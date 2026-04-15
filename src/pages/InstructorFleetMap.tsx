@@ -30,6 +30,8 @@ function isSignalLost(device: FleetDevice): boolean {
 }
 
 
+  // Keep devicesRef in sync with latest state
+  useEffect(() => { devicesRef.current = devices; }, [devices]);
 
 function relativeTime(iso: string | null): string {
   if (!iso) return "Never";
@@ -201,7 +203,7 @@ export default function InstructorFleetMap() {
         });
 
         marker.addListener("click", () => {
-          const d = devices.find((dd) => dd.id === device.id) || device;
+          const d = devicesRef.current.find((dd) => dd.id === device.id) || device;
           const dLost = isSignalLost(d);
           const dSpeed = Math.round(kmhToMph(d.last_speed_kmh ?? 0));
           const dLimit = Math.round(kmhToMph(d.last_speed_limit_kmh ?? 0));
