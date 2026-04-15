@@ -15,7 +15,7 @@ const pwaConfigs: Record<string, PWAMetaConfig> = {
     favicon: "/favicon.png",
     splash: "/splash-1170x2532.png",
     title: "EveryDriver",
-    themeColor: "#142741",
+    themeColor: "#FFFFFF",
   },
   learner: {
     icon: "/favicon-365.png",
