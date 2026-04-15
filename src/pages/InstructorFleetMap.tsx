@@ -148,7 +148,7 @@ export default function InstructorFleetMap() {
 
   // Update markers
   useEffect(() => {
-    if (!mapReady || !mapRef.current) return;
+    if (!mapReady || !mapRef.current || !google.maps.marker?.AdvancedMarkerElement) return;
     const map = mapRef.current;
     const existingIds = new Set(markersRef.current.keys());
 
