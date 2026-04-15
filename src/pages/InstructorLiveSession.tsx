@@ -107,7 +107,7 @@ export default function InstructorLiveSession() {
   const isSessionActive = !!device?.current_session_id;
 
   // Connection status derived from last_seen_at (no client polling needed)
-  // Server-side geotab-poller runs via pg_cron
+  // Server-side poller runs via pg_cron
   const isReconnecting = false;
   const retryCount = 0;
   const manualReconnect = useCallback(() => {
