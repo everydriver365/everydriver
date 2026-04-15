@@ -1,40 +1,51 @@
 
 
-## Fix: Blue Polyline Not Keeping Up With Vehicle Marker
+## Replace Fleet Map Button with Live/Fleet Segmented Toggle
 
-The polyline trail lags behind the vehicle arrow because of two issues in `MiniLiveMap.tsx`:
+Swap the separate "Fleet Map" button link on the tracking page for an iOS-style segmented control at the top that toggles between the current Live view and an embedded Fleet Map view.
 
-### Problem 1 — Overly aggressive deduplication
-The threshold `0.00005` degrees (~5.5m) filters out legitimate movement points at low speeds or short poll intervals, causing the line to stall while the marker moves ahead.
+### Changes — Single file: `src/pages/InstructorLiveSession.tsx`
 
-### Problem 2 — Path not connected after historical trail load
-When historical GPS points are loaded from the session, the last historical point may be far from the current live position. New points append to `pathRef` but the gap between the last historical point and the first live update creates a visual disconnect.
+1. **Add state**: `const [viewMode, setViewMode] = useState<"live" | "fleet">("live");`
 
-### Changes — Single file: `src/components/instructor/tracking/MiniLiveMap.tsx`
+2. **Add segmented control** at the top of the non-session layout (after the `<div className="p-4 pb-24 space-y-4">` opening, before the DeviceSelectorDropdown):
+   - Use the existing `IOSSegmentedControl` component with segments `[{ value: "live", label: "Live" }, { value: "fleet", label: "Fleet" }]`
 
-1. **Lower the dedup threshold** from `0.00005` to `0.000005` (~0.5m) — effectively always append unless truly stationary
-2. **After loading historical trail, bridge the gap** — append the current live position to the end of the loaded trail so the polyline connects to the marker immediately
-3. **Always append the current position on every update** when the marker moves, ensuring the blue line reaches the arrow at all times
+3. **Conditionally render content**:
+   - When `viewMode === "live"`: show all existing content (device selector, GPS hero, links, mini map, session panel, route recorder, recent sessions)
+   - When `viewMode === "fleet"`: render the `InstructorFleetMap` component inline (lazy-imported) instead of the live tracking content
+
+4. **Remove the standalone "Fleet Map" button** (lines ~950-960) since it's now accessible via the toggle
+
+5. **Import** `IOSSegmentedControl` and lazy-load `InstructorFleetMap`
 
 ### Technical detail
 
-```
-// Before (line 159-161):
-Math.abs(lastPt.lat() - latitude) > 0.00005 ||
-Math.abs(lastPt.lng() - longitude) > 0.00005;
+```tsx
+import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
+const InstructorFleetMap = lazy(() => import("@/pages/InstructorFleetMap"));
 
-// After — reduced threshold so line keeps up:
-Math.abs(lastPt.lat() - latitude) > 0.000005 ||
-Math.abs(lastPt.lng() - longitude) > 0.000005;
+// In the non-session return:
+<IOSSegmentedControl
+  segments={[
+    { value: "live", label: "Live" },
+    { value: "fleet", label: "Fleet" },
+  ]}
+  value={viewMode}
+  onChange={(v) => setViewMode(v as "live" | "fleet")}
+  className="mb-2"
+/>
+
+{viewMode === "live" ? (
+  // ...existing live tracking content
+) : (
+  <Suspense fallback={<div className="h-[70vh] flex items-center justify-center"><Loader2 className="animate-spin" /></div>}>
+    <div className="rounded-2xl overflow-hidden border" style={{ height: "70vh" }}>
+      <InstructorFleetMap />
+    </div>
+  </Suspense>
+)}
 ```
 
-After the historical trail loads (line 126), bridge to current live position:
-```typescript
-// Bridge trail to current live position
-if (latitude != null && longitude != null) {
-  const livePt = new google.maps.LatLng(latitude, longitude);
-  pathRef.current.push(livePt);
-  polylineRef.current?.setPath(pathRef.current);
-}
-```
+The `InstructorFleetMap` component is already self-contained (fetches its own data, renders its own map), so embedding it inline requires no props. The fleet map page's own back-button header will need to be hidden when rendered inline — handled by passing an `embedded` prop or checking if it's rendered inside the tracking page.
 
