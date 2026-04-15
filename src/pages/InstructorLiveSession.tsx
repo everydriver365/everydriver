@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -111,6 +111,8 @@ export default function InstructorLiveSession() {
   } | null>(null);
 
   const isSessionActive = !!device?.current_session_id;
+  const location = useLocation();
+  const isFullscreenMode = new URLSearchParams(location.search).get("fullscreen") === "true";
 
   // Connection status derived from last_seen_at (no client polling needed)
   // Server-side poller runs via pg_cron
@@ -184,11 +186,8 @@ export default function InstructorLiveSession() {
             setTotalDistance(session.total_distance_km);
           }
           
-          // Auto-enter fullscreen mode if session is active
-          const searchParams = new URLSearchParams(window.location.search);
-          if (searchParams.get("fullscreen") !== "true") {
-            navigate("/instructor/tracking?fullscreen=true", { replace: true });
-          }
+          // Don't auto-enter fullscreen — let the user see the tracking page first
+          // They can resume the session from there
         }
       }
 
@@ -809,8 +808,8 @@ export default function InstructorLiveSession() {
     );
   }
 
-  // When session is active, show fullscreen map without standard layout
-  if (isSessionActive) {
+  // When session is active AND in fullscreen mode, show fullscreen map without standard layout
+  if (isSessionActive && isFullscreenMode) {
     return (
       <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
         <div className="flex-1 relative overflow-hidden">
@@ -1007,16 +1006,40 @@ export default function InstructorLiveSession() {
                   : null
               }
             />
+           {/* Resume active session banner */}
+           {isSessionActive && (
+             <div
+               className="bg-emerald-500 text-white rounded-2xl p-4 flex items-center justify-between"
+             >
+               <div>
+                 <p className="font-semibold text-sm">Session in progress</p>
+                 <p className="text-xs text-white/80">
+                   {currentPupil?.name || "Test route"} · {formatElapsedTime(elapsedTime)}
+                 </p>
+               </div>
+               <Button
+                 size="sm"
+                 variant="secondary"
+                 className="bg-white text-emerald-600 hover:bg-white/90 font-semibold"
+                 onClick={() => navigate("/instructor/tracking?fullscreen=true", { replace: true })}
+               >
+                 Resume
+               </Button>
+             </div>
+           )}
+
            {/* Session Start Panel */}
-           <SessionStartPanel
-              pupils={pupils}
-              selectedPupilId={selectedPupilId}
-              onPupilChange={setSelectedPupilId}
-              onStartSession={(type) => startSession(type)}
-              onOpenDrivingTestDialog={() => setShowDrivingTestDialog(true)}
-              isStarting={isStarting}
-              isConnected={isConnected}
-            />
+           {!isSessionActive && (
+             <SessionStartPanel
+               pupils={pupils}
+               selectedPupilId={selectedPupilId}
+               onPupilChange={setSelectedPupilId}
+               onStartSession={(type) => startSession(type)}
+               onOpenDrivingTestDialog={() => setShowDrivingTestDialog(true)}
+               isStarting={isStarting}
+               isConnected={isConnected}
+             />
+           )}
  
            {/* Manual GPS Route Recorder */}
            {instructor?.id && (
