@@ -37,6 +37,8 @@ interface NormalisedPosition {
   timestamp: string | null;
   speed_limit_kmh: number | null;
   odometer: number | null;
+  battery_voltage: number | null;
+  engine_hours: number | null;
   _source: string;
 }
 
