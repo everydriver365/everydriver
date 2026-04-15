@@ -259,7 +259,7 @@ export function HomepageHero({
                     </div>
                     {/* Mini car illustration */}
                     <div className="shrink-0 self-end -mb-1">
-                      <img src={carRoadIllustration} alt="" className="w-[72px] h-auto opacity-60" />
+                      <img src={carRoadIllustration} alt="" className="w-[100px] h-auto opacity-60" />
                     </div>
                   </div>
                 </div>
