@@ -2,14 +2,18 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { format, formatDistanceToNow } from "date-fns";
 import { MessageCircle, Search, User, Plus, ShieldCheck, Megaphone } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
+import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Dialog,
   DialogContent,
