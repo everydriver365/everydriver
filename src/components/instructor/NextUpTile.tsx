@@ -181,20 +181,18 @@ export function NextUpTile({
       <div className="w-full overflow-hidden"
         style={{
           background: "#FFFFFF",
-          borderRadius: 24,
-          border: "0.5px solid #E5E5EA",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+          borderRadius: 20,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
           fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
         }}
       >
-        {/* ── TOP ACCENT BAR ── */}
-        <div style={{ height: 4, backgroundColor: "#0A7AFF" }} />
-
         {/* ── HEADER ROW ── */}
-        <div className="px-4 pt-3 pb-2 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <span style={{ width: 7, height: 7, borderRadius: "50%", backgroundColor: "#0A7AFF", display: "inline-block" }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#0A7AFF", letterSpacing: 0.8, textTransform: "uppercase" as const }}>
+        <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center" style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: "rgba(0,122,255,0.1)" }}>
+              <Calendar className="h-3.5 w-3.5" style={{ color: "#007AFF" }} />
+            </div>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#1C1C1E" }}>
               Next Lesson
             </span>
             {checkInStatus && (
@@ -203,9 +201,10 @@ export function NextUpTile({
           </div>
           <div
             className="flex items-center gap-1 px-2.5 py-1"
-            style={{ borderRadius: 12, backgroundColor: "#E8F1FF" }}
+            style={{ borderRadius: 10, backgroundColor: "rgba(0,122,255,0.08)" }}
           >
-            <span style={{ fontSize: 12, fontWeight: 600, color: "#0A7AFF" }}>{formatTime24(startTime)}</span>
+            <Clock className="h-3 w-3" style={{ color: "#007AFF" }} />
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#007AFF" }}>{formatTime24(startTime)}</span>
           </div>
         </div>
 
