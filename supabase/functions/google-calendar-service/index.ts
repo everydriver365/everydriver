@@ -569,6 +569,25 @@ Deno.serve(async (req) => {
           "11": "#D50000", // Tomato
         };
 
+        // Fetch the calendar's default background color
+        let calendarDefaultColor = "#039BE5"; // Peacock fallback
+        try {
+          const calMeta = await fetch(
+            `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(connection.calendar_id)}`,
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+          );
+          if (calMeta.ok) {
+            const calData = await calMeta.json();
+            if (calData.backgroundColor) {
+              calendarDefaultColor = calData.backgroundColor;
+            }
+          }
+        } catch (e) {
+          console.warn("Could not fetch calendar metadata for default color:", e);
+        }
+
+        console.log(`Calendar default color: ${calendarDefaultColor}`);
+
         const allEvents: Array<{ id: string; summary: string; start: string; end: string; color: string | null }> = [];
         let pageToken: string | undefined;
 
@@ -606,7 +625,7 @@ Deno.serve(async (req) => {
               summary: item.summary || "Busy",
               start: item.start.dateTime || `${item.start.date}T00:00:00`,
               end: item.end.dateTime || `${item.end.date}T23:59:59`,
-              color: item.colorId ? (googleColorMap[item.colorId] || null) : null,
+              color: item.colorId ? (googleColorMap[item.colorId] || calendarDefaultColor) : calendarDefaultColor,
             }));
 
           allEvents.push(...pageEvents);
