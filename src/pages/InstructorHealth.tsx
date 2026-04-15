@@ -25,40 +25,41 @@ export default function InstructorHealth() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-4 pb-24" style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
-        {/* iOS Page Title */}
-        <div className="flex items-center gap-2.5">
-          <div className="h-[29px] w-[29px] rounded-[7px] bg-rose-500/10 flex items-center justify-center">
-            <Heart className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
-          </div>
-          <div>
-            <h1 className="text-[17px] font-semibold tracking-[-0.02em]">Health & Wellness</h1>
-            <p className="text-[13px] text-muted-foreground">
-              Track your wellbeing and connect with other instructors
-            </p>
-          </div>
-        </div>
-
-        {/* Quick Stats Row */}
-        <div className="grid grid-cols-4 gap-2">
-          <div className="bg-card rounded-[10px] border border-border/40 p-2.5 text-center">
-            <Scale className="h-4 w-4 mx-auto mb-0.5 text-rose-500" />
-            <p className="text-[10px] text-muted-foreground">Weight</p>
-            <p className="font-semibold text-xs">Track</p>
-          </div>
-          <div className="bg-card rounded-[10px] border border-border/40 p-2.5 text-center">
-            <Droplets className="h-4 w-4 mx-auto mb-0.5 text-sky-500" />
-            <p className="text-[10px] text-muted-foreground">Water</p>
-            <p className="font-semibold text-xs">{waterProgress}%</p>
-          </div>
-          <div className="bg-card rounded-[10px] border border-border/40 p-2.5 text-center">
-            <Heart className="h-4 w-4 mx-auto mb-0.5 text-red-500" />
-            <p className="text-[10px] text-muted-foreground">BP</p>
-            <p className="font-semibold text-xs">Log</p>
-          </div>
-          <div className="bg-card rounded-[10px] border border-border/40 p-2.5 text-center">
-            <Activity className="h-4 w-4 mx-auto mb-0.5 text-purple-500" />
-            <p className="text-[10px] text-muted-foreground">Glucose</p>
-            <p className="font-semibold text-xs">Log</p>
+        {/* Hero Card */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-500 via-rose-600 to-pink-700 p-5 text-white shadow-lg">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="p-2 bg-white/20 rounded-[10px] backdrop-blur-md">
+                <Heart className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-[17px] font-semibold tracking-[-0.02em]">Health & Wellness</h1>
+                <p className="text-[13px] text-white/60">Track your wellbeing</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              <div className="bg-white/15 backdrop-blur-md rounded-[10px] p-2.5 text-center">
+                <Scale className="h-4 w-4 mx-auto mb-0.5 text-white/80" />
+                <p className="text-[10px] text-white/60">Weight</p>
+                <p className="font-semibold text-xs">Track</p>
+              </div>
+              <div className="bg-white/15 backdrop-blur-md rounded-[10px] p-2.5 text-center">
+                <Droplets className="h-4 w-4 mx-auto mb-0.5 text-white/80" />
+                <p className="text-[10px] text-white/60">Water</p>
+                <p className="font-semibold text-xs">{waterProgress}%</p>
+              </div>
+              <div className="bg-white/15 backdrop-blur-md rounded-[10px] p-2.5 text-center">
+                <Heart className="h-4 w-4 mx-auto mb-0.5 text-white/80" />
+                <p className="text-[10px] text-white/60">BP</p>
+                <p className="font-semibold text-xs">Log</p>
+              </div>
+              <div className="bg-white/15 backdrop-blur-md rounded-[10px] p-2.5 text-center">
+                <Activity className="h-4 w-4 mx-auto mb-0.5 text-white/80" />
+                <p className="text-[10px] text-white/60">Glucose</p>
+                <p className="font-semibold text-xs">Log</p>
+              </div>
+            </div>
           </div>
         </div>
 

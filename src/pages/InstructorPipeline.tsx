@@ -21,12 +21,19 @@ export default function InstructorPipeline() {
   return (
     <InstructorPortalLayout>
       <IOSPageWrapper>
-        <IOSPageTitle
-          icon={<Briefcase className="h-3.5 w-3.5 text-primary" />}
-          iconBg="bg-primary/10"
-          title="Pipeline"
-          subtitle="Track leads from enquiry to test pass"
-        />
+        {/* Hero Card */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-600 to-indigo-700 p-5 text-white shadow-lg">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+          <div className="relative z-10 flex items-center gap-2.5">
+            <div className="p-2 bg-white/20 rounded-[10px] backdrop-blur-md">
+              <Briefcase className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-[17px] font-semibold tracking-[-0.02em]">Pipeline</h1>
+              <p className="text-[13px] text-white/60">Track leads from enquiry to test pass</p>
+            </div>
+          </div>
+        </div>
         <KanbanBoard instructorId={instructor.id} />
       </IOSPageWrapper>
     </InstructorPortalLayout>
