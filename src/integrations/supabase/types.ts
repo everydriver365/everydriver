@@ -8650,6 +8650,7 @@ export type Database = {
           instructor_id: string
           lesson_id: string | null
           local_score: number | null
+          manually_started: boolean
           max_speed_kmh: number | null
           max_speed_over_limit_kmh: number | null
           pupil_id: string | null
@@ -8676,6 +8677,7 @@ export type Database = {
           instructor_id: string
           lesson_id?: string | null
           local_score?: number | null
+          manually_started?: boolean
           max_speed_kmh?: number | null
           max_speed_over_limit_kmh?: number | null
           pupil_id?: string | null
@@ -8702,6 +8704,7 @@ export type Database = {
           instructor_id?: string
           lesson_id?: string | null
           local_score?: number | null
+          manually_started?: boolean
           max_speed_kmh?: number | null
           max_speed_over_limit_kmh?: number | null
           pupil_id?: string | null

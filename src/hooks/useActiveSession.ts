@@ -42,12 +42,13 @@ export function useActiveSession(instructorId: string | null | undefined) {
         return null;
       }
 
-      // Fetch telematics session — only if not already ended
+      // Fetch telematics session — only if manually started and not ended
       const { data: telematics } = await supabase
         .from("lesson_telematics")
-        .select("id, lesson_id, started_at, total_distance_km, pupil_id, ended_at")
+        .select("id, lesson_id, started_at, total_distance_km, pupil_id, ended_at, manually_started")
         .eq("id", device.current_session_id)
         .is("ended_at", null)
+        .eq("manually_started", true)
         .maybeSingle();
 
       if (!telematics) return null;
