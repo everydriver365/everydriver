@@ -76,9 +76,9 @@ export default function InstructorFleetDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
 
   const { activeProvider } = useActiveTrackingProvider(instructor?.id);
-  const isGeotab = activeProvider === "geotab";
+  const isGeotab = false; // Geotab removed — Radius only
 
-  const allTabs = isGeotab ? [...GENERAL_TABS, ...GEOTAB_TABS] : GENERAL_TABS;
+  const allTabs = GENERAL_TABS;
   const currentTabDef = allTabs.find(t => t.id === activeTab);
 
   useEffect(() => {
