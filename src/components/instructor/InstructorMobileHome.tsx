@@ -534,9 +534,7 @@ export function InstructorMobileHome({
           }}
         >
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center" style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#007AFF" }}>
-              <span style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>{new Date().getDate()}</span>
-            </div>
+            <img src={googleCalendarIcon} alt="Calendar" className="w-9 h-9 rounded-[10px]" />
             <span style={{ fontSize: 15, fontWeight: 600, color: "#1C1C1E" }}>View Schedule</span>
           </div>
           <ChevronRight className="h-4 w-4" style={{ color: "#C7C7CC" }} />
