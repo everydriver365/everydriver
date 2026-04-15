@@ -386,6 +386,8 @@ async function fetchPositionsLegacy(token: string, customerId: string): Promise<
       timestamp: pos.timestamp || pos.datetime || pos.date_time || null,
       speed_limit_kmh: null,
       odometer: null,
+      battery_voltage: null,
+      engine_hours: null,
       _source: "legacy",
     };
   });
