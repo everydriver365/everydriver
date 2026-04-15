@@ -21,8 +21,7 @@ export function useActiveTrackingProvider(instructorId: string | null | undefine
         supabase
           .from("gps_devices")
           .select("tracking_provider")
-          .eq("instructor_id", instructorId)
-          .eq("is_active", true),
+          .eq("instructor_id", instructorId),
         supabase
           .from("instructors")
           .select("preferred_tracking_provider")

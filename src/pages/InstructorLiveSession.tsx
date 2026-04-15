@@ -142,9 +142,8 @@ export default function InstructorLiveSession() {
         supabase
           .from("gps_devices")
           .select("*")
-          .eq("instructor_id", instructor.id)
-          .eq("is_active", true)
-          .eq("tracking_provider", "radius")
+           .eq("instructor_id", instructor.id)
+           .eq("tracking_provider", "radius")
           .limit(10),
         supabase
           .from("instructors")

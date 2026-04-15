@@ -288,10 +288,61 @@ export default function InstructorGPSSetup() {
         {instructor?.id && (
           <PreFlightChecks 
             instructorId={instructor.id}
-            onAllPassed={() => {}}
-            onSkip={() => {}}
+            onAllPassed={() => {
+              if (devices.length > 0) {
+                navigate("/instructor/tracking");
+              }
+            }}
+            onSkip={() => {
+              if (devices.length > 0) {
+                navigate("/instructor/tracking");
+              }
+            }}
           />
         )}
+
+        {/* Register New Device */}
+        <div className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 space-y-4">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <Search className="h-5 w-5 text-primary" />
+            Register a Tracker
+          </h2>
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="deviceName">Device Name</Label>
+              <Input
+                id="deviceName"
+                placeholder="e.g. My Car Tracker"
+                value={deviceName}
+                onChange={(e) => setDeviceName(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="deviceId">Device ID</Label>
+              <Input
+                id="deviceId"
+                placeholder="Enter your tracker's device ID"
+                value={deviceId}
+                onChange={(e) => setDeviceId(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                This is the unique identifier from your Radius tracker
+              </p>
+            </div>
+            <Button
+              onClick={createDevice}
+              disabled={isCreating || !deviceId.trim()}
+              className="w-full"
+            >
+              {isCreating ? (
+                <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Cpu className="h-4 w-4 mr-2" />
+              )}
+              Register Device
+            </Button>
+          </div>
+        </div>
 
         {/* Devices List */}
         <div className="space-y-3">
