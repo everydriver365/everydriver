@@ -29,8 +29,8 @@ interface HomepageHeroProps {
 }
 
 function ActivityRing({ completed, total }: { completed: number; total: number }) {
-  const size = 88;
-  const stroke = 7;
+  const size = 68;
+  const stroke = 6;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const progress = total > 0 ? Math.min(completed / total, 1) : 0;
@@ -60,10 +60,10 @@ function ActivityRing({ completed, total }: { completed: number; total: number }
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span style={{ fontSize: 24, fontWeight: 700, color: "#1C1C1E", lineHeight: 1, fontFamily: "-apple-system, 'SF Pro Display', sans-serif" }}>
+        <span style={{ fontSize: 18, fontWeight: 700, color: "#1C1C1E", lineHeight: 1, fontFamily: "-apple-system, 'SF Pro Display', sans-serif" }}>
           {completed}
         </span>
-        <span style={{ fontSize: 11, color: "#8E8E93", lineHeight: 1, marginTop: 3 }}>
+        <span style={{ fontSize: 10, color: "#8E8E93", lineHeight: 1, marginTop: 2 }}>
           of {total || 0}
         </span>
       </div>
@@ -190,16 +190,16 @@ export function HomepageHero({
         }}
       >
         {/* Greeting + Avatar */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-1">
+        <div className="flex items-center justify-between px-4 pt-4 pb-1">
           <div>
-            <p style={{ fontSize: 28, fontWeight: 700, color: "#1C1C1E", lineHeight: 1.2 }}>
+            <p style={{ fontSize: 22, fontWeight: 700, color: "#1C1C1E", lineHeight: 1.2 }}>
               {getGreeting()}, <span style={{ display: "inline" }}>{firstName}</span>
             </p>
           </div>
           <div className="relative shrink-0">
             <div
               style={{
-                width: 48, height: 48, borderRadius: "50%", overflow: "hidden",
+                width: 40, height: 40, borderRadius: "50%", overflow: "hidden",
                 boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
               }}
             >
@@ -207,7 +207,7 @@ export function HomepageHero({
                 <img src={profileImageUrl} alt={firstName} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, #E8622A, #FF8C42)" }}>
-                  <span style={{ fontSize: 20, fontWeight: 700, color: "#fff" }}>{firstName.charAt(0)}</span>
+                  <span style={{ fontSize: 17, fontWeight: 700, color: "#fff" }}>{firstName.charAt(0)}</span>
                 </div>
               )}
             </div>
@@ -232,9 +232,9 @@ export function HomepageHero({
           <div className="flex">
             {slides.map((slide, i) => (
               <div key={slide.label} className="min-w-0 shrink-0 grow-0 basis-full">
-                <div className="px-5 pt-3 pb-3">
+                <div className="px-4 pt-2 pb-2">
                   {/* Date row */}
-                  <div className="flex items-center gap-2.5 mb-4">
+                  <div className="flex items-center gap-2.5 mb-3">
                     <span
                       style={{
                         fontSize: 11,
@@ -253,13 +253,13 @@ export function HomepageHero({
                   </div>
 
                   {/* Ring + Lessons info + car illustration */}
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
                     <ActivityRing completed={slide.completed} total={slide.total} />
                     <div className="flex-1 min-w-0">
-                      <p style={{ fontSize: 18, fontWeight: 700, color: "#1C1C1E", marginBottom: 2 }}>
+                      <p style={{ fontSize: 15, fontWeight: 700, color: "#1C1C1E", marginBottom: 1 }}>
                         {slide.completed === slide.total && slide.total > 0 ? "All done! 🎉" : "Lessons Today"}
                       </p>
-                      <p style={{ fontSize: 13, color: "#8E8E93" }}>{slide.subtitle}</p>
+                      <p style={{ fontSize: 12, color: "#8E8E93" }}>{slide.subtitle}</p>
                       {/* Progress bar */}
                       <div style={{ height: 4, borderRadius: 2, backgroundColor: "#E5E5EA", marginTop: 10, overflow: "hidden" }}>
                         <motion.div
@@ -299,30 +299,30 @@ export function HomepageHero({
         <div style={{ height: 0.5, backgroundColor: "rgba(0,0,0,0.06)", marginLeft: 20, marginRight: 20 }} />
 
         {/* Bottom stats row */}
-        <div className="grid grid-cols-4 gap-2 px-4 py-3.5">
+        <div className="grid grid-cols-4 gap-1.5 px-3 py-2.5">
           {stats.map((stat) => (
             <motion.div
               key={stat.label}
               whileTap={{ scale: 0.97 }}
-              className="flex flex-col items-center rounded-2xl py-2.5 px-1"
+              className="flex flex-col items-center rounded-2xl py-2 px-1"
               style={{
                 backgroundColor: stat.highlight ? "#007AFF" : "rgba(0,0,0,0.02)",
                 borderRadius: 16,
               }}
             >
-              <div
-                className="flex items-center justify-center mb-1.5"
+                <div
+                className="flex items-center justify-center mb-1"
                 style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 8,
+                  width: 24,
+                  height: 24,
+                  borderRadius: 7,
                   backgroundColor: stat.highlight ? "rgba(255,255,255,0.2)" : stat.iconBg,
                 }}
               >
-                <stat.icon size={15} color={stat.highlight ? "#fff" : stat.iconColor} strokeWidth={2.2} />
+                <stat.icon size={13} color={stat.highlight ? "#fff" : stat.iconColor} strokeWidth={2.2} />
               </div>
               <span style={{
-                fontSize: 17,
+                fontSize: 15,
                 fontWeight: 700,
                 color: stat.highlight ? "#fff" : "#1C1C1E",
                 lineHeight: 1.1,
