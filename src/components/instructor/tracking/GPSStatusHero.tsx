@@ -111,33 +111,6 @@ export function GPSStatusHero({
                 )}
               </div>
             </div>
-            
-            {/* Status badge */}
-            <div className={`rounded-full font-semibold ${
-              isConnected 
-                ? "px-3 py-1 text-xs bg-white/90 text-primary ring-2 ring-white/30" 
-                : isParked
-                  ? "px-3 py-1 text-xs bg-white/90 text-slate-600"
-                  : showReconnecting 
-                    ? "px-2 py-1 text-[10px] bg-white/90 text-slate-700 font-bold shadow-sm"
-                    : "px-3 py-1 text-xs bg-white text-primary/70"
-            }`}>
-              {isConnected ? (
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-                  LIVE
-                </span>
-              ) : isParked ? (
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 bg-amber-400 rounded-full" />
-                  {lastSeenLabel}
-                </span>
-              ) : showReconnecting ? (
-                `#${retryCount + 1}`
-              ) : (
-                lastSeenLabel
-              )}
-            </div>
           </div>
         </div>
  
