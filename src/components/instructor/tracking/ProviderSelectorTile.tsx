@@ -30,7 +30,7 @@ export function ProviderSelectorTile({
           ...new Set(
             data
               .map((d) => d.tracking_provider)
-              .filter((p): p is string => !!p && p !== "geotab")
+              .filter((p): p is string => !!p)
           ),
         ];
         // Sort consistently: radius first
@@ -51,7 +51,6 @@ export function ProviderSelectorTile({
   if (availableProviders.length <= 1) return null;
 
   const segments = availableProviders
-    .filter((p) => p !== "geotab")
     .map((p) => ({
       value: p,
       label: p === "radius" ? "Radius" : p,

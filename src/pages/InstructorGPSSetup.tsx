@@ -49,7 +49,7 @@ interface GPSDevice {
   last_latitude: number | null;
   last_longitude: number | null;
   current_session_id: string | null;
-  geotab_device_id?: string | null;
+  
 }
 
 export default function InstructorGPSSetup() {

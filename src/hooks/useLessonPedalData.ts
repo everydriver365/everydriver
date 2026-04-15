@@ -97,7 +97,7 @@ function analyseGearData(data: PedalDataPoint[]): GearAnalysis {
 
     distribution[gear] = (distribution[gear] || 0) + Math.min(durationSec, 30); // cap at 30s per interval
 
-    // Track reverse manoeuvres (gear = -1 or 0 depending on Geotab encoding)
+    // Track reverse manoeuvres (gear = -1 or 0 depending on device encoding)
     const isReverse = gear === -1 || gear === 0;
     if (isReverse && !currentReverseStart) {
       currentReverseStart = time;

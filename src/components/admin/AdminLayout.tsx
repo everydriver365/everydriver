@@ -97,7 +97,7 @@ const sidebarGroups: PortalNavGroup[] = [
     icon: Settings,
     items: [
       { key: "trackers", label: "GPS Trackers", icon: Satellite },
-      { key: "geotab-fleet", label: "Geotab Fleet", icon: Satellite },
+      
       { key: "pwa-apps", label: "PWA Config", icon: Settings },
       { key: "site-settings", label: "Site Settings", icon: Settings },
       { key: "activity-log", label: "Activity Log", icon: Settings },

@@ -141,9 +141,6 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
   const [quartixVehicleId, setQuartixVehicleId] = useState("");
   const [quartixDriverId, setQuartixDriverId] = useState("");
 
-  // Geotab tracker state
-  const [geotabDeviceName, setGeotabDeviceName] = useState("");
-  const [geotabDeviceId, setGeotabDeviceId] = useState("");
 
   const form = useForm<InstructorFormData>({
     resolver: zodResolver(instructorSchema),
@@ -251,23 +248,6 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
     fetchQuartixConfig();
   }, [initialData?.id]);
 
-  // Fetch Geotab tracker config for existing instructor
-  useEffect(() => {
-    if (!initialData?.id) return;
-    const fetchGeotabConfig = async () => {
-      const { data: device } = await supabase
-        .from("gps_devices")
-        .select("device_name, geotab_device_id")
-        .eq("instructor_id", initialData.id!)
-        .eq("tracking_provider", "geotab")
-        .maybeSingle();
-      if (device) {
-        setGeotabDeviceName((device as any).device_name || "");
-        setGeotabDeviceId((device as any).geotab_device_id || "");
-      }
-    };
-    fetchGeotabConfig();
-  }, [initialData?.id]);
 
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -494,37 +474,6 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
                 quartix_vehicle_id: quartixVehicleId,
                 quartix_driver_id: quartixDriverId || null,
                 tracking_provider: "quartix",
-                is_active: true,
-              } as any);
-          }
-        }
-
-        // Save Geotab tracker config
-        if (geotabDeviceId) {
-          const { data: existingGeotab } = await supabase
-            .from("gps_devices")
-            .select("id")
-            .eq("instructor_id", instructorId)
-            .eq("tracking_provider", "geotab")
-            .maybeSingle();
-
-          if (existingGeotab) {
-            await supabase
-              .from("gps_devices")
-              .update({
-                device_name: geotabDeviceName || "Geotab Device",
-                geotab_device_id: geotabDeviceId,
-              } as any)
-              .eq("id", existingGeotab.id);
-          } else {
-            await supabase
-              .from("gps_devices")
-              .insert({
-                instructor_id: instructorId,
-                device_identifier: `geotab-${geotabDeviceId}`,
-                device_name: geotabDeviceName || "Geotab Device",
-                geotab_device_id: geotabDeviceId,
-                tracking_provider: "geotab",
                 is_active: true,
               } as any);
           }
@@ -1545,34 +1494,6 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
           </div>
         )}
 
-        {/* Geotab Tracker - Only show for existing instructors */}
-        {initialData?.id && (
-          <div className="rounded-lg border p-4">
-            <h3 className="mb-4 text-lg font-semibold flex items-center gap-2">
-              <Camera className="h-5 w-5" /> Geotab Device
-            </h3>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Device Name</Label>
-                <Input
-                  placeholder="e.g., Geotab GO9 - Front Car"
-                  value={geotabDeviceName}
-                  onChange={(e) => setGeotabDeviceName(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">A friendly name for this Geotab device</p>
-              </div>
-              <div className="space-y-2">
-                <Label>Geotab Device Serial / ID</Label>
-                <Input
-                  placeholder="e.g., G9XXXXXXXX"
-                  value={geotabDeviceId}
-                  onChange={(e) => setGeotabDeviceId(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">The Geotab device serial number — enables tracking + dashcam</p>
-              </div>
-            </div>
-          </div>
-        )}
 
         <div className="flex justify-end gap-3 sticky bottom-0 bg-background pt-4 border-t">
           <Button type="button" variant="outline" onClick={onCancel}>

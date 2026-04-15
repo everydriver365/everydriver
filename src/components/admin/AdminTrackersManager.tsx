@@ -41,7 +41,7 @@ interface Vehicle {
 
 interface LinkedDevice {
   id: string;
-  geotab_device_id: string | null;
+  
   device_identifier: string;
   device_name: string | null;
   vehicle_id: string | null;
@@ -60,7 +60,7 @@ export function AdminTrackersManager() {
   const [newDeviceId, setNewDeviceId] = useState("");
   const [newDeviceName, setNewDeviceName] = useState("");
   const [selectedVehicleId, setSelectedVehicleId] = useState("");
-  const [selectedProvider, setSelectedProvider] = useState<string>("geotab");
+  const [selectedProvider, setSelectedProvider] = useState<string>("radius");
   const [isAdding, setIsAdding] = useState(false);
   const [actionId, setActionId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -85,7 +85,7 @@ export function AdminTrackersManager() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("gps_devices")
-        .select("id, geotab_device_id, device_identifier, device_name, vehicle_id, is_active, instructor_id, tracking_provider")
+        .select("id, device_identifier, device_name, vehicle_id, is_active, instructor_id, tracking_provider")
         .eq("is_active", true);
       if (error) throw error;
       return data as LinkedDevice[];
@@ -119,14 +119,12 @@ export function AdminTrackersManager() {
         instructor_id: selectedInstructorId,
         tracking_provider: selectedProvider,
         device_identifier: `${selectedProvider}-${newDeviceId.trim()}`,
-        device_name: newDeviceName.trim() || `${selectedProvider === "geotab" ? "Geotab" : "Radius"} ${newDeviceId.trim()}`,
+        device_name: newDeviceName.trim() || `Radius ${newDeviceId.trim()}`,
         vehicle_id: selectedVehicleId || null,
         is_active: true,
       };
 
-      if (selectedProvider === "geotab") {
-        insertData.geotab_device_id = newDeviceId.trim();
-      } else if (selectedProvider === "radius") {
+      if (selectedProvider === "radius") {
         insertData.device_identifier = newDeviceId.trim();
       }
 
@@ -134,8 +132,7 @@ export function AdminTrackersManager() {
       if (error) throw error;
 
       await queryClient.invalidateQueries({ queryKey: ["admin-all-gps-devices"] });
-      const providerLabel = selectedProvider === "geotab" ? "Geotab" : "Radius";
-      toast({ title: "Device added", description: `${providerLabel} ${newDeviceId.trim()} linked to ${getInstructorName(selectedInstructorId)}` });
+      toast({ title: "Device added", description: `Radius ${newDeviceId.trim()} linked to ${getInstructorName(selectedInstructorId)}` });
       setNewDeviceId("");
       setNewDeviceName("");
       setSelectedVehicleId("");
@@ -192,7 +189,7 @@ export function AdminTrackersManager() {
                   <TableRow key={d.id}>
                     <TableCell className="font-medium">{getInstructorName(d.instructor_id)}</TableCell>
                     <TableCell>{d.device_name || "—"}</TableCell>
-                    <TableCell className="font-mono text-xs">{d.geotab_device_id || d.device_identifier}</TableCell>
+                    <TableCell className="font-mono text-xs">{d.device_identifier}</TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="text-xs capitalize">
                         {d.tracking_provider}
@@ -260,7 +257,7 @@ export function AdminTrackersManager() {
                 <SelectValue placeholder="Provider..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="geotab">Geotab</SelectItem>
+                <SelectItem value="radius">Radius</SelectItem>
                 <SelectItem value="radius">Radius</SelectItem>
               </SelectContent>
             </Select>
@@ -270,15 +267,13 @@ export function AdminTrackersManager() {
             <div className="space-y-3">
               <div className="space-y-1">
                 <Input
-                  placeholder={selectedProvider === "geotab" ? "Geotab Device ID (e.g. GAUU4BSZ9SK8)" : "Radius Vehicle/Device ID"}
+                  placeholder="Radius Vehicle/Device ID"
                   value={newDeviceId}
                   onChange={(e) => setNewDeviceId(e.target.value)}
                   className="font-mono"
                 />
                 <p className="text-xs text-muted-foreground">
-                  {selectedProvider === "geotab"
-                    ? "Find this in Geotab Admin → Devices"
-                    : "Find this in your Radius/Velocity portal"}
+                  Find this in your Radius/Velocity portal
                 </p>
               </div>
 
@@ -311,7 +306,7 @@ export function AdminTrackersManager() {
                 ) : (
                   <Link2 className="h-4 w-4 mr-2" />
                 )}
-                Add {selectedProvider === "geotab" ? "Geotab" : "Radius"} Device
+                Add Radius Device
               </Button>
             </div>
           )}

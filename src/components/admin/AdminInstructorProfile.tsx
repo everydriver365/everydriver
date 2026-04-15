@@ -173,14 +173,14 @@ function InlineTrackerDevice({ instructorId, provider }: { instructorId: string;
   const [newDeviceName, setNewDeviceName] = useState("");
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
-  const providerLabel = provider === "geotab" ? "Geotab" : "Radius";
+  const providerLabel = provider === "radius" ? "Radius" : provider;
 
   const { data: devices, isLoading } = useQuery({
     queryKey: ["instructor-tracker-devices", instructorId, provider],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("gps_devices")
-        .select("id, device_name, device_identifier, geotab_device_id, is_active, tracking_provider")
+        .select("id, device_name, device_identifier, is_active, tracking_provider")
         .eq("instructor_id", instructorId)
         .eq("tracking_provider", provider);
       if (error) throw error;
@@ -199,9 +199,6 @@ function InlineTrackerDevice({ instructorId, provider }: { instructorId: string;
         device_identifier: provider === "radius" ? newDeviceId.trim() : `${provider}-${newDeviceId.trim()}`,
         is_active: true,
       };
-      if (provider === "geotab") {
-        insertData.geotab_device_id = newDeviceId.trim();
-      }
       const { error } = await supabase.from("gps_devices").insert(insertData as any);
       if (error) throw error;
       toast.success(`${providerLabel} device added`);
@@ -234,7 +231,7 @@ function InlineTrackerDevice({ instructorId, provider }: { instructorId: string;
             <div key={d.id} className="flex items-center justify-between bg-background rounded px-3 py-2 text-sm">
               <div className="min-w-0 flex-1">
                 <p className="font-medium truncate">{d.device_name || "Unnamed"}</p>
-                <p className="text-xs text-muted-foreground font-mono">{d.geotab_device_id || d.device_identifier}</p>
+                <p className="text-xs text-muted-foreground font-mono">{d.device_identifier}</p>
               </div>
               <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => removeDevice(d.id)}>
                 Remove
@@ -247,7 +244,7 @@ function InlineTrackerDevice({ instructorId, provider }: { instructorId: string;
       {(!devices || devices.length === 0) && !isLoading && (
         <div className="space-y-2">
           <Input
-            placeholder={provider === "geotab" ? "Geotab Device ID" : "Radius Vehicle/Device ID"}
+            placeholder="Radius Vehicle/Device ID"
             value={newDeviceId}
             onChange={(e) => setNewDeviceId(e.target.value)}
             className="font-mono h-9 text-sm"
@@ -728,14 +725,14 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="route_recorder">Route Recorder</SelectItem>
-                  <SelectItem value="geotab">Geotab</SelectItem>
+                  <SelectItem value="radius">Radius</SelectItem>
                   <SelectItem value="radius">Radius</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Inline tracker device management */}
-            {(instructor.tracking_mode === "geotab" || instructor.tracking_mode === "radius") && (
+            {instructor.tracking_mode === "radius" && (
               <InlineTrackerDevice instructorId={instructor.id} provider={instructor.tracking_mode} />
             )}
 

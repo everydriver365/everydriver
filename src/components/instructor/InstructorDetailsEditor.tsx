@@ -143,7 +143,7 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
   const testConnection = async () => {
     setTestingConnection(true);
     try {
-      const { data, error } = await supabase.functions.invoke("geotab-poller");
+      const { data, error } = await supabase.functions.invoke("radius-poller");
       
       if (error) throw error;
       await fetchGpsStatus();

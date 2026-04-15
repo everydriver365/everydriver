@@ -76,7 +76,7 @@ const PupilBrakeGearAnalysis: React.FC<PupilBrakeGearAnalysisProps> = ({
         <CardContent className="py-8 text-center text-muted-foreground">
           <Settings2 className="h-10 w-10 mx-auto mb-2 opacity-50" />
           <p className="text-sm">No brake/gear data recorded for this session</p>
-          <p className="text-xs mt-1">Data is collected automatically during Geotab-tracked lessons</p>
+          <p className="text-xs mt-1">Data is collected automatically during GPS-tracked lessons</p>
         </CardContent>
       </Card>
     );

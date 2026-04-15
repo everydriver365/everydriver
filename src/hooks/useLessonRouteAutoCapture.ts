@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Auto-captures GPS points from a completed telematics session and saves them
- * as a lesson_route. Called when a Geotab session stops.
+ * as a lesson_route. Called when a telematics session stops.
  */
 export async function autoCaptureLessonRoute({
   telematicsId,

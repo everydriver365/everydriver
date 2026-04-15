@@ -200,7 +200,7 @@ export function useRunningCosts() {
           device.daily_start_odometer_m != null
         ) {
           // Without live odometer from tracking provider, we can't calculate today's delta
-          // This will be populated by the geotab-poller when it runs
+          // This will be populated by the radius-poller when it runs
         }
       }
 
