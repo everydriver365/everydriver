@@ -478,6 +478,11 @@ export function InstructorMobileHome({
       {/* Telematics Tile */}
       <TelematicsTile />
 
+      {/* Weather Alert */}
+      <div className="px-4 mt-3">
+        <WeatherAlertBanner />
+      </div>
+
       {/* View Schedule Tile */}
       <div className="px-4 mt-3">
         <button
@@ -507,9 +512,9 @@ export function InstructorMobileHome({
           onComplete={() => setShowConfetti(false)}
         />
 
-        {alerts.length > 0 && (
+        {alerts.filter(a => a.type !== "weather").length > 0 && (
           <DrivingAlertsStrip
-            alerts={alerts}
+            alerts={alerts.filter(a => a.type !== "weather")}
             onDismiss={dismissAlert}
             location={alertsLocation}
             className="mt-4"
@@ -586,9 +591,6 @@ export function InstructorMobileHome({
         <div className="pb-4">
           <SwipeableQuickAccess />
         </div>
-
-        {/* Weather Alert */}
-        <WeatherAlertBanner className="mt-4" />
 
         {/* Impact Alerts */}
         <div className="mt-4">
