@@ -1,47 +1,46 @@
 
 
-# Add Lesson Status Indicators to Today's Schedule
+# Extract OBD-II Data from Radius Export Stream
 
-## What changes
+## What's happening
 
-The Today's Schedule agenda will visually distinguish three states for each lesson:
+Your Radius device ("Charlotte") **is** an OBD unit and the Export Stream sends `telemetry`, `counters`, and `io` objects with every update — but the `radius-poller` edge function currently only extracts **two fields**: `telemetry.odometer` and `telemetry.ignition`. All other OBD data is being discarded.
 
-1. **Completed (wizard done)** — status is `completed`. Green checkmark, faded row, strikethrough name (already partially done, will enhance).
-2. **Next up** — the first non-completed lesson. Highlighted with a subtle blue left border and "NEXT" badge.
-3. **Upcoming** — remaining scheduled lessons. Normal styling (as-is).
+The raw payload (truncated in logs at 500 chars) includes keys like `telemetry`, `counters`, and `io` that likely contain fuel level, coolant temperature, battery voltage, engine hours, and possibly DTC fault codes — depending on what the vehicle's ECU exposes through the OBD-II port.
 
-For the end-of-lesson routine indicator, since the `EndLessonWizard` sets `status = "completed"` when it finishes, any lesson that has passed its end time but is still `scheduled` (not `completed`) means the wizard hasn't been run yet. We'll show a small orange "End lesson" nudge on these overdue-but-not-completed lessons.
+## Plan
 
-## Technical details
-
-### File: `src/components/instructor/TodayScheduleAgenda.tsx`
-
-**Determine lesson states** using current time:
+### Step 1 — Log full OBD payload (diagnostic deploy)
+Add temporary detailed logging to the `radius-poller` to capture the full `telemetry`, `counters`, and `io` objects:
+```js
+console.log("[OBD] telemetry:", JSON.stringify(item.telemetry));
+console.log("[OBD] counters:", JSON.stringify(item.counters));
+console.log("[OBD] io:", JSON.stringify(item.io));
 ```
-const now = current HH:mm
-const endTime = startTime + durationMinutes
+This tells us exactly which OBD PIDs your device reports.
 
-- status === "completed" → DONE (wizard completed)
-- endTime <= now && status !== "completed" → OVERDUE (wizard not done)
-- first lesson where status !== "completed" && endTime > now → NEXT
-- everything else → UPCOMING
+### Step 2 — Extract OBD fields in the poller
+Based on common KT Export Stream field names, extend the `NormalisedPosition` type and extraction logic to capture:
+
+| Field | Likely KT path | DB column |
+|-------|---------------|-----------|
+| Fuel level % | `telemetry.fuel` or `io.fuel_level` | `last_fuel_percent` |
+| Coolant temp °C | `telemetry.coolant_temp` or `io.coolant` | `last_coolant_temp_c` |
+| Battery voltage | `telemetry.battery` or `telemetry.ext_voltage` | `last_battery_voltage` |
+| Engine hours | `telemetry.engine_hours` or `counters.engine_hours` | `last_engine_hours` |
+| DTC fault codes | `telemetry.dtc` or `io.dtc_codes` | `last_fault_codes` |
+
+### Step 3 — Write OBD data to `gps_devices`
+Update the DB write block (line ~541) to include the new fields when they're present:
+```js
+...(fuel != null ? { last_fuel_percent: fuel } : {}),
+...(coolant != null ? { last_coolant_temp_c: coolant } : {}),
+...(voltage != null ? { last_battery_voltage: voltage } : {}),
 ```
 
-**Visual indicators:**
-- **DONE**: Green check icon, 55% opacity, strikethrough name (existing), add small "✓ Done" green text
-- **OVERDUE (wizard pending)**: Orange clock icon + "End lesson" text, normal opacity to draw attention
-- **NEXT**: Blue left accent border (4px), subtle blue background tint, "Next" badge
-- **UPCOMING**: No change (current default styling)
+### Step 4 — Update TelematicsTile for GPS-only fallback
+When OBD data is still null (e.g. vehicle ECU doesn't expose certain PIDs), show GPS-relevant metrics (device battery %, speed, odometer) instead of blank dashes.
 
-### File: `src/hooks/useTodayRemainingLessons.ts`
-
-No changes needed — `status` field is already included in the query and interface.
-
-### File: `src/components/instructor/TodayMiniTimeline.tsx`
-
-Add the same visual state logic (completed check, next highlight, overdue nudge) to the card-based timeline view for consistency.
-
-## Summary of changes
-1. `TodayScheduleAgenda.tsx` — Add state detection logic and visual indicators for done/next/overdue
-2. `TodayMiniTimeline.tsx` — Mirror the same status indicators on timeline cards
+## Approach
+I'll deploy Step 1 first, check the logs to see the exact field names from your device, then wire up Steps 2-4 with the correct paths. This avoids guessing field names.
 

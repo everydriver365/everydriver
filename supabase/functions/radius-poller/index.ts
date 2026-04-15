@@ -39,8 +39,6 @@ interface NormalisedPosition {
   odometer: number | null;
   battery_voltage: number | null;
   engine_hours: number | null;
-  dashcam_active: boolean | null;
-  panic_pressed: boolean | null;
   _source: string;
 }
 
@@ -156,11 +154,6 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
       const batteryVoltage: number | null = telemetry.power_voltage ?? telemetry.ext_voltage ?? telemetry.battery ?? null;
       const engineHours: number | null = telemetry.hours_00_counter ?? counters.hours ?? null;
 
-      // Extract IO status fields (dashcam & panic button)
-      const io = item.io || {};
-      const dashcamActive: boolean | null = io.camera_01 ? io.camera_01.value === 1 : null;
-      const panicPressed: boolean | null = io.button_01 ? io.button_01.value === 1 : null;
-
       return {
         id: posId,
         name: assetName,
@@ -177,8 +170,6 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
         odometer: telemetry.odometer ?? telemetry.odo_counter ?? counters.odometer ?? null,
         battery_voltage: batteryVoltage,
         engine_hours: engineHours,
-        dashcam_active: dashcamActive,
-        panic_pressed: panicPressed,
         _source: "export_stream",
       };
     });
@@ -580,8 +571,6 @@ Deno.serve(async (req) => {
           ...(pos.odometer != null ? { last_ecu_odometer_km: pos.odometer } : {}),
           ...(pos.battery_voltage != null ? { last_battery_voltage: pos.battery_voltage } : {}),
           ...(pos.engine_hours != null ? { last_engine_hours: pos.engine_hours } : {}),
-          ...(pos.dashcam_active != null ? { last_dashcam_active: pos.dashcam_active } : {}),
-          ...(pos.panic_pressed != null ? { last_panic_pressed: pos.panic_pressed } : {}),
           ...dailyStartUpdates,
         })
         .eq("id", device.id);

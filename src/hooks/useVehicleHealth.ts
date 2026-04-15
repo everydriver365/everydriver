@@ -30,8 +30,6 @@ export interface GPSDeviceHealth {
   last_ecu_odometer_km: number | null;
   last_tire_pressure_json: Record<string, number> | null;
   last_fault_codes: Array<{ code: string; description: string; severity: string; source: string }> | null;
-  last_dashcam_active: boolean | null;
-  last_panic_pressed: boolean | null;
   last_diagnostics_at: string | null;
   vehicle?: {
     id: string;
@@ -126,8 +124,6 @@ export function useVehicleHealth() {
           last_ecu_odometer_km,
           last_tire_pressure_json,
           last_fault_codes,
-          last_dashcam_active,
-          last_panic_pressed,
           last_diagnostics_at
           `)
           .eq("instructor_id", instructor.id),

@@ -1,4 +1,4 @@
-import { Battery, BatteryLow, BatteryMedium, BatteryFull, Key, Wifi, WifiOff, Car, Link, Gauge, MapPin, Navigation, Timer, Fuel, Thermometer, AlertTriangle, Zap, Camera, ShieldAlert } from "lucide-react";
+import { Battery, BatteryLow, BatteryMedium, BatteryFull, Key, Wifi, WifiOff, Car, Link, Gauge, MapPin, Navigation, Timer, Fuel, Thermometer, AlertTriangle, Zap } from "lucide-react";
 import { enrichFaultCode, isGenericDescription } from "@/lib/obdCodeLookup";
 import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { Badge } from "@/components/ui/badge";
@@ -340,34 +340,6 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
                 <p className="text-[10px] text-muted-foreground">+{faultCodes!.length - 5} more</p>
               )}
             </div>
-          </div>
-        )}
-
-        {/* Dashcam & Panic Button status */}
-        {(device.last_dashcam_active != null || device.last_panic_pressed != null) && (
-          <div className="flex items-center gap-3 text-xs">
-            {device.last_dashcam_active != null && (
-              <div className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl",
-                device.last_dashcam_active ? "bg-emerald-500/10" : "bg-muted/50"
-              )}>
-                <Camera className={cn("h-3.5 w-3.5", device.last_dashcam_active ? "text-emerald-500" : "text-muted-foreground")} />
-                <span className={cn("font-medium", device.last_dashcam_active ? "text-emerald-500" : "text-muted-foreground")}>
-                  {device.last_dashcam_active ? "Recording" : "Cam Off"}
-                </span>
-              </div>
-            )}
-            {device.last_panic_pressed != null && (
-              <div className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl",
-                device.last_panic_pressed ? "bg-destructive/10" : "bg-muted/50"
-              )}>
-                <ShieldAlert className={cn("h-3.5 w-3.5", device.last_panic_pressed ? "text-destructive animate-pulse" : "text-muted-foreground")} />
-                <span className={cn("font-medium", device.last_panic_pressed ? "text-destructive" : "text-muted-foreground")}>
-                  {device.last_panic_pressed ? "PANIC!" : "Panic OK"}
-                </span>
-              </div>
-            )}
           </div>
         )}
 
