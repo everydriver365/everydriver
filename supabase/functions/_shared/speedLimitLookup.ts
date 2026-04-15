@@ -128,20 +128,25 @@ async function fetchFromOverpass(
   const query = `[out:json][timeout:5];way(around:${radius},${lat},${lng})${filter};out tags 1;`;
   const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
 
+  console.log(`[SpeedLimit] Overpass query (maxspeed=${requireMaxspeed}) for ${lat},${lng}`);
+
   const res = await fetch(url, {
     headers: { "User-Agent": "EveryDriverApp/1.0" },
-    signal: AbortSignal.timeout(6000),
+    signal: AbortSignal.timeout(8000),
   });
   if (!res.ok) {
-    await res.text();
+    const body = await res.text();
+    console.warn(`[SpeedLimit] Overpass HTTP ${res.status}: ${body.slice(0, 200)}`);
     return null;
   }
 
   const data = await res.json();
   const elements: any[] = data?.elements || [];
+  console.log(`[SpeedLimit] Overpass returned ${elements.length} elements`);
   if (elements.length === 0) return null;
 
   const tags = elements[0]?.tags || {};
+  console.log(`[SpeedLimit] First element tags: ${JSON.stringify(tags)}`);
   const raw = tags.maxspeed;
   const highwayType = tags.highway || null;
 
