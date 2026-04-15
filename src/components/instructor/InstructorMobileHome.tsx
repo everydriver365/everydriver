@@ -84,6 +84,7 @@ import { ImpactAlertCard } from "@/components/instructor/ImpactAlertCard";
 import calendarIcon from "@/assets/calendar-icon.png";
 import instructorBg from "@/assets/instructor-bg-signs.png";
 import { WeatherAlertBanner } from "@/components/instructor/WeatherAlertBanner";
+import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { VehicleHealthCard } from "@/components/instructor/VehicleHealthCard";
 import { IdleTimeCostCard } from "@/components/instructor/IdleTimeCostCard";
 
@@ -251,6 +252,15 @@ export function InstructorMobileHome({
   const { data: gapSuggestions } = useRealGapSlots(instructorId);
   const { data: todayLessons } = useTodayRemainingLessons(instructorId);
   const { data: tomorrowLessons } = useTomorrowLessons(instructorId);
+  
+  // Traffic ETA to next pupil for running-late detection
+  const nextLessonPostcode = nextLesson?.pickupPostcode || null;
+  const { durationMinutes: etaToNextLesson } = useTrafficETA(
+    nextLesson && nextLesson.minutesUntil <= 120 ? nextLessonPostcode : null
+  );
+  
+  // Filter traffic-only alerts for the weather/traffic tile
+  const trafficAlerts = alerts.filter(a => a.type === "traffic");
   
   // Derive display location - prefer GPS road name, fallback to alerts location
   const displayLocation = gpsRoadName || alertsLocation;
@@ -478,9 +488,15 @@ export function InstructorMobileHome({
       {/* Telematics Tile */}
       <TelematicsTile />
 
-      {/* Weather Alert */}
+      {/* Weather, Traffic & Late Alerts */}
       <div className="px-4 mt-3">
-        <WeatherAlertBanner />
+        <WeatherAlertBanner
+          trafficAlerts={trafficAlerts}
+          onDismissTraffic={dismissAlert}
+          nextLessonMinutesUntil={nextLesson?.minutesUntil}
+          nextLessonEtaMinutes={etaToNextLesson > 0 ? etaToNextLesson : null}
+          nextLessonPupilName={nextLesson?.pupilName}
+        />
       </div>
 
       {/* View Schedule Tile */}
