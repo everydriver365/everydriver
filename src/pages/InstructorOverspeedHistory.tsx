@@ -24,7 +24,8 @@ interface OverspeedEvent {
 type SortKey = "recorded_at" | "speed_kmh" | "speed_limit_kmh" | "excess_kmh" | "road_name" | "device_name";
 
 export default function InstructorOverspeedHistory() {
-  const { instructorId } = useInstructorContext();
+  const { instructor } = useInstructorAuth();
+  const instructorId = instructor?.id ?? null;
   const [events, setEvents] = useState<OverspeedEvent[]>([]);
   const [devices, setDevices] = useState<{ id: string; device_name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);

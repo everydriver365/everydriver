@@ -47,7 +47,8 @@ function createArrowSvg(heading: number, color: string, pulse: boolean): string 
 }
 
 export default function InstructorFleetMap() {
-  const { instructorId } = useInstructorContext();
+  const { instructor } = useInstructorAuth();
+  const instructorId = instructor?.id ?? null;
   const [devices, setDevices] = useState<FleetDevice[]>([]);
   const [showSignalLost, setShowSignalLost] = useState(true);
   const [mapReady, setMapReady] = useState(false);
