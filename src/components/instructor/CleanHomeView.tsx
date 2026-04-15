@@ -29,6 +29,7 @@ import { useGPSConnectionStatus } from "@/hooks/useGPSConnectionStatus";
 import { useInstructorHomepageContent } from "@/hooks/useInstructorHomepageContent";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
+import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
@@ -433,6 +434,7 @@ export function CleanHomeView({
         <RoadAlertsRow alerts={alerts} className="mt-3" />
 
         <BottomPromoGroup className="mt-4" />
+        <UpcomingEventsCard className="mt-4" />
 
         
 

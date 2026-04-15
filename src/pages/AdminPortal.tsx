@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin, Search, StickyNote, PoundSterling, CheckSquare, Satellite, ArrowUpDown
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin, Search, StickyNote, PoundSterling, CheckSquare, Satellite, ArrowUpDown, CalendarDays
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -90,6 +90,7 @@ import { PaymentReconciliationDashboard } from "@/components/admin/PaymentReconc
 import { AdminSchoolManager } from "@/components/admin/AdminSchoolManager";
 import { AdminCommandCenter } from "@/components/admin/AdminCommandCenter";
 import { AdminSchoolFranchiseFees } from "@/components/admin/AdminSchoolFranchiseFees";
+import { AdminEventsManager } from "@/components/admin/AdminEventsManager";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -191,6 +192,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "payment-reconciliation": { title: "Payment Reconciliation", group: "Finance & Payments", icon: ArrowUpDown },
   "school-manager": { title: "School Manager", group: "Schools", icon: Users },
   "school-fees": { title: "Franchise Fees", group: "Schools", icon: PoundSterling },
+  "events": { title: "Upcoming Events", group: "Engagement & Rewards", icon: CalendarDays },
 };
 
 export default function AdminPortal() {
@@ -1060,6 +1062,14 @@ export default function AdminPortal() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminBookingPagesManager />
+          </motion.div>
+        );
+
+      case "events":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminEventsManager />
           </motion.div>
         );
 

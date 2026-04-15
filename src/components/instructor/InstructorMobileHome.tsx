@@ -80,6 +80,7 @@ import { UrgentAlertOverlay } from "@/components/instructor/UrgentAlertOverlay";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import waitingRoomIcon from "@/assets/waiting-room-icon.png";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
+import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
 import { ImpactAlertCard } from "@/components/instructor/ImpactAlertCard";
 import calendarIcon from "@/assets/calendar-icon.png";
 import googleCalendarIcon from "@/assets/google-calendar-icon.png";
@@ -648,7 +649,8 @@ export function InstructorMobileHome({
         <EndOfDaySummary instructorId={instructorId} />
 
         {/* Waiting Room & Discover Features */}
-        <BottomPromoGroup className="mt-6 mb-6" />
+        <BottomPromoGroup className="mt-6 mb-2" />
+        <UpcomingEventsCard className="mb-6" />
 
 
         {/* 10. Floating Session Bar */}

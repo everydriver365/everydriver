@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
+import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
 import { useTheme } from "@/context/ThemeContext";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
@@ -514,7 +515,8 @@ export function IOSNativeHomeView({ instructorId, instructor }: IOSNativeHomeVie
           </div>
         </div>
 
-        <BottomPromoGroup className="mx-4 mb-4" />
+        <BottomPromoGroup className="mx-4 mb-2" />
+        <UpcomingEventsCard className="mx-4 mb-4" />
 
         {/* ─── 5. MORE FEATURES ─── */}
         <div className="mb-6">

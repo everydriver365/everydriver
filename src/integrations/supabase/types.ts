@@ -278,6 +278,48 @@ export type Database = {
           },
         ]
       }
+      admin_events: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          event_date: string
+          event_type: string
+          id: string
+          is_active: boolean
+          link_label: string | null
+          link_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          event_date: string
+          event_type?: string
+          id?: string
+          is_active?: boolean
+          link_label?: string | null
+          link_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          event_date?: string
+          event_type?: string
+          id?: string
+          is_active?: boolean
+          link_label?: string | null
+          link_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_messages: {
         Row: {
           content: string

@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
+import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
 
 interface MissionControlHomeViewProps {
   instructorId: string | undefined;
@@ -282,6 +283,7 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
 
       {/* Bottom promos */}
       <BottomPromoGroup />
+      <UpcomingEventsCard className="mt-4" />
     </div>
   );
 }
