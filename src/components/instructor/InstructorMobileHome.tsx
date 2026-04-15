@@ -253,6 +253,15 @@ export function InstructorMobileHome({
   const { data: todayLessons } = useTodayRemainingLessons(instructorId);
   const { data: tomorrowLessons } = useTomorrowLessons(instructorId);
   
+  // Traffic ETA to next pupil for running-late detection
+  const nextLessonPostcode = nextLesson?.pickupPostcode || null;
+  const { durationMinutes: etaToNextLesson } = useTrafficETA(
+    nextLesson && nextLesson.minutesUntil <= 120 ? nextLessonPostcode : null
+  );
+  
+  // Filter traffic-only alerts for the weather/traffic tile
+  const trafficAlerts = alerts.filter(a => a.type === "traffic");
+  
   // Derive display location - prefer GPS road name, fallback to alerts location
   const displayLocation = gpsRoadName || alertsLocation;
   const { data: lastWeekComparison } = useLastWeekComparison(instructorId);
