@@ -1,5 +1,6 @@
 import { Route, Navigate } from "react-router-dom";
 import { lazyWithRetry as lazy } from "@/utils/lazyWithRetry";
+import { dsmRoutes } from "@/routes/dsmRoutes";
 
 // Instructor SaaS marketing & onboarding pages
 const InstructorFeatures = lazy(() => import("@/pages/instructor-app/InstructorFeatures"));
@@ -42,5 +43,6 @@ export const instructorAppRoutes = (
     <Route path="/instructor-app/mtd" element={<InstructorMTD />} />
     <Route path="/driving-schools" element={<DrivingSchools />} />
     <Route path="/instructor-app/dsm" element={<DSM />} />
+    {dsmRoutes}
   </>
 );
