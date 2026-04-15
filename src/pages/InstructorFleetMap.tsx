@@ -30,6 +30,9 @@ function isSignalLost(device: FleetDevice): boolean {
 }
 
 
+  // Keep devicesRef in sync with latest state for closure-safe access
+  useEffect(() => { devicesRef.current = devices; }, [devices]);
+
 
 function relativeTime(iso: string | null): string {
   if (!iso) return "Never";
