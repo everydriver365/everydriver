@@ -1,5 +1,6 @@
 import { Route, Navigate } from "react-router-dom";
 import { lazyWithRetry as lazy } from "@/utils/lazyWithRetry";
+import { dsmRoutes } from "@/routes/dsmRoutes";
 
 // Instructor SaaS marketing & onboarding pages
 const InstructorFeatures = lazy(() => import("@/pages/instructor-app/InstructorFeatures"));
