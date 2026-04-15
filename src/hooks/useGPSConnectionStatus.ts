@@ -52,6 +52,7 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
         .from("gps_devices")
         .select("last_seen_at, last_heartbeat_at, device_name, device_identifier, is_active")
         .eq("instructor_id", instructorId)
+        .eq("tracking_provider", "radius")
         .order("last_seen_at", { ascending: false })
         .limit(1)
         .maybeSingle();
