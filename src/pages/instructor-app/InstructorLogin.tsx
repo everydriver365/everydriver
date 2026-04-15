@@ -336,7 +336,7 @@ export default function InstructorLogin() {
           <p className="text-white/80 text-sm mt-1">
             {isForgotPassword 
               ? "Enter your email to receive a reset link"
-              : "Sign in to your EveryDriver account"}
+              : "Sign in to your DSM account"}
           </p>
           <p className="text-white/40 text-[10px] mt-2">Build: {BUILD_MARKER}</p>
         </motion.div>
