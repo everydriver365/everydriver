@@ -1,27 +1,31 @@
 
 
-## Fix: Google Calendar Colors Not Syncing
+## Investigation Results: Colors Are Syncing Correctly
 
-### Root Cause
-The edge function (`google-calendar-service/index.ts`) only maps colors when an event has an explicit `colorId` (1-11). Most Google Calendar events use the **calendar's default color** and don't have a `colorId` set — so they all store `null` in the `color` column. The DB confirms every event currently has `color: null`.
+### What I found
 
-### Solution
+The database has **654 events**, all with proper Google Calendar colors:
+- `#039BE5` (Peacock blue) — 223 events
+- `#F6BF26` (Banana yellow) — 285 events  
+- `#33B679` (Sage green) — 72 events
+- `#F4511E` (Tangerine) — 62 events
+- `#E67C73` (Flamingo) — 7 events
+- `#D50000` (Tomato red) — 5 events
 
-**Edit `supabase/functions/google-calendar-service/index.ts`** in the `fetchExternalEvents` action:
+The edge function is deployed and confirmed working (logs show "Calendar default color: #039BE5"). The frontend (`MultiDayScheduleView.tsx`) correctly reads `evt.color` and applies it as `backgroundColor`.
 
-1. **Fetch the calendar's metadata** (GET `/calendars/{id}`) before fetching events — this returns `backgroundColor` (e.g. `#039be5`) which is the calendar's default color.
-2. **Use `backgroundColor` as fallback** when an event has no `colorId`:
-   ```
-   color: item.colorId ? (googleColorMap[item.colorId] || calendarDefaultColor) : calendarDefaultColor
-   ```
-3. Also handle the `event.colorId` values that might not be in the hardcoded map (Google sometimes returns extended IDs) by falling back to the calendar default.
+### Possible explanations for "colors have not changed"
 
-### What changes
-- One file: `supabase/functions/google-calendar-service/index.ts`
-- ~5 lines added (fetch calendar metadata + update color fallback logic)
-- After deploying, the next sync will populate `color` for all events
-- The `MultiDayScheduleView` already reads `evt.color` and falls back to `#039be5` — so once colors are stored, they'll render automatically
+1. **Browser cache** — the page may be showing stale data. A hard refresh (pull-to-refresh or reload) should show updated colors.
 
-### No other changes needed
-The frontend (`MultiDayScheduleView.tsx`) already handles event colors correctly at line 363-364. The issue is purely that the backend stores `null`.
+2. **Lesson vs external event confusion** — Internal lessons (paid lessons, test prep, etc.) use **hardcoded app colors** (blue, amber, etc.) and are **not** colored by Google Calendar. Only the **external Google Calendar events** (synced items) show Google colors. This is by design.
+
+3. **No visible change needed** — If you're expecting something specific to look different, could you clarify which events or which screen you're looking at? A screenshot would help.
+
+### If you want lessons to also use Google Calendar colors
+
+Currently lessons use internal type-based colors. If you want to override these with the instructor's `calendarColors` settings or Google Calendar colors, that would require a separate change to the lesson rendering logic in `MultiDayScheduleView.tsx`.
+
+### Recommended next step
+Try refreshing the schedule page and confirm whether the **external Google Calendar events** (non-lesson items like "Lotty : College AM", "National Speed Awareness") are showing their correct colors (yellow, blue, orange, etc.).
 
