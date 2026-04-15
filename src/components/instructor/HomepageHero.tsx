@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import useEmblaCarousel from "embla-carousel-react";
 import { Calendar, MessageCircle, Briefcase, PoundSterling } from "lucide-react";
 import carRoadIllustration from "@/assets/car-road-illustration.png";
@@ -120,6 +121,8 @@ export function HomepageHero({
 
   const dateStr = format(new Date(), "d MMMM yyyy");
 
+  const navigate = useNavigate();
+
   const stats = [
     {
       icon: Calendar,
@@ -129,6 +132,7 @@ export function HomepageHero({
       iconColor: "#8E8E93",
       valueBg: "transparent",
       highlight: false,
+      route: "/instructor/schedule",
     },
     {
       icon: PoundSterling,
@@ -138,6 +142,7 @@ export function HomepageHero({
       iconColor: "#34C759",
       valueBg: "transparent",
       highlight: false,
+      route: "/instructor/income",
     },
     {
       icon: MessageCircle,
@@ -147,6 +152,7 @@ export function HomepageHero({
       iconColor: "#007AFF",
       valueBg: "transparent",
       highlight: false,
+      route: "/instructor/messages",
     },
     {
       icon: Briefcase,
@@ -156,6 +162,7 @@ export function HomepageHero({
       iconColor: "#fff",
       valueBg: "#007AFF",
       highlight: pendingJobs > 0,
+      route: "/instructor/jobs",
     },
   ];
 
@@ -284,7 +291,8 @@ export function HomepageHero({
             <motion.div
               key={stat.label}
               whileTap={{ scale: 0.97 }}
-              className="flex flex-col items-center rounded-2xl py-2 px-1"
+              onClick={() => navigate(stat.route)}
+              className="flex flex-col items-center rounded-2xl py-2 px-1 cursor-pointer"
               style={{
                 backgroundColor: stat.highlight ? "#007AFF" : "rgba(0,0,0,0.02)",
                 borderRadius: 16,
