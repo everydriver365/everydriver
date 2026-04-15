@@ -1,44 +1,74 @@
 
 
-## iOS Health-Style Progress Circles
+## Make Instructor App Consistently iOS-Styled
 
-Transform all circular progress indicators from flat single-colour rings into Apple Health-style rings — thick strokes with vibrant gradients, rounded caps, subtle glow, and a shadow at the progress tip.
+The homepage already uses iOS-native design language (#F2F2F7 bg, SF Pro fonts, GlassCards, rounded-[16px] tiles with hairline borders, system blue accents). The layout wrapper already applies `#F2F2F7` to all mobile pages. Several sub-pages still use shadcn Card/Tabs components that look out of place. This plan brings visual consistency across all key instructor pages.
 
-### iOS Health Ring Characteristics
-- **Thick stroke** (~12px instead of 8px)
-- **Linear gradient** along the arc (e.g. green→cyan for readiness, blue→purple for goals)
-- **Rounded `strokeLinecap`** with a dot/shadow at the leading edge
-- **Soft glow** behind the coloured arc (`filter: drop-shadow`)
-- **Dark/muted track** ring underneath (very subtle, ~10% opacity)
-- **Bold centre text** with SF-style weight
+### What's already iOS-styled
+- **Homepage** (all layout variants) — full iOS native
+- **Settings** — already uses 29px icon roundels, grouped list dividers, collapsible tiles
+- **Layout header/nav** — frosted glass `backdrop-blur-xl`, system blue back chevron, iOS bottom tab bar
 
-### Files to Update
+### Pages to update (mobile views only, per mobile update policy)
 
-| Component | Location | Current Style |
-|-----------|----------|---------------|
-| `TestReadinessScore` | `src/components/instructor/TestReadinessScore.tsx` | Flat 8px stroke, single colour |
-| `TestReadinessCard` | `src/components/pupil-portal/TestReadinessCard.tsx` | Same flat ring |
-| `WaterIntakeTracker` | `src/components/instructor/health/WaterIntakeTracker.tsx` | Flat blue ring |
-| `HomepageHero` | `src/components/instructor/HomepageHero.tsx` | Already has gradient — refine glow |
-| `WeeklyGoalRing` | `src/components/instructor/WeeklyGoalRing.tsx` | Already has gradient + glow |
-| `MoneyHeroCard` | `src/components/instructor/money/MoneyHeroCard.tsx` | Flat ring |
-| `LearnerDrivingScore` | `src/components/pupil-portal/LearnerDrivingScore.tsx` | Flat ring |
-| `ContextualHomeHero` | `src/components/instructor/ContextualHomeHero.tsx` | Flat emerald ring |
+**Batch 1 — High-traffic pages**
 
-### Changes Per Ring
+| Page | Current | Change |
+|------|---------|--------|
+| `InstructorPay.tsx` | Mixed — vault card is good, but quick-action grid uses inconsistent styles | Wrap action tiles in iOS grouped list style; standardise section headers to `text-[13px] uppercase tracking-wide` |
+| `InstructorSchedule.tsx` | Uses `InstructorPageHeader` with 44px circle icon, shadcn `DropdownMenu` | Replace header with compact iOS nav title; style view-mode selector as `IOSSegmentedControl`; remove `InstructorPageHeader` |
+| `InstructorPupils.tsx` | Uses `IOSLargeTitle` + `IOSSearchBar` ✓ but pupil cards use shadcn `Card` | Restyle pupil list items as iOS grouped list rows; use `IOSGroupedList` wrapper |
+| `InstructorPipeline.tsx` | Uses `InstructorPageHeader` with 32px icon | Replace with iOS inline title; style Kanban columns with iOS card aesthetic |
+| `InstructorMessages.tsx` | Delegates to `InstructorInbox` | Style conversation list as iOS-style rows (avatar + name + preview + timestamp + chevron) |
 
-For each component:
-1. Increase `strokeWidth` from 8 → 12
-2. Add SVG `<linearGradient>` with colour-appropriate stops (e.g. red→orange for low readiness, green→cyan for high)
-3. Apply `filter="drop-shadow(0 0 6px rgba(color, 0.4))"` on the progress arc
-4. Reduce track ring opacity to 8-10%
-5. Add a small circle at the arc tip for the "cap shadow" effect Apple uses
-6. Ensure `strokeLinecap="round"` on all arcs
+**Batch 2 — Secondary pages**
 
-### Gradient Colour Map
-- **Test Readiness**: Maps to score — red→orange (low), orange→yellow (building), yellow→green (nearly), green→cyan (ready)
-- **Water Intake**: Blue→cyan
-- **Money/Goals**: Green→emerald
-- **Weekly Goal**: Keep existing gradient, add glow refinement
-- **Driving Score**: Maps to score colour
+| Page | Change |
+|------|--------|
+| `InstructorHealth.tsx` | Wrap health cards in GlassCard; iOS grouped sections |
+| `InstructorExpenses.tsx` | iOS grouped list for expense entries |
+| `InstructorAccounts.tsx` | iOS section headers + grouped card style |
+| `InstructorJobs.tsx` | Job cards as iOS list rows |
+| `InstructorNotifications.tsx` | Notification items as iOS list rows |
+
+### Design tokens to standardise
+
+All updated pages will use:
+- **Background**: inherited from layout (`#F2F2F7`)
+- **Cards**: `bg-white rounded-[10px] shadow-sm` (not shadcn `bg-card border`)
+- **Section headers**: `text-[13px] font-normal text-muted-foreground uppercase tracking-wide px-4 pb-1.5`
+- **List dividers**: `divide-y divide-border/40` inside card containers
+- **Row padding**: `px-4 py-3`
+- **Icon containers**: `h-[29px] w-[29px] rounded-[7px]` with coloured backgrounds
+- **Font stack**: `-apple-system, 'SF Pro Text', sans-serif` (already set on homepage)
+- **Accent blue**: `hsl(211 100% 50%)` for interactive elements
+
+### Implementation approach
+
+1. **Create a shared `IOSPageWrapper`** component that applies the iOS font stack and consistent spacing to any page content (avoiding per-page duplication)
+2. Update each page's mobile view in priority order (Batch 1 first)
+3. Replace `InstructorPageHeader` usage with a simpler iOS inline title pattern
+4. Swap shadcn `Card` wrappers for `bg-white rounded-[10px] shadow-sm` or `GlassCard` where appropriate
+5. Convert `Tabs`/`TabsList` to `IOSSegmentedControl` where used as view-mode toggles
+
+### Files to create
+- `src/components/instructor/IOSPageWrapper.tsx` — shared wrapper for consistent iOS page styling
+
+### Files to edit (Batch 1)
+- `src/pages/InstructorSchedule.tsx`
+- `src/pages/InstructorPupils.tsx`
+- `src/pages/InstructorPipeline.tsx`
+- `src/pages/InstructorMessages.tsx`
+- `src/pages/InstructorPay.tsx`
+- `src/components/instructor/InstructorInbox.tsx`
+- `src/components/instructor/pipeline/KanbanBoard.tsx`
+
+### Files to edit (Batch 2)
+- `src/pages/InstructorHealth.tsx`
+- `src/pages/InstructorExpenses.tsx`
+- `src/pages/InstructorAccounts.tsx`
+- `src/pages/InstructorJobs.tsx`
+- `src/pages/InstructorNotifications.tsx`
+
+This is a large visual refresh — I'll implement Batch 1 first, then Batch 2 in a follow-up if you're happy with the direction.
 
