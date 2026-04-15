@@ -4,7 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 export function loadGoogleMaps(apiKey: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const w = window as any;
-    if (w.google?.maps) return resolve();
+    if (w.google?.maps?.marker?.AdvancedMarkerElement) return resolve();
+    if (w.google?.maps) {
+      w.google.maps.importLibrary("marker").then(() => resolve()).catch(reject);
+      return;
+    }
 
     const existing = document.querySelector('script[data-google-maps="1"]') as HTMLScriptElement | null;
     if (existing) {
@@ -17,7 +21,7 @@ export function loadGoogleMaps(apiKey: string): Promise<void> {
     s.dataset.googleMaps = "1";
     s.async = true;
     s.defer = true;
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=visualization`;
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=visualization,marker`;
     s.onload = () => resolve();
     s.onerror = () => reject(new Error("Google Maps script failed to load"));
     document.head.appendChild(s);
