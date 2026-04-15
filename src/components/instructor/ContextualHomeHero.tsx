@@ -281,11 +281,10 @@ export function ContextualHomeHero({
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span className="text-lg font-bold text-foreground leading-none">
-                      {hoursThisWeek}
-                      <span className="text-sm">h</span>
+                      {completedToday}/{totalToday}
                     </span>
                     <span className="text-[10px] text-muted-foreground font-medium">
-                      {clampedProgress}%
+                      today
                     </span>
                   </div>
                 </div>
