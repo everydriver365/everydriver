@@ -87,24 +87,49 @@ export function TelematicsTile() {
                 {hasData ? (
                   <>
                     <div className="grid grid-cols-3 gap-2">
-                      <MetricCard
-                        icon={<Fuel className="h-3.5 w-3.5" />}
-                        label="Fuel"
-                        value={fuelPercent != null ? `${Math.round(fuelPercent)}%` : "—"}
-                        warning={fuelPercent != null && fuelPercent < 15}
-                      />
-                      <MetricCard
-                        icon={<Thermometer className="h-3.5 w-3.5" />}
-                        label="Coolant"
-                        value={coolantTemp != null ? `${Math.round(coolantTemp)}°C` : "—"}
-                        warning={coolantTemp != null && coolantTemp > 110}
-                      />
-                      <MetricCard
-                        icon={<Gauge className="h-3.5 w-3.5" />}
-                        label="Battery"
-                        value={batteryVoltage != null ? `${batteryVoltage.toFixed(1)}V` : "—"}
-                        warning={batteryVoltage != null && batteryVoltage < 11.8}
-                      />
+                      {hasOBDData ? (
+                        <>
+                          <MetricCard
+                            icon={<Fuel className="h-3.5 w-3.5" />}
+                            label="Fuel"
+                            value={fuelPercent != null ? `${Math.round(fuelPercent)}%` : "—"}
+                            warning={fuelPercent != null && fuelPercent < 15}
+                          />
+                          <MetricCard
+                            icon={<Thermometer className="h-3.5 w-3.5" />}
+                            label="Coolant"
+                            value={coolantTemp != null ? `${Math.round(coolantTemp)}°C` : "—"}
+                            warning={coolantTemp != null && coolantTemp > 110}
+                          />
+                          <MetricCard
+                            icon={<Gauge className="h-3.5 w-3.5" />}
+                            label="Battery"
+                            value={batteryVoltage != null ? `${batteryVoltage.toFixed(1)}V` : "—"}
+                            warning={batteryVoltage != null && batteryVoltage < 11.8}
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <MetricCard
+                            icon={<Gauge className="h-3.5 w-3.5" />}
+                            label="Battery"
+                            value={batteryVoltage != null ? `${batteryVoltage.toFixed(1)}V` : "—"}
+                            warning={batteryVoltage != null && batteryVoltage < 11.8}
+                          />
+                          <MetricCard
+                            icon={<Activity className="h-3.5 w-3.5" />}
+                            label="Speed"
+                            value={speedKmh != null ? `${Math.round(speedKmh * 0.621371)} mph` : "—"}
+                            warning={false}
+                          />
+                          <MetricCard
+                            icon={<Fuel className="h-3.5 w-3.5" />}
+                            label="Engine Hrs"
+                            value={engineHours != null ? `${Math.round(engineHours)}h` : "—"}
+                            warning={false}
+                          />
+                        </>
+                      )}
                     </div>
 
                     {hasFaults && (
