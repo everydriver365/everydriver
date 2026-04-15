@@ -43,5 +43,6 @@ export const instructorAppRoutes = (
     <Route path="/instructor-app/mtd" element={<InstructorMTD />} />
     <Route path="/driving-schools" element={<DrivingSchools />} />
     <Route path="/instructor-app/dsm" element={<DSM />} />
+    {dsmRoutes}
   </>
 );
