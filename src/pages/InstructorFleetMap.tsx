@@ -6,7 +6,7 @@ import { fetchGoogleMapsKey, loadGoogleMaps, kmhToMph } from "@/lib/googleMapsLo
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Maximize, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Maximize, Eye, EyeOff, ArrowLeft, Locate, LocateOff } from "lucide-react";
 
 interface FleetDevice {
   id: string;
@@ -58,12 +58,14 @@ export default function InstructorFleetMap() {
   const [devices, setDevices] = useState<FleetDevice[]>([]);
   const devicesRef = useRef<FleetDevice[]>([]);
   const [showSignalLost, setShowSignalLost] = useState(true);
+  const [autoFollow, setAutoFollow] = useState(true);
   const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef<google.maps.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new Map());
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const prevSpeedingRef = useRef<Map<string, boolean>>(new Map());
+  const userInteractedRef = useRef(false);
   const [colleagueIds, setColleagueIds] = useState<string[] | null>(null);
 
   // Keep devicesRef in sync with latest state for closure-safe access
@@ -316,6 +318,30 @@ export default function InstructorFleetMap() {
     }
   }, [devices, mapReady, showSignalLost, isColleagueMode]);
 
+  // Disable auto-follow when user manually pans/zooms
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
+    const dragListener = map.addListener("dragstart", () => {
+      userInteractedRef.current = true;
+      setAutoFollow(false);
+    });
+    return () => { google.maps.event.removeListener(dragListener); };
+  }, [mapReady]);
+
+  // Auto-follow: when only one active device, pan to it on every update
+  useEffect(() => {
+    if (!autoFollow || !mapReady || !mapRef.current) return;
+    const activeDevices = devices.filter((d) => !isSignalLost(d) && d.last_latitude && d.last_longitude);
+    if (activeDevices.length === 1) {
+      const d = activeDevices[0];
+      mapRef.current.panTo({ lat: Number(d.last_latitude), lng: Number(d.last_longitude) });
+      if (mapRef.current.getZoom()! < 14) {
+        mapRef.current.setZoom(16);
+      }
+    }
+  }, [devices, autoFollow, mapReady]);
+
   const fitBounds = useCallback(() => {
     if (!mapRef.current) return;
     const bounds = new google.maps.LatLngBounds();
@@ -359,6 +385,15 @@ export default function InstructorFleetMap() {
       <div className="absolute top-3 right-3 z-10 flex gap-2">
         <Button variant="secondary" size="sm" onClick={fitBounds} className="shadow-md">
           <Maximize className="h-4 w-4 mr-1" /> Fit all
+        </Button>
+        <Button
+          variant={autoFollow ? "default" : "secondary"}
+          size="sm"
+          onClick={() => { setAutoFollow(!autoFollow); userInteractedRef.current = false; }}
+          className="shadow-md"
+        >
+          {autoFollow ? <Locate className="h-4 w-4 mr-1" /> : <LocateOff className="h-4 w-4 mr-1" />}
+          {autoFollow ? "Following" : "Follow"}
         </Button>
         <Button
           variant="secondary"
