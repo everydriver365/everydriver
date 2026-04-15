@@ -159,17 +159,17 @@ export function KanbanBoard({ instructorId }: KanbanBoardProps) {
           return (
             <div
               key={stage.value}
-              className={`min-w-[260px] w-[260px] shrink-0 snap-start rounded-[10px] p-3 transition-colors ${
-                dragOverStage === stage.value ? "bg-primary/5 border-primary/30 border" : "bg-card border border-border/40"
+              className={`min-w-[260px] w-[260px] shrink-0 snap-start rounded-[14px] p-3 transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.04)] ${
+                dragOverStage === stage.value ? "bg-primary/5 border-primary/30 border-2" : "bg-card border border-border/40"
               }`}
               onDragOver={(e) => { e.preventDefault(); setDragOverStage(stage.value); }}
               onDragLeave={() => setDragOverStage(null)}
               onDrop={(e) => handleDrop(e, stage.value)}
             >
-              <div className="flex items-center gap-2 mb-3">
-                <div className={`h-2.5 w-2.5 rounded-full ${stage.color}`} />
-                <span className="text-[13px] font-medium">{stage.label}</span>
-                <Badge variant="outline" className="ml-auto text-[11px]">{stageLeads.length}</Badge>
+              <div className="flex items-center gap-2 mb-3 px-1">
+                <div className={`h-3 w-3 rounded-full ${stage.color} shadow-[0_0_6px_currentColor]`} />
+                <span className="text-[13px] font-semibold">{stage.label}</span>
+                <Badge variant="secondary" className="ml-auto text-[11px] rounded-full">{stageLeads.length}</Badge>
               </div>
               <div className="space-y-2 min-h-[80px]">
                 {stageLeads.map((lead) => (

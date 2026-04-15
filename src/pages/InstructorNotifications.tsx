@@ -60,6 +60,29 @@ export default function InstructorNotifications() {
       <InstructorMobileHeader title="Notifications" showBackButton showSettings={false} />
 
       <div className="bg-background min-h-screen px-4 py-4 space-y-4" style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
+        {/* Hero Card */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-700 p-5 text-white shadow-lg">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+          <div className="relative z-10 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-white/20 rounded-[10px] backdrop-blur-md">
+                <Bell className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-[17px] font-semibold tracking-[-0.02em]">Notifications</h1>
+                <p className="text-[13px] text-white/60">
+                  {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
+                </p>
+              </div>
+            </div>
+            {unreadCount > 0 && (
+              <div className="h-8 w-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
+                <span className="text-sm font-bold">{unreadCount}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Messages tile - always visible */}
         <button
           onClick={() => navigate("/instructor/messages")}

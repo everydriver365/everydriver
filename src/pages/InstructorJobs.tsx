@@ -200,14 +200,20 @@ export default function InstructorJobs() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-4 pb-24" style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="h-[29px] w-[29px] rounded-[7px] bg-emerald-500/10 flex items-center justify-center">
-              <Briefcase className="h-3.5 w-3.5 text-emerald-600" />
+        {/* Hero Card */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-500 via-teal-600 to-cyan-700 p-5 text-white shadow-lg">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+          <div className="relative z-10 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-white/20 rounded-[10px] backdrop-blur-md">
+                <Briefcase className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-[17px] font-semibold tracking-[-0.02em]">Available Jobs</h1>
+                <p className="text-[13px] text-white/60">{jobs.length} open opportunities</p>
+              </div>
             </div>
-            <h1 className="text-[17px] font-semibold tracking-[-0.02em]">Available Jobs</h1>
           </div>
-          <Badge variant="secondary" className="rounded-full">{jobs.length} open</Badge>
         </div>
 
         {loading ? (
