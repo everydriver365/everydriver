@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Moon, Volume2, Loader2, ChevronDown, ChevronUp, Share2 } from "lucide-react";
+import { Moon, Volume2, Loader2, ChevronDown, ChevronUp, Share2, AlertTriangle, Wrench, PoundSterling } from "lucide-react";
 import { ShareableEODCard } from "@/components/instructor/ShareableEODCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -128,19 +128,72 @@ export function EndOfDaySummary({ instructorId }: EndOfDaySummaryProps) {
         <motion.div initial={{ height: 0 }} animate={{ height: "auto" }}>
           <p className="text-[13px] leading-relaxed text-muted-foreground mb-2">{summary}</p>
           {data && (
-            <div className="grid grid-cols-3 gap-2 mt-3">
-              <div className="text-center">
-                <p className="text-lg font-bold text-foreground">{data.lessonsCompleted}</p>
-                <p className="text-[10px] text-muted-foreground">Lessons</p>
+            <div className="space-y-3 mt-3">
+              {/* Primary stats */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="text-center bg-white/60 dark:bg-white/5 rounded-xl py-2">
+                  <p className="text-lg font-bold text-foreground">{data.lessonsCompleted}</p>
+                  <p className="text-[10px] text-muted-foreground">Lessons</p>
+                </div>
+                <div className="text-center bg-white/60 dark:bg-white/5 rounded-xl py-2">
+                  <p className="text-lg font-bold text-emerald-600">£{data.earnings}</p>
+                  <p className="text-[10px] text-muted-foreground">Earned</p>
+                </div>
+                <div className="text-center bg-white/60 dark:bg-white/5 rounded-xl py-2">
+                  <p className="text-lg font-bold text-foreground">{data.milesDriven}</p>
+                  <p className="text-[10px] text-muted-foreground">Miles</p>
+                </div>
               </div>
-              <div className="text-center">
-                <p className="text-lg font-bold text-foreground">£{data.earnings}</p>
-                <p className="text-[10px] text-muted-foreground">Earned</p>
-              </div>
-              <div className="text-center">
-                <p className="text-lg font-bold text-foreground">{data.milesDriven}</p>
-                <p className="text-[10px] text-muted-foreground">Miles</p>
-              </div>
+
+              {/* Alerts row */}
+              {data.totalAlerts > 0 && (
+                <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 rounded-xl px-3 py-2">
+                  <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-semibold text-amber-700 dark:text-amber-400">
+                      {data.totalAlerts} driving alert{data.totalAlerts !== 1 ? "s" : ""} today
+                    </p>
+                    <p className="text-[10px] text-amber-600/70 dark:text-amber-400/60">
+                      {[
+                        data.alertCounts?.speeding > 0 && `${data.alertCounts.speeding} speeding`,
+                        data.alertCounts?.harsh_brake > 0 && `${data.alertCounts.harsh_brake} harsh braking`,
+                        data.alertCounts?.harsh_accel > 0 && `${data.alertCounts.harsh_accel} harsh accel`,
+                        data.alertCounts?.sharp_turn > 0 && `${data.alertCounts.sharp_turn} sharp turn`,
+                      ].filter(Boolean).join(" · ")}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Service reminders */}
+              {data.serviceReminders && data.serviceReminders.length > 0 && (
+                <div className="flex items-start gap-2 bg-orange-50 dark:bg-orange-900/20 rounded-xl px-3 py-2">
+                  <Wrench className="h-3.5 w-3.5 text-orange-500 shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-semibold text-orange-700 dark:text-orange-400">
+                      Service Reminders
+                    </p>
+                    {data.serviceReminders.map((r: string, i: number) => (
+                      <p key={i} className="text-[10px] text-orange-600/70 dark:text-orange-400/60">{r}</p>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Outstanding balances */}
+              {data.unpaidPupilCount > 0 && (
+                <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 rounded-xl px-3 py-2">
+                  <PoundSterling className="h-3.5 w-3.5 text-red-500 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-semibold text-red-700 dark:text-red-400">
+                      £{data.outstandingBalance} outstanding
+                    </p>
+                    <p className="text-[10px] text-red-600/70 dark:text-red-400/60">
+                      {data.unpaidPupilCount} pupil{data.unpaidPupilCount !== 1 ? "s" : ""} with unpaid balance
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
           <button
@@ -148,7 +201,7 @@ export function EndOfDaySummary({ instructorId }: EndOfDaySummaryProps) {
               sessionStorage.setItem(key, "1");
               setDismissed(true);
             }}
-            className="text-[11px] text-muted-foreground/60 mt-2 hover:text-muted-foreground transition-colors"
+            className="text-[11px] text-muted-foreground/60 mt-3 hover:text-muted-foreground transition-colors"
           >
             Dismiss
           </button>
