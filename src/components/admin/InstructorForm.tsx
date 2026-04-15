@@ -479,9 +479,6 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
           }
         }
 
-        }
-      }
-
       toast.success(initialData?.id ? "Instructor updated successfully!" : "Instructor added successfully!");
       onSuccess();
     } catch (error) {
