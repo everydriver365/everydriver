@@ -322,12 +322,19 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
           const isEmpty = timeline.length === 0 && allDay.length === 0;
 
           return (
-            <div
-              key={dateStr}
-              id={`schedule-day-${dateStr}`}
-              ref={today ? todayRef : undefined}
-              className="flex min-h-[72px]"
-            >
+            <div key={dateStr}>
+              {showMonthHeader && (
+                <div className="px-4 py-2.5 bg-muted/50 border-b border-border/40">
+                  <span className="text-[13px] font-bold text-foreground">
+                    {format(day, "MMMM yyyy")}
+                  </span>
+                </div>
+              )}
+              <div
+                id={`schedule-day-${dateStr}`}
+                ref={today ? todayRef : undefined}
+                className="flex min-h-[72px]"
+              >
               {/* Date column */}
               <div className="w-14 shrink-0 flex flex-col items-center pt-3 pb-2">
                 <span className={`text-[11px] font-semibold uppercase tracking-wide ${today ? "text-[#1a73e8]" : "text-muted-foreground"}`}>
