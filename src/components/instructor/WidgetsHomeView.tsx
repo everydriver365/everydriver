@@ -307,7 +307,7 @@ export function WidgetsHomeView({ instructorId, instructor }: WidgetsHomeViewPro
             iconBg="#34C759"
             iconColor="#fff"
             label="Today"
-            value={`£${todayOverview?.totalEarnings?.toFixed(0) || 0}`}
+            value={`£${todayOverview?.expectedEarnings?.toFixed(0) || 0}`}
             onClick={() => navigate("/instructor/pay")}
           />
           <SmallWidget
