@@ -149,6 +149,11 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
       const posId = String(origin.name || origin.id || item.originId || item.imei || asset.id || item.assetId || "");
       const assetName = asset.name || item.assetName || null;
 
+      // Extract OBD-II diagnostics from telemetry/counters
+      const counters = item.counters || {};
+      const batteryVoltage: number | null = telemetry.power_voltage ?? telemetry.ext_voltage ?? telemetry.battery ?? null;
+      const engineHours: number | null = telemetry.hours_00_counter ?? counters.hours ?? null;
+
       return {
         id: posId,
         name: assetName,
@@ -162,7 +167,9 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
         town,
         timestamp,
         speed_limit_kmh: speedLimitKmh,
-        odometer: telemetry.odometer ?? telemetry.odo_counter ?? null,
+        odometer: telemetry.odometer ?? telemetry.odo_counter ?? counters.odometer ?? null,
+        battery_voltage: batteryVoltage,
+        engine_hours: engineHours,
         _source: "export_stream",
       };
     });
