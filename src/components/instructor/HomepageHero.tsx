@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
+import { Calendar, MessageCircle, Briefcase, PoundSterling } from "lucide-react";
 
 interface SlideData {
   label: string;
@@ -27,10 +28,9 @@ interface HomepageHeroProps {
   pendingJobs?: number;
 }
 
-// Apple Health-style activity ring with iOS system colours
 function ActivityRing({ completed, total }: { completed: number; total: number }) {
-  const size = 80;
-  const stroke = 8;
+  const size = 88;
+  const stroke = 7;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const progress = total > 0 ? Math.min(completed / total, 1) : 0;
@@ -39,15 +39,19 @@ function ActivityRing({ completed, total }: { completed: number; total: number }
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full" style={{ transform: "rotate(-90deg)" }}>
-        {/* Track */}
+        <defs>
+          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#34C759" />
+            <stop offset="100%" stopColor="#30B0C7" />
+          </linearGradient>
+        </defs>
         <circle
           cx={size / 2} cy={size / 2} r={radius}
           fill="none" stroke="#E5E5EA" strokeWidth={stroke}
         />
-        {/* Progress */}
         <motion.circle
           cx={size / 2} cy={size / 2} r={radius}
-          fill="none" stroke="#34C759" strokeWidth={stroke}
+          fill="none" stroke="url(#ringGrad)" strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
@@ -55,16 +59,37 @@ function ActivityRing({ completed, total }: { completed: number; total: number }
           transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1], delay: 0.3 }}
         />
       </svg>
-      {/* Centre text */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span style={{ fontSize: 20, fontWeight: 700, color: "#1C1C1E", lineHeight: 1, fontFamily: "-apple-system, 'SF Pro Text', sans-serif" }}>
+        <span style={{ fontSize: 24, fontWeight: 700, color: "#1C1C1E", lineHeight: 1, fontFamily: "-apple-system, 'SF Pro Display', sans-serif" }}>
           {completed}
         </span>
-        <span style={{ fontSize: 10, color: "#8E8E93", lineHeight: 1, marginTop: 2 }}>
+        <span style={{ fontSize: 11, color: "#8E8E93", lineHeight: 1, marginTop: 3 }}>
           of {total || 0}
         </span>
       </div>
     </div>
+  );
+}
+
+function MiniCarIllustration() {
+  return (
+    <svg width="72" height="48" viewBox="0 0 72 48" fill="none" className="opacity-40">
+      {/* Winding road */}
+      <path d="M0 38 Q18 28 36 34 Q54 40 72 30" stroke="#C7C7CC" strokeWidth="8" strokeLinecap="round" fill="none" />
+      <path d="M0 38 Q18 28 36 34 Q54 40 72 30" stroke="#E5E5EA" strokeWidth="4" strokeLinecap="round" fill="none" />
+      {/* Road dashes */}
+      <path d="M8 36 Q18 30 28 33" stroke="#fff" strokeWidth="1" strokeDasharray="3 4" fill="none" />
+      <path d="M38 34 Q48 37 58 33" stroke="#fff" strokeWidth="1" strokeDasharray="3 4" fill="none" />
+      {/* Car body */}
+      <rect x="42" y="22" width="18" height="8" rx="3" fill="#fff" />
+      <rect x="45" y="16" width="12" height="8" rx="2" fill="#fff" />
+      {/* Windows */}
+      <rect x="46.5" y="17.5" width="4" height="5" rx="1" fill="#D1D1D6" />
+      <rect x="52" y="17.5" width="4" height="5" rx="1" fill="#D1D1D6" />
+      {/* Wheels */}
+      <circle cx="46" cy="30" r="2.5" fill="#8E8E93" />
+      <circle cx="56" cy="30" r="2.5" fill="#8E8E93" />
+    </svg>
   );
 }
 
@@ -108,96 +133,146 @@ export function HomepageHero({
   };
 
   const slides: SlideData[] = [
-    { label: "TODAY", completed: todayCompleted, total: todayTotal, subtitle: `${todayTotal} lesson${todayTotal !== 1 ? "s" : ""} today` },
+    { label: "TODAY", completed: todayCompleted, total: todayTotal, subtitle: `${todayTotal} lesson${todayTotal !== 1 ? "s" : ""} scheduled` },
     { label: "THIS WEEK", completed: weeklyLessonsCompleted, total: weeklyLessonsTotal, subtitle: `${weeklyLessonsScheduled} scheduled` },
     { label: "THIS MONTH", completed: monthlyCompleted, total: monthlyTotal, subtitle: `${monthlyTotal} lesson${monthlyTotal !== 1 ? "s" : ""} this month` },
   ];
 
-  const dateStr = format(new Date(), "EEEE, d MMMM");
+  const dateStr = format(new Date(), "d MMMM yyyy");
+
+  const stats = [
+    {
+      icon: Calendar,
+      value: String(weeklyLessonsTotal),
+      label: "This week",
+      iconBg: "rgba(142,142,147,0.12)",
+      iconColor: "#8E8E93",
+      valueBg: "transparent",
+      highlight: false,
+    },
+    {
+      icon: PoundSterling,
+      value: `£${weeklyEarnings}`,
+      label: "Earnings",
+      iconBg: "rgba(52,199,89,0.14)",
+      iconColor: "#34C759",
+      valueBg: "transparent",
+      highlight: false,
+    },
+    {
+      icon: MessageCircle,
+      value: String(unreadMessages),
+      label: "Messages",
+      iconBg: "rgba(0,122,255,0.12)",
+      iconColor: "#007AFF",
+      valueBg: "transparent",
+      highlight: false,
+    },
+    {
+      icon: Briefcase,
+      value: String(pendingJobs),
+      label: "Job offers",
+      iconBg: "rgba(0,122,255,1)",
+      iconColor: "#fff",
+      valueBg: "#007AFF",
+      highlight: true,
+    },
+  ];
 
   return (
-    <div className="px-4 pt-3">
-      {/* Hero card — iOS glass */}
+    <div className="px-4 pt-3" style={{ fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', sans-serif" }}>
       <div
         style={{
-          background: "linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(249,249,251,0.9) 100%)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
+          background: "#FFFFFF",
           borderRadius: 24,
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8), 0 10px 30px rgba(0,0,0,0.06)",
+          boxShadow: "0 4px 24px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
           overflow: "hidden",
-          fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
         }}
       >
-        {/* Greeting row */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+        {/* Greeting + Avatar */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-1">
           <div>
-            <p style={{ fontSize: 14, color: "#8E8E93", fontWeight: 400 }}>{getGreeting()}</p>
-            <p style={{ fontSize: 26, fontWeight: 700, color: "#1C1C1E", lineHeight: 1.15, marginTop: 2 }}>{firstName}</p>
+            <p style={{ fontSize: 28, fontWeight: 700, color: "#1C1C1E", lineHeight: 1.2 }}>
+              {getGreeting()}, <span style={{ display: "inline" }}>{firstName}</span>
+            </p>
           </div>
-          <div
-            className="shrink-0"
-            style={{
-              width: 46, height: 46, borderRadius: "50%", overflow: "hidden",
-              backgroundColor: "#F2F2F7",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-            }}
-          >
-            {profileImageUrl ? (
-              <img src={profileImageUrl} alt={firstName} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, #E8622A, #FF8C42)" }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: "#fff" }}>{firstName.charAt(0)}</span>
-              </div>
-            )}
+          <div className="relative shrink-0">
+            <div
+              style={{
+                width: 48, height: 48, borderRadius: "50%", overflow: "hidden",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+              }}
+            >
+              {profileImageUrl ? (
+                <img src={profileImageUrl} alt={firstName} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, #E8622A, #FF8C42)" }}>
+                  <span style={{ fontSize: 20, fontWeight: 700, color: "#fff" }}>{firstName.charAt(0)}</span>
+                </div>
+              )}
+            </div>
+            {/* Green available dot */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: 1,
+                right: 1,
+                width: 13,
+                height: 13,
+                borderRadius: "50%",
+                backgroundColor: "#34C759",
+                border: "2.5px solid #fff",
+              }}
+            />
           </div>
         </div>
 
-        {/* Subtle divider */}
-        <div style={{ height: 0.5, backgroundColor: "rgba(0,0,0,0.06)", marginLeft: 20, marginRight: 20 }} />
-
-        {/* Today section carousel */}
+        {/* Carousel */}
         <div ref={emblaRef} className="overflow-hidden">
           <div className="flex">
             {slides.map((slide, i) => (
               <div key={slide.label} className="min-w-0 shrink-0 grow-0 basis-full">
-                <div className="px-5 pt-4 pb-3">
-                  {/* Label row */}
-                  <div className="flex items-center justify-between mb-3">
+                <div className="px-5 pt-3 pb-3">
+                  {/* Date row */}
+                  <div className="flex items-center gap-2.5 mb-4">
                     <span
                       style={{
                         fontSize: 11,
                         fontWeight: 600,
                         color: "#34C759",
-                        letterSpacing: 0.6,
+                        letterSpacing: 0.8,
                         textTransform: "uppercase" as const,
-                        backgroundColor: "rgba(52,199,89,0.15)",
-                        padding: "3px 8px",
-                        borderRadius: 6,
+                        backgroundColor: "rgba(52,199,89,0.12)",
+                        padding: "4px 10px",
+                        borderRadius: 20,
                       }}
                     >
                       {slide.label}
                     </span>
-                    <span style={{ fontSize: 13, color: "#8E8E93" }}>{dateStr}</span>
+                    <span style={{ fontSize: 13, color: "#8E8E93", fontWeight: 400 }}>{dateStr}</span>
                   </div>
 
-                  {/* Ring + info */}
+                  {/* Ring + Lessons info + car illustration */}
                   <div className="flex items-center gap-4">
                     <ActivityRing completed={slide.completed} total={slide.total} />
                     <div className="flex-1 min-w-0">
-                      <p style={{ fontSize: 17, fontWeight: 600, color: "#1C1C1E" }}>
-                        {slide.completed === slide.total && slide.total > 0 ? "All done! 🎉" : "Lessons today"}
+                      <p style={{ fontSize: 18, fontWeight: 700, color: "#1C1C1E", marginBottom: 2 }}>
+                        {slide.completed === slide.total && slide.total > 0 ? "All done! 🎉" : "Lessons Today"}
                       </p>
-                      <p style={{ fontSize: 13, color: "#8E8E93", marginTop: 2 }}>{slide.subtitle}</p>
-                      {/* Thin progress bar */}
-                      <div style={{ height: 4, borderRadius: 2, backgroundColor: "#E5E5EA", marginTop: 8, overflow: "hidden" }}>
+                      <p style={{ fontSize: 13, color: "#8E8E93" }}>{slide.subtitle}</p>
+                      {/* Progress bar */}
+                      <div style={{ height: 4, borderRadius: 2, backgroundColor: "#E5E5EA", marginTop: 10, overflow: "hidden" }}>
                         <motion.div
-                          style={{ height: "100%", borderRadius: 2, backgroundColor: "#34C759" }}
+                          style={{ height: "100%", borderRadius: 2, background: "linear-gradient(90deg, #34C759, #30B0C7)" }}
                           initial={{ width: 0 }}
                           animate={{ width: `${slide.total > 0 ? Math.min((slide.completed / slide.total) * 100, 100) : 0}%` }}
                           transition={{ duration: 1, delay: 0.5 }}
                         />
                       </div>
+                    </div>
+                    {/* Mini car illustration */}
+                    <div className="shrink-0 self-end -mb-1">
+                      <MiniCarIllustration />
                     </div>
                   </div>
                 </div>
@@ -213,33 +288,58 @@ export function HomepageHero({
               key={i}
               style={{
                 width: 6, height: 6, borderRadius: "50%",
-                backgroundColor: i === selectedIndex ? "#3C3C43" : "#C7C7CC",
+                backgroundColor: i === selectedIndex ? "#3C3C43" : "#D1D1D6",
                 transition: "background-color 0.2s",
               }}
             />
           ))}
         </div>
 
-        {/* Bottom stat strip */}
-        <div style={{ backgroundColor: "rgba(249,249,251,0.6)" }}>
-          <div className="grid grid-cols-4 py-1">
-            {[
-              { label: "This week", value: String(weeklyLessonsTotal), color: "#1C1C1E" },
-              { label: "Earnings", value: `£${weeklyEarnings}`, color: "#34C759" },
-              { label: "Messages", value: String(unreadMessages), color: "#FF9500" },
-              { label: "Job offer", value: String(pendingJobs), color: "#007AFF" },
-            ].map((stat) => (
+        {/* Divider */}
+        <div style={{ height: 0.5, backgroundColor: "rgba(0,0,0,0.06)", marginLeft: 20, marginRight: 20 }} />
+
+        {/* Bottom stats row */}
+        <div className="grid grid-cols-4 gap-2 px-4 py-3.5">
+          {stats.map((stat) => (
+            <motion.div
+              key={stat.label}
+              whileTap={{ scale: 0.97 }}
+              className="flex flex-col items-center rounded-2xl py-2.5 px-1"
+              style={{
+                backgroundColor: stat.highlight ? "#007AFF" : "rgba(0,0,0,0.02)",
+                borderRadius: 16,
+              }}
+            >
               <div
-                key={stat.label}
-                className="flex flex-col items-center py-2"
+                className="flex items-center justify-center mb-1.5"
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 8,
+                  backgroundColor: stat.highlight ? "rgba(255,255,255,0.2)" : stat.iconBg,
+                }}
               >
-                <span style={{ fontSize: 16, fontWeight: 700, color: stat.color, fontVariantNumeric: "tabular-nums" }}>
-                  {stat.value}
-                </span>
-                <span style={{ fontSize: 10, color: "#8E8E93", marginTop: 1 }}>{stat.label}</span>
+                <stat.icon size={15} color={stat.highlight ? "#fff" : stat.iconColor} strokeWidth={2.2} />
               </div>
-            ))}
-          </div>
+              <span style={{
+                fontSize: 17,
+                fontWeight: 700,
+                color: stat.highlight ? "#fff" : "#1C1C1E",
+                lineHeight: 1.1,
+                fontVariantNumeric: "tabular-nums",
+              }}>
+                {stat.value}
+              </span>
+              <span style={{
+                fontSize: 9.5,
+                color: stat.highlight ? "rgba(255,255,255,0.8)" : "#8E8E93",
+                marginTop: 2,
+                fontWeight: 500,
+              }}>
+                {stat.label}
+              </span>
+            </motion.div>
+          ))}
         </div>
       </div>
     </div>
