@@ -73,29 +73,32 @@ function getGreeting() {
   return "Good Evening";
 }
 
+// Mock data for demonstration
+const mockNextLesson = {
+  id: "mock-lesson-1",
+  start_time: (() => {
+    const d = new Date();
+    d.setHours(d.getHours() + 2, 0, 0, 0);
+    return d.toISOString();
+  })(),
+  pickup_location: "23 Oak Avenue, BR1 3PQ",
+  pupils: { name: "Emma Thompson" },
+};
+
+const mockBadges: Record<string, number> = {
+  "Job Offers": 3,
+  "Messages": 5,
+  "Tests": 1,
+  "Fill Gaps": 2,
+};
+
 export default function DSM() {
   const navigate = useNavigate();
   const { instructor } = useInstructorAuth();
   const firstName = instructor?.name?.split(" ")[0] || "Instructor";
 
-  const { data: nextLesson } = useQuery({
-    queryKey: ["dsm-next-lesson", instructor?.id],
-    queryFn: async () => {
-      if (!instructor?.id) return null;
-      const { data, error } = await supabase
-        .from("scheduled_lessons")
-        .select("id, start_time, pickup_location, pupils(name)")
-        .eq("instructor_id", instructor.id)
-        .gte("start_time", new Date().toISOString())
-        .order("start_time", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      if (error || !data) return null;
-      return data;
-    },
-    enabled: !!instructor?.id,
-    staleTime: 60_000,
-  });
+  // Use mock data so the page is always populated
+  const nextLesson = mockNextLesson;
 
   const lessonDate = nextLesson?.start_time ? new Date(nextLesson.start_time) : null;
   const lessonDay = lessonDate
@@ -131,8 +134,13 @@ export default function DSM() {
               transition={{ delay: i * 0.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate(tile.route)}
-              className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+              className="relative flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
             >
+              {mockBadges[tile.label] && (
+                <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#FF3B30] flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-white">{mockBadges[tile.label]}</span>
+                </div>
+              )}
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center"
                 style={{ backgroundColor: `${tile.color}14` }}
