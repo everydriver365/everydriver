@@ -1,47 +1,37 @@
 
 
-# Add Lesson Status Indicators to Today's Schedule
+## Plan: Upcoming Events Tile + Admin Event Manager
 
-## What changes
+### What we're building
+1. A new database table `admin_events` to store upcoming events (webinars, shows, etc.)
+2. An "Upcoming Events" tile on the instructor home page, placed after the `BottomPromoGroup`
+3. An admin section to create/edit/delete events
+4. Seed the first event (DVSA Booking System webinar, 23rd April)
 
-The Today's Schedule agenda will visually distinguish three states for each lesson:
+### Database
+- New `admin_events` table: `id`, `title`, `description`, `event_date` (timestamptz), `duration_minutes`, `event_type` (online_webinar / in_person / show), `link_url`, `link_label`, `is_active`, `created_at`
+- RLS: SELECT for authenticated users, full CRUD for admins via `has_role`
 
-1. **Completed (wizard done)** — status is `completed`. Green checkmark, faded row, strikethrough name (already partially done, will enhance).
-2. **Next up** — the first non-completed lesson. Highlighted with a subtle blue left border and "NEXT" badge.
-3. **Upcoming** — remaining scheduled lessons. Normal styling (as-is).
+### Instructor Home — New Component
+- `UpcomingEventsCard` placed below `BottomPromoGroup` in all home view variants
+- Fetches active events where `event_date > now()`, ordered by date, limit 5
+- Each event row shows: date/time badge, title, description snippet, and a tappable link button
+- Styled consistently with the existing iOS card aesthetic (rounded-2xl, border, bg-card)
+- Calendar icon with purple accent to distinguish from existing tiles
 
-For the end-of-lesson routine indicator, since the `EndLessonWizard` sets `status = "completed"` when it finishes, any lesson that has passed its end time but is still `scheduled` (not `completed`) means the wizard hasn't been run yet. We'll show a small orange "End lesson" nudge on these overdue-but-not-completed lessons.
+### Admin Portal — New Section
+- `AdminEventsManager` component: table of events with create/edit/delete
+- Form fields: title, description, date/time, duration, type, link URL, link label, active toggle
+- Added to `sectionMeta` and the admin navigation grid under "Engagement & Rewards"
 
-## Technical details
+### Seed Data
+- Insert the DVSA webinar event (23 April 2025, 18:00, 60 min, with the provided Teams link)
 
-### File: `src/components/instructor/TodayScheduleAgenda.tsx`
-
-**Determine lesson states** using current time:
-```
-const now = current HH:mm
-const endTime = startTime + durationMinutes
-
-- status === "completed" → DONE (wizard completed)
-- endTime <= now && status !== "completed" → OVERDUE (wizard not done)
-- first lesson where status !== "completed" && endTime > now → NEXT
-- everything else → UPCOMING
-```
-
-**Visual indicators:**
-- **DONE**: Green check icon, 55% opacity, strikethrough name (existing), add small "✓ Done" green text
-- **OVERDUE (wizard pending)**: Orange clock icon + "End lesson" text, normal opacity to draw attention
-- **NEXT**: Blue left accent border (4px), subtle blue background tint, "Next" badge
-- **UPCOMING**: No change (current default styling)
-
-### File: `src/hooks/useTodayRemainingLessons.ts`
-
-No changes needed — `status` field is already included in the query and interface.
-
-### File: `src/components/instructor/TodayMiniTimeline.tsx`
-
-Add the same visual state logic (completed check, next highlight, overdue nudge) to the card-based timeline view for consistency.
-
-## Summary of changes
-1. `TodayScheduleAgenda.tsx` — Add state detection logic and visual indicators for done/next/overdue
-2. `TodayMiniTimeline.tsx` — Mirror the same status indicators on timeline cards
+### Files to create/modify
+- **Migration**: Create `admin_events` table with RLS
+- **New**: `src/components/instructor/UpcomingEventsCard.tsx`
+- **New**: `src/components/admin/AdminEventsManager.tsx`
+- **Modified**: All home view variants to add `UpcomingEventsCard` after `BottomPromoGroup`
+- **Modified**: `src/pages/AdminPortal.tsx` — add section metadata, import, and render
+- **Insert**: Seed the DVSA event row
 
