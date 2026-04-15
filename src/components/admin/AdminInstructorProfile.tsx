@@ -200,7 +200,6 @@ function InlineTrackerDevice({ instructorId, provider }: { instructorId: string;
         is_active: true,
       };
       const { error } = await supabase.from("gps_devices").insert(insertData as any);
-      const { error } = await supabase.from("gps_devices").insert(insertData as any);
       if (error) throw error;
       toast.success(`${providerLabel} device added`);
       setNewDeviceId("");
