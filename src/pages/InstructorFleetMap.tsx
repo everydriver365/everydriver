@@ -52,6 +52,7 @@ export default function InstructorFleetMap() {
   const { instructor } = useInstructorAuth();
   const instructorId = instructor?.id ?? null;
   const [devices, setDevices] = useState<FleetDevice[]>([]);
+  const devicesRef = useRef<FleetDevice[]>([]);
   const [showSignalLost, setShowSignalLost] = useState(true);
   const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef<google.maps.Map | null>(null);
