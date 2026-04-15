@@ -479,7 +479,7 @@ export default function LiveGoogleTrackingMap({ className = "", deviceId: device
   useEffect(() => {
     if (!device?.id || !isConnected) return;
     const triggerPoller = async () => {
-      try { await supabase.functions.invoke("geotab-poller", { body: { mode: "fast" } }); }
+      try { await supabase.functions.invoke("radius-poller", { body: { mode: "fast" } }); }
       catch (err) { console.error("Live map poller trigger failed:", err); }
     };
     triggerPoller();
