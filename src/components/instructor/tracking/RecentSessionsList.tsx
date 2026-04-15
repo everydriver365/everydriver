@@ -1,6 +1,6 @@
  import { useState, useEffect } from "react";
  import { motion, AnimatePresence } from "framer-motion";
- import { ChevronDown, Clock, MapPin, Play, RotateCcw } from "lucide-react";
+ import { ChevronDown, Clock, MapPin, Play, RotateCcw, Camera, ExternalLink } from "lucide-react";
  import { useNavigate } from "react-router-dom";
  import { supabase } from "@/integrations/supabase/client";
  import { formatDistanceToNow } from "date-fns";
@@ -121,47 +121,57 @@
                  animate={{ opacity: 1 }}
                  exit={{ opacity: 0 }}
                >
-                 {sessions.map((session, index) => (
-                   <motion.button
-                     key={session.id}
-                     className="w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-muted/50 hover:bg-slate-100 dark:hover:bg-muted transition-colors text-left"
-                     onClick={() => navigate(`/instructor/trip-replay/${session.id}`)}
-                     initial={{ opacity: 0, x: -10 }}
-                     animate={{ opacity: 1, x: 0 }}
-                     transition={{ delay: index * 0.05 }}
-                   >
-                     <div className={`w-9 h-9 rounded-2xl flex items-center justify-center ${
-                       session.pupilName 
-                         ? "bg-emerald-100 dark:bg-emerald-500/20" 
-                         : "bg-amber-100 dark:bg-amber-500/20"
-                     }`}>
-                       {session.pupilName ? (
-                         <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                           {session.pupilName.charAt(0)}
-                         </span>
-                       ) : (
-                         <MapPin className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                       )}
-                     </div>
-                     <div className="flex-1 min-w-0">
-                       <p className="font-medium text-sm text-foreground truncate">
-                         {session.pupilName || "Test Route"}
-                       </p>
-                       <p className="text-xs text-muted-foreground">
-                         {formatDistanceToNow(session.startedAt, { addSuffix: true })}
-                       </p>
-                     </div>
-                     <div className="text-right">
-                       <p className="text-xs font-medium text-foreground">{formatDistance(session.distanceKm)}</p>
-                       <p className="text-xs text-muted-foreground flex items-center gap-1 justify-end">
-                         <Clock className="h-3 w-3" />
-                         {formatDuration(session.durationMinutes)}
-                       </p>
-                     </div>
-                     <Play className="h-4 w-4 text-muted-foreground" />
-                   </motion.button>
-                 ))}
-               </motion.div>
+                  {sessions.map((session, index) => (
+                    <motion.button
+                      key={session.id}
+                      className="w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-muted/50 hover:bg-slate-100 dark:hover:bg-muted transition-colors text-left"
+                      onClick={() => navigate(`/instructor/trip-replay/${session.id}`)}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <div className={`w-9 h-9 rounded-2xl flex items-center justify-center ${
+                        session.pupilName 
+                          ? "bg-emerald-100 dark:bg-emerald-500/20" 
+                          : "bg-amber-100 dark:bg-amber-500/20"
+                      }`}>
+                        {session.pupilName ? (
+                          <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                            {session.pupilName.charAt(0)}
+                          </span>
+                        ) : (
+                          <MapPin className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-foreground truncate">
+                          {session.pupilName || "Test Route"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(session.startedAt, { addSuffix: true })}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-medium text-foreground">{formatDistance(session.distanceKm)}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1 justify-end">
+                          <Clock className="h-3 w-3" />
+                          {formatDuration(session.durationMinutes)}
+                        </p>
+                      </div>
+                      <Play className="h-4 w-4 text-muted-foreground" />
+                    </motion.button>
+                  ))}
+
+                  {/* Dashcam Portal Link */}
+                  <button
+                    onClick={() => window.open("https://www.kinesisfleetpro.com/#/login;next=%2Fstatus", "_blank", "noopener,noreferrer")}
+                    className="w-full flex items-center justify-center gap-2 p-2.5 rounded-2xl bg-slate-100 dark:bg-muted/30 hover:bg-slate-200 dark:hover:bg-muted/50 transition-colors text-sm text-muted-foreground"
+                  >
+                    <Camera className="h-4 w-4" />
+                    <span>View Dashcam Footage</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </button>
+                </motion.div>
              )}
            </AnimatePresence>
          </CollapsibleContent>

@@ -958,6 +958,18 @@ export default function InstructorLiveSession() {
              <span className="text-xs text-muted-foreground">View all vehicles →</span>
            </button>
 
+           {/* Dashcam Portal Link */}
+           <button
+             onClick={() => window.open("https://www.kinesisfleetpro.com/#/login;next=%2Fstatus", "_blank", "noopener,noreferrer")}
+             className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-muted/50 border border-slate-200 dark:border-muted hover:bg-slate-100 dark:hover:bg-muted transition-colors mb-3"
+           >
+             <div className="flex items-center gap-2">
+               <Camera className="h-4 w-4 text-slate-600" />
+               <span className="text-sm font-medium text-foreground">Dashcam Portal</span>
+             </div>
+             <span className="text-xs text-muted-foreground">View footage →</span>
+           </button>
+
            {/* Mini Live Map Preview */}
            <MiniLiveMap
               latitude={device.last_latitude}

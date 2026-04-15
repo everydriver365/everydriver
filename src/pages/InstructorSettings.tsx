@@ -130,6 +130,7 @@ const allTiles: TileDef[] = [
   // Tracking
   { id: "gps-mobile", title: "Mobile GPS Tracking", description: "Link your GPS Gate account", icon: Satellite, iconColor: "text-cyan-600", iconBg: "bg-cyan-100 dark:bg-cyan-900/30", category: "tracking" },
   { id: "routes", title: "Saved Routes", description: "View and manage your recorded driving routes", icon: Route, iconColor: "text-fuchsia-600", iconBg: "bg-fuchsia-100 dark:bg-fuchsia-900/30", category: "tracking" },
+  { id: "dashcam-portal", title: "Dashcam Portal", description: "View footage on Kinesis Fleet Pro", icon: Camera, iconColor: "text-slate-600", iconBg: "bg-slate-100 dark:bg-slate-900/30", category: "tracking", externalUrl: "https://www.kinesisfleetpro.com/#/login;next=%2Fstatus" },
   // Preferences
   { id: "demo-mode", title: "Demo Mode", description: "Preview the app with sample data", icon: Eye, iconColor: "text-amber-600", iconBg: "bg-amber-100 dark:bg-amber-900/30", category: "preferences" },
   { id: "appearance", title: "Appearance", description: "Layout, hero image & wallpaper", icon: Paintbrush, iconColor: "text-pink-600", iconBg: "bg-pink-100 dark:bg-pink-900/30", category: "preferences" },
