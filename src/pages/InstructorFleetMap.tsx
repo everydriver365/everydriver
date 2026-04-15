@@ -1,16 +1,18 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeHub";
 import { fetchGoogleMapsKey, loadGoogleMaps, kmhToMph } from "@/lib/googleMapsLoader";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Maximize, Eye, EyeOff } from "lucide-react";
+import { Maximize, Eye, EyeOff, ArrowLeft } from "lucide-react";
 
 interface FleetDevice {
   id: string;
   device_name: string | null;
   device_identifier: string;
+  instructor_id?: string;
   last_latitude: number | null;
   last_longitude: number | null;
   last_speed_kmh: number | null;
@@ -22,6 +24,7 @@ interface FleetDevice {
   last_seen_at: string | null;
   last_heartbeat_at: string | null;
   is_active: boolean;
+  _instructor_name?: string;
 }
 
 function isSignalLost(device: FleetDevice): boolean {
@@ -47,6 +50,9 @@ function createArrowSvg(heading: number, color: string, pulse: boolean): string 
 }
 
 export default function InstructorFleetMap() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isColleagueMode = searchParams.get("mode") === "colleagues";
   const { instructor } = useInstructorAuth();
   const instructorId = instructor?.id ?? null;
   const [devices, setDevices] = useState<FleetDevice[]>([]);
@@ -58,27 +64,91 @@ export default function InstructorFleetMap() {
   const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new Map());
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const prevSpeedingRef = useRef<Map<string, boolean>>(new Map());
+  const [colleagueIds, setColleagueIds] = useState<string[] | null>(null);
 
   // Keep devicesRef in sync with latest state for closure-safe access
   useEffect(() => { devicesRef.current = devices; }, [devices]);
 
+  // Fetch colleague IDs for school filtering
+  useEffect(() => {
+    if (!isColleagueMode || !instructorId) {
+      setColleagueIds(null);
+      return;
+    }
+    (async () => {
+      // Get my schools
+      const { data: mySchools } = await supabase
+        .from("school_instructors")
+        .select("school_id")
+        .eq("instructor_id", instructorId) as any;
+
+      if (!mySchools?.length) {
+        setColleagueIds([]);
+        return;
+      }
+
+      const schoolIds = mySchools.map((s: any) => s.school_id);
+
+      // Get all instructor IDs in those schools
+      const { data: members } = await supabase
+        .from("school_instructors")
+        .select("instructor_id")
+        .in("school_id", schoolIds) as any;
+
+      const ids = [...new Set((members || []).map((m: any) => m.instructor_id))] as string[];
+      setColleagueIds(ids);
+    })();
+  }, [isColleagueMode, instructorId]);
+
   // Fetch initial devices
   useEffect(() => {
     if (!instructorId) return;
+    // In colleague mode, wait for colleagueIds to resolve
+    if (isColleagueMode && colleagueIds === null) return;
+
     (async () => {
-      const { data } = await supabase
+      let query = supabase
         .from("gps_devices")
-        .select("id, device_name, device_identifier, last_latitude, last_longitude, last_speed_kmh, last_heading, last_ignition_status, last_road_name, last_speed_limit_kmh, last_is_speeding, last_seen_at, last_heartbeat_at, is_active")
-        .eq("instructor_id", instructorId)
+        .select("id, device_name, device_identifier, instructor_id, last_latitude, last_longitude, last_speed_kmh, last_heading, last_ignition_status, last_road_name, last_speed_limit_kmh, last_is_speeding, last_seen_at, last_heartbeat_at, is_active")
         .eq("tracking_provider", "radius");
+
+      if (isColleagueMode && colleagueIds) {
+        if (colleagueIds.length === 0) {
+          setDevices([]);
+          return;
+        }
+        query = query.in("instructor_id", colleagueIds);
+      } else {
+        query = query.eq("instructor_id", instructorId);
+      }
+
+      const { data } = await query;
       if (data) {
-        setDevices(data as FleetDevice[]);
-        data.forEach((d: any) => prevSpeedingRef.current.set(d.id, !!d.last_is_speeding));
+        let devicesWithNames = data as FleetDevice[];
+
+        // In colleague mode, fetch instructor names
+        if (isColleagueMode && colleagueIds && colleagueIds.length > 0) {
+          const { data: instructors } = await supabase
+            .from("instructors")
+            .select("id, name")
+            .in("id", colleagueIds) as any;
+
+          const nameMap = new Map<string, string>();
+          (instructors || []).forEach((i: any) => nameMap.set(i.id, i.name));
+
+          devicesWithNames = devicesWithNames.map(d => ({
+            ...d,
+            _instructor_name: d.instructor_id ? nameMap.get(d.instructor_id) || undefined : undefined,
+          }));
+        }
+
+        setDevices(devicesWithNames);
+        devicesWithNames.forEach((d) => prevSpeedingRef.current.set(d.id, !!d.last_is_speeding));
       }
     })();
-  }, [instructorId]);
+  }, [instructorId, isColleagueMode, colleagueIds]);
 
-  // Realtime updates
+  // Realtime updates — only for own devices (not colleague mode to avoid complex filter)
   useRealtimeSubscription(
     "gps_devices",
     "UPDATE",
@@ -103,14 +173,21 @@ export default function InstructorFleetMap() {
 
       setDevices((prev) => {
         const idx = prev.findIndex((d) => d.id === updated.id);
-        if (idx === -1) return [...prev, updated];
+        if (idx === -1) {
+          // In colleague mode, check if this device belongs to a colleague
+          if (isColleagueMode && colleagueIds && updated.instructor_id && !colleagueIds.includes(updated.instructor_id)) {
+            return prev;
+          }
+          return [...prev, updated];
+        }
         const next = [...prev];
-        next[idx] = updated;
+        // Preserve _instructor_name from previous entry
+        next[idx] = { ...updated, _instructor_name: prev[idx]._instructor_name };
         return next;
       });
     },
     {
-      filter: instructorId ? `instructor_id=eq.${instructorId}` : undefined,
+      filter: !isColleagueMode && instructorId ? `instructor_id=eq.${instructorId}` : undefined,
       enabled: !!instructorId,
     }
   );
@@ -165,9 +242,9 @@ export default function InstructorFleetMap() {
       const speeding = !!device.last_is_speeding && !lost;
       const color = lost ? "#9CA3AF" : speeding ? "#EF4444" : "#22C55E";
       const heading = Number(device.last_heading) || 0;
-      const name = device.device_name || device.device_identifier;
+      const displayName = device._instructor_name || device.device_name || device.device_identifier;
       const speedMph = Math.round(kmhToMph(device.last_speed_kmh ?? 0));
-      const label = lost ? `${name} — Signal lost` : `${name} — ${speedMph} mph`;
+      const label = lost ? `${displayName} — Signal lost` : `${displayName} — ${speedMph} mph`;
 
       existingIds.delete(device.id);
 
@@ -206,9 +283,14 @@ export default function InstructorFleetMap() {
           const dLost = isSignalLost(d);
           const dSpeed = Math.round(kmhToMph(d.last_speed_kmh ?? 0));
           const dLimit = Math.round(kmhToMph(d.last_speed_limit_kmh ?? 0));
+          const dName = d._instructor_name || d.device_name || d.device_identifier;
+          const instructorLine = isColleagueMode && d._instructor_name
+            ? `<span style="color:#6B7280;font-size:11px;">${d.device_name || d.device_identifier}</span><br/>`
+            : "";
           infoWindowRef.current?.setContent(`
             <div style="font-family:system-ui;font-size:13px;line-height:1.5;">
-              <strong>${d.device_name || d.device_identifier}</strong><br/>
+              <strong>${dName}</strong><br/>
+              ${instructorLine}
               Speed: ${dSpeed} mph<br/>
               Limit: ${dLimit > 0 ? dLimit + " mph" : "Unknown"}<br/>
               Road: ${d.last_road_name || "Unknown"}<br/>
@@ -232,7 +314,7 @@ export default function InstructorFleetMap() {
         markersRef.current.delete(id);
       }
     }
-  }, [devices, mapReady, showSignalLost]);
+  }, [devices, mapReady, showSignalLost, isColleagueMode]);
 
   const fitBounds = useCallback(() => {
     if (!mapRef.current) return;
@@ -252,9 +334,22 @@ export default function InstructorFleetMap() {
 
   return (
     <div className="relative w-full h-[calc(100vh-4rem)]">
+      {/* Back button */}
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={() => navigate(-1)}
+        className="absolute top-3 left-3 z-10 shadow-md"
+      >
+        <ArrowLeft className="h-4 w-4 mr-1" />
+        Back
+      </Button>
+
       {/* Stats bar */}
-      <div className="absolute top-3 left-3 z-10 bg-background/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-md border border-border text-sm">
-        <span className="text-foreground font-medium">{activeCount} active</span>
+      <div className="absolute top-3 left-24 z-10 bg-background/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-md border border-border text-sm">
+        <span className="text-foreground font-medium">
+          {isColleagueMode ? "Colleagues: " : ""}{activeCount} active
+        </span>
         {speedingCount > 0 && (
           <span className="ml-2 text-destructive font-semibold">{speedingCount} speeding</span>
         )}
