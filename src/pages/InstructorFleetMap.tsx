@@ -387,6 +387,15 @@ export default function InstructorFleetMap() {
           <Maximize className="h-4 w-4 mr-1" /> Fit all
         </Button>
         <Button
+          variant={autoFollow ? "default" : "secondary"}
+          size="sm"
+          onClick={() => { setAutoFollow(!autoFollow); userInteractedRef.current = false; }}
+          className="shadow-md"
+        >
+          {autoFollow ? <Locate className="h-4 w-4 mr-1" /> : <LocateOff className="h-4 w-4 mr-1" />}
+          {autoFollow ? "Following" : "Follow"}
+        </Button>
+        <Button
           variant="secondary"
           size="sm"
           onClick={() => setShowSignalLost(!showSignalLost)}
