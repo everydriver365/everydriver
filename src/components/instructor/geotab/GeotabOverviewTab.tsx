@@ -22,7 +22,7 @@ export function GeotabOverviewTab() {
       <InstructorCard>
         <div className="p-6 text-center text-muted-foreground">
           <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-amber-500" />
-          <p>No Geotab devices found. Contact your admin to have a device assigned.</p>
+          <p>No GPS devices found. Contact your admin to have a device assigned.</p>
         </div>
       </InstructorCard>
     );

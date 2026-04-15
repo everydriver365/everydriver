@@ -27,15 +27,7 @@ import {
   Fuel, Zap, ChevronRight,
 } from "lucide-react";
 
-// Geotab-specific tab components
-import { GeotabTripHistory } from "@/components/instructor/geotab/GeotabTripHistory";
-import { GeotabDiagnosticsTab } from "@/components/instructor/geotab/GeotabDiagnosticsTab";
-import { GeotabExtendedDiagnosticsTab } from "@/components/instructor/geotab/GeotabExtendedDiagnosticsTab";
-import { GeotabFaultCodesTab } from "@/components/instructor/geotab/GeotabFaultCodesTab";
-import { GeotabContextualSpeedTab } from "@/components/instructor/geotab/GeotabContextualSpeedTab";
-import { GeotabDriverBehaviourTab } from "@/components/instructor/geotab/GeotabDriverBehaviourTab";
-import { GeotabFuelTab } from "@/components/instructor/geotab/GeotabFuelTab";
-import { GeotabImpactTab } from "@/components/instructor/geotab/GeotabImpactTab";
+// Geotab tabs removed — Radius only
 
 interface TabDef {
   id: string;
@@ -56,16 +48,7 @@ const GENERAL_TABS: TabDef[] = [
   { id: "reports", icon: Mail, label: "Reports", category: "general" },
 ];
 
-const GEOTAB_TABS: TabDef[] = [
-  { id: "trips", icon: Route, label: "Trips", category: "geotab" },
-  { id: "diagnostics", icon: Activity, label: "Diagnostics", category: "geotab" },
-  { id: "sensors", icon: CircleDot, label: "Sensors", category: "geotab" },
-  { id: "faults", icon: Wrench, label: "Faults", category: "geotab" },
-  { id: "speeding", icon: Gauge, label: "Speeding", category: "geotab" },
-  { id: "behaviour", icon: ShieldAlert, label: "Behaviour", category: "geotab" },
-  { id: "fuel", icon: Fuel, label: "Fuel", category: "geotab" },
-  { id: "impact", icon: Zap, label: "Impact", category: "geotab" },
-];
+// GEOTAB_TABS removed — Radius only
 
 export default function InstructorFleetDashboard() {
   const { instructor, subscription } = useInstructorAuth();
@@ -105,12 +88,6 @@ export default function InstructorFleetDashboard() {
             <h1 className="text-[28px] font-bold text-foreground leading-tight tracking-tight">
               Vehicle Health
             </h1>
-            {isGeotab && (
-              <Badge variant="secondary" className="bg-success/10 text-success border-0 text-[10px] gap-1">
-                <div className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
-                Geotab
-              </Badge>
-            )}
           </div>
         </div>
 
@@ -160,29 +137,6 @@ export default function InstructorFleetDashboard() {
                 </TabsList>
               </div>
 
-              {/* Geotab tabs */}
-              {isGeotab && (
-                <div>
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.1em] mb-1.5 px-0.5">
-                    Geotab Deep Dive
-                  </p>
-                  <TabsList className="bg-transparent h-auto p-0 gap-1.5 flex flex-wrap">
-                    {GEOTAB_TABS.map(tab => (
-                      <TabsTrigger
-                        key={tab.id}
-                        value={tab.id}
-                        className={cn(
-                          "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border data-[state=inactive]:bg-card data-[state=inactive]:text-muted-foreground data-[state=inactive]:border-border data-[state=inactive]:shadow-none",
-                          "data-[state=active]:bg-chart-1 data-[state=active]:text-white data-[state=active]:border-chart-1 data-[state=active]:shadow-md"
-                        )}
-                      >
-                        <tab.icon className="h-3 w-3" />
-                        {tab.label}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </div>
-              )}
             </div>
 
             {/* ── Tab content ── */}
@@ -225,35 +179,6 @@ export default function InstructorFleetDashboard() {
                 <ScheduledReportsSettings instructorId={instructor.id} />
               </TabsContent>
 
-              {/* Geotab-specific tab content */}
-              {isGeotab && (
-                <>
-                  <TabsContent value="trips" className="mt-0">
-                    <GeotabTripHistory instructorId={instructor.id} />
-                  </TabsContent>
-                  <TabsContent value="diagnostics" className="mt-0">
-                    <GeotabDiagnosticsTab />
-                  </TabsContent>
-                  <TabsContent value="sensors" className="mt-0">
-                    <GeotabExtendedDiagnosticsTab />
-                  </TabsContent>
-                  <TabsContent value="faults" className="mt-0">
-                    <GeotabFaultCodesTab />
-                  </TabsContent>
-                  <TabsContent value="speeding" className="mt-0">
-                    <GeotabContextualSpeedTab />
-                  </TabsContent>
-                  <TabsContent value="behaviour" className="mt-0">
-                    <GeotabDriverBehaviourTab />
-                  </TabsContent>
-                  <TabsContent value="fuel" className="mt-0">
-                    <GeotabFuelTab />
-                  </TabsContent>
-                  <TabsContent value="impact" className="mt-0">
-                    <GeotabImpactTab />
-                  </TabsContent>
-                </>
-              )}
             </div>
           </Tabs>
         ) : (

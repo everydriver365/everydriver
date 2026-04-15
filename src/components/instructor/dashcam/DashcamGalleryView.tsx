@@ -174,7 +174,7 @@ export function DashcamGalleryView({ instructorId, showAllInstructors = false }:
             <h3 className="font-semibold text-lg mb-2">No footage yet</h3>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
               {media.length === 0
-                ? "Dashcam clips will appear here once your Geotab device starts recording."
+                ? "Dashcam clips will appear here once your GPS device starts recording."
                 : "No clips match your current filters."}
             </p>
           </CardContent>

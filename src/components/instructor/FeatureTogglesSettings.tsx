@@ -158,8 +158,7 @@ function TrackingProviderSelector({ instructorId }: { instructorId: string }) {
         <IOSSegmentedControl
           segments={[
             { value: "auto", label: "Auto" },
-            { value: "geotab", label: "Geotab" },
-            { value: "radius", label: "Kinesis" },
+            { value: "radius", label: "Radius" },
           ]}
           value={currentValue}
           onChange={handleChange}
