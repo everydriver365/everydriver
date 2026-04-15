@@ -234,11 +234,30 @@ export default function LovableTracker() {
     });
   }, []);
 
-  const startTracking = () => {
+  const startTracking = async () => {
     if (!selectedPupil) {
       toast.error('Please select a pupil first');
       return;
     }
+
+    // Mark the current telematics session as manually started (if one exists)
+    if (instructorId) {
+      const { data: device } = await supabase
+        .from("gps_devices")
+        .select("current_session_id")
+        .eq("instructor_id", instructorId)
+        .eq("is_active", true)
+        .not("current_session_id", "is", null)
+        .maybeSingle();
+
+      if (device?.current_session_id) {
+        await supabase
+          .from("lesson_telematics")
+          .update({ manually_started: true } as any)
+          .eq("id", device.current_session_id);
+      }
+    }
+
     setPhase('tracking');
     setGpsPoints([]);
     setElapsedTime(0);
