@@ -99,6 +99,7 @@ import { IOSNativeHomeView } from "@/components/instructor/IOSNativeHomeView";
 import { CompactHomeView } from "@/components/instructor/CompactHomeView";
 import { BestMateHomeView } from "@/components/instructor/BestMateHomeView";
 import { MissionControlHomeView } from "@/components/instructor/MissionControlHomeView";
+import { WidgetsHomeView } from "@/components/instructor/WidgetsHomeView";
 
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TodayScheduleAgenda } from "@/components/instructor/TodayScheduleAgenda";
@@ -413,6 +414,11 @@ export function InstructorMobileHome({
         />
       ) : layoutStyle === "mission-control" ? (
         <MissionControlHomeView
+          instructorId={instructorId}
+          instructor={instructor}
+        />
+      ) : layoutStyle === "widgets" ? (
+        <WidgetsHomeView
           instructorId={instructorId}
           instructor={instructor}
         />

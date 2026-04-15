@@ -129,6 +129,20 @@ const designs: DesignOption[] = [
       { label: "Next Lesson + Insight Tiles", height: "h-14", color: "bg-slate-500/8" },
     ],
   },
+  {
+    id: "widgets",
+    name: "Home Widgets",
+    subtitle: "iOS Today View",
+    description: "Widget-sized blocks inspired by iOS Today View. Mixed sizes for stats, next lesson, schedule, and earnings — all at a glance.",
+    tags: ["Widgets", "Mixed Sizes", "Today View"],
+    gradient: "from-sky-500 to-cyan-600",
+    mockupSections: [
+      { label: "Greeting + Date", height: "h-10", color: "bg-gradient-to-r from-sky-500/15 to-cyan-500/15" },
+      { label: "Next Lesson Widget", height: "h-12", color: "bg-sky-500/10" },
+      { label: "2×2 Stat Widgets", height: "h-20", color: "bg-cyan-500/10" },
+      { label: "App Grid", height: "h-14", color: "bg-sky-500/8" },
+    ],
+  },
 ];
 
 function DesignMockup({ design, isSelected }: { design: DesignOption; isSelected: boolean }) {
