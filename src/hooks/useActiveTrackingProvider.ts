@@ -31,7 +31,7 @@ export function useActiveTrackingProvider(instructorId: string | null | undefine
       ]);
 
       const devices = devicesRes.data ?? [];
-      const providers = [...new Set(devices.map((d) => d.tracking_provider as TrackingProvider))];
+      const providers = [...new Set(devices.map((d) => d.tracking_provider as TrackingProvider).filter((p) => p !== "geotab" && p !== null))];
       const preference = (instRes.data?.preferred_tracking_provider as TrackingProvider) ?? null;
 
       if (preference && providers.includes(preference)) {
