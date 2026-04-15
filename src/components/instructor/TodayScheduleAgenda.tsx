@@ -1,10 +1,7 @@
 import { useState } from "react";
-import { format, parse, addMinutes, addDays } from "date-fns";
-import { motion } from "framer-motion";
-import { Clock, MapPin, CalendarX, CheckCircle2 } from "lucide-react";
+import { format, parse, addDays } from "date-fns";
+import { CalendarX, CheckCircle2, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { PupilAvatar } from "./PupilAvatar";
 import { TodayLesson } from "@/hooks/useTodayRemainingLessons";
 
@@ -17,17 +14,14 @@ interface TodayScheduleAgendaProps {
 const fmtTime24 = (t: string) => {
   try { return format(parse(t, "HH:mm:ss", new Date()), "HH:mm"); } catch { return t?.substring(0, 5); }
 };
-const fmtTime12 = (t: string) => {
-  try { return format(parse(t, "HH:mm:ss", new Date()), "h:mm a"); } catch { return t?.substring(0, 5); }
-};
 
-const typeColors: Record<string, string> = {
-  Standard: "bg-primary/10 text-primary",
-  "Test Prep": "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  "Mock Test": "bg-violet-500/10 text-violet-600 dark:text-violet-400",
-  Motorway: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-  Refresher: "bg-pink-500/10 text-pink-600 dark:text-pink-400",
-  "Pass Plus": "bg-sky-500/10 text-sky-600 dark:text-sky-400",
+const typeColors: Record<string, { bg: string; text: string }> = {
+  Standard: { bg: "rgba(10,122,255,0.08)", text: "#0A7AFF" },
+  "Test Prep": { bg: "rgba(217,119,6,0.08)", text: "#D97706" },
+  "Mock Test": { bg: "rgba(139,92,246,0.08)", text: "#8B5CF6" },
+  Motorway: { bg: "rgba(48,209,88,0.08)", text: "#30D158" },
+  Refresher: { bg: "rgba(236,72,153,0.08)", text: "#EC4899" },
+  "Pass Plus": { bg: "rgba(14,165,233,0.08)", text: "#0EA5E9" },
 };
 
 function SummaryBar({ lessons }: { lessons: TodayLesson[] }) {
@@ -35,14 +29,14 @@ function SummaryBar({ lessons }: { lessons: TodayLesson[] }) {
   const totalEarnings = lessons.reduce((s, l) => s + (l.amountDue || 0), 0);
   const paid = lessons.filter(l => l.paymentStatus === "paid").length;
   return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-      <span className="font-semibold text-foreground">{lessons.length} lesson{lessons.length !== 1 ? "s" : ""}</span>
-      <span>•</span>
+    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#8E8E93", padding: "8px 16px 4px" }}>
+      <span style={{ fontWeight: 600, color: "#000" }}>{lessons.length} lesson{lessons.length !== 1 ? "s" : ""}</span>
+      <span>·</span>
       <span>{(totalMins / 60).toFixed(1)}h</span>
-      <span>•</span>
-      <span>£{Math.round(totalEarnings)}</span>
-      <span>•</span>
-      <span className="text-emerald-600 dark:text-emerald-400">{paid}/{lessons.length} paid</span>
+      <span>·</span>
+      <span style={{ color: "#30D158" }}>£{Math.round(totalEarnings)}</span>
+      <span>·</span>
+      <span style={{ color: "#30D158" }}>{paid}/{lessons.length} paid</span>
     </div>
   );
 }
@@ -50,9 +44,9 @@ function SummaryBar({ lessons }: { lessons: TodayLesson[] }) {
 function AgendaList({ lessons }: { lessons: TodayLesson[] }) {
   if (!lessons.length) {
     return (
-      <div className="flex flex-col items-center justify-center py-8 text-center">
-        <CalendarX className="h-10 w-10 text-muted-foreground/40 mb-2" />
-        <p className="text-sm font-medium text-muted-foreground">No lessons scheduled</p>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 16px", textAlign: "center" }}>
+        <CalendarX style={{ height: 36, width: 36, color: "#C7C7CC", marginBottom: 8 }} />
+        <p style={{ margin: 0, fontSize: 14, fontWeight: 500, color: "#8E8E93" }}>No lessons scheduled</p>
       </div>
     );
   }
@@ -60,56 +54,80 @@ function AgendaList({ lessons }: { lessons: TodayLesson[] }) {
   return (
     <div>
       <SummaryBar lessons={lessons} />
-      <div className="space-y-1.5">
+      <div>
         {lessons.map((l, i) => {
           const done = l.status === "completed";
+          const colors = typeColors[l.lessonType] || typeColors.Standard;
           return (
-            <Link key={l.id} to={l.pupilId ? `/instructor/pupils/${l.pupilId}` : "/instructor/pupils"}>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: i * 0.04 }}
-                className={`flex items-stretch gap-3 rounded-2xl p-2.5 transition-colors active:scale-[0.98] ${done ? "bg-muted/50" : "bg-card border shadow-sm"}`}
+            <Link key={l.id} to={l.pupilId ? `/instructor/pupils/${l.pupilId}` : "/instructor/pupils"} style={{ textDecoration: "none" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "10px 16px",
+                  borderBottom: i < lessons.length - 1 ? "0.5px solid #F2F2F7" : "none",
+                  opacity: done ? 0.55 : 1,
+                }}
               >
-                {/* Time column */}
-                <div className="flex flex-col items-center justify-center w-12 shrink-0">
-                  <span className="text-base font-bold text-foreground leading-none">{fmtTime24(l.startTime)}</span>
-                  <span className="text-[10px] text-muted-foreground mt-0.5">{l.durationMinutes}m</span>
+                {/* Time */}
+                <div style={{ width: 44, flexShrink: 0, textAlign: "center" }}>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: "#000", lineHeight: 1 }}>{fmtTime24(l.startTime)}</span>
+                  <div style={{ fontSize: 10, color: "#C7C7CC", marginTop: 2 }}>{l.durationMinutes}m</div>
                 </div>
 
                 {/* Divider */}
-                <div className="w-0.5 bg-primary/20 rounded-full shrink-0" />
+                <div style={{ width: 2, alignSelf: "stretch", borderRadius: 1, backgroundColor: colors.bg, flexShrink: 0 }} />
 
                 {/* Avatar + Details */}
-                <div className="flex items-center gap-2.5 flex-1 min-w-0 py-0.5">
-                  <PupilAvatar
-                    name={l.pupilName}
-                    imageUrl={l.pupilProfileImageUrl}
-                    size="sm"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`font-semibold text-sm truncate ${done ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
+                  <PupilAvatar name={l.pupilName} imageUrl={l.pupilProfileImageUrl} size="sm" />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: "#000",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap" as const,
+                        textDecoration: done ? "line-through" : "none",
+                      }}>
                         {l.pupilName}
                       </span>
-                      {done && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />}
+                      {done && <CheckCircle2 style={{ height: 14, width: 14, color: "#30D158", flexShrink: 0 }} />}
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5 flex-wrap">
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#8E8E93", marginTop: 2, flexWrap: "wrap" as const }}>
                       {l.pickupPostcode && (
-                        <span className="flex items-center gap-0.5">
-                          <MapPin className="h-3 w-3" />{l.pickupPostcode}
+                        <span style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                          <MapPin style={{ height: 10, width: 10 }} />{l.pickupPostcode}
                         </span>
                       )}
-                      <Badge variant="outline" className={`${typeColors[l.lessonType] || typeColors.Standard} border-0 text-[10px] px-1.5 py-0`}>
+                      <span style={{
+                        display: "inline-block",
+                        fontSize: 10,
+                        fontWeight: 500,
+                        padding: "1px 6px",
+                        borderRadius: 4,
+                        backgroundColor: colors.bg,
+                        color: colors.text,
+                      }}>
                         {l.lessonType}
-                      </Badge>
-                      <span className={`ml-auto ${l.paymentStatus === "paid" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-                        £{l.amountDue || 0}
                       </span>
                     </div>
                   </div>
                 </div>
-              </motion.div>
+
+                {/* Price */}
+                <span style={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  flexShrink: 0,
+                  color: l.paymentStatus === "paid" ? "#30D158" : "#D97706",
+                }}>
+                  £{l.amountDue || 0}
+                </span>
+              </div>
             </Link>
           );
         })}
@@ -119,31 +137,60 @@ function AgendaList({ lessons }: { lessons: TodayLesson[] }) {
 }
 
 export function TodayScheduleAgenda({ todayLessons, tomorrowLessons, className = "" }: TodayScheduleAgendaProps) {
+  const [tab, setTab] = useState<"today" | "tomorrow">("today");
+  const activeLessons = tab === "today" ? todayLessons : tomorrowLessons;
+
   return (
-    <div className={className}>
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-base font-bold text-foreground">Schedule</h3>
-        <Link to="/instructor/schedule" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-          See all
-        </Link>
+    <div
+      className={className}
+      style={{
+        backgroundColor: "#FFFFFF",
+        borderRadius: 20,
+        border: "0.5px solid #E5E5EA",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+        overflow: "hidden",
+        fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
+      }}
+    >
+      {/* Header */}
+      <div style={{ padding: "14px 16px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div>
+          <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#000" }}>Today's Schedule</p>
+          <p style={{ margin: "3px 0 0", fontSize: 12, color: "#8E8E93" }}>
+            {format(tab === "today" ? new Date() : addDays(new Date(), 1), "EEE d MMM")} · {activeLessons.length} lesson{activeLessons.length !== 1 ? "s" : ""}
+          </p>
+        </div>
+
+        {/* iOS segmented control */}
+        <div style={{ background: "#F2F2F7", borderRadius: 9, padding: 2, display: "flex" }}>
+          {(["today", "tomorrow"] as const).map((val) => (
+            <button
+              key={val}
+              onClick={() => setTab(val)}
+              style={{
+                border: "none",
+                cursor: "pointer",
+                borderRadius: 7,
+                padding: "5px 14px",
+                fontSize: 12,
+                fontWeight: 600,
+                background: tab === val ? "white" : "transparent",
+                color: tab === val ? "#000" : "#8E8E93",
+                boxShadow: tab === val ? "0 1px 2px rgba(0,0,0,0.12)" : "none",
+                fontFamily: "inherit",
+              }}
+            >
+              {val === "today" ? "Today" : "Tomorrow"}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <Tabs defaultValue="today">
-        <TabsList className="w-full mb-3">
-          <TabsTrigger value="today" className="flex-1 text-xs">
-            Today · {format(new Date(), "EEE d")}
-          </TabsTrigger>
-          <TabsTrigger value="tomorrow" className="flex-1 text-xs">
-            Tomorrow · {format(addDays(new Date(), 1), "EEE d")}
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="today">
-          <AgendaList lessons={todayLessons} />
-        </TabsContent>
-        <TabsContent value="tomorrow">
-          <AgendaList lessons={tomorrowLessons} />
-        </TabsContent>
-      </Tabs>
+      {/* Divider */}
+      <div style={{ height: 0.5, backgroundColor: "#F2F2F7" }} />
+
+      {/* Lesson list */}
+      <AgendaList lessons={activeLessons} />
     </div>
   );
 }
