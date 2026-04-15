@@ -52,7 +52,6 @@ export function ProviderSelectorTile({
 
   const segments = availableProviders
     .map((p) => ({
-    .map((p) => ({
       value: p,
       label: p === "radius" ? "Radius" : p,
     }));
