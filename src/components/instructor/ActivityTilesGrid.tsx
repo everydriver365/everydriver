@@ -1,17 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle2 } from "lucide-react";
-import jobOffersIcon from "@/assets/job-offers-icon.png";
-
-interface ActivityTile {
-  title: string;
-  count: number;
-  iconBg: string;
-  iconColor: string;
-  route: string;
-  useCustomIcon?: boolean;
-  icon?: React.ReactNode;
-}
 
 interface ActivityTilesGridProps {
   pendingJobsCount: number;
@@ -20,29 +9,65 @@ interface ActivityTilesGridProps {
   gapSlotsCount: number;
 }
 
-// iOS-style SVG icons
+// Large, friendly flat SVG icons
+const JobOffersIcon = () => (
+  <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
+    <rect x="4" y="10" width="40" height="30" rx="4" fill="#FFCC00" />
+    <path d="M4 14l20 13L44 14" stroke="#E6B800" strokeWidth="2" fill="none" />
+    <rect x="16" y="6" width="16" height="12" rx="2" fill="#FFFFFF" />
+    <path d="M20 10h8M20 14h5" stroke="#FFCC00" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
 const MessagesIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-    <path d="M21 11.5C21 16.75 16.75 21 11.5 21C9.8 21 8.2 20.6 6.8 19.8L3 21L4.2 17.2C3.4 15.8 3 14.2 3 12.5C3 7.25 7.25 3 12.5 3C17.75 3 21 6.25 21 11.5Z" fill="#FF9500"/>
-    <circle cx="9" cy="12" r="1.2" fill="white"/>
-    <circle cx="12.5" cy="12" r="1.2" fill="white"/>
-    <circle cx="16" cy="12" r="1.2" fill="white"/>
+  <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
+    <path d="M6 12C6 9.79 7.79 8 10 8h28c2.21 0 4 1.79 4 4v20c0 2.21-1.79 4-4 4H16l-8 6V12z" fill="#FF9500" />
+    <circle cx="17" cy="22" r="2.5" fill="white" />
+    <circle cx="24" cy="22" r="2.5" fill="white" />
+    <circle cx="31" cy="22" r="2.5" fill="white" />
   </svg>
 );
 
 const TestsIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-    <rect x="4" y="3" width="16" height="18" rx="2" fill="#007AFF"/>
-    <path d="M8 8h8M8 12h6M8 16h4" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+  <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
+    <rect x="8" y="4" width="32" height="40" rx="5" fill="#007AFF" />
+    <path d="M16 16h16M16 24h12M16 32h8" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
   </svg>
 );
 
 const FillGapsIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-    <rect x="3" y="3" width="18" height="18" rx="3" fill="#FF3B30"/>
-    <path d="M12 8v8M8 12h8" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+  <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
+    <rect x="4" y="4" width="40" height="40" rx="10" fill="#FF6B8A" />
+    <path d="M24 14v20M14 24h20" stroke="white" strokeWidth="3.5" strokeLinecap="round" />
   </svg>
 );
+
+const tileConfig = [
+  {
+    title: "Job Offers",
+    icon: <JobOffersIcon />,
+    route: "/instructor/jobs",
+    key: "pendingJobsCount" as const,
+  },
+  {
+    title: "Messages",
+    icon: <MessagesIcon />,
+    route: "/instructor/messages",
+    key: "unreadMessagesCount" as const,
+  },
+  {
+    title: "Tests",
+    icon: <TestsIcon />,
+    route: "/instructor/test-requests",
+    key: "testRequestsCount" as const,
+  },
+  {
+    title: "Fill Gaps",
+    icon: <FillGapsIcon />,
+    route: "/instructor/gaps",
+    key: "gapSlotsCount" as const,
+  },
+];
 
 export function ActivityTilesGrid({
   pendingJobsCount,
@@ -52,46 +77,17 @@ export function ActivityTilesGrid({
 }: ActivityTilesGridProps) {
   const navigate = useNavigate();
 
-  const tiles: ActivityTile[] = [
-    {
-      title: "Job Offers",
-      count: pendingJobsCount,
-      iconBg: "rgba(255,204,0,0.18)",
-      iconColor: "#FFCC00",
-      route: "/instructor/jobs",
-      useCustomIcon: true,
-    },
-    {
-      title: "Messages",
-      count: unreadMessagesCount,
-      iconBg: "rgba(255,149,0,0.18)",
-      iconColor: "#FF9500",
-      route: "/instructor/messages",
-      icon: <MessagesIcon />,
-    },
-    {
-      title: "Tests",
-      count: testRequestsCount,
-      iconBg: "rgba(0,122,255,0.15)",
-      iconColor: "#007AFF",
-      route: "/instructor/test-requests",
-      icon: <TestsIcon />,
-    },
-    {
-      title: "Fill Gaps",
-      count: gapSlotsCount,
-      iconBg: "rgba(255,59,48,0.15)",
-      iconColor: "#FF3B30",
-      route: "/instructor/gaps",
-      icon: <FillGapsIcon />,
-    },
-  ];
+  const counts: Record<string, number> = {
+    pendingJobsCount,
+    unreadMessagesCount,
+    testRequestsCount,
+    gapSlotsCount,
+  };
 
-  // Always show Messages and Fill Gaps, hide others if count is 0
-  const alwaysShow = ["Messages", "Fill Gaps"];
-  const activeTiles = tiles.filter(t => alwaysShow.includes(t.title) || t.count > 0);
+  // Always show all 4 tiles in 2x2 grid
+  const allZero = Object.values(counts).every(c => c === 0);
 
-  if (activeTiles.length === 0) {
+  if (allZero) {
     return (
       <div className="px-4 mt-3">
         <motion.div
@@ -110,64 +106,64 @@ export function ActivityTilesGrid({
   }
 
   return (
-    <div className="px-4 mt-3">
-      <div className="grid grid-cols-2 gap-[10px]">
-        {activeTiles.map((tile, idx) => (
-          <motion.button
-            key={tile.title}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.04 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => navigate(tile.route)}
-            className="relative flex flex-col items-center justify-center gap-2 py-4"
-            style={{
-              background: "rgba(255,255,255,0.7)",
-              backdropFilter: "blur(16px)",
-              WebkitBackdropFilter: "blur(16px)",
-              borderRadius: 22,
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6), 0 6px 20px rgba(0,0,0,0.04)",
-              fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
-            }}
-          >
-            {/* Badge */}
-            {tile.count > 0 && (
-              <span
-                className="absolute flex items-center justify-center"
-                style={{
-                  top: 8, right: 8,
-                  minWidth: 18, height: 18, borderRadius: 9,
-                  backgroundColor: "#FF3B30",
-                  color: "#fff",
-                  fontSize: 10, fontWeight: 700,
-                  paddingLeft: 4, paddingRight: 4,
-                }}
-              >
-                {tile.count > 99 ? "99+" : tile.count}
-              </span>
-            )}
-
-            {/* Icon */}
-            <div
-              className="flex items-center justify-center"
+    <div className="px-4 mt-3" style={{ fontFamily: "-apple-system, 'SF Pro Text', sans-serif" }}>
+      <div className="grid grid-cols-2 gap-3">
+        {tileConfig.map((tile, idx) => {
+          const count = counts[tile.key];
+          return (
+            <motion.button
+              key={tile.title}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => navigate(tile.route)}
+              className="relative flex flex-col items-center justify-center gap-2.5"
               style={{
-                width: 36, height: 36, borderRadius: 10,
-                backgroundColor: tile.useCustomIcon ? "rgba(255,204,0,0.18)" : tile.iconBg,
+                background: "#FFFFFF",
+                borderRadius: 20,
+                boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                paddingTop: 20,
+                paddingBottom: 16,
+                paddingLeft: 12,
+                paddingRight: 12,
               }}
             >
-              {tile.useCustomIcon ? (
-                <img src={jobOffersIcon} alt="Job Offers" style={{ width: 20, height: 20, objectFit: "contain" }} />
-              ) : (
-                tile.icon
+              {/* Red notification badge */}
+              {count > 0 && (
+                <span
+                  className="absolute flex items-center justify-center"
+                  style={{
+                    top: 10,
+                    right: 10,
+                    minWidth: 22,
+                    height: 22,
+                    borderRadius: 11,
+                    backgroundColor: "#FF3B30",
+                    color: "#fff",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    paddingLeft: 5,
+                    paddingRight: 5,
+                    lineHeight: 1,
+                  }}
+                >
+                  {count > 99 ? "99+" : count}
+                </span>
               )}
-            </div>
 
-            {/* Label */}
-            <span style={{ fontSize: 10, fontWeight: 500, color: "#3C3C43" }}>
-              {tile.title}
-            </span>
-          </motion.button>
-        ))}
+              {/* Large centered icon */}
+              <div className="flex items-center justify-center" style={{ width: 48, height: 48 }}>
+                {tile.icon}
+              </div>
+
+              {/* Label */}
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#3C3C43", letterSpacing: -0.1 }}>
+                {tile.title}
+              </span>
+            </motion.button>
+          );
+        })}
       </div>
     </div>
   );
