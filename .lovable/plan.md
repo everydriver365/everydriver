@@ -1,24 +1,23 @@
 
 
-# Match iPhone Safe Areas to Instructor Header Color
+# Stop Floating Tracking Bar from Auto-Appearing
 
-## What's happening now
-The instructor mobile app header uses a frosted white glass (`bg-white/80 backdrop-blur-xl`), but the iPhone status bar safe area is colored `#142741` (dark navy) via the `theme-color` meta tag. This creates a visual mismatch — the status bar area appears dark while the header below it is white.
+## Problem
+The `FloatingSessionBar` (showing "Tracking · LIVE · 3 min · 0 mph") appears on the homepage whenever the `gps_devices` table has a row with `is_active = true` and a `current_session_id` set. It doesn't verify whether the instructor manually started a tracking session — stale or auto-created data triggers it.
+
+## What stays untouched
+Weather alerts, driving alerts, and all other banners remain as-is.
 
 ## Changes
 
-### 1. `src/components/pwa/DynamicPWAMeta.tsx`
-- Update the `instructor` config's `themeColor` from `"#142741"` to `"#FFFFFF"` so the iPhone status bar area matches the white frosted header.
+### 1. `src/hooks/useActiveSession.ts`
+Add a stricter liveness check: only return an active session if `last_seen_at` is within the last **60 seconds** (not 5 minutes). This prevents stale device data from triggering the bar. The current 5-minute window is far too generous and causes the bar to appear long after any real activity.
 
-### 2. `index.html`
-- Update the default `<meta name="theme-color" content="#142741" />` to `"#FFFFFF"` so it matches on first load before the dynamic script runs.
+Additionally, add a check that `current_session_id` corresponds to a `lesson_telematics` record whose `ended_at` is null — ensuring we only show truly in-progress sessions, not completed ones with stale device state.
 
-### 3. `src/components/instructor/InstructorMobileHeader.tsx`
-- Line 78: the safe area fill div already uses `bg-white/80` — no change needed, it already matches.
-
-### 4. `src/index.css`
-- Line 386-388: Update the `html` background-color rule to also account for the white safe area on instructor routes (the current `hsl(var(--background))` should already resolve to the right value, but we'll verify it works correctly with the white theme-color).
+### 2. `src/components/instructor/FloatingSessionBar.tsx`
+No structural changes needed — it already conditionally renders based on `hasActiveSession`. The fix in the hook will prevent false positives.
 
 ### Result
-The iPhone status bar, notch area, and bottom home indicator will all appear white, seamlessly blending with the frosted glass header and bottom nav.
+The tracking bar will only appear when there is a genuinely active, recently-updated tracking session — not from stale GPS device records. Weather and other alerts remain unchanged.
 
