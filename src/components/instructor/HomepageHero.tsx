@@ -22,6 +22,9 @@ interface HomepageHeroProps {
   monthlyCompleted: number;
   monthlyScheduled: number;
   monthlyTotal: number;
+  weeklyEarnings?: number;
+  unreadMessages?: number;
+  pendingJobs?: number;
 }
 
 // Apple Health-style activity ring
@@ -98,6 +101,9 @@ export function HomepageHero({
   monthlyCompleted,
   monthlyScheduled,
   monthlyTotal,
+  weeklyEarnings = 0,
+  unreadMessages = 0,
+  pendingJobs = 0,
 }: HomepageHeroProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "center" });
   const [selectedIndex, setSelectedIndex] = useState(0);
