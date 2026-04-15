@@ -14,7 +14,7 @@ export function BottomPromoGroup({ className = "" }: { className?: string }) {
         <motion.div
           whileTap={{ backgroundColor: "hsl(var(--muted) / 0.5)" }}
           onClick={() => navigate("/instructor/waiting-room")}
-          className="px-4 py-3 cursor-pointer flex items-center gap-3 border-b border-border"
+          className="px-4 py-3 cursor-pointer flex items-center gap-3"
         >
           <div className="h-8 w-8 rounded-2xl bg-blue-500 flex items-center justify-center shrink-0">
             <Users className="h-4 w-4 text-white" />
@@ -23,6 +23,8 @@ export function BottomPromoGroup({ className = "" }: { className?: string }) {
           <p className="text-[13px] text-muted-foreground mr-1">Weekly</p>
           <ChevronRight className="h-4 w-4 text-muted-foreground/30" />
         </motion.div>
+      </div>
+      <div className={`rounded-2xl bg-card border border-border overflow-hidden mt-3 ${className}`}>
         <motion.div
           whileTap={{ backgroundColor: "hsl(var(--muted) / 0.5)" }}
           onClick={() => setSheetOpen(true)}
