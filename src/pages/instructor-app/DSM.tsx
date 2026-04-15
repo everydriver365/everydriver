@@ -134,8 +134,13 @@ export default function DSM() {
               transition={{ delay: i * 0.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate(tile.route)}
-              className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+              className="relative flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
             >
+              {mockBadges[tile.label] && (
+                <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#FF3B30] flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-white">{mockBadges[tile.label]}</span>
+                </div>
+              )}
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center"
                 style={{ backgroundColor: `${tile.color}14` }}
