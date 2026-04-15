@@ -478,6 +478,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
               } as any);
           }
         }
+      }
 
       toast.success(initialData?.id ? "Instructor updated successfully!" : "Instructor added successfully!");
       onSuccess();
