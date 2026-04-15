@@ -315,7 +315,9 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
 
       {/* Multi-day infinite list */}
       <div className="divide-y divide-border/40">
-        {dayData.map(({ day, dateStr, timeline, allDay }) => {
+        {dayData.map(({ day, dateStr, timeline, allDay }, idx) => {
+          const prevDay = idx > 0 ? dayData[idx - 1].day : null;
+          const showMonthHeader = !prevDay || day.getMonth() !== prevDay.getMonth();
           const today = isToday(day);
           const isEmpty = timeline.length === 0 && allDay.length === 0;
 
