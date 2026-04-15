@@ -28,7 +28,7 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
  import { FloatingSessionTimer } from "@/components/instructor/tracking/FloatingSessionTimer";
 import { DeviceSelectorDropdown } from "@/components/instructor/tracking/DeviceSelectorDropdown";
 
-import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
+import { SatNavLiveMap } from "@/components/instructor/tracking/SatNavLiveMap";
 import { LessonRouteRecorder } from "@/components/instructor/LessonRouteRecorder";
 import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
 
@@ -952,20 +952,10 @@ export default function InstructorLiveSession() {
               isConnected={isConnected}
               isParked={isParked}
               lastSeenLabel={lastSeenLabel}
-              speedKmh={device.last_speed_kmh}
-              speedLimitKmh={device.last_speed_limit_kmh ?? speedLimitKmh}
-              roadName={device.last_road_name}
               isReconnecting={isReconnecting}
               retryCount={retryCount}
               onManualReconnect={manualReconnect}
               trackingProvider={device.tracking_provider}
-              odometerKm={device.last_ecu_odometer_km}
-              dailyDistanceKm={
-                device.last_ecu_odometer_km != null && device.daily_start_ecu_odometer_km != null
-                  ? device.last_ecu_odometer_km - device.daily_start_ecu_odometer_km
-                  : null
-              }
-              ignitionOn={device.last_ignition_status}
             />
 
 
@@ -982,14 +972,22 @@ export default function InstructorLiveSession() {
            </button>
 
            {/* Mini Live Map Preview */}
-           <MiniLiveMap
+           <SatNavLiveMap
               latitude={device.last_latitude}
               longitude={device.last_longitude}
               heading={device.last_heading}
               speedKmh={device.last_speed_kmh}
+              speedLimitKmh={device.last_speed_limit_kmh ?? speedLimitKmh}
+              roadName={device.last_road_name}
               lastSeenAt={device.last_seen_at}
               isActive={isConnected}
               sessionId={device.current_session_id}
+              ignitionOn={device.last_ignition_status}
+              dailyDistanceKm={
+                device.last_ecu_odometer_km != null && device.daily_start_ecu_odometer_km != null
+                  ? device.last_ecu_odometer_km - device.daily_start_ecu_odometer_km
+                  : null
+              }
             />
            {/* Session Start Panel */}
            <SessionStartPanel
