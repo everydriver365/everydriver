@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import TripSummarySheet from "@/components/instructor/TripSummarySheet";
 import { autoCaptureLessonRoute } from "@/hooks/useLessonRouteAutoCapture";
-import LiveTrackingMap from "@/components/instructor/GoogleLiveTrackingMap";
+
 import { DrivingTestStartDialog } from "@/components/instructor/DrivingTestStartDialog";
 import { GPSStatusHero } from "@/components/instructor/tracking/GPSStatusHero";
 import { SessionStartPanel } from "@/components/instructor/tracking/SessionStartPanel";
