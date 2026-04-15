@@ -337,7 +337,8 @@ export function InstructorMobileHome({
        <div
          className="min-h-screen flex flex-col overflow-x-hidden relative"
          style={{
-           backgroundColor: '#F2F3F5',
+           backgroundColor: '#F2F2F7',
+           fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
          }}
         >
 
@@ -437,6 +438,9 @@ export function InstructorMobileHome({
         monthlyCompleted={monthlyGoals?.lessonsCompleted || 0}
         monthlyScheduled={monthlyGoals?.lessonsScheduled || 0}
         monthlyTotal={monthlyGoals?.lessonsThisMonth || 0}
+        weeklyEarnings={weeklyGoals?.earningsThisWeek || 0}
+        unreadMessages={pupilMsgCount || 0}
+        pendingJobs={pendingJobsCount}
       />
 
       {/* Sticky next-up bar */}
@@ -478,14 +482,22 @@ export function InstructorMobileHome({
       <div className="px-4 mt-3">
         <button
           onClick={() => navigate("/instructor/schedule")}
-          className="w-full flex items-center justify-between bg-white rounded-2xl px-4 py-3.5 transition-shadow"
-          style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
+          className="w-full flex items-center justify-between px-4 py-3"
+          style={{
+            backgroundColor: "#FFFFFF",
+            borderRadius: 16,
+            border: "0.5px solid #E5E5EA",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+            fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
+          }}
         >
           <div className="flex items-center gap-3">
-            <img src={calendarIcon} alt="Schedule" className="w-8 h-8" />
-            <span className="text-[15px] font-semibold text-foreground">View Schedule</span>
+            <div className="flex items-center justify-center" style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#0A7AFF" }}>
+              <span style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>{new Date().getDate()}</span>
+            </div>
+            <span style={{ fontSize: 15, fontWeight: 600, color: "#000" }}>View Schedule</span>
           </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          <ChevronRight className="h-4 w-4" style={{ color: "#C7C7CC" }} />
         </button>
       </div>
 

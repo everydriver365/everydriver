@@ -178,44 +178,58 @@ export function NextUpTile({
 
   return (
     <>
-      <div className="w-full overflow-hidden rounded-2xl dark:border dark:border-white/10"
+      <div className="w-full overflow-hidden"
         style={{
-          background: "#fff",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)",
+          background: "#FFFFFF",
+          borderRadius: 24,
+          border: "0.5px solid #E5E5EA",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+          fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
         }}
       >
-        {/* ── HEADER BAND ── */}
-        <div className="px-4 py-3 flex items-center justify-between"
-          style={{ background: "linear-gradient(135deg, hsl(220,52%,16%), hsl(220,52%,24%))" }}>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-white/70">Next Up</span>
+        {/* ── TOP ACCENT BAR ── */}
+        <div style={{ height: 4, backgroundColor: "#0A7AFF" }} />
+
+        {/* ── HEADER ROW ── */}
+        <div className="px-4 pt-3 pb-2 flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <span style={{ width: 7, height: 7, borderRadius: "50%", backgroundColor: "#0A7AFF", display: "inline-block" }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#0A7AFF", letterSpacing: 0.8, textTransform: "uppercase" as const }}>
+              Next Lesson
+            </span>
             {checkInStatus && (
-              <LessonCheckInBadge status={checkInStatus} className="text-[9px] py-0 px-1.5 h-4" />
+              <LessonCheckInBadge status={checkInStatus} className="text-[9px] py-0 px-1.5 h-4 ml-1" />
             )}
-            <span className="text-[10px] font-bold text-white/50">·</span>
-            <span className="text-[11px] font-semibold text-white/90">{getDateLabel()}</span>
           </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }}>
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: minutesUntil <= 5 ? "#ef4444" : minutesUntil <= 15 ? "#fbbf24" : "#34d399" }} />
-            <span className="text-[12px] font-bold text-white">{getCountdownText()}</span>
+          <div
+            className="flex items-center gap-1 px-2.5 py-1"
+            style={{ borderRadius: 12, backgroundColor: "#E8F1FF" }}
+          >
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#0A7AFF" }}>{formatTime24(startTime)}</span>
           </div>
         </div>
 
         {/* ── MAIN CONTENT ── */}
         <button onClick={() => setExpanded(!expanded)} className="w-full text-left">
-          <div className="px-4 py-4">
+          <div className="px-4 py-3">
             <div className="flex items-center gap-3.5">
               {/* Avatar */}
               <div className="relative shrink-0">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg overflow-hidden"
-                  style={{ background: "linear-gradient(135deg, hsl(220,52%,16%), hsl(220,52%,28%))", color: "white" }}>
+                <div className="flex items-center justify-center font-bold text-lg overflow-hidden"
+                  style={{ width: 52, height: 52, borderRadius: "50%", background: "linear-gradient(135deg, #E8622A, #FF8C42)", color: "white" }}>
                   {pupilProfileImage ? (
-                    <img src={pupilProfileImage} alt={pupilName} className="w-full h-full object-cover" />
+                    <img src={pupilProfileImage} alt={pupilName} className="w-full h-full object-cover" style={{ borderRadius: "50%" }} />
                   ) : getInitials(pupilName)}
                 </div>
+                {/* Online dot */}
+                <span style={{
+                  position: "absolute", bottom: 0, right: 0,
+                  width: 14, height: 14, borderRadius: "50%",
+                  backgroundColor: "#30D158", border: "2.5px solid #FFFFFF",
+                }} />
                 {hasUnread && (
-                  <span className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-red-500 text-white font-bold"
-                    style={{ width: 20, height: 20, fontSize: 10, border: "2px solid white" }}>
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center"
+                    style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: "#FF3B30", color: "#fff", fontSize: 10, fontWeight: 700, border: "2px solid #F2F2F7" }}>
                     {pupilUnreadCount}
                   </span>
                 )}
@@ -223,17 +237,10 @@ export function NextUpTile({
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <p className="text-[17px] font-bold truncate" style={{ color: navBlue }}>{pupilName}</p>
-                <div className="flex items-center gap-3 mt-1">
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-[12px] text-muted-foreground">{formatTime24(startTime)}</span>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">·</span>
-                  <span className="text-[12px] text-muted-foreground">{formatDuration()}</span>
-                  <span className="text-[10px] text-muted-foreground">·</span>
-                  <span className="text-[12px] font-semibold" style={{ color: effectiveBalance < 0 ? "#f97316" : "#10b981" }}>£{Math.abs(effectiveBalance).toFixed(0)}</span>
-                </div>
+                <p style={{ fontSize: 17, fontWeight: 700, color: "#000" }} className="truncate">{pupilName}</p>
+                <p style={{ fontSize: 13, color: "#8E8E93", marginTop: 2 }}>
+                  {getDateLabel()} · {formatDuration()} · {getCountdownText()}
+                </p>
               </div>
 
               {/* Expand */}
@@ -241,25 +248,53 @@ export function NextUpTile({
                 <ExpandChevron isExpanded={expanded} />
               </div>
             </div>
-
-            {/* Location */}
-            {(pickupLocation || pickupPostcode) && (
-              <div className="flex items-center gap-2 mt-3 px-3 py-2 rounded-xl" style={{ background: "rgba(21,30,48,0.04)" }}>
-                <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: navBlue }} />
-                <span className="text-[12px] font-medium truncate flex-1" style={{ color: "hsl(220,52%,25%)" }}>
-                  {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
-                </span>
-                {etaLoading ? (
-                  <Loader2 className="h-3 w-3 animate-spin text-muted-foreground shrink-0" />
-                ) : etaMinutes > 0 ? (
-                  <div className="flex items-center gap-1 shrink-0 pl-2">
-                    <span className={`w-1.5 h-1.5 rounded-full ${getTrafficDot()}`} />
-                    <span className="text-[11px] font-bold" style={{ color: navBlue }}>{etaMinutes} min</span>
-                  </div>
-                ) : null}
-              </div>
-            )}
           </div>
+
+          {/* ── STAT ROW ── */}
+          <div style={{ borderTop: "0.5px solid #E5E5EA" }}>
+            <div className="grid grid-cols-3">
+              <div className="flex flex-col items-center py-2.5" style={{ borderRight: "0.5px solid #E5E5EA" }}>
+                <span style={{ fontSize: 10, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Balance</span>
+                <span style={{ fontSize: 15, fontWeight: 700, color: effectiveBalance < 0 ? "#FF9500" : "#30D158", marginTop: 2 }}>
+                  £{Math.abs(effectiveBalance).toFixed(0)}
+                </span>
+              </div>
+              <div className="flex flex-col items-center py-2.5" style={{ borderRight: "0.5px solid #E5E5EA" }}>
+                <span style={{ fontSize: 10, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Duration</span>
+                <span style={{ fontSize: 15, fontWeight: 700, color: "#000", marginTop: 2 }}>{formatDuration()}</span>
+              </div>
+              <div className="flex flex-col items-center py-2.5">
+                <span style={{ fontSize: 10, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>ETA</span>
+                <span style={{ fontSize: 15, fontWeight: 700, color: "#0A7AFF", marginTop: 2 }}>
+                  {etaLoading ? "..." : etaMinutes > 0 ? `${etaMinutes}m` : "—"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── PICK-UP ROW ── */}
+          {(pickupLocation || pickupPostcode) && (
+            <div className="px-4 pb-3 pt-2">
+              <div className="flex items-center gap-3" style={{ backgroundColor: "#F2F2F7", borderRadius: 14, padding: "10px 12px" }}>
+                <div className="flex items-center justify-center shrink-0" style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "#E8F1FF" }}>
+                  <MapPin className="h-4 w-4" style={{ color: "#0A7AFF" }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span style={{ fontSize: 10, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Pick-up</span>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: "#000", marginTop: 1 }} className="truncate">
+                    {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
+                  </p>
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
+                  className="flex items-center justify-center shrink-0"
+                  style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: "#0A7AFF" }}
+                >
+                  <Navigation className="h-4 w-4 text-white" />
+                </button>
+              </div>
+            </div>
+          )}
         </button>
 
         {/* ── RUNNING LATE ALERT ── */}
