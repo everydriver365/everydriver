@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import TripSummarySheet from "@/components/instructor/TripSummarySheet";
 import { autoCaptureLessonRoute } from "@/hooks/useLessonRouteAutoCapture";
-import LiveTrackingMap from "@/components/instructor/GoogleLiveTrackingMap";
+
 import { DrivingTestStartDialog } from "@/components/instructor/DrivingTestStartDialog";
 import { GPSStatusHero } from "@/components/instructor/tracking/GPSStatusHero";
 import { SessionStartPanel } from "@/components/instructor/tracking/SessionStartPanel";
@@ -815,8 +815,26 @@ export default function InstructorLiveSession() {
       <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
         <div className="flex-1 relative overflow-hidden">
 
-          {/* Live Map — self-contained, fetches its own device data */}
-          <LiveTrackingMap className="absolute inset-0" deviceId={device?.id} />
+          {/* Sat-Nav Live Map — same style as preview, fullscreen */}
+          <SatNavLiveMap
+            latitude={device.last_latitude}
+            longitude={device.last_longitude}
+            heading={device.last_heading}
+            speedKmh={device.last_speed_kmh}
+            speedLimitKmh={device.last_speed_limit_kmh ?? speedLimitKmh}
+            roadName={device.last_road_name}
+            lastSeenAt={device.last_seen_at}
+            isActive={isConnected}
+            sessionId={device.current_session_id}
+            ignitionOn={device.last_ignition_status}
+            dailyDistanceKm={
+              device.last_ecu_odometer_km != null && device.daily_start_ecu_odometer_km != null
+                ? device.last_ecu_odometer_km - device.daily_start_ecu_odometer_km
+                : null
+            }
+            fullscreen
+            className="absolute inset-0"
+          />
 
           {/* Floating device selector during active session */}
           {instructor?.id && (
