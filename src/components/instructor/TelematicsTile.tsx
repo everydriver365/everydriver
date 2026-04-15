@@ -50,7 +50,7 @@ export function TelematicsTile() {
         >
           {/* Icon */}
           <div className="shrink-0 flex items-center justify-center overflow-hidden" style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "#F2F2F7" }}>
-            <img src={carShellIcon} alt="Vehicle" style={{ width: "150%", height: "150%", objectFit: "contain" }} />
+            <img src={carHealthIcon} alt="Vehicle" style={{ width: "150%", height: "150%", objectFit: "contain" }} />
           </div>
 
           {/* Centre */}
