@@ -6,7 +6,7 @@ import { fetchGoogleMapsKey, loadGoogleMaps, kmhToMph } from "@/lib/googleMapsLo
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Maximize, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Maximize, Eye, EyeOff, ArrowLeft, Locate, LocateOff } from "lucide-react";
 
 interface FleetDevice {
   id: string;
