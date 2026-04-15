@@ -251,7 +251,7 @@ export function HomepageHero({
                         bottom: -10,
                         width: 140,
                         height: "auto",
-                        opacity: 0.55,
+                        opacity: 0.65,
                       }}
                     />
                     <ActivityRing completed={slide.completed} total={slide.total} />
