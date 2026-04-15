@@ -214,21 +214,21 @@ export function NextUpTile({
             <div className="flex items-center gap-3.5">
               {/* Avatar */}
               <div className="relative shrink-0">
-                <div className="flex items-center justify-center font-bold text-lg overflow-hidden"
-                  style={{ width: 52, height: 52, borderRadius: "50%", background: "linear-gradient(135deg, #E8622A, #FF8C42)", color: "white" }}>
+                <div className="flex items-center justify-center font-bold text-base overflow-hidden"
+                  style={{ width: 48, height: 48, borderRadius: 16, background: "linear-gradient(135deg, #FF6B6B, #FF8E53)", color: "white" }}>
                   {pupilProfileImage ? (
-                    <img src={pupilProfileImage} alt={pupilName} className="w-full h-full object-cover" style={{ borderRadius: "50%" }} />
+                    <img src={pupilProfileImage} alt={pupilName} className="w-full h-full object-cover" style={{ borderRadius: 16 }} />
                   ) : getInitials(pupilName)}
                 </div>
                 {/* Online dot */}
                 <span style={{
-                  position: "absolute", bottom: 0, right: 0,
-                  width: 14, height: 14, borderRadius: "50%",
-                  backgroundColor: "#30D158", border: "2.5px solid #FFFFFF",
+                  position: "absolute", bottom: -1, right: -1,
+                  width: 12, height: 12, borderRadius: "50%",
+                  backgroundColor: "#34C759", border: "2px solid #FFFFFF",
                 }} />
                 {hasUnread && (
                   <span className="absolute -top-1 -right-1 flex items-center justify-center"
-                    style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: "#FF3B30", color: "#fff", fontSize: 10, fontWeight: 700, border: "2px solid #F2F2F7" }}>
+                    style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: "#FF3B30", color: "#fff", fontSize: 9, fontWeight: 700, border: "2px solid #FFFFFF" }}>
                     {pupilUnreadCount}
                   </span>
                 )}
@@ -236,8 +236,8 @@ export function NextUpTile({
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <p style={{ fontSize: 17, fontWeight: 700, color: "#000" }} className="truncate">{pupilName}</p>
-                <p style={{ fontSize: 13, color: "#8E8E93", marginTop: 2 }}>
+                <p style={{ fontSize: 16, fontWeight: 700, color: "#1C1C1E" }} className="truncate">{pupilName}</p>
+                <p style={{ fontSize: 12, color: "#8E8E93", marginTop: 2 }}>
                   {getDateLabel()} · {formatDuration()} · {getCountdownText()}
                 </p>
               </div>
@@ -250,21 +250,21 @@ export function NextUpTile({
           </div>
 
           {/* ── STAT ROW ── */}
-          <div style={{ borderTop: "0.5px solid #E5E5EA" }}>
+          <div className="mx-4 mt-1 mb-2" style={{ borderRadius: 14, backgroundColor: "#F8F9FA" }}>
             <div className="grid grid-cols-3">
-              <div className="flex flex-col items-center py-2.5" style={{ borderRight: "0.5px solid #E5E5EA" }}>
-                <span style={{ fontSize: 10, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Balance</span>
-                <span style={{ fontSize: 15, fontWeight: 700, color: effectiveBalance < 0 ? "#FF9500" : "#30D158", marginTop: 2 }}>
+              <div className="flex flex-col items-center py-2.5">
+                <span style={{ fontSize: 9, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Balance</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: effectiveBalance < 0 ? "#FF9500" : "#34C759", marginTop: 1 }}>
                   £{Math.abs(effectiveBalance).toFixed(0)}
                 </span>
               </div>
-              <div className="flex flex-col items-center py-2.5" style={{ borderRight: "0.5px solid #E5E5EA" }}>
-                <span style={{ fontSize: 10, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Duration</span>
-                <span style={{ fontSize: 15, fontWeight: 700, color: "#000", marginTop: 2 }}>{formatDuration()}</span>
+              <div className="flex flex-col items-center py-2.5" style={{ borderLeft: "1px solid rgba(0,0,0,0.04)", borderRight: "1px solid rgba(0,0,0,0.04)" }}>
+                <span style={{ fontSize: 9, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Duration</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#1C1C1E", marginTop: 1 }}>{formatDuration()}</span>
               </div>
               <div className="flex flex-col items-center py-2.5">
-                <span style={{ fontSize: 10, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>ETA</span>
-                <span style={{ fontSize: 15, fontWeight: 700, color: "#0A7AFF", marginTop: 2 }}>
+                <span style={{ fontSize: 9, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>ETA</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#007AFF", marginTop: 1 }}>
                   {etaLoading ? "..." : etaMinutes > 0 ? `${etaMinutes}m` : "—"}
                 </span>
               </div>
@@ -273,23 +273,23 @@ export function NextUpTile({
 
           {/* ── PICK-UP ROW ── */}
           {(pickupLocation || pickupPostcode) && (
-            <div className="px-4 pb-3 pt-2">
-              <div className="flex items-center gap-3" style={{ backgroundColor: "#F2F2F7", borderRadius: 14, padding: "10px 12px" }}>
-                <div className="flex items-center justify-center shrink-0" style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "#E8F1FF" }}>
-                  <MapPin className="h-4 w-4" style={{ color: "#0A7AFF" }} />
+            <div className="px-4 pb-3">
+              <div className="flex items-center gap-3" style={{ backgroundColor: "#F8F9FA", borderRadius: 14, padding: "10px 12px" }}>
+                <div className="flex items-center justify-center shrink-0" style={{ width: 30, height: 30, borderRadius: 10, backgroundColor: "rgba(0,122,255,0.1)" }}>
+                  <MapPin className="h-3.5 w-3.5" style={{ color: "#007AFF" }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span style={{ fontSize: 10, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Pick-up</span>
-                  <p style={{ fontSize: 13, fontWeight: 500, color: "#000", marginTop: 1 }} className="truncate">
+                  <span style={{ fontSize: 9, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Pick-up</span>
+                  <p style={{ fontSize: 12, fontWeight: 500, color: "#1C1C1E", marginTop: 1 }} className="truncate">
                     {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
                   </p>
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
                   className="flex items-center justify-center shrink-0"
-                  style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: "#0A7AFF" }}
+                  style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: "#007AFF" }}
                 >
-                  <Navigation className="h-4 w-4 text-white" />
+                  <Navigation className="h-3.5 w-3.5 text-white" />
                 </button>
               </div>
             </div>
