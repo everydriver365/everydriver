@@ -125,14 +125,19 @@ async function fetchFromOverpass(
   const filter = requireMaxspeed
     ? '["highway"]["maxspeed"]'
     : '["highway"]';
-  const query = `[out:json][timeout:5];way(around:${radius},${lat},${lng})${filter};out tags 1;`;
-  const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+  const query = `[out:json][timeout:10];way(around:${radius},${lat},${lng})${filter};out tags 1;`;
 
   console.log(`[SpeedLimit] Overpass query (maxspeed=${requireMaxspeed}) for ${lat},${lng}`);
 
-  const res = await fetch(url, {
-    headers: { "User-Agent": "EveryDriverApp/1.0" },
-    signal: AbortSignal.timeout(8000),
+  // Use POST to avoid URL-length issues and improve reliability
+  const res = await fetch("https://overpass-api.de/api/interpreter", {
+    method: "POST",
+    headers: {
+      "User-Agent": "EveryDriverApp/1.0",
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: `data=${encodeURIComponent(query)}`,
+    signal: AbortSignal.timeout(12000),
   });
   if (!res.ok) {
     const body = await res.text();
