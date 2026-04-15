@@ -217,8 +217,8 @@ export default function InstructorPay() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-5 pb-24">
-        {/* ── Vault Card ── */}
+      <div className="space-y-5 pb-24" style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
+         {/* ── Vault Card ── */}
         <motion.section
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -503,9 +503,9 @@ export default function InstructorPay() {
 
         {/* ── Quick Actions Grid ── */}
         <section>
-          <h2 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-0.5">
+          <p className="text-[13px] font-normal text-muted-foreground uppercase tracking-wide px-4 pb-1.5">
             Quick Actions
-          </h2>
+          </p>
           <div className="grid grid-cols-2 gap-3">
             {actions.map((action, i) => {
               const Icon = action.icon;

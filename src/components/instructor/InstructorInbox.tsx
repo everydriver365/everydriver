@@ -2,14 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { format, formatDistanceToNow } from "date-fns";
 import { MessageCircle, Search, User, Plus, ShieldCheck, Megaphone } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
+import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -239,61 +237,61 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
 
   return (
     <>
-      <div className="space-y-4 h-[calc(100vh-8rem)]">
-        <InstructorPageHeader
-          lucideIcon={MessageCircle}
-          title="Messages"
-          subtitle={(totalUnread + adminUnreadCount) > 0 ? `${totalUnread + adminUnreadCount} unread` : undefined}
-        />
-        <Card className="flex-1 overflow-hidden border-border/40">
-        <CardContent className="px-4 pb-4 pt-5 space-y-3">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="space-y-3">
-              <TabsList className="grid grid-cols-2 w-full">
-                <TabsTrigger value="pupils" className="relative text-sm">
-                  Pupils
-                  {totalUnread > 0 && (
-                    <Badge variant="destructive" className="ml-1.5 h-5 px-1.5 text-[10px]">
-                      {totalUnread}
-                    </Badge>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="admin" className="relative text-sm">
-                  Admin
-                  {adminUnreadCount > 0 && (
-                    <Badge variant="destructive" className="ml-1.5 h-5 px-1.5 text-[10px]">
-                      {adminUnreadCount}
-                    </Badge>
-                  )}
-                </TabsTrigger>
-              </TabsList>
-              {activeTab === "pupils" && (
-                <div className="flex gap-1.5 justify-end">
-                  {authInstructor?.broadcast_messaging_enabled !== false && (
-                    <Button size="sm" variant="outline" onClick={() => setShowBroadcast(true)}>
-                      <Megaphone className="h-4 w-4 mr-1" />
-                      Broadcast
-                    </Button>
-                  )}
-                  <Button size="sm" onClick={() => setShowNewChatDialog(true)}>
-                    <Plus className="h-4 w-4 mr-1" />
-                    New
-                  </Button>
-                </div>
+      <div className="space-y-4 h-[calc(100vh-8rem)]" style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
+        {/* iOS inline title */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="h-[29px] w-[29px] rounded-[7px] bg-purple-500/10 flex items-center justify-center">
+              <MessageCircle className="h-3.5 w-3.5 text-purple-600" />
+            </div>
+            <div>
+              <h1 className="text-[17px] font-semibold tracking-[-0.02em]">Messages</h1>
+              {(totalUnread + adminUnreadCount) > 0 && (
+                <p className="text-[13px] text-muted-foreground">{totalUnread + adminUnreadCount} unread</p>
               )}
             </div>
+          </div>
+        </div>
 
-            <TabsContent value="pupils" className="mt-3 space-y-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search conversations..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <ScrollArea className="h-[calc(100vh-18rem)]">
+        {/* iOS Segmented Control for Pupils / Admin */}
+        <IOSSegmentedControl
+          segments={[
+            { value: "pupils", label: `Pupils${totalUnread > 0 ? ` (${totalUnread})` : ""}` },
+            { value: "admin", label: `Admin${adminUnreadCount > 0 ? ` (${adminUnreadCount})` : ""}` },
+          ]}
+          value={activeTab}
+          onChange={setActiveTab}
+        />
+
+        {activeTab === "pupils" && (
+          <div className="space-y-3">
+            <div className="flex gap-1.5 justify-end">
+              {authInstructor?.broadcast_messaging_enabled !== false && (
+                <Button size="sm" variant="outline" className="rounded-[10px]" onClick={() => setShowBroadcast(true)}>
+                  <Megaphone className="h-4 w-4 mr-1" />
+                  Broadcast
+                </Button>
+              )}
+              <Button size="sm" className="rounded-[10px]" onClick={() => setShowNewChatDialog(true)}>
+                <Plus className="h-4 w-4 mr-1" />
+                New
+              </Button>
+            </div>
+
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search conversations..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 rounded-[10px] bg-card border-border/40"
+              />
+            </div>
+
+            {/* Conversation list — iOS grouped style */}
+            <div className="bg-card rounded-[10px] border border-border/40 divide-y divide-border/40 overflow-hidden">
+              <ScrollArea className="h-[calc(100vh-20rem)]">
                 {loading ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
@@ -301,100 +299,101 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
                 ) : filteredConversations.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>No conversations yet</p>
-                    <p className="text-sm mb-4">Start a new chat with one of your pupils</p>
-                    <Button size="sm" variant="outline" onClick={() => setShowNewChatDialog(true)}>
+                    <p className="text-[15px]">No conversations yet</p>
+                    <p className="text-[13px] mb-4">Start a new chat with one of your pupils</p>
+                    <Button size="sm" variant="outline" className="rounded-[10px]" onClick={() => setShowNewChatDialog(true)}>
                       <Plus className="h-4 w-4 mr-1" />
                       Start New Chat
                     </Button>
                   </div>
                 ) : (
-                  <div className="divide-y">
-                    {filteredConversations.map((conversation) => (
-                      <button
-                        key={conversation.id}
-                        onClick={() => setSelectedConversation(conversation)}
-                        className={cn(
-                          "w-full px-4 py-3 text-left hover:bg-muted/50 transition-colors flex items-start gap-3",
-                          conversation.unread_count && conversation.unread_count > 0 && "bg-primary/5"
-                        )}
-                      >
-                        <Avatar className="h-10 w-10 shrink-0">
-                          <AvatarFallback className="bg-primary text-primary-foreground">
-                            {conversation.pupil?.name?.charAt(0) || <User className="h-4 w-4" />}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className={cn(
-                              "font-medium truncate",
-                              conversation.unread_count && conversation.unread_count > 0 && "font-semibold"
-                            )}>
-                              {conversation.pupil?.name || "Unknown"}
-                            </span>
-                            <span className="text-xs text-muted-foreground shrink-0">
-                              {formatDistanceToNow(new Date(conversation.last_message_at), { addSuffix: true })}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between gap-2 mt-0.5">
-                            <p className={cn(
-                              "text-sm truncate",
-                              conversation.unread_count && conversation.unread_count > 0 
-                                ? "text-foreground" 
-                                : "text-muted-foreground"
-                            )}>
-                              {conversation.last_message_preview || "No messages yet"}
-                            </p>
-                            {conversation.unread_count && conversation.unread_count > 0 && (
-                              <Badge variant="destructive" className="shrink-0 h-5 min-w-[20px] px-1.5">
-                                {conversation.unread_count}
-                              </Badge>
-                            )}
-                          </div>
+                  filteredConversations.map((conversation) => (
+                    <button
+                      key={conversation.id}
+                      onClick={() => setSelectedConversation(conversation)}
+                      className={cn(
+                        "w-full px-4 py-3 text-left active:bg-muted/50 transition-colors flex items-center gap-3",
+                        conversation.unread_count && conversation.unread_count > 0 && "bg-primary/5"
+                      )}
+                    >
+                      <Avatar className="h-10 w-10 shrink-0">
+                        <AvatarFallback className="bg-primary text-primary-foreground text-[13px]">
+                          {conversation.pupil?.name?.charAt(0) || <User className="h-4 w-4" />}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className={cn(
+                            "text-[15px] truncate",
+                            conversation.unread_count && conversation.unread_count > 0 ? "font-semibold" : "font-medium"
+                          )}>
+                            {conversation.pupil?.name || "Unknown"}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground shrink-0">
+                            {formatDistanceToNow(new Date(conversation.last_message_at), { addSuffix: true })}
+                          </span>
                         </div>
-                      </button>
-                    ))}
-                  </div>
+                        <div className="flex items-center justify-between gap-2 mt-0.5">
+                          <p className={cn(
+                            "text-[13px] truncate",
+                            conversation.unread_count && conversation.unread_count > 0 
+                              ? "text-foreground" 
+                              : "text-muted-foreground"
+                          )}>
+                            {conversation.last_message_preview || "No messages yet"}
+                          </p>
+                          {conversation.unread_count && conversation.unread_count > 0 && (
+                            <Badge variant="destructive" className="shrink-0 h-5 min-w-[20px] px-1.5 text-[10px]">
+                              {conversation.unread_count}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))
                 )}
               </ScrollArea>
-            </TabsContent>
+            </div>
+          </div>
+        )}
 
-            <TabsContent value="admin" className="mt-3 space-y-3">
+        {activeTab === "admin" && (
+          <div className="space-y-3">
+            <div className="bg-card rounded-[10px] border border-border/40 overflow-hidden">
               <button
                 onClick={() => setShowAdminChat(true)}
-                className="w-full p-4 rounded-2xl border hover:bg-muted/50 transition-colors flex items-center gap-4"
+                className="w-full px-4 py-3 flex items-center gap-3 active:bg-muted/50 transition-colors"
               >
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <ShieldCheck className="h-6 w-6 text-primary" />
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <ShieldCheck className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1 text-left">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold">EveryDriver Support</h3>
+                    <h3 className="text-[15px] font-semibold">EveryDriver Support</h3>
                     {adminUnreadCount > 0 && (
-                      <Badge variant="destructive">{adminUnreadCount}</Badge>
+                      <Badge variant="destructive" className="text-[10px]">{adminUnreadCount}</Badge>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-[13px] text-muted-foreground">
                     Contact the admin team for help
                   </p>
                 </div>
               </button>
-              <div className="p-4 rounded-2xl bg-muted/50">
-                <h4 className="font-medium mb-2">Need Help?</h4>
-                <p className="text-sm text-muted-foreground">
-                  Message our admin team for assistance with:
-                </p>
-                <ul className="text-sm text-muted-foreground mt-2 space-y-1">
-                  <li>• Account or billing questions</li>
-                  <li>• Technical issues</li>
-                  <li>• Feature requests</li>
-                  <li>• General enquiries</li>
-                </ul>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+            </div>
+            <div className="bg-card rounded-[10px] border border-border/40 p-4">
+              <h4 className="text-[15px] font-medium mb-2">Need Help?</h4>
+              <p className="text-[13px] text-muted-foreground">
+                Message our admin team for assistance with:
+              </p>
+              <ul className="text-[13px] text-muted-foreground mt-2 space-y-1">
+                <li>• Account or billing questions</li>
+                <li>• Technical issues</li>
+                <li>• Feature requests</li>
+                <li>• General enquiries</li>
+              </ul>
+            </div>
+          </div>
+        )}
 
       {/* New Chat Dialog */}
       <Dialog open={showNewChatDialog} onOpenChange={setShowNewChatDialog}>

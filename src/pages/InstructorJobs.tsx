@@ -199,12 +199,16 @@ export default function InstructorJobs() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4">
-        <InstructorPageHeader
-          lucideIcon={Briefcase}
-          title="Available Jobs"
-          action={<Badge variant="secondary">{jobs.length} open</Badge>}
-        />
+      <div className="space-y-4 pb-24" style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="h-[29px] w-[29px] rounded-[7px] bg-emerald-500/10 flex items-center justify-center">
+              <Briefcase className="h-3.5 w-3.5 text-emerald-600" />
+            </div>
+            <h1 className="text-[17px] font-semibold tracking-[-0.02em]">Available Jobs</h1>
+          </div>
+          <Badge variant="secondary" className="rounded-full">{jobs.length} open</Badge>
+        </div>
 
         {loading ? (
           <div className="text-center py-8 text-muted-foreground">Loading jobs...</div>

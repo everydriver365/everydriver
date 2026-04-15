@@ -1,6 +1,6 @@
 import { ExpenseTracker } from "@/components/instructor/ExpenseTracker";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
-import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
+import { IOSPageWrapper, IOSPageTitle } from "@/components/instructor/IOSPageWrapper";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Receipt } from "lucide-react";
 
@@ -20,14 +20,15 @@ export default function InstructorExpenses() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4">
-        <InstructorPageHeader
-          lucideIcon={Receipt}
+      <IOSPageWrapper>
+        <IOSPageTitle
+          icon={<Receipt className="h-3.5 w-3.5 text-orange-600" />}
+          iconBg="bg-orange-500/10"
           title="Expenses"
           subtitle="Track expenses for Xero sync"
         />
         <ExpenseTracker instructorId={instructorId} />
-      </div>
+      </IOSPageWrapper>
     </InstructorPortalLayout>
   );
 }

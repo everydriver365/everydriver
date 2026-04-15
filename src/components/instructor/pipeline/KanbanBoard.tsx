@@ -159,8 +159,8 @@ export function KanbanBoard({ instructorId }: KanbanBoardProps) {
           return (
             <div
               key={stage.value}
-              className={`min-w-[260px] w-[260px] shrink-0 snap-start rounded-2xl border p-3 transition-colors ${
-                dragOverStage === stage.value ? "bg-primary/5 border-primary/30" : "bg-muted/30"
+              className={`min-w-[260px] w-[260px] shrink-0 snap-start rounded-[10px] p-3 transition-colors ${
+                dragOverStage === stage.value ? "bg-primary/5 border-primary/30 border" : "bg-card border border-border/40"
               }`}
               onDragOver={(e) => { e.preventDefault(); setDragOverStage(stage.value); }}
               onDragLeave={() => setDragOverStage(null)}
@@ -168,8 +168,8 @@ export function KanbanBoard({ instructorId }: KanbanBoardProps) {
             >
               <div className="flex items-center gap-2 mb-3">
                 <div className={`h-2.5 w-2.5 rounded-full ${stage.color}`} />
-                <span className="text-sm font-medium">{stage.label}</span>
-                <Badge variant="outline" className="ml-auto text-xs">{stageLeads.length}</Badge>
+                <span className="text-[13px] font-medium">{stage.label}</span>
+                <Badge variant="outline" className="ml-auto text-[11px]">{stageLeads.length}</Badge>
               </div>
               <div className="space-y-2 min-h-[80px]">
                 {stageLeads.map((lead) => (

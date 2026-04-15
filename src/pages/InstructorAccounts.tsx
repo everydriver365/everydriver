@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
 import { AccountSettings } from "@/components/instructor/AccountSettings";
 import { EarningsCalculator } from "@/components/instructor/EarningsCalculator";
 import { ExpenseCategoryChart } from "@/components/instructor/ExpenseCategoryChart";
@@ -61,47 +62,28 @@ export default function InstructorAccounts() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4 pb-24">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-              <Wallet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            Accounts
-          </h1>
+      <div className="space-y-4 pb-24" style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
+        <div className="flex items-center gap-2.5">
+          <div className="h-[29px] w-[29px] rounded-[7px] bg-emerald-500/10 flex items-center justify-center">
+            <Wallet className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <h1 className="text-[17px] font-semibold tracking-[-0.02em]">Accounts</h1>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7">
-            <TabsTrigger value="earnings" className="gap-1.5 text-xs md:text-sm">
-              <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline">Earnings</span>
-            </TabsTrigger>
-            <TabsTrigger value="expenses" className="gap-1.5 text-xs md:text-sm">
-              <PieChart className="h-4 w-4" />
-              <span className="hidden sm:inline">Expenses</span>
-            </TabsTrigger>
-            <TabsTrigger value="mileage" className="gap-1.5 text-xs md:text-sm">
-              <Car className="h-4 w-4" />
-              <span className="hidden sm:inline">Mileage</span>
-            </TabsTrigger>
-            <TabsTrigger value="tax" className="gap-1.5 text-xs md:text-sm">
-              <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">Tax Report</span>
-            </TabsTrigger>
-            <TabsTrigger value="export" className="gap-1.5 text-xs md:text-sm">
-              <FileSpreadsheet className="h-4 w-4" />
-              <span className="hidden sm:inline">Export</span>
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="gap-1.5 text-xs md:text-sm">
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Settings</span>
-            </TabsTrigger>
-            <TabsTrigger value="annual" className="gap-1.5 text-xs md:text-sm">
-              <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Annual</span>
-            </TabsTrigger>
-          </TabsList>
+          <IOSSegmentedControl
+            segments={[
+              { value: "earnings", label: "Earnings" },
+              { value: "expenses", label: "Expenses" },
+              { value: "mileage", label: "Mileage" },
+              { value: "tax", label: "Tax" },
+              { value: "export", label: "Export" },
+              { value: "settings", label: "Settings" },
+              { value: "annual", label: "Annual" },
+            ]}
+            value={activeTab}
+            onChange={setActiveTab}
+          />
 
           <TabsContent value="earnings">
             <EarningsCalculator instructorId={instructor.id} />
