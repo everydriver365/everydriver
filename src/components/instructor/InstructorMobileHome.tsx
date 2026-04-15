@@ -347,7 +347,7 @@ export function InstructorMobileHome({
        <div
          className="min-h-screen flex flex-col overflow-x-hidden relative"
          style={{
-           backgroundColor: '#F2F2F7',
+           background: "linear-gradient(180deg, #F2F2F7 0%, #E5E5EA 100%)",
            fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
          }}
         >
@@ -505,18 +505,19 @@ export function InstructorMobileHome({
           onClick={() => navigate("/instructor/schedule")}
           className="w-full flex items-center justify-between px-4 py-3"
           style={{
-            backgroundColor: "#FFFFFF",
-            borderRadius: 16,
-            border: "0.5px solid #E5E5EA",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+            background: "rgba(255,255,255,0.7)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            borderRadius: 22,
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6), 0 6px 20px rgba(0,0,0,0.04)",
             fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
           }}
         >
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center" style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#0A7AFF" }}>
+            <div className="flex items-center justify-center" style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#007AFF" }}>
               <span style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>{new Date().getDate()}</span>
             </div>
-            <span style={{ fontSize: 15, fontWeight: 600, color: "#000" }}>View Schedule</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: "#1C1C1E" }}>View Schedule</span>
           </div>
           <ChevronRight className="h-4 w-4" style={{ color: "#C7C7CC" }} />
         </button>
