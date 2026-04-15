@@ -1,31 +1,19 @@
 
 
-## Investigation Results: Colors Are Syncing Correctly
+# Make Hero & Activity Tiles Match Quick Access Elevation
 
-### What I found
+## What's changing
+The "Good evening" hero card and the 4 activity tiles (Job Offers, Messages, Tests, Fill Gaps) currently have a flat, subtle shadow (`0 1px 3px rgba(0,0,0,0.08)` + border). The Quick Access tiles use a more elevated, prominent shadow that makes them "pop". We'll apply that same shadow style to the hero and activity tiles.
 
-The database has **654 events**, all with proper Google Calendar colors:
-- `#039BE5` (Peacock blue) — 223 events
-- `#F6BF26` (Banana yellow) — 285 events  
-- `#33B679` (Sage green) — 72 events
-- `#F4511E` (Tangerine) — 62 events
-- `#E67C73` (Flamingo) — 7 events
-- `#D50000` (Tomato red) — 5 events
+## Changes
 
-The edge function is deployed and confirmed working (logs show "Calendar default color: #039BE5"). The frontend (`MultiDayScheduleView.tsx`) correctly reads `evt.color` and applies it as `backgroundColor`.
+### 1. `src/components/instructor/HomepageHero.tsx`
+- Update the hero card's `boxShadow` from `"0 1px 3px rgba(0,0,0,0.08)"` to the Quick Access style: `"inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)"`
+- Remove the `border: "0.5px solid #E5E5EA"` to match the borderless Quick Access look
 
-### Possible explanations for "colors have not changed"
+### 2. `src/components/instructor/ActivityTilesGrid.tsx`
+- Update each activity tile's `boxShadow` from `"0 1px 3px rgba(0,0,0,0.08)"` to the same elevated shadow
+- Remove the `border: "0.5px solid #E5E5EA"` from each tile
 
-1. **Browser cache** — the page may be showing stale data. A hard refresh (pull-to-refresh or reload) should show updated colors.
-
-2. **Lesson vs external event confusion** — Internal lessons (paid lessons, test prep, etc.) use **hardcoded app colors** (blue, amber, etc.) and are **not** colored by Google Calendar. Only the **external Google Calendar events** (synced items) show Google colors. This is by design.
-
-3. **No visible change needed** — If you're expecting something specific to look different, could you clarify which events or which screen you're looking at? A screenshot would help.
-
-### If you want lessons to also use Google Calendar colors
-
-Currently lessons use internal type-based colors. If you want to override these with the instructor's `calendarColors` settings or Google Calendar colors, that would require a separate change to the lesson rendering logic in `MultiDayScheduleView.tsx`.
-
-### Recommended next step
-Try refreshing the schedule page and confirm whether the **external Google Calendar events** (non-lesson items like "Lotty : College AM", "National Speed Awareness") are showing their correct colors (yellow, blue, orange, etc.).
+Both components will then visually match the SwipeableQuickAccess tiles' elevated card style.
 
