@@ -75,6 +75,7 @@ const sidebarGroups: SidebarGroup[] = [
       { key: "courses", label: "Courses", icon: BookOpen },
       { key: "upsells", label: "Upsells", icon: Tag },
       { key: "discount-codes", label: "Discount Codes", icon: Tag },
+      { key: "events", label: "Events", icon: Gift },
     ],
   },
   {
