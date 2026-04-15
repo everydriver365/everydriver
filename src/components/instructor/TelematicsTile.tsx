@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Activity, ChevronDown, ChevronUp, Fuel, Thermometer, Gauge, AlertTriangle, CheckCircle2, Wifi, WifiOff } from "lucide-react";
+import { Activity, ChevronRight, ChevronDown, ChevronUp, Fuel, Thermometer, Gauge, AlertTriangle, CheckCircle2, WifiOff } from "lucide-react";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { formatDistanceToNow } from "date-fns";
 
@@ -10,31 +10,17 @@ export function TelematicsTile() {
   const { devices, vehicles } = useVehicleHealth();
   const [expanded, setExpanded] = useState(false);
 
-  // preferredDevice is already sorted first by the hook
   const primaryDevice = devices?.[0];
   const primaryVehicle = primaryDevice?.vehicle || vehicles?.[0];
-
   const isConnected = primaryDevice?.is_connected ?? false;
   const hasData = !!primaryDevice;
-
   const fuelPercent = primaryDevice?.last_fuel_percent;
   const coolantTemp = primaryDevice?.last_coolant_temp_c;
   const batteryVoltage = primaryDevice?.last_battery_voltage;
   const faultCodes = primaryDevice?.last_fault_codes;
   const lastSeen = primaryDevice?.last_seen_at;
   const odometerKm = primaryDevice?.last_ecu_odometer_km;
-
   const hasFaults = faultCodes && faultCodes.length > 0;
-  const healthStatus = hasFaults ? "warning" : isConnected ? "good" : "offline";
-
-  const statusConfig = {
-    good: { color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10", icon: CheckCircle2, label: "Healthy" },
-    warning: { color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10", icon: AlertTriangle, label: `${faultCodes?.length} fault${(faultCodes?.length || 0) !== 1 ? "s" : ""}` },
-    offline: { color: "text-muted-foreground", bg: "bg-muted/50", icon: WifiOff, label: "Offline" },
-  };
-
-  const status = statusConfig[healthStatus];
-  const StatusIcon = status.icon;
 
   const vehicleLabel = primaryVehicle
     ? `${primaryVehicle.registration || ""}${primaryVehicle.make ? ` · ${primaryVehicle.make}` : ""}${primaryVehicle.model ? ` ${primaryVehicle.model}` : ""}`.trim()
@@ -42,39 +28,45 @@ export function TelematicsTile() {
 
   return (
     <div className="px-4 mt-3">
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="overflow-hidden bg-card dark:bg-[#1C1C1E]"
+      <div
         style={{
+          backgroundColor: "#FFFFFF",
           borderRadius: 16,
-          boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 4px 12px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)",
+          border: "0.5px solid #E5E5EA",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+          overflow: "hidden",
+          fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
         }}
       >
-        {/* Main row — always visible */}
         <button
-          onClick={() => setExpanded((v) => !v)}
-          className="w-full flex items-center gap-3 p-3 text-left rounded-2xl"
+          onClick={() => setExpanded(v => !v)}
+          className="w-full flex items-center gap-3 px-4 py-3 text-left"
         >
-          <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${status.bg}`}>
-            <Activity className={`h-4.5 w-4.5 ${status.color}`} />
+          {/* Icon */}
+          <div
+            className="flex items-center justify-center shrink-0"
+            style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#F2F2F7" }}
+          >
+            <Activity className="h-4 w-4" style={{ color: "#8E8E93" }} />
           </div>
+
+          {/* Centre */}
           <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-semibold text-foreground leading-tight">Telematics</p>
-            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5 truncate">
-              {vehicleLabel}
-            </p>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "#000" }}>Telematics</p>
+            <p style={{ fontSize: 12, color: "#8E8E93" }} className="truncate">{vehicleLabel}</p>
           </div>
+
+          {/* Right */}
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className={`text-[11px] font-semibold ${status.color} flex items-center gap-1`}>
-              <StatusIcon className="h-3.5 w-3.5" />
-              {status.label}
-            </span>
-            {expanded ? (
-              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            {isConnected ? (
+              <CheckCircle2 className="h-3.5 w-3.5" style={{ color: "#30D158" }} />
             ) : (
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              <WifiOff className="h-3.5 w-3.5" style={{ color: "#8E8E93" }} />
             )}
+            <span style={{ fontSize: 12, color: "#8E8E93", fontWeight: 500 }}>
+              {isConnected ? "Online" : "Offline"}
+            </span>
+            <ChevronRight className="h-4 w-4" style={{ color: "#C7C7CC" }} />
           </div>
         </button>
 
@@ -88,8 +80,7 @@ export function TelematicsTile() {
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className="px-3 pb-3 space-y-2">
-                {/* Health metrics grid */}
+              <div style={{ borderTop: "0.5px solid #E5E5EA" }} className="px-4 pb-3 pt-3 space-y-2">
                 {hasData ? (
                   <>
                     <div className="grid grid-cols-3 gap-2">
@@ -113,30 +104,25 @@ export function TelematicsTile() {
                       />
                     </div>
 
-                    {/* Fault codes */}
                     {hasFaults && (
-                      <div className="bg-amber-500/10 rounded-xl p-2.5">
-                        <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 mb-1">Active Faults</p>
+                      <div style={{ backgroundColor: "rgba(217,119,6,0.1)", borderRadius: 12, padding: 10 }}>
+                        <p style={{ fontSize: 11, fontWeight: 600, color: "#D97706", marginBottom: 4 }}>Active Faults</p>
                         {faultCodes.slice(0, 3).map((fault, i) => (
-                          <p key={i} className="text-[10px] text-amber-600 dark:text-amber-300 truncate">
+                          <p key={i} style={{ fontSize: 10, color: "#D97706" }} className="truncate">
                             {fault.code}: {fault.description}
                           </p>
                         ))}
                       </div>
                     )}
 
-                    {/* Footer info */}
                     <div className="flex items-center justify-between pt-1">
-                      <p className="text-[10px] text-muted-foreground">
+                      <p style={{ fontSize: 10, color: "#8E8E93" }}>
                         {odometerKm != null && `${Math.round(odometerKm).toLocaleString()} km`}
                         {lastSeen && ` · ${formatDistanceToNow(new Date(lastSeen), { addSuffix: true })}`}
                       </p>
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate("/instructor/fleet-dashboard");
-                        }}
-                        className="text-[11px] font-bold text-primary"
+                        onClick={(e) => { e.stopPropagation(); navigate("/instructor/fleet-dashboard"); }}
+                        style={{ fontSize: 11, fontWeight: 700, color: "#0A7AFF" }}
                       >
                         Full Dashboard →
                       </button>
@@ -144,13 +130,10 @@ export function TelematicsTile() {
                   </>
                 ) : (
                   <div className="text-center py-3">
-                    <p className="text-[12px] text-muted-foreground">No telematics device connected</p>
+                    <p style={{ fontSize: 12, color: "#8E8E93" }}>No telematics device connected</p>
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate("/instructor/gps-setup");
-                      }}
-                      className="text-[12px] font-semibold text-primary mt-1"
+                      onClick={(e) => { e.stopPropagation(); navigate("/instructor/gps-setup"); }}
+                      style={{ fontSize: 12, fontWeight: 600, color: "#0A7AFF", marginTop: 4 }}
                     >
                       Set up tracking →
                     </button>
@@ -160,21 +143,25 @@ export function TelematicsTile() {
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
     </div>
   );
 }
 
 function MetricCard({ icon, label, value, warning }: { icon: React.ReactNode; label: string; value: string; warning: boolean }) {
   return (
-    <div className={`rounded-xl p-2 text-center ${warning ? "bg-red-500/10" : "bg-white/60 dark:bg-white/5"}`}>
-      <div className={`flex justify-center mb-1 ${warning ? "text-red-500" : "text-muted-foreground"}`}>
+    <div
+      className="text-center"
+      style={{
+        borderRadius: 12, padding: 8,
+        backgroundColor: warning ? "rgba(220,38,38,0.08)" : "#F9F9FB",
+      }}
+    >
+      <div className="flex justify-center mb-1" style={{ color: warning ? "#DC2626" : "#8E8E93" }}>
         {icon}
       </div>
-      <p className={`text-[14px] font-bold leading-none ${warning ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
-        {value}
-      </p>
-      <p className="text-[9px] text-muted-foreground mt-0.5">{label}</p>
+      <p style={{ fontSize: 14, fontWeight: 700, color: warning ? "#DC2626" : "#000" }}>{value}</p>
+      <p style={{ fontSize: 9, color: "#8E8E93", marginTop: 2 }}>{label}</p>
     </div>
   );
 }
