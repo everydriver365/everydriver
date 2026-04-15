@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw, CalendarRange } from "lucide-react";
 import { ScheduleSkeleton } from "@/components/ui/skeletons/ScheduleSkeleton";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
-import { NewMobileScheduleView } from "@/components/instructor/NewMobileScheduleView";
+import { MultiDayScheduleView } from "@/components/instructor/MultiDayScheduleView";
 import { MobileMonthCalendarView } from "@/components/instructor/MobileMonthCalendarView";
 import { InstructorCalendar } from "@/components/instructor/InstructorCalendar";
 import { GoogleStyleScheduleView } from "@/components/instructor/GoogleStyleScheduleView";
@@ -230,7 +230,7 @@ export default function InstructorSchedule() {
 
 
         {viewMode === 'list' ? (
-          <NewMobileScheduleView instructorId={instructorId} />
+          <MultiDayScheduleView instructorId={instructorId} />
         ) : viewMode === 'month' ? (
           <MobileMonthCalendarView instructorId={instructorId} />
         ) : viewMode === 'schedule' ? (
