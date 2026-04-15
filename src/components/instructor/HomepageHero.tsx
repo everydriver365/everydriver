@@ -130,7 +130,7 @@ export function HomepageHero({
       label: "This week",
       iconBg: "rgba(142,142,147,0.12)",
       iconColor: "#8E8E93",
-      valueBg: "transparent",
+      tileBg: "rgba(142,142,147,0.08)",
       highlight: false,
       route: "/instructor/schedule",
     },
@@ -140,7 +140,7 @@ export function HomepageHero({
       label: "Earnings",
       iconBg: "rgba(52,199,89,0.14)",
       iconColor: "#34C759",
-      valueBg: "transparent",
+      tileBg: "rgba(52,199,89,0.08)",
       highlight: false,
       route: "/instructor/income",
     },
@@ -150,7 +150,7 @@ export function HomepageHero({
       label: "Messages",
       iconBg: "rgba(0,122,255,0.12)",
       iconColor: "#007AFF",
-      valueBg: "transparent",
+      tileBg: "rgba(0,122,255,0.07)",
       highlight: false,
       route: "/instructor/messages",
     },
@@ -160,7 +160,7 @@ export function HomepageHero({
       label: "Job offers",
       iconBg: "rgba(0,122,255,1)",
       iconColor: "#fff",
-      valueBg: "#007AFF",
+      tileBg: "#007AFF",
       highlight: pendingJobs > 0,
       route: "/instructor/jobs",
     },
@@ -303,7 +303,7 @@ export function HomepageHero({
               onClick={() => navigate(stat.route)}
               className="flex flex-col items-center rounded-2xl py-2 px-1 cursor-pointer"
               style={{
-                backgroundColor: stat.highlight ? "#007AFF" : "rgba(0,0,0,0.02)",
+                backgroundColor: stat.highlight ? stat.tileBg : stat.tileBg,
                 borderRadius: 16,
               }}
             >
