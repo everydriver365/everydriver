@@ -179,7 +179,9 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/fleet-dashboard" element={<Gated feature="telematics" label="Telematics Dashboard"><InstructorFleetDashboard /></Gated>} />
     <Route path="/instructor/live" element={<Gated feature="telematics" label="Live Session"><InstructorLiveSession /></Gated>} />
     <Route path="/instructor/tracking" element={<Gated feature="telematics" label="GPS Tracking"><InstructorLiveSession /></Gated>} />
-    
+    <Route path="/instructor/fleet-map" element={<Gated feature="telematics" label="Fleet Map"><InstructorFleetMap /></Gated>} />
+    <Route path="/instructor/overspeed-history" element={<Gated feature="telematics" label="Overspeed History"><InstructorOverspeedHistory /></Gated>} />
+
     <Route path="/instructor/settings/gps" element={<Gated feature="telematics" label="GPS Setup"><InstructorGPSSetup /></Gated>} />
     <Route path="/instructor/settings/tracking" element={<Gated feature="telematics" label="GPS Setup"><InstructorGPSSetup /></Gated>} />
     
