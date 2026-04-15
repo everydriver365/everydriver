@@ -1,33 +1,40 @@
 
 
-## Add Dashcam Portal Links in Four Places
+## Fix: Blue Polyline Not Keeping Up With Vehicle Marker
 
-Add a "View Dashcam Footage" link/button that opens `https://www.kinesisfleetpro.com/#/login;next=%2Fstatus` in four locations.
+The polyline trail lags behind the vehicle arrow because of two issues in `MiniLiveMap.tsx`:
 
-### 1. Settings — New tile in "Tracking & Routes" category
+### Problem 1 — Overly aggressive deduplication
+The threshold `0.00005` degrees (~5.5m) filters out legitimate movement points at low speeds or short poll intervals, causing the line to stall while the marker moves ahead.
 
-**File: `src/pages/InstructorSettings.tsx`**
-- Add a new tile to the `allTiles` array in the `tracking` category:
-  - `id: "dashcam-portal"`, title: "Dashcam Portal", description: "View footage on Kinesis Fleet Pro", icon: `Camera`, category: `"tracking"`
-- In the tile content renderer, add a special case for `"dashcam-portal"` that renders the external link button (similar to how other tiles render custom content), opening the Kinesis URL in a new tab
+### Problem 2 — Path not connected after historical trail load
+When historical GPS points are loaded from the session, the last historical point may be far from the current live position. New points append to `pathRef` but the gap between the last historical point and the first live update creates a visual disconnect.
 
-### 2. Home quick actions grid — New tile
+### Changes — Single file: `src/components/instructor/tracking/MiniLiveMap.tsx`
 
-**File: `src/components/instructor/HomeQuickActions.tsx`**
-- Add a new action entry: `{ id: "dashcam", label: "Dashcam", subtitle: "View footage", icon: Camera, iconColor: "text-slate-600" }` with an `onClick` handler that opens the Kinesis URL via `window.open`
-- Import `Camera` from lucide-react
+1. **Lower the dedup threshold** from `0.00005` to `0.000005` (~0.5m) — effectively always append unless truly stationary
+2. **After loading historical trail, bridge the gap** — append the current live position to the end of the loaded trail so the polyline connects to the marker immediately
+3. **Always append the current position on every update** when the marker moves, ensuring the blue line reaches the arrow at all times
 
-### 3. Tracking page — Button below Fleet Map link
+### Technical detail
 
-**File: `src/pages/InstructorLiveSession.tsx`**
-- Add a button after the "Fleet Map" button (around line 959) styled the same way, with a Camera icon and "Dashcam Portal" label that opens the Kinesis URL in a new tab
-- Import `Camera` from lucide-react
+```
+// Before (line 159-161):
+Math.abs(lastPt.lat() - latitude) > 0.00005 ||
+Math.abs(lastPt.lng() - longitude) > 0.00005;
 
-### 4. Recent Sessions list — Button at bottom
+// After — reduced threshold so line keeps up:
+Math.abs(lastPt.lat() - latitude) > 0.000005 ||
+Math.abs(lastPt.lng() - longitude) > 0.000005;
+```
 
-**File: `src/components/instructor/tracking/RecentSessionsList.tsx`**
-- Add a small "View Dashcam Footage" link/button at the bottom of the recent sessions list that opens the Kinesis URL externally
-- Import `Camera` and `ExternalLink` from lucide-react
-
-### No backend changes needed
+After the historical trail loads (line 126), bridge to current live position:
+```typescript
+// Bridge trail to current live position
+if (latitude != null && longitude != null) {
+  const livePt = new google.maps.LatLng(latitude, longitude);
+  pathRef.current.push(livePt);
+  polylineRef.current?.setPath(pathRef.current);
+}
+```
 
