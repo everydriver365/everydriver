@@ -42,11 +42,12 @@ export function useActiveSession(instructorId: string | null | undefined) {
         return null;
       }
 
-      // Fetch telematics session
+      // Fetch telematics session — only if not already ended
       const { data: telematics } = await supabase
         .from("lesson_telematics")
-        .select("id, lesson_id, started_at, total_distance_km, pupil_id")
+        .select("id, lesson_id, started_at, total_distance_km, pupil_id, ended_at")
         .eq("id", device.current_session_id)
+        .is("ended_at", null)
         .maybeSingle();
 
       if (!telematics) return null;
@@ -73,8 +74,11 @@ export function useActiveSession(instructorId: string | null | undefined) {
 
       const lastSeen = device.last_seen_at ? new Date(device.last_seen_at) : null;
       const isLive = lastSeen 
-        ? (now.getTime() - lastSeen.getTime()) < 5 * 60 * 1000 
+        ? (now.getTime() - lastSeen.getTime()) < 60 * 1000 
         : false;
+
+      // Don't show the bar if device data is stale (> 60s since last seen)
+      if (!isLive) return null;
 
       return {
         sessionId: telematics.id,
