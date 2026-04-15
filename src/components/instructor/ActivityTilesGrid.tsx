@@ -107,7 +107,7 @@ export function ActivityTilesGrid({
 
   return (
     <div className="px-4 mt-3" style={{ fontFamily: "-apple-system, 'SF Pro Text', sans-serif" }}>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-4 gap-2">
         {tileConfig.map((tile, idx) => {
           const count = counts[tile.key];
           return (
@@ -118,15 +118,15 @@ export function ActivityTilesGrid({
               transition={{ delay: idx * 0.05 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(tile.route)}
-              className="relative flex flex-col items-center justify-center gap-2.5"
+              className="relative flex flex-col items-center justify-center gap-1.5"
               style={{
                 background: "#FFFFFF",
-                borderRadius: 20,
-                boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-                paddingTop: 20,
-                paddingBottom: 16,
-                paddingLeft: 12,
-                paddingRight: 12,
+                borderRadius: 16,
+                boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+                paddingTop: 12,
+                paddingBottom: 10,
+                paddingLeft: 6,
+                paddingRight: 6,
               }}
             >
               {/* Red notification badge */}
@@ -134,17 +134,17 @@ export function ActivityTilesGrid({
                 <span
                   className="absolute flex items-center justify-center"
                   style={{
-                    top: 10,
-                    right: 10,
-                    minWidth: 22,
-                    height: 22,
-                    borderRadius: 11,
+                    top: 4,
+                    right: 4,
+                    minWidth: 18,
+                    height: 18,
+                    borderRadius: 9,
                     backgroundColor: "#FF3B30",
                     color: "#fff",
-                    fontSize: 11,
+                    fontSize: 9,
                     fontWeight: 700,
-                    paddingLeft: 5,
-                    paddingRight: 5,
+                    paddingLeft: 4,
+                    paddingRight: 4,
                     lineHeight: 1,
                   }}
                 >
@@ -152,13 +152,13 @@ export function ActivityTilesGrid({
                 </span>
               )}
 
-              {/* Large centered icon */}
-              <div className="flex items-center justify-center" style={{ width: 48, height: 48 }}>
+              {/* Icon */}
+              <div className="flex items-center justify-center" style={{ width: 32, height: 32 }}>
                 {tile.icon}
               </div>
 
               {/* Label */}
-              <span style={{ fontSize: 12, fontWeight: 600, color: "#3C3C43", letterSpacing: -0.1 }}>
+              <span style={{ fontSize: 9.5, fontWeight: 600, color: "#3C3C43", letterSpacing: -0.1 }}>
                 {tile.title}
               </span>
             </motion.button>
