@@ -202,7 +202,7 @@ function MobileNotificationBell({ instructorId }: { instructorId: string | undef
     <Button
       variant="ghost"
       size="icon"
-      className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15 relative"
+      className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 text-[hsl(240_6%_11%)] hover:bg-gray-100 relative"
       onClick={() => navigate("/instructor/notifications")}
       title="Notifications"
     >
@@ -457,7 +457,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/90 text-primary-foreground shrink-0"
+                          className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/90 text-white shrink-0"
                           title="Quick Actions"
                           onClick={() => setHeaderQuickActionsOpen(true)}
                         >
@@ -468,7 +468,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15"
+                          className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 text-[hsl(240_6%_11%)] hover:bg-gray-100"
                         >
                           <Menu className="h-5 w-5" />
                         </Button>
