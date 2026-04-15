@@ -155,7 +155,7 @@ export function HomepageHero({
       iconBg: "rgba(0,122,255,1)",
       iconColor: "#fff",
       valueBg: "#007AFF",
-      highlight: true,
+      highlight: pendingJobs > 0,
     },
   ];
 
