@@ -14,12 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useMessaging, Conversation } from "@/hooks/useMessaging";
 import { ChatWindow } from "./ChatWindow";
 import { AdminChatWindow } from "./AdminChatWindow";
