@@ -184,11 +184,8 @@ export default function InstructorLiveSession() {
             setTotalDistance(session.total_distance_km);
           }
           
-          // Auto-enter fullscreen mode if session is active
-          const searchParams = new URLSearchParams(window.location.search);
-          if (searchParams.get("fullscreen") !== "true") {
-            navigate("/instructor/tracking?fullscreen=true", { replace: true });
-          }
+          // Don't auto-enter fullscreen — let the user see the tracking page first
+          // They can resume the session from there
         }
       }
 
@@ -809,8 +806,8 @@ export default function InstructorLiveSession() {
     );
   }
 
-  // When session is active, show fullscreen map without standard layout
-  if (isSessionActive) {
+  // When session is active AND in fullscreen mode, show fullscreen map without standard layout
+  if (isSessionActive && isFullscreenMode) {
     return (
       <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
         <div className="flex-1 relative overflow-hidden">
