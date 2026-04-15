@@ -1,33 +1,65 @@
 
 
-## Fix: Stale Closure in Fleet Map Marker Click Handler
+## Link Fleet Map from Tracker + Back Button + Colleague Mode
 
-### Problem
-The marker click handler (line 200-217) captures `devices` from the effect closure when the marker is first created. After realtime updates change `devices` state, clicking a marker still references the old array, showing stale speed/road/ignition data in the popup.
+### What changes
 
-### Solution
-Use a `useRef` to always hold the latest `devices` array, and reference that ref inside the click handler instead of the closure variable.
+1. **Fleet Map back button** — Add a back/close button (top-left, behind the stats bar) to navigate back to the previous page (`navigate(-1)`).
 
-### Changes — `src/pages/InstructorFleetMap.tsx`
+2. **Fleet Map link on tracking page** — Add a "Fleet Map" button/card on `InstructorLiveSession.tsx` (the no-session view, after the MiniLiveMap), linking to `/instructor/fleet-map`.
 
-1. Add a `devicesRef` that tracks the latest `devices` state:
-   ```typescript
-   const devicesRef = useRef<FleetDevice[]>([]);
-   // Keep ref in sync
-   useEffect(() => { devicesRef.current = devices; }, [devices]);
-   ```
+3. **Colleague mode on Fleet Map** — Accept an optional `?mode=colleagues` query param. When present:
+   - Look up the current instructor's school(s) via `school_instructors`
+   - Fetch all `instructor_id`s in those schools
+   - Query `gps_devices` with `.in("instructor_id", colleagueIds)` instead of `.eq("instructor_id", instructorId)`
+   - Add `instructor_id` to the `FleetDevice` interface and show instructor name in popups
 
-2. In the marker click handler (line 201), replace:
-   ```typescript
-   const d = devices.find((dd) => dd.id === device.id) || device;
-   ```
-   with:
-   ```typescript
-   const d = devicesRef.current.find((dd) => dd.id === device.id) || device;
-   ```
+4. **"Find My Colleague" tile** — Rename or add a tile that navigates to `/instructor/fleet-map?mode=colleagues`. Update in:
+   - `AppStyleHomeView.tsx`
+   - `DashboardLayoutManager.tsx`
+   - `SwipeableQuickAccess.tsx`
 
-This ensures the popup always shows the most current data regardless of when the marker was created.
+### Technical details
 
-### No other changes needed
-The popup content itself is correct — it shows speed, limit, road, ignition, last seen, and signal-lost warning as designed.
+**File: `src/pages/InstructorFleetMap.tsx`**
+- Add `useSearchParams` to detect `mode=colleagues`
+- Add `ArrowLeft` icon import + back button in the top-left controls
+- New `useEffect` for colleague mode:
+  ```typescript
+  // 1. Get my schools
+  const { data: mySchools } = await supabase
+    .from("school_instructors")
+    .select("school_id")
+    .eq("instructor_id", instructorId);
+  
+  // 2. Get all instructor IDs in those schools
+  const schoolIds = mySchools.map(s => s.school_id);
+  const { data: members } = await supabase
+    .from("school_instructors")
+    .select("instructor_id")
+    .in("school_id", schoolIds);
+  
+  // 3. Fetch their devices
+  const ids = [...new Set(members.map(m => m.instructor_id))];
+  const { data } = await supabase
+    .from("gps_devices")
+    .select("id, device_name, device_identifier, instructor_id, ...")
+    .in("instructor_id", ids)
+    .eq("tracking_provider", "radius");
+  ```
+- Join instructor name for popup display: fetch instructors table for the colleague IDs and map names onto devices
+
+**File: `src/pages/InstructorLiveSession.tsx`**
+- After `MiniLiveMap` (line ~958), add a card/button linking to `/instructor/fleet-map`:
+  ```
+  <Link to="/instructor/fleet-map">
+    Fleet Map → View all vehicles
+  </Link>
+  ```
+
+**Files: `AppStyleHomeView.tsx`, `DashboardLayoutManager.tsx`, `SwipeableQuickAccess.tsx`**
+- Add a "Find Colleague" tile with route `/instructor/fleet-map?mode=colleagues`, using `UsersRound` icon
+
+### No database changes needed
+The existing `gps_devices` and `school_instructors` tables have all required data. RLS on `gps_devices` may need a policy allowing reads for same-school instructors — will verify and add a migration if needed.
 
