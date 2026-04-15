@@ -1,125 +1,69 @@
 import { useNavigate } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { format, isToday, isTomorrow } from "date-fns";
 import { motion } from "framer-motion";
 import {
   Briefcase, MessageSquare, ClipboardCheck, CalendarPlus,
-  Calendar, ChevronRight, Clock, MapPin,
+  Calendar, ChevronRight, Clock, MapPin, User,
   Users, CreditCard, BarChart3, Settings, Car,
   BookOpen, Bell, FileText, Star, Shield,
-  Navigation, Fuel, Wrench, Phone,
-  Camera, Globe, Award, Target,
+  Navigation, Fuel, Wrench, Phone, Mail,
+  Camera, Mic, Globe, Award, Target,
   TrendingUp, Zap, Heart, Gift, Bookmark,
-  Clipboard, HelpCircle, Download, Upload,
-  Receipt, Banknote, PiggyBank, Wallet, CalendarCheck,
-  ListChecks, UserCheck, Search, Map, MapPinned,
-  Radio, Gauge, Eye, Send, MessagesSquare,
-  GraduationCap, CheckCircle, Medal, TestTube,
-  Activity, Paintbrush, StickyNote, FolderOpen,
-  BookMarked, FolderLock, Timer, Brain, Workflow,
-  FileSignature, ClipboardList, BarChart, ServerCog,
-  Import, Megaphone, CalendarClock, ListTodo, Coffee,
-  MonitorSmartphone,
+  Layout, Clipboard, AlertTriangle, HelpCircle,
+  Share2, Download, Upload,
 } from "lucide-react";
 
 const quickTiles = [
-  { icon: Briefcase, label: "Job Offers", color: "#007AFF", route: "/instructor-app/dsm/jobs" },
-  { icon: MessageSquare, label: "Messages", color: "#34C759", route: "/instructor-app/dsm/messages" },
-  { icon: ClipboardCheck, label: "Tests", color: "#FF9500", route: "/instructor-app/dsm/test-requests" },
-  { icon: CalendarPlus, label: "Fill Gaps", color: "#FF2D55", route: "/instructor-app/dsm/gaps" },
+  { icon: Briefcase, label: "Job Offers", color: "#007AFF", route: "/instructor/jobs" },
+  { icon: MessageSquare, label: "Messages", color: "#34C759", route: "/instructor/messages" },
+  { icon: ClipboardCheck, label: "Tests", color: "#FF9500", route: "/instructor/tests" },
+  { icon: CalendarPlus, label: "Fill Gaps", color: "#FF2D55", route: "/instructor/gaps" },
 ];
 
 const featureTiles = [
-  // Core
-  { icon: Users, label: "Pupils", route: "/instructor-app/dsm/pupils" },
-  { icon: Calendar, label: "Diary", route: "/instructor-app/dsm/diary" },
-  { icon: Settings, label: "Settings", route: "/instructor-app/dsm/settings" },
-  { icon: Bell, label: "Notifications", route: "/instructor-app/dsm/notifications" },
-
-  // Jobs & scheduling
-  { icon: CalendarCheck, label: "Pending", route: "/instructor-app/dsm/pending-scheduling" },
-  { icon: CalendarClock, label: "Availability", route: "/instructor-app/dsm/availability" },
-  { icon: ListChecks, label: "Windows", route: "/instructor-app/dsm/availability-windows" },
-  { icon: UserCheck, label: "Waiting List", route: "/instructor-app/dsm/waiting-list" },
-  { icon: Search, label: "Test Finder", route: "/instructor-app/dsm/test-slot-finder" },
-
-  // Finance
-  { icon: Wallet, label: "Pay", route: "/instructor-app/dsm/pay" },
-  { icon: CreditCard, label: "Take Payment", route: "/instructor-app/dsm/take-payment" },
-  { icon: Banknote, label: "Income", route: "/instructor-app/dsm/income" },
-  { icon: Receipt, label: "Expenses", route: "/instructor-app/dsm/expenses" },
-  { icon: PiggyBank, label: "Accounts", route: "/instructor-app/dsm/accounts" },
-  { icon: Shield, label: "Tax", route: "/instructor-app/dsm/tax" },
-  { icon: Bookmark, label: "Subscriptions", route: "/instructor-app/dsm/subscriptions" },
-  { icon: TrendingUp, label: "In & Out", route: "/instructor-app/dsm/in-out" },
-  { icon: BarChart3, label: "Month End", route: "/instructor-app/dsm/month-end" },
-
-  // Communication
-  { icon: Send, label: "Admin Chat", route: "/instructor-app/dsm/admin-chat" },
-  { icon: Phone, label: "Contact", route: "/instructor-app/dsm/contact" },
-  { icon: MessagesSquare, label: "Team Chat", route: "/instructor-app/dsm/team-channels" },
-  { icon: Eye, label: "Visitor Chats", route: "/instructor-app/dsm/visitor-chats" },
-
-  // Vehicle & GPS
-  { icon: Navigation, label: "SatNav", route: "/instructor-app/dsm/satnav" },
-  { icon: MapPin, label: "Find Car", route: "/instructor-app/dsm/find-my-car" },
-  { icon: Car, label: "Vehicle", route: "/instructor-app/dsm/vehicle-health" },
-  { icon: Fuel, label: "Fuel Log", route: "/instructor-app/dsm/fuel" },
-  { icon: Gauge, label: "Mileage", route: "/instructor-app/dsm/mileage" },
-  { icon: Map, label: "Routes", route: "/instructor-app/dsm/routes" },
-  { icon: Radio, label: "Fleet", route: "/instructor-app/dsm/fleet-dashboard" },
-  { icon: Target, label: "Live GPS", route: "/instructor-app/dsm/tracking" },
-  { icon: Wrench, label: "GPS Setup", route: "/instructor-app/dsm/gps-setup" },
-  { icon: MonitorSmartphone, label: "Geotab", route: "/instructor-app/dsm/geotab" },
-  { icon: Camera, label: "Dashcam", route: "/instructor-app/dsm/dashcam" },
-  { icon: MapPinned, label: "Find Nearby", route: "/instructor-app/dsm/find-nearby" },
-  { icon: Users, label: "Friends", route: "/instructor-app/dsm/nearby-friends" },
-  { icon: MapPin, label: "Locations", route: "/instructor-app/dsm/locations" },
-
-  // Website & marketing
-  { icon: Globe, label: "Website", route: "/instructor-app/dsm/website" },
-  { icon: Globe, label: "Domains", route: "/instructor-app/dsm/domains" },
-  { icon: Zap, label: "Addons", route: "/instructor-app/dsm/website-addons" },
-  { icon: Star, label: "Reviews", route: "/instructor-app/dsm/reviews" },
-  { icon: Gift, label: "Referrals", route: "/instructor-app/dsm/referrals" },
-  { icon: TrendingUp, label: "Pipeline", route: "/instructor-app/dsm/pipeline" },
-  { icon: Zap, label: "Automations", route: "/instructor-app/dsm/automations" },
-  { icon: CreditCard, label: "Checkouts", route: "/instructor-app/dsm/abandoned-checkouts" },
-
-  // Professional development
-  { icon: GraduationCap, label: "Test Results", route: "/instructor-app/dsm/test-results" },
-  { icon: CheckCircle, label: "Standards", route: "/instructor-app/dsm/standards-check" },
-  { icon: BookOpen, label: "CPD Log", route: "/instructor-app/dsm/cpd" },
-  { icon: Medal, label: "Certs", route: "/instructor-app/dsm/certifications" },
-  { icon: TestTube, label: "Tests", route: "/instructor-app/dsm/test-requests" },
-  { icon: Activity, label: "Performance", route: "/instructor-app/dsm/performance" },
-
-  // Tools & utilities
-  { icon: HelpCircle, label: "FAQs", route: "/instructor-app/dsm/faqs" },
-  { icon: Paintbrush, label: "Doodlepad", route: "/instructor-app/dsm/doodlepad" },
-  { icon: ListTodo, label: "To-Dos", route: "/instructor-app/dsm/todos" },
-  { icon: StickyNote, label: "Notes", route: "/instructor-app/dsm/notes" },
-  { icon: BookMarked, label: "Plans", route: "/instructor-app/dsm/plans" },
-  { icon: FolderOpen, label: "Resources", route: "/instructor-app/dsm/resources" },
-  { icon: FileText, label: "Templates", route: "/instructor-app/dsm/document-templates" },
-  { icon: Clipboard, label: "Checklists", route: "/instructor-app/dsm/checklists" },
-  { icon: FolderLock, label: "Doc Vault", route: "/instructor-app/dsm/document-vault" },
-  { icon: Timer, label: "Clock In", route: "/instructor-app/dsm/clock" },
-  { icon: Heart, label: "Wellbeing", route: "/instructor-app/dsm/wellbeing" },
-  { icon: Brain, label: "AI Command", route: "/instructor-app/dsm/ai-command" },
-  { icon: Workflow, label: "Workflows", route: "/instructor-app/dsm/workflows" },
-  { icon: FileSignature, label: "Waivers", route: "/instructor-app/dsm/waivers" },
-  { icon: ClipboardList, label: "Manifest", route: "/instructor-app/dsm/daily-manifest" },
-  { icon: BarChart, label: "EOD Report", route: "/instructor-app/dsm/eod-report" },
-  { icon: ServerCog, label: "Bulk Ops", route: "/instructor-app/dsm/bulk-operations" },
-  { icon: Download, label: "Reports", route: "/instructor-app/dsm/reports" },
-  { icon: Award, label: "App Health", route: "/instructor-app/dsm/health" },
-  { icon: Import, label: "Import", route: "/instructor-app/dsm/import-data" },
-  { icon: Megaphone, label: "Updates", route: "/instructor-app/dsm/platform-updates" },
-  { icon: FileText, label: "Weekly", route: "/instructor-app/dsm/weekly-report" },
-  { icon: Upload, label: "Tasks", route: "/instructor-app/dsm/outstanding-tasks" },
-  { icon: Coffee, label: "End of Day", route: "/instructor-app/dsm/end-of-day" },
-  { icon: Clock, label: "Waiting Room", route: "/instructor-app/dsm/waiting-room" },
+  { icon: Users, label: "Pupils", route: "/instructor/pupils" },
+  { icon: CreditCard, label: "Payments", route: "/instructor/payments" },
+  { icon: BarChart3, label: "Analytics", route: "/instructor/analytics" },
+  { icon: Car, label: "Vehicle", route: "/instructor/vehicle-health" },
+  { icon: BookOpen, label: "Courses", route: "/instructor/courses" },
+  { icon: Bell, label: "Notifications", route: "/instructor/notifications" },
+  { icon: FileText, label: "Invoices", route: "/instructor/invoices" },
+  { icon: Star, label: "Reviews", route: "/instructor/reviews" },
+  { icon: Shield, label: "Compliance", route: "/instructor/compliance" },
+  { icon: Navigation, label: "Navigate", route: "/instructor/navigation" },
+  { icon: Fuel, label: "Fuel Log", route: "/instructor/fuel" },
+  { icon: Wrench, label: "Maintenance", route: "/instructor/maintenance" },
+  { icon: Phone, label: "Contacts", route: "/instructor/contacts" },
+  { icon: Mail, label: "Email", route: "/instructor/email" },
+  { icon: Camera, label: "Dashcam", route: "/instructor/dashcam" },
+  { icon: Mic, label: "Voice Notes", route: "/instructor/voice-notes" },
+  { icon: Globe, label: "Website", route: "/instructor/website" },
+  { icon: Award, label: "CPD Log", route: "/instructor/cpd" },
+  { icon: Target, label: "Goals", route: "/instructor/goals" },
+  { icon: TrendingUp, label: "Revenue", route: "/instructor/revenue" },
+  { icon: Zap, label: "Automations", route: "/instructor/automations" },
+  { icon: Heart, label: "Wellbeing", route: "/instructor/wellbeing" },
+  { icon: Gift, label: "Referrals", route: "/instructor/referrals" },
+  { icon: Bookmark, label: "Saved", route: "/instructor/saved" },
+  { icon: Layout, label: "Dashboard", route: "/instructor/dashboard" },
+  { icon: Clipboard, label: "Checklists", route: "/instructor/checklists" },
+  { icon: AlertTriangle, label: "Alerts", route: "/instructor/alerts" },
+  { icon: HelpCircle, label: "Support", route: "/instructor/support" },
+  { icon: Share2, label: "Share", route: "/instructor/share" },
+  { icon: Download, label: "Reports", route: "/instructor/reports" },
+  { icon: Upload, label: "Documents", route: "/instructor/documents" },
+  { icon: Settings, label: "Settings", route: "/instructor/settings" },
+  { icon: Calendar, label: "Availability", route: "/instructor/availability" },
+  { icon: Clock, label: "Clock In", route: "/instructor/clock" },
+  { icon: MapPin, label: "Areas", route: "/instructor/areas" },
+  { icon: User, label: "Profile", route: "/instructor/profile" },
+  { icon: Star, label: "Ratings", route: "/instructor/ratings" },
+  { icon: FileText, label: "Notes", route: "/instructor/notes" },
+  { icon: BarChart3, label: "Insights", route: "/instructor/insights" },
+  { icon: CreditCard, label: "Expenses", route: "/instructor/expenses" },
 ];
 
 function getGreeting() {
@@ -129,30 +73,30 @@ function getGreeting() {
   return "Good Evening";
 }
 
-const mockNextLesson = {
-  id: "mock-lesson-1",
-  start_time: (() => {
-    const d = new Date();
-    d.setHours(d.getHours() + 2, 0, 0, 0);
-    return d.toISOString();
-  })(),
-  pickup_location: "23 Oak Avenue, BR1 3PQ",
-  pupils: { name: "Emma Thompson" },
-};
-
-const mockBadges: Record<string, number> = {
-  "Job Offers": 3,
-  "Messages": 5,
-  "Tests": 1,
-  "Fill Gaps": 2,
-};
-
 export default function DSM() {
   const navigate = useNavigate();
   const { instructor } = useInstructorAuth();
   const firstName = instructor?.name?.split(" ")[0] || "Instructor";
 
-  const nextLesson = mockNextLesson;
+  const { data: nextLesson } = useQuery({
+    queryKey: ["dsm-next-lesson", instructor?.id],
+    queryFn: async () => {
+      if (!instructor?.id) return null;
+      const { data, error } = await supabase
+        .from("scheduled_lessons")
+        .select("id, start_time, pickup_location, pupils(name)")
+        .eq("instructor_id", instructor.id)
+        .gte("start_time", new Date().toISOString())
+        .order("start_time", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (error || !data) return null;
+      return data;
+    },
+    enabled: !!instructor?.id,
+    staleTime: 60_000,
+  });
+
   const lessonDate = nextLesson?.start_time ? new Date(nextLesson.start_time) : null;
   const lessonDay = lessonDate
     ? isToday(lessonDate) ? "Today" : isTomorrow(lessonDate) ? "Tomorrow" : format(lessonDate, "EEE, d MMM")
@@ -160,6 +104,7 @@ export default function DSM() {
 
   return (
     <div className="min-h-screen bg-[#F2F2F7]">
+      {/* Status bar spacer */}
       <div className="h-[env(safe-area-inset-top,0px)]" />
 
       {/* Hero greeting */}
@@ -174,7 +119,7 @@ export default function DSM() {
         </h1>
       </motion.div>
 
-      {/* Quick action tiles */}
+      {/* Quick action tiles – 4 across */}
       <div className="px-5 grid grid-cols-4 gap-3">
         {quickTiles.map((tile, i) => {
           const Icon = tile.icon;
@@ -186,13 +131,8 @@ export default function DSM() {
               transition={{ delay: i * 0.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate(tile.route)}
-              className="relative flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+              className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
             >
-              {mockBadges[tile.label] && (
-                <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#FF3B30] flex items-center justify-center">
-                  <span className="text-[10px] font-bold text-white">{mockBadges[tile.label]}</span>
-                </div>
-              )}
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center"
                 style={{ backgroundColor: `${tile.color}14` }}
@@ -212,7 +152,7 @@ export default function DSM() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => navigate("/instructor-app/dsm/schedule")}
+          onClick={() => navigate("/instructor/schedule")}
           className="w-full flex items-center justify-between p-4 rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
         >
           <div className="flex items-center gap-3">
@@ -242,7 +182,7 @@ export default function DSM() {
           </div>
           {nextLesson ? (
             <button
-              onClick={() => navigate(`/instructor-app/dsm/pupils`)}
+              onClick={() => navigate(`/instructor/lessons/${nextLesson.id}`)}
               className="w-full text-left px-4 pb-4 pt-2"
             >
               <div className="flex items-center justify-between">
@@ -272,7 +212,7 @@ export default function DSM() {
         </motion.div>
       </div>
 
-      {/* Feature grid */}
+      {/* Feature grid – horizontal scroll, 2 rows × many columns */}
       <div className="mt-5">
         <p className="px-5 text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wide mb-2">Tools & Features</p>
         <div className="overflow-x-auto scrollbar-hide">
@@ -305,7 +245,7 @@ export default function DSM() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => navigate("/instructor-app/dsm/referrals")}
+          onClick={() => navigate("/instructor/referrals")}
           className="w-full p-4 rounded-2xl bg-gradient-to-r from-[#007AFF] to-[#5856D6] text-white text-left shadow-[0_4px_14px_rgba(0,122,255,0.25)]"
         >
           <div className="flex items-center gap-3">
@@ -322,7 +262,7 @@ export default function DSM() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.55 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => navigate("/instructor-app/dsm/faqs")}
+          onClick={() => navigate("/instructor/support")}
           className="w-full p-4 rounded-2xl bg-gradient-to-r from-[#34C759] to-[#30D158] text-white text-left shadow-[0_4px_14px_rgba(52,199,89,0.25)]"
         >
           <div className="flex items-center gap-3">
