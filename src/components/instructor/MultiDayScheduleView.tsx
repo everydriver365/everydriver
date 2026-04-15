@@ -466,6 +466,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                   </div>
                 )}
               </div>
+              </div>
             </div>
           );
         })}
