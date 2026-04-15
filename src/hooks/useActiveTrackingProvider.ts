@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type TrackingProvider = "geotab" | "radius" | null;
+export type TrackingProvider = "radius" | null;
 
-const PROVIDER_PRIORITY: TrackingProvider[] = ["geotab", "radius"];
+const PROVIDER_PRIORITY: TrackingProvider[] = ["radius"];
 
 export function useActiveTrackingProvider(instructorId: string | null | undefined) {
   const [activeProvider, setActiveProvider] = useState<TrackingProvider>(null);

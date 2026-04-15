@@ -98,7 +98,7 @@ export function GPSStatusHero({
                   <p className="text-white/80 text-xs font-medium">
                     {trackingProvider ? (
                       <span>
-                        <span className="uppercase font-semibold">{trackingProvider === "geotab" ? "Geotab" : trackingProvider === "radius" ? "Radius" : trackingProvider}</span>
+                        <span className="uppercase font-semibold">{trackingProvider === "radius" ? "Radius" : trackingProvider}</span>
                         {" · "}
                         {isParked ? (roadName || deviceName || "Ignition Off") : (deviceName || "GPS Tracker")}
                       </span>

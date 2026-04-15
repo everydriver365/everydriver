@@ -33,8 +33,8 @@ export function ProviderSelectorTile({
               .filter((p): p is string => !!p)
           ),
         ];
-        // Sort consistently: geotab first, then radius
-        const order = ["geotab", "radius"];
+        // Sort consistently: radius first
+        const order = ["radius"];
         providers.sort(
           (a, b) =>
             (order.indexOf(a) === -1 ? 99 : order.indexOf(a)) -
@@ -50,10 +50,12 @@ export function ProviderSelectorTile({
   // Don't render if only one provider
   if (availableProviders.length <= 1) return null;
 
-  const segments = availableProviders.map((p) => ({
-    value: p,
-    label: p === "geotab" ? "Geotab" : p === "radius" ? "Radius" : p,
-  }));
+  const segments = availableProviders
+    .filter((p) => p !== "geotab")
+    .map((p) => ({
+      value: p,
+      label: p === "radius" ? "Radius" : p,
+    }));
 
   const handleChange = async (value: string) => {
     onProviderChange(value);
