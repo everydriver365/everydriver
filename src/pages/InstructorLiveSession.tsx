@@ -298,13 +298,21 @@ export default function InstructorLiveSession() {
       )
       .subscribe();
     
-    // Fallback polling every 5s for faster map updates
-    const interval = setInterval(pollDevice, 2000);
+    // Direct poller trigger every 2s for near-realtime updates
+    const triggerPoller = () => {
+      supabase.functions.invoke("radius-poller").catch(() => {});
+    };
+    triggerPoller(); // Immediate first trigger
+    const pollerInterval = setInterval(triggerPoller, 2000);
+
+    // Fallback DB poll every 5s (safety net — Realtime is primary)
+    const fallbackInterval = setInterval(pollDevice, 5000);
     
     return () => {
       deviceIdRef.current = null;
       supabase.removeChannel(channel);
-      clearInterval(interval);
+      clearInterval(pollerInterval);
+      clearInterval(fallbackInterval);
     };
   }, [device?.id]);
 
