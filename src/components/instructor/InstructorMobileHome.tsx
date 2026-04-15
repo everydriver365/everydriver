@@ -417,6 +417,11 @@ export function InstructorMobileHome({
           instructorId={instructorId}
           instructor={instructor}
         />
+      ) : layoutStyle === "widgets" ? (
+        <WidgetsHomeView
+          instructorId={instructorId}
+          instructor={instructor}
+        />
       ) : (
       <>
       {/* 1. Hero Banner */}
