@@ -7,7 +7,7 @@ interface DashcamGalleryViewProps {
 
 export function DashcamGalleryView({ instructorId, showAllInstructors }: DashcamGalleryViewProps) {
   const handleOpenPortal = () => {
-    window.open("https://velocity.radiustelematics.com", "_blank", "noopener,noreferrer");
+    window.open("https://www.kinesisfleetpro.com/#/login;next=%2Fstatus", "_blank", "noopener,noreferrer");
   };
 
   return (
