@@ -1006,16 +1006,42 @@ export default function InstructorLiveSession() {
                   : null
               }
             />
+           {/* Resume active session banner */}
+           {isSessionActive && (
+             <motion.div
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="bg-emerald-500 text-white rounded-2xl p-4 flex items-center justify-between"
+             >
+               <div>
+                 <p className="font-semibold text-sm">Session in progress</p>
+                 <p className="text-xs text-white/80">
+                   {currentPupil?.name || "Test route"} · {formatElapsedTime(elapsedTime)}
+                 </p>
+               </div>
+               <Button
+                 size="sm"
+                 variant="secondary"
+                 className="bg-white text-emerald-600 hover:bg-white/90 font-semibold"
+                 onClick={() => navigate("/instructor/tracking?fullscreen=true", { replace: true })}
+               >
+                 Resume
+               </Button>
+             </motion.div>
+           )}
+
            {/* Session Start Panel */}
-           <SessionStartPanel
-              pupils={pupils}
-              selectedPupilId={selectedPupilId}
-              onPupilChange={setSelectedPupilId}
-              onStartSession={(type) => startSession(type)}
-              onOpenDrivingTestDialog={() => setShowDrivingTestDialog(true)}
-              isStarting={isStarting}
-              isConnected={isConnected}
-            />
+           {!isSessionActive && (
+             <SessionStartPanel
+               pupils={pupils}
+               selectedPupilId={selectedPupilId}
+               onPupilChange={setSelectedPupilId}
+               onStartSession={(type) => startSession(type)}
+               onOpenDrivingTestDialog={() => setShowDrivingTestDialog(true)}
+               isStarting={isStarting}
+               isConnected={isConnected}
+             />
+           )}
  
            {/* Manual GPS Route Recorder */}
            {instructor?.id && (
