@@ -433,6 +433,7 @@ export function CleanHomeView({
         <RoadAlertsRow alerts={alerts} className="mt-3" />
 
         <BottomPromoGroup className="mt-4" />
+        <UpcomingEventsCard className="mt-4" />
 
         
 

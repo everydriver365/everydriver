@@ -282,6 +282,7 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
 
       {/* Bottom promos */}
       <BottomPromoGroup />
+      <UpcomingEventsCard className="mt-4" />
     </div>
   );
 }

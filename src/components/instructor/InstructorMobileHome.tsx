@@ -648,7 +648,8 @@ export function InstructorMobileHome({
         <EndOfDaySummary instructorId={instructorId} />
 
         {/* Waiting Room & Discover Features */}
-        <BottomPromoGroup className="mt-6 mb-6" />
+        <BottomPromoGroup className="mt-6 mb-2" />
+        <UpcomingEventsCard className="mb-6" />
 
 
         {/* 10. Floating Session Bar */}

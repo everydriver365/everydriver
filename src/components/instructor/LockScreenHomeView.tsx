@@ -397,6 +397,7 @@ export function LockScreenHomeView({
         </FrostedCard>
 
         <BottomPromoGroup className="mt-4" />
+        <UpcomingEventsCard className="mt-4" />
 
 
         <FloatingSessionBar instructorId={instructorId} />

@@ -174,6 +174,7 @@ export function AppStyleHomeView({
           })}
         </div>
         <BottomPromoGroup className="mt-6" />
+        <UpcomingEventsCard className="mt-4" />
       </div>
     </div>
   );

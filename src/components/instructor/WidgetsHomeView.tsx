@@ -355,6 +355,7 @@ export function WidgetsHomeView({ instructorId, instructor }: WidgetsHomeViewPro
       {/* ── CTAs ── */}
       <div className="px-4 mt-6">
         <BottomPromoGroup />
+        <UpcomingEventsCard className="mt-4" />
       </div>
 
       <FloatingSessionBar instructorId={instructorId} />
