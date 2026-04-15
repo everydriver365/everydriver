@@ -82,6 +82,7 @@ import waitingRoomIcon from "@/assets/waiting-room-icon.png";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
 import { ImpactAlertCard } from "@/components/instructor/ImpactAlertCard";
 import calendarIcon from "@/assets/calendar-icon.png";
+import googleCalendarIcon from "@/assets/google-calendar-icon.png";
 import instructorBg from "@/assets/instructor-bg-signs.png";
 import { WeatherAlertBanner } from "@/components/instructor/WeatherAlertBanner";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
