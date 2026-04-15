@@ -247,11 +247,11 @@ export function HomepageHero({
                       alt=""
                       className="absolute pointer-events-none select-none"
                       style={{
-                        right: -10,
-                        bottom: -8,
-                        width: 150,
+                        right: -5,
+                        bottom: -10,
+                        width: 140,
                         height: "auto",
-                        opacity: 0.15,
+                        opacity: 0.55,
                       }}
                     />
                     <ActivityRing completed={slide.completed} total={slide.total} />
