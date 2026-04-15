@@ -402,12 +402,12 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
       )}
       <div
         className={cn(
-          "min-h-screen instructor-portal",
+          "min-h-screen instructor-portal ios-instructor",
            isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : "pb-16"
         )}
         style={
           !isFullscreenMode
-            ? { backgroundColor: "#F4F7F6" }
+            ? { backgroundColor: "#F2F2F7" }
             : undefined
         }
       >
@@ -416,14 +416,14 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             {/* iOS Install Banner */}
             <IOSInstallBanner />
 
-            {/* Mobile Header */}
+            {/* Mobile Header — iOS translucent nav bar */}
             <header
               className="sticky top-0 z-40"
             >
-              {/* Safe area spacer — always primary blue */}
-              <div className="bg-primary" style={{ paddingTop: "env(safe-area-inset-top)" }} />
+              {/* Safe area spacer — translucent */}
+              <div className="bg-white/80 backdrop-blur-xl" style={{ paddingTop: "env(safe-area-inset-top)" }} />
 
-              <div className="text-primary-foreground relative overflow-hidden bg-primary">
+              <div className="relative overflow-hidden bg-white/80 backdrop-blur-xl border-b border-[hsl(240_5%_78%/0.5)]">
 
                 <div className="relative flex items-center justify-between px-3 sm:px-4 h-14">
                    {/* Left: Back button + Logo + Notification */}
@@ -431,9 +431,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     {showBackButton && (
                       <button
                         onClick={() => navigate(-1)}
-                        className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center shrink-0"
+                        className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0"
                       >
-                        <ChevronLeft className="h-5 w-5" />
+                        <ChevronLeft className="h-5 w-5 text-[hsl(211_100%_50%)]" />
                       </button>
                     )}
 
