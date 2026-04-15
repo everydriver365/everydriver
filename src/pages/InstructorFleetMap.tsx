@@ -29,11 +29,6 @@ function isSignalLost(device: FleetDevice): boolean {
   return (Date.now() - new Date(device.last_heartbeat_at).getTime()) > 60_000;
 }
 
-
-  // Keep devicesRef in sync with latest state for closure-safe access
-  useEffect(() => { devicesRef.current = devices; }, [devices]);
-
-
 function relativeTime(iso: string | null): string {
   if (!iso) return "Never";
   const diffS = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
