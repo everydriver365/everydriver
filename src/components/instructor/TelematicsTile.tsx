@@ -2,7 +2,6 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Activity, ChevronRight, ChevronDown, ChevronUp, Fuel, Thermometer, Gauge, AlertTriangle, CheckCircle2, WifiOff, Camera, ShieldAlert } from "lucide-react";
-import carHealthIcon from "@/assets/car-health-icon.png";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { formatDistanceToNow } from "date-fns";
 
@@ -48,23 +47,6 @@ export function TelematicsTile() {
           onClick={() => setExpanded(v => !v)}
           className="w-full flex items-center gap-3 px-4 py-3 text-left relative overflow-hidden"
         >
-          {/* Background car image */}
-          <img
-            src={carHealthIcon}
-            alt=""
-            aria-hidden="true"
-            className="absolute pointer-events-none select-none"
-            style={{
-              right: -15,
-              top: "50%",
-              transform: "translateY(-50%)",
-              width: 120,
-              height: 120,
-              objectFit: "contain",
-              opacity: 0.15,
-            }}
-          />
-
           {/* Centre */}
           <div className="flex-1 min-w-0">
             <p style={{ fontSize: 15, fontWeight: 600, color: "#000" }}>Telematics</p>
