@@ -44,7 +44,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
       
       <div
         className="rounded-2xl border shadow-sm relative overflow-hidden"
-        style={{ minHeight: 140 }}
+        style={{ minHeight: 200 }}
       >
         {/* Background image */}
         <img
