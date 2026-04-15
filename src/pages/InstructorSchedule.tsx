@@ -49,6 +49,7 @@ export default function InstructorSchedule() {
   const [addEventDate, setAddEventDate] = useState<Date | null>(null);
   const [fabLessonSheetOpen, setFabLessonSheetOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [mobileListRefreshKey, setMobileListRefreshKey] = useState(0);
 
   // Use the calendar hook for schedule view data
   const calendar = useInstructorCalendar(instructorId || '');
@@ -61,6 +62,7 @@ export default function InstructorSchedule() {
       await supabase.functions.invoke("google-calendar-service", {
         body: { action: "fetchExternalEvents", instructorId },
       });
+      setMobileListRefreshKey((current) => current + 1);
       calendar.refetch();
       toast.success("Calendar synced");
     } catch {
@@ -230,7 +232,7 @@ export default function InstructorSchedule() {
 
 
         {viewMode === 'list' ? (
-          <MultiDayScheduleView instructorId={instructorId} />
+          <MultiDayScheduleView key={mobileListRefreshKey} instructorId={instructorId} />
         ) : viewMode === 'month' ? (
           <MobileMonthCalendarView instructorId={instructorId} />
         ) : viewMode === 'schedule' ? (
