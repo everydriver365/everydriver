@@ -352,15 +352,19 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
               {/* Events column */}
               <div className="flex-1 py-2 pr-3 space-y-1.5 min-w-0">
                 {/* All-day events */}
-                {allDay.map((evt) => (
-                  <div
-                    key={evt.id}
-                    className="rounded-lg px-3 py-2 text-[13px] font-semibold"
-                    style={{ backgroundColor: evt.color || "#039be5" }}
-                  >
-                    <span className={contrastText(evt.color || "#039be5")}>{evt.title}</span>
-                  </div>
-                ))}
+                {allDay.map((evt) => {
+                  const bgColor = evt.color || "#039be5";
+                  return (
+                    <div
+                      key={evt.id}
+                      className="rounded-lg px-3 py-2.5 space-y-0.5"
+                      style={{ backgroundColor: bgColor }}
+                    >
+                      <span className={`text-[13px] font-bold ${contrastText(bgColor)}`}>{evt.title}</span>
+                      <div className={`text-[12px] ${contrastText(bgColor)} opacity-80`}>All day</div>
+                    </div>
+                  );
+                })}
 
                 {/* Timeline items */}
                 {timeline.map((item) => {
