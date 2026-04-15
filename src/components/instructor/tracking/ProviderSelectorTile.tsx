@@ -30,7 +30,7 @@ export function ProviderSelectorTile({
           ...new Set(
             data
               .map((d) => d.tracking_provider)
-              .filter((p): p is string => !!p)
+              .filter((p): p is string => !!p && p !== "geotab")
           ),
         ];
         // Sort consistently: radius first
