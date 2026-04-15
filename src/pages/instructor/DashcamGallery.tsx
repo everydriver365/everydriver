@@ -8,19 +8,36 @@ export default function InstructorDashcamGallery() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4 pb-24">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center shrink-0">
-              <Camera className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-            </div>
+      <div
+        style={{
+          fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
+          minHeight: "100vh",
+          background: "#F2F2F7",
+        }}
+        className="space-y-4 pb-24 -m-4 p-4"
+      >
+        <div className="flex items-center gap-2">
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 10,
+              background: "#F2F2F7",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Camera style={{ width: 16, height: 16, color: "#8E8E93" }} />
+          </div>
+          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#000" }}>
             Dashcam Footage
           </h1>
         </div>
         {instructor?.id ? (
           <DashcamGalleryView instructorId={instructor.id} />
         ) : (
-          <p className="text-muted-foreground">Loading...</p>
+          <p style={{ color: "#8E8E93" }}>Loading...</p>
         )}
       </div>
     </InstructorPortalLayout>
