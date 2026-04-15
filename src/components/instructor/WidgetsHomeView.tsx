@@ -192,9 +192,10 @@ function ScheduleWidget({ instructorId }: { instructorId: string | undefined }) 
 /* ── Earnings Widget (2×1) ── */
 function EarningsWidget({ instructorId }: { instructorId: string | undefined }) {
   const navigate = useNavigate();
-  const { data: stats } = useInstructorLiveStats(instructorId);
-  const todayEarnings = stats?.todayEarnings || 0;
-  const weekEarnings = stats?.weekEarnings || 0;
+  const stats = useInstructorLiveStats(instructorId);
+  const { data: todayOverviewData } = useTodayOverview(instructorId);
+  const todayEarnings = todayOverviewData?.expectedEarnings || 0;
+  const weekEarnings = stats.monthEarnings || 0;
 
   return (
     <MediumWidget onClick={() => navigate("/instructor/pay")}>
