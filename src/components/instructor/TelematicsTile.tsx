@@ -46,12 +46,24 @@ export function TelematicsTile() {
       >
         <button
           onClick={() => setExpanded(v => !v)}
-          className="w-full flex items-center gap-3 px-4 py-3 text-left"
+          className="w-full flex items-center gap-3 px-4 py-3 text-left relative overflow-hidden"
         >
-          {/* Icon */}
-          <div className="shrink-0 flex items-center justify-center overflow-hidden" style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "#F2F2F7" }}>
-            <img src={carHealthIcon} alt="Vehicle" style={{ width: "150%", height: "150%", objectFit: "contain" }} />
-          </div>
+          {/* Background car image */}
+          <img
+            src={carHealthIcon}
+            alt=""
+            aria-hidden="true"
+            className="absolute pointer-events-none select-none"
+            style={{
+              right: -10,
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: 80,
+              height: 80,
+              objectFit: "contain",
+              opacity: 0.12,
+            }}
+          />
 
           {/* Centre */}
           <div className="flex-1 min-w-0">
