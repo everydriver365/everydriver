@@ -60,7 +60,7 @@ const products = [
     priceSuffix: "/month",
     isFree: false,
     benefits: [
-      "Geotab integration",
+      "GPS integration",
       "Incident recording",
       "Clip sharing",
       "Cloud storage",

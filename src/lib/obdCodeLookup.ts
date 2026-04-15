@@ -1,6 +1,6 @@
 /**
  * Local OBD-II DTC code lookup for common fault codes.
- * Falls back to the original Geotab description if no match is found.
+ * Falls back to the original description if no match is found.
  */
 const OBD_CODES: Record<string, string> = {
   // Powertrain - Fuel & Air Metering
@@ -157,7 +157,7 @@ export interface EnrichedFault {
 
 /**
  * Enriches a fault code with a human-readable description from the local lookup.
- * If the code is not found, returns the original description from Geotab.
+ * If the code is not found, returns the original description.
  */
 export function enrichFaultCode(fault: {
   code: string;

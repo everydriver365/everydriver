@@ -263,7 +263,7 @@ export default function HomepageRedesignDemo() {
               icon: Camera,
               title: "Dashcam & Incident Protection",
               description: "AI-powered dashcam integration captures every lesson. Protect yourself with automatic incident detection, cloud storage, and easy clip sharing.",
-              features: ["AI incident detection", "Cloud video storage", "Clip sharing with pupils", "Geotab integration"],
+              features: ["AI incident detection", "Cloud video storage", "Clip sharing with pupils", "GPS integration"],
               image: dashcamFeatureImg,
               reverse: false,
               link: "/instructor-app/dashcam",
