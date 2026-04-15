@@ -179,7 +179,7 @@ export function LessonRouteRecorder({
   }, [coordinates, getArrowIcon]);
 
   // Hide when a hardware tracker auto-captures routes
-  if (!providerLoading && (activeProvider === "geotab" || activeProvider === "radius")) {
+  if (!providerLoading && activeProvider === "radius") {
     return null;
   }
 
