@@ -96,7 +96,7 @@ export function GPSStatusHero({
                 </h2>
                 {!showReconnecting && (
                   <p className="text-white/80 text-xs font-medium">
-                    {trackingProvider ? (
+                    {trackingProvider && trackingProvider !== "geotab" ? (
                       <span>
                         <span className="uppercase font-semibold">{trackingProvider === "radius" ? "Radius" : trackingProvider}</span>
                         {" · "}
