@@ -59,6 +59,9 @@ export default function InstructorFleetMap() {
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const prevSpeedingRef = useRef<Map<string, boolean>>(new Map());
 
+  // Keep devicesRef in sync with latest state for closure-safe access
+  useEffect(() => { devicesRef.current = devices; }, [devices]);
+
   // Fetch initial devices
   useEffect(() => {
     if (!instructorId) return;
