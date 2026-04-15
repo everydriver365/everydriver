@@ -49,8 +49,8 @@ export function TelematicsTile() {
           className="w-full flex items-center gap-3 px-4 py-3 text-left"
         >
           {/* Icon */}
-          <div className="shrink-0 flex items-center justify-center overflow-hidden" style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#F2F2F7" }}>
-            <img src={carShellIcon} alt="Vehicle" style={{ width: "130%", height: "130%", objectFit: "contain" }} />
+          <div className="shrink-0 flex items-center justify-center overflow-hidden" style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "#F2F2F7" }}>
+            <img src={carShellIcon} alt="Vehicle" style={{ width: "150%", height: "150%", objectFit: "contain" }} />
           </div>
 
           {/* Centre */}
