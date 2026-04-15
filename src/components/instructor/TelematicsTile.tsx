@@ -49,12 +49,7 @@ export function TelematicsTile() {
           className="w-full flex items-center gap-3 px-4 py-3 text-left"
         >
           {/* Icon */}
-          <div
-            className="flex items-center justify-center shrink-0"
-            style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#F2F2F7" }}
-          >
-            <Activity className="h-4 w-4" style={{ color: "#8E8E93" }} />
-          </div>
+          <img src={carShellIcon} alt="Vehicle" className="shrink-0" style={{ width: 36, height: 36, borderRadius: 10, objectFit: "cover" }} />
 
           {/* Centre */}
           <div className="flex-1 min-w-0">
