@@ -297,10 +297,11 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
               return (
                 <div
                   key={evt.id}
-                  className="rounded-lg px-3 py-2"
+                  className="rounded-lg px-3 py-2.5 space-y-0.5"
                   style={{ backgroundColor: bgColor }}
                 >
-                  <span className={`text-[13px] font-semibold ${contrastText(bgColor)}`}>{evt.title}</span>
+                  <span className={`text-[13px] font-bold ${contrastText(bgColor)}`}>{evt.title}</span>
+                  <div className={`text-[12px] ${contrastText(bgColor)} opacity-80`}>All day</div>
                 </div>
               );
             })}
