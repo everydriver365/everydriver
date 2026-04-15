@@ -257,7 +257,7 @@ export function HomepageHero({
                     <ActivityRing completed={slide.completed} total={slide.total} />
                     <div className="flex-1 min-w-0 relative z-10">
                       <p style={{ fontSize: 15, fontWeight: 700, color: "#1C1C1E", marginBottom: 1 }}>
-                        {slide.completed === slide.total && slide.total > 0 ? "All done! 🎉" : "Lessons Today"}
+                        {slide.completed === slide.total && slide.total > 0 ? "All done! 🎉" : slide.label === "TODAY" ? "Lessons Today" : slide.label === "THIS WEEK" ? "Lessons This Week" : "Lessons This Month"}
                       </p>
                       <p style={{ fontSize: 12, color: "#8E8E93" }}>{slide.subtitle}</p>
                       {/* Progress bar */}
