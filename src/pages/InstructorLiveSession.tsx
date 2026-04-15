@@ -137,12 +137,13 @@ export default function InstructorLiveSession() {
     
     try {
       // Fetch active devices and instructor preference in parallel
-      const [devicesRes, prefRes] = await Promise.all([
+      const [devicesRes] = await Promise.all([
         supabase
           .from("gps_devices")
           .select("*")
           .eq("instructor_id", instructor.id)
           .eq("is_active", true)
+          .eq("tracking_provider", "radius")
           .limit(10),
         supabase
           .from("instructors")
@@ -153,18 +154,11 @@ export default function InstructorLiveSession() {
 
       if (devicesRes.error) throw devicesRes.error;
       const devices = devicesRes.data;
-      const preference = (prefRes.data?.preferred_tracking_provider as string) || null;
       
       if (devices && devices.length > 0) {
-        // Determine active provider
-        const providers = [...new Set(devices.map(d => d.tracking_provider).filter(Boolean))];
-        const effectiveProvider = preference && providers.includes(preference) ? preference : providers[0] || null;
-        setActiveProvider(effectiveProvider);
+        setActiveProvider("radius");
 
-        // Filter devices to the active provider
-        const providerDevices = effectiveProvider
-          ? devices.filter(d => d.tracking_provider === effectiveProvider)
-          : devices;
+        const providerDevices = devices;
 
         // Pick the best device from filtered set
         const chosen = providerDevices[0] || devices[0];

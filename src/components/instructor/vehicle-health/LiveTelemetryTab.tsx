@@ -9,9 +9,6 @@ import { EnhancedDeviceStatusCard } from "./EnhancedDeviceStatusCard";
 import { BatteryHistoryChart } from "./BatteryHistoryChart";
 import { IgnitionEventsLog } from "./IgnitionEventsLog";
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
-import { GeotabExtendedDiagnosticsTab } from "@/components/instructor/geotab/GeotabExtendedDiagnosticsTab";
-import { GeotabFaultCodesTab } from "@/components/instructor/geotab/GeotabFaultCodesTab";
-import { GeotabContextualSpeedTab } from "@/components/instructor/geotab/GeotabContextualSpeedTab";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface LiveTelemetryTabProps {
@@ -32,7 +29,7 @@ export function LiveTelemetryTab({
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(
     preferredDeviceId || devices[0]?.id || null
   );
-  const [activeSubTab, setActiveSubTab] = useState<"devices" | "battery" | "ignition" | "gps" | "sensors" | "faults" | "speeding">("devices");
+  const [activeSubTab, setActiveSubTab] = useState<"devices" | "battery" | "ignition" | "gps">("devices");
 
   useEffect(() => {
     if (devices.length > 0 && (!selectedDeviceId || !devices.find(d => d.id === selectedDeviceId))) {
@@ -44,7 +41,6 @@ export function LiveTelemetryTab({
   const { data: ignitionEvents, isLoading: ignitionLoading } = useAllIgnitionEvents();
 
   const selectedDevice = devices.find(d => d.id === selectedDeviceId);
-  const hasGeotab = true;
 
   if (isLoading) {
     return (
@@ -101,9 +97,6 @@ export function LiveTelemetryTab({
           <TabsTrigger value="gps" className="text-xs flex-1">GPS</TabsTrigger>
           <TabsTrigger value="battery" className="text-xs flex-1">Battery</TabsTrigger>
           <TabsTrigger value="ignition" className="text-xs flex-1">Ignition</TabsTrigger>
-          {hasGeotab && <TabsTrigger value="sensors" className="text-xs flex-1">Sensors</TabsTrigger>}
-          {hasGeotab && <TabsTrigger value="faults" className="text-xs flex-1">Faults</TabsTrigger>}
-          {hasGeotab && <TabsTrigger value="speeding" className="text-xs flex-1">Speeding</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="devices" className="mt-4 space-y-3">
@@ -148,24 +141,6 @@ export function LiveTelemetryTab({
             showDeviceName={devices.length > 1}
           />
         </TabsContent>
-
-        {hasGeotab && (
-          <TabsContent value="sensors" className="mt-4">
-            <GeotabExtendedDiagnosticsTab />
-          </TabsContent>
-        )}
-
-        {hasGeotab && (
-          <TabsContent value="faults" className="mt-4">
-            <GeotabFaultCodesTab />
-          </TabsContent>
-        )}
-
-        {hasGeotab && (
-          <TabsContent value="speeding" className="mt-4">
-            <GeotabContextualSpeedTab />
-          </TabsContent>
-        )}
       </Tabs>
     </div>
   );

@@ -24,13 +24,6 @@ interface DeviceSelectorDropdownProps {
   onDeviceChange: (deviceId: string, provider: string | null) => void;
 }
 
-function formatProvider(provider: string | null): string {
-  if (!provider) return "";
-  if (provider === "geotab") return "GPS";
-  if (provider === "radius") return "Radius";
-  return provider.charAt(0).toUpperCase() + provider.slice(1);
-}
-
 export function DeviceSelectorDropdown({
   instructorId,
   currentDeviceId,
@@ -46,6 +39,7 @@ export function DeviceSelectorDropdown({
         .from("gps_devices")
         .select("id, device_identifier, device_name, tracking_provider, is_active, last_seen_at")
         .eq("instructor_id", instructorId)
+        .eq("tracking_provider", "radius")
         .order("last_seen_at", { ascending: false, nullsFirst: false });
       if (data) setDevices(data);
     };
@@ -53,8 +47,8 @@ export function DeviceSelectorDropdown({
     fetchDevices();
   }, [instructorId]);
 
-  // Don't render if no devices at all
-  if (devices.length === 0) return null;
+  // Hide if 0 or 1 device
+  if (devices.length <= 1) return null;
 
   return (
     <div className="flex items-center gap-3">
@@ -74,14 +68,7 @@ export function DeviceSelectorDropdown({
         <SelectContent>
           {devices.map((device) => (
             <SelectItem key={device.id} value={device.id}>
-              <span className="flex items-center gap-2">
-                <span>{device.device_name || device.device_identifier}</span>
-                {device.tracking_provider && (
-                  <span className="text-xs text-muted-foreground">
-                    ({formatProvider(device.tracking_provider)})
-                  </span>
-                )}
-              </span>
+              {device.device_name || device.device_identifier}
             </SelectItem>
           ))}
         </SelectContent>

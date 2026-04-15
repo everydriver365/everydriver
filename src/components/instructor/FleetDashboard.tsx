@@ -12,7 +12,6 @@ import { useDriverTimesheets } from "@/hooks/useDriverTimesheets";
 import { TrackedLessons } from "./TrackedLessons";
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { format, subDays, formatDistanceToNow } from "date-fns";
-import { useGeotabDriverEvents } from "@/hooks/useGeotabDriverEvents";
 import { useQuery } from "@tanstack/react-query";
 
 interface FleetDashboardProps {
@@ -64,9 +63,7 @@ export function FleetDashboard({ instructorId, onTabChange }: FleetDashboardProp
   const toDate = useMemo(() => new Date(), [rangeDays]);
   const { timesheets, loading: tsLoading } = useDriverTimesheets(instructorId, fromDate, toDate);
 
-  // Live driver score from driver events
-  const { data: driverData } = useGeotabDriverEvents(instructorId, fromDate, toDate);
-  const driverScore = driverData?.scores?.overall ?? null;
+  const driverScore: number | null = null;
 
   // Live speeding event count
   const { data: speedingCount } = useQuery({

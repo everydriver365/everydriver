@@ -56,7 +56,7 @@ const InstructorTripReplay = lazy(() => import("@/pages/InstructorTripReplay"));
 const InstructorFleetDashboard = lazy(() => import("@/pages/InstructorFleetDashboard"));
 const InstructorLiveSession = lazy(() => import("@/pages/InstructorLiveSession"));
 const InstructorGPSSetup = lazy(() => import("@/pages/InstructorGPSSetup"));
-const InstructorGeotabHub = lazy(() => import("@/pages/InstructorGeotabHub"));
+
 const DashcamGallery = lazy(() => import("@/pages/instructor/DashcamGallery"));
 const InstructorFindNearby = lazy(() => import("@/pages/InstructorFindNearby"));
 const InstructorNearbyFriends = lazy(() => import("@/pages/InstructorNearbyFriends"));
@@ -181,7 +181,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/settings/gps" element={<Gated feature="telematics" label="GPS Setup"><InstructorGPSSetup /></Gated>} />
     <Route path="/instructor/settings/tracking" element={<Gated feature="telematics" label="GPS Setup"><InstructorGPSSetup /></Gated>} />
     
-    <Route path="/instructor/geotab" element={<Gated feature="telematics" label="Geotab Hub"><InstructorGeotabHub /></Gated>} />
+    
     <Route path="/instructor/dashcam" element={<Gated feature="dashcam" label="Dashcam"><DashcamGallery /></Gated>} />
     <Route path="/instructor/find-nearby" element={<InstructorFindNearby />} />
     <Route path="/instructor/nearby-friends" element={<InstructorNearbyFriends />} />
