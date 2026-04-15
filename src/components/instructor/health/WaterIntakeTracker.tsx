@@ -11,9 +11,19 @@ export function WaterIntakeTracker() {
   const isGoalReached = currentCount >= waterGoal;
 
   // Calculate circumference for progress ring
-  const radius = 45;
+  const radius = 42;
+  const strokeWidth = 12;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  const gradientColors = isGoalReached
+    ? { start: "#10b981", end: "#06b6d4" }
+    : { start: "#0ea5e9", end: "#8b5cf6" };
+  const glowColor = isGoalReached ? "rgba(16,185,129,0.4)" : "rgba(14,165,233,0.4)";
+
+  const tipAngle = (progress / 100) * 2 * Math.PI - Math.PI / 2;
+  const tipX = 56 + radius * Math.cos(tipAngle);
+  const tipY = 56 + radius * Math.sin(tipAngle);
 
   return (
     <Card className="border-sky-200/50 dark:border-sky-900/30">
@@ -30,6 +40,12 @@ export function WaterIntakeTracker() {
           {/* Progress Ring */}
           <div className="relative flex-shrink-0">
             <svg className="w-28 h-28 transform -rotate-90">
+              <defs>
+                <linearGradient id="waterGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor={gradientColors.start} />
+                  <stop offset="100%" stopColor={gradientColors.end} />
+                </linearGradient>
+              </defs>
               {/* Background circle */}
               <circle
                 cx="56"
@@ -37,8 +53,8 @@ export function WaterIntakeTracker() {
                 r={radius}
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="8"
-                className="text-sky-100 dark:text-sky-900/30"
+                strokeWidth={strokeWidth}
+                className="text-sky-100/10 dark:text-sky-900/10"
               />
               {/* Progress circle */}
               <circle
@@ -46,18 +62,17 @@ export function WaterIntakeTracker() {
                 cy="56"
                 r={radius}
                 fill="none"
-                stroke="currentColor"
-                strokeWidth="8"
+                stroke="url(#waterGrad)"
+                strokeWidth={strokeWidth}
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
-                className={cn(
-                  "transition-all duration-500",
-                  isGoalReached
-                    ? "text-emerald-500 dark:text-emerald-400"
-                    : "text-sky-500 dark:text-sky-400"
-                )}
+                className="transition-all duration-500"
+                style={{ filter: `drop-shadow(0 0 6px ${glowColor})` }}
               />
+              {progress > 2 && (
+                <circle cx={tipX} cy={tipY} r={strokeWidth / 2 + 1} fill={gradientColors.end} opacity="0.5" style={{ filter: "blur(2px)" }} />
+              )}
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-2xl font-bold">{currentCount}</span>

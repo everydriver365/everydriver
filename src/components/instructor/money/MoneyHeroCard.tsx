@@ -29,7 +29,8 @@ export function MoneyHeroCard({
   // Calculate progress towards a typical monthly target (£4000)
   const monthlyTarget = 4000;
   const progress = Math.min((thisMonth / monthlyTarget) * 100, 100);
-  const circumference = 2 * Math.PI * 58;
+  const moneyRadius = 42;
+  const circumference = 2 * Math.PI * moneyRadius;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
@@ -97,27 +98,26 @@ export function MoneyHeroCard({
               <circle
                 cx="50"
                 cy="50"
-                r="45"
+                r={moneyRadius}
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="8"
+                strokeWidth="12"
                 className="text-white/10"
               />
               {/* Progress ring with gradient */}
               <defs>
                 <linearGradient id="moneyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#34d399" />
-                  <stop offset="50%" stopColor="#10b981" />
-                  <stop offset="100%" stopColor="#059669" />
+                  <stop offset="100%" stopColor="#06b6d4" />
                 </linearGradient>
               </defs>
               <motion.circle
                 cx="50"
                 cy="50"
-                r="45"
+                r={moneyRadius}
                 fill="none"
                 stroke="url(#moneyGradient)"
-                strokeWidth="8"
+                strokeWidth="12"
                 strokeLinecap="round"
                 strokeDasharray={circumference}
                 initial={{ strokeDashoffset: circumference }}

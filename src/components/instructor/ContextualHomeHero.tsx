@@ -144,9 +144,16 @@ export function ContextualHomeHero({
   const hoursRemaining = Math.max(hoursGoal - hoursThisWeek, 0);
 
   // SVG ring math
-  const radius = 28;
+  const radius = 25;
+  const ringStroke = 8;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (clampedProgress / 100) * circumference;
+  const heroGradientColors = clampedProgress >= 80
+    ? { start: "#22c55e", end: "#06b6d4" }
+    : clampedProgress >= 50
+    ? { start: "#eab308", end: "#22c55e" }
+    : { start: "#ef4444", end: "#f97316" };
+  const heroGlowColor = clampedProgress >= 80 ? "rgba(34,197,94,0.4)" : clampedProgress >= 50 ? "rgba(234,179,8,0.4)" : "rgba(239,68,68,0.4)";
 
   // Parallax
   const { scrollY } = useScroll();
@@ -245,20 +252,25 @@ export function ContextualHomeHero({
               <div className="flex-shrink-0">
                 <div className="relative w-[72px] h-[72px]">
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 72 72">
+                    <defs>
+                      <linearGradient id="heroWeeklyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor={heroGradientColors.start} />
+                        <stop offset="100%" stopColor={heroGradientColors.end} />
+                      </linearGradient>
+                    </defs>
                     <circle
                       cx="36" cy="36" r={radius}
-                      fill="none" stroke="currentColor" strokeWidth="5"
-                      className="text-muted/20"
+                      fill="none" stroke="currentColor" strokeWidth={ringStroke}
+                      className="text-muted/10"
                     />
                     <motion.circle
                       cx="36" cy="36" r={radius}
-                      fill="none" strokeWidth="5" strokeLinecap="round"
-                      className="text-emerald-500"
-                      stroke="currentColor"
+                      fill="none" strokeWidth={ringStroke} strokeLinecap="round"
+                      stroke="url(#heroWeeklyGrad)"
                       initial={{ strokeDashoffset: circumference }}
                       animate={{ strokeDashoffset }}
                       transition={{ duration: 1, ease: "easeOut" }}
-                      style={{ strokeDasharray: circumference }}
+                      style={{ strokeDasharray: circumference, filter: `drop-shadow(0 0 4px ${heroGlowColor})` }}
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">

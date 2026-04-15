@@ -38,9 +38,24 @@ export function TestReadinessCard({ progress, totalHoursCompleted, brandColour }
   }, [progress, totalHoursCompleted]);
 
   // SVG circular gauge
-  const radius = 50;
+  const radius = 46;
+  const strokeWidth = 12;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (score / 100) * circumference;
+
+  const gradientColors = score >= 80
+    ? { start: "#22c55e", end: "#06b6d4" }
+    : score >= 60
+    ? { start: "#eab308", end: "#22c55e" }
+    : score >= 30
+    ? { start: "#f97316", end: "#eab308" }
+    : { start: "#ef4444", end: "#f97316" };
+
+  const glowColor = score >= 80 ? "rgba(34,197,94,0.4)" : score >= 60 ? "rgba(234,179,8,0.4)" : score >= 30 ? "rgba(249,115,22,0.4)" : "rgba(239,68,68,0.4)";
+
+  const tipAngle = (score / 100) * 2 * Math.PI - Math.PI / 2;
+  const tipX = 60 + radius * Math.cos(tipAngle);
+  const tipY = 60 + radius * Math.sin(tipAngle);
 
   return (
     <Card style={{ backgroundColor: "var(--brand-card)", borderColor: "var(--brand-border)" }}>
@@ -54,23 +69,32 @@ export function TestReadinessCard({ progress, totalHoursCompleted, brandColour }
         <div className="flex items-center justify-center">
           <div className="relative w-32 h-32">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r={radius} fill="none" stroke="currentColor" strokeWidth="8" className="text-muted/20" />
+              <defs>
+                <linearGradient id="pupilReadinessGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor={gradientColors.start} />
+                  <stop offset="100%" stopColor={gradientColors.end} />
+                </linearGradient>
+              </defs>
+              <circle cx="60" cy="60" r={radius} fill="none" stroke="currentColor" strokeWidth={strokeWidth} className="text-muted/10" />
               <circle
                 cx="60" cy="60" r={radius}
                 fill="none"
-                stroke={color}
-                strokeWidth="8"
+                stroke="url(#pupilReadinessGrad)"
+                strokeWidth={strokeWidth}
                 strokeLinecap="round"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
-                style={{ transition: "stroke-dashoffset 1s ease" }}
+                style={{ transition: "stroke-dashoffset 1s ease", filter: `drop-shadow(0 0 6px ${glowColor})` }}
               />
+              {score > 2 && (
+                <circle cx={tipX} cy={tipY} r={strokeWidth / 2 + 1} fill={gradientColors.end} opacity="0.5" style={{ filter: "blur(2px)" }} />
+              )}
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-2xl font-bold" style={{ color: "var(--brand-foreground)" }}>
                 {score}%
               </span>
-              <span className="text-[10px] font-medium" style={{ color }}>
+              <span className="text-[10px] font-medium" style={{ color: gradientColors.end }}>
                 {label}
               </span>
             </div>
