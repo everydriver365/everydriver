@@ -318,6 +318,30 @@ export default function InstructorFleetMap() {
     }
   }, [devices, mapReady, showSignalLost, isColleagueMode]);
 
+  // Disable auto-follow when user manually pans/zooms
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
+    const dragListener = map.addListener("dragstart", () => {
+      userInteractedRef.current = true;
+      setAutoFollow(false);
+    });
+    return () => { google.maps.event.removeListener(dragListener); };
+  }, [mapReady]);
+
+  // Auto-follow: when only one active device, pan to it on every update
+  useEffect(() => {
+    if (!autoFollow || !mapReady || !mapRef.current) return;
+    const activeDevices = devices.filter((d) => !isSignalLost(d) && d.last_latitude && d.last_longitude);
+    if (activeDevices.length === 1) {
+      const d = activeDevices[0];
+      mapRef.current.panTo({ lat: Number(d.last_latitude), lng: Number(d.last_longitude) });
+      if (mapRef.current.getZoom()! < 14) {
+        mapRef.current.setZoom(16);
+      }
+    }
+  }, [devices, autoFollow, mapReady]);
+
   const fitBounds = useCallback(() => {
     if (!mapRef.current) return;
     const bounds = new google.maps.LatLngBounds();
