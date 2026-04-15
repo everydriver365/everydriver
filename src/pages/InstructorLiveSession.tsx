@@ -84,7 +84,8 @@ export default function InstructorLiveSession() {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [device, setDevice] = useState<GPSDevice | null>(null);
+ const [viewMode, setViewMode] = useState<"live" | "fleet">("live");
+ const [device, setDevice] = useState<GPSDevice | null>(null);
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [selectedPupilId, setSelectedPupilId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
