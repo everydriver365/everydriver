@@ -191,6 +191,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "payment-reconciliation": { title: "Payment Reconciliation", group: "Finance & Payments", icon: ArrowUpDown },
   "school-manager": { title: "School Manager", group: "Schools", icon: Users },
   "school-fees": { title: "Franchise Fees", group: "Schools", icon: PoundSterling },
+  "events": { title: "Upcoming Events", group: "Engagement & Rewards", icon: CalendarDays },
 };
 
 export default function AdminPortal() {
