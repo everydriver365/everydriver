@@ -1,6 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
-import { CloudRain, Snowflake, Wind, CloudFog, Sun, CloudLightning, Thermometer, AlertTriangle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  CloudRain, Snowflake, Wind, CloudFog, Sun, CloudLightning,
+  AlertTriangle, Car, Clock, Construction, Ban, MapPin,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { DrivingAlert } from "@/hooks/useDrivingAlerts";
 
 // WMO Weather interpretation codes mapping
 const getWeatherInfo = (code: number) => {
@@ -23,11 +28,27 @@ const severityStyles = {
   danger: "bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-300",
 };
 
+const trafficIconMap: Record<string, React.ElementType> = {
+  Car,
+  AlertTriangle,
+  Construction,
+  Ban,
+};
+
 interface WeatherData {
   temperature: number;
   weatherCode: number;
   windSpeed: number;
   isIcy: boolean;
+}
+
+interface WeatherAlertBannerProps {
+  className?: string;
+  trafficAlerts?: DrivingAlert[];
+  onDismissTraffic?: (alertId: string) => void;
+  nextLessonMinutesUntil?: number;
+  nextLessonEtaMinutes?: number | null;
+  nextLessonPupilName?: string;
 }
 
 async function fetchWeather(lat: number, lon: number): Promise<WeatherData> {
@@ -43,53 +64,130 @@ async function fetchWeather(lat: number, lon: number): Promise<WeatherData> {
   };
 }
 
-export function WeatherAlertBanner({ className = "" }: { className?: string }) {
+export function WeatherAlertBanner({
+  className = "",
+  trafficAlerts = [],
+  onDismissTraffic,
+  nextLessonMinutesUntil,
+  nextLessonEtaMinutes,
+  nextLessonPupilName,
+}: WeatherAlertBannerProps) {
   const { data: weather } = useQuery({
     queryKey: ["weather-alert"],
     queryFn: async () => {
-      // Try browser geolocation, fallback to London
       try {
         const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
           navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
         );
         return fetchWeather(pos.coords.latitude, pos.coords.longitude);
       } catch {
-        return fetchWeather(51.5074, -0.1278); // London fallback
+        return fetchWeather(51.5074, -0.1278);
       }
     },
-    staleTime: 15 * 60 * 1000, // 15 min
+    staleTime: 15 * 60 * 1000,
     refetchInterval: 15 * 60 * 1000,
   });
 
-  if (!weather) return null;
+  // Weather alert
+  let weatherAlert: { message: string; severity: "low" | "warning" | "danger"; Icon: React.ElementType } | null = null;
+  if (weather) {
+    const info = getWeatherInfo(weather.weatherCode);
+    const hasWeatherAlert = info.severity !== "none" || weather.isIcy || weather.windSpeed > 50;
+    if (hasWeatherAlert) {
+      const Icon = weather.isIcy ? Snowflake : info.icon;
+      const severity = weather.isIcy ? "danger" as const : info.severity === "none" ? "warning" as const : info.severity;
+      const message = weather.isIcy
+        ? `Ice risk — ${weather.temperature}°C. Roads may be slippery.`
+        : weather.windSpeed > 50
+          ? `High winds — ${Math.round(weather.windSpeed)} km/h. Take extra care.`
+          : `${info.label} — ${weather.temperature}°C. Drive carefully.`;
+      weatherAlert = { message, severity, Icon };
+    }
+  }
 
-  const info = getWeatherInfo(weather.weatherCode);
-  const hasAlert = info.severity !== "none" || weather.isIcy || weather.windSpeed > 50;
+  // Running late detection
+  const isRunningLate = nextLessonEtaMinutes != null
+    && nextLessonMinutesUntil != null
+    && nextLessonMinutesUntil > 0
+    && nextLessonMinutesUntil <= 120
+    && nextLessonEtaMinutes > nextLessonMinutesUntil;
 
-  if (!hasAlert) return null;
+  const lateByMinutes = isRunningLate && nextLessonEtaMinutes != null && nextLessonMinutesUntil != null
+    ? Math.round(nextLessonEtaMinutes - nextLessonMinutesUntil)
+    : 0;
 
-  const Icon = weather.isIcy ? Snowflake : info.icon;
-  const severity = weather.isIcy ? "danger" : info.severity === "none" ? "warning" : info.severity;
-
-  const alertMessage = weather.isIcy
-    ? `Ice risk — ${weather.temperature}°C. Roads may be slippery.`
-    : weather.windSpeed > 50
-      ? `High winds — ${Math.round(weather.windSpeed)} km/h. Take extra care.`
-      : `${info.label} — ${weather.temperature}°C. Drive carefully.`;
+  const hasAnything = weatherAlert || trafficAlerts.length > 0 || isRunningLate;
+  if (!hasAnything) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`rounded-2xl border p-3 flex items-center gap-3 ${severityStyles[severity]} ${className}`}
-    >
-      <div className="h-9 w-9 rounded-2xl bg-current/10 flex items-center justify-center shrink-0">
-        <Icon className="h-4.5 w-4.5" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-semibold">Weather Alert</p>
-        <p className="text-[11px] opacity-80 mt-0.5">{alertMessage}</p>
-      </div>
-    </motion.div>
+    <div className={cn("space-y-2", className)}>
+      <AnimatePresence mode="popLayout">
+        {/* Running Late Alert */}
+        {isRunningLate && (
+          <motion.div
+            key="running-late"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="rounded-2xl border p-3 flex items-center gap-3 bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-300"
+          >
+            <div className="h-9 w-9 rounded-2xl bg-red-500/15 flex items-center justify-center shrink-0">
+              <Clock className="h-4.5 w-4.5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-semibold">Running Late</p>
+              <p className="text-[11px] opacity-80 mt-0.5">
+                ~{lateByMinutes} min late for {nextLessonPupilName || "next lesson"}.
+                ETA {Math.round(nextLessonEtaMinutes!)} min, lesson in {nextLessonMinutesUntil} min.
+              </p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Weather Alert */}
+        {weatherAlert && (
+          <motion.div
+            key="weather"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className={`rounded-2xl border p-3 flex items-center gap-3 ${severityStyles[weatherAlert.severity]}`}
+          >
+            <div className="h-9 w-9 rounded-2xl bg-current/10 flex items-center justify-center shrink-0">
+              <weatherAlert.Icon className="h-4.5 w-4.5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-semibold">Weather Alert</p>
+              <p className="text-[11px] opacity-80 mt-0.5">{weatherAlert.message}</p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Traffic Alerts */}
+        {trafficAlerts.map((alert, i) => {
+          const TrafficIcon = trafficIconMap[alert.icon] || AlertTriangle;
+          const severity = alert.severity === "severe" ? "danger" as const
+            : alert.severity === "moderate" ? "warning" as const
+            : "low" as const;
+          return (
+            <motion.div
+              key={`traffic-${i}`}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className={`rounded-2xl border p-3 flex items-center gap-3 ${severityStyles[severity]}`}
+            >
+              <div className="h-9 w-9 rounded-2xl bg-current/10 flex items-center justify-center shrink-0">
+                <TrafficIcon className="h-4.5 w-4.5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-semibold">{alert.title}</p>
+                <p className="text-[11px] opacity-80 mt-0.5">{alert.description}</p>
+              </div>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
+    </div>
   );
 }
