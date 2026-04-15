@@ -261,7 +261,7 @@ export function HomepageHero({
                       </p>
                       <p style={{ fontSize: 12, color: "#8E8E93" }}>{slide.subtitle}</p>
                       {/* Progress bar */}
-                      <div style={{ height: 4, borderRadius: 2, backgroundColor: "#E5E5EA", marginTop: 10, overflow: "hidden" }}>
+                      <div style={{ height: 4, borderRadius: 2, backgroundColor: slide.total === 0 ? "rgba(0,122,255,0.15)" : "#E5E5EA", marginTop: 10, overflow: "hidden" }}>
                         <motion.div
                           style={{ height: "100%", borderRadius: 2, background: "linear-gradient(90deg, #34C759, #30B0C7)" }}
                           initial={{ width: 0 }}
