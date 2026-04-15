@@ -14,7 +14,8 @@ import {
   Clock,
   Settings,
   Loader2,
-  ExternalLink
+  ExternalLink,
+  MapPin
 } from "lucide-react";
 import TripSummarySheet from "@/components/instructor/TripSummarySheet";
 import { autoCaptureLessonRoute } from "@/hooks/useLessonRouteAutoCapture";
@@ -945,6 +946,18 @@ export default function InstructorLiveSession() {
               }
               ignitionOn={device.last_ignition_status}
             />
+
+           {/* Fleet Map Link */}
+           <button
+             onClick={() => navigate("/instructor/fleet-map")}
+             className="w-full flex items-center justify-between p-3 rounded-xl bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors mb-3"
+           >
+             <div className="flex items-center gap-2">
+               <MapPin className="h-4 w-4 text-primary" />
+               <span className="text-sm font-medium text-foreground">Fleet Map</span>
+             </div>
+             <span className="text-xs text-muted-foreground">View all vehicles →</span>
+           </button>
 
            {/* Mini Live Map Preview */}
            <MiniLiveMap
