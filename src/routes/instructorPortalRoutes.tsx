@@ -56,6 +56,8 @@ const InstructorTripReplay = lazy(() => import("@/pages/InstructorTripReplay"));
 const InstructorFleetDashboard = lazy(() => import("@/pages/InstructorFleetDashboard"));
 const InstructorLiveSession = lazy(() => import("@/pages/InstructorLiveSession"));
 const InstructorGPSSetup = lazy(() => import("@/pages/InstructorGPSSetup"));
+const InstructorFleetMap = lazy(() => import("@/pages/InstructorFleetMap"));
+const InstructorOverspeedHistory = lazy(() => import("@/pages/InstructorOverspeedHistory"));
 
 const DashcamGallery = lazy(() => import("@/pages/instructor/DashcamGallery"));
 const InstructorFindNearby = lazy(() => import("@/pages/InstructorFindNearby"));
