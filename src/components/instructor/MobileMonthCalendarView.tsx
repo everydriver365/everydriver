@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameDay, isSameMonth, isToday, parseISO, isSunday } from "date-fns";
-import { ChevronLeft, ChevronRight, CalendarDays, Clock, Loader2, Calendar } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, Loader2, Calendar, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +17,9 @@ interface DayEvents {
     duration_minutes: number;
     lesson_type: string;
     status: string;
-    pupil: { name: string } | null;
+    payment_status: string | null;
+    pickup_location: string | null;
+    pupil: { name: string; address: string | null } | null;
   }>;
   external: Array<{
     id: string;
@@ -28,6 +29,39 @@ interface DayEvents {
     color: string | null;
     is_all_day: boolean;
   }>;
+}
+
+const lessonTypeBarColors: Record<string, string> = {
+  standard: "#3b82f6",
+  test_prep: "#f59e0b",
+  mock_test: "#f43f5e",
+  motorway: "#10b981",
+  refresher: "#06b6d4",
+  intensive: "#8b5cf6",
+  first_lesson: "#22c55e",
+  pass_plus: "#6366f1",
+  driving_test: "#f97316",
+};
+
+const courseTypeLabels: Record<string, string> = {
+  standard: "Standard",
+  test_prep: "Test Prep",
+  mock_test: "Mock Test",
+  motorway: "Motorway",
+  refresher: "Refresher",
+  intensive: "Intensive",
+  first_lesson: "First Lesson",
+  pass_plus: "Pass Plus",
+  driving_test: "Driving Test",
+};
+
+function contrastText(hex: string): string {
+  const c = hex.replace("#", "");
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.6 ? "text-gray-900" : "text-white";
 }
 
 export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarViewProps) {
@@ -44,7 +78,6 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
 
-  // Build grid of days
   const calendarDays = useMemo(() => {
     const days: Date[] = [];
     let day = calendarStart;
@@ -55,7 +88,6 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
     return days;
   }, [calendarStart.getTime(), calendarEnd.getTime()]);
 
-  // Fetch dots for the visible month range
   const fetchDots = useCallback(async () => {
     setLoading(true);
     const from = format(calendarStart, "yyyy-MM-dd");
@@ -103,7 +135,6 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
 
   useEffect(() => { fetchDots(); }, [fetchDots]);
 
-  // Fetch events for selected date
   const fetchDayEvents = useCallback(async () => {
     setEventsLoading(true);
     const dateStr = format(selectedDate, "yyyy-MM-dd");
@@ -114,7 +145,7 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
       const [lessonsRes, externalRes] = await Promise.all([
         supabase
           .from("scheduled_lessons")
-          .select("id, lesson_date, start_time, duration_minutes, lesson_type, status, pupil:pupils(name)")
+          .select("id, lesson_date, start_time, duration_minutes, lesson_type, status, payment_status, pickup_location, pupil:pupils(name, address)")
           .eq("instructor_id", instructorId)
           .eq("lesson_date", dateStr)
           .neq("status", "cancelled")
@@ -169,26 +200,8 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
   };
 
   const allDayEvents = dayEvents.external.filter(e => e.is_all_day);
-  const timedEvents = [
-    ...dayEvents.lessons.map(l => ({
-      id: l.id,
-      type: 'lesson' as const,
-      title: l.pupil?.name || "Lesson",
-      time: formatTime(l.start_time),
-      endTime: getEndTime(l.start_time, l.duration_minutes),
-      sortKey: l.start_time,
-      color: null as string | null,
-    })),
-    ...dayEvents.external.filter(e => !e.is_all_day).map(e => ({
-      id: e.id,
-      type: 'external' as const,
-      title: e.title,
-      time: format(parseISO(e.start_time), "HH:mm"),
-      endTime: format(parseISO(e.end_time), "HH:mm"),
-      sortKey: format(parseISO(e.start_time), "HH:mm"),
-      color: e.color,
-    })),
-  ].sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+  const timedLessons = dayEvents.lessons.sort((a, b) => a.start_time.localeCompare(b.start_time));
+  const timedExternal = dayEvents.external.filter(e => !e.is_all_day).sort((a, b) => a.start_time.localeCompare(b.start_time));
 
   const weekDayHeaders = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -245,7 +258,6 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
               )}
             >
               <span className="text-sm font-medium leading-none">{format(day, "d")}</span>
-              {/* Dot indicators */}
               <div className="flex gap-0.5 mt-1 h-1.5">
                 {hasLessons && (
                   <span className={cn("w-1.5 h-1.5 rounded-full", selected ? "bg-white/70" : "bg-amber-500")} />
@@ -263,8 +275,8 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
       <div className="border-t border-border mt-2" />
 
       {/* Selected Day Events */}
-      <div className="flex-1 overflow-y-auto px-2 py-3 space-y-2">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
+      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1.5">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-2">
           {format(selectedDate, "EEEE, d MMMM")}
         </p>
 
@@ -272,7 +284,7 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
-        ) : allDayEvents.length === 0 && timedEvents.length === 0 ? (
+        ) : allDayEvents.length === 0 && timedLessons.length === 0 && timedExternal.length === 0 ? (
           <div className="flex flex-col items-center py-8 text-center">
             <Calendar className="h-8 w-8 text-muted-foreground/40 mb-2" />
             <p className="text-sm text-muted-foreground">No events</p>
@@ -280,36 +292,74 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
         ) : (
           <>
             {/* All-day events */}
-            {allDayEvents.map((evt) => (
-              <div
-                key={evt.id}
-                className="bg-warning/10 rounded-2xl border border-foreground px-4 py-2.5 flex items-center gap-2"
-              >
-                <CalendarDays className="h-3.5 w-3.5 text-warning shrink-0" />
-                <span className="text-sm font-bold text-foreground truncate flex-1">{evt.title}</span>
-                <span className="text-xs text-foreground/70 shrink-0">all-day</span>
-              </div>
-            ))}
-
-            {/* Timed events */}
-            {timedEvents.map((evt) => (
-              <div
-                key={evt.id}
-                className="rounded-2xl border border-border px-4 py-2.5 flex items-center justify-between bg-card"
-              >
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                  {evt.type === 'external' && evt.color ? (
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: evt.color }} />
-                  ) : (
-                    <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  )}
-                  <span className="text-sm text-foreground truncate">{evt.title}</span>
+            {allDayEvents.map((evt) => {
+              const bgColor = evt.color || "#039be5";
+              return (
+                <div
+                  key={evt.id}
+                  className="rounded-lg px-3 py-2"
+                  style={{ backgroundColor: bgColor }}
+                >
+                  <span className={`text-[13px] font-semibold ${contrastText(bgColor)}`}>{evt.title}</span>
                 </div>
-                <span className="text-xs text-muted-foreground shrink-0 ml-2">
-                  {evt.time}
-                </span>
-              </div>
-            ))}
+              );
+            })}
+
+            {/* Lessons - matching schedule view design */}
+            {timedLessons.map((lesson) => {
+              const barColor = lessonTypeBarColors[lesson.lesson_type] || "#3b82f6";
+              const paid = lesson.payment_status === "paid";
+              return (
+                <div
+                  key={lesson.id}
+                  className="rounded-lg px-3 py-2.5 space-y-0.5"
+                  style={{ backgroundColor: barColor }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[13px] font-bold text-white truncate">
+                      {lesson.pupil?.name || "Unknown"}
+                    </span>
+                    {!paid && (
+                      <span className="text-[10px] font-semibold bg-white/25 text-white rounded px-1.5 py-0.5">
+                        Unpaid
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-white/90 text-[12px]">
+                    <span>{formatTime(lesson.start_time)} – {getEndTime(lesson.start_time, lesson.duration_minutes)}</span>
+                    <span className="text-white/60">·</span>
+                    <span>{courseTypeLabels[lesson.lesson_type] || lesson.lesson_type}</span>
+                  </div>
+                  {(lesson.pickup_location || lesson.pupil?.address) && (
+                    <div className="flex items-center gap-1 text-white/75 text-[11px]">
+                      <MapPin className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{lesson.pickup_location || lesson.pupil?.address}</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* External events - matching schedule view design */}
+            {timedExternal.map((evt) => {
+              const bgColor = evt.color || "#039be5";
+              const startDt = parseISO(evt.start_time);
+              const endDt = parseISO(evt.end_time);
+              return (
+                <div
+                  key={evt.id}
+                  className="rounded-lg px-3 py-2.5 space-y-0.5"
+                  style={{ backgroundColor: bgColor }}
+                >
+                  <span className={`text-[13px] font-bold ${contrastText(bgColor)}`}>
+                    {evt.title}
+                  </span>
+                  <div className={`text-[12px] ${contrastText(bgColor)} opacity-80`}>
+                    {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")}
+                  </div>
+                </div>
+              );
+            })}
           </>
         )}
       </div>
