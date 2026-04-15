@@ -84,6 +84,7 @@ import { ImpactAlertCard } from "@/components/instructor/ImpactAlertCard";
 import calendarIcon from "@/assets/calendar-icon.png";
 import instructorBg from "@/assets/instructor-bg-signs.png";
 import { WeatherAlertBanner } from "@/components/instructor/WeatherAlertBanner";
+import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { VehicleHealthCard } from "@/components/instructor/VehicleHealthCard";
 import { IdleTimeCostCard } from "@/components/instructor/IdleTimeCostCard";
 
