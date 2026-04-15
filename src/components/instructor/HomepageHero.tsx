@@ -224,6 +224,29 @@ export function HomepageHero({
             />
           ))}
         </div>
+
+        {/* Bottom stat strip */}
+        <div style={{ borderTop: "0.5px solid #E5E5EA", backgroundColor: "#F9F9FB" }}>
+          <div className="grid grid-cols-4">
+            {[
+              { label: "This week", value: String(weeklyLessonsTotal), color: "#000" },
+              { label: "Earnings", value: `£${weeklyEarnings}`, color: "#30D158" },
+              { label: "Messages", value: String(unreadMessages), color: "#D97706" },
+              { label: "Job offer", value: String(pendingJobs), color: "#0A7AFF" },
+            ].map((stat, i) => (
+              <div
+                key={stat.label}
+                className="flex flex-col items-center py-2.5"
+                style={{ borderRight: i < 3 ? "0.5px solid #E5E5EA" : "none" }}
+              >
+                <span style={{ fontSize: 16, fontWeight: 700, color: stat.color, fontVariantNumeric: "tabular-nums" }}>
+                  {stat.value}
+                </span>
+                <span style={{ fontSize: 10, color: "#8E8E93", marginTop: 1 }}>{stat.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
