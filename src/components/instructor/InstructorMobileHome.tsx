@@ -438,6 +438,9 @@ export function InstructorMobileHome({
         monthlyCompleted={monthlyGoals?.lessonsCompleted || 0}
         monthlyScheduled={monthlyGoals?.lessonsScheduled || 0}
         monthlyTotal={monthlyGoals?.lessonsThisMonth || 0}
+        weeklyEarnings={weeklyGoals?.earningsThisWeek || 0}
+        unreadMessages={pupilMsgCount || 0}
+        pendingJobs={pendingJobsCount}
       />
 
       {/* Sticky next-up bar */}
