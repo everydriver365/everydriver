@@ -124,7 +124,14 @@ export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive
 
       const trail = points.map(p => new google.maps.LatLng(p.latitude, p.longitude));
       pathRef.current = trail;
-      polylineRef.current?.setPath(trail);
+
+      // Bridge trail to current live position
+      if (latitude != null && longitude != null) {
+        const livePt = new google.maps.LatLng(latitude, longitude);
+        pathRef.current.push(livePt);
+      }
+
+      polylineRef.current?.setPath(pathRef.current);
 
       // Fit bounds to show entire trail
       const bounds = new google.maps.LatLngBounds();
@@ -157,8 +164,8 @@ export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive
     // Append to route polyline (deduplicate close points)
     const lastPt = pathRef.current[pathRef.current.length - 1];
     const shouldAdd = !lastPt ||
-      Math.abs(lastPt.lat() - latitude) > 0.00005 ||
-      Math.abs(lastPt.lng() - longitude) > 0.00005;
+      Math.abs(lastPt.lat() - latitude) > 0.000005 ||
+      Math.abs(lastPt.lng() - longitude) > 0.000005;
 
     if (shouldAdd) {
       pathRef.current.push(latLng);
