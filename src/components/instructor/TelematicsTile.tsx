@@ -46,32 +46,16 @@ export function TelematicsTile() {
       >
         <button
           onClick={() => setExpanded(v => !v)}
-          className="w-full flex items-center gap-3 px-4 py-3 text-left relative overflow-hidden"
+          className="w-full flex items-center justify-between px-4 py-3 text-left"
         >
-          {/* Background icon */}
-          <img
-            src={telematicsIcon}
-            alt=""
-            aria-hidden="true"
-            className="absolute pointer-events-none select-none"
-            style={{
-              right: -10,
-              top: "50%",
-              transform: "translateY(-50%)",
-              width: 100,
-              height: 100,
-              objectFit: "contain",
-              opacity: 0.15,
-            }}
-          />
-
-          {/* Centre */}
-          <div className="flex-1 min-w-0">
-            <p style={{ fontSize: 15, fontWeight: 600, color: "#000" }}>Telematics</p>
-            <p style={{ fontSize: 12, color: "#8E8E93" }} className="truncate">{vehicleLabel}</p>
+          <div className="flex items-center gap-3">
+            <img src={telematicsIcon} alt="Telematics" className="w-9 h-9 rounded-[10px]" />
+            <div className="min-w-0">
+              <p style={{ fontSize: 15, fontWeight: 600, color: "#1C1C1E" }}>Telematics</p>
+              <p style={{ fontSize: 12, color: "#8E8E93" }} className="truncate">{vehicleLabel}</p>
+            </div>
           </div>
 
-          {/* Right */}
           <div className="flex items-center gap-1.5 shrink-0">
             {isConnected ? (
               <CheckCircle2 className="h-3.5 w-3.5" style={{ color: "#30D158" }} />
