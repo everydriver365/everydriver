@@ -567,6 +567,8 @@ Deno.serve(async (req) => {
           last_heartbeat_at: new Date().toISOString(),
           device_name: device.device_name || pos.name || pos.registration || null,
           ...(pos.odometer != null ? { last_ecu_odometer_km: pos.odometer } : {}),
+          ...(pos.battery_voltage != null ? { last_battery_voltage: pos.battery_voltage } : {}),
+          ...(pos.engine_hours != null ? { last_engine_hours: pos.engine_hours } : {}),
           ...dailyStartUpdates,
         })
         .eq("id", device.id);
