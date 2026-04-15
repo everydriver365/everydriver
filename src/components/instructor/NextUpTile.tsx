@@ -327,19 +327,19 @@ export function NextUpTile({
         </AnimatePresence>
 
         {/* ── QUICK ACTION BAR (always visible) ── */}
-        <div className="px-4 pb-3">
+        <div className="px-4 pb-4">
           <div className="flex items-center gap-2">
             {[
-              { icon: Navigation, label: "Navigate", color: "#3B82F6", bg: "rgba(59,130,246,0.1)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
-              { icon: Phone, label: "Call", color: "#10b981", bg: "rgba(16,185,129,0.1)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
-              { icon: MessageSquare, label: "SMS", color: "#f97316", bg: "rgba(249,115,22,0.1)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleMessage(); } },
-              { icon: MapPin, label: "I'm Here", color: "#22c55e", bg: "rgba(34,197,94,0.1)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
+              { icon: Navigation, label: "Navigate", color: "#007AFF", bg: "rgba(0,122,255,0.08)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
+              { icon: Phone, label: "Call", color: "#34C759", bg: "rgba(52,199,89,0.08)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
+              { icon: MessageSquare, label: "SMS", color: "#FF9500", bg: "rgba(255,149,0,0.08)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleMessage(); } },
+              { icon: MapPin, label: "I'm Here", color: "#34C759", bg: "rgba(52,199,89,0.08)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
             ].map((btn) => (
               <button key={btn.label} onClick={btn.action}
-                className="flex-1 flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
+                className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-transform active:scale-95"
                 style={{ background: btn.bg }}>
-                <btn.icon className="h-[18px] w-[18px]" style={{ color: btn.color }} />
-                <span className="text-[9px] font-bold" style={{ color: btn.color }}>{btn.label}</span>
+                <btn.icon className="h-4 w-4" style={{ color: btn.color }} />
+                <span className="text-[9px] font-semibold" style={{ color: btn.color }}>{btn.label}</span>
               </button>
             ))}
           </div>
