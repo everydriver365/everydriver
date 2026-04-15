@@ -50,6 +50,7 @@ export default function InstructorFleetMap() {
   const { instructor } = useInstructorAuth();
   const instructorId = instructor?.id ?? null;
   const [devices, setDevices] = useState<FleetDevice[]>([]);
+  const devicesRef = useRef<FleetDevice[]>([]);
   const [showSignalLost, setShowSignalLost] = useState(true);
   const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -57,6 +58,9 @@ export default function InstructorFleetMap() {
   const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new Map());
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const prevSpeedingRef = useRef<Map<string, boolean>>(new Map());
+
+  // Keep devicesRef in sync with latest state for closure-safe access
+  useEffect(() => { devicesRef.current = devices; }, [devices]);
 
   // Fetch initial devices
   useEffect(() => {
@@ -198,7 +202,7 @@ export default function InstructorFleetMap() {
         });
 
         marker.addListener("click", () => {
-          const d = devices.find((dd) => dd.id === device.id) || device;
+          const d = devicesRef.current.find((dd) => dd.id === device.id) || device;
           const dLost = isSignalLost(d);
           const dSpeed = Math.round(kmhToMph(d.last_speed_kmh ?? 0));
           const dLimit = Math.round(kmhToMph(d.last_speed_limit_kmh ?? 0));
