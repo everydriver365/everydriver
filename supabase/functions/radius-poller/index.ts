@@ -76,6 +76,12 @@ async function fetchFromExportStream(exportEndpoint: string, exportApiKey: strin
   if (items.length > 0) {
     console.log("[RadiusPoller] First item keys:", Object.keys(items[0]).join(", "));
     console.log("[RadiusPoller] First item sample:", JSON.stringify(items[0]).substring(0, 500));
+    // Diagnostic: log full OBD-II objects to discover available fields
+    const first = items[0];
+    console.log("[OBD] telemetry:", JSON.stringify(first.telemetry || null));
+    console.log("[OBD] counters:", JSON.stringify(first.counters || null));
+    console.log("[OBD] io:", JSON.stringify(first.io || null));
+    console.log("[OBD] state:", JSON.stringify(first.state || null));
   }
 
   const positions: NormalisedPosition[] = items
