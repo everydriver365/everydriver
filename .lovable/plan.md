@@ -1,44 +1,32 @@
 
 
-## Speed Up Live Map Updates
+## Fix: GPS Status Always Shows "Offline"
 
-### Current Pipeline & Latencies
-```text
-Radius API → radius-poller (pg_cron ~5s) → gps_devices table → Client poll (2s) + Realtime → Map
-                                                                 ↑
-                                                         Vehicle Health also triggers
-                                                         radius-poller directly (10s/30s)
-```
+### Root Cause
 
-Worst-case end-to-end: **~7s** (5s cron gap + 2s client poll gap).
+The database has two devices for this instructor:
 
-### Proposed Change: Client-triggered polling on the tracking page
+| Device | Provider | is_active | last_seen_at |
+|--------|----------|-----------|-------------|
+| Kenneth's Geotab | geotab | **true** | 09:21 (stale — poller deleted) |
+| 861778063583081 | radius | **false** | 09:12 |
 
-Instead of relying solely on pg_cron, have `InstructorLiveSession.tsx` directly invoke the `radius-poller` edge function every **2 seconds** while on the tracking page (the same pattern Vehicle Health already uses). This collapses the pipeline:
+`useGPSConnectionStatus` queries `gps_devices` ordered by `last_seen_at DESC` with **no provider filter**. It picks the Geotab device every time. Since `geotab-poller` was deleted, that device's timestamps go stale → always "offline".
 
-```text
-Client triggers radius-poller (2s) → gps_devices updated → Realtime fires instantly → Map
-```
+The Radius device also has `is_active = false`, so even adding a filter alone won't fix it.
 
-Worst-case drops to **~2-3s**.
+### Plan
 
-### Implementation
+**1. Filter `useGPSConnectionStatus` to Radius-only**
+- Add `.eq("tracking_provider", "radius")` to the query in `checkConnection()`
+- Remove the `is_active` requirement (or use `.order("last_seen_at")` without filtering on `is_active`) so the Radius device is found regardless
 
-**1. Add direct poller trigger to `InstructorLiveSession.tsx`**
-- When a session is active or the page is open, call `supabase.functions.invoke("radius-poller")` every 2 seconds
-- Stop on unmount or when no device is selected
-- This replaces reliance on the background cron for live tracking scenarios
+**2. Fix the Radius device's `is_active` flag via migration**
+- Run a migration to set `is_active = true` for all Radius devices and `is_active = false` for all Geotab devices
+- This ensures the Radius device is the canonical active device going forward
 
-**2. Keep existing Realtime subscription as primary update path**
-- The Realtime `UPDATE` channel on `gps_devices` already fires instantly when the poller writes — this becomes the main update mechanism
-- Reduce the fallback `setInterval(pollDevice)` from 2s to 5s (it's just a safety net now)
+**3. Deactivate the Geotab device row**
+- The same migration marks the Geotab device as `is_active = false` so it never surfaces in any query
 
-**3. No backend changes needed**
-- `radius-poller` already handles concurrent invocations safely
-- pg_cron continues running for background updates when the page isn't open
-
-### Impact
-- Live map updates go from ~5-7s to ~2-3s
-- No new edge functions or database changes
-- Minimal extra load — one additional edge function call per 2s per active instructor viewing the tracking page
+These are small, targeted changes — one line in the hook query and one short migration.
 
