@@ -1,28 +1,30 @@
 
 
-## Restyle TodayScheduleAgenda to iOS Design
+## Deep-link to Radius Dashcam Portal
 
-Restyle the `TodayScheduleAgenda` component to match the provided iOS-style HTML mockup exactly. No functionality changes — same data, same links, same Today/Tomorrow tabs.
+Replace the broken Geotab-based dashcam gallery with a clean launcher card that opens the Radius/Velocity Fleet portal in a new browser tab. The existing gallery code references a deleted `geotab-media-download` edge function and will never work — this replaces it with something immediately useful.
 
-### Visual changes to `src/components/instructor/TodayScheduleAgenda.tsx`
+### What changes
 
-1. **Outer card**: White `#FFFFFF` background, `border-radius: 20px`, `0.5px solid #E5E5EA` border, light shadow, overflow hidden — replaces the current unstyled wrapper
+**`src/components/instructor/dashcam/DashcamGalleryView.tsx`** — Full rewrite
+- Remove all Geotab media fetching, filtering, grid, and dialog code
+- Replace with a single iOS-styled launcher card:
+  - Camera icon + "View Dashcam Footage" title
+  - Subtitle explaining footage is viewed on the Radius portal
+  - "Open Dashcam Portal" button that opens `https://velocity.radiustelematics.com` in a new tab
+  - Secondary help text: "Log in with your Radius account credentials"
+- Keep the component signature (`instructorId`, `showAllInstructors`) so the parent page doesn't need changes
 
-2. **Header row**: Inside the card top, left-aligned "Today's Schedule" title (`15px`, `font-weight: 700`, black) with subtitle showing day/date and lesson count (`12px`, `#8E8E93`). Right side: iOS-style segmented control (Today/Tomorrow) using `#F2F2F7` background pill with `border-radius: 9px`, active tab gets white background with subtle shadow
+**`src/components/instructor/dashcam/DashcamVideoPlayer.tsx`** — Delete
+- Dead code — references the deleted `geotab-media-download` edge function
 
-3. **Divider**: `0.5px` solid `#F2F2F7` line between header and lesson list
+**`src/pages/instructor/DashcamGallery.tsx`** — Minor restyle
+- Match the iOS design system (white card, `#F2F2F7` background, system font)
 
-4. **Lesson rows**: Each row gets inline iOS styling — no card/border per row, just padding with `0.5px` bottom divider between items. Time on the left in bold, pupil name + details on the right. Payment amount right-aligned. Completed lessons get a muted/strikethrough treatment
+### Deep-link URL
+`https://velocity.radiustelematics.com` — this is the Radius Vision / Velocity Fleet web portal where instructors already have accounts to view their dashcam footage. Opens in a new tab via `window.open()`.
 
-5. **Empty state**: Centered "No lessons scheduled" with calendar icon, matching `#8E8E93` text
-
-6. **Summary bar**: Restyled with iOS grey text palette — earnings in `#30D158`, paid count in green
-
-### Technical details
-
-- Replace the shadcn `Tabs`/`TabsList`/`TabsTrigger` with a custom iOS-style segmented control using plain buttons + state
-- Use inline `style` props for precise iOS colours (`#E5E5EA`, `#8E8E93`, `#F2F2F7`, `#30D158`)
-- Keep all existing props, data flow, links, and `PupilAvatar` usage unchanged
-- Remove the external "Schedule" heading and "See all" link — move them inside the card header
-- Single file edit: `src/components/instructor/TodayScheduleAgenda.tsx`
+### No backend changes needed
+- No new tables, edge functions, or API calls
+- The `dashcam_media` table stays in the DB (no migration) in case a video API becomes available later
 
