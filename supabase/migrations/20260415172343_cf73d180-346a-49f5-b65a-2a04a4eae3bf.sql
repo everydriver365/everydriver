@@ -1,0 +1,1 @@
+ALTER TABLE public.lesson_telematics ADD COLUMN manually_started boolean NOT NULL DEFAULT false;
