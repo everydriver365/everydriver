@@ -28,6 +28,7 @@ import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
+import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
 
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";

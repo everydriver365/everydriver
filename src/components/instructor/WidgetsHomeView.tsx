@@ -18,6 +18,7 @@ import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
 import { triggerHaptic } from "@/lib/haptics";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
+import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
 import { TodayScheduleAgenda } from "@/components/instructor/TodayScheduleAgenda";
 import { useTomorrowLessons } from "@/hooks/useTomorrowLessons";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";

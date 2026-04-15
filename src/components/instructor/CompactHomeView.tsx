@@ -29,6 +29,7 @@ import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
+import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
