@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -111,6 +111,8 @@ export default function InstructorLiveSession() {
   } | null>(null);
 
   const isSessionActive = !!device?.current_session_id;
+  const location = useLocation();
+  const isFullscreenMode = new URLSearchParams(location.search).get("fullscreen") === "true";
 
   // Connection status derived from last_seen_at (no client polling needed)
   // Server-side poller runs via pg_cron
