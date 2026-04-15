@@ -201,6 +201,18 @@
     --sidebar-border: 0 0% 12%;
     --sidebar-ring: 38 92% 50%;
   }
+
+  /* iOS System Colours — scoped to instructor mobile portal */
+  .ios-instructor {
+    --ios-bg: 240 5% 96%;
+    --ios-card: 0 0% 100%;
+    --ios-blue: 211 100% 50%;
+    --ios-gray: 240 2% 56%;
+    --ios-gray2: 240 3% 23%;
+    --ios-gray3: 240 6% 11%;
+    --ios-separator: 240 5% 78%;
+    --ios-nav-bg: 0 0% 100% / 0.8;
+  }
 }
 
 @layer base {

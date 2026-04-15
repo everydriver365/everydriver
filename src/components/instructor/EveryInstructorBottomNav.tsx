@@ -30,7 +30,7 @@ export function EveryInstructorBottomNav() {
       layoutId="eiActiveTab"
       activeColor="text-[#0066FF]"
       inactiveColor="text-[#8E8E93]"
-      bgClassName="bg-white border-t border-gray-200"
+      bgClassName="bg-white/80 backdrop-blur-xl border-t border-[hsl(240_5%_78%/0.5)]"
       pillClassName="bg-[#0066FF]"
       onNavigate={handleNav}
     />

@@ -202,7 +202,7 @@ function MobileNotificationBell({ instructorId }: { instructorId: string | undef
     <Button
       variant="ghost"
       size="icon"
-      className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15 relative"
+      className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 text-[hsl(240_6%_11%)] hover:bg-gray-100 relative"
       onClick={() => navigate("/instructor/notifications")}
       title="Notifications"
     >
@@ -402,12 +402,12 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
       )}
       <div
         className={cn(
-          "min-h-screen instructor-portal",
+          "min-h-screen instructor-portal ios-instructor",
            isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : "pb-16"
         )}
         style={
           !isFullscreenMode
-            ? { backgroundColor: "#F4F7F6" }
+            ? { backgroundColor: "#F2F2F7" }
             : undefined
         }
       >
@@ -416,14 +416,14 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             {/* iOS Install Banner */}
             <IOSInstallBanner />
 
-            {/* Mobile Header */}
+            {/* Mobile Header — iOS translucent nav bar */}
             <header
               className="sticky top-0 z-40"
             >
-              {/* Safe area spacer — always primary blue */}
-              <div className="bg-primary" style={{ paddingTop: "env(safe-area-inset-top)" }} />
+              {/* Safe area spacer — translucent */}
+              <div className="bg-white/80 backdrop-blur-xl" style={{ paddingTop: "env(safe-area-inset-top)" }} />
 
-              <div className="text-primary-foreground relative overflow-hidden bg-primary">
+              <div className="relative overflow-hidden bg-white/80 backdrop-blur-xl border-b border-[hsl(240_5%_78%/0.5)]">
 
                 <div className="relative flex items-center justify-between px-3 sm:px-4 h-14">
                    {/* Left: Back button + Logo + Notification */}
@@ -431,9 +431,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     {showBackButton && (
                       <button
                         onClick={() => navigate(-1)}
-                        className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center shrink-0"
+                        className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0"
                       >
-                        <ChevronLeft className="h-5 w-5" />
+                        <ChevronLeft className="h-5 w-5 text-[hsl(211_100%_50%)]" />
                       </button>
                     )}
 
@@ -457,7 +457,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/90 text-primary-foreground shrink-0"
+                          className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/90 text-white shrink-0"
                           title="Quick Actions"
                           onClick={() => setHeaderQuickActionsOpen(true)}
                         >
@@ -468,7 +468,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/15"
+                          className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 text-[hsl(240_6%_11%)] hover:bg-gray-100"
                         >
                           <Menu className="h-5 w-5" />
                         </Button>
@@ -635,7 +635,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         ) : (
           <>
             <OfflineBanner />
-            <main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`} style={{ backgroundColor: isHomePage ? 'transparent' : mobileBg }}>{children}</main>
+            <main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`} style={{ backgroundColor: isHomePage ? 'transparent' : '#F2F2F7' }}>{children}</main>
             <InstructorBottomNav wallpaperColor={appStyleBg} />
             {/* Floating Ask ED button */}
             <div className="fixed bottom-[88px] right-4 z-40 flex flex-col items-center gap-1">

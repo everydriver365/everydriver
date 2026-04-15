@@ -29,7 +29,7 @@ export function MobilePortalNav({
   layoutId,
   activeColor = "text-primary",
   inactiveColor = "text-muted-foreground",
-  bgClassName = "bg-card/95 backdrop-blur-xl border-t border-border",
+  bgClassName = "bg-white/80 backdrop-blur-xl border-t border-[hsl(240_5%_78%/0.5)]",
   pillClassName = "bg-primary",
   onNavigate,
   activeSection,

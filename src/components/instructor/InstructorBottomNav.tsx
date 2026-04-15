@@ -77,7 +77,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-primary"
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/80 backdrop-blur-xl border-t border-[hsl(240_5%_78%/0.5)]"
     >
       <div className="flex items-center justify-around h-16 w-full px-1">
         {navItems.map((item) => {
@@ -108,7 +108,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute inset-0 rounded-2xl bg-white/20"
+                    className="absolute inset-0 rounded-2xl bg-[hsl(211_100%_50%)]/10"
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
                 )}
@@ -120,32 +120,32 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                       trackIconColor
                         ? trackIconColor
                         : isActive
-                        ? "#ffffff"
-                        : "rgba(255,255,255,0.5)"
+                        ? "#007AFF"
+                        : "#8E8E93"
                     }
                   />
                 </div>
                 {showNotification && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-primary">
+                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-white">
                     {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                   </span>
                 )}
                 {isTrack && isTrackingActive && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-primary animate-pulse" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-pulse" />
                 )}
                 {isSchedule && badgeCount > 0 && !isActive && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-white text-primary text-[10px] font-semibold flex items-center justify-center shadow-lg ring-2 ring-primary">
+                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-[hsl(211_100%_50%)] text-white text-[10px] font-semibold flex items-center justify-center shadow-lg ring-2 ring-white">
                     {badgeCount > 9 ? "9+" : badgeCount}
                   </span>
                 )}
                 {showMoreDot && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-white ring-2 ring-primary" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-destructive ring-2 ring-white" />
                 )}
               </div>
               <span
                 className={cn(
                   "text-[12px] font-medium transition-all duration-200",
-                  isActive ? "text-white font-semibold" : "text-white/50"
+                  isActive ? "text-[#007AFF] font-semibold" : "text-[#8E8E93]"
                 )}
               >
                 {item.label}
@@ -155,7 +155,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
         })}
       </div>
       {/* Safe area for iOS — matches navy bg */}
-      <div className="h-safe-area-inset-bottom bg-primary" />
+      <div className="h-safe-area-inset-bottom bg-white/80" />
     </nav>
   );
 }

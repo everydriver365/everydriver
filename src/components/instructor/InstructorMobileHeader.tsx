@@ -74,33 +74,33 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
 
   return (
     <div className="sticky top-0 z-50">
-      {/* Safe area fill — solid primary */}
-      <div className="bg-primary pt-[env(safe-area-inset-top)]" />
+      {/* Safe area fill — frosted glass */}
+      <div className="bg-white/80 backdrop-blur-xl pt-[env(safe-area-inset-top)]" />
       {/* Header bar */}
-      <div className="bg-primary text-primary-foreground relative overflow-hidden">
+      <div className="bg-white/80 backdrop-blur-xl border-b border-[hsl(240_5%_78%/0.5)] relative overflow-hidden">
         <div className="relative flex items-center justify-between px-4 py-3">
           {/* Left: Back button OR Avatar + Greeting */}
           <div className="flex items-center gap-3">
             {showBackButton ? (
               <button
                 onClick={handleBackClick}
-                className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"
+                className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-5 w-5 text-[hsl(211_100%_50%)]" />
               </button>
             ) : (
-              <Avatar className="h-9 w-9 border-2 border-primary-foreground/30">
+              <Avatar className="h-9 w-9 border-2 border-gray-200">
                 <AvatarImage src={undefined} />
-                <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground text-xs font-bold">
+                <AvatarFallback className="bg-[hsl(211_100%_50%)]/10 text-[hsl(211_100%_50%)] text-xs font-bold">
                   {getInitials()}
                 </AvatarFallback>
               </Avatar>
             )}
             <div>
               {showBackButton ? (
-                <p className="text-sm font-semibold leading-tight">{title}</p>
+                <p className="text-sm font-semibold leading-tight text-[hsl(240_6%_11%)]">{title}</p>
               ) : (
-                <p className="text-sm font-semibold leading-tight">
+                <p className="text-sm font-semibold leading-tight text-[hsl(240_6%_11%)]">
                   {instructor?.name?.split(" ")[0] || "Instructor"}
                 </p>
               )}
@@ -118,9 +118,9 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
             </button>
             <button
               onClick={() => navigate("/instructor/notifications")}
-              className="relative h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"
+              className="relative h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center"
             >
-              <Bell className="h-4 w-4" />
+              <Bell className="h-4 w-4 text-[hsl(240_6%_11%)]" />
               {totalNotifCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center animate-pulse">
                   {totalNotifCount > 9 ? "9+" : totalNotifCount}
@@ -130,23 +130,23 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
             {showAddButton && (
               <button
                 onClick={onAddClick}
-                className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center"
+                className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center"
               >
-                <Plus className="h-5 w-5" />
+                <Plus className="h-5 w-5 text-[hsl(211_100%_50%)]" />
               </button>
             )}
             <button
               onClick={() => setPaymentModalOpen(true)}
-              className="h-8 px-3 rounded-full bg-primary-foreground/90 flex items-center gap-1.5 hover:bg-primary-foreground transition-colors"
+              className="h-8 px-3 rounded-full bg-[hsl(211_100%_50%)] flex items-center gap-1.5 hover:bg-[hsl(211_100%_45%)] transition-colors"
             >
-              <PoundSterling className="h-3.5 w-3.5 text-primary" />
-              <span className="text-xs font-semibold text-primary">Pay</span>
+              <PoundSterling className="h-3.5 w-3.5 text-white" />
+              <span className="text-xs font-semibold text-white">Pay</span>
             </button>
             {showSettings && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center">
-                    <Settings className="h-4 w-4" />
+                  <button className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
+                    <Settings className="h-4 w-4 text-[hsl(240_6%_11%)]" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
