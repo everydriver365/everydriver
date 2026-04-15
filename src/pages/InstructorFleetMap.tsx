@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeHub";
 import { fetchGoogleMapsKey, loadGoogleMaps, kmhToMph } from "@/lib/googleMapsLoader";
-import { useInstructorContext } from "@/contexts/InstructorContext";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Maximize, Eye, EyeOff } from "lucide-react";

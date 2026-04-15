@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useInstructorContext } from "@/contexts/InstructorContext";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { kmhToMph } from "@/lib/googleMapsLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
