@@ -1008,9 +1008,7 @@ export default function InstructorLiveSession() {
             />
            {/* Resume active session banner */}
            {isSessionActive && (
-             <motion.div
-               initial={{ opacity: 0, y: 10 }}
-               animate={{ opacity: 1, y: 0 }}
+             <div
                className="bg-emerald-500 text-white rounded-2xl p-4 flex items-center justify-between"
              >
                <div>
@@ -1027,7 +1025,7 @@ export default function InstructorLiveSession() {
                >
                  Resume
                </Button>
-             </motion.div>
+             </div>
            )}
 
            {/* Session Start Panel */}
