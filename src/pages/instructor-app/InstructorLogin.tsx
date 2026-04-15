@@ -325,8 +325,8 @@ export default function InstructorLogin() {
         >
           <div className="mb-6 mx-auto inline-block">
             <img 
-              src="/everydriver-logo-v2.png" 
-              alt="EveryDriver" 
+              src={dsmLogo} 
+              alt="DSM - Driving School Manager" 
               className="h-12 mx-auto"
             />
           </div>
