@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Activity, ChevronRight, ChevronDown, ChevronUp, Fuel, Thermometer, Gauge, AlertTriangle, CheckCircle2, WifiOff, Camera, ShieldAlert } from "lucide-react";
+import carShellIcon from "@/assets/car-shell-icon.jpg";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { formatDistanceToNow } from "date-fns";
 
