@@ -1,0 +1,1 @@
+DELETE FROM speed_limit_cache WHERE speed_limit_kmh = -1;
