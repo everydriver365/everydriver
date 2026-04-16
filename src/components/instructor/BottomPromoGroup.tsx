@@ -8,35 +8,52 @@ export function BottomPromoGroup({ className = "" }: { className?: string }) {
   const navigate = useNavigate();
   const [sheetOpen, setSheetOpen] = useState(false);
 
+  const cardStyle: React.CSSProperties = {
+    background: "white",
+    borderRadius: 20,
+    overflow: "hidden",
+    border: "0.5px solid rgba(0,0,0,0.06)",
+    boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
+  };
+
+  const gradientLine = (
+    <div style={{ height: 2, background: "linear-gradient(to right, #0d4fa0, #56a8f5)", borderRadius: 2 }} />
+  );
+
   return (
     <>
-      <div className={`rounded-2xl bg-card border border-border overflow-hidden ${className}`}>
-        <motion.div
-          whileTap={{ backgroundColor: "hsl(var(--muted) / 0.5)" }}
-          onClick={() => navigate("/instructor/waiting-room")}
-          className="px-4 py-3 cursor-pointer flex items-center gap-3"
-        >
-          <div className="h-8 w-8 rounded-2xl bg-blue-500 flex items-center justify-center shrink-0">
-            <Users className="h-4 w-4 text-white" />
-          </div>
-          <p className="text-[15px] text-foreground flex-1">The Waiting Room</p>
-          <p className="text-[13px] text-muted-foreground mr-1">Weekly</p>
-          <ChevronRight className="h-4 w-4 text-muted-foreground/30" />
-        </motion.div>
-      </div>
-      <div className={`rounded-2xl bg-card border border-border overflow-hidden mt-3 ${className}`}>
-        <motion.div
-          whileTap={{ backgroundColor: "hsl(var(--muted) / 0.5)" }}
-          onClick={() => setSheetOpen(true)}
-          className="px-4 py-3 cursor-pointer flex items-center gap-3"
-        >
-          <div className="h-8 w-8 rounded-2xl bg-emerald-500 flex items-center justify-center shrink-0">
-            <Compass className="h-4 w-4 text-white" />
-          </div>
-          <p className="text-[15px] text-foreground flex-1">Discover Features</p>
-          <p className="text-[13px] text-muted-foreground mr-1">30+</p>
-          <ChevronRight className="h-4 w-4 text-muted-foreground/30" />
-        </motion.div>
+      <div className={`flex flex-col gap-[10px] ${className}`}>
+        <div style={cardStyle}>
+          <motion.div
+            whileTap={{ backgroundColor: "rgba(0,0,0,0.03)" }}
+            onClick={() => navigate("/instructor/waiting-room")}
+            style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
+          >
+            <div style={{ width: 42, height: 42, borderRadius: "50%", backgroundColor: "#1a6fd4", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Users style={{ width: 20, height: 20, color: "white" }} />
+            </div>
+            <p style={{ flex: 1, fontSize: 15, fontWeight: 700, color: "#1c1c1e" }}>The Waiting Room</p>
+            <p style={{ fontSize: 13, color: "#8e8e93", fontWeight: 400, marginRight: 4 }}>Weekly</p>
+            <ChevronRight style={{ width: 14, height: 14, color: "#c7c7cc" }} />
+          </motion.div>
+          {gradientLine}
+        </div>
+
+        <div style={cardStyle}>
+          <motion.div
+            whileTap={{ backgroundColor: "rgba(0,0,0,0.03)" }}
+            onClick={() => setSheetOpen(true)}
+            style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
+          >
+            <div style={{ width: 42, height: 42, borderRadius: "50%", backgroundColor: "#0f9e75", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Compass style={{ width: 20, height: 20, color: "white" }} />
+            </div>
+            <p style={{ flex: 1, fontSize: 15, fontWeight: 700, color: "#1c1c1e" }}>Discover Features</p>
+            <p style={{ fontSize: 13, color: "#8e8e93", fontWeight: 400, marginRight: 4 }}>30+</p>
+            <ChevronRight style={{ width: 14, height: 14, color: "#c7c7cc" }} />
+          </motion.div>
+          {gradientLine}
+        </div>
       </div>
 
       <DiscoverFeaturesSheet open={sheetOpen} onOpenChange={setSheetOpen} />
