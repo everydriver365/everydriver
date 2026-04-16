@@ -54,7 +54,7 @@ export function UpcomingEventsCard({ className = "" }: { className?: string }) {
               style={{
                 width: 72,
                 flexShrink: 0,
-                background: "linear-gradient(to bottom, #0d4fa0, #1a6fd4)",
+                background: "linear-gradient(to bottom, #1F2B3D, #2A394F)",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -100,7 +100,7 @@ export function UpcomingEventsCard({ className = "" }: { className?: string }) {
                   href={event.link_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 600, color: "#1a6fd4", marginTop: 8, textDecoration: "none" }}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 600, color: "#2A394F", marginTop: 8, textDecoration: "none" }}
                 >
                   <ExternalLink style={{ width: 13, height: 13 }} />
                   {event.link_label || "Join Event"}

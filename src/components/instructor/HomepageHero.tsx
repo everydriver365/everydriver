@@ -180,7 +180,7 @@ export function HomepageHero({
         <div
           className="flex items-center justify-between"
           style={{
-            backgroundColor: "#1a6fd4",
+            backgroundColor: "#2A394F",
             borderRadius: "20px 20px 0 0",
             padding: "6px 16px",
           }}

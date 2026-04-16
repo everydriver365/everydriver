@@ -472,7 +472,7 @@ export default function InstructorPay() {
                   style={action.accent ? undefined : tileStyle}
                   className={cn(
                     action.accent
-                      ? "rounded-[14px] overflow-hidden bg-gradient-to-br from-[#0d4fa0] to-[#1a6fd4] shadow-[0_6px_20px_rgba(26,111,212,0.35)]"
+                      ? "rounded-[14px] overflow-hidden bg-gradient-to-br from-[#1F2B3D] to-[#2A394F] shadow-[0_6px_20px_rgba(26,111,212,0.35)]"
                       : ""
                   )}
                 >
