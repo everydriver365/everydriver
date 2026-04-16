@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format, addWeeks } from 'date-fns';
-import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Car, CheckSquare, MapPin, AlertTriangle, Clock, ChevronRight, CreditCard, Mail, Send, Banknote } from 'lucide-react';
+import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Car, CheckSquare, MapPin, AlertTriangle, Clock, ChevronRight, CreditCard, Mail, Send, Banknote, Sparkles } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -113,6 +113,7 @@ export function AddLessonSheet({
   const [checklistOpen, setChecklistOpen] = useState(true);
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
   const [checkingConflict, setCheckingConflict] = useState(false);
+  const [travelSuggestion, setTravelSuggestion] = useState<{ suggestedTime: string; travelMinutes: number; fromName: string } | null>(null);
   const [newPupilName, setNewPupilName] = useState('');
   const [newPupilPhone, setNewPupilPhone] = useState('');
   const [newPupilAddress, setNewPupilAddress] = useState('');
@@ -189,10 +190,14 @@ export function AddLessonSheet({
     }
   }, [selectedPupil, pupils]);
 
-  // Conflict check
+  // Conflict check + travel-time suggestion based on previous lesson
   useEffect(() => {
-    if (!lessonDate || !lessonStartTime || !open) { setConflictWarning(null); return; }
-    const checkConflicts = async () => {
+    if (!lessonDate || !lessonStartTime || !open) {
+      setConflictWarning(null);
+      setTravelSuggestion(null);
+      return;
+    }
+    const run = async () => {
       setCheckingConflict(true);
       try {
         const dateStr = format(lessonDate, 'yyyy-MM-dd');
@@ -202,10 +207,12 @@ export function AddLessonSheet({
         const newEndMinutes = newStartMinutes + durationMinutes;
         const { data: existingLessons } = await supabase
           .from('scheduled_lessons')
-          .select('start_time, duration_minutes, pupil_id, pupils(name)')
+          .select('start_time, duration_minutes, pupil_id, pickup_location, dropoff_location, pupils(name, postcode, address)')
           .eq('instructor_id', instructorId)
           .eq('lesson_date', dateStr)
-          .neq('status', 'cancelled');
+          .neq('status', 'cancelled')
+          .order('start_time');
+
         if (existingLessons && existingLessons.length > 0) {
           const conflicts = existingLessons.filter((lesson: any) => {
             const [h, m] = (lesson.start_time || '00:00').split(':').map(Number);
@@ -216,14 +223,80 @@ export function AddLessonSheet({
           if (conflicts.length > 0) {
             const names = conflicts.map((c: any) => c.pupils?.name || 'Unknown').join(', ');
             setConflictWarning(`Overlaps with ${names}`);
-          } else { setConflictWarning(null); }
-        } else { setConflictWarning(null); }
-      } catch { setConflictWarning(null); }
-      finally { setCheckingConflict(false); }
+          } else {
+            setConflictWarning(null);
+          }
+
+          // Travel suggestion: find lesson that ends closest BEFORE the new start
+          const previous = existingLessons
+            .map((l: any) => {
+              const [h, m] = (l.start_time || '00:00').split(':').map(Number);
+              const start = h * 60 + m;
+              return { ...l, _start: start, _end: start + (l.duration_minutes || 60) };
+            })
+            .filter((l: any) => l._end <= newStartMinutes)
+            .sort((a: any, b: any) => b._end - a._end)[0];
+
+          // Determine destination postcode for the new lesson
+          let toPostcode = pickupPostcode;
+          if (!toPostcode && tab === 'existing' && selectedPupil) {
+            const p = pupils.find(x => x.id === selectedPupil);
+            toPostcode = p?.postcode || '';
+          }
+          if (!toPostcode && tab === 'new') toPostcode = newPupilPostcode;
+
+          const fromPostcode = previous?.pupils?.postcode || '';
+
+          if (previous && fromPostcode && toPostcode && fromPostcode.trim() && toPostcode.trim()) {
+            const gap = newStartMinutes - previous._end;
+            try {
+              const { data } = await supabase.functions.invoke('check-travel-buffer', {
+                body: {
+                  from_postcode: fromPostcode,
+                  to_postcode: toPostcode,
+                  available_gap_minutes: gap,
+                  padding_minutes: 5,
+                },
+              });
+              if (data?.travel_minutes != null) {
+                const required = (data.required_minutes ?? data.travel_minutes + 5);
+                if (gap < required) {
+                  // Suggest a start time = previous end + required, rounded up to next 5 min
+                  const suggestedMinutes = Math.ceil((previous._end + required) / 5) * 5;
+                  const sh = Math.floor(suggestedMinutes / 60);
+                  const sm = suggestedMinutes % 60;
+                  const suggestedTime = `${sh.toString().padStart(2, '0')}:${sm.toString().padStart(2, '0')}`;
+                  setTravelSuggestion({
+                    suggestedTime,
+                    travelMinutes: data.travel_minutes,
+                    fromName: previous.pupils?.name || 'previous lesson',
+                  });
+                } else {
+                  setTravelSuggestion(null);
+                }
+              } else {
+                setTravelSuggestion(null);
+              }
+            } catch {
+              setTravelSuggestion(null);
+            }
+          } else {
+            setTravelSuggestion(null);
+          }
+        } else {
+          setConflictWarning(null);
+          setTravelSuggestion(null);
+        }
+      } catch {
+        setConflictWarning(null);
+        setTravelSuggestion(null);
+      } finally {
+        setCheckingConflict(false);
+      }
     };
-    const timer = setTimeout(checkConflicts, 300);
+    const timer = setTimeout(run, 400);
     return () => clearTimeout(timer);
-  }, [lessonDate, lessonStartTime, lessonDuration, instructorId, open]);
+  }, [lessonDate, lessonStartTime, lessonDuration, instructorId, open, selectedPupil, pickupPostcode, newPupilPostcode, tab, pupils]);
 
   const buildDrivingTestNotes = () => {
     if (!isDrivingTest) return null;
@@ -233,6 +306,7 @@ export function AddLessonSheet({
 
   const handleAddLessonExisting = async () => {
     if (!selectedPupil || !lessonDate) { toast.error('Please select a pupil and date'); return; }
+    if (conflictWarning) { toast.error(conflictWarning); return; }
     setLoading(true);
     try {
       const durationMinutes = parseFloat(lessonDuration) * 60;
@@ -265,6 +339,7 @@ export function AddLessonSheet({
 
   const handleAddLessonNew = async () => {
     if (!newPupilName.trim() || !lessonDate) { toast.error('Please enter a name and date'); return; }
+    if (conflictWarning) { toast.error(conflictWarning); return; }
     setLoading(true);
     try {
       const { data: newPupil, error: pupilError } = await supabase
@@ -446,14 +521,12 @@ export function AddLessonSheet({
                 <InputField label="Phone" placeholder="07123 456789" value={newPupilPhone} onChange={setNewPupilPhone} type="tel" />
                 <div>
                   <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Address</span>
-                  <div style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", overflow: "hidden" }}>
-                    <GoogleAddressAutocomplete
-                      value={newPupilAddress}
-                      onChange={setNewPupilAddress}
-                      onPostcodeChange={setNewPupilPostcode}
-                      placeholder="Start typing an address..."
-                    />
-                  </div>
+                  <GoogleAddressAutocomplete
+                    value={newPupilAddress}
+                    onChange={setNewPupilAddress}
+                    onPostcodeChange={setNewPupilPostcode}
+                    placeholder="Start typing an address..."
+                  />
                 </div>
               </div>
             )}
@@ -536,6 +609,29 @@ export function AddLessonSheet({
                 <span style={{ fontSize: 13, color: "#991B1B" }}>{conflictWarning}</span>
               </div>
             )}
+
+            {/* Travel-time Suggestion */}
+            {!conflictWarning && travelSuggestion && (
+              <button
+                type="button"
+                onClick={() => {
+                  setLessonStartTime(travelSuggestion.suggestedTime);
+                  setTravelSuggestion(null);
+                }}
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", gap: 10,
+                  padding: "12px 16px", borderRadius: 12,
+                  backgroundColor: "#EFF6FF", border: "1px solid #BFDBFE",
+                  textAlign: "left", cursor: "pointer",
+                }}
+              >
+                <Sparkles style={{ width: 16, height: 16, color: "#2A394F", flexShrink: 0 }} />
+                <div style={{ flex: 1, fontSize: 13, color: "#1E3A8A", lineHeight: 1.4 }}>
+                  {travelSuggestion.travelMinutes} min drive from {travelSuggestion.fromName}.
+                  Tap to start at <strong>{travelSuggestion.suggestedTime}</strong>.
+                </div>
+              </button>
+            )}
           </Section>
 
           {/* Divider */}
@@ -545,14 +641,12 @@ export function AddLessonSheet({
           {tab === 'existing' && (
             <Section>
               <SectionLabel>Pickup Location</SectionLabel>
-              <div style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", overflow: "hidden" }}>
-                <GoogleAddressAutocomplete
-                  value={pickupAddress}
-                  onChange={setPickupAddress}
-                  onPostcodeChange={setPickupPostcode}
-                  placeholder="Start typing an address..."
-                />
-              </div>
+              <GoogleAddressAutocomplete
+                value={pickupAddress}
+                onChange={setPickupAddress}
+                onPostcodeChange={setPickupPostcode}
+                placeholder="Start typing an address..."
+              />
             </Section>
           )}
 
