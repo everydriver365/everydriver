@@ -1,4 +1,5 @@
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { FleetDashboard } from "@/components/instructor/FleetDashboard";
