@@ -81,6 +81,7 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
               flexDirection: "column",
               gap: 12,
               cursor: "pointer",
+              overflow: "hidden",
               transition: "background 120ms ease",
             }}
           >
