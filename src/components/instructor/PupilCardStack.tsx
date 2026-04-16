@@ -721,6 +721,7 @@ export function PupilCardStack({
             </motion.div>
           )}
         </AnimatePresence>
+        {isExpanded && <div className="h-[2px] w-full bg-gradient-to-r from-[#0d4fa0] to-[#56a8f5]" />}
       </motion.div>
 
       {/* Mobile: Full-screen pupil profile sheet */}
