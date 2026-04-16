@@ -541,7 +541,7 @@ export default function InstructorPupils() {
         </div>
 
         {/* Compact stat chips */}
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+        <div className="grid grid-cols-4 gap-1.5">
           {[
             { label: "Active", value: stats.active, dot: "#34C759" },
             { label: "Passed", value: stats.passed, dot: "#007AFF" },
@@ -550,11 +550,20 @@ export default function InstructorPupils() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm rounded-full px-3 py-[6px] border-[0.5px] border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.04)] whitespace-nowrap"
+              style={{
+                backgroundColor: "#FFFFFF",
+                borderRadius: 14,
+                border: "0.5px solid #E4E4E7",
+                padding: "8px 0",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 2,
+              }}
             >
-              <span className="w-[6px] h-[6px] rounded-full shrink-0" style={{ backgroundColor: stat.dot }} />
-              <span className="text-[13px] font-semibold text-[#1c1c1e]">{stat.value}</span>
-              <span className="text-[11px] text-[#8e8e93]">{stat.label}</span>
+              <span className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: stat.dot }} />
+              <span style={{ fontSize: 16, fontWeight: 600, color: "#18181B", fontFamily: "Inter, sans-serif", lineHeight: 1.2 }}>{stat.value}</span>
+              <span style={{ fontSize: 11, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>{stat.label}</span>
             </div>
           ))}
         </div>
