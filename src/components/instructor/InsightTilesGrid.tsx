@@ -100,7 +100,16 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
                 {tile.subtitle}
               </p>
             </div>
-            <div className="flex items-end justify-end" style={{ marginTop: "auto" }}>
+            <div className="flex items-end justify-between" style={{ marginTop: "auto" }}>
+              <div
+                style={{
+                  height: 2,
+                  flex: 1,
+                  background: "linear-gradient(to right, #0d4fa0, #56a8f5)",
+                  borderRadius: 2,
+                  marginRight: 10,
+                }}
+              />
                <span
                   style={{
                     fontSize: 30,
