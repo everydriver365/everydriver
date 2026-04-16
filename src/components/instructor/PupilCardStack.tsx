@@ -619,18 +619,21 @@ export function PupilCardStack({
         layout
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card border border-border rounded-2xl overflow-hidden"
+        className="bg-white rounded-[20px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.05)] border-[0.5px] border-black/[0.06]"
       >
         {/* Collapsed Card */}
         <button
           onClick={handleCardClick}
-          className="w-full text-left px-4 py-4 flex items-center gap-3.5"
+          className="w-full text-left px-4 py-[14px] flex items-center gap-3"
         >
           {/* Circular Avatar */}
           <div className="relative">
-            <Avatar className={cn("h-14 w-14 shrink-0", getAvatarRingColor())}>
+            <Avatar className={cn("h-[42px] w-[42px] shrink-0 shadow-[0_3px_8px_rgba(15,158,117,0.3)]", getAvatarRingColor())}>
               <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
-              <AvatarFallback className="text-white text-base font-bold" style={{ backgroundColor: avatarBg }}>
+              <AvatarFallback
+                className="text-white text-[13px] font-bold"
+                style={{ background: pupil.profile_image_url ? avatarBg : 'linear-gradient(135deg, #0f9e75, #1dcaa5)' }}
+              >
                 {getInitials(pupil.name)}
               </AvatarFallback>
             </Avatar>
@@ -648,7 +651,7 @@ export function PupilCardStack({
           {/* Name + Phone + Stats */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-[15px] text-foreground truncate">{pupil.name}</h3>
+              <h3 className="font-bold text-[14px] text-[#1c1c1e] truncate">{pupil.name}</h3>
               {isTracking && (
                 <Badge className="bg-primary/10 text-primary border-0 text-[10px] px-1.5 py-0">
                   LIVE
@@ -656,12 +659,12 @@ export function PupilCardStack({
               )}
             </div>
             {pupil.phone && (
-              <p className="text-[13px] text-muted-foreground mt-0.5 flex items-center gap-1">
+              <p className="text-[12px] text-[#8e8e93] mt-[2px] flex items-center gap-1">
                 <Phone className="h-3 w-3" />
                 {pupil.phone}
               </p>
             )}
-            <p className="text-[12px] text-muted-foreground mt-0.5">
+            <p className="text-[12px] text-[#8e8e93] mt-[2px]">
               {pupil.lessons_completed || 0} lessons · {totalHours}h
               {pupil.test_date && ` · Test: ${format(parseISO(pupil.test_date), "yyyy-MM-dd")}`}
             </p>
@@ -671,20 +674,18 @@ export function PupilCardStack({
           {(hasDebt || hasCredit) && (
             <span className={cn(
               "text-[13px] font-semibold px-2.5 py-1 rounded-2xl shrink-0",
-              hasDebt ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400" : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
+              hasDebt ? "bg-[#fff0f0] text-[#e24b4a]" : "bg-[#eaf3de] text-[#4a8c3f]"
             )}>
               £{Math.abs(balance).toFixed(0)}
             </span>
           )}
 
           {/* Chevron */}
-          <motion.div
-            animate={{ rotate: (!isMobile && isExpanded) ? 90 : 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ChevronRight className="h-5 w-5 text-muted-foreground" />
-          </motion.div>
+          <span className="text-[16px] text-[#c7c7cc] shrink-0">›</span>
         </button>
+
+        {/* Gradient line before expanded content or at bottom */}
+        {!isExpanded && <div className="h-[2px] w-full bg-gradient-to-r from-[#0d4fa0] to-[#56a8f5]" />}
 
         {/* Expanded Content - Desktop only (inline) */}
         <AnimatePresence>
