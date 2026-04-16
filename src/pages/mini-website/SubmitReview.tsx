@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Star, CheckCircle, Loader2 } from "lucide-react";
+import { Star, CheckCircle, Loader2 , Car } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -110,7 +110,7 @@ export default function SubmitReview() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
         <Card className="max-w-md w-full text-center p-8">
-          <div className="text-6xl mb-4">🚗</div>
+          <div className="mb-4"><Car className="h-16 w-16 text-muted-foreground mx-auto" /></div>
           <h1 className="text-2xl font-bold mb-2">Instructor Not Found</h1>
           <p className="text-muted-foreground">This review link doesn't appear to be valid.</p>
         </Card>

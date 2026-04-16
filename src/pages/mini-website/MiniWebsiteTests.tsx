@@ -6,7 +6,7 @@ import { TestEnquiryDialog } from "@/components/mini-website/TestEnquiryDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RefreshCw, MapPin, Calendar, Clock, AlertCircle, Search, MessageCircle } from "lucide-react";
+import { RefreshCw, MapPin, Calendar, Clock, AlertCircle, Search, MessageCircle , Car } from "lucide-react";
 import { motion } from "framer-motion";
 import { fetchTestCentres, fetchSlotsForCentre, type TestSlot } from "@/lib/api/firecrawl";
 import {
@@ -90,7 +90,7 @@ export default function MiniWebsiteTests({ subdomainSlug }: MiniWebsiteTestsProp
     return (
       <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: '#e9f4f9' }}>
         <Card className="max-w-md w-full text-center p-8">
-          <div className="text-6xl mb-4">🚗</div>
+          <div className="mb-4"><Car className="h-16 w-16 text-muted-foreground mx-auto" /></div>
           <h1 className="text-2xl font-bold mb-2">Page Not Found</h1>
           <Button onClick={() => window.location.href = "/"}>Go Home</Button>
         </Card>
