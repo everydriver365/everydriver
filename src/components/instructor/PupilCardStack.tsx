@@ -630,7 +630,7 @@ export function PupilCardStack({
         {/* Collapsed Card */}
         <button
           onClick={handleCardClick}
-          className="w-full text-left px-4 py-[14px] flex items-center gap-3"
+          className="w-full text-left px-[14px] py-[14px] flex items-center gap-3"
         >
           {/* Circular Avatar */}
           <div className="relative">
@@ -657,7 +657,7 @@ export function PupilCardStack({
           {/* Name + Phone + Stats */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-[14px] text-[#1c1c1e] truncate">{pupil.name}</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 500, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="truncate">{pupil.name}</h3>
               {isTracking && (
                 <Badge className="bg-primary/10 text-primary border-0 text-[10px] px-1.5 py-0">
                   LIVE
@@ -665,12 +665,12 @@ export function PupilCardStack({
               )}
             </div>
             {pupil.phone && (
-              <p className="text-[12px] text-[#8e8e93] mt-[2px] flex items-center gap-1">
+              <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }} className="flex items-center gap-1">
                 <Phone className="h-3 w-3" />
                 {pupil.phone}
               </p>
             )}
-            <p className="text-[12px] text-[#8e8e93] mt-[2px]">
+            <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }}>
               {pupil.lessons_completed || 0} lessons · {totalHours}h
               {pupil.test_date && ` · Test: ${format(parseISO(pupil.test_date), "yyyy-MM-dd")}`}
             </p>
@@ -687,7 +687,7 @@ export function PupilCardStack({
           )}
 
           {/* Chevron */}
-          <span className="text-[16px] text-[#c7c7cc] shrink-0">›</span>
+          <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" className="shrink-0" />
         </button>
 
         {/* Subtle divider */}
