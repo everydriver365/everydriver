@@ -422,21 +422,46 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                   {/* All-day events */}
                   {allDay.map((evt) => {
                     const colors = getCardColors(evt.color);
+                    const isExpanded = expandedEventId === evt.id;
                     return (
                       <div
                         key={evt.id}
+                        onClick={() => setExpandedEventId(isExpanded ? null : evt.id)}
                         style={{
                           backgroundColor: colors.bg,
                           borderRadius: 8,
                           padding: "12px 16px",
                           minHeight: 48,
-                          display: "flex",
-                          alignItems: "center",
+                          cursor: "pointer",
                         }}
                       >
-                        <span style={{ fontSize: 15, fontWeight: 500, color: colors.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {evt.title}
-                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 15, fontWeight: 500, color: colors.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                            {evt.title}
+                          </span>
+                          <span style={{ fontSize: 11, fontWeight: 500, color: colors.textMuted, flexShrink: 0 }}>All day</span>
+                        </div>
+                        {isExpanded && (
+                          <div style={{ marginTop: 10, borderTop: `1px solid ${colors.text}20`, paddingTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+                            {evt.location && (
+                              <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                                <MapPin style={{ width: 14, height: 14, color: colors.text, marginTop: 2, flexShrink: 0 }} />
+                                <span style={{ fontSize: 13, color: colors.text }}>{evt.location}</span>
+                              </div>
+                            )}
+                            {evt.description && (
+                              <div style={{ fontSize: 13, color: colors.textMuted, whiteSpace: "pre-wrap", lineHeight: 1.4 }}>
+                                {evt.description}
+                              </div>
+                            )}
+                            <span style={{ fontSize: 11, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                              {evt.is_busy ? "Busy" : "Free"} · Google Calendar
+                            </span>
+                            {!evt.location && !evt.description && (
+                              <span style={{ fontSize: 12, color: colors.textMuted, fontStyle: "italic" }}>No additional details</span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
