@@ -425,8 +425,8 @@ export default function InstructorPay() {
               style={tileStyle} className="w-full text-left"
             >
               <div style={{ padding: 14 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
-                  <Users size={22} strokeWidth={2} color="#4F46E5" />
+                <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#E8ECF1", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                  <Users size={22} strokeWidth={2} color="#2A394F" />
                 </div>
                 <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="tabular-nums">{pupils.length}</p>
                 <div className="flex items-center justify-between" style={{ marginTop: 2 }}>

@@ -177,7 +177,7 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
             <div className="relative">
               <div
                 className="rounded-full p-[2px]"
-                style={{ background: "linear-gradient(135deg, #3B82F6, #6366F1)" }}
+                style={{ background: "linear-gradient(135deg, #3B82F6, #2A394F)" }}
               >
                 <PupilAvatar
                   name={nextLesson.pupil.name}
@@ -191,7 +191,7 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
               <div className="flex items-center gap-1">
                 <span
                   className="text-[11px] font-bold uppercase tracking-[0.5px]"
-                  style={{ color: "#6366F1" }}
+                  style={{ color: "#2A394F" }}
                 >
                   Next Up
                 </span>
@@ -216,7 +216,7 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
                 {getTimeLabel()}
               </span>
               <div className="h-8 w-8 rounded-full flex items-center justify-center mt-1" style={{ background: "rgba(99,102,241,0.1)" }}>
-                <ChevronRight className="h-4 w-4" style={{ color: "#6366F1" }} />
+                <ChevronRight className="h-4 w-4" style={{ color: "#2A394F" }} />
               </div>
             </div>
           </div>

@@ -63,9 +63,9 @@ const ALL_TILES: QuickTile[] = [
   { title: "Month End", subtitle: "Review & submit", icon: FileBarChart, tintBg: "#EDE9FE", tintColor: "#5B21B6", route: "/instructor/month-end" },
   { title: "Weekly Report", subtitle: "AI summary", icon: BarChart3, tintBg: "#EDE9FE", tintColor: "#5B21B6", route: "/instructor/weekly-report" },
   { title: "Tasks Due", subtitle: "Outstanding", icon: ClipboardCheck, tintBg: "#FEF3C7", tintColor: "#92400E", route: "/instructor/outstanding-tasks" },
-  { title: "End of Day", subtitle: "Day summary", icon: Moon, tintBg: "#EEF2FF", tintColor: "#4F46E5", route: "/instructor/end-of-day" },
-  { title: "Waiting Room", subtitle: "Weekly Zoom", icon: Users, tintBg: "#EEF2FF", tintColor: "#4F46E5", route: "/instructor/waiting-room" },
-  { title: "Platform Updates", subtitle: "News & ideas", icon: Megaphone, tintBg: "#EEF2FF", tintColor: "#4F46E5", route: "/instructor/platform-updates" },
+  { title: "End of Day", subtitle: "Day summary", icon: Moon, tintBg: "#E8ECF1", tintColor: "#2A394F", route: "/instructor/end-of-day" },
+  { title: "Waiting Room", subtitle: "Weekly Zoom", icon: Users, tintBg: "#E8ECF1", tintColor: "#2A394F", route: "/instructor/waiting-room" },
+  { title: "Platform Updates", subtitle: "News & ideas", icon: Megaphone, tintBg: "#E8ECF1", tintColor: "#2A394F", route: "/instructor/platform-updates" },
 ];
 
 const TILES_PER_PAGE = 6;
@@ -124,7 +124,7 @@ export function SwipeableQuickAccess() {
                       whileHover={{ backgroundColor: locked ? undefined : "#FAFAFA" }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                       onClick={handleClick}
-                      className="focus-visible:ring-2 focus-visible:ring-[#6366F1] outline-none"
+                      className="focus-visible:ring-2 focus-visible:ring-[#2A394F] outline-none"
                       style={{
                         position: "relative",
                         background: "#FFFFFF",
@@ -149,7 +149,7 @@ export function SwipeableQuickAccess() {
                           left: 0,
                           right: 0,
                           height: 2,
-                          background: "linear-gradient(90deg, #4F46E5, #818CF8)",
+                          background: "linear-gradient(90deg, #2A394F, #3D5377)",
                           borderRadius: "0 0 14px 14px",
                         }}
                       />

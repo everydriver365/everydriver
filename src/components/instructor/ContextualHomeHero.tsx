@@ -158,7 +158,7 @@ export function ContextualHomeHero({
     ? { start: "#22c55e", end: "#06b6d4" }
     : clampedDaily >= 50
     ? { start: "#eab308", end: "#22c55e" }
-    : { start: "#3b82f6", end: "#6366f1" };
+    : { start: "#3b82f6", end: "#2A394F" };
   const heroGlowColor = clampedDaily >= 80 ? "rgba(34,197,94,0.4)" : clampedDaily >= 50 ? "rgba(234,179,8,0.4)" : "rgba(99,102,241,0.4)";
 
   // Parallax

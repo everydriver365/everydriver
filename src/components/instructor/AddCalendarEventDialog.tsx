@@ -25,7 +25,7 @@ const BLOCK_COLOR_PRESETS = [
   '#06b6d4', // cyan
   '#84cc16', // lime
   '#f97316', // orange
-  '#6366f1', // indigo
+  '#2A394F', // indigo
 ];
 
 interface AddCalendarEventDialogProps {

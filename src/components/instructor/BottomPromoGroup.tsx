@@ -29,7 +29,7 @@ export function BottomPromoGroup({ className = "" }: { className?: string }) {
           whileHover={{ backgroundColor: "#FAFAFA" }}
           onClick={() => navigate("/instructor/waiting-room")}
           style={tileStyle}
-          className="focus-visible:ring-2 focus-visible:ring-[#6366F1] outline-none"
+          className="focus-visible:ring-2 focus-visible:ring-[#2A394F] outline-none"
           tabIndex={0}
         >
           <div style={{
@@ -59,7 +59,7 @@ export function BottomPromoGroup({ className = "" }: { className?: string }) {
           whileHover={{ backgroundColor: "#FAFAFA" }}
           onClick={() => setSheetOpen(true)}
           style={tileStyle}
-          className="focus-visible:ring-2 focus-visible:ring-[#6366F1] outline-none"
+          className="focus-visible:ring-2 focus-visible:ring-[#2A394F] outline-none"
           tabIndex={0}
         >
           <div style={{

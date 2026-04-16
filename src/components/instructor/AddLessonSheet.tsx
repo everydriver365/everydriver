@@ -328,7 +328,7 @@ export function AddLessonSheet({
         }}>
           <button
             onClick={() => onOpenChange(false)}
-            style={{ fontSize: 15, fontWeight: 400, color: "#6B63D6", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            style={{ fontSize: 15, fontWeight: 400, color: "#2A394F", background: "none", border: "none", cursor: "pointer", padding: 0 }}
           >
             Cancel
           </button>
@@ -340,7 +340,7 @@ export function AddLessonSheet({
             disabled={loading}
             style={{
               fontSize: 15, fontWeight: 600,
-              color: loading ? "#A1A1AA" : "#6B63D6",
+              color: loading ? "#A1A1AA" : "#2A394F",
               background: "none", border: "none", cursor: loading ? "default" : "pointer", padding: 0,
             }}
           >
@@ -474,7 +474,7 @@ export function AddLessonSheet({
                   padding: "14px 16px", backgroundColor: "#FFFFFF", borderRadius: 12,
                   border: "1px solid #E4E4E7", cursor: "pointer", textAlign: "left",
                 }}>
-                  <CalendarIcon style={{ width: 18, height: 18, color: "#6B63D6" }} />
+                  <CalendarIcon style={{ width: 18, height: 18, color: "#2A394F" }} />
                   <span style={{ flex: 1, fontSize: 15, fontWeight: 400, color: "#18181B" }}>
                     {lessonDate ? format(lessonDate, 'EEEE, d MMMM yyyy') : 'Pick a date'}
                   </span>
@@ -499,7 +499,7 @@ export function AddLessonSheet({
                 <Select value={lessonStartTime} onValueChange={setLessonStartTime}>
                   <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <Clock style={{ width: 16, height: 16, color: "#6B63D6" }} />
+                      <Clock style={{ width: 16, height: 16, color: "#2A394F" }} />
                       <SelectValue />
                     </div>
                   </SelectTrigger>
@@ -567,7 +567,7 @@ export function AddLessonSheet({
                   <Select value={selectedTestCentre} onValueChange={setSelectedTestCentre}>
                     <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <MapPin style={{ width: 16, height: 16, color: "#6B63D6" }} />
+                        <MapPin style={{ width: 16, height: 16, color: "#2A394F" }} />
                         <SelectValue placeholder="Select test centre..." />
                       </div>
                     </SelectTrigger>
@@ -635,7 +635,7 @@ export function AddLessonSheet({
                   border: "1px solid #E4E4E7",
                 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <Repeat style={{ width: 16, height: 16, color: "#6B63D6" }} />
+                    <Repeat style={{ width: 16, height: 16, color: "#2A394F" }} />
                     <span style={{ fontSize: 14, fontWeight: 500, color: "#18181B" }}>Weekly recurring</span>
                   </div>
                   <Switch checked={isRecurring} onCheckedChange={setIsRecurring} />
@@ -676,7 +676,7 @@ export function AddLessonSheet({
             <Select value={paymentMethod} onValueChange={setPaymentMethod}>
               <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <CreditCard style={{ width: 16, height: 16, color: "#6B63D6" }} />
+                  <CreditCard style={{ width: 16, height: 16, color: "#2A394F" }} />
                   <SelectValue />
                 </div>
               </SelectTrigger>

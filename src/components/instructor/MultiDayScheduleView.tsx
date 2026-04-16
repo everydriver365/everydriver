@@ -323,7 +323,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#6B63D6" }} />
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#2A394F" }} />
       </div>
     );
   }
@@ -340,7 +340,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
           right: 20,
           maxWidth: 420,
           margin: "0 auto",
-          background: "#6B63D6",
+          background: "#2A394F",
           color: "#FFFFFF",
           borderRadius: 12,
           padding: "14px 20px",
@@ -391,7 +391,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                     fontSize: 11,
                     fontWeight: 500,
                     textTransform: "uppercase",
-                    color: today ? "#6B63D6" : "#71717A",
+                    color: today ? "#2A394F" : "#71717A",
                     letterSpacing: "0.02em",
                   }}>
                     {format(day, "EEE")}

@@ -39,7 +39,7 @@ const lessonTypeBarColors: Record<string, string> = {
   refresher: "#06b6d4",
   intensive: "#8b5cf6",
   first_lesson: "#22c55e",
-  pass_plus: "#6366f1",
+  pass_plus: "#2A394F",
   driving_test: "#f97316",
 };
 

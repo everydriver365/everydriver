@@ -21,16 +21,16 @@ export function WaitingRoomPromoTile({ className = "" }: { className?: string })
         cursor: "pointer",
         transition: "background 120ms ease",
       }}
-      className={`focus-visible:ring-2 focus-visible:ring-[#6366F1] outline-none ${className}`}
+      className={`focus-visible:ring-2 focus-visible:ring-[#2A394F] outline-none ${className}`}
       tabIndex={0}
     >
       <div style={{
         width: 44, height: 44, borderRadius: 12,
-        backgroundColor: "#EEF2FF",
+        backgroundColor: "#E8ECF1",
         display: "flex", alignItems: "center", justifyContent: "center",
         flexShrink: 0,
       }}>
-        <Users size={22} strokeWidth={2} color="#4F46E5" />
+        <Users size={22} strokeWidth={2} color="#2A394F" />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
