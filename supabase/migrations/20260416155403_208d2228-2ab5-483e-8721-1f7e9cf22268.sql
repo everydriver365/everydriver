@@ -1,0 +1,1 @@
+ALTER TABLE public.scheduled_lessons ADD COLUMN payment_method text DEFAULT 'tbc';

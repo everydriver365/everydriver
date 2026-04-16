@@ -13236,6 +13236,7 @@ export type Database = {
           no_show_fee_charged: number | null
           notes: string | null
           original_lesson_id: string | null
+          payment_method: string | null
           payment_status: string
           payment_token: string | null
           pickup_location: string | null
@@ -13277,6 +13278,7 @@ export type Database = {
           no_show_fee_charged?: number | null
           notes?: string | null
           original_lesson_id?: string | null
+          payment_method?: string | null
           payment_status?: string
           payment_token?: string | null
           pickup_location?: string | null
@@ -13318,6 +13320,7 @@ export type Database = {
           no_show_fee_charged?: number | null
           notes?: string | null
           original_lesson_id?: string | null
+          payment_method?: string | null
           payment_status?: string
           payment_token?: string | null
           pickup_location?: string | null
