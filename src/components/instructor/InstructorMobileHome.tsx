@@ -125,7 +125,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { triggerHaptic } from "@/lib/haptics";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
-import { useRealtimeSubscription } from "@/hooks/useRealtimeHub";
+
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 
