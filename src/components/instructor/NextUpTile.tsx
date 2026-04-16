@@ -187,12 +187,11 @@ export function NextUpTile({
         }}
       >
         {/* ── HEADER ROW ── */}
-        <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+        <div className="flex items-center justify-between px-4 py-3"
+          style={{ backgroundColor: "#1a6fd4", borderRadius: "16px 16px 0 0" }}>
           <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center" style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: "rgba(0,122,255,0.1)" }}>
-              <Calendar className="h-3.5 w-3.5" style={{ color: "#007AFF" }} />
-            </div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#1C1C1E" }}>
+            <Calendar className="h-4 w-4 text-white" />
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF" }}>
               Next Lesson
             </span>
             {checkInStatus && (
@@ -201,10 +200,10 @@ export function NextUpTile({
           </div>
           <div
             className="flex items-center gap-1 px-2.5 py-1"
-            style={{ borderRadius: 10, backgroundColor: "rgba(0,122,255,0.08)" }}
+            style={{ borderRadius: 100, backgroundColor: "rgba(255,255,255,0.2)" }}
           >
-            <Clock className="h-3 w-3" style={{ color: "#007AFF" }} />
-            <span style={{ fontSize: 12, fontWeight: 600, color: "#007AFF" }}>{formatTime24(startTime)}</span>
+            <Clock className="h-3 w-3 text-white" />
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#FFFFFF" }}>{formatTime24(startTime)}</span>
           </div>
         </div>
 
