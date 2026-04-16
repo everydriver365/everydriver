@@ -10,8 +10,9 @@ import {
   Car, Lightbulb, Crown, CalendarPlus, ListTodo,
   Wrench, Fuel, ClipboardCheck, ArrowLeftRight, Target,
   MessageSquare, MapPinned, BookOpen, Settings,
-  Gift, Clock, Receipt, FileBarChart, BarChart3, Moon, Megaphone, Lock, ChevronRight,
+  Gift, Clock, Receipt, FileBarChart, BarChart3, Moon, Megaphone, Lock, ChevronRight, GraduationCap,
 } from "lucide-react";
+import { CoursePlannerSheet } from "@/components/course-planner/CoursePlannerSheet";
 
 interface QuickTile {
   title: string;
