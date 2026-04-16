@@ -194,8 +194,8 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
             )}
           </div>
         </div>
-        {/* Gradient accent line */}
-        <div className="h-[2px] w-full" style={{ background: 'linear-gradient(to right, #0d4fa0, #56a8f5)' }} />
+        {/* Bottom edge */}
+        <div className="h-px w-full bg-black/[0.06]" />
       </div>
       <TakePaymentModal
         open={paymentModalOpen}
