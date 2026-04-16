@@ -12,6 +12,7 @@ import { CalendarEventSheet } from "@/components/instructor/CalendarEventSheet";
 import { ScheduleFAB } from "@/components/instructor/ScheduleFAB";
 import { WeeklySummaryWidget } from "@/components/instructor/WeeklySummaryWidget";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { PremiumScheduleView } from "@/components/instructor/schedule/PremiumScheduleView";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useInstructorCalendar, type CalendarEvent } from "@/hooks/useInstructorCalendar";
 
@@ -28,6 +29,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
+import { useNavigate } from "react-router-dom";
 
 type ViewMode = 'list' | 'month' | 'calendar' | 'schedule';
 
@@ -35,6 +37,7 @@ export default function InstructorSchedule() {
   const { instructor } = useInstructorAuth();
   const instructorId = instructor?.id;
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const { wallpaperColor } = useInstructorAppearance(instructorId);
   
   // Default to list on mobile, calendar on desktop
@@ -86,7 +89,6 @@ export default function InstructorSchedule() {
   }, [viewMode]);
 
   const handleAddEvent = (date?: Date) => {
-    // Ensure the data fetch range includes the date the user is adding an event for
     if (date) {
       calendar.goToDate(date);
     }
@@ -96,7 +98,7 @@ export default function InstructorSchedule() {
 
   const handleDeleteEvent = async (event: CalendarEvent) => {
     if (event.type === 'external') {
-      toast.error('External events can’t be deleted here');
+      toast.error('External events can\'t be deleted here');
       return;
     }
 
@@ -120,7 +122,6 @@ export default function InstructorSchedule() {
         await calendar.refetch();
       }
 
-      // Close sheet if it was open for this event
       setSelectedEvent((curr) => (curr?.id === event.id ? null : curr));
       toast.success('Updated');
     } catch (e) {
@@ -137,40 +138,30 @@ export default function InstructorSchedule() {
     );
   }
 
+  // Mobile: use the premium schedule view
+  if (isMobile) {
+    return (
+      <InstructorPortalLayout hideHeader>
+        <PremiumScheduleView
+          instructorId={instructorId}
+          onMenuClick={() => navigate("/instructor/menu")}
+        />
+      </InstructorPortalLayout>
+    );
+  }
+
+  // Desktop: existing layout
   return (
     <InstructorPortalLayout>
       <div className="space-y-4 h-full flex flex-col">
         <div className="flex items-center justify-between gap-2 sticky top-0 z-20 py-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b sm:border-b-0" style={{ backgroundColor: wallpaperColor || "#F4F7F6" }}>
-          {isMobile ? (
-            <>
-              {/* Mobile toggle: List / Month */}
-               <div className="flex bg-black/[0.04] dark:bg-white/[0.06] p-0.5 rounded-[12px]">
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={cn(
-                    "flex items-center gap-1 px-2.5 py-1 rounded-[10px] text-xs font-medium transition-colors",
-                    viewMode === 'list'
-                      ? "bg-[#F2F3F5] dark:bg-[#1C1C1E] text-foreground shadow-[0px_2px_6px_rgba(0,0,0,0.06)] ring-1 ring-inset ring-white/60 dark:ring-white/5"
-                      : "text-muted-foreground"
-                  )}
-                >
-                  <List className="h-3.5 w-3.5" />
-                  List
-                </button>
-                <button
-                  onClick={() => setViewMode('month')}
-                  className={cn(
-                    "flex items-center gap-1 px-2.5 py-1 rounded-[10px] text-xs font-medium transition-colors",
-                    viewMode === 'month'
-                      ? "bg-[#F2F3F5] dark:bg-[#1C1C1E] text-foreground shadow-[0px_2px_6px_rgba(0,0,0,0.06)] ring-1 ring-inset ring-white/60 dark:ring-white/5"
-                      : "text-muted-foreground"
-                  )}
-                >
-                  <CalendarRange className="h-3.5 w-3.5" />
-                  Month
-                </button>
-              </div>
-              <h1 className="text-lg font-bold text-foreground">Schedule</h1>
+          <>
+            <InstructorPageHeader
+              lucideIcon={Calendar}
+              title="Schedule"
+              className="flex-1"
+            />
+            <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="sm"
@@ -181,55 +172,34 @@ export default function InstructorSchedule() {
               >
                 <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
               </Button>
-            </>
-          ) : (
-            <>
-              <InstructorPageHeader
-                lucideIcon={Calendar}
-                title="Schedule"
-                className="flex-1"
-              />
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={handleSync}
-                  disabled={isSyncing}
-                  title="Sync Google Calendar"
-                >
-                  <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-1.5 h-8">
-                      {viewMode === 'list' && <List className="h-3.5 w-3.5" />}
-                      {viewMode === 'schedule' && <CalendarDays className="h-3.5 w-3.5" />}
-                      {viewMode === 'calendar' && <Calendar className="h-3.5 w-3.5" />}
-                      <span className="text-xs capitalize">{viewMode === 'calendar' ? 'Calendar' : viewMode === 'schedule' ? 'Schedule' : 'List'}</span>
-                      <ChevronDown className="h-3 w-3 opacity-50" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40 bg-popover border shadow-lg z-50">
-                    <DropdownMenuItem onClick={() => setViewMode('list')} className="cursor-pointer gap-2">
-                      <List className="h-4 w-4" /> List
-                      {viewMode === 'list' && <Check className="ml-auto h-4 w-4" />}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setViewMode('schedule')} className="cursor-pointer gap-2">
-                      <CalendarDays className="h-4 w-4" /> Schedule
-                      {viewMode === 'schedule' && <Check className="ml-auto h-4 w-4" />}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setViewMode('calendar')} className="cursor-pointer gap-2">
-                      <Calendar className="h-4 w-4" /> Calendar
-                      {viewMode === 'calendar' && <Check className="ml-auto h-4 w-4" />}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </>
-          )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5 h-8">
+                    {viewMode === 'list' && <List className="h-3.5 w-3.5" />}
+                    {viewMode === 'schedule' && <CalendarDays className="h-3.5 w-3.5" />}
+                    {viewMode === 'calendar' && <Calendar className="h-3.5 w-3.5" />}
+                    <span className="text-xs capitalize">{viewMode === 'calendar' ? 'Calendar' : viewMode === 'schedule' ? 'Schedule' : 'List'}</span>
+                    <ChevronDown className="h-3 w-3 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40 bg-popover border shadow-lg z-50">
+                  <DropdownMenuItem onClick={() => setViewMode('list')} className="cursor-pointer gap-2">
+                    <List className="h-4 w-4" /> List
+                    {viewMode === 'list' && <Check className="ml-auto h-4 w-4" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setViewMode('schedule')} className="cursor-pointer gap-2">
+                    <CalendarDays className="h-4 w-4" /> Schedule
+                    {viewMode === 'schedule' && <Check className="ml-auto h-4 w-4" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setViewMode('calendar')} className="cursor-pointer gap-2">
+                    <Calendar className="h-4 w-4" /> Calendar
+                    {viewMode === 'calendar' && <Check className="ml-auto h-4 w-4" />}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </>
         </div>
-
 
         {viewMode === 'list' ? (
           <MultiDayScheduleView key={mobileListRefreshKey} instructorId={instructorId} />
@@ -266,7 +236,6 @@ export default function InstructorSchedule() {
         onRefetch={calendar.refetch}
       />
 
-      {/* Color Settings Dialog */}
       <CalendarColorSettings
         open={colorSettingsOpen}
         onOpenChange={setColorSettingsOpen}
@@ -275,7 +244,6 @@ export default function InstructorSchedule() {
         onColorsChange={calendar.setCalendarColors}
       />
 
-      {/* Add Event Dialog - for Schedule view */}
       <AddCalendarEventDialog
         open={addEventOpen}
         onOpenChange={setAddEventOpen}
@@ -287,8 +255,6 @@ export default function InstructorSchedule() {
         }}
       />
 
-
-      {/* FAB Add Lesson Sheet */}
       <AddLessonSheet
         open={fabLessonSheetOpen}
         onOpenChange={setFabLessonSheetOpen}
