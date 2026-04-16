@@ -800,6 +800,41 @@ export default function InstructorPupils() {
             </div>
             <div className="border-t pt-4 mt-4">
               <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                <CreditCard className="h-4 w-4" />
+                Payment
+              </p>
+              <div className="space-y-2">
+                <Label>Payment Method</Label>
+                <Select
+                  value={addForm.payment_method}
+                  onValueChange={(val) => setAddForm({ ...addForm, payment_method: val })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select payment method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tbc">TBC — Decide Later</SelectItem>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="card">Card</SelectItem>
+                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                    <SelectItem value="send_link">Send Payment Link</SelectItem>
+                    <SelectItem value="take_payment">Take Payment Now (QR)</SelectItem>
+                  </SelectContent>
+                </Select>
+                {addForm.payment_method === 'send_link' && (
+                  <p className="text-xs text-muted-foreground">
+                    A payment link will be sent after saving the pupil
+                  </p>
+                )}
+                {addForm.payment_method === 'take_payment' && (
+                  <p className="text-xs text-muted-foreground">
+                    QR code will be shown after saving the pupil
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="border-t pt-4 mt-4">
+              <p className="text-sm font-medium mb-3 flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Parent/Guardian (for Parent Portal access)
               </p>
