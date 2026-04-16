@@ -4,7 +4,7 @@ import { ArrowLeft, Check, CheckCheck, Send, User, Paperclip, X, File, Trash2, M
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useConversationMessages, Conversation, Message } from "@/hooks/useMessaging";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
@@ -312,6 +312,7 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
             <ArrowLeft className="h-5 w-5 pointer-events-none" />
           </Button>
           <Avatar className="h-10 w-10">
+            <AvatarImage src={conversation.pupil?.profile_image_url || undefined} alt={conversation.pupil?.name} />
             <AvatarFallback className="bg-primary text-primary-foreground">
               {conversation.pupil?.name?.charAt(0) || <User className="h-4 w-4" />}
             </AvatarFallback>
