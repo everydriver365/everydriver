@@ -57,10 +57,11 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
     if (!instructor?.id) return;
     const checkActiveSession = async () => {
       const { data } = await supabase
-        .from("gps_devices")
-        .select("current_session_id")
+        .from("lesson_telematics")
+        .select("id")
         .eq("instructor_id", instructor.id)
-        .not("current_session_id", "is", null)
+        .eq("manually_started", true)
+        .is("ended_at", null)
         .limit(1);
       setIsTrackingActive((data?.length ?? 0) > 0);
     };
