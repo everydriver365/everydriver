@@ -193,7 +193,12 @@ export default function InstructorPay() {
 
   const GradientLine = () => null;
 
-  const cardClass = "bg-white rounded-[20px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.05)] border-[0.5px] border-black/[0.06]";
+  const tileStyle: React.CSSProperties = {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    border: "0.5px solid #E4E4E7",
+    overflow: "hidden",
+  };
 
   return (
     <InstructorPortalLayout>
@@ -258,21 +263,20 @@ export default function InstructorPay() {
               transition={{ delay: 0.12 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setOwesExpanded(!owesExpanded); }}
-              className={cn(cardClass, "w-full text-left")}
+              style={tileStyle} className="w-full text-left"
             >
-              <div className="p-[14px_14px_12px]">
-                <div className="h-9 w-9 rounded-[12px] bg-[#FEF2F2] flex items-center justify-center mb-2">
-                  <AlertCircle size={20} strokeWidth={2} color="#DC2626" />
+              <div style={{ padding: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#FEF2F2", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                  <AlertCircle size={22} strokeWidth={2} color="#DC2626" />
                 </div>
-                <p className="text-[22px] font-bold tabular-nums text-[#e24b4a]">
+                <p style={{ fontSize: 22, fontWeight: 700, color: "#DC2626", fontFamily: "Inter, sans-serif" }} className="tabular-nums">
                   {debtors.length > 0 ? `£${totalOwed.toFixed(0)}` : "£0"}
                 </p>
-                <div className="flex items-center justify-between mt-0.5">
-                  <p className="text-[12px] text-[#8e8e93]">Owes Money</p>
-                  <ChevronRight className={cn("h-4 w-4 text-[#c7c7cc] transition-transform", owesExpanded && "rotate-90")} />
+                <div className="flex items-center justify-between" style={{ marginTop: 2 }}>
+                  <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Owes Money</p>
+                  <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" className={cn("transition-transform", owesExpanded && "rotate-90")} />
                 </div>
               </div>
-              <GradientLine />
             </motion.button>
 
             <AnimatePresence>
@@ -284,7 +288,7 @@ export default function InstructorPay() {
                   transition={{ duration: 0.25 }}
                   className="overflow-hidden"
                 >
-                  <div className={cn(cardClass, "mt-2 divide-y divide-black/[0.06]")}>
+                  <div style={{ ...tileStyle, marginTop: 8 }} className="divide-y divide-[#E4E4E7]">
                     {debtors.map((pupil) => {
                       const amount = Math.abs(pupil.account_balance || 0);
                       return (
@@ -340,19 +344,18 @@ export default function InstructorPay() {
               transition={{ delay: 0.16 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setPaymentsExpanded(!paymentsExpanded); }}
-              className={cn(cardClass, "w-full text-left")}
+              style={tileStyle} className="w-full text-left"
             >
-              <div className="p-[14px_14px_12px]">
-                <div className="h-9 w-9 rounded-[12px] bg-[#DBEAFE] flex items-center justify-center mb-2">
-                  <CreditCard size={20} strokeWidth={2} color="#1E40AF" />
+              <div style={{ padding: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#DBEAFE", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                  <CreditCard size={22} strokeWidth={2} color="#1E40AF" />
                 </div>
-                <p className="text-[22px] font-bold tabular-nums text-[#1c1c1e]">{recentPaymentCount}</p>
-                <div className="flex items-center justify-between mt-0.5">
-                  <p className="text-[12px] text-[#8e8e93]">Recent Payments</p>
-                  <ChevronRight className={cn("h-4 w-4 text-[#c7c7cc] transition-transform", paymentsExpanded && "rotate-90")} />
+                <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="tabular-nums">{recentPaymentCount}</p>
+                <div className="flex items-center justify-between" style={{ marginTop: 2 }}>
+                  <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Recent Payments</p>
+                  <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" className={cn("transition-transform", paymentsExpanded && "rotate-90")} />
                 </div>
               </div>
-              <GradientLine />
             </motion.button>
 
             <AnimatePresence>
@@ -380,19 +383,18 @@ export default function InstructorPay() {
               transition={{ delay: 0.20 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setBonusExpanded(!bonusExpanded); }}
-              className={cn(cardClass, "w-full text-left")}
+              style={tileStyle} className="w-full text-left"
             >
-              <div className="p-[14px_14px_12px]">
-                <div className="h-9 w-9 rounded-[12px] bg-[#FEF3C7] flex items-center justify-center mb-2">
-                  <Trophy size={20} strokeWidth={2} color="#92400E" />
+              <div style={{ padding: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#FEF3C7", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                  <Trophy size={22} strokeWidth={2} color="#92400E" />
                 </div>
-                <p className="text-[22px] font-bold tabular-nums text-[#1c1c1e]">£{bonusEarned}</p>
-                <div className="flex items-center justify-between mt-0.5">
-                  <p className="text-[12px] text-[#8e8e93]">Course Rewards</p>
-                  <ChevronRight className={cn("h-4 w-4 text-[#c7c7cc] transition-transform", bonusExpanded && "rotate-90")} />
+                <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="tabular-nums">£{bonusEarned}</p>
+                <div className="flex items-center justify-between" style={{ marginTop: 2 }}>
+                  <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Course Rewards</p>
+                  <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" className={cn("transition-transform", bonusExpanded && "rotate-90")} />
                 </div>
               </div>
-              <GradientLine />
             </motion.button>
 
             <AnimatePresence>
@@ -420,19 +422,18 @@ export default function InstructorPay() {
               transition={{ delay: 0.24 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setBalancesExpanded(!balancesExpanded); }}
-              className={cn(cardClass, "w-full text-left")}
+              style={tileStyle} className="w-full text-left"
             >
-              <div className="p-[14px_14px_12px]">
-                <div className="h-9 w-9 rounded-[12px] bg-[#EEF2FF] flex items-center justify-center mb-2">
-                  <Users size={20} strokeWidth={2} color="#4F46E5" />
+              <div style={{ padding: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                  <Users size={22} strokeWidth={2} color="#4F46E5" />
                 </div>
-                <p className="text-[22px] font-bold tabular-nums text-[#1c1c1e]">{pupils.length}</p>
-                <div className="flex items-center justify-between mt-0.5">
-                  <p className="text-[12px] text-[#8e8e93]">Pupil Balances</p>
-                  <ChevronRight className={cn("h-4 w-4 text-[#c7c7cc] transition-transform", balancesExpanded && "rotate-90")} />
+                <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="tabular-nums">{pupils.length}</p>
+                <div className="flex items-center justify-between" style={{ marginTop: 2 }}>
+                  <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Pupil Balances</p>
+                  <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" className={cn("transition-transform", balancesExpanded && "rotate-90")} />
                 </div>
               </div>
-              <GradientLine />
             </motion.button>
 
             <AnimatePresence>
@@ -444,7 +445,7 @@ export default function InstructorPay() {
                   transition={{ duration: 0.25 }}
                   className="overflow-hidden"
                 >
-                  <div className={cn(cardClass, "mt-2 p-4")}>
+                  <div style={{ ...tileStyle, marginTop: 8, padding: 16 }}>
                     <PupilBalancesList pupils={pupils} limit={5} />
                     <GradientLine />
                   </div>
@@ -468,46 +469,37 @@ export default function InstructorPay() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 + i * 0.04 }}
                   whileTap={{ scale: 0.97 }}
+                  style={action.accent ? undefined : tileStyle}
                   className={cn(
-                    "rounded-[20px] overflow-hidden",
                     action.accent
-                      ? "bg-gradient-to-br from-[#0d4fa0] to-[#1a6fd4] shadow-[0_6px_20px_rgba(26,111,212,0.35)]"
-                      : cardClass
+                      ? "rounded-[14px] overflow-hidden bg-gradient-to-br from-[#0d4fa0] to-[#1a6fd4] shadow-[0_6px_20px_rgba(26,111,212,0.35)]"
+                      : ""
                   )}
                 >
-                  <div className="p-[16px_14px_12px] flex flex-col gap-3">
+                  <div style={{ padding: "14px", display: "flex", flexDirection: "column", gap: 12 }}>
                     <div
-                      className={cn(
-                        "h-9 w-9 rounded-[12px] flex items-center justify-center shrink-0",
-                      )}
-                      style={{ backgroundColor: action.accent ? "rgba(255,255,255,0.2)" : action.iconBg }}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 12,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        backgroundColor: action.accent ? "rgba(255,255,255,0.2)" : action.iconBg,
+                      }}
                     >
-                      <action.icon size={20} strokeWidth={2} color={action.iconColor} />
+                      <action.icon size={22} strokeWidth={2} color={action.iconColor} />
                     </div>
                     <div>
-                      <p
-                        className={cn(
-                          "text-[14px] font-bold leading-tight",
-                          action.accent ? "text-white" : "text-[#1c1c1e]"
-                        )}
-                      >
+                      <p style={{ fontSize: 15, fontWeight: 500, color: action.accent ? "#FFFFFF" : "#18181B", lineHeight: 1.2, fontFamily: "Inter, sans-serif" }}>
                         {action.label}
                       </p>
-                      <p
-                        className={cn(
-                          "text-[12px] mt-0.5",
-                          action.accent ? "text-white/65" : "text-[#8e8e93]"
-                        )}
-                      >
+                      <p style={{ fontSize: 12, fontWeight: 400, color: action.accent ? "rgba(255,255,255,0.65)" : "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }}>
                         {action.sublabel}
                       </p>
                     </div>
                   </div>
-                  {action.accent ? (
-                    <div className="h-[2px] w-full bg-white/25" />
-                  ) : (
-                    <GradientLine />
-                  )}
                 </motion.div>
               );
 
