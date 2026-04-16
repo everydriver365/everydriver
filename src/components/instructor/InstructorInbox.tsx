@@ -153,7 +153,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
     try {
       const { data, error } = await supabase
         .from("pupils")
-        .select("id, name, phone, email")
+        .select("id, name, phone, email, profile_image_url")
         .eq("instructor_id", instructorId)
         .is("deleted_at", null)
         .order("name");
@@ -184,6 +184,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
           id: pupil.id,
           name: pupil.name,
           phone: pupil.phone,
+          profile_image_url: pupil.profile_image_url,
         },
       };
       setSelectedConversation(conv);
