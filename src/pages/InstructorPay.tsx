@@ -215,33 +215,37 @@ export default function InstructorPay() {
     },
   ];
 
+  const GradientLine = () => (
+    <div className="h-[2px] w-full bg-gradient-to-r from-[#0d4fa0] to-[#56a8f5]" />
+  );
+
+  const cardClass = "bg-white rounded-[20px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.05)] border-[0.5px] border-black/[0.06]";
+
   return (
     <InstructorPortalLayout>
-      <div className="space-y-5 pb-24" style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
-         {/* ── Vault Card ── */}
+      <div className="space-y-[10px] pb-24" style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
+
+        {/* ── Hero Earnings Card ── */}
         <motion.section
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/75 p-6 text-white shadow-[0_20px_40px_-15px_hsl(var(--primary)/0.5)]"
+          className="rounded-[20px] overflow-hidden shadow-[0_8px_24px_rgba(13,27,46,0.35)]"
         >
-          {/* subtle glow */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.06),transparent_50%)] pointer-events-none" />
-
-          <div className="relative z-10">
-            <p className="text-xs font-medium text-white/60 uppercase tracking-wider">
+          <div className="bg-gradient-to-br from-[#0d1b2e] to-[#1c2b4a] p-[18px_18px_0]">
+            <p className="text-[10px] font-bold text-white/50 uppercase tracking-[0.08em] mb-2">
               Net Earnings · This Month
             </p>
-            <div className="mt-2 flex items-baseline gap-1">
-              <span className="text-4xl font-extrabold tracking-tighter tabular-nums">
+            <div className="flex items-center gap-2">
+              <span className="text-[36px] font-bold text-white leading-none tabular-nums">
                 £{thisMonth}
               </span>
               {monthlyChange !== 0 && (
                 <span
                   className={cn(
-                    "ml-2 text-xs font-semibold flex items-center gap-0.5 px-1.5 py-0.5 rounded-md",
+                    "text-[11px] font-bold px-[10px] py-1 rounded-[20px] flex items-center gap-0.5",
                     monthlyChange > 0
-                      ? "bg-emerald-500/20 text-emerald-300"
-                      : "bg-rose-500/20 text-rose-300"
+                      ? "bg-[#eaf3de] text-[#4a8c3f]"
+                      : "bg-[#fff0f0] text-[#e24b4a]"
                   )}
                 >
                   <ArrowUpRight
@@ -252,34 +256,27 @@ export default function InstructorPay() {
               )}
             </div>
 
-            <div className="mt-5 flex gap-8">
-              <div>
-                <span className="text-[10px] font-semibold text-white/50 uppercase tracking-widest">
-                  This Week
-                </span>
-                <p className="text-lg font-bold tabular-nums">£{thisWeek}</p>
+            <div className="mt-[14px] pt-[14px] border-t border-white/10 flex pb-[14px]">
+              <div className="flex-1">
+                <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.08em]">This Week</p>
+                <p className="text-[18px] font-bold text-white tabular-nums">£{thisWeek}</p>
               </div>
-              <div>
-                <span className="text-[10px] font-semibold text-white/50 uppercase tracking-widest">
-                  Last Month
-                </span>
-                <p className="text-lg font-bold tabular-nums">£{lastMonth}</p>
+              <div className="flex-1 border-l border-white/10 pl-4">
+                <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.08em]">Last Month</p>
+                <p className="text-[18px] font-bold text-white tabular-nums">£{lastMonth}</p>
               </div>
-              <div>
-                <span className="text-[10px] font-semibold text-white/50 uppercase tracking-widest">
-                  Per Hour
-                </span>
-                <p className="text-lg font-bold tabular-nums">
-                  £{earnings?.hourlyRate || 40}
-                </p>
+              <div className="flex-1 border-l border-white/10 pl-4">
+                <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.08em]">Per Hour</p>
+                <p className="text-[18px] font-bold text-white tabular-nums">£{earnings?.hourlyRate || 40}</p>
               </div>
             </div>
           </div>
+          <GradientLine />
         </motion.section>
 
-        {/* ── Summary Tiles ── */}
-        <div className="grid grid-cols-2 gap-3">
-          {/* Owes Money — expandable */}
+        {/* ── Summary Tiles 2×2 ── */}
+        <div className="grid grid-cols-2 gap-[10px]">
+          {/* Owes Money */}
           <div className={cn(owesExpanded && "col-span-2")}>
             <motion.button
               initial={{ opacity: 0, y: 12 }}
@@ -287,31 +284,21 @@ export default function InstructorPay() {
               transition={{ delay: 0.12 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setOwesExpanded(!owesExpanded); }}
-              className={cn(
-                "w-full rounded-2xl p-4 bg-card border shadow-[0_2px_8px_rgba(0,0,0,0.04)] text-left transition-colors",
-                debtors.length > 0 ? "border-destructive/30" : "border-border",
-                !owesExpanded && "min-h-[100px] flex flex-col justify-between"
-              )}
+              className={cn(cardClass, "w-full text-left")}
             >
-              <div className="h-9 w-9 rounded-full bg-destructive/10 flex items-center justify-center">
-                <AlertCircle className="h-4.5 w-4.5 text-destructive" />
-              </div>
-              <div className="mt-2 flex items-end justify-between">
-                <div>
-                  <p className="text-xl font-bold tabular-nums text-destructive">
-                    {debtors.length > 0 ? `£${totalOwed.toFixed(0)}` : "£0"}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">
-                    Owes Money · {debtors.length} pupil{debtors.length !== 1 ? "s" : ""}
-                  </p>
+              <div className="p-[14px_14px_12px]">
+                <div className="h-9 w-9 rounded-[10px] bg-[#fff0f0] flex items-center justify-center mb-2">
+                  <span className="text-[18px]">💸</span>
                 </div>
-                {debtors.length > 0 && (
-                  <ChevronDown className={cn(
-                    "h-4 w-4 text-muted-foreground transition-transform",
-                    owesExpanded && "rotate-180"
-                  )} />
-                )}
+                <p className="text-[22px] font-bold tabular-nums text-[#e24b4a]">
+                  {debtors.length > 0 ? `£${totalOwed.toFixed(0)}` : "£0"}
+                </p>
+                <div className="flex items-center justify-between mt-0.5">
+                  <p className="text-[12px] text-[#8e8e93]">Owes Money</p>
+                  <ChevronRight className={cn("h-4 w-4 text-[#c7c7cc] transition-transform", owesExpanded && "rotate-90")} />
+                </div>
               </div>
+              <GradientLine />
             </motion.button>
 
             <AnimatePresence>
@@ -323,48 +310,49 @@ export default function InstructorPay() {
                   transition={{ duration: 0.25 }}
                   className="overflow-hidden"
                 >
-                  <div className="mt-2 bg-card rounded-2xl border border-destructive/20 divide-y divide-border/50 overflow-hidden">
+                  <div className={cn(cardClass, "mt-2 divide-y divide-black/[0.06]")}>
                     {debtors.map((pupil) => {
                       const amount = Math.abs(pupil.account_balance || 0);
                       return (
                         <div key={pupil.id} className="p-3 flex items-center gap-3">
-                          <div className="h-9 w-9 rounded-full bg-destructive/10 flex items-center justify-center text-xs font-semibold text-destructive flex-shrink-0">
+                          <div className="h-9 w-9 rounded-full bg-[#fff0f0] flex items-center justify-center text-xs font-semibold text-[#e24b4a] flex-shrink-0">
                             {getInitials(pupil.name)}
                           </div>
                           <Link to={`/instructor/pupils?pupil=${pupil.id}`} className="flex-1 min-w-0">
-                            <p className="font-medium text-sm truncate">{pupil.name}</p>
-                            <p className="text-destructive text-xs font-semibold">Owes £{amount.toFixed(2)}</p>
+                            <p className="font-medium text-sm truncate text-[#1c1c1e]">{pupil.name}</p>
+                            <p className="text-[#e24b4a] text-xs font-semibold">Owes £{amount.toFixed(2)}</p>
                           </Link>
                           <div className="flex items-center gap-1.5 flex-shrink-0">
                             <Button
                               variant="outline"
                               size="icon"
-                              className="h-7 w-7 border-destructive/20 hover:bg-destructive/5"
+                              className="h-7 w-7 border-[#e24b4a]/20 hover:bg-[#fff0f0]"
                               onClick={(e) => { e.stopPropagation(); handleChase(pupil, "sms"); }}
                               disabled={!!chasing || !pupil.phone}
                             >
-                              {chasing === `${pupil.id}-sms` ? <Loader2 className="h-3 w-3 animate-spin" /> : <MessageSquare className="h-3 w-3 text-destructive" />}
+                              {chasing === `${pupil.id}-sms` ? <Loader2 className="h-3 w-3 animate-spin" /> : <MessageSquare className="h-3 w-3 text-[#e24b4a]" />}
                             </Button>
                             <Button
                               variant="outline"
                               size="icon"
-                              className="h-7 w-7 border-destructive/20 hover:bg-destructive/5"
+                              className="h-7 w-7 border-[#e24b4a]/20 hover:bg-[#fff0f0]"
                               onClick={(e) => { e.stopPropagation(); handleChase(pupil, "email"); }}
                               disabled={!!chasing || !pupil.email}
                             >
-                              {chasing === `${pupil.id}-email` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3 w-3 text-destructive" />}
+                              {chasing === `${pupil.id}-email` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3 w-3 text-[#e24b4a]" />}
                             </Button>
                           </div>
                         </div>
                       );
                     })}
+                    <GradientLine />
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
 
-          {/* Recent Payments — expandable */}
+          {/* Recent Payments */}
           <div className={cn(paymentsExpanded && "col-span-2")}>
             <motion.button
               initial={{ opacity: 0, y: 12 }}
@@ -372,24 +360,19 @@ export default function InstructorPay() {
               transition={{ delay: 0.16 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setPaymentsExpanded(!paymentsExpanded); }}
-              className={cn(
-                "w-full rounded-2xl p-4 bg-card border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] text-left transition-colors",
-                !paymentsExpanded && "min-h-[100px] flex flex-col justify-between"
-              )}
+              className={cn(cardClass, "w-full text-left")}
             >
-              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-                <Receipt className="h-4.5 w-4.5 text-primary" />
-              </div>
-              <div className="mt-2 flex items-end justify-between">
-                <div>
-                  <p className="text-xl font-bold tabular-nums text-foreground">{recentPaymentCount}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Recent Payments</p>
+              <div className="p-[14px_14px_12px]">
+                <div className="h-9 w-9 rounded-[10px] bg-[#eef4fd] flex items-center justify-center mb-2">
+                  <span className="text-[18px]">💳</span>
                 </div>
-                <ChevronDown className={cn(
-                  "h-4 w-4 text-muted-foreground transition-transform",
-                  paymentsExpanded && "rotate-180"
-                )} />
+                <p className="text-[22px] font-bold tabular-nums text-[#1c1c1e]">{recentPaymentCount}</p>
+                <div className="flex items-center justify-between mt-0.5">
+                  <p className="text-[12px] text-[#8e8e93]">Recent Payments</p>
+                  <ChevronRight className={cn("h-4 w-4 text-[#c7c7cc] transition-transform", paymentsExpanded && "rotate-90")} />
+                </div>
               </div>
+              <GradientLine />
             </motion.button>
 
             <AnimatePresence>
@@ -409,7 +392,7 @@ export default function InstructorPay() {
             </AnimatePresence>
           </div>
 
-          {/* Course Rewards — expandable with payouts */}
+          {/* Course Rewards */}
           <div className={cn(bonusExpanded && "col-span-2")}>
             <motion.button
               initial={{ opacity: 0, y: 12 }}
@@ -417,24 +400,19 @@ export default function InstructorPay() {
               transition={{ delay: 0.20 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setBonusExpanded(!bonusExpanded); }}
-              className={cn(
-                "w-full rounded-2xl p-4 bg-card border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] text-left transition-colors",
-                !bonusExpanded && "min-h-[100px] flex flex-col justify-between"
-              )}
+              className={cn(cardClass, "w-full text-left")}
             >
-              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-                <Trophy className="h-4.5 w-4.5 text-primary" />
-              </div>
-              <div className="mt-2 flex items-end justify-between">
-                <div>
-                  <p className="text-xl font-bold tabular-nums text-foreground">£{bonusEarned}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Course Rewards</p>
+              <div className="p-[14px_14px_12px]">
+                <div className="h-9 w-9 rounded-[10px] bg-[#eaf3de] flex items-center justify-center mb-2">
+                  <span className="text-[18px]">🏆</span>
                 </div>
-                <ChevronDown className={cn(
-                  "h-4 w-4 text-muted-foreground transition-transform",
-                  bonusExpanded && "rotate-180"
-                )} />
+                <p className="text-[22px] font-bold tabular-nums text-[#1c1c1e]">£{bonusEarned}</p>
+                <div className="flex items-center justify-between mt-0.5">
+                  <p className="text-[12px] text-[#8e8e93]">Course Rewards</p>
+                  <ChevronRight className={cn("h-4 w-4 text-[#c7c7cc] transition-transform", bonusExpanded && "rotate-90")} />
+                </div>
               </div>
+              <GradientLine />
             </motion.button>
 
             <AnimatePresence>
@@ -454,7 +432,7 @@ export default function InstructorPay() {
             </AnimatePresence>
           </div>
 
-          {/* Pupil Balances — expandable */}
+          {/* Pupil Balances */}
           <div className={cn(balancesExpanded && "col-span-2")}>
             <motion.button
               initial={{ opacity: 0, y: 12 }}
@@ -462,24 +440,19 @@ export default function InstructorPay() {
               transition={{ delay: 0.24 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setBalancesExpanded(!balancesExpanded); }}
-              className={cn(
-                "w-full rounded-2xl p-4 bg-card border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] text-left transition-colors",
-                !balancesExpanded && "min-h-[100px] flex flex-col justify-between"
-              )}
+              className={cn(cardClass, "w-full text-left")}
             >
-              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-                <Users className="h-4.5 w-4.5 text-primary" />
-              </div>
-              <div className="mt-2 flex items-end justify-between">
-                <div>
-                  <p className="text-xl font-bold tabular-nums text-foreground">{pupils.length}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Pupil Balances</p>
+              <div className="p-[14px_14px_12px]">
+                <div className="h-9 w-9 rounded-[10px] bg-[#eef4fd] flex items-center justify-center mb-2">
+                  <span className="text-[18px]">👥</span>
                 </div>
-                <ChevronDown className={cn(
-                  "h-4 w-4 text-muted-foreground transition-transform",
-                  balancesExpanded && "rotate-180"
-                )} />
+                <p className="text-[22px] font-bold tabular-nums text-[#1c1c1e]">{pupils.length}</p>
+                <div className="flex items-center justify-between mt-0.5">
+                  <p className="text-[12px] text-[#8e8e93]">Pupil Balances</p>
+                  <ChevronRight className={cn("h-4 w-4 text-[#c7c7cc] transition-transform", balancesExpanded && "rotate-90")} />
+                </div>
               </div>
+              <GradientLine />
             </motion.button>
 
             <AnimatePresence>
@@ -491,8 +464,9 @@ export default function InstructorPay() {
                   transition={{ duration: 0.25 }}
                   className="overflow-hidden"
                 >
-                  <div className="mt-2 bg-card rounded-2xl border border-border p-4">
+                  <div className={cn(cardClass, "mt-2 p-4")}>
                     <PupilBalancesList pupils={pupils} limit={5} />
+                    <GradientLine />
                   </div>
                 </motion.div>
               )}
@@ -500,13 +474,12 @@ export default function InstructorPay() {
           </div>
         </div>
 
-
-        {/* ── Quick Actions Grid ── */}
+        {/* ── Quick Actions ── */}
         <section>
-          <p className="text-[13px] font-normal text-muted-foreground uppercase tracking-wide px-4 pb-1.5">
+          <p className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em] px-1 mb-[10px]">
             Quick Actions
           </p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-[10px]">
             {actions.map((action, i) => {
               const Icon = action.icon;
               const inner = (
@@ -517,43 +490,50 @@ export default function InstructorPay() {
                   transition={{ delay: 0.1 + i * 0.04 }}
                   whileTap={{ scale: 0.97 }}
                   className={cn(
-                    "rounded-2xl p-4 flex flex-col gap-3 min-h-[110px] transition-shadow",
+                    "rounded-[20px] overflow-hidden",
                     action.accent
-                      ? "bg-primary text-white shadow-[0_8px_24px_hsl(var(--primary)/0.3)]"
-                      : "bg-card border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md"
+                      ? "bg-gradient-to-br from-[#0d4fa0] to-[#1a6fd4] shadow-[0_6px_20px_rgba(26,111,212,0.35)]"
+                      : cardClass
                   )}
                 >
-                  <div
-                    className={cn(
-                      "h-10 w-10 rounded-full flex items-center justify-center shrink-0",
-                      action.accent ? "bg-white/15" : "bg-primary/10"
-                    )}
-                  >
-                    <Icon
+                  <div className="p-[16px_14px_12px] flex flex-col gap-3">
+                    <div
                       className={cn(
-                        "h-5 w-5",
-                        action.accent ? "text-white" : "text-primary"
-                      )}
-                    />
-                  </div>
-                  <div>
-                    <p
-                      className={cn(
-                        "text-sm font-semibold leading-tight",
-                        action.accent ? "text-white" : "text-foreground"
+                        "h-9 w-9 rounded-[10px] flex items-center justify-center shrink-0",
+                        action.accent ? "bg-white/20" : "bg-[#eef4fd]"
                       )}
                     >
-                      {action.label}
-                    </p>
-                    <p
-                      className={cn(
-                        "text-[10px] mt-0.5",
-                        action.accent ? "text-white/60" : "text-muted-foreground"
-                      )}
-                    >
-                      {action.sublabel}
-                    </p>
+                      <Icon
+                        className={cn(
+                          "h-[18px] w-[18px]",
+                          action.accent ? "text-white" : "text-[#0d4fa0]"
+                        )}
+                      />
+                    </div>
+                    <div>
+                      <p
+                        className={cn(
+                          "text-[14px] font-bold leading-tight",
+                          action.accent ? "text-white" : "text-[#1c1c1e]"
+                        )}
+                      >
+                        {action.label}
+                      </p>
+                      <p
+                        className={cn(
+                          "text-[12px] mt-0.5",
+                          action.accent ? "text-white/65" : "text-[#8e8e93]"
+                        )}
+                      >
+                        {action.sublabel}
+                      </p>
+                    </div>
                   </div>
+                  {action.accent ? (
+                    <div className="h-[2px] w-full bg-white/25" />
+                  ) : (
+                    <GradientLine />
+                  )}
                 </motion.div>
               );
 
@@ -580,9 +560,6 @@ export default function InstructorPay() {
             })}
           </div>
         </section>
-
-
-
 
         {/* ── Forecaster ── */}
         <motion.div
