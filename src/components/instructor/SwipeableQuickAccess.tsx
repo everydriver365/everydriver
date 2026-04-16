@@ -10,47 +10,19 @@ import {
   Car, Lightbulb, Crown, CalendarPlus, ListTodo,
   Wrench, Fuel, ClipboardCheck, ArrowLeftRight, Target,
   MessageSquare, MapPinned, BookOpen, Settings,
-  Gift, Clock, Receipt, Plus, FileBarChart, BarChart3, Moon, Megaphone, Lock,
+  Gift, Clock, Receipt, FileBarChart, BarChart3, Moon, Megaphone, Lock, ChevronRight,
 } from "lucide-react";
-import expensesIcon from "@/assets/expenses-icon.png";
-import trackLessonIcon from "@/assets/track-lesson-icon.png";
-import planAheadIcon from "@/assets/plan-ahead-icon.png";
-import yourPlanIcon from "@/assets/your-plan-icon.png";
-import fillGapsIcon from "@/assets/fill-gaps-icon.png";
-import todoIcon from "@/assets/todo-icon.png";
-import vehicleHealthIcon from "@/assets/vehicle-health-icon.png";
-import takePaymentIcon from "@/assets/take-payment-icon.png";
-import agendaIcon from "@/assets/agenda-icon.png";
-import pupilsIcon from "@/assets/pupils-icon.png";
-import findMyCarIcon from "@/assets/find_car2.png";
-import availabilityIcon from "@/assets/availability-icon.png";
-import referralsIcon from "@/assets/referrals-icon.png";
-import cpdIcon from "@/assets/cpd-icon.png";
-import settingsIcon from "@/assets/settings-icon.png";
-import locationsIcon from "@/assets/locations-icon.png";
-import fuelIcon from "@/assets/fuel-icon.png";
-import satnavIcon from "@/assets/satnav-icon.svg";
-import messagesIcon from "@/assets/messages-icon.png";
-import testResultIcon from "@/assets/test-result-icon.png";
-import testSwapIcon from "@/assets/test-swap-icon.png";
-import standardsCheckIcon from "@/assets/standards-check-icon.png";
-import monthEndIcon from "@/assets/month-end-icon.png";
-import weeklyReportIcon from "@/assets/weekly-report-icon.png";
-import tasksDueIcon from "@/assets/tasks-due-icon.png";
-import endOfDayIcon from "@/assets/end-of-day-icon.png";
-import waitingRoomIcon from "@/assets/waiting-room-icon.png";
+
 interface QuickTile {
   title: string;
   subtitle: string;
   icon: React.ElementType;
-  customIcon?: string;
-  accent: string;
+  tintBg: string;
+  tintColor: string;
   route: string;
-  quickAction?: string;
   requiredFeature?: string;
 }
 
-// Map tiles to required features
 const TILE_FEATURE_MAP: Record<string, string> = {
   "Track Lesson": "telematics",
   "Take Payment": "payment_tracking",
@@ -62,53 +34,38 @@ const TILE_FEATURE_MAP: Record<string, string> = {
   "Month End": "payment_tracking",
 };
 
-const quickActionRoutes: Record<string, string> = {
-  "Agenda": "/instructor/schedule?action=add",
-  "Pupils": "/instructor/pupils?action=add",
-  "Track Lesson": "/instructor/tracking",
-  "Take Payment": "/instructor/take-payment",
-  "Fill Gaps": "/instructor/gaps?action=add",
-  "To Do": "/instructor/todos?action=add",
-  "Log Test Result": "/instructor/test-results?action=add",
-  "Messages": "/instructor/messages?action=new",
-  "CPD Log": "/instructor/cpd?action=add",
-  "Referrals": "/instructor/referrals?action=invite",
-  "Availability": "/instructor/availability?action=add",
-  "Expenses": "/instructor/expenses?action=add",
-};
-
 const ALL_TILES: QuickTile[] = [
-  { title: "Agenda", subtitle: "Your schedule", icon: CalendarDays, customIcon: agendaIcon, accent: "#007AFF", route: "/instructor/schedule" },
-  { title: "Pupils", subtitle: "Manage learners", icon: Users, customIcon: pupilsIcon, accent: "#34C759", route: "/instructor/pupils" },
-  { title: "Track Lesson", subtitle: "Start GPS", icon: MapPin, customIcon: trackLessonIcon, accent: "#FF3B30", route: "/instructor/tracking" },
-  { title: "Take Payment", subtitle: "Record payment", icon: PoundSterling, customIcon: takePaymentIcon, accent: "#AF52DE", route: "/instructor/pay" },
-  { title: "SatNav", subtitle: "Navigation", icon: Navigation, customIcon: satnavIcon, accent: "#007AFF", route: "/instructor/satnav" },
-  { title: "Find My Car", subtitle: "Last position", icon: Car, customIcon: findMyCarIcon, accent: "#FF9500", route: "/instructor/find-my-car" },
-  { title: "Plan Ahead", subtitle: "Tomorrow", icon: Lightbulb, customIcon: planAheadIcon, accent: "#FFCC00", route: "/instructor/diary" },
-  { title: "Your Plan", subtitle: "Subscription", icon: Crown, customIcon: yourPlanIcon, accent: "#AF52DE", route: "/instructor/plans" },
-  { title: "Fill Gaps", subtitle: "Open slots", icon: CalendarPlus, customIcon: fillGapsIcon, accent: "#FF2D55", route: "/instructor/gaps" },
-  { title: "To Do", subtitle: "Task list", icon: ListTodo, customIcon: todoIcon, accent: "#5AC8FA", route: "/instructor/todos" },
-  { title: "Vehicle Health", subtitle: "MOT & service", icon: Wrench, customIcon: vehicleHealthIcon, accent: "#8E8E93", route: "/instructor/vehicle-health" },
-  { title: "Find Fuel", subtitle: "Nearby stations", icon: Fuel, customIcon: fuelIcon, accent: "#34C759", route: "/instructor/fuel" },
-  { title: "Log Test Result", subtitle: "Record result", icon: ClipboardCheck, customIcon: testResultIcon, accent: "#007AFF", route: "/instructor/test-results" },
-  { title: "Test Swap", subtitle: "Exchange dates", icon: ArrowLeftRight, customIcon: testSwapIcon, accent: "#FF9500", route: "/instructor/test-requests" },
-  { title: "Standards Check", subtitle: "DVSA triggers", icon: Target, customIcon: standardsCheckIcon, accent: "#FF3B30", route: "/instructor/standards-check" },
-  { title: "Messages", subtitle: "Chat", icon: MessageSquare, customIcon: messagesIcon, accent: "#007AFF", route: "/instructor/messages" },
-  { title: "Find Nearby", subtitle: "Toilets, food & more", icon: MapPin, accent: "#0EA5E9", route: "/instructor/find-nearby" },
-  { title: "Locations", subtitle: "Saved places", icon: MapPinned, customIcon: locationsIcon, accent: "#FF3B30", route: "/instructor/locations" },
-  { title: "CPD Log", subtitle: "Training hours", icon: BookOpen, customIcon: cpdIcon, accent: "#5856D6", route: "/instructor/cpd" },
-  { title: "Settings", subtitle: "Preferences", icon: Settings, customIcon: settingsIcon, accent: "#8E8E93", route: "/instructor/settings" },
-  { title: "Referrals", subtitle: "Earn rewards", icon: Gift, customIcon: referralsIcon, accent: "#FF2D55", route: "/instructor/referrals" },
-  { title: "Availability", subtitle: "Working hours", icon: Clock, customIcon: availabilityIcon, accent: "#34C759", route: "/instructor/availability" },
-  { title: "Expenses", subtitle: "Track costs", icon: Receipt, customIcon: expensesIcon, accent: "#FF9500", route: "/instructor/expenses" },
-  { title: "Nearby ADIs", subtitle: "Friends map", icon: Users, accent: "#5856D6", route: "/instructor/nearby-friends" },
-  { title: "Find Colleague", subtitle: "School fleet", icon: Users, accent: "#007AFF", route: "/instructor/fleet-map?mode=colleagues" },
-  { title: "Month End", subtitle: "Review & submit", icon: FileBarChart, customIcon: monthEndIcon, accent: "#5856D6", route: "/instructor/month-end" },
-  { title: "Weekly Report", subtitle: "AI summary", icon: BarChart3, customIcon: weeklyReportIcon, accent: "#7C3AED", route: "/instructor/weekly-report" },
-  { title: "Tasks Due", subtitle: "Outstanding", icon: ClipboardCheck, customIcon: tasksDueIcon, accent: "#EA580C", route: "/instructor/outstanding-tasks" },
-  { title: "End of Day", subtitle: "Day summary", icon: Moon, customIcon: endOfDayIcon, accent: "#6366F1", route: "/instructor/end-of-day" },
-  { title: "Waiting Room", subtitle: "Weekly Zoom", icon: Users, customIcon: waitingRoomIcon, accent: "#2563EB", route: "/instructor/waiting-room" },
-  { title: "Platform Updates", subtitle: "News & ideas", icon: Megaphone, accent: "#6366F1", route: "/instructor/platform-updates" },
+  { title: "Agenda", subtitle: "Your schedule", icon: CalendarDays, tintBg: "#DBEAFE", tintColor: "#1E40AF", route: "/instructor/schedule" },
+  { title: "Pupils", subtitle: "Manage learners", icon: Users, tintBg: "#EEF2FF", tintColor: "#4F46E5", route: "/instructor/pupils" },
+  { title: "Track Lesson", subtitle: "Start GPS", icon: MapPin, tintBg: "#FEF2F2", tintColor: "#DC2626", route: "/instructor/tracking" },
+  { title: "Take Payment", subtitle: "Record payment", icon: PoundSterling, tintBg: "#ECFDF5", tintColor: "#059669", route: "/instructor/pay" },
+  { title: "SatNav", subtitle: "Navigation", icon: Navigation, tintBg: "#DBEAFE", tintColor: "#1E40AF", route: "/instructor/satnav" },
+  { title: "Find My Car", subtitle: "Last position", icon: Car, tintBg: "#FEF3C7", tintColor: "#92400E", route: "/instructor/find-my-car" },
+  { title: "Plan Ahead", subtitle: "Tomorrow", icon: Lightbulb, tintBg: "#FEF3C7", tintColor: "#92400E", route: "/instructor/diary" },
+  { title: "Your Plan", subtitle: "Subscription", icon: Crown, tintBg: "#EDE9FE", tintColor: "#5B21B6", route: "/instructor/plans" },
+  { title: "Fill Gaps", subtitle: "Open slots", icon: CalendarPlus, tintBg: "#FFE4E6", tintColor: "#BE123C", route: "/instructor/gaps" },
+  { title: "To Do", subtitle: "Task list", icon: ListTodo, tintBg: "#DBEAFE", tintColor: "#1E40AF", route: "/instructor/todos" },
+  { title: "Vehicle Health", subtitle: "MOT & service", icon: Wrench, tintBg: "#F4F4F5", tintColor: "#52525B", route: "/instructor/vehicle-health" },
+  { title: "Find Fuel", subtitle: "Nearby stations", icon: Fuel, tintBg: "#ECFDF5", tintColor: "#059669", route: "/instructor/fuel" },
+  { title: "Log Test Result", subtitle: "Record result", icon: ClipboardCheck, tintBg: "#DBEAFE", tintColor: "#1E40AF", route: "/instructor/test-results" },
+  { title: "Test Swap", subtitle: "Exchange dates", icon: ArrowLeftRight, tintBg: "#FEF3C7", tintColor: "#92400E", route: "/instructor/test-requests" },
+  { title: "Standards Check", subtitle: "DVSA triggers", icon: Target, tintBg: "#FEF2F2", tintColor: "#DC2626", route: "/instructor/standards-check" },
+  { title: "Messages", subtitle: "Chat", icon: MessageSquare, tintBg: "#DBEAFE", tintColor: "#1E40AF", route: "/instructor/messages" },
+  { title: "Find Nearby", subtitle: "Toilets, food & more", icon: MapPin, tintBg: "#DBEAFE", tintColor: "#1E40AF", route: "/instructor/find-nearby" },
+  { title: "Locations", subtitle: "Saved places", icon: MapPinned, tintBg: "#FEF2F2", tintColor: "#DC2626", route: "/instructor/locations" },
+  { title: "CPD Log", subtitle: "Training hours", icon: BookOpen, tintBg: "#EDE9FE", tintColor: "#5B21B6", route: "/instructor/cpd" },
+  { title: "Settings", subtitle: "Preferences", icon: Settings, tintBg: "#F4F4F5", tintColor: "#52525B", route: "/instructor/settings" },
+  { title: "Referrals", subtitle: "Earn rewards", icon: Gift, tintBg: "#FFE4E6", tintColor: "#BE123C", route: "/instructor/referrals" },
+  { title: "Availability", subtitle: "Working hours", icon: Clock, tintBg: "#ECFDF5", tintColor: "#059669", route: "/instructor/availability" },
+  { title: "Expenses", subtitle: "Track costs", icon: Receipt, tintBg: "#FEF3C7", tintColor: "#92400E", route: "/instructor/expenses" },
+  { title: "Nearby ADIs", subtitle: "Friends map", icon: Users, tintBg: "#EDE9FE", tintColor: "#5B21B6", route: "/instructor/nearby-friends" },
+  { title: "Find Colleague", subtitle: "School fleet", icon: Users, tintBg: "#DBEAFE", tintColor: "#1E40AF", route: "/instructor/fleet-map?mode=colleagues" },
+  { title: "Month End", subtitle: "Review & submit", icon: FileBarChart, tintBg: "#EDE9FE", tintColor: "#5B21B6", route: "/instructor/month-end" },
+  { title: "Weekly Report", subtitle: "AI summary", icon: BarChart3, tintBg: "#EDE9FE", tintColor: "#5B21B6", route: "/instructor/weekly-report" },
+  { title: "Tasks Due", subtitle: "Outstanding", icon: ClipboardCheck, tintBg: "#FEF3C7", tintColor: "#92400E", route: "/instructor/outstanding-tasks" },
+  { title: "End of Day", subtitle: "Day summary", icon: Moon, tintBg: "#EEF2FF", tintColor: "#4F46E5", route: "/instructor/end-of-day" },
+  { title: "Waiting Room", subtitle: "Weekly Zoom", icon: Users, tintBg: "#EEF2FF", tintColor: "#4F46E5", route: "/instructor/waiting-room" },
+  { title: "Platform Updates", subtitle: "News & ideas", icon: Megaphone, tintBg: "#EEF2FF", tintColor: "#4F46E5", route: "/instructor/platform-updates" },
 ];
 
 const TILES_PER_PAGE = 6;
@@ -144,7 +101,7 @@ export function SwipeableQuickAccess() {
         <div className="flex">
           {pages.map((page, pageIdx) => (
             <div key={pageIdx} className="flex-[0_0_100%] min-w-0">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-[10px]">
                 {page.map((tile) => {
                   const Icon = tile.icon;
                   const requiredFeature = TILE_FEATURE_MAP[tile.title];
@@ -163,65 +120,71 @@ export function SwipeableQuickAccess() {
                   return (
                     <motion.button
                       key={tile.title}
-                      whileTap={{ scale: locked ? 1 : 0.98 }}
+                      whileTap={{ scale: locked ? 1 : 0.98, backgroundColor: locked ? undefined : "#F4F4F5" }}
+                      whileHover={{ backgroundColor: locked ? undefined : "#FAFAFA" }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                       onClick={handleClick}
+                      className="focus-visible:ring-2 focus-visible:ring-[#6366F1] outline-none"
                       style={{
                         position: "relative",
-                        background: "white",
-                        borderRadius: 20,
+                        background: "#FFFFFF",
+                        borderRadius: 14,
                         overflow: "hidden",
-                        border: "0.5px solid rgba(0,0,0,0.06)",
-                        boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
-                        padding: "16px 14px 14px",
+                        border: "0.5px solid #E4E4E7",
+                        padding: "14px",
                         textAlign: "left",
                         display: "flex",
                         flexDirection: "column",
-                        justifyContent: "space-between",
-                        height: 110,
+                        gap: 12,
+                        cursor: "pointer",
+                        transition: "background 120ms ease",
                         opacity: locked ? 0.5 : 1,
                       }}
                     >
-                      {/* Lock overlay */}
-                      {locked && (
-                        <div className="absolute top-2.5 right-2.5 z-10">
-                          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div>
-                        <p style={{ fontSize: 15, fontWeight: 700, color: "#1c1c1e", marginBottom: 2, lineHeight: 1.2 }}>
-                          {tile.title}
-                        </p>
-                        <p style={{ fontSize: 12, fontWeight: 400, color: "#8e8e93" }}>
-                          {tile.subtitle}
-                        </p>
-                      </div>
-                      <div className="flex items-end justify-between" style={{ marginTop: "auto" }}>
+                      {/* Blue gradient accent line at bottom */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: 2,
+                          background: "linear-gradient(90deg, #4F46E5, #818CF8)",
+                          borderRadius: "0 0 14px 14px",
+                        }}
+                      />
+
+                      {/* Icon tile + lock/chevron row */}
+                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                         <div
-                          style={{
-                            height: 2,
-                            flex: 1,
-                            background: "linear-gradient(to right, #0d4fa0, #56a8f5)",
-                            borderRadius: 2,
-                            marginRight: 10,
-                          }}
-                        />
-                        <div
-                          className="flex items-center justify-center"
                           style={{
                             width: 44,
                             height: 44,
-                            borderRadius: 22,
-                            backgroundColor: "#E6E8EC",
+                            borderRadius: 12,
+                            backgroundColor: tile.tintBg,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                             flexShrink: 0,
                           }}
                         >
-                          {tile.customIcon ? (
-                            <img src={tile.customIcon} alt={tile.title} className="w-7 h-7 object-contain" />
-                          ) : (
-                            <Icon size={24} strokeWidth={1.6} style={{ color: tile.accent }} />
-                          )}
+                          <Icon size={22} strokeWidth={2} color={tile.tintColor} />
                         </div>
+                        {locked ? (
+                          <Lock size={14} strokeWidth={2} color="#A1A1AA" style={{ marginTop: 2 }} />
+                        ) : (
+                          <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" style={{ marginTop: 2 }} />
+                        )}
+                      </div>
+
+                      {/* Text */}
+                      <div>
+                        <p style={{ fontSize: 15, fontWeight: 500, color: "#18181B", lineHeight: 1.2, fontFamily: "Inter, sans-serif" }}>
+                          {tile.title}
+                        </p>
+                        <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }}>
+                          {tile.subtitle}
+                        </p>
                       </div>
                     </motion.button>
                   );
