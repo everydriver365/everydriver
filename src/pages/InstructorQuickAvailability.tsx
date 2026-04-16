@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { PageSkeleton } from "@/components/ui/skeletons/PageSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { format, addWeeks, subWeeks, startOfWeek, addDays, isSameDay } from "date-fns";
 import { ChevronLeft, ChevronRight, Calendar, Plus, Trash2 } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
