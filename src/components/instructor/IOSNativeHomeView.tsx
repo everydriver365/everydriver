@@ -155,7 +155,11 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
                   <span className="text-[18px] font-bold text-white">{getInitials(nextLesson.pupilName)}</span>
                 )}
               </div>
-              {pupilUnreadCount > 0 && (
+              {totalUnreadBadge > 0 && (
+                <div className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                  {totalUnreadBadge}
+                </div>
+              )}
                 <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
                   {pupilUnreadCount}
                 </span>
