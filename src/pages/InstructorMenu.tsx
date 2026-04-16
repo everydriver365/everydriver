@@ -798,10 +798,12 @@ export default function InstructorMenu() {
                   >
                     {locked ? (
                       <Lock className="h-5 w-5 text-[#8e8e93]" />
+                    ) : menuEmojis[item.label] ? (
+                      <span style={{ fontSize: 20 }}>{menuEmojis[item.label]}</span>
                     ) : item.customIcon ? (
                       <img src={item.customIcon} alt={item.label} className="h-full w-full object-cover" />
                     ) : (
-                      <item.icon className="h-5 w-5 text-white" />
+                      <span style={{ fontSize: 20 }}>⚙️</span>
                     )}
                   </div>
                   <p className="flex-1 min-w-0 font-semibold text-[15px] text-[#1c1c1e] truncate">
