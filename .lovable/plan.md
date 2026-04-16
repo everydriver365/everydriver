@@ -1,51 +1,51 @@
 
 
-## Plan: Unify Menu + Settings into One Searchable Page
+## Plan: Redesign Earnings Screen (InstructorPay) with Premium iOS Tile Style
 
-### Problem
-The "More" tab shows a menu with an "All Settings" row that navigates to a separate `/instructor/settings` page. This creates an unnecessary extra tap. The user wants one long, searchable, categorized list combining everything.
+### Overview
+Restyle `src/pages/InstructorPay.tsx` to match the exact premium iOS tile spec. All logic, data fetching, expandable panels, navigation, and modals remain untouched — only the JSX markup and styling changes.
 
-### Approach
-Merge the settings tiles (collapsible panels) directly into the Menu page, organized by category. Remove the separate "All Settings" navigation row. The result is a single scrollable page with:
-1. **Search bar** at the top (filters across all items)
-2. **Quick Actions** section (existing menu items like To Do, Messages, Jobs, etc.)
-3. **Money & Reports** section (existing menu items)
-4. **Schedule & Pupils** section
-5. **Tools** section
-6. **Resources** / **Wellbeing** sections
-7. **Profile & Identity** settings (collapsible tiles from current Settings page)
-8. **Compliance & Teaching** settings
-9. **Courses & Payments** settings
-10. **Website & Branding** settings
-11. **Scheduling** settings
-12. **Tracking & Routes** settings
-13. **Preferences & Data** settings (includes Quick Toggles like visibility, Hey ED)
-14. **Account** (Sign Out)
+### Changes — Single file: `src/pages/InstructorPay.tsx`
 
-### File Changes
+**Shared styling constants** (top of file):
+```
+cardClass = white bg, rounded-[20px], overflow-hidden, specific box-shadow + border
+gradientLine = h-[2px] bg-gradient-to-r from-[#0d4fa0] to-[#56a8f5]
+```
 
-**`src/pages/InstructorMenu.tsx`**
-- Import all settings tile content components (profile editor, working hours, courses manager, etc.) from InstructorSettings
-- Import the `allTiles`, `categories` arrays and `renderTileContent` logic (or refactor into a shared hook/module)
-- Add the Quick Toggles section (visibility, Hey ED, feature toggles) inline
-- Add all settings categories with collapsible tiles after the existing menu sections
-- Remove the "Settings" section that currently links to `/instructor/settings` (lines 150-157), keeping "FAQs & Help" in Resources
-- Keep the search bar filtering across both menu items AND settings tiles
+**1. Hero Earnings Card** (lines 222–278)
+- Replace gradient: `bg-gradient-to-br from-[#0d1b2e] to-[#1c2b4a]`, shadow `0 8px 24px rgba(13,27,46,0.35)`
+- Section label: "Net Earnings · This Month", 10px uppercase, `rgba(255,255,255,0.5)`
+- £ figure: 36px bold white
+- Change badge: pill with `bg-[#fff0f0] text-[#e24b4a]` for negative, `bg-[#eaf3de] text-[#4a8c3f]` for positive, with arrow icon
+- Bottom stats row: border-top `0.5px solid rgba(255,255,255,0.1)`, 3 columns (This Week, Last Month, Per Hour) with `border-left` dividers between columns
+- Flush gradient line at bottom
 
-**`src/pages/InstructorSettings.tsx`**
-- Redirect to `/instructor/menu` (or keep as-is for deep-link `/instructor/settings?open=profile` support by redirecting with params)
+**2. Summary Tiles — 2×2 grid** (lines 280–501)
+- Grid: `grid-cols-2 gap-[10px]`
+- Each tile: white card with `padding: 14px 14px 12px`, 36×36 icon square (10px radius, tinted bg)
+  - Owes Money: red tint `#fff0f0`, number in `#e24b4a`
+  - Recent Payments: blue tint `#eef4fd`
+  - Course Rewards: green tint `#eaf3de`
+  - Pupil Balances: blue tint `#eef4fd`
+- Number: 22px bold `#1c1c1e`, label: 12px `#8e8e93` with `›` chevron right-aligned
+- Each card ends with gradient line
+- Expandable content below each card remains identical
 
-**`src/pages/InstructorSettingsCategory.tsx`**
-- Update redirect target from `/instructor/settings` to `/instructor/menu`
+**3. Quick Actions section** (lines 504–582)
+- Section label: 11px bold uppercase `#8e8e93`, letter-spacing 0.06em
+- Grid: `grid-cols-2 gap-[10px]`
+- Take Payment: `bg-gradient-to-br from-[#0d4fa0] to-[#1a6fd4]`, shadow `0 6px 20px rgba(26,111,212,0.35)`, icon square `rgba(255,255,255,0.2)`, white text, bottom line `rgba(255,255,255,0.25)`
+- Accounts: white card, blue icon `#eef4fd`, title 14px bold `#1c1c1e`, subtitle 12px `#8e8e93`, gradient underline
+- Other action tiles (Expenses, Bonus, Mileage, Tax Summary): same white card style as Accounts
+
+**4. Page wrapper**
+- Background `#f2f2f7` on the content area
+- All `mb-10` between sections via the card `margin-bottom: 10px`
 
 ### What stays the same
-- All existing functionality: search, filtering, collapsible panels, profile editing, all settings components
-- Navigation from menu items (schedule, pupils, etc.) works identically
-- Feature gating and lock badges on menu items
-- Deep links via `?open=` parameter still work
-
-### Technical details
-- Extract `allTiles`, `categories`, `renderTileContent`, and related profile-fetching logic into a shared file `src/hooks/useSettingsTiles.tsx` to avoid duplicating ~400 lines
-- The Menu page will use `Collapsible` from radix for settings tiles (same pattern as current Settings page)
-- Settings tiles render inline with the same iOS grouped-list card style already used in the menu
+- All state, data fetching, expand/collapse logic, chase reminders, payment modal, forecaster
+- Navigation links and `haptics.selection()` calls
+- `InstructorPortalLayout` wrapper
+- `EarningsForecaster` component at bottom
 
