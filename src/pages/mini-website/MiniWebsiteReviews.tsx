@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Star, Calendar } from "lucide-react";
+import { Star, Calendar, Car } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
@@ -67,7 +67,7 @@ export default function MiniWebsiteReviews({ subdomainSlug }: MiniWebsiteReviews
     return (
       <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: '#e9f4f9' }}>
         <Card className="max-w-md w-full text-center p-8">
-          <div className="text-6xl mb-4">🚗</div>
+          <div className="mb-4"><Car className="h-16 w-16 text-muted-foreground mx-auto" /></div>
           <h1 className="text-2xl font-bold mb-2">Page Not Found</h1>
           <Link to={`/i/${slug}`}>
             <Button>Go Home</Button>

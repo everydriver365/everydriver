@@ -1,29 +1,48 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users } from "lucide-react";
+import { Users, ChevronRight } from "lucide-react";
 
 export function WaitingRoomPromoTile({ className = "" }: { className?: string }) {
   const navigate = useNavigate();
 
   return (
     <motion.div
-      whileTap={{ scale: 0.97 }}
+      whileTap={{ scale: 0.99, backgroundColor: "#F4F4F5" }}
+      whileHover={{ backgroundColor: "#FAFAFA" }}
       onClick={() => navigate("/instructor/waiting-room")}
-      className={`cursor-pointer flex overflow-hidden rounded-2xl border border-border shadow-sm ${className}`}
+      style={{
+        background: "#FFFFFF",
+        borderRadius: 14,
+        border: "0.5px solid #E4E4E7",
+        padding: "14px 16px",
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        cursor: "pointer",
+        transition: "background 120ms ease",
+      }}
+      className={`focus-visible:ring-2 focus-visible:ring-[#6366F1] outline-none ${className}`}
+      tabIndex={0}
     >
-      <div className="bg-blue-600 p-5 flex flex-col items-center justify-center shrink-0 min-w-[80px]">
-        <span className="text-2xl">☕</span>
-        <p className="text-[9px] font-bold text-blue-200 uppercase tracking-widest mt-1">Weekly</p>
+      <div style={{
+        width: 44, height: 44, borderRadius: 12,
+        backgroundColor: "#EEF2FF",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        flexShrink: 0,
+      }}>
+        <Users size={22} strokeWidth={2} color="#4F46E5" />
       </div>
-      <div className="border-l-2 border-dashed border-border" />
-      <div className="bg-card flex-1 p-4 flex flex-col justify-center">
-        <p className="text-sm font-bold text-foreground">The Waiting Room</p>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Informal Zoom for driving instructors</p>
-        <div className="flex items-center gap-1.5 mt-2">
-          <Users className="h-3 w-3 text-muted-foreground" />
-          <span className="text-[10px] text-muted-foreground">Open to all ADIs</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <p style={{ fontSize: 15, fontWeight: 500, color: "#18181B", fontFamily: "Inter, sans-serif" }}>The Waiting Room</p>
+          <span style={{
+            fontSize: 10, fontWeight: 500, padding: "2px 7px", borderRadius: 4,
+            backgroundColor: "#DBEAFE", color: "#1E40AF",
+          }}>Weekly</span>
         </div>
+        <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }}>Informal Zoom for driving instructors</p>
       </div>
+      <ChevronRight size={18} strokeWidth={2} color="#A1A1AA" style={{ flexShrink: 0 }} />
     </motion.div>
   );
 }

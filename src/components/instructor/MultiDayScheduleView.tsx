@@ -625,7 +625,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                             {isExpanded && (
                               <div style={{ marginTop: 10, borderTop: `1px solid ${colors.text}20`, paddingTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
                                 <span style={{ fontSize: 12, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                                  {block.block_type === "break" ? "☕ Break" : block.block_type === "meeting" ? "📅 Meeting" : "🔒 Personal"}
+                                  {block.block_type === "break" ? "Break" : block.block_type === "meeting" ? "Meeting" : "Personal"}
                                 </span>
                                 {block.notes && (
                                   <div style={{ fontSize: 13, color: colors.text, whiteSpace: "pre-wrap", lineHeight: 1.4 }}>

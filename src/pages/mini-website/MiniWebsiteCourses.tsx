@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import {
   Search, MapPin, Filter, ChevronDown, PoundSterling, Navigation,
-  Loader2, Calendar as CalendarIcon, X,
+  Loader2, Calendar as CalendarIcon, X, Car,
 } from "lucide-react";
 import { useWebsitePage } from "@/hooks/useInstructorWebsitePages";
 import { useMiniWebsiteLinks } from "@/hooks/useMiniWebsiteLinks";
@@ -121,7 +121,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <Card className="max-w-md w-full text-center p-8">
-          <div className="text-6xl mb-4">🚗</div>
+          <div className="mb-4"><Car className="h-16 w-16 text-muted-foreground mx-auto" /></div>
           <h1 className="text-2xl font-bold mb-2">Page Not Found</h1>
           <Link to={`/i/${slug}`}>
             <Button>Go Home</Button>

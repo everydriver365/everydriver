@@ -267,7 +267,7 @@ export function PupilEndOfLessonWizard({ pupilId, instructorId, brandColour }: P
                   <div className="space-y-3">
                     <div>
                       <label className="text-xs font-medium text-foreground block mb-1">
-                        🌟 What went well?
+                        What went well?
                       </label>
                       <Textarea
                         placeholder="e.g. Mirror checks were great, felt calm at roundabouts..."
@@ -280,7 +280,7 @@ export function PupilEndOfLessonWizard({ pupilId, instructorId, brandColour }: P
 
                     <div>
                       <label className="text-xs font-medium text-foreground block mb-1">
-                        🔧 What was tricky?
+                        What was tricky?
                       </label>
                       <Textarea
                         placeholder="e.g. Parallel parking was tough, need more practice..."
@@ -293,7 +293,7 @@ export function PupilEndOfLessonWizard({ pupilId, instructorId, brandColour }: P
 
                     <div>
                       <label className="text-xs font-medium text-foreground block mb-1">
-                        🎯 Goal for next time
+                        Goal for next time
                       </label>
                       <Textarea
                         placeholder="e.g. Focus on bay parking, be smoother with gear changes..."

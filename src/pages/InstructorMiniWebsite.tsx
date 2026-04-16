@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { 
   Star, MapPin, Phone, Mail, Clock, Car, Award, 
   Calendar, ChevronRight, Globe, Facebook, Instagram, 
-  Twitter, Linkedin, CheckCircle2, Play
+  Twitter, Linkedin, CheckCircle2, Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -151,7 +151,7 @@ export default function InstructorMiniWebsite() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
         <Card className="max-w-md w-full text-center p-8">
-          <div className="text-6xl mb-4">🚗</div>
+          <div className="mb-4"><Car className="h-16 w-16 text-muted-foreground mx-auto" /></div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Instructor Not Found</h1>
           <p className="text-gray-600 mb-6">
             Sorry, we couldn't find an instructor with this profile.

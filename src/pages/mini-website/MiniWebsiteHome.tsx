@@ -14,7 +14,7 @@ import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, Phone, Star, Award, MapPin, Search, CheckCircle, Gift, BookOpen, Shield, CreditCard, Clock, Heart, ArrowRight, Zap, User, ChevronRight, X } from "lucide-react";
+import { Calendar, Phone, Star, Award, MapPin, Search, CheckCircle, Gift, BookOpen, Shield, CreditCard, Clock, Heart, ArrowRight, Zap, User, ChevronRight, X, Car } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
@@ -111,7 +111,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
     return (
       <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: '#e9f4f9' }}>
         <Card className="max-w-md w-full text-center p-8">
-          <div className="text-6xl mb-4">🚗</div>
+          <div className="mb-4"><Car className="h-16 w-16 text-muted-foreground mx-auto" /></div>
           <h1 className="text-2xl font-bold text-foreground mb-2">Page Not Found</h1>
           <p className="text-muted-foreground mb-6">
             Sorry, we couldn't find this instructor's website.
