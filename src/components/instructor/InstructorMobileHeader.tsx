@@ -89,7 +89,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                 onClick={handleBackClick}
                 className="h-8 w-8 rounded-full bg-[#f2f2f7] flex items-center justify-center"
               >
-                <ChevronLeft className="h-5 w-5 text-[#0d4fa0]" />
+                <ChevronLeft className="h-5 w-5 text-[#1F2B3D]" />
               </button>
             ) : (
               <button

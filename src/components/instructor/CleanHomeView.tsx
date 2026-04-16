@@ -329,7 +329,7 @@ export function CleanHomeView({
             const totalEarnings = lessons.reduce((sum, l) => sum + (l.amountDue || 0), 0);
             const paidCount = lessons.filter(l => l.paymentStatus === "paid").length;
             const statsBar = lessons.length > 0 ? (
-              <div style={{ backgroundColor: "#1a6fd4", padding: "8px 16px" }}>
+              <div style={{ backgroundColor: "#2A394F", padding: "8px 16px" }}>
                 <div className="flex items-center gap-0 text-xs">
                   <span style={{ color: "#fff", fontWeight: 500 }}>{lessons.length} lesson{lessons.length !== 1 ? "s" : ""}</span>
                   <span style={{ color: "rgba(255,255,255,0.4)", margin: "0 6px" }}>·</span>

@@ -534,7 +534,7 @@ export default function InstructorPupils() {
             <h1 className="text-[22px] font-bold text-[#1c1c1e]">Pupils</h1>
             <p className="text-[13px] text-[#8e8e93]">{stats.total} total · {stats.active} active</p>
           </div>
-          <Button size="sm" className="bg-gradient-to-r from-[#0d4fa0] to-[#1a6fd4] text-white rounded-xl h-9 px-3 shadow-[0_4px_12px_rgba(13,79,160,0.3)]" onClick={() => setIsAddOpen(true)}>
+          <Button size="sm" className="bg-gradient-to-r from-[#1F2B3D] to-[#2A394F] text-white rounded-xl h-9 px-3 shadow-[0_4px_12px_rgba(13,79,160,0.3)]" onClick={() => setIsAddOpen(true)}>
             <Plus className="h-4 w-4 mr-1" />
             Add
           </Button>

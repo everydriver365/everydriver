@@ -982,7 +982,7 @@ export default function InstructorLiveSession() {
                     fontSize: 13,
                     fontWeight: viewMode === seg.value ? 700 : 600,
                     color: viewMode === seg.value ? "white" : "#8e8e93",
-                    background: viewMode === seg.value ? "linear-gradient(to right, #0d4fa0, #1a6fd4)" : "transparent",
+                    background: viewMode === seg.value ? "linear-gradient(to right, #1F2B3D, #2A394F)" : "transparent",
                     border: "none",
                     cursor: "pointer",
                     transition: "all 0.2s",
@@ -1089,9 +1089,9 @@ export default function InstructorLiveSession() {
                  <Camera className="h-4 w-4" style={{ color: "#8e8e93" }} />
                  <span style={{ fontSize: 14, fontWeight: 700, color: "#1c1c1e" }}>Dashcam Portal</span>
                </div>
-               <span style={{ fontSize: 13, color: "#1a6fd4", fontWeight: 600 }}>View footage →</span>
+               <span style={{ fontSize: 13, color: "#2A394F", fontWeight: 600 }}>View footage →</span>
              </button>
-             <div style={{ height: 2, background: "linear-gradient(to right, #0d4fa0, #56a8f5)", borderRadius: 2 }} />
+             <div style={{ height: 2, background: "linear-gradient(to right, #1F2B3D, #3D5377)", borderRadius: 2 }} />
            </div>
 
            {/* Mini Live Map Preview */}
@@ -1134,7 +1134,7 @@ export default function InstructorLiveSession() {
                  <button
                    onClick={() => navigate("/instructor/tracking?fullscreen=true", { replace: true })}
                    style={{
-                     background: "linear-gradient(to right, #0d4fa0, #1a6fd4)",
+                     background: "linear-gradient(to right, #1F2B3D, #2A394F)",
                      color: "white",
                      fontSize: 13,
                      fontWeight: 700,
@@ -1147,7 +1147,7 @@ export default function InstructorLiveSession() {
                    Resume
                  </button>
                </div>
-               <div style={{ height: 2, background: "linear-gradient(to right, #0d4fa0, #56a8f5)", borderRadius: 2 }} />
+               <div style={{ height: 2, background: "linear-gradient(to right, #1F2B3D, #3D5377)", borderRadius: 2 }} />
              </div>
            )}
 

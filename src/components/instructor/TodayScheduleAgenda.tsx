@@ -232,7 +232,7 @@ export function TodayScheduleAgenda({ todayLessons, tomorrowLessons, className =
         </div>
 
         {/* Pill toggle */}
-        <div style={{ borderRadius: 20, border: "1.5px solid #1a6fd4", display: "flex", overflow: "hidden" }}>
+        <div style={{ borderRadius: 20, border: "1.5px solid #2A394F", display: "flex", overflow: "hidden" }}>
           {(["today", "tomorrow"] as const).map((val) => (
             <button
               key={val}
@@ -245,8 +245,8 @@ export function TodayScheduleAgenda({ todayLessons, tomorrowLessons, className =
                 fontSize: 12,
                 fontWeight: 600,
                 fontFamily: "inherit",
-                backgroundColor: tab === val ? "#1a6fd4" : "transparent",
-                color: tab === val ? "#ffffff" : "#1a6fd4",
+                backgroundColor: tab === val ? "#2A394F" : "transparent",
+                color: tab === val ? "#ffffff" : "#2A394F",
               }}
             >
               {val === "today" ? "Today" : "Tomorrow"}
