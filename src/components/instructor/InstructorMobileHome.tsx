@@ -509,21 +509,35 @@ export function InstructorMobileHome({
       <div className="px-4 mt-3">
         <button
           onClick={() => navigate("/instructor/schedule")}
-          className="w-full flex items-center justify-between px-4 py-3"
+          className="w-full flex items-center justify-between"
           style={{
-            background: "rgba(255,255,255,0.7)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-            borderRadius: 22,
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6), 0 6px 20px rgba(0,0,0,0.04)",
-            fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
+            backgroundColor: "#FFFFFF",
+            borderRadius: 14,
+            border: "0.5px solid #E4E4E7",
+            padding: "14px",
           }}
         >
           <div className="flex items-center gap-3">
-            <img src={googleCalendarIcon} alt="Calendar" className="w-9 h-9 rounded-[10px]" />
-            <span style={{ fontSize: 15, fontWeight: 600, color: "#1C1C1E" }}>View Schedule</span>
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                backgroundColor: "#DBEAFE",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <Calendar size={22} strokeWidth={2} color="#1E40AF" />
+            </div>
+            <div>
+              <p style={{ fontSize: 15, fontWeight: 500, color: "#18181B", fontFamily: "Inter, sans-serif" }}>View Schedule</p>
+              <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Calendar & lessons</p>
+            </div>
           </div>
-          <ChevronRight className="h-4 w-4" style={{ color: "#C7C7CC" }} />
+          <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" />
         </button>
       </div>
 
