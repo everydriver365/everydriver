@@ -524,26 +524,21 @@ export default function InstructorPupils() {
           </Button>
         </div>
 
-        {/* 4-column stat row */}
-        <div className="grid grid-cols-4 gap-2">
+        {/* Compact stat chips */}
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
           {[
-            { label: "Active", value: stats.active, emoji: "🟢", bg: "#eef4fd" },
-            { label: "Passed", value: stats.passed, emoji: "🎓", bg: "#eaf3de" },
-            { label: "Lessons", value: stats.totalLessons, emoji: "📚", bg: "#faeeda" },
-            { label: "On Hold", value: statusCounts.on_hold + statusCounts.inactive, emoji: "⏸️", bg: "#f0ebfd" },
+            { label: "Active", value: stats.active, dot: "#34C759" },
+            { label: "Passed", value: stats.passed, dot: "#007AFF" },
+            { label: "Lessons", value: stats.totalLessons, dot: "#FF9500" },
+            { label: "On Hold", value: statusCounts.on_hold + statusCounts.inactive, dot: "#8E8E93" },
           ].map((stat) => (
-            <div key={stat.label} className={cardClass}>
-              <div className="p-[12px_8px_10px] text-center">
-                <div
-                  className="w-8 h-8 rounded-[10px] flex items-center justify-center mx-auto mb-1.5"
-                  style={{ backgroundColor: stat.bg }}
-                >
-                  <span className="text-[16px]">{stat.emoji}</span>
-                </div>
-                <p className="text-[18px] font-bold text-[#1c1c1e]">{stat.value}</p>
-                <p className="text-[11px] text-[#8e8e93]">{stat.label}</p>
-              </div>
-              <GradientLine />
+            <div
+              key={stat.label}
+              className="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm rounded-full px-3 py-[6px] border-[0.5px] border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.04)] whitespace-nowrap"
+            >
+              <span className="w-[6px] h-[6px] rounded-full shrink-0" style={{ backgroundColor: stat.dot }} />
+              <span className="text-[13px] font-semibold text-[#1c1c1e]">{stat.value}</span>
+              <span className="text-[11px] text-[#8e8e93]">{stat.label}</span>
             </div>
           ))}
         </div>
