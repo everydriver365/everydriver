@@ -1,20 +1,38 @@
 
 
-## Plan: Move Session Start Panel above the map
+## Plan: Fix session ending being immediately overridden by auto-create
 
-### Problem
-The `SessionStartPanel` (pupil selector + practice/test toggle) is rendered **below** the map, dashcam link, and status cards. On a 492px mobile viewport, it's completely off-screen and requires significant scrolling to reach. The user can't see it.
+### Root Cause
+When the user presses "End" on the tracking page:
+1. `stopSession` sets `ended_at` on the telematics session and clears `current_session_id` on the device
+2. The client is calling `radius-poller` every 2 seconds (line 350-353)
+3. The poller sees ignition ON + no `current_session_id` → auto-creates a new session immediately
+4. The realtime subscription picks up the new `current_session_id` → UI shows session is still active
+
+The session IS ending in the DB, but a new one is created within 2 seconds.
 
 ### Changes
 
+**File: `supabase/functions/radius-poller/index.ts`**
+
+Add a cooldown check before auto-creating sessions. Before creating a new session at line 592, query the most recent `lesson_telematics` for this device's instructor to see if one was ended in the last 60 seconds. If so, skip auto-creation (the instructor just manually ended a session).
+
+```sql
+-- Check: was a session for this instructor ended in the last 60s?
+SELECT id FROM lesson_telematics 
+WHERE instructor_id = device.instructor_id 
+  AND ended_at > now() - interval '60 seconds'
+LIMIT 1
+```
+
+If a recently-ended session exists, skip the auto-create.
+
 **File: `src/pages/InstructorLiveSession.tsx`**
 
-1. **Move the `SessionStartPanel` block** (lines 1096–1107) to render **above** the map — specifically right after the `GPSStatusHero` card (after line 1006) and before the Dashcam Portal link.
+1. Stop triggering the poller immediately after ending a session. After `stopSession` clears `current_session_id` locally (line 756), the `useEffect` at line 262 re-runs and the `device?.current_session_id` check at line 347 is falsy, so the poller interval should not restart. However, there's a race: the poller call that's already in-flight can still auto-create a session. The server-side cooldown above handles this.
 
-2. **Also move the `LessonRouteRecorder` block** (lines 1109–1115) to stay adjacent to the SessionStartPanel, keeping them grouped logically.
-
-3. No changes to `SessionStartPanel.tsx` itself — the component already has the pupil selector dropdown and practice/test toggle working correctly.
+2. Additionally, stop the poller calls during the stop operation. Add the `isStopping` flag to the polling guard so no poller triggers fire while ending.
 
 ### Result
-When no session is active, the pupil selector and session type toggle will be immediately visible without scrolling, sitting between the device status card and the map.
+After pressing "End", the session ends cleanly. The poller won't auto-create a new session for 60 seconds, giving the UI time to settle. The pupil selector reappears.
 
