@@ -609,6 +609,29 @@ export function AddLessonSheet({
                 <span style={{ fontSize: 13, color: "#991B1B" }}>{conflictWarning}</span>
               </div>
             )}
+
+            {/* Travel-time Suggestion */}
+            {!conflictWarning && travelSuggestion && (
+              <button
+                type="button"
+                onClick={() => {
+                  setLessonStartTime(travelSuggestion.suggestedTime);
+                  setTravelSuggestion(null);
+                }}
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", gap: 10,
+                  padding: "12px 16px", borderRadius: 12,
+                  backgroundColor: "#EFF6FF", border: "1px solid #BFDBFE",
+                  textAlign: "left", cursor: "pointer",
+                }}
+              >
+                <Sparkles style={{ width: 16, height: 16, color: "#2A394F", flexShrink: 0 }} />
+                <div style={{ flex: 1, fontSize: 13, color: "#1E3A8A", lineHeight: 1.4 }}>
+                  {travelSuggestion.travelMinutes} min drive from {travelSuggestion.fromName}.
+                  Tap to start at <strong>{travelSuggestion.suggestedTime}</strong>.
+                </div>
+              </button>
+            )}
           </Section>
 
           {/* Divider */}
