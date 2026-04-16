@@ -590,6 +590,18 @@ Deno.serve(async (req) => {
 
       // ─── Auto-create session if ignition ON and no active session ───
       if (ignition && !device.current_session_id && lat && lon) {
+        // Cooldown: skip auto-create if a session was manually ended in last 60s
+        const { data: recentEnded } = await supabase
+          .from("lesson_telematics")
+          .select("id")
+          .eq("instructor_id", device.instructor_id)
+          .not("ended_at", "is", null)
+          .gte("ended_at", new Date(Date.now() - 60_000).toISOString())
+          .limit(1);
+
+        if (recentEnded && recentEnded.length > 0) {
+          console.log("[RadiusPoller] Skipping auto-create — session ended <60s ago for device:", device.device_name);
+        } else {
         console.log("[RadiusPoller] Auto-creating session for device:", device.device_name);
         const { data: newSession, error: sessErr } = await supabase
           .from("lesson_telematics")
