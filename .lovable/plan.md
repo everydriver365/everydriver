@@ -1,39 +1,60 @@
 
 
-# Wire Realtime Lesson Sync Across the Entire Instructor App
+# Tile Design Consistency Audit
 
-## Problem
-When a lesson is added (e.g. from the Schedule page), the home page and other views still show stale data because only `InstructorMobileHome.tsx` subscribes to `scheduled_lessons` changes — and only while it's mounted. Other pages like Schedule, Pupil Detail, and Gaps don't propagate changes back to shared query caches.
+## Current State
 
-## Root Cause
-- Realtime subscription for `scheduled_lessons` lives inside `InstructorMobileHome.tsx` (component-level), so it only runs when that page is active
-- The `AddLessonSheet` `onSuccess` only calls `calendar.refetch()` locally — doesn't invalidate home-page query keys
-- No global listener exists to keep all lesson-dependent queries in sync
+The "Insight Tile" design spec (white bg `#FFFFFF`, `0.5px solid #E4E4E7` border, `14px` border-radius, no box-shadow, Inter font 15px/500 + 12px/400) has been applied to:
+- Insight Tiles Grid
+- Activity Tiles Grid  
+- Waiting Room Promo Tile
+- Telematics Tile
+- View Schedule Tile
+- Pupil Cards
+- Pupil stat pills/filter tabs
+- Schedule event tiles
+- InstructorPay summary + quick action tiles
 
-## Solution: Global Realtime Lesson Sync Hook
+## Components Still Using Old Design
 
-### 1. Create `useGlobalLessonSync.ts`
-A new hook that subscribes to `scheduled_lessons` changes via the RealtimeHub and invalidates **all** lesson-related query keys app-wide. This runs at the layout level so it's always active.
+The following tiles still use the legacy style (`rounded-2xl`, `shadow-[0_2px_8px_rgba(20,37,66,0.08)]`, Tailwind theme colors instead of explicit hex):
 
-Query keys to invalidate on any `scheduled_lessons` change:
-- `today-overview`, `today-remaining-lessons`, `next-lesson-details`
-- `weekly-goals`, `monthly-goals`, `instructor-streak`
-- `tomorrow-preview`, `tomorrow-lessons`, `gap-suggestions`
-- `instructor-calendar`, `instructor-live-stats`
-- `break-reminders`, `lesson-end-alert`, `today-route`
-- `quick-tile-actions`, `gap-slots`
+| Component | File | Issue |
+|-----------|------|-------|
+| **MoneyActionGrid** | `src/components/instructor/money/MoneyActionGrid.tsx` | `rounded-2xl`, box-shadow, Tailwind `bg-card`/`text-primary` classes, `rounded-full` icon containers |
+| **NextLessonCard** | `src/components/instructor/NextLessonCard.tsx` | `rounded-2xl`, box-shadow |
+| **GapFillerCard** | `src/components/instructor/GapFillerCard.tsx` | `rounded-2xl`, box-shadow |
+| **FuelFinderCard** | `src/components/instructor/FuelFinderCard.tsx` | `rounded-2xl`, box-shadow, `rounded-2xl` icon containers |
+| **TodayRoutePreview** | `src/components/instructor/TodayRoutePreview.tsx` | `rounded-2xl`, box-shadow |
+| **ContextualHomeHero** | `src/components/instructor/ContextualHomeHero.tsx` | box-shadow on overlapping card |
+| **InstructorCard** | `src/components/instructor/InstructorCard.tsx` | `ios-card-shadow`, `rounded-2xl` (generic wrapper used in various places) |
+| **DiscoverFeaturesTile** | `src/components/instructor/DiscoverFeaturesTile.tsx` | `rounded-2xl`, `shadow-sm` |
+| **KanbanBoard** | `src/components/instructor/pipeline/KanbanBoard.tsx` | `rounded-[14px]` but has box-shadow |
+| **InstructorGPSSetup** | `src/pages/InstructorGPSSetup.tsx` | `rounded-lg`, box-shadow on cards |
 
-### 2. Mount the hook in `InstructorPortalLayout.tsx`
-Call `useGlobalLessonSync(instructorId)` inside the layout component (inside the `RealtimeHubProvider`). This ensures the subscription is active on every instructor page.
+## Plan
 
-### 3. Remove duplicate subscription from `InstructorMobileHome.tsx`
-Delete the `invalidateScheduleQueries` callback and `useRealtimeSubscription` call from InstructorMobileHome since the layout now handles it globally.
+Restyle each component above to match the Insight Tile spec:
 
-### 4. Also subscribe to `pupils` and `lesson_history` changes
-These tables affect dashboard stats (earnings, balances, progress). Add two more subscriptions in the global hook to invalidate relevant keys when pupil data or lesson history changes.
+1. **MoneyActionGrid** — Replace `rounded-2xl` with `borderRadius: 14`, remove box-shadow, use `#FFFFFF` bg with `0.5px solid #E4E4E7` border, change icon containers from `rounded-full` to `borderRadius: 12` squares (44x44), use explicit hex colors for icons.
 
-## Files to modify
-- **Create** `src/hooks/useGlobalLessonSync.ts` — New hook with realtime subscriptions + query invalidation
-- **Edit** `src/components/layout/InstructorPortalLayout.tsx` — Import and call the new hook
-- **Edit** `src/components/instructor/InstructorMobileHome.tsx` — Remove the now-redundant realtime subscription block
+2. **NextLessonCard** — Replace shadow and `rounded-2xl` with the standard tile container style. Keep swipe-to-dismiss and all interactive behaviour.
+
+3. **GapFillerCard** — Update both skeleton and main card containers to the standard tile style.
+
+4. **FuelFinderCard** — Update skeleton, error, and main states to the standard tile style.
+
+5. **TodayRoutePreview** — Replace shadow and `rounded-2xl` with the standard style. Keep map display and click handler.
+
+6. **ContextualHomeHero** — Remove box-shadow from the overlapping card.
+
+7. **InstructorCard** — Replace `ios-card-shadow` and `rounded-2xl` with `borderRadius: 14` and `0.5px solid #E4E4E7`. Remove ring utility. This is a shared wrapper, so all consumers automatically update.
+
+8. **DiscoverFeaturesTile** — Replace `rounded-2xl` and `shadow-sm` with standard tile style.
+
+9. **KanbanBoard** — Remove box-shadow from column containers.
+
+10. **InstructorGPSSetup** — Update device cards and provider banner to standard tile style.
+
+All changes are purely visual — no functional or behavioural modifications.
 
