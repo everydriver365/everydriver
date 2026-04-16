@@ -344,19 +344,18 @@ export default function InstructorPay() {
               transition={{ delay: 0.16 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setPaymentsExpanded(!paymentsExpanded); }}
-              style={tileStyle} className={cn("", "w-full text-left")}
+              style={tileStyle} className="w-full text-left"
             >
-              <div className="p-[14px_14px_12px]">
-                <div className="h-9 w-9 rounded-[12px] bg-[#DBEAFE] flex items-center justify-center mb-2">
-                  <CreditCard size={20} strokeWidth={2} color="#1E40AF" />
+              <div style={{ padding: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#DBEAFE", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                  <CreditCard size={22} strokeWidth={2} color="#1E40AF" />
                 </div>
-                <p className="text-[22px] font-bold tabular-nums text-[#1c1c1e]">{recentPaymentCount}</p>
-                <div className="flex items-center justify-between mt-0.5">
-                  <p className="text-[12px] text-[#8e8e93]">Recent Payments</p>
-                  <ChevronRight className={cn("h-4 w-4 text-[#c7c7cc] transition-transform", paymentsExpanded && "rotate-90")} />
+                <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="tabular-nums">{recentPaymentCount}</p>
+                <div className="flex items-center justify-between" style={{ marginTop: 2 }}>
+                  <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Recent Payments</p>
+                  <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" className={cn("transition-transform", paymentsExpanded && "rotate-90")} />
                 </div>
               </div>
-              <GradientLine />
             </motion.button>
 
             <AnimatePresence>
@@ -384,19 +383,18 @@ export default function InstructorPay() {
               transition={{ delay: 0.20 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setBonusExpanded(!bonusExpanded); }}
-              style={tileStyle} className={cn("", "w-full text-left")}
+              style={tileStyle} className="w-full text-left"
             >
-              <div className="p-[14px_14px_12px]">
-                <div className="h-9 w-9 rounded-[12px] bg-[#FEF3C7] flex items-center justify-center mb-2">
-                  <Trophy size={20} strokeWidth={2} color="#92400E" />
+              <div style={{ padding: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#FEF3C7", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                  <Trophy size={22} strokeWidth={2} color="#92400E" />
                 </div>
-                <p className="text-[22px] font-bold tabular-nums text-[#1c1c1e]">£{bonusEarned}</p>
-                <div className="flex items-center justify-between mt-0.5">
-                  <p className="text-[12px] text-[#8e8e93]">Course Rewards</p>
-                  <ChevronRight className={cn("h-4 w-4 text-[#c7c7cc] transition-transform", bonusExpanded && "rotate-90")} />
+                <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="tabular-nums">£{bonusEarned}</p>
+                <div className="flex items-center justify-between" style={{ marginTop: 2 }}>
+                  <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Course Rewards</p>
+                  <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" className={cn("transition-transform", bonusExpanded && "rotate-90")} />
                 </div>
               </div>
-              <GradientLine />
             </motion.button>
 
             <AnimatePresence>
@@ -424,19 +422,18 @@ export default function InstructorPay() {
               transition={{ delay: 0.24 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setBalancesExpanded(!balancesExpanded); }}
-              style={tileStyle} className={cn("", "w-full text-left")}
+              style={tileStyle} className="w-full text-left"
             >
-              <div className="p-[14px_14px_12px]">
-                <div className="h-9 w-9 rounded-[12px] bg-[#EEF2FF] flex items-center justify-center mb-2">
-                  <Users size={20} strokeWidth={2} color="#4F46E5" />
+              <div style={{ padding: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                  <Users size={22} strokeWidth={2} color="#4F46E5" />
                 </div>
-                <p className="text-[22px] font-bold tabular-nums text-[#1c1c1e]">{pupils.length}</p>
-                <div className="flex items-center justify-between mt-0.5">
-                  <p className="text-[12px] text-[#8e8e93]">Pupil Balances</p>
-                  <ChevronRight className={cn("h-4 w-4 text-[#c7c7cc] transition-transform", balancesExpanded && "rotate-90")} />
+                <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="tabular-nums">{pupils.length}</p>
+                <div className="flex items-center justify-between" style={{ marginTop: 2 }}>
+                  <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Pupil Balances</p>
+                  <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" className={cn("transition-transform", balancesExpanded && "rotate-90")} />
                 </div>
               </div>
-              <GradientLine />
             </motion.button>
 
             <AnimatePresence>
