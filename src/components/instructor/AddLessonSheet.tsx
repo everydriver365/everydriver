@@ -335,32 +335,24 @@ export function AddLessonSheet({
           {/* Lesson type chips */}
           <Section>
             <SectionLabel>Lesson Type</SectionLabel>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {LESSON_TYPES.map((type) => {
-                const selected = lessonType === type.value;
-                return (
-                  <button
-                    key={type.value}
-                    onClick={() => setLessonType(type.value)}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 6,
-                      padding: "8px 14px", borderRadius: 20,
-                      fontSize: 13, fontWeight: 500,
-                      cursor: "pointer", border: "none",
-                      transition: "all 0.15s",
-                      backgroundColor: selected ? type.color : "#FFFFFF",
-                      color: selected ? "#18181B" : "#52525B",
-                      boxShadow: selected
-                        ? `0 2px 8px ${type.color}40`
-                        : "0 1px 3px rgba(0,0,0,0.06)",
-                    }}
-                  >
-                    {type.value === 'driving_test' && '🚗 '}
-                    {type.label}
-                  </button>
-                );
-              })}
-            </div>
+            <Select value={lessonType} onValueChange={setLessonType}>
+              <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Car style={{ width: 16, height: 16, color: currentTypeColor }} />
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {LESSON_TYPES.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: type.color, display: "inline-block" }} />
+                      {type.label}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Section>
 
           {/* Divider */}
@@ -502,26 +494,16 @@ export function AddLessonSheet({
               </div>
               <div>
                 <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Duration</span>
-                <div style={{ display: "flex", gap: 6 }}>
-                  {DURATIONS.map((d) => (
-                    <button
-                      key={d.value}
-                      onClick={() => setLessonDuration(d.value)}
-                      style={{
-                        flex: 1, padding: "12px 4px", borderRadius: 10,
-                        fontSize: 13, fontWeight: 500, border: "none", cursor: "pointer",
-                        transition: "all 0.15s",
-                        backgroundColor: lessonDuration === d.value ? "#6B63D6" : "#FFFFFF",
-                        color: lessonDuration === d.value ? "#FFFFFF" : "#3F3F46",
-                        boxShadow: lessonDuration === d.value
-                          ? "0 2px 8px rgba(107,99,214,0.3)"
-                          : "0 1px 3px rgba(0,0,0,0.06)",
-                      }}
-                    >
-                      {d.label}
-                    </button>
-                  ))}
-                </div>
+                <Select value={lessonDuration} onValueChange={setLessonDuration}>
+                  <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DURATIONS.map((d) => (
+                      <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -644,22 +626,16 @@ export function AddLessonSheet({
                 {isRecurring && (
                   <div style={{ padding: "12px 16px", backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7" }}>
                     <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 8, display: "block" }}>Repeat for</span>
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      {['2', '4', '6', '8', '10', '12'].map((w) => (
-                        <button
-                          key={w}
-                          onClick={() => setRecurrenceWeeks(w)}
-                          style={{
-                            padding: "8px 14px", borderRadius: 20,
-                            fontSize: 13, fontWeight: 500, border: "none", cursor: "pointer",
-                            backgroundColor: recurrenceWeeks === w ? "#6B63D6" : "#F4F4F5",
-                            color: recurrenceWeeks === w ? "#FFFFFF" : "#3F3F46",
-                          }}
-                        >
-                          {w} weeks
-                        </button>
-                      ))}
-                    </div>
+                    <Select value={recurrenceWeeks} onValueChange={setRecurrenceWeeks}>
+                      <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {['2', '4', '6', '8', '10', '12'].map((w) => (
+                          <SelectItem key={w} value={w}>{w} weeks</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <p style={{ fontSize: 12, color: "#A1A1AA", marginTop: 8 }}>
                       Creates {recurrenceWeeks} lessons, same time every {lessonDate ? format(lessonDate, 'EEEE') : 'week'}
                     </p>
