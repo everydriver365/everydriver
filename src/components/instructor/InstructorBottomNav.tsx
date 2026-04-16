@@ -74,8 +74,8 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
         boxShadow: '0 -4px 16px rgba(0,0,0,0.08), 0 -1px 4px rgba(0,0,0,0.05)',
       }}
     >
-      {/* Gradient accent line */}
-      <div className="h-[2px] w-full" style={{ background: 'linear-gradient(to right, #0d4fa0, #56a8f5)' }} />
+      {/* Top edge */}
+      <div className="h-px w-full bg-black/[0.06]" />
       <div className="flex items-start justify-around" style={{ padding: '10px 0 16px' }}>
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
