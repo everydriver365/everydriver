@@ -110,7 +110,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                 <Icon 
                   size={22} 
                   strokeWidth={2} 
-                  color={isActive ? '#4F46E5' : trackIconColor || '#A1A1AA'} 
+                  color={isActive ? '#2A394F' : trackIconColor || '#A1A1AA'} 
                 />
                 {/* Pupils badge */}
                 {showNotification && (
@@ -178,7 +178,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                 style={{
                   fontSize: 11,
                   fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#4F46E5' : '#A1A1AA',
+                  color: isActive ? '#2A394F' : '#A1A1AA',
                 }}
               >
                 {item.label}

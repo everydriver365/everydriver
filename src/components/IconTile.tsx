@@ -2,9 +2,9 @@ import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const colorMap = {
-  indigo:  { light: { bg: "#EEF2FF", icon: "#4F46E5" }, dark: { bg: "#312E81", icon: "#C7D2FE" } },
+  indigo:  { light: { bg: "#E8ECF1", icon: "#2A394F" }, dark: { bg: "#312E81", icon: "#C7D2FE" } },
   emerald: { light: { bg: "#ECFDF5", icon: "#059669" }, dark: { bg: "#064E3B", icon: "#A7F3D0" } },
-  blue:    { light: { bg: "#DBEAFE", icon: "#1E40AF" }, dark: { bg: "#1E3A8A", icon: "#BFDBFE" } },
+  blue:    { light: { bg: "#E8ECF1", icon: "#2A394F" }, dark: { bg: "#1E3A8A", icon: "#BFDBFE" } },
   purple:  { light: { bg: "#EDE9FE", icon: "#5B21B6" }, dark: { bg: "#4C1D95", icon: "#DDD6FE" } },
   amber:   { light: { bg: "#FEF3C7", icon: "#92400E" }, dark: { bg: "#78350F", icon: "#FDE68A" } },
   red:     { light: { bg: "#FEF2F2", icon: "#DC2626" }, dark: { bg: "#7F1D1D", icon: "#FECACA" } },
