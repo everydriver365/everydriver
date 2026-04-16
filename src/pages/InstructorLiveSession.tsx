@@ -1005,6 +1005,26 @@ export default function InstructorLiveSession() {
               trackingProvider={device.tracking_provider}
             />
 
+           {/* Session Start Panel */}
+           {!isSessionActive && (
+              <SessionStartPanel
+                pupils={pupils}
+                selectedPupilId={selectedPupilId}
+                onPupilChange={setSelectedPupilId}
+                onStartSession={(type) => startSession(type)}
+                onOpenDrivingTestDialog={() => setShowDrivingTestDialog(true)}
+                isStarting={isStarting}
+                isConnected={isConnected}
+              />
+            )}
+
+           {/* Manual GPS Route Recorder */}
+           {instructor?.id && (
+              <LessonRouteRecorder
+                instructorId={instructor.id}
+                pupilId={selectedPupilId || null}
+              />
+            )}
 
            {/* Dashcam Portal Link — premium card */}
            <div style={{
@@ -1093,26 +1113,6 @@ export default function InstructorLiveSession() {
              </div>
            )}
 
-           {/* Session Start Panel */}
-           {!isSessionActive && (
-             <SessionStartPanel
-               pupils={pupils}
-               selectedPupilId={selectedPupilId}
-               onPupilChange={setSelectedPupilId}
-               onStartSession={(type) => startSession(type)}
-               onOpenDrivingTestDialog={() => setShowDrivingTestDialog(true)}
-               isStarting={isStarting}
-               isConnected={isConnected}
-             />
-           )}
- 
-           {/* Manual GPS Route Recorder */}
-           {instructor?.id && (
-             <LessonRouteRecorder
-               instructorId={instructor.id}
-               pupilId={selectedPupilId || null}
-             />
-           )}
 
            {/* Recent Sessions */}
            {instructor?.id && (
