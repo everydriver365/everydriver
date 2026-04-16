@@ -22,7 +22,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   "Vehicle Maintenance": "#3b82f6",
   "Insurance": "#8b5cf6",
   "Training Materials": "#10b981",
-  "Office Supplies": "#6366f1",
+  "Office Supplies": "#2A394F",
   "Marketing": "#ec4899",
   "Tolls & Parking": "#14b8a6",
   "Other": "#6b7280",

@@ -220,7 +220,7 @@ function Option10() {
     <motion.div
       whileTap={{ scale: 0.97 }}
       className="rounded-2xl cursor-pointer overflow-hidden"
-      style={{ background: "linear-gradient(135deg, #06b6d4, #6366f1, #d946ef)" }}
+      style={{ background: "linear-gradient(135deg, #06b6d4, #2A394F, #d946ef)" }}
     >
       <div className="p-4 flex items-center gap-4">
         <div className="flex-1">

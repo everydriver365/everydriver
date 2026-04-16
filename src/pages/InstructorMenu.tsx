@@ -144,7 +144,7 @@ const allTiles: TileDef[] = [
   { id: "intake-questions", title: "Intake Questions", description: "Custom questions on booking forms", icon: ClipboardList, tintBg: "#DBEAFE", tintColor: "#1E40AF", category: "courses" },
   { id: "pricing-rules", title: "Price Adjustment Rules", description: "Dynamic pricing by time, day & zone", icon: PoundSterling, tintBg: "#FEF3C7", tintColor: "#92400E", category: "courses" },
   { id: "mini-website", title: "Share Link", description: "Share your instructor profile", icon: Globe, tintBg: "#DBEAFE", tintColor: "#1E40AF", category: "website" },
-  { id: "website-pages", title: "Website Pages", description: "Edit your 5-page mini-website", icon: Layout, tintBg: "#EEF2FF", tintColor: "#4F46E5", category: "website" },
+  { id: "website-pages", title: "Website Pages", description: "Edit your 5-page mini-website", icon: Layout, tintBg: "#E8ECF1", tintColor: "#2A394F", category: "website" },
   { id: "website-theme", title: "Website Theme", description: "Colors, fonts & style presets", icon: Sparkles, tintBg: "#FFE4E6", tintColor: "#BE123C", category: "website" },
   { id: "branding", title: "Pupil App Branding", description: "Customise your pupil portal", icon: Palette, tintBg: "#FFE4E6", tintColor: "#BE123C", category: "website" },
   { id: "pupil-self-service", title: "Pupil Self-Service Booking", description: "Let pupils book, cancel & reschedule", icon: CalendarClock, tintBg: "#ECFDF5", tintColor: "#059669", category: "scheduling" },
@@ -158,7 +158,7 @@ const allTiles: TileDef[] = [
   { id: "dashcam-portal", title: "Dashcam Portal", description: "View footage on Kinesis Fleet Pro", icon: Camera, tintBg: "#F4F4F5", tintColor: "#52525B", category: "tracking", externalUrl: "https://www.kinesisfleetpro.com/#/login;next=%2Fstatus" },
   { id: "demo-mode", title: "Demo Mode", description: "Preview the app with sample data", icon: Eye, tintBg: "#FEF3C7", tintColor: "#92400E", category: "preferences" },
   { id: "appearance", title: "Appearance", description: "Layout, hero image & wallpaper", icon: Paintbrush, tintBg: "#FFE4E6", tintColor: "#BE123C", category: "preferences" },
-  { id: "dashboard-layout", title: "Dashboard Layout", description: "Customize your home screen tiles", icon: LayoutGrid, tintBg: "#EEF2FF", tintColor: "#4F46E5", category: "preferences" },
+  { id: "dashboard-layout", title: "Dashboard Layout", description: "Customize your home screen tiles", icon: LayoutGrid, tintBg: "#E8ECF1", tintColor: "#2A394F", category: "preferences" },
   { id: "notifications", title: "Push Notifications", description: "Manage notification preferences", icon: Bell, tintBg: "#FEF3C7", tintColor: "#92400E", category: "preferences" },
   { id: "gdpr", title: "GDPR Data Retention", description: "Auto-flag stale pupil records", icon: Shield, tintBg: "#DBEAFE", tintColor: "#1E40AF", category: "preferences" },
   { id: "data-backup", title: "Data Export & Backup", description: "Download your data for backup", icon: Database, tintBg: "#F4F4F5", tintColor: "#52525B", category: "preferences" },
@@ -315,7 +315,7 @@ export default function InstructorMenu() {
     {
       title: "Quick Actions",
       items: [
-        { icon: CheckSquare, label: "To Do", description: "Task list", gateKey: "todos", path: "/instructor/todos", tintBg: "#EEF2FF", tintColor: "#4F46E5" },
+        { icon: CheckSquare, label: "To Do", description: "Task list", gateKey: "todos", path: "/instructor/todos", tintBg: "#E8ECF1", tintColor: "#2A394F" },
         { icon: MessageCircle, label: "Messages", description: "Chat with pupils", gateKey: "messages", path: "/instructor/messages", tintBg: "#ECFDF5", tintColor: "#059669" },
         { icon: Briefcase, label: "Job Offers", description: "Pending jobs", gateKey: "jobs", path: "/instructor/jobs", tintBg: "#EDE9FE", tintColor: "#5B21B6" },
         { icon: CalendarPlus, label: "New Bookings", description: "Pending schedule", gateKey: "pending-scheduling", path: "/instructor/pending-scheduling", tintBg: "#FEF3C7", tintColor: "#92400E" },
@@ -340,7 +340,7 @@ export default function InstructorMenu() {
       title: "Schedule & Pupils",
       items: [
         { icon: Calendar, label: "Schedule", description: "View calendar", gateKey: "schedule", path: "/instructor/schedule", tintBg: "#DBEAFE", tintColor: "#1E40AF" },
-        { icon: Users, label: "Pupils", description: "Manage pupils", gateKey: "pupils", path: "/instructor/pupils", tintBg: "#EEF2FF", tintColor: "#4F46E5" },
+        { icon: Users, label: "Pupils", description: "Manage pupils", gateKey: "pupils", path: "/instructor/pupils", tintBg: "#E8ECF1", tintColor: "#2A394F" },
       ],
     },
     {
@@ -356,7 +356,7 @@ export default function InstructorMenu() {
         { icon: MapPin, label: "Jotter", description: "Draw on map", gateKey: "doodlepad", path: "/instructor/doodlepad", tintBg: "#FEF2F2", tintColor: "#DC2626" },
         { icon: MapPin, label: "Fill Gaps", description: "Schedule gaps", gateKey: "gaps", path: "/instructor/gaps", tintBg: "#FFE4E6", tintColor: "#BE123C" },
         { icon: StickyNote, label: "Notes", description: "Notebook", gateKey: "notes", path: "/instructor/notes", tintBg: "#FEF3C7", tintColor: "#92400E" },
-        { icon: Users, label: "Bulk Operations", description: "SMS, reschedule, pricing", gateKey: "bulk-operations", path: "/instructor/bulk-operations", tintBg: "#EEF2FF", tintColor: "#4F46E5" },
+        { icon: Users, label: "Bulk Operations", description: "SMS, reschedule, pricing", gateKey: "bulk-operations", path: "/instructor/bulk-operations", tintBg: "#E8ECF1", tintColor: "#2A394F" },
         { icon: TrendingUp, label: "Reports Hub", description: "PDF reports", gateKey: "reports-hub", path: "/instructor/reports", tintBg: "#EDE9FE", tintColor: "#5B21B6" },
       ],
     },
@@ -364,7 +364,7 @@ export default function InstructorMenu() {
       title: "Resources",
       items: [
         { icon: FolderOpen, label: "Resources", description: "Documents & files", gateKey: "resources", path: "/instructor/resources", tintBg: "#DBEAFE", tintColor: "#1E40AF" },
-        { icon: Megaphone, label: "Platform Updates", description: "News & feature ideas", path: "/instructor/platform-updates", tintBg: "#EEF2FF", tintColor: "#4F46E5" },
+        { icon: Megaphone, label: "Platform Updates", description: "News & feature ideas", path: "/instructor/platform-updates", tintBg: "#E8ECF1", tintColor: "#2A394F" },
         { icon: HelpCircle, label: "FAQs & Help", description: "Get support", gateKey: "faqs", path: "/instructor/faqs", tintBg: "#DBEAFE", tintColor: "#1E40AF" },
       ],
     },
@@ -760,7 +760,7 @@ export default function InstructorMenu() {
               <div className={cardClass}>
                 <div className="flex items-center justify-between px-4 py-[14px] gap-[14px]">
                   <div className="flex items-center gap-[14px]">
-                    {renderIconTile(Mic, "#EEF2FF", "#4F46E5")}
+                    {renderIconTile(Mic, "#E8ECF1", "#2A394F")}
                     <p className="text-[15px] font-medium text-[#18181B]" style={{ fontFamily: "Inter, sans-serif" }}>"Hey ED" Always Listening</p>
                   </div>
                   <Switch

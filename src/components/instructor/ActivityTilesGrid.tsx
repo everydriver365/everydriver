@@ -15,8 +15,8 @@ const tileConfig: { title: string; subtitle: string; icon: LucideIcon; iconColor
     title: "Job Offers",
     subtitle: "Pending jobs",
     icon: Briefcase,
-    iconColor: "#4F46E5",
-    iconBg: "#EEF2FF",
+    iconColor: "#2A394F",
+    iconBg: "#E8ECF1",
     route: "/instructor/jobs",
     key: "pendingJobsCount",
   },
@@ -99,7 +99,7 @@ export function ActivityTilesGrid({
               whileTap={{ scale: 0.98, backgroundColor: "#F4F4F5" }}
               whileHover={{ backgroundColor: "#FAFAFA" }}
               onClick={() => navigate(tile.route)}
-              className="focus-visible:ring-2 focus-visible:ring-[#6366F1] outline-none"
+              className="focus-visible:ring-2 focus-visible:ring-[#2A394F] outline-none"
               style={{
                 position: "relative",
                 background: "#FFFFFF",
@@ -123,7 +123,7 @@ export function ActivityTilesGrid({
                   left: 0,
                   right: 0,
                   height: 2,
-                  background: "linear-gradient(90deg, #4F46E5, #818CF8)",
+                  background: "linear-gradient(90deg, #2A394F, #3D5377)",
                   borderRadius: "0 0 14px 14px",
                 }}
               />

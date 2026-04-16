@@ -347,12 +347,12 @@ function VariantGlass({ expanded, toggle }: { expanded: boolean; toggle: () => v
     }} className="w-full overflow-hidden">
       <button onClick={toggle} className="w-full px-4 pt-4 pb-3 flex flex-col gap-2.5">
         <div className="flex items-center gap-3">
-          <div className="w-[50px] h-[50px] rounded-full flex items-center justify-center font-bold text-lg" style={{ background: "linear-gradient(135deg, #3B82F6, #6366F1)", color: "white" }}>
+          <div className="w-[50px] h-[50px] rounded-full flex items-center justify-center font-bold text-lg" style={{ background: "linear-gradient(135deg, #3B82F6, #2A394F)", color: "white" }}>
             {getInitials(mockData.pupilName)}
           </div>
           <div className="flex-1 min-w-0 text-left">
             <div className="flex items-center gap-1">
-              <span className="text-[11px] font-bold uppercase tracking-[0.5px]" style={{ color: "#6366F1" }}>Next Up</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.5px]" style={{ color: "#2A394F" }}>Next Up</span>
               <span className="text-[11px]" style={{ color: "#D1D5DB" }}>·</span>
               <span className="text-[11px] font-bold" style={{ color: "#059669" }}>{mockData.countdown}</span>
             </div>

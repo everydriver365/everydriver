@@ -1465,7 +1465,7 @@ function NeonDarkDesign() {
           <div className="grid grid-cols-4 gap-3">
             {[
               { label: "Lessons", value: "5", color: "#00ff88", icon: Calendar },
-              { label: "Revenue", value: "£2.3k", color: "#6366f1", icon: PoundSterling },
+              { label: "Revenue", value: "£2.3k", color: "#2A394F", icon: PoundSterling },
               { label: "Pupils", value: "23", color: "#f59e0b", icon: Users },
               { label: "Hours", value: "32h", color: "#ec4899", icon: Clock },
             ].map((s) => (
@@ -1484,12 +1484,12 @@ function NeonDarkDesign() {
       </div>
 
       {/* Next lesson with glow border */}
-      <div className="rounded-2xl p-[1px] bg-gradient-to-r from-[#00ff88]/40 via-[#6366f1]/40 to-[#00ff88]/40">
+      <div className="rounded-2xl p-[1px] bg-gradient-to-r from-[#00ff88]/40 via-[#2A394F]/40 to-[#00ff88]/40">
         <div className="rounded-2xl bg-[#0a0a0f] p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-11 w-11 rounded-xl bg-[#6366f1]/10 border border-[#6366f1]/20 flex items-center justify-center">
-                <Play className="h-5 w-5 text-[#6366f1]" />
+              <div className="h-11 w-11 rounded-xl bg-[#2A394F]/10 border border-[#2A394F]/20 flex items-center justify-center">
+                <Play className="h-5 w-5 text-[#2A394F]" />
               </div>
               <div>
                 <p className="text-[10px] font-mono text-[#00ff88]">NEXT_LESSON // 14:00</p>
@@ -1543,7 +1543,7 @@ function NeonDarkDesign() {
             <div className="grid grid-cols-2 gap-1.5">
               {[
                 { icon: CreditCard, label: "Pay", color: "#00ff88" },
-                { icon: MessageSquare, label: "Msg", color: "#6366f1" },
+                { icon: MessageSquare, label: "Msg", color: "#2A394F" },
                 { icon: Calendar, label: "Gaps", color: "#f59e0b" },
                 { icon: Heart, label: "Health", color: "#ec4899" },
                 { icon: Shield, label: "Vehicle", color: "#64748b" },
@@ -1562,7 +1562,7 @@ function NeonDarkDesign() {
             <div className="space-y-1.5 text-xs">
               <div className="px-2 py-1.5 rounded border border-red-500/20 bg-red-500/5 text-red-400/80 font-mono">Test → 3 days</div>
               <div className="px-2 py-1.5 rounded border border-amber-500/20 bg-amber-500/5 text-amber-400/80 font-mono">£120 overdue</div>
-              <div className="px-2 py-1.5 rounded border border-[#6366f1]/20 bg-[#6366f1]/5 text-[#6366f1]/80 font-mono">2 msgs unread</div>
+              <div className="px-2 py-1.5 rounded border border-[#2A394F]/20 bg-[#2A394F]/5 text-[#2A394F]/80 font-mono">2 msgs unread</div>
             </div>
           </div>
         </div>
