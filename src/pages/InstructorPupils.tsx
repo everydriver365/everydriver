@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { IOSLargeTitle } from "@/components/ui/IOSLargeTitle";
@@ -503,78 +504,107 @@ export default function InstructorPupils() {
     );
   }
 
+  const cardClass = "bg-white rounded-[20px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.05)] border-[0.5px] border-black/[0.06]";
+  const GradientLine = () => <div className="h-[2px] w-full bg-gradient-to-r from-[#0d4fa0] to-[#56a8f5]" />;
+
+  const getInitials = (name: string) =>
+    name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+
   return (
     <InstructorPortalLayout>
-      <div className="space-y-3 pb-6">
-        {/* iOS Large Title Header */}
-        <IOSLargeTitle
-          title="Pupils"
-          subtitle={`${stats.total} total · ${stats.active} active`}
-          action={
-            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-3" onClick={() => setIsAddOpen(true)}>
-              <Plus className="h-4 w-4 mr-1" />
-              Add
-            </Button>
-          }
-        />
+      <div className="space-y-3 pb-6" style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-[22px] font-bold text-[#1c1c1e]">Pupils</h1>
+            <p className="text-[13px] text-[#8e8e93]">{stats.total} total · {stats.active} active</p>
+          </div>
+          <Button size="sm" className="bg-gradient-to-r from-[#0d4fa0] to-[#1a6fd4] text-white rounded-xl h-9 px-3 shadow-[0_4px_12px_rgba(13,79,160,0.3)]" onClick={() => setIsAddOpen(true)}>
+            <Plus className="h-4 w-4 mr-1" />
+            Add
+          </Button>
+        </div>
 
-        {/* Compact stats strip */}
+        {/* 4-column stat row */}
         <div className="grid grid-cols-4 gap-2">
           {[
-            { label: "Active", value: stats.active, icon: Users, color: "text-primary" },
-            { label: "Passed", value: stats.passed, icon: GraduationCap, color: "text-emerald-600 dark:text-emerald-400" },
-            { label: "Lessons", value: stats.totalLessons, icon: BookOpen, color: "text-amber-600 dark:text-amber-400" },
-            { label: "On Hold", value: statusCounts.on_hold + statusCounts.inactive, icon: Target, color: "text-violet-600 dark:text-violet-400" },
+            { label: "Active", value: stats.active, emoji: "🟢", bg: "#eef4fd" },
+            { label: "Passed", value: stats.passed, emoji: "🎓", bg: "#eaf3de" },
+            { label: "Lessons", value: stats.totalLessons, emoji: "📚", bg: "#faeeda" },
+            { label: "On Hold", value: statusCounts.on_hold + statusCounts.inactive, emoji: "⏸️", bg: "#f0ebfd" },
           ].map((stat) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              className="bg-card rounded-xl border p-2.5 text-center"
-            >
-              <stat.icon className={`h-4 w-4 ${stat.color} mx-auto mb-1`} />
-              <p className="text-base font-bold text-foreground leading-none">{stat.value}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</p>
-            </motion.div>
+            <div key={stat.label} className={cardClass}>
+              <div className="p-[12px_8px_10px] text-center">
+                <div
+                  className="w-8 h-8 rounded-[10px] flex items-center justify-center mx-auto mb-1.5"
+                  style={{ backgroundColor: stat.bg }}
+                >
+                  <span className="text-[16px]">{stat.emoji}</span>
+                </div>
+                <p className="text-[18px] font-bold text-[#1c1c1e]">{stat.value}</p>
+                <p className="text-[11px] text-[#8e8e93]">{stat.label}</p>
+              </div>
+              <GradientLine />
+            </div>
           ))}
         </div>
 
-        {/* iOS Search Bar */}
-        <IOSSearchBar
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder="Search pupils..."
-        />
+        {/* Search bar card */}
+        <div className={cardClass}>
+          <div className="p-[10px_16px] flex items-center gap-[10px]">
+            <Search className="h-4 w-4 text-[#8e8e93] shrink-0" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search pupils..."
+              className="flex-1 bg-transparent outline-none text-[14px] text-[#1c1c1e] placeholder:text-[#c7c7cc]"
+            />
+          </div>
+          <GradientLine />
+        </div>
 
-        {/* iOS Segmented Control */}
-        <IOSSegmentedControl
-          segments={[
-            { value: "all", label: "All" },
-            { value: "active", label: "Active" },
-            { value: "passed", label: "Passed" },
-            ...(statusCounts.on_hold > 0 ? [{ value: "on_hold", label: "On Hold" }] : []),
-            ...(statusCounts.inactive > 0 ? [{ value: "inactive", label: "Inactive" }] : []),
-          ]}
-          value={activeTab}
-          onChange={(val) => setActiveTab(val as any)}
-        />
+        {/* All / Active / Passed toggle card */}
+        <div className={cn(cardClass, "!shadow-none !border-0")}>
+          <div className="p-1.5 flex gap-1 bg-white rounded-[20px]">
+            {[
+              { value: "all", label: "All" },
+              { value: "active", label: "Active" },
+              { value: "passed", label: "Passed" },
+              ...(statusCounts.on_hold > 0 ? [{ value: "on_hold", label: "On Hold" }] : []),
+              ...(statusCounts.inactive > 0 ? [{ value: "inactive", label: "Inactive" }] : []),
+            ].map((seg) => (
+              <button
+                key={seg.value}
+                onClick={() => setActiveTab(seg.value as any)}
+                className={cn(
+                  "flex-1 py-[7px] px-3 rounded-[14px] text-[13px] font-semibold transition-all",
+                  activeTab === seg.value
+                    ? "bg-gradient-to-r from-[#0d4fa0] to-[#1a6fd4] text-white font-bold shadow-sm"
+                    : "text-[#8e8e93] bg-transparent"
+                )}
+              >
+                {seg.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Pupils List */}
         {displayedPupils.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-3">
-              <Users className="h-7 w-7 text-muted-foreground" />
+            <div className="w-14 h-14 rounded-full bg-[#eef4fd] flex items-center justify-center mb-3">
+              <span className="text-2xl">👥</span>
             </div>
-            <h3 className="font-semibold text-sm mb-1">No pupils found</h3>
-            <p className="text-xs text-muted-foreground max-w-xs">
+            <h3 className="font-bold text-[14px] text-[#1c1c1e] mb-1">No pupils found</h3>
+            <p className="text-[12px] text-[#8e8e93] max-w-xs">
               {searchQuery
                 ? "No pupils match your search."
                 : "Add your first pupil to get started."}
             </p>
           </div>
         ) : (
-          <div className="space-y-2.5">
+          <div className="space-y-[10px]">
             {displayedPupils.map((pupil, idx) => (
               <motion.div
                 key={pupil.id}
