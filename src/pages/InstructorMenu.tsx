@@ -13,19 +13,7 @@ import {
   Gift, LayoutGrid, Satellite,
 } from "lucide-react";
 
-// Custom PNG icons
-import messagesIcon from "@/assets/messages-icon.png";
-import paymentsIcon from "@/assets/payments-icon-new.png";
-import takePaymentIcon from "@/assets/take-payment-icon.png";
-import scheduleIcon from "@/assets/schedule-icon.png";
-import pupilsIcon from "@/assets/pupils-icon.png";
-import trackIcon from "@/assets/track-icon.png";
-import findMyCarIcon from "@/assets/find_car2.png";
-import jobOffersIcon from "@/assets/job-offers-icon.png";
-import healthHubIcon from "@/assets/health-hub-icon.png";
-import vehicleHealthIcon from "@/assets/vehicle-health-icon.png";
-import expensesIcon from "@/assets/expenses-icon.png";
-import todoIcon from "@/assets/todo-icon.png";
+// Custom PNG icons (only Square logo still used for branded tile)
 import squareLogo from "@/assets/square-logo.png";
 
 import { motion } from "framer-motion";
