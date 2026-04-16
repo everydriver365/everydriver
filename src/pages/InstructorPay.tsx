@@ -288,7 +288,7 @@ export default function InstructorPay() {
                   transition={{ duration: 0.25 }}
                   className="overflow-hidden"
                 >
-                  <div style={tileStyle} className={cn("", "mt-2 divide-y divide-black/[0.06]")}>
+                  <div style={{ ...tileStyle, marginTop: 8 }} className="divide-y divide-[#E4E4E7]">
                     {debtors.map((pupil) => {
                       const amount = Math.abs(pupil.account_balance || 0);
                       return (
@@ -445,7 +445,7 @@ export default function InstructorPay() {
                   transition={{ duration: 0.25 }}
                   className="overflow-hidden"
                 >
-                  <div style={tileStyle} className={cn("", "mt-2 p-4")}>
+                  <div style={{ ...tileStyle, marginTop: 8, padding: 16 }}>
                     <PupilBalancesList pupils={pupils} limit={5} />
                     <GradientLine />
                   </div>
