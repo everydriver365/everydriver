@@ -217,6 +217,12 @@ function MobileNotificationBell({ instructorId }: { instructorId: string | undef
   );
 }
 
+function GlobalSyncBridge({ instructorId }: { instructorId: string | undefined }) {
+  useGlobalLessonSync(instructorId);
+  return null;
+}
+
+
 interface InstructorPortalLayoutProps {
   children: ReactNode;
 }
