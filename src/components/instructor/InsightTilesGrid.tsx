@@ -1,15 +1,10 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { CalendarPlus, Wrench, Sparkles, UserMinus } from "lucide-react";
-import fillGapsIcon from "@/assets/fill-gaps-icon.png";
-import vehicleHealthIcon from "@/assets/vehicle-health-icon.png";
 
 interface InsightTile {
   title: string;
   subtitle: string;
-  icon: React.ElementType;
-  customIcon?: string;
-  accent: string;
+  emoji: string;
   route: string;
   badge?: number;
 }
@@ -25,32 +20,26 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
     {
       title: "Fill Gaps",
       subtitle: "Open slots",
-      icon: CalendarPlus,
-      customIcon: fillGapsIcon,
-      accent: "#FF2D55",
+      emoji: "➕",
       route: "/instructor/gaps",
       badge: gapCount,
     },
     {
       title: "Vehicle Health",
       subtitle: "MOT & service",
-      icon: Wrench,
-      customIcon: vehicleHealthIcon,
-      accent: "#8E8E93",
+      emoji: "🚗",
       route: "/instructor/vehicle-health",
     },
     {
       title: "Smart Nudges",
       subtitle: "Action items",
-      icon: Sparkles,
-      accent: "#FF9500",
+      emoji: "✨",
       route: "/instructor/nudges",
     },
     {
       title: "Re-engage",
       subtitle: "Dormant pupils",
-      icon: UserMinus,
-      accent: "#AF52DE",
+      emoji: "👤",
       route: "/instructor/dormant-pupils",
     },
   ];
@@ -58,7 +47,6 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
   return (
     <div className="grid grid-cols-2 gap-4">
       {tiles.map((tile, idx) => {
-        const Icon = tile.icon;
         return (
           <motion.button
             key={tile.title}
@@ -122,22 +110,14 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
                   marginRight: 10,
                 }}
               />
-              <div
-                className="flex items-center justify-center"
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 22,
-                  backgroundColor: "#E6E8EC",
-                  flexShrink: 0,
-                }}
-              >
-                {tile.customIcon ? (
-                  <img src={tile.customIcon} alt={tile.title} className="w-7 h-7 object-contain" />
-                ) : (
-                  <Icon size={24} strokeWidth={1.6} style={{ color: tile.accent }} />
-                )}
-              </div>
+               <span
+                  style={{
+                    fontSize: 30,
+                    filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
+                  }}
+                >
+                  {tile.emoji}
+                </span>
             </div>
           </motion.button>
         );
