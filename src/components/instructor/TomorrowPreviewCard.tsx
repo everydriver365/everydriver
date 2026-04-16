@@ -113,9 +113,8 @@ export function TomorrowPreviewCard({
             )}
           </div>
           <div className="flex items-center justify-center gap-2 mb-4 bg-amber-50/80 dark:bg-amber-950/30 rounded-2xl px-4 py-3 border border-amber-100/50 dark:border-amber-800/30">
-            <span className="text-lg">☕</span>
+            <Coffee className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             <span className="text-sm font-medium text-amber-700 dark:text-amber-300">Enjoy a well-deserved break</span>
-            <span className="text-lg">☕</span>
           </div>
           <div className="flex gap-3">
             <Link to="/instructor/schedule" className="flex-1">

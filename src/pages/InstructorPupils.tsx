@@ -603,8 +603,8 @@ export default function InstructorPupils() {
         {/* Pupils List */}
         {displayedPupils.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-14 h-14 rounded-full bg-[#eef4fd] flex items-center justify-center mb-3">
-              <span className="text-2xl">👥</span>
+            <div className="w-14 h-14 rounded-[12px] bg-[#EEF2FF] flex items-center justify-center mb-3">
+              <Users className="h-7 w-7" style={{ color: "#4F46E5" }} />
             </div>
             <h3 className="font-bold text-[14px] text-[#1c1c1e] mb-1">No pupils found</h3>
             <p className="text-[12px] text-[#8e8e93] max-w-xs">
