@@ -339,6 +339,7 @@ export function AddLessonSheet({
 
   const handleAddLessonNew = async () => {
     if (!newPupilName.trim() || !lessonDate) { toast.error('Please enter a name and date'); return; }
+    if (conflictWarning) { toast.error(conflictWarning); return; }
     setLoading(true);
     try {
       const { data: newPupil, error: pupilError } = await supabase
