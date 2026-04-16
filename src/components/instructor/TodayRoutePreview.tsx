@@ -73,7 +73,8 @@ export function TodayRoutePreview({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-           className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border"
+           className="overflow-hidden"
+           style={{ backgroundColor: '#FFFFFF', borderRadius: 14, border: '0.5px solid #E4E4E7' }}
         >
            <div className="h-40 flex items-center justify-center bg-gray-50">
              <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
@@ -97,7 +98,8 @@ export function TodayRoutePreview({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-         className="bg-white rounded-2xl overflow-hidden cursor-pointer shadow-[0_2px_8px_rgba(20,37,66,0.08)] transition-all border border-border"
+         className="overflow-hidden cursor-pointer transition-all"
+         style={{ backgroundColor: '#FFFFFF', borderRadius: 14, border: '0.5px solid #E4E4E7' }}
         onClick={onTap}
       >
         {/* Header */}

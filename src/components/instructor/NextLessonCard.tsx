@@ -151,10 +151,11 @@ export function NextLessonCard({
       className="mx-4 mb-4"
     >
       <SwipeHint direction="right" hintKey="next-lesson-swipe" show={!!pickupPostcode}>
-        <div className="relative overflow-hidden rounded-2xl">
+        <div className="relative overflow-hidden" style={{ borderRadius: 14 }}>
           {/* Slide action background */}
           <motion.div 
-            className="absolute inset-y-0 left-0 flex items-center pl-4 bg-gradient-to-r from-primary to-primary/80 rounded-2xl"
+            className="absolute inset-y-0 left-0 flex items-center pl-4 bg-gradient-to-r from-primary to-primary/80"
+            style={{ borderRadius: 14 }}
             style={{ 
               width: maxSwipe + 20,
               opacity: actionOpacity
@@ -179,7 +180,8 @@ export function NextLessonCard({
             onDrag={handleDrag}
             onDragEnd={handleDragEnd}
             style={{ x }}
-             className="relative bg-card rounded-2xl p-3 cursor-grab active:cursor-grabbing shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border"
+             className="relative p-3 cursor-grab active:cursor-grabbing"
+             style={{ backgroundColor: '#FFFFFF', borderRadius: 14, border: '0.5px solid #E4E4E7' }}
           >
             <div className="flex items-center gap-3">
               {/* Avatar */}
