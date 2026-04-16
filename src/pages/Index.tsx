@@ -8,6 +8,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { IOSCourseCard } from "@/components/IOSCourseCard";
 import { Badge } from "@/components/ui/badge";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
+import { CoursePlannerSheet } from "@/components/course-planner/CoursePlannerSheet";
 import { FeatureDetailModal } from "@/components/FeatureDetailModal";
 import { FeatureData } from "@/hooks/useHomepageFeatures";
 import {
@@ -71,6 +72,7 @@ export default function Index() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [postcode, setPostcode] = useState("");
+  const [plannerOpen, setPlannerOpen] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState<FeatureData | null>(null);
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
@@ -180,6 +182,14 @@ export default function Index() {
                     <Search className="h-4 w-4 mr-2" /> Find
                   </Button>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setPlannerOpen(true)}
+                  className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                >
+                  <CalendarCheck className="h-4 w-4" />
+                  Plan my course around my test date →
+                </button>
               </motion.div>
               
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="flex items-center gap-3">
@@ -1129,6 +1139,12 @@ export default function Index() {
           </div>
         </div>
       </section>
+      <CoursePlannerSheet
+        open={plannerOpen}
+        onOpenChange={setPlannerOpen}
+        mode="public"
+        source="drive365"
+      />
     </MainLayout>
   );
 }
