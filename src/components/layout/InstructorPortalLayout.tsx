@@ -225,9 +225,10 @@ function GlobalSyncBridge({ instructorId }: { instructorId: string | undefined }
 
 interface InstructorPortalLayoutProps {
   children: ReactNode;
+  hideHeader?: boolean;
 }
 
-export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps) {
+export function InstructorPortalLayout({ children, hideHeader }: InstructorPortalLayoutProps) {
   const { instructor, subscription, signOut, loading } = useInstructorAuth();
   useInstructorPresence(instructor?.id);
   usePaymentReceivedAlert(instructor?.id);
@@ -419,7 +420,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             : undefined
         }
       >
-        {!isFullscreenMode && (
+        {!isFullscreenMode && !hideHeader && (
           <>
             {/* iOS Install Banner */}
             <IOSInstallBanner />
@@ -657,7 +658,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         ) : (
           <>
             <OfflineBanner />
-            <main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`} style={{ backgroundColor: isHomePage ? 'transparent' : '#F2F2F7' }}>{children}</main>
+            <main className={`ios-scroll ${hideHeader ? '' : location.pathname === '/instructor' ? '' : 'px-4 py-4'}`} style={{ backgroundColor: isHomePage ? 'transparent' : '#F2F2F7' }}>{children}</main>
             <InstructorBottomNav wallpaperColor={appStyleBg} />
             {/* Floating Ask ED button */}
             <div className="fixed bottom-[88px] right-4 z-40 flex flex-col items-center gap-1">
