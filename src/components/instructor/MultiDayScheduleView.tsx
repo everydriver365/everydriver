@@ -178,7 +178,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
           .order("start_time", { ascending: true }),
         supabase
           .from("instructor_calendar_events")
-          .select("id, title, start_time, end_time, color")
+          .select("id, title, start_time, end_time, color, location, description, is_busy")
           .eq("instructor_id", instructorId)
           .gte("start_time", fromISO)
           .lte("start_time", toISO),
@@ -202,7 +202,17 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
         const startHour = start.getHours() + start.getMinutes();
         const endHour = end.getHours();
         const isAllDay = startHour === 0 && (endHour === 23 || endHour === 0);
-        return { id: evt.id, title: evt.title || "Busy", start_time: evt.start_time, end_time: evt.end_time, color: evt.color, is_all_day: isAllDay };
+        return {
+          id: evt.id,
+          title: evt.title || "Busy",
+          start_time: evt.start_time,
+          end_time: evt.end_time,
+          color: evt.color,
+          is_all_day: isAllDay,
+          location: evt.location || null,
+          description: evt.description || null,
+          is_busy: evt.is_busy ?? true,
+        };
       });
       setExternalEvents(events);
       setManualBlocks(blocksRes.data || []);
