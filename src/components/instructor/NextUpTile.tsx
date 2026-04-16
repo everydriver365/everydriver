@@ -224,6 +224,13 @@ export function NextUpTile({
             <span style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF" }}>
               Next Lesson
             </span>
+            {effectiveBalance < 0 && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full animate-pulse"
+                style={{ backgroundColor: "#FF3B30", color: "#FFFFFF", fontSize: 9, fontWeight: 700, letterSpacing: 0.3 }}>
+                <AlertTriangle className="h-2.5 w-2.5" />
+                £{Math.abs(effectiveBalance).toFixed(0)} OWED
+              </span>
+            )}
             {checkInStatus && (
               <LessonCheckInBadge status={checkInStatus} className="text-[9px] py-0 px-1.5 h-4 ml-1" />
             )}
