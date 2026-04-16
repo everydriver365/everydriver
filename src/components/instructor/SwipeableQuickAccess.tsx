@@ -166,10 +166,19 @@ export function SwipeableQuickAccess() {
                       whileTap={{ scale: locked ? 1 : 0.98 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                       onClick={handleClick}
-                      className="relative h-[110px] p-5 rounded-2xl text-left flex flex-col justify-between border-0 transition-all duration-200 ease-out"
                       style={{
-                        backgroundColor: "#FFFFFF",
-                        boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
+                        position: "relative",
+                        background: "white",
+                        borderRadius: 20,
+                        overflow: "hidden",
+                        border: "0.5px solid rgba(0,0,0,0.06)",
+                        boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
+                        padding: "16px 14px 14px",
+                        textAlign: "left",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        height: 110,
                         opacity: locked ? 0.5 : 1,
                       }}
                     >
@@ -179,28 +188,34 @@ export function SwipeableQuickAccess() {
                           <Lock className="h-3.5 w-3.5 text-muted-foreground" />
                         </div>
                       )}
-                      {/* Green plus button */}
-                      {!locked && quickActionRoutes[tile.title] && (
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setQuickActionsMenuOpen(true);
-                          }}
-                          className="absolute bottom-2.5 left-2.5 w-5 h-5 rounded-full bg-emerald-300/40 flex items-center justify-center active:scale-90 transition-transform z-10"
-                        >
-                          <Plus className="h-3 w-3 text-emerald-700/50" strokeWidth={2} />
-                        </div>
-                      )}
                       <div>
-                        <p className="text-[16px] font-bold leading-tight text-foreground">
+                        <p style={{ fontSize: 15, fontWeight: 700, color: "#1c1c1e", marginBottom: 2, lineHeight: 1.2 }}>
                           {tile.title}
                         </p>
-                        <p className="text-[13px] mt-0.5 text-muted-foreground">
+                        <p style={{ fontSize: 12, fontWeight: 400, color: "#8e8e93" }}>
                           {tile.subtitle}
                         </p>
                       </div>
-                      <div className="self-end">
-                        <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: "#E6E8EC" }}>
+                      <div className="flex items-end justify-between" style={{ marginTop: "auto" }}>
+                        <div
+                          style={{
+                            height: 2,
+                            flex: 1,
+                            background: "linear-gradient(to right, #0d4fa0, #56a8f5)",
+                            borderRadius: 2,
+                            marginRight: 10,
+                          }}
+                        />
+                        <div
+                          className="flex items-center justify-center"
+                          style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: 22,
+                            backgroundColor: "#E6E8EC",
+                            flexShrink: 0,
+                          }}
+                        >
                           {tile.customIcon ? (
                             <img src={tile.customIcon} alt={tile.title} className="w-7 h-7 object-contain" />
                           ) : (
