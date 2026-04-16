@@ -278,6 +278,20 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
                   </button>
                 )}
 
+                {/* Admin notes about this pupil */}
+                {adminUnreadCount > 0 && (
+                  <button
+                    onClick={() => navigate("/instructor-app/admin-chat")}
+                    className="w-full bg-white/[0.08] rounded-2xl p-3 flex items-center gap-3 mb-3"
+                  >
+                    <Mail className="h-5 w-5 shrink-0" style={{ color: "#FF9500" }} />
+                    <span className="text-[13px] text-white/80 flex-1 text-left">
+                      {adminUnreadCount} admin note{adminUnreadCount !== 1 ? "s" : ""} about {nextLesson.pupilName.split(" ")[0]}
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-white/30" />
+                  </button>
+                )}
+
                 {/* Start Lesson Button */}
                 {canStart && (
                   <button
