@@ -77,7 +77,22 @@ export function NextUpTile({
   const { data: pupilUnreadCount = 0 } = usePupilUnreadCount(instructorId, pupilId);
   const { data: adminUnreadCount = 0 } = useAdminUnreadForPupil(instructorId, pupilId, pupilName);
   const totalUnreadBadge = pupilUnreadCount + adminUnreadCount;
-  const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition, isLoading: etaLoading } = useTrafficETA(pickupPostcode);
+  const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition, isLoading: etaLoading, error: etaError } = useTrafficETA(pickupPostcode);
+
+  // Fetch instructor hourly rate for expected earnings
+  const [hourlyRate, setHourlyRate] = useState<number>(40);
+  useEffect(() => {
+    if (!instructorId) return;
+    supabase
+      .from("instructors")
+      .select("hourly_rate")
+      .eq("id", instructorId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.hourly_rate) setHourlyRate(Number(data.hourly_rate));
+      });
+  }, [instructorId]);
+  const expectedEarnings = (durationMinutes / 60) * hourlyRate;
   const { currentWeather } = useDrivingAlerts(instructorId);
   const { devices } = useVehicleHealth();
 
@@ -357,7 +372,7 @@ export function NextUpTile({
               <div className="px-4 pb-4 flex flex-col gap-3">
                 <div className="h-px w-full" style={{ background: "rgba(0,0,0,0.06)" }} />
 
-                {/* Mini-map of pickup location */}
+                {/* Mini-map of pickup location with ETA overlay */}
                 {pickupPostcode && (
                   <div
                     className="rounded-2xl overflow-hidden border cursor-pointer relative"
@@ -366,12 +381,50 @@ export function NextUpTile({
                     role="button"
                     tabIndex={0}
                   >
+                    {/* ETA pill (top-left) */}
+                    <div className="absolute top-2 left-2 z-[1] bg-black/70 backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 pointer-events-none">
+                      <Car className="h-3 w-3" />
+                      {etaLoading ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          <span>ETA…</span>
+                        </>
+                      ) : etaMinutes > 0 ? (
+                        <>
+                          <span>{etaMinutes} min</span>
+                          {trafficCondition && (
+                            <span className={`w-1.5 h-1.5 rounded-full ${getTrafficDot()}`} />
+                          )}
+                        </>
+                      ) : etaError ? (
+                        <span>ETA unavailable</span>
+                      ) : (
+                        <span>No ETA</span>
+                      )}
+                    </div>
                     <div className="absolute top-2 right-2 z-[1] bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 pointer-events-none">
-                      <Navigation className="h-3 w-3" /> Tap to navigate
+                      <Navigation className="h-3 w-3" /> Navigate
                     </div>
                     <PostcodeMapPreview postcode={pickupPostcode} />
                   </div>
                 )}
+
+                {/* Stats row */}
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { icon: Hourglass, label: "Duration", value: formatDuration(), color: "hsl(220, 52%, 22%)" },
+                    { icon: PoundSterling, label: "Earnings", value: `£${expectedEarnings.toFixed(0)}`, color: "#10b981" },
+                    { icon: PoundSterling, label: effectiveBalance < 0 ? "Due" : "Balance", value: `£${Math.abs(effectiveBalance).toFixed(0)}`, color: effectiveBalance < 0 ? "#f97316" : "#10b981" },
+                  ].map((stat) => (
+                    <div key={stat.label} className="flex flex-col items-center py-3 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)" }}>
+                      <div className="w-8 h-8 rounded-2xl flex items-center justify-center mb-1.5" style={{ background: `${stat.color}15` }}>
+                        <stat.icon className="h-4 w-4" style={{ color: stat.color }} />
+                      </div>
+                      <span className="text-[15px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{stat.value}</span>
+                      <span className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</span>
+                    </div>
+                  ))}
+                </div>
 
                 {/* Stats row */}
                 <div className="grid grid-cols-3 gap-2">
