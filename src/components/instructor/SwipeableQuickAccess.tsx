@@ -74,10 +74,11 @@ const TILES_PER_PAGE = 6;
 
 export function SwipeableQuickAccess() {
   const navigate = useNavigate();
-  const { subscription } = useInstructorAuth();
+  const { subscription, instructor } = useInstructorAuth();
   const features = subscription?.features || [];
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [quickActionsMenuOpen, setQuickActionsMenuOpen] = useState(false);
+  const [plannerOpen, setPlannerOpen] = useState(false);
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
 
   const pages: QuickTile[][] = [];
