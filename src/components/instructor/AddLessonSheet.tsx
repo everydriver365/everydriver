@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 import { format, addWeeks } from 'date-fns';
-import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Car, CheckSquare, MapPin, AlertTriangle } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
+import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Car, CheckSquare, MapPin, AlertTriangle, Clock, ChevronRight } from 'lucide-react';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -50,16 +48,41 @@ const TEST_DAY_CHECKLIST = [
 ];
 
 const LESSON_TYPES = [
-  { value: 'standard', label: 'Standard' },
-  { value: 'intensive', label: 'Intensive' },
-  { value: 'motorway', label: 'Motorway' },
-  { value: 'test_prep', label: 'Test Prep' },
-  { value: 'mock_test', label: 'Mock Test' },
-  { value: 'refresher', label: 'Refresher' },
-  { value: 'first_lesson', label: 'First Lesson' },
-  { value: 'pass_plus', label: 'Pass Plus' },
-  { value: 'driving_test', label: '🚗 Driving Test' },
+  { value: 'standard', label: 'Standard', color: '#7FB3E3' },
+  { value: 'intensive', label: 'Intensive', color: '#B3AFF5' },
+  { value: 'motorway', label: 'Motorway', color: '#8FCFA5' },
+  { value: 'test_prep', label: 'Test Prep', color: '#F4D06F' },
+  { value: 'mock_test', label: 'Mock Test', color: '#E89999' },
+  { value: 'refresher', label: 'Refresher', color: '#7FB3E3' },
+  { value: 'first_lesson', label: 'First Lesson', color: '#8FCFA5' },
+  { value: 'pass_plus', label: 'Pass Plus', color: '#B3AFF5' },
+  { value: 'driving_test', label: 'Driving Test', color: '#F4D06F' },
 ];
+
+const DURATIONS = [
+  { value: '1', label: '1 hr' },
+  { value: '1.5', label: '1.5 hr' },
+  { value: '2', label: '2 hr' },
+  { value: '2.5', label: '2.5 hr' },
+  { value: '3', label: '3 hr' },
+];
+
+// Styled section wrapper
+function Section({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn("space-y-3", className)}>
+      {children}
+    </div>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span style={{ fontSize: 11, fontWeight: 600, color: "#71717A", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+      {children}
+    </span>
+  );
+}
 
 export function AddLessonSheet({ 
   open, 
@@ -73,57 +96,41 @@ export function AddLessonSheet({
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [loadingPupils, setLoadingPupils] = useState(false);
 
-  // Lesson type
   const [lessonType, setLessonType] = useState('standard');
-
-  // Existing pupil form state
   const [selectedPupil, setSelectedPupil] = useState('');
   const [lessonDate, setLessonDate] = useState<Date | undefined>(defaultDate || new Date());
   const [lessonStartTime, setLessonStartTime] = useState('09:00');
   const [lessonDuration, setLessonDuration] = useState('1');
   const [pickupAddress, setPickupAddress] = useState('');
   const [pickupPostcode, setPickupPostcode] = useState('');
-
-  // Recurring lesson options
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrenceWeeks, setRecurrenceWeeks] = useState('4');
   const [plannedCompetencies, setPlannedCompetencies] = useState<string[]>([]);
-
-  // Driving test fields
   const [testCentres, setTestCentres] = useState<TestCentre[]>([]);
   const [selectedTestCentre, setSelectedTestCentre] = useState('');
   const [selectedExaminer, setSelectedExaminer] = useState('');
   const [checklistOpen, setChecklistOpen] = useState(true);
-
-  // Conflict detection
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
   const [checkingConflict, setCheckingConflict] = useState(false);
-
-  // New pupil form state
   const [newPupilName, setNewPupilName] = useState('');
   const [newPupilPhone, setNewPupilPhone] = useState('');
   const [newPupilAddress, setNewPupilAddress] = useState('');
   const [newPupilPostcode, setNewPupilPostcode] = useState('');
 
   const isDrivingTest = lessonType === 'driving_test';
+  const currentTypeColor = LESSON_TYPES.find(t => t.value === lessonType)?.color || '#7FB3E3';
 
   useEffect(() => {
     if (open) {
       fetchPupils();
-      if (defaultDate) {
-        setLessonDate(defaultDate);
-      }
+      if (defaultDate) setLessonDate(defaultDate);
     }
   }, [open, defaultDate]);
 
-  // Fetch test centres when driving test is selected
   useEffect(() => {
-    if (isDrivingTest && instructorId) {
-      fetchTestCentres();
-    }
+    if (isDrivingTest && instructorId) fetchTestCentres();
   }, [isDrivingTest, instructorId]);
 
-  // Auto-set duration to 1hr when switching to driving test
   useEffect(() => {
     if (isDrivingTest) {
       setLessonDuration('1');
@@ -139,83 +146,55 @@ export function AddLessonSheet({
       .select('id, name, phone, address, postcode')
       .eq('instructor_id', instructorId)
       .order('name');
-
-    if (!error && data) {
-      setPupils(data);
-    }
+    if (!error && data) setPupils(data);
     setLoadingPupils(false);
   };
 
   const fetchTestCentres = async () => {
-    // Fetch from instructor_test_centres joined with test_centres
     const { data: instructorCentres } = await supabase
       .from('instructor_test_centres')
       .select('test_centre_id, test_centres ( id, name, address )')
       .eq('instructor_id', instructorId);
-
     if (instructorCentres) {
-      const centres = instructorCentres
-        .map((ic: any) => ic.test_centres)
-        .filter(Boolean) as TestCentre[];
+      const centres = instructorCentres.map((ic: any) => ic.test_centres).filter(Boolean) as TestCentre[];
       setTestCentres(centres);
     }
   };
 
   const resetForm = () => {
-    setSelectedPupil('');
-    setPickupAddress('');
-    setPickupPostcode('');
-    setNewPupilName('');
-    setNewPupilPhone('');
-    setNewPupilAddress('');
-    setNewPupilPostcode('');
-    setLessonStartTime('09:00');
-    setLessonDuration('1');
-    setIsRecurring(false);
-    setRecurrenceWeeks('4');
-    setPlannedCompetencies([]);
-    setLessonType('standard');
-    setSelectedTestCentre('');
-    setSelectedExaminer('');
+    setSelectedPupil(''); setPickupAddress(''); setPickupPostcode('');
+    setNewPupilName(''); setNewPupilPhone(''); setNewPupilAddress(''); setNewPupilPostcode('');
+    setLessonStartTime('09:00'); setLessonDuration('1');
+    setIsRecurring(false); setRecurrenceWeeks('4');
+    setPlannedCompetencies([]); setLessonType('standard');
+    setSelectedTestCentre(''); setSelectedExaminer('');
     setConflictWarning(null);
   };
 
-  // Auto-fill pickup address when selecting an existing pupil
   useEffect(() => {
     if (selectedPupil) {
       const pupil = pupils.find(p => p.id === selectedPupil);
-      if (pupil) {
-        setPickupAddress(pupil.address || '');
-        setPickupPostcode(pupil.postcode || '');
-      }
+      if (pupil) { setPickupAddress(pupil.address || ''); setPickupPostcode(pupil.postcode || ''); }
     }
   }, [selectedPupil, pupils]);
 
-  // Check for schedule conflicts when date/time/duration changes
+  // Conflict check
   useEffect(() => {
-    if (!lessonDate || !lessonStartTime || !open) {
-      setConflictWarning(null);
-      return;
-    }
-
+    if (!lessonDate || !lessonStartTime || !open) { setConflictWarning(null); return; }
     const checkConflicts = async () => {
       setCheckingConflict(true);
       try {
         const dateStr = format(lessonDate, 'yyyy-MM-dd');
         const durationMinutes = parseFloat(lessonDuration) * 60;
-        
-        // Calculate new lesson end time
         const [startH, startM] = lessonStartTime.split(':').map(Number);
         const newStartMinutes = startH * 60 + startM;
         const newEndMinutes = newStartMinutes + durationMinutes;
-
         const { data: existingLessons } = await supabase
           .from('scheduled_lessons')
           .select('start_time, duration_minutes, pupil_id, pupils(name)')
           .eq('instructor_id', instructorId)
           .eq('lesson_date', dateStr)
           .neq('status', 'cancelled');
-
         if (existingLessons && existingLessons.length > 0) {
           const conflicts = existingLessons.filter((lesson: any) => {
             const [h, m] = (lesson.start_time || '00:00').split(':').map(Number);
@@ -223,177 +202,85 @@ export function AddLessonSheet({
             const existingEnd = existingStart + (lesson.duration_minutes || 60);
             return newStartMinutes < existingEnd && newEndMinutes > existingStart;
           });
-
           if (conflicts.length > 0) {
             const names = conflicts.map((c: any) => c.pupils?.name || 'Unknown').join(', ');
-            setConflictWarning(`Overlaps with ${names} at this time`);
-          } else {
-            setConflictWarning(null);
-          }
-        } else {
-          setConflictWarning(null);
-        }
-      } catch {
-        setConflictWarning(null);
-      } finally {
-        setCheckingConflict(false);
-      }
+            setConflictWarning(`Overlaps with ${names}`);
+          } else { setConflictWarning(null); }
+        } else { setConflictWarning(null); }
+      } catch { setConflictWarning(null); }
+      finally { setCheckingConflict(false); }
     };
-
     const timer = setTimeout(checkConflicts, 300);
     return () => clearTimeout(timer);
   }, [lessonDate, lessonStartTime, lessonDuration, instructorId, open]);
 
   const buildDrivingTestNotes = () => {
     if (!isDrivingTest) return null;
-    const parts: string[] = [];
     const centre = testCentres.find(c => c.id === selectedTestCentre);
-    if (centre) parts.push(`Test Centre: ${centre.name}`);
-    return parts.length > 0 ? parts.join(' | ') : null;
+    return centre ? `Test Centre: ${centre.name}` : null;
   };
 
   const handleAddLessonExisting = async () => {
-    if (!selectedPupil || !lessonDate) {
-      toast.error('Please select a pupil and date');
-      return;
-    }
-
+    if (!selectedPupil || !lessonDate) { toast.error('Please select a pupil and date'); return; }
     setLoading(true);
     try {
-      const durationHours = parseFloat(lessonDuration);
-      const durationMinutes = durationHours * 60;
+      const durationMinutes = parseFloat(lessonDuration) * 60;
       const weeks = isRecurring ? parseInt(recurrenceWeeks) : 1;
-      const lessons = [];
       const testNotes = buildDrivingTestNotes();
-
-      const parentLesson = {
-        instructor_id: instructorId,
-        pupil_id: selectedPupil,
-        lesson_date: format(lessonDate, 'yyyy-MM-dd'),
-        start_time: lessonStartTime,
-        duration_minutes: durationMinutes,
-        pickup_location: pickupAddress || null,
-        status: 'scheduled',
-        payment_status: 'not_paid',
-        lesson_type: lessonType,
-        recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
-        planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
-        notes: testNotes,
-        ...(isDrivingTest && selectedExaminer ? { examiner_id: selectedExaminer } : {}),
-      };
-      lessons.push(parentLesson);
-
-      if (isRecurring) {
-        for (let i = 1; i < weeks; i++) {
-          const recurringDate = addWeeks(lessonDate, i);
-          lessons.push({
-            instructor_id: instructorId,
-            pupil_id: selectedPupil,
-            lesson_date: format(recurringDate, 'yyyy-MM-dd'),
-            start_time: lessonStartTime,
-            duration_minutes: durationMinutes,
-            pickup_location: pickupAddress || null,
-            status: 'scheduled',
-            payment_status: 'not_paid',
-            lesson_type: lessonType,
-            recurrence_rule: `WEEKLY;COUNT=${weeks}`,
-            planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
-            notes: testNotes,
-          });
-        }
+      const lessons = [];
+      for (let i = 0; i < weeks; i++) {
+        const recurringDate = i === 0 ? lessonDate : addWeeks(lessonDate, i);
+        lessons.push({
+          instructor_id: instructorId, pupil_id: selectedPupil,
+          lesson_date: format(recurringDate, 'yyyy-MM-dd'), start_time: lessonStartTime,
+          duration_minutes: durationMinutes, pickup_location: pickupAddress || null,
+          status: 'scheduled', payment_status: 'not_paid', lesson_type: lessonType,
+          recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
+          planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
+          notes: testNotes,
+          ...(isDrivingTest && selectedExaminer ? { examiner_id: selectedExaminer } : {}),
+        });
       }
-
-      const { error } = await supabase
-        .from('scheduled_lessons')
-        .insert(lessons);
-
+      const { error } = await supabase.from('scheduled_lessons').insert(lessons);
       if (error) throw error;
-
-      const message = isDrivingTest 
-        ? 'Driving test scheduled! Pupil will be reminded.'
-        : isRecurring 
-          ? `${weeks} lessons scheduled (weekly recurring)` 
-          : 'Lesson scheduled';
-      toast.success(message);
-      resetForm();
-      onOpenChange(false);
-      onSuccess();
-    } catch (error) {
-      console.error('Error adding lesson:', error);
-      toast.error('Failed to schedule lesson');
-    } finally {
-      setLoading(false);
-    }
+      toast.success(isDrivingTest ? 'Test scheduled!' : isRecurring ? `${weeks} lessons scheduled` : 'Lesson scheduled');
+      resetForm(); onOpenChange(false); onSuccess();
+    } catch (error) { console.error(error); toast.error('Failed to schedule lesson'); }
+    finally { setLoading(false); }
   };
 
   const handleAddLessonNew = async () => {
-    if (!newPupilName.trim() || !lessonDate) {
-      toast.error('Please enter a name and select a date');
-      return;
-    }
-
+    if (!newPupilName.trim() || !lessonDate) { toast.error('Please enter a name and date'); return; }
     setLoading(true);
     try {
       const { data: newPupil, error: pupilError } = await supabase
         .from('pupils')
-        .insert({
-          instructor_id: instructorId,
-          name: newPupilName.trim(),
-          phone: newPupilPhone.trim() || null,
-          address: newPupilAddress.trim() || null,
-          postcode: newPupilPostcode.trim() || null,
-        })
-        .select('id')
-        .single();
-
+        .insert({ instructor_id: instructorId, name: newPupilName.trim(), phone: newPupilPhone.trim() || null, address: newPupilAddress.trim() || null, postcode: newPupilPostcode.trim() || null })
+        .select('id').single();
       if (pupilError) throw pupilError;
-
-      const durationHours = parseFloat(lessonDuration);
-      const durationMinutes = durationHours * 60;
-      const addr = [newPupilAddress, newPupilPostcode].filter(Boolean).join(', ');
+      const durationMinutes = parseFloat(lessonDuration) * 60;
       const weeks = isRecurring ? parseInt(recurrenceWeeks) : 1;
-      const lessons = [];
       const testNotes = buildDrivingTestNotes();
-
+      const addr = [newPupilAddress, newPupilPostcode].filter(Boolean).join(', ');
+      const lessons = [];
       for (let i = 0; i < weeks; i++) {
         const recurringDate = i === 0 ? lessonDate : addWeeks(lessonDate, i);
         lessons.push({
-          instructor_id: instructorId,
-          pupil_id: newPupil.id,
-          lesson_date: format(recurringDate, 'yyyy-MM-dd'),
-          start_time: lessonStartTime,
-          duration_minutes: durationMinutes,
-          pickup_location: addr || null,
-          status: 'scheduled',
-          payment_status: 'not_paid',
-          lesson_type: lessonType,
+          instructor_id: instructorId, pupil_id: newPupil.id,
+          lesson_date: format(recurringDate, 'yyyy-MM-dd'), start_time: lessonStartTime,
+          duration_minutes: durationMinutes, pickup_location: addr || null,
+          status: 'scheduled', payment_status: 'not_paid', lesson_type: lessonType,
           recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
           planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
           notes: testNotes,
         });
       }
-
-      const { error: lessonError } = await supabase
-        .from('scheduled_lessons')
-        .insert(lessons);
-
+      const { error: lessonError } = await supabase.from('scheduled_lessons').insert(lessons);
       if (lessonError) throw lessonError;
-
-      const message = isDrivingTest
-        ? 'Pupil created and driving test scheduled!'
-        : isRecurring 
-          ? `Pupil created and ${weeks} lessons scheduled (weekly)` 
-          : 'Pupil created and lesson scheduled';
-      toast.success(message);
-      resetForm();
-      onOpenChange(false);
-      onSuccess();
-    } catch (error) {
-      console.error('Error adding lesson:', error);
-      toast.error('Failed to schedule lesson');
-    } finally {
-      setLoading(false);
-    }
+      toast.success(isDrivingTest ? 'Pupil created & test scheduled!' : isRecurring ? `Pupil created & ${weeks} lessons scheduled` : 'Pupil created & lesson scheduled');
+      resetForm(); onOpenChange(false); onSuccess();
+    } catch (error) { console.error(error); toast.error('Failed to schedule lesson'); }
+    finally { setLoading(false); }
   };
 
   const timeSlots = Array.from({ length: 28 }, (_, i) => {
@@ -402,215 +289,263 @@ export function AddLessonSheet({
     return `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
   });
 
-  // Shared driving test fields component
-  const DrivingTestFields = () => (
-    <>
-      {/* Test Centre */}
-      <div className="space-y-2">
-        <Label className="flex items-center gap-1.5">
-          <MapPin className="h-3.5 w-3.5" />
-          Test Centre
-        </Label>
-        <Select value={selectedTestCentre} onValueChange={setSelectedTestCentre}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select test centre..." />
-          </SelectTrigger>
-          <SelectContent>
-            {testCentres.length === 0 ? (
-              <div className="p-2 text-center text-sm text-muted-foreground">
-                No test centres saved yet
-              </div>
-            ) : (
-              testCentres.map((centre) => (
-                <SelectItem key={centre.id} value={centre.id}>
-                  {centre.name}
-                </SelectItem>
-              ))
-            )}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Examiner */}
-      <div className="space-y-2">
-        <Label>Examiner (optional)</Label>
-        <ExaminerSelector
-          value={selectedExaminer}
-          onChange={setSelectedExaminer}
-          instructorId={instructorId}
-        />
-      </div>
-
-      {/* Test Day Checklist */}
-      <Collapsible open={checklistOpen} onOpenChange={setChecklistOpen}>
-        <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 rounded-2xl border bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20 text-sm font-medium text-orange-800 dark:text-orange-300">
-          <CheckSquare className="h-4 w-4" />
-          Test Day Checklist
-          <span className="ml-auto text-xs text-orange-600 dark:text-orange-400">
-            {checklistOpen ? '▾' : '▸'}
-          </span>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="mt-2">
-          <div className="space-y-2 p-3 rounded-2xl border bg-muted/30">
-            {TEST_DAY_CHECKLIST.map((item, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <Checkbox id={`checklist-${i}`} className="mt-0.5" />
-                <label htmlFor={`checklist-${i}`} className="text-sm text-muted-foreground cursor-pointer leading-tight">
-                  {item}
-                </label>
-              </div>
-            ))}
-            <p className="text-xs text-muted-foreground/70 mt-2 italic">
-              This checklist is sent to the pupil as part of their reminder notification.
-            </p>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-    </>
-  );
-
-  // Shared lesson scheduling fields
-  const LessonScheduleFields = (prefix: string) => (
-    <>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label>Start Time</Label>
-          <Select value={lessonStartTime} onValueChange={setLessonStartTime}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="max-h-60">
-              {timeSlots.map((time) => (
-                <SelectItem key={time} value={time}>
-                  {time}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Duration</Label>
-          <Select value={lessonDuration} onValueChange={setLessonDuration}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1">1 hour</SelectItem>
-              <SelectItem value="1.5">1.5 hours</SelectItem>
-              <SelectItem value="2">2 hours</SelectItem>
-              <SelectItem value="2.5">2.5 hours</SelectItem>
-              <SelectItem value="3">3 hours</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Conflict Warning */}
-      {conflictWarning && (
-        <div className="flex items-center gap-2 p-3 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
-          <AlertTriangle className="h-4 w-4 shrink-0" />
-          <span>{conflictWarning}</span>
-        </div>
-      )}
-    </>
-  );
+  const selectedPupilName = pupils.find(p => p.id === selectedPupil)?.name;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[85vh] rounded-2xl">
-        <SheetHeader className="pb-4">
-          <SheetTitle>{isDrivingTest ? '🚗 Schedule Driving Test' : 'Add Lesson'}</SheetTitle>
-        </SheetHeader>
+      <SheetContent
+        side="bottom"
+        className="rounded-t-[20px] p-0 border-0"
+        style={{ height: "90vh", backgroundColor: "#F7F7F7" }}
+      >
+        {/* Handle bar */}
+        <div style={{ display: "flex", justifyContent: "center", paddingTop: 8, paddingBottom: 4 }}>
+          <div style={{ width: 36, height: 5, borderRadius: 3, backgroundColor: "#D4D4D8" }} />
+        </div>
 
-        <div className="overflow-y-auto max-h-[calc(85vh-140px)] pb-4">
-          {/* Lesson Type Selector */}
-          <div className="space-y-2 mb-4">
-            <Label className="flex items-center gap-1.5">
-              <Car className="h-3.5 w-3.5" />
-              Lesson Type
-            </Label>
-            <Select value={lessonType} onValueChange={setLessonType}>
-              <SelectTrigger className={cn(isDrivingTest && "border-orange-300 dark:border-orange-500/40 bg-orange-50/50 dark:bg-orange-500/5")}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {LESSON_TYPES.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
+        {/* Header */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "8px 20px 16px",
+        }}>
+          <button
+            onClick={() => onOpenChange(false)}
+            style={{ fontSize: 15, fontWeight: 400, color: "#6B63D6", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+          >
+            Cancel
+          </button>
+          <span style={{ fontSize: 17, fontWeight: 600, color: "#18181B" }}>
+            {isDrivingTest ? 'Schedule Test' : 'New Lesson'}
+          </span>
+          <button
+            onClick={tab === 'existing' ? handleAddLessonExisting : handleAddLessonNew}
+            disabled={loading}
+            style={{
+              fontSize: 15, fontWeight: 600,
+              color: loading ? "#A1A1AA" : "#6B63D6",
+              background: "none", border: "none", cursor: loading ? "default" : "pointer", padding: 0,
+            }}
+          >
+            {loading ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+
+        {/* Scrollable form */}
+        <div style={{ overflowY: "auto", height: "calc(90vh - 80px)", padding: "0 20px 40px" }}>
+          {/* Lesson type chips */}
+          <Section>
+            <SectionLabel>Lesson Type</SectionLabel>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {LESSON_TYPES.map((type) => {
+                const selected = lessonType === type.value;
+                return (
+                  <button
+                    key={type.value}
+                    onClick={() => setLessonType(type.value)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 6,
+                      padding: "8px 14px", borderRadius: 20,
+                      fontSize: 13, fontWeight: 500,
+                      cursor: "pointer", border: "none",
+                      transition: "all 0.15s",
+                      backgroundColor: selected ? type.color : "#FFFFFF",
+                      color: selected ? "#18181B" : "#52525B",
+                      boxShadow: selected
+                        ? `0 2px 8px ${type.color}40`
+                        : "0 1px 3px rgba(0,0,0,0.06)",
+                    }}
+                  >
+                    {type.value === 'driving_test' && '🚗 '}
                     {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+                  </button>
+                );
+              })}
+            </div>
+          </Section>
 
-          <Tabs value={tab} onValueChange={(v) => setTab(v as 'existing' | 'new')} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="existing" className="gap-1.5">
-                <Users className="h-4 w-4" />
-                Existing Pupil
-              </TabsTrigger>
-              <TabsTrigger value="new" className="gap-1.5">
-                <UserPlus className="h-4 w-4" />
+          {/* Divider */}
+          <div style={{ height: 1, backgroundColor: "#E4E4E7", margin: "20px 0" }} />
+
+          {/* Pupil selector tabs */}
+          <Section>
+            <SectionLabel>Pupil</SectionLabel>
+            <div style={{
+              display: "flex", backgroundColor: "#EAEAEA", padding: 3, borderRadius: 10, marginBottom: 12,
+            }}>
+              <button
+                onClick={() => setTab('existing')}
+                style={{
+                  flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  padding: "8px 0", borderRadius: 8, fontSize: 13, fontWeight: 500,
+                  border: "none", cursor: "pointer", transition: "all 0.2s",
+                  ...(tab === 'existing'
+                    ? { backgroundColor: "#FFFFFF", color: "#18181B", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }
+                    : { backgroundColor: "transparent", color: "#71717A" }),
+                }}
+              >
+                <Users style={{ width: 14, height: 14 }} />
+                Existing
+              </button>
+              <button
+                onClick={() => setTab('new')}
+                style={{
+                  flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  padding: "8px 0", borderRadius: 8, fontSize: 13, fontWeight: 500,
+                  border: "none", cursor: "pointer", transition: "all 0.2s",
+                  ...(tab === 'new'
+                    ? { backgroundColor: "#FFFFFF", color: "#18181B", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }
+                    : { backgroundColor: "transparent", color: "#71717A" }),
+                }}
+              >
+                <UserPlus style={{ width: 14, height: 14 }} />
                 New Pupil
-              </TabsTrigger>
-            </TabsList>
+              </button>
+            </div>
 
-            {/* Existing Pupil Tab */}
-            <TabsContent value="existing" className="space-y-4 mt-0">
-              <div className="space-y-2">
-                <Label>Pupil *</Label>
-                {loadingPupils ? (
-                  <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Loading pupils...
-                  </div>
-                ) : (
-                  <Select value={selectedPupil} onValueChange={setSelectedPupil}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a pupil" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {pupils.length === 0 ? (
-                        <div className="p-2 text-center text-sm text-muted-foreground">
-                          No pupils found. Add a new one!
-                        </div>
-                      ) : (
-                        pupils.map((pupil) => (
-                          <SelectItem key={pupil.id} value={pupil.id}>
-                            {pupil.name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {lessonDate ? format(lessonDate, 'PPP') : 'Pick a date'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={lessonDate}
-                      onSelect={setLessonDate}
-                      initialFocus
-                      className="pointer-events-auto"
+            {tab === 'existing' ? (
+              loadingPupils ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 0", color: "#71717A", fontSize: 13 }}>
+                  <Loader2 style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} />
+                  Loading pupils...
+                </div>
+              ) : (
+                <Select value={selectedPupil} onValueChange={setSelectedPupil}>
+                  <SelectTrigger
+                    style={{
+                      backgroundColor: "#FFFFFF", borderRadius: 12,
+                      border: "1px solid #E4E4E7", padding: "12px 16px",
+                      fontSize: 15, height: "auto",
+                    }}
+                  >
+                    <SelectValue placeholder="Choose a pupil..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pupils.length === 0 ? (
+                      <div className="p-3 text-center text-sm text-muted-foreground">No pupils yet</div>
+                    ) : (
+                      pupils.map((pupil) => (
+                        <SelectItem key={pupil.id} value={pupil.id}>{pupil.name}</SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              )
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <InputField label="Name" placeholder="John Smith" value={newPupilName} onChange={setNewPupilName} required />
+                <InputField label="Phone" placeholder="07123 456789" value={newPupilPhone} onChange={setNewPupilPhone} type="tel" />
+                <div>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Address</span>
+                  <div style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", overflow: "hidden" }}>
+                    <GoogleAddressAutocomplete
+                      value={newPupilAddress}
+                      onChange={setNewPupilAddress}
+                      onPostcodeChange={setNewPupilPostcode}
+                      placeholder="Start typing an address..."
                     />
-                  </PopoverContent>
-                </Popover>
+                  </div>
+                </div>
               </div>
+            )}
+          </Section>
 
-              {LessonScheduleFields('existing')}
+          {/* Divider */}
+          <div style={{ height: 1, backgroundColor: "#E4E4E7", margin: "20px 0" }} />
 
-              <div className="space-y-2">
-                <Label>Pickup Address</Label>
+          {/* Date & Time */}
+          <Section>
+            <SectionLabel>Date & Time</SectionLabel>
+
+            {/* Date picker */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button style={{
+                  width: "100%", display: "flex", alignItems: "center", gap: 12,
+                  padding: "14px 16px", backgroundColor: "#FFFFFF", borderRadius: 12,
+                  border: "1px solid #E4E4E7", cursor: "pointer", textAlign: "left",
+                }}>
+                  <CalendarIcon style={{ width: 18, height: 18, color: "#6B63D6" }} />
+                  <span style={{ flex: 1, fontSize: 15, fontWeight: 400, color: "#18181B" }}>
+                    {lessonDate ? format(lessonDate, 'EEEE, d MMMM yyyy') : 'Pick a date'}
+                  </span>
+                  <ChevronRight style={{ width: 16, height: 16, color: "#A1A1AA" }} />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="center">
+                <Calendar
+                  mode="single"
+                  selected={lessonDate}
+                  onSelect={setLessonDate}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+
+            {/* Time & Duration side-by-side */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div>
+                <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Start Time</span>
+                <Select value={lessonStartTime} onValueChange={setLessonStartTime}>
+                  <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <Clock style={{ width: 16, height: 16, color: "#6B63D6" }} />
+                      <SelectValue />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {timeSlots.map((time) => (
+                      <SelectItem key={time} value={time}>{time}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Duration</span>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {DURATIONS.map((d) => (
+                    <button
+                      key={d.value}
+                      onClick={() => setLessonDuration(d.value)}
+                      style={{
+                        flex: 1, padding: "12px 4px", borderRadius: 10,
+                        fontSize: 13, fontWeight: 500, border: "none", cursor: "pointer",
+                        transition: "all 0.15s",
+                        backgroundColor: lessonDuration === d.value ? "#6B63D6" : "#FFFFFF",
+                        color: lessonDuration === d.value ? "#FFFFFF" : "#3F3F46",
+                        boxShadow: lessonDuration === d.value
+                          ? "0 2px 8px rgba(107,99,214,0.3)"
+                          : "0 1px 3px rgba(0,0,0,0.06)",
+                      }}
+                    >
+                      {d.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Conflict Warning */}
+            {conflictWarning && (
+              <div style={{
+                display: "flex", alignItems: "center", gap: 10,
+                padding: "12px 16px", borderRadius: 12,
+                backgroundColor: "#FEF2F2", border: "1px solid #FECACA",
+              }}>
+                <AlertTriangle style={{ width: 16, height: 16, color: "#DC2626", flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: "#991B1B" }}>{conflictWarning}</span>
+              </div>
+            )}
+          </Section>
+
+          {/* Divider */}
+          <div style={{ height: 1, backgroundColor: "#E4E4E7", margin: "20px 0" }} />
+
+          {/* Pickup address (existing pupil) */}
+          {tab === 'existing' && (
+            <Section>
+              <SectionLabel>Pickup Location</SectionLabel>
+              <div style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", overflow: "hidden" }}>
                 <GoogleAddressAutocomplete
                   value={pickupAddress}
                   onChange={setPickupAddress}
@@ -618,201 +553,180 @@ export function AddLessonSheet({
                   placeholder="Start typing an address..."
                 />
               </div>
+            </Section>
+          )}
 
-              {/* Driving Test specific fields */}
-              {isDrivingTest && <DrivingTestFields />}
+          {/* Driving Test specific fields */}
+          {isDrivingTest && (
+            <>
+              <div style={{ height: 1, backgroundColor: "#E4E4E7", margin: "20px 0" }} />
+              <Section>
+                <SectionLabel>Test Details</SectionLabel>
+                <div>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Test Centre</span>
+                  <Select value={selectedTestCentre} onValueChange={setSelectedTestCentre}>
+                    <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <MapPin style={{ width: 16, height: 16, color: "#6B63D6" }} />
+                        <SelectValue placeholder="Select test centre..." />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {testCentres.length === 0 ? (
+                        <div className="p-3 text-center text-sm text-muted-foreground">No test centres saved</div>
+                      ) : (
+                        testCentres.map((centre) => (
+                          <SelectItem key={centre.id} value={centre.id}>{centre.name}</SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* Recurring Lesson Options - hidden for driving test */}
-              {!isDrivingTest && (
-                <div className="border rounded-2xl p-3 bg-muted/30 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Repeat className="h-4 w-4 text-muted-foreground" />
-                      <Label htmlFor="recurring-existing" className="text-sm cursor-pointer">
-                        Weekly recurring lesson
-                      </Label>
+                <div>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Examiner (optional)</span>
+                  <ExaminerSelector value={selectedExaminer} onChange={setSelectedExaminer} instructorId={instructorId} />
+                </div>
+
+                {/* Checklist */}
+                <Collapsible open={checklistOpen} onOpenChange={setChecklistOpen}>
+                  <CollapsibleTrigger style={{
+                    display: "flex", alignItems: "center", gap: 8, width: "100%",
+                    padding: "12px 16px", borderRadius: 12,
+                    backgroundColor: "#FDF8EE", border: "1px solid #F4D06F",
+                    fontSize: 13, fontWeight: 600, color: "#5C4A0F", cursor: "pointer",
+                  }}>
+                    <CheckSquare style={{ width: 16, height: 16 }} />
+                    Test Day Checklist
+                    <span style={{ marginLeft: "auto", fontSize: 12 }}>
+                      {checklistOpen ? '▾' : '▸'}
+                    </span>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div style={{ padding: "12px 16px", marginTop: 8, borderRadius: 12, backgroundColor: "#FFFFFF", border: "1px solid #E4E4E7" }}>
+                      <div className="space-y-3">
+                        {TEST_DAY_CHECKLIST.map((item, i) => (
+                          <div key={i} className="flex items-start gap-3">
+                            <Checkbox id={`checklist-${i}`} className="mt-0.5" />
+                            <label htmlFor={`checklist-${i}`} style={{ fontSize: 13, color: "#52525B", cursor: "pointer", lineHeight: 1.4 }}>
+                              {item}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <Switch
-                      id="recurring-existing"
-                      checked={isRecurring}
-                      onCheckedChange={setIsRecurring}
-                    />
+                  </CollapsibleContent>
+                </Collapsible>
+              </Section>
+            </>
+          )}
+
+          {/* Recurring & Skills */}
+          {!isDrivingTest && (
+            <>
+              <div style={{ height: 1, backgroundColor: "#E4E4E7", margin: "20px 0" }} />
+              <Section>
+                <SectionLabel>Options</SectionLabel>
+
+                {/* Recurring toggle */}
+                <div style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "14px 16px", backgroundColor: "#FFFFFF", borderRadius: 12,
+                  border: "1px solid #E4E4E7",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <Repeat style={{ width: 16, height: 16, color: "#6B63D6" }} />
+                    <span style={{ fontSize: 14, fontWeight: 500, color: "#18181B" }}>Weekly recurring</span>
                   </div>
-                  {isRecurring && (
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Number of weeks</Label>
-                      <Select value={recurrenceWeeks} onValueChange={setRecurrenceWeeks}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="2">2 weeks</SelectItem>
-                          <SelectItem value="4">4 weeks</SelectItem>
-                          <SelectItem value="6">6 weeks</SelectItem>
-                          <SelectItem value="8">8 weeks</SelectItem>
-                          <SelectItem value="10">10 weeks</SelectItem>
-                          <SelectItem value="12">12 weeks</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground">
-                        Creates {recurrenceWeeks} lessons, same time every {lessonDate ? format(lessonDate, 'EEEE') : 'week'}
-                      </p>
-                    </div>
-                  )}
+                  <Switch checked={isRecurring} onCheckedChange={setIsRecurring} />
                 </div>
-              )}
 
-              {/* Planned Competencies - hidden for driving test */}
-              {!isDrivingTest && (
-                <div className="space-y-2">
-                  <Label>Skills to Practice (optional)</Label>
-                  <CompetencyPicker
-                    selected={plannedCompetencies}
-                    onChange={setPlannedCompetencies}
-                  />
-                </div>
-              )}
-            </TabsContent>
-
-            {/* New Pupil Tab */}
-            <TabsContent value="new" className="space-y-4 mt-0">
-              <div className="space-y-2">
-                <Label>Pupil Name *</Label>
-                <Input
-                  placeholder="e.g., John Smith"
-                  value={newPupilName}
-                  onChange={(e) => setNewPupilName(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Phone (optional)</Label>
-                <Input
-                  type="tel"
-                  placeholder="e.g., 07123 456789"
-                  value={newPupilPhone}
-                  onChange={(e) => setNewPupilPhone(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Address</Label>
-                <GoogleAddressAutocomplete
-                  value={newPupilAddress}
-                  onChange={setNewPupilAddress}
-                  onPostcodeChange={setNewPupilPostcode}
-                  placeholder="Start typing an address..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {lessonDate ? format(lessonDate, 'PPP') : 'Pick a date'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={lessonDate}
-                      onSelect={setLessonDate}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              {LessonScheduleFields('new')}
-
-              {/* Driving Test specific fields */}
-              {isDrivingTest && <DrivingTestFields />}
-
-              {/* Recurring Lesson Options - hidden for driving test */}
-              {!isDrivingTest && (
-                <div className="border rounded-2xl p-3 bg-muted/30 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Repeat className="h-4 w-4 text-muted-foreground" />
-                      <Label htmlFor="recurring-new" className="text-sm cursor-pointer">
-                        Weekly recurring lesson
-                      </Label>
+                {isRecurring && (
+                  <div style={{ padding: "12px 16px", backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7" }}>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 8, display: "block" }}>Repeat for</span>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {['2', '4', '6', '8', '10', '12'].map((w) => (
+                        <button
+                          key={w}
+                          onClick={() => setRecurrenceWeeks(w)}
+                          style={{
+                            padding: "8px 14px", borderRadius: 20,
+                            fontSize: 13, fontWeight: 500, border: "none", cursor: "pointer",
+                            backgroundColor: recurrenceWeeks === w ? "#6B63D6" : "#F4F4F5",
+                            color: recurrenceWeeks === w ? "#FFFFFF" : "#3F3F46",
+                          }}
+                        >
+                          {w} weeks
+                        </button>
+                      ))}
                     </div>
-                    <Switch
-                      id="recurring-new"
-                      checked={isRecurring}
-                      onCheckedChange={setIsRecurring}
-                    />
+                    <p style={{ fontSize: 12, color: "#A1A1AA", marginTop: 8 }}>
+                      Creates {recurrenceWeeks} lessons, same time every {lessonDate ? format(lessonDate, 'EEEE') : 'week'}
+                    </p>
                   </div>
-                  {isRecurring && (
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Number of weeks</Label>
-                      <Select value={recurrenceWeeks} onValueChange={setRecurrenceWeeks}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="2">2 weeks</SelectItem>
-                          <SelectItem value="4">4 weeks</SelectItem>
-                          <SelectItem value="6">6 weeks</SelectItem>
-                          <SelectItem value="8">8 weeks</SelectItem>
-                          <SelectItem value="10">10 weeks</SelectItem>
-                          <SelectItem value="12">12 weeks</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground">
-                        Creates {recurrenceWeeks} lessons, same time every {lessonDate ? format(lessonDate, 'EEEE') : 'week'}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
+                )}
 
-              {/* Planned Competencies - hidden for driving test */}
-              {!isDrivingTest && (
-                <div className="space-y-2">
-                  <Label>Skills to Practice (optional)</Label>
-                  <CompetencyPicker
-                    selected={plannedCompetencies}
-                    onChange={setPlannedCompetencies}
-                  />
+                {/* Skills */}
+                <div>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Skills to Practice</span>
+                  <CompetencyPicker selected={plannedCompetencies} onChange={setPlannedCompetencies} />
                 </div>
-              )}
-            </TabsContent>
-          </Tabs>
+              </Section>
+            </>
+          )}
+
+          {/* Summary card */}
+          {(selectedPupil || newPupilName) && lessonDate && (
+            <>
+              <div style={{ height: 1, backgroundColor: "#E4E4E7", margin: "20px 0" }} />
+              <div style={{
+                backgroundColor: currentTypeColor,
+                borderRadius: 12, padding: "16px 20px",
+              }}>
+                <div style={{ fontSize: 15, fontWeight: 500, color: "#18181B" }}>
+                  {tab === 'existing' ? (selectedPupilName || 'Unknown') : newPupilName}
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 400, color: "rgba(24,24,27,0.7)", marginTop: 4 }}>
+                  {lessonDate && format(lessonDate, 'EEE d MMM')} · {lessonStartTime} · {lessonDuration}hr
+                  {isRecurring && ` · ${recurrenceWeeks}wk recurring`}
+                </div>
+                {pickupAddress && (
+                  <div style={{ fontSize: 12, color: "rgba(24,24,27,0.6)", marginTop: 4 }}>
+                    📍 {pickupAddress}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
-
-        <SheetFooter className="pt-4 border-t">
-          <div className="flex gap-3 w-full">
-            <Button 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={tab === 'existing' ? handleAddLessonExisting : handleAddLessonNew}
-              disabled={loading}
-              className={cn("flex-1", isDrivingTest && "bg-orange-600 hover:bg-orange-700")}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Adding...
-                </>
-              ) : isDrivingTest ? (
-                'Schedule Test'
-              ) : (
-                'Add Lesson'
-              )}
-            </Button>
-          </div>
-        </SheetFooter>
       </SheetContent>
     </Sheet>
+  );
+}
+
+// Simple styled input field
+function InputField({
+  label, placeholder, value, onChange, required, type = "text"
+}: {
+  label: string; placeholder: string; value: string; onChange: (v: string) => void; required?: boolean; type?: string;
+}) {
+  return (
+    <div>
+      <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>
+        {label}{required && ' *'}
+      </span>
+      <input
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{
+          width: "100%", padding: "12px 16px", fontSize: 15,
+          backgroundColor: "#FFFFFF", borderRadius: 12,
+          border: "1px solid #E4E4E7", outline: "none",
+          color: "#18181B",
+        }}
+      />
+    </div>
   );
 }
