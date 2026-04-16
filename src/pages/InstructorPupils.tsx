@@ -541,7 +541,7 @@ export default function InstructorPupils() {
         </div>
 
         {/* Compact stat chips */}
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+        <div className="grid grid-cols-4 gap-1.5">
           {[
             { label: "Active", value: stats.active, dot: "#34C759" },
             { label: "Passed", value: stats.passed, dot: "#007AFF" },
@@ -550,11 +550,20 @@ export default function InstructorPupils() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm rounded-full px-3 py-[6px] border-[0.5px] border-black/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.04)] whitespace-nowrap"
+              style={{
+                backgroundColor: "#FFFFFF",
+                borderRadius: 14,
+                border: "0.5px solid #E4E4E7",
+                padding: "8px 0",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 2,
+              }}
             >
-              <span className="w-[6px] h-[6px] rounded-full shrink-0" style={{ backgroundColor: stat.dot }} />
-              <span className="text-[13px] font-semibold text-[#1c1c1e]">{stat.value}</span>
-              <span className="text-[11px] text-[#8e8e93]">{stat.label}</span>
+              <span className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: stat.dot }} />
+              <span style={{ fontSize: 16, fontWeight: 600, color: "#18181B", fontFamily: "Inter, sans-serif", lineHeight: 1.2 }}>{stat.value}</span>
+              <span style={{ fontSize: 11, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>{stat.label}</span>
             </div>
           ))}
         </div>
@@ -574,30 +583,45 @@ export default function InstructorPupils() {
           <GradientLine />
         </div>
 
-        {/* All / Active / Passed toggle card */}
-        <div className={cn(cardClass, "!shadow-none !border-0")}>
-          <div className="p-1.5 flex gap-1 bg-white rounded-[20px]">
-            {[
-              { value: "all", label: "All" },
-              { value: "active", label: "Active" },
-              { value: "passed", label: "Passed" },
-              ...(statusCounts.on_hold > 0 ? [{ value: "on_hold", label: "On Hold" }] : []),
-              ...(statusCounts.inactive > 0 ? [{ value: "inactive", label: "Inactive" }] : []),
-            ].map((seg) => (
-              <button
-                key={seg.value}
-                onClick={() => setActiveTab(seg.value as any)}
-                className={cn(
-                  "flex-1 py-[7px] px-3 rounded-[14px] text-[13px] font-semibold transition-all",
-                  activeTab === seg.value
-                    ? "bg-gradient-to-r from-[#0d4fa0] to-[#1a6fd4] text-white font-bold shadow-sm"
-                    : "text-[#8e8e93] bg-transparent"
-                )}
-              >
-                {seg.label}
-              </button>
-            ))}
-          </div>
+        {/* All / Active / Passed toggle */}
+        <div
+          style={{
+            display: "flex",
+            gap: 6,
+            backgroundColor: "#FFFFFF",
+            borderRadius: 14,
+            border: "0.5px solid #E4E4E7",
+            padding: 4,
+          }}
+        >
+          {[
+            { value: "all", label: "All" },
+            { value: "active", label: "Active" },
+            { value: "passed", label: "Passed" },
+            ...(statusCounts.on_hold > 0 ? [{ value: "on_hold", label: "Hold" }] : []),
+            ...(statusCounts.inactive > 0 ? [{ value: "inactive", label: "Inactive" }] : []),
+          ].map((seg) => (
+            <button
+              key={seg.value}
+              onClick={() => setActiveTab(seg.value as any)}
+              style={{
+                flex: 1,
+                padding: "7px 0",
+                borderRadius: 10,
+                fontSize: 13,
+                fontWeight: activeTab === seg.value ? 600 : 500,
+                fontFamily: "Inter, sans-serif",
+                transition: "all 0.15s ease",
+                cursor: "pointer",
+                border: "none",
+                ...(activeTab === seg.value
+                  ? { backgroundColor: "#18181B", color: "#FFFFFF" }
+                  : { backgroundColor: "transparent", color: "#71717A" }),
+              }}
+            >
+              {seg.label}
+            </button>
+          ))}
         </div>
 
         {/* Pupils List */}
