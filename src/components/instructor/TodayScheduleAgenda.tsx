@@ -87,7 +87,6 @@ function AgendaList({ lessons }: { lessons: TodayLesson[] }) {
 
   return (
     <div>
-      <SummaryBar lessons={lessons} />
       <div>
         {lessons.map((l, i) => {
           const state = states.get(l.id) || "upcoming";
