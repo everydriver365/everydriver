@@ -248,6 +248,9 @@ export function TodayScheduleAgenda({ todayLessons, tomorrowLessons, className =
       {/* Divider */}
       <div className="bg-border" style={{ height: 0.5 }} />
 
+      {/* Stats bar */}
+      {activeLessons.length > 0 && <SummaryBar lessons={activeLessons} />}
+
       {/* Lesson list */}
       <div className="bg-card">
         <AgendaList lessons={activeLessons} />
