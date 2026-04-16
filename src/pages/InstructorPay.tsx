@@ -166,23 +166,25 @@ export default function InstructorPay() {
     }
   };
 
-  const actions: { id: string; label: string; sublabel: string; emoji: string; href?: string; onClick?: () => void; accent?: boolean }[] = [
+  const actions: { id: string; label: string; sublabel: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>; iconColor: string; iconBg: string; href?: string; onClick?: () => void; accent?: boolean }[] = [
     {
       id: "take-payment",
       label: "Take Payment",
       sublabel: "QR or manual",
-      emoji: "💳",
+      icon: CreditCard,
+      iconColor: "#FFFFFF",
+      iconBg: "rgba(255,255,255,0.2)",
       onClick: () => {
         haptics.selection();
         setPaymentModalOpen(true);
       },
       accent: true,
     },
-    { id: "accounts", label: "Accounts", sublabel: "Income & outgoings", emoji: "📊", href: "/instructor/accounts" },
-    { id: "expenses", label: "Expenses", sublabel: "Track costs", emoji: "💰", href: "/instructor/expenses" },
-    { id: "bonus", label: "Bonus", sublabel: "Incentives & rewards", emoji: "🎁", href: "/instructor/bonus" },
-    { id: "mileage", label: "Mileage", sublabel: "Tax tracker", emoji: "🚗", href: "/instructor/mileage" },
-    { id: "tax", label: "Tax Summary", sublabel: "HMRC ready", emoji: "🧾", href: "/instructor/accounts?tab=tax" },
+    { id: "accounts", label: "Accounts", sublabel: "Income & outgoings", icon: BarChart2, iconColor: "#5B21B6", iconBg: "#EDE9FE", href: "/instructor/accounts" },
+    { id: "expenses", label: "Expenses", sublabel: "Track costs", icon: Receipt, iconColor: "#92400E", iconBg: "#FEF3C7", href: "/instructor/expenses" },
+    { id: "bonus", label: "Bonus", sublabel: "Incentives & rewards", icon: Gift, iconColor: "#BE123C", iconBg: "#FFE4E6", href: "/instructor/bonus" },
+    { id: "mileage", label: "Mileage", sublabel: "Tax tracker", icon: Car, iconColor: "#1E40AF", iconBg: "#DBEAFE", href: "/instructor/mileage" },
+    { id: "tax", label: "Tax Summary", sublabel: "HMRC ready", icon: FileText, iconColor: "#92400E", iconBg: "#FEF3C7", href: "/instructor/accounts?tab=tax" },
   ];
 
   const GradientLine = () => null;
@@ -255,8 +257,8 @@ export default function InstructorPay() {
               className={cn(cardClass, "w-full text-left")}
             >
               <div className="p-[14px_14px_12px]">
-                <div className="h-9 w-9 rounded-[10px] bg-[#fff0f0] flex items-center justify-center mb-2">
-                  <span className="text-[18px]">💸</span>
+                <div className="h-9 w-9 rounded-[12px] bg-[#FEF2F2] flex items-center justify-center mb-2">
+                  <AlertCircle size={20} strokeWidth={2} color="#DC2626" />
                 </div>
                 <p className="text-[22px] font-bold tabular-nums text-[#e24b4a]">
                   {debtors.length > 0 ? `£${totalOwed.toFixed(0)}` : "£0"}
@@ -337,8 +339,8 @@ export default function InstructorPay() {
               className={cn(cardClass, "w-full text-left")}
             >
               <div className="p-[14px_14px_12px]">
-                <div className="h-9 w-9 rounded-[10px] bg-[#eef4fd] flex items-center justify-center mb-2">
-                  <span className="text-[18px]">💳</span>
+                <div className="h-9 w-9 rounded-[12px] bg-[#DBEAFE] flex items-center justify-center mb-2">
+                  <CreditCard size={20} strokeWidth={2} color="#1E40AF" />
                 </div>
                 <p className="text-[22px] font-bold tabular-nums text-[#1c1c1e]">{recentPaymentCount}</p>
                 <div className="flex items-center justify-between mt-0.5">
@@ -377,8 +379,8 @@ export default function InstructorPay() {
               className={cn(cardClass, "w-full text-left")}
             >
               <div className="p-[14px_14px_12px]">
-                <div className="h-9 w-9 rounded-[10px] bg-[#eaf3de] flex items-center justify-center mb-2">
-                  <span className="text-[18px]">🏆</span>
+                <div className="h-9 w-9 rounded-[12px] bg-[#FEF3C7] flex items-center justify-center mb-2">
+                  <Trophy size={20} strokeWidth={2} color="#92400E" />
                 </div>
                 <p className="text-[22px] font-bold tabular-nums text-[#1c1c1e]">£{bonusEarned}</p>
                 <div className="flex items-center justify-between mt-0.5">
@@ -417,8 +419,8 @@ export default function InstructorPay() {
               className={cn(cardClass, "w-full text-left")}
             >
               <div className="p-[14px_14px_12px]">
-                <div className="h-9 w-9 rounded-[10px] bg-[#eef4fd] flex items-center justify-center mb-2">
-                  <span className="text-[18px]">👥</span>
+                <div className="h-9 w-9 rounded-[12px] bg-[#EEF2FF] flex items-center justify-center mb-2">
+                  <Users size={20} strokeWidth={2} color="#4F46E5" />
                 </div>
                 <p className="text-[22px] font-bold tabular-nums text-[#1c1c1e]">{pupils.length}</p>
                 <div className="flex items-center justify-between mt-0.5">
