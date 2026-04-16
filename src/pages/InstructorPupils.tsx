@@ -680,6 +680,26 @@ export default function InstructorPupils() {
                 placeholder="Full name"
               />
             </div>
+            <div className="space-y-2">
+              <Label>Course Type</Label>
+              <Select
+                value={addForm.course_type}
+                onValueChange={(val) => setAddForm({ ...addForm, course_type: val })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select course type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="semi-intensive">Semi-Intensive</SelectItem>
+                  <SelectItem value="intensive">Intensive</SelectItem>
+                  <SelectItem value="refresher">Refresher</SelectItem>
+                  <SelectItem value="pass-plus">Pass Plus</SelectItem>
+                  <SelectItem value="motorway">Motorway</SelectItem>
+                  <SelectItem value="other">Custom</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Email</Label>
