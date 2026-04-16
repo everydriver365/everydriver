@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { 
   Star, MapPin, Phone, Mail, Clock, Car, Award, 
   Calendar, ChevronRight, Globe, Facebook, Instagram, 
-  Twitter, Linkedin, CheckCircle2, Play
-, Car } from "lucide-react";
+  Twitter, Linkedin, CheckCircle2, Play,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
