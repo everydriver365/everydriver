@@ -13,10 +13,10 @@ export function EveryInstructorLayout({ children, title = "Every Instructor", sh
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F2F2F7" }}>
-      {/* Header */}
+    <div className="min-h-screen ios-instructor ios-scroll" style={{ backgroundColor: "#F2F2F7" }}>
+      {/* Header — frosted glass iOS nav bar */}
       {showHeader && (
-        <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-[hsl(240_5%_78%/0.5)]">
+        <header className="sticky top-0 z-40 border-b border-[hsl(240_5%_78%/0.5)]" style={{ backgroundColor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px) saturate(180%)', WebkitBackdropFilter: 'blur(20px) saturate(180%)' }}>
           <div className="flex items-center justify-between px-5 h-14">
             <h1 className="text-xl font-bold text-[hsl(240_6%_11%)] tracking-tight">{title}</h1>
             <div className="flex items-center gap-3">
