@@ -384,6 +384,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   if (isMobile) {
     return (
       <RealtimeHubProvider instructorId={instructor?.id}>
+      <GlobalSyncBridge instructorId={instructor?.id} />
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
       {!endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
       {endWizardLesson && instructor?.id && (
@@ -760,6 +761,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   // Desktop Layout - Sidebar
   return (
     <RealtimeHubProvider instructorId={instructor?.id}>
+      <GlobalSyncBridge instructorId={instructor?.id} />
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
       {!endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
       {endWizardLesson && instructor?.id && (
