@@ -157,7 +157,7 @@ export function WeatherAlertBanner({
               <weatherAlert.Icon className="h-4.5 w-4.5" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold">Weather Alert</p>
+              <p className="text-[13px] font-semibold">Alerts</p>
               <p className="text-[11px] opacity-80 mt-0.5">{weatherAlert.message}</p>
             </div>
           </motion.div>
