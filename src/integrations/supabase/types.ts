@@ -5083,33 +5083,39 @@ export type Database = {
       instructor_calendar_events: {
         Row: {
           color: string | null
+          description: string | null
           end_time: string
           external_event_id: string
           id: string
           instructor_id: string
           is_busy: boolean
+          location: string | null
           start_time: string
           synced_at: string
           title: string | null
         }
         Insert: {
           color?: string | null
+          description?: string | null
           end_time: string
           external_event_id: string
           id?: string
           instructor_id: string
           is_busy?: boolean
+          location?: string | null
           start_time: string
           synced_at?: string
           title?: string | null
         }
         Update: {
           color?: string | null
+          description?: string | null
           end_time?: string
           external_event_id?: string
           id?: string
           instructor_id?: string
           is_busy?: boolean
+          location?: string | null
           start_time?: string
           synced_at?: string
           title?: string | null
