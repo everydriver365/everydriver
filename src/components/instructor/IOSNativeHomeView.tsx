@@ -231,6 +231,24 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
                   </div>
                 </div>
 
+                {/* Mini-map of pickup location */}
+                {nextLesson.pickupPostcode && (
+                  <div
+                    className="rounded-2xl overflow-hidden border border-white/10 mb-3 cursor-pointer relative"
+                    onClick={() => {
+                      const q = nextLesson.pickupPostcode || nextLesson.pickupLocation || "";
+                      window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`, "_blank");
+                    }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <div className="absolute top-2 right-2 z-[1] bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 pointer-events-none">
+                      <Navigation className="h-3 w-3" /> Tap to navigate
+                    </div>
+                    <PostcodeMapPreview postcode={nextLesson.pickupPostcode} />
+                  </div>
+                )}
+
                 {/* ETA Row */}
                 {etaText && (
                   <div className="bg-white/[0.08] rounded-2xl p-3 flex items-center gap-3 mb-3">
