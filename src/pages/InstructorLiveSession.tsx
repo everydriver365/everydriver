@@ -344,7 +344,7 @@ export default function InstructorLiveSession() {
     let pollerInterval: ReturnType<typeof setInterval> | null = null;
     let fallbackInterval: ReturnType<typeof setInterval> | null = null;
 
-    if (device?.current_session_id) {
+    if (device?.current_session_id && !isStopping) {
       // Direct poller trigger every 2s for near-realtime updates
       const triggerPoller = () => {
         supabase.functions.invoke("radius-poller").catch(() => {});
@@ -362,7 +362,7 @@ export default function InstructorLiveSession() {
       if (pollerInterval) clearInterval(pollerInterval);
       if (fallbackInterval) clearInterval(fallbackInterval);
     };
-  }, [device?.id, device?.current_session_id]);
+  }, [device?.id, device?.current_session_id, isStopping]);
 
   // Additional realtime subscription for pupil sessions (live_pupil_positions)
   // This is supplementary - the main updates come from gps_devices subscription above
