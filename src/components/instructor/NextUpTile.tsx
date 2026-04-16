@@ -34,6 +34,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Construction, Ban } from "lucide-react";
 
 interface NextUpTileProps {
   lessonId: string;
@@ -70,6 +78,7 @@ export function NextUpTile({
   const [wizardOpen, setWizardOpen] = useState(false);
   const [lateSheetOpen, setLateSheetOpen] = useState(false);
   const [showGPSRecorder, setShowGPSRecorder] = useState(false);
+  const [trafficModalOpen, setTrafficModalOpen] = useState(false);
   const [, setTick] = useState(0);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -93,8 +102,10 @@ export function NextUpTile({
       });
   }, [instructorId]);
   const expectedEarnings = (durationMinutes / 60) * hourlyRate;
-  const { currentWeather } = useDrivingAlerts(instructorId);
+  const { currentWeather, alerts: drivingAlerts } = useDrivingAlerts(instructorId);
   const { devices } = useVehicleHealth();
+  const trafficAlerts = drivingAlerts.filter(a => a.type === "traffic" || a.type === "road");
+  const hasTrafficAlerts = trafficAlerts.length > 0 || (trafficCondition && trafficCondition.toLowerCase() !== "light" && trafficCondition.toLowerCase() !== "free");
 
   const [lateDismissed, setLateDismissed] = useState(false);
   const lateAlertFiredRef = useRef(false);
