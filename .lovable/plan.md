@@ -1,52 +1,39 @@
 
 
-# Elevate the Instructor App to Premium Quality
+# Wire Realtime Lesson Sync Across the Entire Instructor App
 
 ## Problem
-The app currently looks like a template due to flat coloured icon squares, repetitive horizontal scrolls, uniform shadows, and lack of visual hierarchy.
+When a lesson is added (e.g. from the Schedule page), the home page and other views still show stale data because only `InstructorMobileHome.tsx` subscribes to `scheduled_lessons` changes — and only while it's mounted. Other pages like Schedule, Pupil Detail, and Gaps don't propagate changes back to shared query caches.
 
-## Changes
+## Root Cause
+- Realtime subscription for `scheduled_lessons` lives inside `InstructorMobileHome.tsx` (component-level), so it only runs when that page is active
+- The `AddLessonSheet` `onSuccess` only calls `calendar.refetch()` locally — doesn't invalidate home-page query keys
+- No global listener exists to keep all lesson-dependent queries in sync
 
-### 1. Replace flat icon squares with SF Symbol-style roundels
-- Quick Actions (4-column grid): Replace the solid-colour squares with subtle tinted backgrounds (`accent + 12% opacity`) and coloured icons instead of white-on-colour. Smaller, 48px circles instead of full squares. This matches iOS Settings/Shortcuts style.
-- Tools & Features cards: Use a soft gradient (e.g. `linear-gradient(135deg, accent, accent-lighter)`) instead of flat colour. Add a subtle inner glow.
+## Solution: Global Realtime Lesson Sync Hook
 
-### 2. Introduce card hierarchy with 3 shadow tiers
-- **Elevated** (lessons, primary actions): Multi-layer shadow with blur 24px
-- **Resting** (stats, tools): Softer 2-layer shadow with blur 8px  
-- **Flat** (quick actions): No shadow, just tinted background
+### 1. Create `useGlobalLessonSync.ts`
+A new hook that subscribes to `scheduled_lessons` changes via the RealtimeHub and invalidates **all** lesson-related query keys app-wide. This runs at the layout level so it's always active.
 
-### 3. Redesign Quick Actions as a grouped iOS list
-- Instead of 4 coloured squares, use a single white rounded card with 4 rows (icon + label + chevron + badge), separated by indented dividers. This matches iOS Settings and feels immediately native.
+Query keys to invalidate on any `scheduled_lessons` change:
+- `today-overview`, `today-remaining-lessons`, `next-lesson-details`
+- `weekly-goals`, `monthly-goals`, `instructor-streak`
+- `tomorrow-preview`, `tomorrow-lessons`, `gap-suggestions`
+- `instructor-calendar`, `instructor-live-stats`
+- `break-reminders`, `lesson-end-alert`, `today-route`
+- `quick-tile-actions`, `gap-slots`
 
-### 4. Add visual variety between sections
-- Today's Schedule: Keep horizontal scroll but make cards taller with a gradient strip instead of flat blue
-- Your Business: Switch from horizontal scroll to a 2x2 grid of stat cards (they're all visible on screen anyway)
-- Tools: Keep horizontal scroll but with refined icon treatment
-- Insights: Use a stacked list instead of scroll (only 3 items)
+### 2. Mount the hook in `InstructorPortalLayout.tsx`
+Call `useGlobalLessonSync(instructorId)` inside the layout component (inside the `RealtimeHubProvider`). This ensures the subscription is active on every instructor page.
 
-### 5. Improve spacing and typography
-- Increase section spacing from `mt-7` to `mt-9`
-- Add letter-spacing `-0.02em` to section titles
-- Use `font-weight: 600` (semibold) for card titles instead of 700 (bold) — less aggressive
-- Muted subtitles at `text-[13px]` with `text-gray-400` instead of `text-gray-500`
+### 3. Remove duplicate subscription from `InstructorMobileHome.tsx`
+Delete the `invalidateScheduleQueries` callback and `useRealtimeSubscription` call from InstructorMobileHome since the layout now handles it globally.
 
-### 6. Refine lesson cards
-- Replace solid `bg-blue-500` with a gradient: `linear-gradient(135deg, #007AFF, #5856D6)`
-- Add a frosted glass effect to the avatar ring
-- Slightly larger card width (220px vs 200px) for more breathing room
-
-### 7. Polish stat cards
-- Add a thin top-border accent line (2px, matching the icon colour) for visual interest
-- Use tabular numbers for values (`font-variant-numeric: tabular-nums`)
+### 4. Also subscribe to `pupils` and `lesson_history` changes
+These tables affect dashboard stats (earnings, balances, progress). Add two more subscriptions in the global hook to invalidate relevant keys when pupil data or lesson history changes.
 
 ## Files to modify
-- `src/pages/EveryInstructorHome.tsx` — All component redesigns (ImageCard, StatCard, LessonCard, Quick Actions grid, section spacing)
-- `src/index.css` — Add iOS shadow tier utilities and tabular-nums class
-
-## What stays the same
-- Hero image and greeting overlay
-- Bottom navigation
-- All routes, data hooks, and functionality
-- Overall page structure and section order
+- **Create** `src/hooks/useGlobalLessonSync.ts` — New hook with realtime subscriptions + query invalidation
+- **Edit** `src/components/layout/InstructorPortalLayout.tsx` — Import and call the new hook
+- **Edit** `src/components/instructor/InstructorMobileHome.tsx` — Remove the now-redundant realtime subscription block
 
