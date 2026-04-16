@@ -9,61 +9,28 @@ interface ActivityTilesGridProps {
   gapSlotsCount: number;
 }
 
-// Large, friendly flat SVG icons
-const JobOffersIcon = () => (
-  <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
-    <rect x="4" y="10" width="40" height="30" rx="4" fill="#FFCC00" />
-    <path d="M4 14l20 13L44 14" stroke="#E6B800" strokeWidth="2" fill="none" />
-    <rect x="16" y="6" width="16" height="12" rx="2" fill="#FFFFFF" />
-    <path d="M20 10h8M20 14h5" stroke="#FFCC00" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
-
-const MessagesIcon = () => (
-  <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
-    <path d="M6 12C6 9.79 7.79 8 10 8h28c2.21 0 4 1.79 4 4v20c0 2.21-1.79 4-4 4H16l-8 6V12z" fill="#FF9500" />
-    <circle cx="17" cy="22" r="2.5" fill="white" />
-    <circle cx="24" cy="22" r="2.5" fill="white" />
-    <circle cx="31" cy="22" r="2.5" fill="white" />
-  </svg>
-);
-
-const TestsIcon = () => (
-  <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
-    <rect x="8" y="4" width="32" height="40" rx="5" fill="#007AFF" />
-    <path d="M16 16h16M16 24h12M16 32h8" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-  </svg>
-);
-
-const FillGapsIcon = () => (
-  <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
-    <rect x="4" y="4" width="40" height="40" rx="10" fill="#FF6B8A" />
-    <path d="M24 14v20M14 24h20" stroke="white" strokeWidth="3.5" strokeLinecap="round" />
-  </svg>
-);
-
 const tileConfig = [
   {
     title: "Job Offers",
-    icon: <JobOffersIcon />,
+    emoji: "📨",
     route: "/instructor/jobs",
     key: "pendingJobsCount" as const,
   },
   {
     title: "Messages",
-    icon: <MessagesIcon />,
+    emoji: "💬",
     route: "/instructor/messages",
     key: "unreadMessagesCount" as const,
   },
   {
     title: "Tests",
-    icon: <TestsIcon />,
+    emoji: "📋",
     route: "/instructor/test-requests",
     key: "testRequestsCount" as const,
   },
   {
     title: "Fill Gaps",
-    icon: <FillGapsIcon />,
+    emoji: "➕",
     route: "/instructor/gaps",
     key: "gapSlotsCount" as const,
   },
@@ -170,18 +137,14 @@ export function ActivityTilesGrid({
                     marginRight: 10,
                   }}
                 />
-                <div
-                  className="flex items-center justify-center"
+               <span
                   style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 22,
-                    backgroundColor: "#E6E8EC",
-                    flexShrink: 0,
+                    fontSize: 30,
+                    filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
                   }}
                 >
-                  {tile.icon}
-                </div>
+                  {tile.emoji}
+                </span>
               </div>
             </motion.button>
           );

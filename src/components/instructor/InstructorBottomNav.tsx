@@ -1,18 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { 
-  Home, 
-  CalendarDays, 
-  Users, 
-  Radio,
-  PoundSterling,
-  Grid3X3,
-  LucideIcon
-} from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { haptics } from "@/lib/haptics";
-import { cn } from "@/lib/utils";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
@@ -20,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface NavItem {
   label: string;
-  icon: LucideIcon;
+  emoji: string;
   path: string;
   showBadge?: boolean;
   isMessages?: boolean;
@@ -30,12 +20,12 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "Home", icon: Home, path: "/instructor" },
-  { label: "Schedule", icon: CalendarDays, path: "/instructor/schedule", isSchedule: true },
-  { label: "Track", icon: Radio, path: "/instructor/tracking", isTrack: true },
-  { label: "Money", icon: PoundSterling, path: "/instructor/pay" },
-  { label: "Pupils", icon: Users, path: "/instructor/pupils", showBadge: true },
-  { label: "More", icon: Grid3X3, path: "/instructor/menu", isMore: true },
+  { label: "Home", emoji: "🏠", path: "/instructor" },
+  { label: "Schedule", emoji: "📅", path: "/instructor/schedule", isSchedule: true },
+  { label: "Track", emoji: "📡", path: "/instructor/tracking", isTrack: true },
+  { label: "Money", emoji: "💷", path: "/instructor/pay" },
+  { label: "Pupils", emoji: "👥", path: "/instructor/pupils", showBadge: true },
+  { label: "More", emoji: "⊞", path: "/instructor/menu", isMore: true },
 ];
 
 interface InstructorBottomNavProps {
@@ -113,18 +103,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
               style={{ gap: 3, minWidth: 52 }}
             >
               <div className="relative">
-                <item.icon
-                  className="transition-all duration-200"
-                  style={{ width: 22, height: 22 }}
-                  strokeWidth={isActive ? 2.2 : 1.8}
-                  color={
-                    trackIconColor
-                      ? trackIconColor
-                      : isActive
-                      ? "#1a6fd4"
-                      : "#8e8e93"
-                  }
-                />
+                <span style={{ fontSize: 22, lineHeight: 1 }}>{item.emoji}</span>
                 {/* Pupils badge */}
                 {showNotification && (
                   <span

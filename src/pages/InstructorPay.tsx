@@ -166,53 +166,23 @@ export default function InstructorPay() {
     }
   };
 
-  const actions: QuickAction[] = [
+  const actions: { id: string; label: string; sublabel: string; emoji: string; href?: string; onClick?: () => void; accent?: boolean }[] = [
     {
       id: "take-payment",
       label: "Take Payment",
       sublabel: "QR or manual",
-      icon: QrCode,
+      emoji: "💳",
       onClick: () => {
         haptics.selection();
         setPaymentModalOpen(true);
       },
       accent: true,
     },
-    {
-      id: "accounts",
-      label: "Accounts",
-      sublabel: "Income & outgoings",
-      icon: Wallet,
-      href: "/instructor/accounts",
-    },
-    {
-      id: "expenses",
-      label: "Expenses",
-      sublabel: "Track costs",
-      icon: Receipt,
-      href: "/instructor/expenses",
-    },
-    {
-      id: "bonus",
-      label: "Bonus",
-      sublabel: "Incentives & rewards",
-      icon: Gift,
-      href: "/instructor/bonus",
-    },
-    {
-      id: "mileage",
-      label: "Mileage",
-      sublabel: "Tax tracker",
-      icon: Car,
-      href: "/instructor/mileage",
-    },
-    {
-      id: "tax",
-      label: "Tax Summary",
-      sublabel: "HMRC ready",
-      icon: Calculator,
-      href: "/instructor/accounts?tab=tax",
-    },
+    { id: "accounts", label: "Accounts", sublabel: "Income & outgoings", emoji: "📊", href: "/instructor/accounts" },
+    { id: "expenses", label: "Expenses", sublabel: "Track costs", emoji: "💰", href: "/instructor/expenses" },
+    { id: "bonus", label: "Bonus", sublabel: "Incentives & rewards", emoji: "🎁", href: "/instructor/bonus" },
+    { id: "mileage", label: "Mileage", sublabel: "Tax tracker", emoji: "🚗", href: "/instructor/mileage" },
+    { id: "tax", label: "Tax Summary", sublabel: "HMRC ready", emoji: "🧾", href: "/instructor/accounts?tab=tax" },
   ];
 
   const GradientLine = () => (
@@ -481,7 +451,6 @@ export default function InstructorPay() {
           </p>
           <div className="grid grid-cols-2 gap-[10px]">
             {actions.map((action, i) => {
-              const Icon = action.icon;
               const inner = (
                 <motion.div
                   key={action.id}
@@ -503,12 +472,7 @@ export default function InstructorPay() {
                         action.accent ? "bg-white/20" : "bg-[#eef4fd]"
                       )}
                     >
-                      <Icon
-                        className={cn(
-                          "h-[18px] w-[18px]",
-                          action.accent ? "text-white" : "text-[#0d4fa0]"
-                        )}
-                      />
+                     <span style={{ fontSize: 20 }}>{action.emoji}</span>
                     </div>
                     <div>
                       <p

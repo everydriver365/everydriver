@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, Compass, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { DiscoverFeaturesSheet } from "./DiscoverFeaturesSheet";
 
 export function BottomPromoGroup({ className = "" }: { className?: string }) {
@@ -30,7 +30,7 @@ export function BottomPromoGroup({ className = "" }: { className?: string }) {
             style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
           >
             <div style={{ width: 42, height: 42, borderRadius: "50%", backgroundColor: "#1a6fd4", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Users style={{ width: 20, height: 20, color: "white" }} />
+              <span style={{ fontSize: 20 }}>👥</span>
             </div>
             <p style={{ flex: 1, fontSize: 15, fontWeight: 700, color: "#1c1c1e" }}>The Waiting Room</p>
             <p style={{ fontSize: 13, color: "#8e8e93", fontWeight: 400, marginRight: 4 }}>Weekly</p>
@@ -46,7 +46,7 @@ export function BottomPromoGroup({ className = "" }: { className?: string }) {
             style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
           >
             <div style={{ width: 42, height: 42, borderRadius: "50%", backgroundColor: "#0f9e75", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Compass style={{ width: 20, height: 20, color: "white" }} />
+              <span style={{ fontSize: 20 }}>🧭</span>
             </div>
             <p style={{ flex: 1, fontSize: 15, fontWeight: 700, color: "#1c1c1e" }}>Discover Features</p>
             <p style={{ fontSize: 13, color: "#8e8e93", fontWeight: 400, marginRight: 4 }}>30+</p>
