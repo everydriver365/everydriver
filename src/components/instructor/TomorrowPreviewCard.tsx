@@ -15,6 +15,7 @@ import {
   CloudFog,
   CloudLightning,
   Snowflake,
+  Coffee,
 } from "lucide-react";
 import calendarIcon from "@/assets/calendar-icon.png";
 import { format, parse, addDays } from "date-fns";
