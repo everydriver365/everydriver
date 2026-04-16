@@ -1,16 +1,18 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Home, CalendarDays, Radio, PoundSterling, Users, LayoutGrid } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { haptics } from "@/lib/haptics";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { supabase } from "@/integrations/supabase/client";
+import type { LucideIcon } from "lucide-react";
 
 interface NavItem {
   label: string;
-  emoji: string;
+  icon: LucideIcon;
   path: string;
   showBadge?: boolean;
   isMessages?: boolean;
@@ -20,12 +22,12 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "Home", emoji: "🏠", path: "/instructor" },
-  { label: "Schedule", emoji: "📅", path: "/instructor/schedule", isSchedule: true },
-  { label: "Track", emoji: "📡", path: "/instructor/tracking", isTrack: true },
-  { label: "Money", emoji: "💷", path: "/instructor/pay" },
-  { label: "Pupils", emoji: "👥", path: "/instructor/pupils", showBadge: true },
-  { label: "More", emoji: "⊞", path: "/instructor/menu", isMore: true },
+  { label: "Home", icon: Home, path: "/instructor" },
+  { label: "Schedule", icon: CalendarDays, path: "/instructor/schedule", isSchedule: true },
+  { label: "Track", icon: Radio, path: "/instructor/tracking", isTrack: true },
+  { label: "Money", icon: PoundSterling, path: "/instructor/pay" },
+  { label: "Pupils", icon: Users, path: "/instructor/pupils", showBadge: true },
+  { label: "More", icon: LayoutGrid, path: "/instructor/menu", isMore: true },
 ];
 
 interface InstructorBottomNavProps {
@@ -95,6 +97,8 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
             ? "#10b981"
             : undefined;
           
+          const Icon = item.icon;
+          
           return (
             <button
               key={item.path}
@@ -103,7 +107,11 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
               style={{ gap: 3, minWidth: 52 }}
             >
               <div className="relative">
-                <span style={{ fontSize: 22, lineHeight: 1 }}>{item.emoji}</span>
+                <Icon 
+                  size={22} 
+                  strokeWidth={2} 
+                  color={isActive ? '#4F46E5' : trackIconColor || '#A1A1AA'} 
+                />
                 {/* Pupils badge */}
                 {showNotification && (
                   <span
@@ -170,7 +178,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                 style={{
                   fontSize: 11,
                   fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#1a6fd4' : '#8e8e93',
+                  color: isActive ? '#4F46E5' : '#A1A1AA',
                 }}
               >
                 {item.label}

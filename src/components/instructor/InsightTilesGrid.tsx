@@ -1,10 +1,14 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { CalendarPlus, Car, Sparkles, UserCheck } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 interface InsightTile {
   title: string;
   subtitle: string;
-  emoji: string;
+  icon: LucideIcon;
+  iconColor: string;
+  iconBg: string;
   route: string;
   badge?: number;
 }
@@ -20,26 +24,34 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
     {
       title: "Fill Gaps",
       subtitle: "Open slots",
-      emoji: "➕",
+      icon: CalendarPlus,
+      iconColor: "#059669",
+      iconBg: "#ECFDF5",
       route: "/instructor/gaps",
       badge: gapCount,
     },
     {
       title: "Vehicle Health",
       subtitle: "MOT & service",
-      emoji: "🚗",
+      icon: Car,
+      iconColor: "#5B21B6",
+      iconBg: "#EDE9FE",
       route: "/instructor/vehicle-health",
     },
     {
       title: "Smart Nudges",
       subtitle: "Action items",
-      emoji: "✨",
+      icon: Sparkles,
+      iconColor: "#92400E",
+      iconBg: "#FEF3C7",
       route: "/instructor/nudges",
     },
     {
       title: "Re-engage",
       subtitle: "Dormant pupils",
-      emoji: "👤",
+      icon: UserCheck,
+      iconColor: "#4F46E5",
+      iconBg: "#EEF2FF",
       route: "/instructor/dormant-pupils",
     },
   ];
@@ -47,6 +59,7 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
   return (
     <div className="grid grid-cols-2 gap-4">
       {tiles.map((tile, idx) => {
+        const Icon = tile.icon;
         return (
           <motion.button
             key={tile.title}
@@ -58,10 +71,9 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
             style={{
               position: "relative",
               background: "white",
-              borderRadius: 20,
+              borderRadius: 14,
               overflow: "hidden",
-              border: "0.5px solid rgba(26,111,212,0.1)",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
+              border: "0.5px solid #E4E4E7",
               padding: "16px 14px 14px",
               textAlign: "left",
               display: "flex",
@@ -93,31 +105,28 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
               </span>
             )}
             <div>
-              <p style={{ fontSize: 15, fontWeight: 700, color: "#1c1c1e", marginBottom: 2, lineHeight: 1.2 }}>
+              <p style={{ fontSize: 15, fontWeight: 500, color: "#18181B", marginBottom: 2, lineHeight: 1.2 }}>
                 {tile.title}
               </p>
-              <p style={{ fontSize: 12, fontWeight: 400, color: "#8e8e93" }}>
+              <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A" }}>
                 {tile.subtitle}
               </p>
             </div>
             <div className="flex items-end justify-between" style={{ marginTop: "auto" }}>
+              <div style={{ flex: 1 }} />
               <div
                 style={{
-                  height: 2,
-                  flex: 1,
-                  background: "linear-gradient(to right, #0d4fa0, #56a8f5)",
-                  borderRadius: 2,
-                  marginRight: 10,
+                  width: 44,
+                  height: 44,
+                  borderRadius: 12,
+                  backgroundColor: tile.iconBg,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
-              />
-               <span
-                  style={{
-                    fontSize: 30,
-                    filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
-                  }}
-                >
-                  {tile.emoji}
-                </span>
+              >
+                <Icon size={22} strokeWidth={2} color={tile.iconColor} />
+              </div>
             </div>
           </motion.button>
         );
