@@ -102,7 +102,7 @@ export function RecentSessionsList({ instructorId }: RecentSessionsListProps) {
       }}>
         <CollapsibleTrigger className="w-full" style={{ background: "transparent", border: "none" }}>
           <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#f2f2f7", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 12, background: "#F4F4F5", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <RotateCcw style={{ width: 18, height: 18, color: "#8e8e93" }} />
             </div>
             <div style={{ flex: 1, textAlign: "left" }}>

@@ -42,7 +42,7 @@ export function GPSStatusHero({
         <div style={{ padding: "12px 16px" }}>
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="flex items-center justify-center" style={{ width: 36, height: 36, borderRadius: "50%", backgroundColor: isConnected ? "rgba(15,158,117,0.12)" : isParked ? "rgba(245,166,35,0.12)" : "rgba(142,142,147,0.12)" }}>
+              <div className="flex items-center justify-center" style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: isConnected ? "rgba(15,158,117,0.12)" : isParked ? "rgba(245,166,35,0.12)" : "rgba(142,142,147,0.12)" }}>
                 {isConnected ? (
                   <Radio className="h-4 w-4" style={{ color: "#0f9e75" }} />
                 ) : isParked ? (
