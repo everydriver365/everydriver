@@ -9,7 +9,7 @@ interface AnimatedRoutesProps {
 const pageVariants = {
   initial: {
     opacity: 0,
-    x: 20,
+    x: 16,
   },
   animate: {
     opacity: 1,
@@ -17,14 +17,15 @@ const pageVariants = {
   },
   exit: {
     opacity: 0,
-    x: -20,
+    x: -16,
   },
 };
 
 const pageTransition = {
-  type: "tween",
-  ease: "easeOut",
-  duration: 0.25,
+  type: "spring",
+  stiffness: 300,
+  damping: 30,
+  mass: 0.8,
 };
 
 export function AnimatedRoutes({ children }: AnimatedRoutesProps) {

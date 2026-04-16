@@ -29,15 +29,14 @@ export function InstructorCard({
     <motion.div
       className={cn(
         "bg-white dark:bg-[#1C1C1E] rounded-2xl",
-        "shadow-[0px_8px_20px_rgba(0,0,0,0.08),0px_2px_6px_rgba(0,0,0,0.04)]",
-        "dark:shadow-[0px_8px_20px_rgba(0,0,0,0.3),0px_2px_6px_rgba(0,0,0,0.15)]",
-        // Inset highlight for depth
-        "ring-1 ring-inset ring-white/60 dark:ring-white/5",
+        "ios-card-shadow",
+        "ring-1 ring-black/[0.04] dark:ring-white/[0.06]",
         !noPadding && "p-5",
-        interactive && "cursor-pointer transition-transform active:scale-[0.98]",
+        interactive && "cursor-pointer",
         className
       )}
-      whileTap={interactive ? { scale: 0.98 } : undefined}
+      whileTap={interactive ? { scale: 0.97 } : undefined}
+      transition={interactive ? { type: "spring", stiffness: 400, damping: 25 } : undefined}
       {...motionProps}
     >
       {children}

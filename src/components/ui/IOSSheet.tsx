@@ -30,12 +30,12 @@ export function IOSSheet({
         <DrawerPrimitive.Content
           className={cn(
             "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-[14px] bg-card",
-            "shadow-[0_-4px_40px_rgba(0,0,0,0.12)]"
+            "shadow-[0_-8px_40px_rgba(0,0,0,0.15),0_-2px_10px_rgba(0,0,0,0.06)]"
           )}
         >
-          {/* iOS-style grab handle */}
+          {/* iOS-style grab handle — exact Apple spec */}
           <div className="flex justify-center pt-2.5 pb-1">
-            <div className="w-9 h-[5px] rounded-full bg-muted-foreground/30" />
+            <div className="w-9 h-[5px] rounded-[2.5px] bg-[#c7c7cc] dark:bg-[#48484a]" />
           </div>
           {children}
         </DrawerPrimitive.Content>
