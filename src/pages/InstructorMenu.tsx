@@ -582,61 +582,147 @@ export default function InstructorMenu() {
     return undefined;
   };
 
+  // ─── Premium card + gradient helpers ────────────────────────────────
+  const cardClass = "bg-white rounded-[20px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.05)] border-[0.5px] border-black/[0.06] mb-[10px]";
+  const GradientLine = () => <div className="h-[2px] w-full bg-gradient-to-r from-[#0d4fa0] to-[#56a8f5]" />;
+
+  // Gradient palette for menu items
+  const menuGradients: Record<string, { bg: string; shadow: string }> = {
+    "To Do": { bg: "linear-gradient(135deg, #1a6fd4, #56a8f5)", shadow: "0 3px 8px rgba(26,111,212,0.3)" },
+    "Messages": { bg: "linear-gradient(135deg, #34c759, #30d158)", shadow: "0 3px 8px rgba(52,199,89,0.3)" },
+    "Job Offers": { bg: "linear-gradient(135deg, #7c3aed, #a855f7)", shadow: "0 3px 8px rgba(124,58,237,0.3)" },
+    "New Bookings": { bg: "linear-gradient(135deg, #f5a623, #f97316)", shadow: "0 3px 8px rgba(245,166,35,0.3)" },
+    "Take Payment": { bg: "linear-gradient(135deg, #0f9e75, #1dcaa5)", shadow: "0 3px 8px rgba(15,158,117,0.3)" },
+    "Live Tracking": { bg: "linear-gradient(135deg, #06b6d4, #22d3ee)", shadow: "0 3px 8px rgba(6,182,212,0.3)" },
+    "Find My Car": { bg: "linear-gradient(135deg, #e11d48, #f43f5e)", shadow: "0 3px 8px rgba(225,29,72,0.3)" },
+    "Expenses": { bg: "linear-gradient(135deg, #f59e0b, #fbbf24)", shadow: "0 3px 8px rgba(245,158,11,0.3)" },
+    "Test Swap": { bg: "linear-gradient(135deg, #d97706, #f59e0b)", shadow: "0 3px 8px rgba(217,119,6,0.3)" },
+    "Payments": { bg: "linear-gradient(135deg, #059669, #10b981)", shadow: "0 3px 8px rgba(5,150,105,0.3)" },
+    "Income Summary": { bg: "linear-gradient(135deg, #16a34a, #22c55e)", shadow: "0 3px 8px rgba(22,163,74,0.3)" },
+    "In vs Out": { bg: "linear-gradient(135deg, #0284c7, #38bdf8)", shadow: "0 3px 8px rgba(2,132,199,0.3)" },
+    "Mileage Tracker": { bg: "linear-gradient(135deg, #15803d, #4ade80)", shadow: "0 3px 8px rgba(21,128,61,0.3)" },
+    "Tax Summary": { bg: "linear-gradient(135deg, #7c3aed, #a78bfa)", shadow: "0 3px 8px rgba(124,58,237,0.3)" },
+    "Schedule": { bg: "linear-gradient(135deg, #0d4fa0, #56a8f5)", shadow: "0 3px 8px rgba(13,79,160,0.3)" },
+    "Pupils": { bg: "linear-gradient(135deg, #4f46e5, #818cf8)", shadow: "0 3px 8px rgba(79,70,229,0.3)" },
+    "Telematics": { bg: "linear-gradient(135deg, #059669, #34d399)", shadow: "0 3px 8px rgba(5,150,105,0.3)" },
+    "Dashcam": { bg: "linear-gradient(135deg, #0284c7, #38bdf8)", shadow: "0 3px 8px rgba(2,132,199,0.3)" },
+    "Reviews": { bg: "linear-gradient(135deg, #f59e0b, #fbbf24)", shadow: "0 3px 8px rgba(245,158,11,0.3)" },
+    "Vehicle Health": { bg: "linear-gradient(135deg, #06b6d4, #67e8f9)", shadow: "0 3px 8px rgba(6,182,212,0.3)" },
+    "Quick Test Result": { bg: "linear-gradient(135deg, #059669, #34d399)", shadow: "0 3px 8px rgba(5,150,105,0.3)" },
+    "Full Test Report": { bg: "linear-gradient(135deg, #0d9488, #2dd4bf)", shadow: "0 3px 8px rgba(13,148,136,0.3)" },
+    "Saved Routes": { bg: "linear-gradient(135deg, #e11d48, #fb7185)", shadow: "0 3px 8px rgba(225,29,72,0.3)" },
+    "Jotter": { bg: "linear-gradient(135deg, #ea580c, #fb923c)", shadow: "0 3px 8px rgba(234,88,12,0.3)" },
+    "Fill Gaps": { bg: "linear-gradient(135deg, #db2777, #f472b6)", shadow: "0 3px 8px rgba(219,39,119,0.3)" },
+    "Notes": { bg: "linear-gradient(135deg, #ca8a04, #facc15)", shadow: "0 3px 8px rgba(202,138,4,0.3)" },
+    "Bulk Operations": { bg: "linear-gradient(135deg, #4f46e5, #818cf8)", shadow: "0 3px 8px rgba(79,70,229,0.3)" },
+    "Reports Hub": { bg: "linear-gradient(135deg, #7c3aed, #a78bfa)", shadow: "0 3px 8px rgba(124,58,237,0.3)" },
+    "Resources": { bg: "linear-gradient(135deg, #0d4fa0, #56a8f5)", shadow: "0 3px 8px rgba(13,79,160,0.3)" },
+    "Platform Updates": { bg: "linear-gradient(135deg, #4f46e5, #818cf8)", shadow: "0 3px 8px rgba(79,70,229,0.3)" },
+    "FAQs & Help": { bg: "linear-gradient(135deg, #0d4fa0, #56a8f5)", shadow: "0 3px 8px rgba(13,79,160,0.3)" },
+    "Health Hub": { bg: "linear-gradient(135deg, #e11d48, #f43f5e)", shadow: "0 3px 8px rgba(225,29,72,0.3)" },
+    "Sign Out": { bg: "linear-gradient(135deg, #dc2626, #ef4444)", shadow: "0 3px 8px rgba(220,38,38,0.3)" },
+  };
+  const defaultGradient = { bg: "linear-gradient(135deg, #0d4fa0, #56a8f5)", shadow: "0 3px 8px rgba(13,79,160,0.3)" };
+
+  // Settings tile gradients
+  const settingsGradients: Record<string, { bg: string; shadow: string }> = {
+    "profile": { bg: "linear-gradient(135deg, #1a6fd4, #56a8f5)", shadow: "0 3px 8px rgba(26,111,212,0.3)" },
+    "details": { bg: "linear-gradient(135deg, #ea580c, #fb923c)", shadow: "0 3px 8px rgba(234,88,12,0.3)" },
+    "images": { bg: "linear-gradient(135deg, #7c3aed, #a855f7)", shadow: "0 3px 8px rgba(124,58,237,0.3)" },
+    "compliance": { bg: "linear-gradient(135deg, #059669, #34d399)", shadow: "0 3px 8px rgba(5,150,105,0.3)" },
+    "test-centres": { bg: "linear-gradient(135deg, #dc2626, #f87171)", shadow: "0 3px 8px rgba(220,38,38,0.3)" },
+    "terms": { bg: "linear-gradient(135deg, #78716c, #a8a29e)", shadow: "0 3px 8px rgba(120,113,108,0.3)" },
+    "courses-mgr": { bg: "linear-gradient(135deg, #059669, #34d399)", shadow: "0 3px 8px rgba(5,150,105,0.3)" },
+    "booking-mode": { bg: "linear-gradient(135deg, #0d9488, #2dd4bf)", shadow: "0 3px 8px rgba(13,148,136,0.3)" },
+    "deposits": { bg: "linear-gradient(135deg, #65a30d, #a3e635)", shadow: "0 3px 8px rgba(101,163,13,0.3)" },
+    "commission": { bg: "linear-gradient(135deg, #7c3aed, #a78bfa)", shadow: "0 3px 8px rgba(124,58,237,0.3)" },
+    "square-connect": { bg: "linear-gradient(135deg, #1a6fd4, #56a8f5)", shadow: "0 3px 8px rgba(26,111,212,0.3)" },
+    "referrals": { bg: "linear-gradient(135deg, #059669, #34d399)", shadow: "0 3px 8px rgba(5,150,105,0.3)" },
+    "bnpl": { bg: "linear-gradient(135deg, #db2777, #f472b6)", shadow: "0 3px 8px rgba(219,39,119,0.3)" },
+    "discount-codes": { bg: "linear-gradient(135deg, #ea580c, #fb923c)", shadow: "0 3px 8px rgba(234,88,12,0.3)" },
+    "lesson-packages": { bg: "linear-gradient(135deg, #7c3aed, #a78bfa)", shadow: "0 3px 8px rgba(124,58,237,0.3)" },
+    "intake-questions": { bg: "linear-gradient(135deg, #0891b2, #22d3ee)", shadow: "0 3px 8px rgba(8,145,178,0.3)" },
+    "pricing-rules": { bg: "linear-gradient(135deg, #d97706, #fbbf24)", shadow: "0 3px 8px rgba(217,119,6,0.3)" },
+    "mini-website": { bg: "linear-gradient(135deg, #0891b2, #22d3ee)", shadow: "0 3px 8px rgba(8,145,178,0.3)" },
+    "website-pages": { bg: "linear-gradient(135deg, #4f46e5, #818cf8)", shadow: "0 3px 8px rgba(79,70,229,0.3)" },
+    "website-theme": { bg: "linear-gradient(135deg, #db2777, #f472b6)", shadow: "0 3px 8px rgba(219,39,119,0.3)" },
+    "branding": { bg: "linear-gradient(135deg, #e11d48, #fb7185)", shadow: "0 3px 8px rgba(225,29,72,0.3)" },
+    "pupil-self-service": { bg: "linear-gradient(135deg, #059669, #34d399)", shadow: "0 3px 8px rgba(5,150,105,0.3)" },
+    "working-hours": { bg: "linear-gradient(135deg, #2563eb, #60a5fa)", shadow: "0 3px 8px rgba(37,99,235,0.3)" },
+    "calendar": { bg: "linear-gradient(135deg, #0284c7, #38bdf8)", shadow: "0 3px 8px rgba(2,132,199,0.3)" },
+    "cancellation": { bg: "linear-gradient(135deg, #475569, #94a3b8)", shadow: "0 3px 8px rgba(71,85,105,0.3)" },
+    "no-show-policy": { bg: "linear-gradient(135deg, #dc2626, #f87171)", shadow: "0 3px 8px rgba(220,38,38,0.3)" },
+    "reminders": { bg: "linear-gradient(135deg, #0284c7, #38bdf8)", shadow: "0 3px 8px rgba(2,132,199,0.3)" },
+    "gps-mobile": { bg: "linear-gradient(135deg, #0891b2, #22d3ee)", shadow: "0 3px 8px rgba(8,145,178,0.3)" },
+    "routes": { bg: "linear-gradient(135deg, #c026d3, #e879f9)", shadow: "0 3px 8px rgba(192,38,211,0.3)" },
+    "dashcam-portal": { bg: "linear-gradient(135deg, #475569, #94a3b8)", shadow: "0 3px 8px rgba(71,85,105,0.3)" },
+    "demo-mode": { bg: "linear-gradient(135deg, #d97706, #fbbf24)", shadow: "0 3px 8px rgba(217,119,6,0.3)" },
+    "appearance": { bg: "linear-gradient(135deg, #db2777, #f472b6)", shadow: "0 3px 8px rgba(219,39,119,0.3)" },
+    "dashboard-layout": { bg: "linear-gradient(135deg, #4f46e5, #818cf8)", shadow: "0 3px 8px rgba(79,70,229,0.3)" },
+    "notifications": { bg: "linear-gradient(135deg, #ca8a04, #facc15)", shadow: "0 3px 8px rgba(202,138,4,0.3)" },
+    "gdpr": { bg: "linear-gradient(135deg, #1a6fd4, #56a8f5)", shadow: "0 3px 8px rgba(26,111,212,0.3)" },
+    "data-backup": { bg: "linear-gradient(135deg, #52525b, #a1a1aa)", shadow: "0 3px 8px rgba(82,82,91,0.3)" },
+    "reset-stats": { bg: "linear-gradient(135deg, #dc2626, #ef4444)", shadow: "0 3px 8px rgba(220,38,38,0.3)" },
+  };
+
   // ─── Settings tile component ───────────────────────────────────────
 
   const SettingsTile = ({ tile, statusBadge, children }: { tile: TileDef; statusBadge?: React.ReactNode; children: React.ReactNode }) => {
     const Icon = tile.icon;
+    const grad = settingsGradients[tile.id] || defaultGradient;
 
     if (tile.externalUrl) {
       return (
-        <div id={`settings-tile-${tile.id}`} className="overflow-hidden transition-all duration-300">
+        <div id={`settings-tile-${tile.id}`} className={cardClass}>
           <button
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors"
+            className="w-full flex items-center gap-[14px] px-4 py-[13px]"
             onClick={() => window.open(tile.externalUrl, "_blank", "noopener,noreferrer")}
           >
-            <div className="flex items-center gap-3">
-              <div className={cn("h-[29px] w-[29px] rounded-[7px] flex items-center justify-center shrink-0", tile.iconBg)}>
-                <Icon className={cn("h-4 w-4", tile.iconColor)} />
-              </div>
-              <div className="text-left">
-                <span className="text-[15px] font-normal text-foreground">{tile.title}</span>
-                <div className="text-[13px] text-muted-foreground">{tile.description}</div>
-              </div>
+            <div
+              className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
+              style={{ background: grad.bg, boxShadow: grad.shadow }}
+            >
+              <Icon className="h-5 w-5 text-white" />
             </div>
-            <ExternalLink className="h-4 w-4 text-muted-foreground/40" />
+            <div className="flex-1 text-left min-w-0">
+              <span className="text-[15px] font-semibold text-[#1c1c1e]">{tile.title}</span>
+            </div>
+            <ExternalLink className="h-4 w-4 text-[#c7c7cc] shrink-0" />
           </button>
+          <GradientLine />
         </div>
       );
     }
 
     return (
-      <div id={`settings-tile-${tile.id}`} className="overflow-hidden transition-all duration-300">
+      <div id={`settings-tile-${tile.id}`} className={cardClass}>
         <Collapsible open={isOpen(tile.id)} onOpenChange={() => toggleSection(tile.id)}>
           <CollapsibleTrigger asChild>
-            <button className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className={cn("h-[29px] w-[29px] rounded-[7px] flex items-center justify-center shrink-0", tile.iconBg)}>
-                  {tile.iconSrc ? (
-                    <img src={tile.iconSrc} alt={tile.title} className="h-4 w-4 object-contain" />
-                  ) : (
-                    <Icon className={cn("h-4 w-4", tile.iconColor)} />
-                  )}
-                </div>
-                <div className="text-left">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[15px] font-normal text-foreground">{tile.title}</span>
-                    {statusBadge}
-                  </div>
-                  <div className="text-[13px] text-muted-foreground">{tile.description}</div>
+            <button className="w-full flex items-center gap-[14px] px-4 py-[13px]">
+              <div
+                className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
+                style={{ background: grad.bg, boxShadow: grad.shadow }}
+              >
+                {tile.iconSrc ? (
+                  <img src={tile.iconSrc} alt={tile.title} className="h-5 w-5 object-contain" />
+                ) : (
+                  <Icon className="h-5 w-5 text-white" />
+                )}
+              </div>
+              <div className="flex-1 text-left min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-[15px] font-semibold text-[#1c1c1e]">{tile.title}</span>
+                  {statusBadge}
                 </div>
               </div>
-              <ChevronRight className={cn("h-4 w-4 text-muted-foreground/40 transition-transform duration-200", isOpen(tile.id) && "rotate-90")} />
+              <ChevronRight className={cn("h-4 w-4 text-[#c7c7cc] transition-transform duration-200 shrink-0", isOpen(tile.id) && "rotate-90")} />
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="px-4 pb-4 border-t border-border/30 pt-4">{children}</div>
+            <div className="px-4 pb-4 border-t border-black/[0.06] pt-4">{children}</div>
           </CollapsibleContent>
         </Collapsible>
+        <GradientLine />
       </div>
     );
   };
@@ -658,16 +744,17 @@ export default function InstructorMenu() {
 
     return (
       <div key={section.title}>
-        <div className="px-4 pb-1.5">
-          <span className="text-[13px] font-normal text-muted-foreground uppercase">{section.title}</span>
+        <div className="px-1 pb-[10px]">
+          <span className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em]">{section.title}</span>
         </div>
-        <div className="bg-card dark:bg-[#1C1C1E] rounded-2xl overflow-hidden shadow-sm">
+        <div>
           {filteredItems.map((item, itemIndex) => {
             const locked = item.gateKey ? isFeatureLocked(item.gateKey, subscription?.features) : false;
             const idx = globalIndex++;
+            const grad = menuGradients[item.label] || defaultGradient;
 
             return (
-              <div key={idx}>
+              <div key={idx} className={cardClass}>
                 <motion.button
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -686,42 +773,34 @@ export default function InstructorMenu() {
                     }
                   }}
                   className={cn(
-                    "w-full px-4 py-3 hover:bg-muted/40 active:bg-muted/60 transition-colors text-left",
+                    "w-full px-4 py-[13px] text-left flex items-center gap-[14px]",
                     locked && "opacity-60 cursor-not-allowed"
                   )}
                 >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden",
-                        locked ? "bg-muted" : (item.iconBg || "bg-primary")
-                      )}
-                    >
-                      {locked ? (
-                        <Lock className="h-4 w-4 text-muted-foreground" />
-                      ) : item.customIcon ? (
-                        <img src={item.customIcon} alt={item.label} className="h-full w-full object-cover" />
-                      ) : (
-                        <item.icon className={cn("h-4 w-4", item.iconColor || "text-white")} />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={cn("font-medium text-sm truncate", locked ? "text-muted-foreground" : "text-foreground")}>
-                        {item.label}
-                      </p>
-                    </div>
+                  <div
+                    className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0 overflow-hidden"
+                    style={locked ? { background: '#e5e7eb' } : { background: grad.bg, boxShadow: grad.shadow }}
+                  >
                     {locked ? (
-                      <Badge variant="outline" className="text-[10px] border-muted-foreground/30 text-muted-foreground shrink-0">
-                        {item.gateKey ? getMinimumPlanName(item.gateKey) : 'PRO'}
-                      </Badge>
+                      <Lock className="h-5 w-5 text-[#8e8e93]" />
+                    ) : item.customIcon ? (
+                      <img src={item.customIcon} alt={item.label} className="h-full w-full object-cover" />
                     ) : (
-                      <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                      <item.icon className="h-5 w-5 text-white" />
                     )}
                   </div>
+                  <p className="flex-1 min-w-0 font-semibold text-[15px] text-[#1c1c1e] truncate">
+                    {item.label}
+                  </p>
+                  {locked ? (
+                    <Badge variant="outline" className="text-[10px] border-[#c7c7cc]/30 text-[#8e8e93] shrink-0">
+                      {item.gateKey ? getMinimumPlanName(item.gateKey) : 'PRO'}
+                    </Badge>
+                  ) : (
+                    <span className="text-[16px] text-[#c7c7cc] shrink-0">›</span>
+                  )}
                 </motion.button>
-                {itemIndex < filteredItems.length - 1 && (
-                  <div className="ml-[56px] border-b border-border/40" />
-                )}
+                <GradientLine />
               </div>
             );
           })}
@@ -740,12 +819,12 @@ export default function InstructorMenu() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search menu & settings..."
-            className="pl-9 pr-8 rounded-2xl bg-card dark:bg-[#1C1C1E] shadow-sm border-0 h-10"
+            className="pl-9 pr-8 rounded-[20px] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.05)] border-[0.5px] border-black/[0.06] h-10"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8e8e93] hover:text-[#1c1c1e]"
             >
               <X className="h-4 w-4" />
             </button>
@@ -758,48 +837,60 @@ export default function InstructorMenu() {
         {/* Quick Toggles (hidden during search) */}
         {!lowerQuery && instructorId && (
           <div>
-            <div className="px-4 pb-1.5">
-              <span className="text-[13px] font-normal text-muted-foreground uppercase tracking-wide">Quick Toggles</span>
+            <div className="px-1 pb-[10px]">
+              <span className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em]">Quick Toggles</span>
             </div>
-            <div className="bg-card dark:bg-[#1C1C1E] rounded-2xl overflow-hidden shadow-sm divide-y divide-border/40">
-              <div className="flex items-center justify-between px-4 py-3 gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="h-[29px] w-[29px] rounded-[7px] bg-violet-500 flex items-center justify-center shrink-0">
-                    <Eye className="h-4 w-4 text-white" />
+            <div>
+              {/* Listed on Website */}
+              <div className={cardClass}>
+                <div className="flex items-center justify-between px-4 py-[13px] gap-[14px]">
+                  <div className="flex items-center gap-[14px]">
+                    <div
+                      className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
+                      style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)", boxShadow: "0 3px 8px rgba(124,58,237,0.3)" }}
+                    >
+                      <Eye className="h-5 w-5 text-white" />
+                    </div>
+                    <p className="text-[15px] font-semibold text-[#1c1c1e]">Listed on Website</p>
                   </div>
-                  <div>
-                    <p className="text-[15px] font-normal text-foreground">Listed on Website</p>
-                    <p className="text-[13px] text-muted-foreground">Appear in course searches</p>
-                  </div>
+                  <Switch checked={isActive} onCheckedChange={handleVisibilityToggle} />
                 </div>
-                <Switch checked={isActive} onCheckedChange={handleVisibilityToggle} />
+                <GradientLine />
               </div>
-              <div className="flex items-center justify-between px-4 py-3 gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="h-[29px] w-[29px] rounded-[7px] bg-indigo-500 flex items-center justify-center shrink-0">
-                    <Mic className="h-4 w-4 text-white" />
+              {/* Hey ED */}
+              <div className={cardClass}>
+                <div className="flex items-center justify-between px-4 py-[13px] gap-[14px]">
+                  <div className="flex items-center gap-[14px]">
+                    <div
+                      className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
+                      style={{ background: "linear-gradient(135deg, #4f46e5, #818cf8)", boxShadow: "0 3px 8px rgba(79,70,229,0.3)" }}
+                    >
+                      <Mic className="h-5 w-5 text-white" />
+                    </div>
+                    <p className="text-[15px] font-semibold text-[#1c1c1e]">"Hey ED" Always Listening</p>
                   </div>
-                  <div>
-                    <p className="text-[15px] font-normal text-foreground">"Hey ED" Always Listening</p>
-                    <p className="text-[13px] text-muted-foreground">Activate ED hands-free</p>
-                  </div>
+                  <Switch
+                    checked={heyEdEnabled}
+                    onCheckedChange={(checked) => {
+                      setHeyEdEnabled(checked);
+                      localStorage.setItem(`hey-ed-always-listen-${instructorId}`, String(checked));
+                      uiToast({ title: checked ? '"Hey ED" enabled' : '"Hey ED" disabled' });
+                    }}
+                  />
                 </div>
-                <Switch
-                  checked={heyEdEnabled}
-                  onCheckedChange={(checked) => {
-                    setHeyEdEnabled(checked);
-                    localStorage.setItem(`hey-ed-always-listen-${instructorId}`, String(checked));
-                    uiToast({ title: checked ? '"Hey ED" enabled' : '"Hey ED" disabled' });
-                  }}
-                />
+                <GradientLine />
               </div>
-              <div className="px-3">
-                <FeatureTogglesSettings instructorId={instructorId} />
+              {/* Feature Toggles */}
+              <div className={cardClass}>
+                <div className="px-4 py-3">
+                  <FeatureTogglesSettings instructorId={instructorId} />
+                </div>
+                <GradientLine />
               </div>
             </div>
             {!isActive && (
-              <div className="mt-2 mx-4 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
-                <p className="text-sm text-amber-700 dark:text-amber-400">You're currently hidden from the website.</p>
+              <div className="mt-2 rounded-[20px] bg-amber-500/10 border border-amber-500/30 p-3">
+                <p className="text-sm text-amber-700">You're currently hidden from the website.</p>
               </div>
             )}
           </div>
@@ -811,10 +902,10 @@ export default function InstructorMenu() {
           if (tilesInCat.length === 0) return null;
           return (
             <div key={cat.id}>
-              <div className="px-4 pb-1.5">
-                <span className="text-[13px] font-normal text-muted-foreground uppercase tracking-wide">{cat.title}</span>
+              <div className="px-1 pb-[10px]">
+                <span className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em]">{cat.title}</span>
               </div>
-              <div className="bg-card dark:bg-[#1C1C1E] rounded-2xl overflow-hidden shadow-sm divide-y divide-border/40">
+              <div>
                 {tilesInCat.map((tile) => (
                   <SettingsTile key={tile.id} tile={tile} statusBadge={getStatusBadge(tile.id)}>
                     {renderTileContent(tile.id)}
@@ -828,23 +919,26 @@ export default function InstructorMenu() {
         {/* Account */}
         {!lowerQuery && (
           <div>
-            <div className="px-4 pb-1.5">
-              <span className="text-[13px] font-normal text-muted-foreground uppercase">Account</span>
+            <div className="px-1 pb-[10px]">
+              <span className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em]">Account</span>
             </div>
-            <div className="bg-card dark:bg-[#1C1C1E] rounded-2xl overflow-hidden shadow-sm">
+            <div className={cardClass}>
               <motion.button
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 onClick={handleLogout}
-                className="w-full px-4 py-3 hover:bg-muted/40 active:bg-muted/60 transition-colors text-left"
+                className="w-full px-4 py-[13px] text-left flex items-center gap-[14px]"
               >
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 bg-destructive">
-                    <LogOut className="h-4 w-4 text-white" />
-                  </div>
-                  <p className="font-medium text-sm text-foreground">Sign Out</p>
+                <div
+                  className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
+                  style={{ background: "linear-gradient(135deg, #dc2626, #ef4444)", boxShadow: "0 3px 8px rgba(220,38,38,0.3)" }}
+                >
+                  <LogOut className="h-5 w-5 text-white" />
                 </div>
+                <p className="flex-1 font-semibold text-[15px] text-[#1c1c1e]">Sign Out</p>
+                <span className="text-[16px] text-[#c7c7cc]">›</span>
               </motion.button>
+              <GradientLine />
             </div>
           </div>
         )}
@@ -858,7 +952,7 @@ export default function InstructorMenu() {
           );
         }) && (
           <div className="text-center py-8">
-            <p className="text-sm text-muted-foreground">No results found for "{searchQuery}"</p>
+            <p className="text-sm text-[#8e8e93]">No results found for "{searchQuery}"</p>
           </div>
         )}
       </div>
