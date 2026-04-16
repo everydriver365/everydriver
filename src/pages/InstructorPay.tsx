@@ -17,6 +17,9 @@ import {
   MessageSquare,
   Mail,
   Loader2,
+  CreditCard,
+  BarChart2,
+  FileText,
 } from "lucide-react";
 import { TakePaymentModal } from "@/components/instructor/TakePaymentModal";
 import { PaymentHistory } from "@/components/instructor/PaymentHistory";
@@ -474,11 +477,11 @@ export default function InstructorPay() {
                   <div className="p-[16px_14px_12px] flex flex-col gap-3">
                     <div
                       className={cn(
-                        "h-9 w-9 rounded-[10px] flex items-center justify-center shrink-0",
-                        action.accent ? "bg-white/20" : "bg-[#eef4fd]"
+                        "h-9 w-9 rounded-[12px] flex items-center justify-center shrink-0",
                       )}
+                      style={{ backgroundColor: action.accent ? "rgba(255,255,255,0.2)" : action.iconBg }}
                     >
-                     <span style={{ fontSize: 20 }}>{action.emoji}</span>
+                      <action.icon size={20} strokeWidth={2} color={action.iconColor} />
                     </div>
                     <div>
                       <p
