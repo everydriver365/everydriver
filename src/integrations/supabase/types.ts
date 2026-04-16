@@ -1646,6 +1646,106 @@ export type Database = {
           },
         ]
       }
+      course_proposals: {
+        Row: {
+          created_at: string
+          feasible: boolean
+          generated_slots: Json
+          hours_remaining: number
+          id: string
+          instructor_id: string | null
+          lead_email: string | null
+          lead_name: string | null
+          lead_phone: string | null
+          lead_postcode: string | null
+          lesson_length_minutes: number
+          lessons_per_week: number
+          notes: string | null
+          pattern_summary: Json | null
+          pupil_id: string | null
+          shortfall_hours: number | null
+          source: string
+          status: string
+          test_centre_name: string | null
+          test_date: string | null
+          test_time: string | null
+          updated_at: string
+          weekly_availability: Json
+        }
+        Insert: {
+          created_at?: string
+          feasible?: boolean
+          generated_slots?: Json
+          hours_remaining?: number
+          id?: string
+          instructor_id?: string | null
+          lead_email?: string | null
+          lead_name?: string | null
+          lead_phone?: string | null
+          lead_postcode?: string | null
+          lesson_length_minutes?: number
+          lessons_per_week?: number
+          notes?: string | null
+          pattern_summary?: Json | null
+          pupil_id?: string | null
+          shortfall_hours?: number | null
+          source?: string
+          status?: string
+          test_centre_name?: string | null
+          test_date?: string | null
+          test_time?: string | null
+          updated_at?: string
+          weekly_availability?: Json
+        }
+        Update: {
+          created_at?: string
+          feasible?: boolean
+          generated_slots?: Json
+          hours_remaining?: number
+          id?: string
+          instructor_id?: string | null
+          lead_email?: string | null
+          lead_name?: string | null
+          lead_phone?: string | null
+          lead_postcode?: string | null
+          lesson_length_minutes?: number
+          lessons_per_week?: number
+          notes?: string | null
+          pattern_summary?: Json | null
+          pupil_id?: string | null
+          shortfall_hours?: number | null
+          source?: string
+          status?: string
+          test_centre_name?: string | null
+          test_date?: string | null
+          test_time?: string | null
+          updated_at?: string
+          weekly_availability?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_proposals_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_proposals_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_proposals_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_reviews: {
         Row: {
           course_hours: number
