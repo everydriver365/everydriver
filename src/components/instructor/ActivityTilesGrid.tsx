@@ -118,15 +118,12 @@ export function ActivityTilesGrid({
               transition={{ delay: idx * 0.05 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(tile.route)}
-              className="relative flex flex-col items-center justify-center gap-2"
+              className="relative flex flex-col"
               style={{
                 background: "#FFFFFF",
                 borderRadius: 16,
-                boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-                paddingTop: 16,
-                paddingBottom: 14,
-                paddingLeft: 8,
-                paddingRight: 8,
+                overflow: "hidden",
+                border: "0.5px solid #e5e7eb",
               }}
             >
               {/* Red notification badge */}
@@ -134,8 +131,8 @@ export function ActivityTilesGrid({
                 <span
                   className="absolute flex items-center justify-center"
                   style={{
-                    top: 6,
-                    right: 6,
+                    top: 8,
+                    right: 8,
                     minWidth: 20,
                     height: 20,
                     borderRadius: 10,
@@ -146,21 +143,27 @@ export function ActivityTilesGrid({
                     paddingLeft: 5,
                     paddingRight: 5,
                     lineHeight: 1,
+                    zIndex: 1,
                   }}
                 >
                   {count > 99 ? "99+" : count}
                 </span>
               )}
 
-              {/* Icon */}
-              <div className="flex items-center justify-center" style={{ width: 40, height: 40 }}>
+              {/* Icon area */}
+              <div className="flex items-center justify-center" style={{ padding: "18px 0 12px" }}>
                 {tile.icon}
               </div>
 
-              {/* Label */}
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#3C3C43", letterSpacing: -0.1 }}>
-                {tile.title}
-              </span>
+              {/* Blue label bar */}
+              <div
+                className="flex items-center justify-center"
+                style={{ backgroundColor: "#1a6fd4", padding: "6px 0" }}
+              >
+                <span style={{ fontSize: 13, fontWeight: 500, color: "#FFFFFF" }}>
+                  {tile.title}
+                </span>
+              </div>
             </motion.button>
           );
         })}
