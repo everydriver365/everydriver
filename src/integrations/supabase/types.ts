@@ -12177,6 +12177,7 @@ export type Database = {
           parent_name: string | null
           parent_phone: string | null
           parent_portal_enabled: boolean
+          payment_method: string
           payment_type: string | null
           phone: string | null
           pickup_address: string | null
@@ -12264,6 +12265,7 @@ export type Database = {
           parent_name?: string | null
           parent_phone?: string | null
           parent_portal_enabled?: boolean
+          payment_method?: string
           payment_type?: string | null
           phone?: string | null
           pickup_address?: string | null
@@ -12351,6 +12353,7 @@ export type Database = {
           parent_name?: string | null
           parent_phone?: string | null
           parent_portal_enabled?: boolean
+          payment_method?: string
           payment_type?: string | null
           phone?: string | null
           pickup_address?: string | null

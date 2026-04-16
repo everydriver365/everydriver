@@ -1,0 +1,1 @@
+ALTER TABLE public.pupils ADD COLUMN IF NOT EXISTS payment_method text NOT NULL DEFAULT 'tbc';
