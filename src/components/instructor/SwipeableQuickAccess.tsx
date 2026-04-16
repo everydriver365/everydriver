@@ -160,16 +160,19 @@ export function SwipeableQuickAccess() {
                     navigate(tile.route);
                   };
 
-                  return (
+                    return (
                     <motion.button
                       key={tile.title}
                       whileTap={{ scale: locked ? 1 : 0.98 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                       onClick={handleClick}
-                      className="relative h-[110px] p-5 rounded-2xl text-left flex flex-col justify-between border-0 transition-all duration-200 ease-out"
+                      className="relative h-[110px] p-5 text-left flex flex-col justify-between transition-all duration-200 ease-out"
                       style={{
-                        backgroundColor: "#FFFFFF",
-                        boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.6), 0px 8px 20px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.04)",
+                        backgroundColor: "white",
+                        borderRadius: 20,
+                        overflow: "hidden",
+                        border: "0.5px solid rgba(26,111,212,0.1)",
+                        boxShadow: "0 8px 24px rgba(26,111,212,0.2), 0 2px 6px rgba(0,0,0,0.06)",
                         opacity: locked ? 0.5 : 1,
                       }}
                     >
