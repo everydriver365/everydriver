@@ -20,6 +20,9 @@ import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
+import { useAdminUnreadForPupil } from "@/hooks/useAdminUnreadForPupil";
+import { PostcodeMapPreview } from "@/components/instructor/PostcodeMapPreview";
+import { Mail } from "lucide-react";
 import { useRunningLateDetection } from "@/hooks/useRunningLateDetection";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { triggerHaptic } from "@/lib/haptics";
@@ -60,6 +63,8 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
   const pickupPostcode = nextLesson?.pickupPostcode ?? null;
   const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition } = useTrafficETA(pickupPostcode);
   const { data: pupilUnreadCount = 0 } = usePupilUnreadCount(instructorId, nextLesson?.pupilId);
+  const { data: adminUnreadCount = 0 } = useAdminUnreadForPupil(instructorId, nextLesson?.pupilId, nextLesson?.pupilName);
+  const totalUnreadBadge = pupilUnreadCount + adminUnreadCount;
   const { isRunningLate, lateByMinutes, suggestedMessage, arrivalTimeText, sendLateETA } = useRunningLateDetection({
     etaMinutes,
     minutesUntil: nextLesson?.minutesUntil ?? 999,
