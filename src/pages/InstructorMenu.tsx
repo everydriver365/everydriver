@@ -584,7 +584,7 @@ export default function InstructorMenu() {
 
   // ─── Premium card + gradient helpers ────────────────────────────────
   const cardClass = "bg-white rounded-[20px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.05)] border-[0.5px] border-black/[0.06] mb-[10px]";
-  const GradientLine = () => <div className="h-[2px] w-full bg-gradient-to-r from-[#0d4fa0] to-[#56a8f5]" />;
+  const GradientLine = () => <div className="h-[0.5px] w-full bg-black/[0.06]" />;
 
   // Emoji map for menu items
   const menuEmojis: Record<string, string> = {
