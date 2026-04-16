@@ -586,6 +586,21 @@ export default function InstructorMenu() {
   const cardClass = "bg-white rounded-[20px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.05)] border-[0.5px] border-black/[0.06] mb-[10px]";
   const GradientLine = () => <div className="h-[2px] w-full bg-gradient-to-r from-[#0d4fa0] to-[#56a8f5]" />;
 
+  // Emoji map for menu items
+  const menuEmojis: Record<string, string> = {
+    "To Do": "📋", "Messages": "💬", "Job Offers": "📨", "New Bookings": "📅",
+    "Take Payment": "💳", "Live Tracking": "📡", "Find My Car": "📌",
+    "Expenses": "💰", "Test Swap": "🔄", "Payments": "💳",
+    "Income Summary": "📊", "In vs Out": "📈", "Mileage Tracker": "🚗",
+    "Tax Summary": "🧾", "Schedule": "📅", "Pupils": "👥",
+    "Telematics": "📡", "Dashcam": "🎥", "Reviews": "⭐",
+    "Vehicle Health": "🚗", "Quick Test Result": "✅", "Full Test Report": "📋",
+    "Saved Routes": "🗺️", "Jotter": "📝", "Fill Gaps": "➕",
+    "Notes": "📝", "Bulk Operations": "📦", "Reports Hub": "📊",
+    "Resources": "📁", "Platform Updates": "📢", "FAQs & Help": "❓",
+    "Health Hub": "❤️", "Sign Out": "🚪",
+  };
+
   // Gradient palette for menu items
   const menuGradients: Record<string, { bg: string; shadow: string }> = {
     "To Do": { bg: "linear-gradient(135deg, #1a6fd4, #56a8f5)", shadow: "0 3px 8px rgba(26,111,212,0.3)" },
