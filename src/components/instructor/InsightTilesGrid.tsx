@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { CalendarPlus, Car, Sparkles, UserCheck } from "lucide-react";
+import { CalendarPlus, Car, Sparkles, UserCheck, ChevronRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 interface InsightTile {
@@ -57,63 +57,35 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-2 gap-[10px]">
       {tiles.map((tile, idx) => {
         const Icon = tile.icon;
         return (
           <motion.button
             key={tile.title}
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: idx * 0.04, type: "spring", stiffness: 400, damping: 25 }}
-            whileTap={{ scale: 0.98 }}
+            whileTap={{ scale: 0.98, backgroundColor: "#F4F4F5" }}
+            whileHover={{ backgroundColor: "#FAFAFA" }}
             onClick={() => navigate(tile.route)}
+            className="focus-visible:ring-2 focus-visible:ring-[#6366F1] outline-none"
             style={{
               position: "relative",
-              background: "white",
+              background: "#FFFFFF",
               borderRadius: 14,
-              overflow: "hidden",
               border: "0.5px solid #E4E4E7",
-              padding: "16px 14px 14px",
+              padding: "14px",
               textAlign: "left",
               display: "flex",
               flexDirection: "column",
-              justifyContent: "space-between",
-              height: 110,
+              gap: 12,
+              cursor: "pointer",
+              transition: "background 120ms ease",
             }}
           >
-            {tile.badge && tile.badge > 0 && (
-              <span
-                className="flex items-center justify-center"
-                style={{
-                  position: "absolute",
-                  top: 10,
-                  right: 10,
-                  minWidth: 20,
-                  height: 20,
-                  borderRadius: 10,
-                  backgroundColor: "#ff3b30",
-                  color: "#fff",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "0 6px",
-                  lineHeight: 1,
-                  boxShadow: "0 2px 6px rgba(255,59,48,0.5)",
-                }}
-              >
-                {tile.badge > 99 ? "99+" : tile.badge}
-              </span>
-            )}
-            <div>
-              <p style={{ fontSize: 15, fontWeight: 500, color: "#18181B", marginBottom: 2, lineHeight: 1.2 }}>
-                {tile.title}
-              </p>
-              <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A" }}>
-                {tile.subtitle}
-              </p>
-            </div>
-            <div className="flex items-end justify-between" style={{ marginTop: "auto" }}>
-              <div style={{ flex: 1 }} />
+            {/* Icon tile + badge row */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
               <div
                 style={{
                   width: 44,
@@ -123,10 +95,41 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  flexShrink: 0,
                 }}
               >
                 <Icon size={22} strokeWidth={2} color={tile.iconColor} />
               </div>
+              {tile.badge && tile.badge > 0 ? (
+                <span
+                  className="flex items-center justify-center"
+                  style={{
+                    minWidth: 20,
+                    height: 20,
+                    borderRadius: 10,
+                    backgroundColor: "#FEF2F2",
+                    color: "#DC2626",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "0 6px",
+                    lineHeight: 1,
+                  }}
+                >
+                  {tile.badge > 99 ? "99+" : tile.badge}
+                </span>
+              ) : (
+                <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" style={{ marginTop: 2 }} />
+              )}
+            </div>
+
+            {/* Text */}
+            <div>
+              <p style={{ fontSize: 15, fontWeight: 500, color: "#18181B", lineHeight: 1.2, fontFamily: "Inter, sans-serif" }}>
+                {tile.title}
+              </p>
+              <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }}>
+                {tile.subtitle}
+              </p>
             </div>
           </motion.button>
         );
