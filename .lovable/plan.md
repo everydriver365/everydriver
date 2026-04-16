@@ -1,26 +1,20 @@
 
 
-## Plan: Only poll GPS when a session is active
+## Plan: Move Session Start Panel above the map
 
 ### Problem
-The tracking page triggers the `radius-poller` edge function every 2 seconds and polls the database every 5 seconds as soon as a device is found — even when no session is active. This wastes resources and creates unnecessary network traffic.
+The `SessionStartPanel` (pupil selector + practice/test toggle) is rendered **below** the map, dashcam link, and status cards. On a 492px mobile viewport, it's completely off-screen and requires significant scrolling to reach. The user can't see it.
 
 ### Changes
 
 **File: `src/pages/InstructorLiveSession.tsx`**
 
-1. **Gate the 2-second `radius-poller` invocation** behind `isSessionActive` — only trigger the poller when `device.current_session_id` is set (i.e., a session has been manually started).
+1. **Move the `SessionStartPanel` block** (lines 1096–1107) to render **above** the map — specifically right after the `GPSStatusHero` card (after line 1006) and before the Dashcam Portal link.
 
-2. **Gate the 5-second fallback DB poll** the same way — when no session is active, do a single initial fetch for device status but skip the recurring interval.
+2. **Also move the `LessonRouteRecorder` block** (lines 1109–1115) to stay adjacent to the SessionStartPanel, keeping them grouped logically.
 
-3. **Keep the Realtime subscription** for `gps_devices` changes (it's lightweight and ensures the UI updates if a session starts from elsewhere), but stop the aggressive polling loops when idle.
+3. No changes to `SessionStartPanel.tsx` itself — the component already has the pupil selector dropdown and practice/test toggle working correctly.
 
-### Specifically
-
-- Move the `triggerPoller` + `setInterval(triggerPoller, 2000)` block inside a condition: only run when `device.current_session_id` is truthy.
-- Move `setInterval(pollDevice, 5000)` inside the same condition — keep the single initial `pollDevice()` call so the page loads device info on mount.
-- This means when the instructor opens the tracking page without an active session, no recurring network calls fire. Once they start a session (which sets `current_session_id`), the polling begins automatically via the existing `useEffect` dependency on `device?.id`.
-
-### No other files need changes
-The `SatNavLiveMap`, `LessonRouteRecorder`, and other components already respond passively to props — they don't initiate their own polling.
+### Result
+When no session is active, the pupil selector and session type toggle will be immediately visible without scrolling, sitting between the device status card and the map.
 
