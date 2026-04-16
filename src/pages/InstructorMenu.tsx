@@ -744,16 +744,17 @@ export default function InstructorMenu() {
 
     return (
       <div key={section.title}>
-        <div className="px-4 pb-1.5">
-          <span className="text-[13px] font-normal text-muted-foreground uppercase">{section.title}</span>
+        <div className="px-1 pb-[10px]">
+          <span className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em]">{section.title}</span>
         </div>
-        <div className="bg-card dark:bg-[#1C1C1E] rounded-2xl overflow-hidden shadow-sm">
+        <div>
           {filteredItems.map((item, itemIndex) => {
             const locked = item.gateKey ? isFeatureLocked(item.gateKey, subscription?.features) : false;
             const idx = globalIndex++;
+            const grad = menuGradients[item.label] || defaultGradient;
 
             return (
-              <div key={idx}>
+              <div key={idx} className={cardClass}>
                 <motion.button
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -772,42 +773,34 @@ export default function InstructorMenu() {
                     }
                   }}
                   className={cn(
-                    "w-full px-4 py-3 hover:bg-muted/40 active:bg-muted/60 transition-colors text-left",
+                    "w-full px-4 py-[13px] text-left flex items-center gap-[14px]",
                     locked && "opacity-60 cursor-not-allowed"
                   )}
                 >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden",
-                        locked ? "bg-muted" : (item.iconBg || "bg-primary")
-                      )}
-                    >
-                      {locked ? (
-                        <Lock className="h-4 w-4 text-muted-foreground" />
-                      ) : item.customIcon ? (
-                        <img src={item.customIcon} alt={item.label} className="h-full w-full object-cover" />
-                      ) : (
-                        <item.icon className={cn("h-4 w-4", item.iconColor || "text-white")} />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={cn("font-medium text-sm truncate", locked ? "text-muted-foreground" : "text-foreground")}>
-                        {item.label}
-                      </p>
-                    </div>
+                  <div
+                    className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0 overflow-hidden"
+                    style={locked ? { background: '#e5e7eb' } : { background: grad.bg, boxShadow: grad.shadow }}
+                  >
                     {locked ? (
-                      <Badge variant="outline" className="text-[10px] border-muted-foreground/30 text-muted-foreground shrink-0">
-                        {item.gateKey ? getMinimumPlanName(item.gateKey) : 'PRO'}
-                      </Badge>
+                      <Lock className="h-5 w-5 text-[#8e8e93]" />
+                    ) : item.customIcon ? (
+                      <img src={item.customIcon} alt={item.label} className="h-full w-full object-cover" />
                     ) : (
-                      <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                      <item.icon className="h-5 w-5 text-white" />
                     )}
                   </div>
+                  <p className="flex-1 min-w-0 font-semibold text-[15px] text-[#1c1c1e] truncate">
+                    {item.label}
+                  </p>
+                  {locked ? (
+                    <Badge variant="outline" className="text-[10px] border-[#c7c7cc]/30 text-[#8e8e93] shrink-0">
+                      {item.gateKey ? getMinimumPlanName(item.gateKey) : 'PRO'}
+                    </Badge>
+                  ) : (
+                    <span className="text-[16px] text-[#c7c7cc] shrink-0">›</span>
+                  )}
                 </motion.button>
-                {itemIndex < filteredItems.length - 1 && (
-                  <div className="ml-[56px] border-b border-border/40" />
-                )}
+                <GradientLine />
               </div>
             );
           })}
