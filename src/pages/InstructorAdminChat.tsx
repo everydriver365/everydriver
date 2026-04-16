@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { PageSkeleton } from "@/components/ui/skeletons/PageSkeleton";
 import { AdminChatWindow } from "@/components/instructor/AdminChatWindow";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 

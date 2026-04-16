@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { IOSLargeTitle } from "@/components/ui/IOSLargeTitle";
+import { PageSkeleton } from "@/components/ui/skeletons/PageSkeleton";
 import { IOSSearchBar } from "@/components/ui/IOSSearchBar";
 import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
