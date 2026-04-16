@@ -173,7 +173,7 @@ export function NextUpTile({
   };
 
   const isImminent = minutesUntil <= 30;
-  const navBlue = "hsl(220, 52%, 16%)";
+  const navBlue = "#2A394F";
   const countdownColor = minutesUntil <= 5 ? "#ef4444" : minutesUntil <= 15 ? "#f59e0b" : navBlue;
 
   return (
@@ -188,7 +188,7 @@ export function NextUpTile({
       >
         {/* ── HEADER ROW ── */}
         <div className="flex items-center justify-between px-4 py-3"
-          style={{ backgroundColor: "#1a6fd4", borderRadius: "16px 16px 0 0" }}>
+          style={{ backgroundColor: "#2A394F", borderRadius: "16px 16px 0 0" }}>
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-white" />
             <span style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF" }}>
