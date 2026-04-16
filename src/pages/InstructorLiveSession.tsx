@@ -1048,25 +1048,42 @@ export default function InstructorLiveSession() {
                   : null
               }
             />
-           {/* Resume active session banner */}
+           {/* Resume active session banner — premium card */}
            {isSessionActive && (
-             <div
-               className="bg-emerald-500 text-white rounded-2xl p-4 flex items-center justify-between"
-             >
-               <div>
-                 <p className="font-semibold text-sm">Session in progress</p>
-                 <p className="text-xs text-white/80">
-                   {currentPupil?.name || "Test route"} · {formatElapsedTime(elapsedTime)}
-                 </p>
+             <div style={{
+               background: "white",
+               borderRadius: 20,
+               overflow: "hidden",
+               boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
+               border: "0.5px solid rgba(0,0,0,0.06)",
+             }}>
+               <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                   <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#0f9e75", flexShrink: 0 }} />
+                   <div>
+                     <p style={{ fontSize: 14, fontWeight: 700, color: "#1c1c1e" }}>Session in progress</p>
+                     <p style={{ fontSize: 12, color: "#8e8e93" }}>
+                       {currentPupil?.name || "Test route"} · {formatElapsedTime(elapsedTime)}
+                     </p>
+                   </div>
+                 </div>
+                 <button
+                   onClick={() => navigate("/instructor/tracking?fullscreen=true", { replace: true })}
+                   style={{
+                     background: "linear-gradient(to right, #0d4fa0, #1a6fd4)",
+                     color: "white",
+                     fontSize: 13,
+                     fontWeight: 700,
+                     padding: "8px 18px",
+                     borderRadius: 20,
+                     border: "none",
+                     cursor: "pointer",
+                   }}
+                 >
+                   Resume
+                 </button>
                </div>
-               <Button
-                 size="sm"
-                 variant="secondary"
-                 className="bg-white text-emerald-600 hover:bg-white/90 font-semibold"
-                 onClick={() => navigate("/instructor/tracking?fullscreen=true", { replace: true })}
-               >
-                 Resume
-               </Button>
+               <div style={{ height: 2, background: "linear-gradient(to right, #0d4fa0, #56a8f5)", borderRadius: 2 }} />
              </div>
            )}
 

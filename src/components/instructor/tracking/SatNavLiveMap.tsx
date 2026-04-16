@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict } from "date-fns";
 import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
 import { supabase } from "@/integrations/supabase/client";
-import SpeedLimitRoundel from "@/components/instructor/SpeedLimitRoundel";
 
 interface SatNavLiveMapProps {
   latitude: number | null;
@@ -42,6 +41,7 @@ export function SatNavLiveMap({
   const hasPosition = latitude !== null && longitude !== null;
 
   const speedMph = speedKmh != null ? Math.round(speedKmh * 0.621371) : null;
+  const speedLimitMph = speedLimitKmh != null ? Math.round(speedLimitKmh * 0.621371) : null;
   const isOverSpeed = speedKmh != null && speedLimitKmh != null && speedKmh > speedLimitKmh;
   const dailyMiles = dailyDistanceKm != null ? Math.round(dailyDistanceKm * 0.621371) : null;
 
@@ -236,14 +236,76 @@ export function SatNavLiveMap({
     map.panTo(pos);
   }, [latitude, longitude, heading, isActive, getArrowIcon]);
 
-  const containerStyle = fullscreen
-    ? { height: "100%", width: "100%" }
-    : { height: "55vh", minHeight: 320 };
+  // Fullscreen mode — keep existing behavior
+  if (fullscreen) {
+    return (
+      <div className={className} style={{ overflow: "hidden" }}>
+        <div className="relative" style={{ height: "100%", width: "100%" }}>
+          <div ref={mapDivRef} className="absolute inset-0 z-0" />
+          {hasPosition ? (
+            <>
+              <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 py-2.5" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                <div>
+                  {isLive ? (
+                    <span style={{ background: "#0f9e75", color: "white", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 20, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+                      </span>
+                      Live
+                    </span>
+                  ) : lastSeenLabel ? (
+                    <Badge variant="secondary" className="gap-1 text-[10px]">{lastSeenLabel}</Badge>
+                  ) : null}
+                </div>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "#1c1c1e" }} className="truncate ml-3 flex-1 text-right">
+                  {roadName || "Awaiting location…"}
+                </p>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 z-10 px-3 py-3" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                <div className="flex items-end justify-between">
+                  <div className="flex items-end gap-2.5">
+                    <div className="text-center">
+                      <span style={{ fontSize: 48, fontWeight: 700, color: isOverSpeed ? "#e24b4a" : "#1c1c1e", lineHeight: 1 }} className={`tabular-nums ${isOverSpeed ? "animate-pulse" : ""}`}>
+                        {speedMph ?? 0}
+                      </span>
+                      <p style={{ fontSize: 12, color: "#8e8e93", marginTop: 2 }}>mph</p>
+                    </div>
+                    {speedLimitMph != null && speedLimitMph > 0 && (
+                      <div style={{ width: 44, height: 44, border: "3px solid #e24b4a", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ fontSize: 16, fontWeight: 700, color: "#e24b4a" }} className="tabular-nums">{speedLimitMph}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-end gap-0.5">
+                    {ignitionOn != null && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                        <span style={{ width: 8, height: 8, borderRadius: "50%", background: ignitionOn ? "#0f9e75" : "#c7c7cc" }} />
+                        <span style={{ fontSize: 12, color: "#8e8e93" }}>{ignitionOn ? "Engine On" : "Engine Off"}</span>
+                      </div>
+                    )}
+                    {dailyMiles != null && dailyMiles > 0 && (
+                      <span style={{ fontSize: 10, fontWeight: 500, color: "#8e8e93" }}>Today: {dailyMiles} mi</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-[5]" style={{ background: "rgba(242,242,247,0.8)" }}>
+              <p style={{ fontSize: 14, color: "#8e8e93" }}>No position data yet</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
+  // Non-fullscreen: premium iOS card with top bar, map, bottom bar, gradient line
   return (
     <div
       className={className}
-      style={fullscreen ? { overflow: "hidden" } : {
+      style={{
         borderRadius: 20,
         overflow: "hidden",
         boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
@@ -251,79 +313,67 @@ export function SatNavLiveMap({
         background: "white",
       }}
     >
-      <div className="relative" style={containerStyle}>
-        {/* Map canvas */}
+      {/* Top bar: Live badge + address */}
+      <div style={{ background: "white", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div>
+          {isLive ? (
+            <span style={{ background: "#0f9e75", color: "white", fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 20, display: "inline-flex", alignItems: "center", gap: 5 }}>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+              </span>
+              Live
+            </span>
+          ) : lastSeenLabel ? (
+            <Badge variant="secondary" className="gap-1 text-[10px]">{lastSeenLabel}</Badge>
+          ) : null}
+        </div>
+        <p style={{ fontSize: 13, fontWeight: 600, color: "#1c1c1e" }} className="truncate ml-3 flex-1 text-right">
+          {roadName || "Awaiting location…"}
+        </p>
+      </div>
+
+      {/* Map */}
+      <div className="relative" style={{ height: "45vh", minHeight: 240 }}>
         <div ref={mapDivRef} className="absolute inset-0 z-0" />
-
-        {hasPosition ? (
-          <>
-            {/* Top frosted bar: Live badge + road name */}
-            <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 py-2.5" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-              <div>
-                {isLive ? (
-                  <span style={{ background: "#0f9e75", color: "white", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 20, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
-                    </span>
-                    Live
-                  </span>
-                ) : lastSeenLabel ? (
-                  <Badge variant="secondary" className="gap-1 text-[10px]">
-                    {lastSeenLabel}
-                  </Badge>
-                ) : null}
-              </div>
-              <p style={{ fontSize: 13, fontWeight: 600, color: "#1c1c1e" }} className="truncate ml-3 flex-1 text-right">
-                {roadName || "Awaiting location…"}
-              </p>
-            </div>
-
-            {/* Bottom HUD: Speed + limit — separate card below map */}
-            <div className="absolute bottom-0 left-0 right-0 z-10 px-3 py-3" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
-              <div className="flex items-end justify-between">
-                {/* Speed readout */}
-                <div className="flex items-end gap-2.5">
-                  <div className="text-center">
-                    <span style={{ fontSize: fullscreen ? 48 : 28, fontWeight: 700, color: isOverSpeed ? "#e24b4a" : "#1c1c1e", lineHeight: 1 }} className={`tabular-nums ${isOverSpeed ? "animate-pulse" : ""}`}>
-                      {speedMph ?? 0}
-                    </span>
-                    <p style={{ fontSize: 12, color: "#8e8e93", marginTop: 2 }}>mph</p>
-                  </div>
-                  {speedLimitKmh != null && speedLimitKmh > 0 && (
-                    <SpeedLimitRoundel
-                      speedLimit={speedLimitKmh}
-                      isExceeding={isOverSpeed}
-                      size={fullscreen ? "md" : "sm"}
-                    />
-                  )}
-                </div>
-
-                {/* Telemetry strip */}
-                <div className="flex flex-col items-end gap-0.5">
-                  {ignitionOn != null && (
-                    <div className="flex items-center gap-1">
-                      <span className={`w-2 h-2 rounded-full ${ignitionOn ? "bg-emerald-500" : "bg-muted-foreground/40"}`} />
-                      <span style={{ fontSize: 10, fontWeight: 500, color: "#8e8e93" }}>
-                        {ignitionOn ? "Engine On" : "Engine Off"}
-                      </span>
-                    </div>
-                  )}
-                  {dailyMiles != null && dailyMiles > 0 && (
-                    <span style={{ fontSize: 10, fontWeight: 500, color: "#8e8e93" }}>
-                      Today: {dailyMiles} mi
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </>
-        ) : (
+        {!hasPosition && (
           <div className="absolute inset-0 flex flex-col items-center justify-center z-[5]" style={{ background: "rgba(242,242,247,0.8)" }}>
             <p style={{ fontSize: 14, color: "#8e8e93" }}>No position data yet</p>
           </div>
         )}
       </div>
+
+      {/* Bottom bar: Speed + limit + engine */}
+      <div style={{ background: "white", padding: "12px 16px", display: "flex", alignItems: "center", gap: 16 }}>
+        {/* Speed */}
+        <div>
+          <span style={{ fontSize: 28, fontWeight: 700, color: isOverSpeed ? "#e24b4a" : "#1c1c1e", lineHeight: 1 }} className={`tabular-nums ${isOverSpeed ? "animate-pulse" : ""}`}>
+            {speedMph ?? 0}
+          </span>
+          <p style={{ fontSize: 12, color: "#8e8e93", marginTop: 2 }}>mph</p>
+        </div>
+
+        {/* Speed limit roundel */}
+        {speedLimitMph != null && speedLimitMph > 0 && (
+          <div style={{ width: 44, height: 44, border: "3px solid #e24b4a", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: "#e24b4a" }} className="tabular-nums">{speedLimitMph}</span>
+          </div>
+        )}
+
+        {/* Spacer */}
+        <div style={{ flex: 1 }} />
+
+        {/* Engine status */}
+        {ignitionOn != null && (
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: ignitionOn ? "#0f9e75" : "#c7c7cc" }} />
+            <span style={{ fontSize: 12, color: "#8e8e93" }}>{ignitionOn ? "Engine On" : "Engine Off"}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom gradient line */}
+      <div style={{ height: 2, background: "linear-gradient(to right, #0d4fa0, #56a8f5)", borderRadius: 2 }} />
     </div>
   );
 }
