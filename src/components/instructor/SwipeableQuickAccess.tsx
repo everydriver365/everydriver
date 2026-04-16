@@ -221,6 +221,15 @@ export function SwipeableQuickAccess() {
         open={quickActionsMenuOpen}
         onClose={() => setQuickActionsMenuOpen(false)}
       />
+
+      <CoursePlannerSheet
+        open={plannerOpen}
+        onOpenChange={setPlannerOpen}
+        mode="instructor"
+        instructorId={instructor?.id || null}
+        instructorName={instructor?.name || null}
+        source="instructor_app"
+      />
     </div>
   );
 }
