@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { format, addWeeks } from 'date-fns';
-import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Car, CheckSquare, MapPin, AlertTriangle, Clock, ChevronRight } from 'lucide-react';
+import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Car, CheckSquare, MapPin, AlertTriangle, Clock, ChevronRight, CreditCard, Mail, Send, Banknote } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -116,6 +117,9 @@ export function AddLessonSheet({
   const [newPupilPhone, setNewPupilPhone] = useState('');
   const [newPupilAddress, setNewPupilAddress] = useState('');
   const [newPupilPostcode, setNewPupilPostcode] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('tbc');
+  const [showPostPayment, setShowPostPayment] = useState(false);
+  const [savedPupilId, setSavedPupilId] = useState<string | null>(null);
 
   const isDrivingTest = lessonType === 'driving_test';
   const currentTypeColor = LESSON_TYPES.find(t => t.value === lessonType)?.color || '#7FB3E3';
@@ -168,7 +172,14 @@ export function AddLessonSheet({
     setIsRecurring(false); setRecurrenceWeeks('4');
     setPlannedCompetencies([]); setLessonType('standard');
     setSelectedTestCentre(''); setSelectedExaminer('');
-    setConflictWarning(null);
+    setConflictWarning(null); setPaymentMethod('tbc');
+  };
+
+  const handlePostSavePayment = (pupilId: string) => {
+    if (paymentMethod === 'send_link' || paymentMethod === 'take_payment') {
+      setSavedPupilId(pupilId);
+      setShowPostPayment(true);
+    }
   };
 
   useEffect(() => {
@@ -234,7 +245,9 @@ export function AddLessonSheet({
           instructor_id: instructorId, pupil_id: selectedPupil,
           lesson_date: format(recurringDate, 'yyyy-MM-dd'), start_time: lessonStartTime,
           duration_minutes: durationMinutes, pickup_location: pickupAddress || null,
-          status: 'scheduled', payment_status: 'not_paid', lesson_type: lessonType,
+          status: 'scheduled', payment_status: paymentMethod === 'cash' ? 'cash' : 'not_paid', 
+          payment_method: paymentMethod,
+          lesson_type: lessonType,
           recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
           planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
           notes: testNotes,
@@ -244,6 +257,7 @@ export function AddLessonSheet({
       const { error } = await supabase.from('scheduled_lessons').insert(lessons);
       if (error) throw error;
       toast.success(isDrivingTest ? 'Test scheduled!' : isRecurring ? `${weeks} lessons scheduled` : 'Lesson scheduled');
+      handlePostSavePayment(selectedPupil);
       resetForm(); onOpenChange(false); onSuccess();
     } catch (error) { console.error(error); toast.error('Failed to schedule lesson'); }
     finally { setLoading(false); }
@@ -269,7 +283,9 @@ export function AddLessonSheet({
           instructor_id: instructorId, pupil_id: newPupil.id,
           lesson_date: format(recurringDate, 'yyyy-MM-dd'), start_time: lessonStartTime,
           duration_minutes: durationMinutes, pickup_location: addr || null,
-          status: 'scheduled', payment_status: 'not_paid', lesson_type: lessonType,
+          status: 'scheduled', payment_status: paymentMethod === 'cash' ? 'cash' : 'not_paid',
+          payment_method: paymentMethod,
+          lesson_type: lessonType,
           recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
           planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
           notes: testNotes,
@@ -278,6 +294,7 @@ export function AddLessonSheet({
       const { error: lessonError } = await supabase.from('scheduled_lessons').insert(lessons);
       if (lessonError) throw lessonError;
       toast.success(isDrivingTest ? 'Pupil created & test scheduled!' : isRecurring ? `Pupil created & ${weeks} lessons scheduled` : 'Pupil created & lesson scheduled');
+      handlePostSavePayment(newPupil.id);
       resetForm(); onOpenChange(false); onSuccess();
     } catch (error) { console.error(error); toast.error('Failed to schedule lesson'); }
     finally { setLoading(false); }
@@ -292,6 +309,7 @@ export function AddLessonSheet({
   const selectedPupilName = pupils.find(p => p.id === selectedPupil)?.name;
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
@@ -651,6 +669,38 @@ export function AddLessonSheet({
             </>
           )}
 
+          {/* Payment */}
+          <div style={{ height: 1, backgroundColor: "#E4E4E7", margin: "20px 0" }} />
+          <Section>
+            <SectionLabel>Payment</SectionLabel>
+            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+              <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <CreditCard style={{ width: 16, height: 16, color: "#6B63D6" }} />
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="tbc">TBC — Decide Later</SelectItem>
+                <SelectItem value="cash">Cash</SelectItem>
+                <SelectItem value="card">Card</SelectItem>
+                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                <SelectItem value="send_link">Send Payment Link</SelectItem>
+                <SelectItem value="take_payment">Take Payment Now (QR)</SelectItem>
+              </SelectContent>
+            </Select>
+            {paymentMethod === 'send_link' && (
+              <p style={{ fontSize: 12, color: "#A1A1AA", marginTop: 4 }}>
+                A payment link will be sent after saving
+              </p>
+            )}
+            {paymentMethod === 'take_payment' && (
+              <p style={{ fontSize: 12, color: "#A1A1AA", marginTop: 4 }}>
+                A payment page / QR code will open after saving
+              </p>
+            )}
+          </Section>
+
           {/* Summary card */}
           {(selectedPupil || newPupilName) && lessonDate && (
             <>
@@ -677,6 +727,101 @@ export function AddLessonSheet({
         </div>
       </SheetContent>
     </Sheet>
+
+    {/* Post-Save Payment Dialog */}
+    <Dialog open={showPostPayment} onOpenChange={setShowPostPayment}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Payment Action
+          </DialogTitle>
+          <DialogDescription>
+            What would you like to do now?
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3 pt-2">
+          {paymentMethod === 'send_link' && savedPupilId && (
+            <>
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-3 h-12"
+                onClick={async () => {
+                  if (!savedPupilId) return;
+                  try {
+                    const { data: pupilData } = await supabase.from("pupils").select("name, email").eq("id", savedPupilId).single();
+                    if (pupilData?.email) {
+                      await supabase.functions.invoke("send-payment-link", {
+                        body: { instructorId, pupilId: savedPupilId, method: "email" },
+                      });
+                      toast.success(`Payment link sent to ${pupilData.email}`);
+                    } else {
+                      toast.error("No email address on file");
+                    }
+                  } catch { toast.error("Failed to send payment link"); }
+                  setShowPostPayment(false);
+                }}
+              >
+                <Mail className="h-5 w-5 text-muted-foreground" />
+                <div className="text-left">
+                  <p className="font-medium text-sm">Send via Email</p>
+                  <p className="text-xs text-muted-foreground">Email a payment link to the pupil</p>
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-3 h-12"
+                onClick={async () => {
+                  if (!savedPupilId) return;
+                  try {
+                    const { data: pupilData } = await supabase.from("pupils").select("name, phone").eq("id", savedPupilId).single();
+                    if (pupilData?.phone) {
+                      await supabase.functions.invoke("send-payment-link", {
+                        body: { instructorId, pupilId: savedPupilId, method: "sms" },
+                      });
+                      toast.success(`Payment link sent to ${pupilData.phone}`);
+                    } else {
+                      toast.error("No phone number on file");
+                    }
+                  } catch { toast.error("Failed to send payment link"); }
+                  setShowPostPayment(false);
+                }}
+              >
+                <Send className="h-5 w-5 text-muted-foreground" />
+                <div className="text-left">
+                  <p className="font-medium text-sm">Send via SMS</p>
+                  <p className="text-xs text-muted-foreground">Text a payment link to the pupil</p>
+                </div>
+              </Button>
+            </>
+          )}
+          {paymentMethod === 'take_payment' && (
+            <Button
+              className="w-full justify-start gap-3 h-12"
+              onClick={async () => {
+                setShowPostPayment(false);
+                const { data: inst } = await supabase.from("instructors").select("app_slug").eq("id", instructorId).single();
+                if (inst?.app_slug) {
+                  window.open(`/pay/${inst.app_slug}`, '_blank');
+                } else {
+                  toast.info("Payment page not configured yet");
+                }
+              }}
+            >
+              <Banknote className="h-5 w-5" />
+              <div className="text-left">
+                <p className="font-medium text-sm">Open Payment Page</p>
+                <p className="text-xs opacity-80">Show QR code or payment page</p>
+              </div>
+            </Button>
+          )}
+          <Button variant="ghost" className="w-full" onClick={() => setShowPostPayment(false)}>
+            Skip for now
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
 
