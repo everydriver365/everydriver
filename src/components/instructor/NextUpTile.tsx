@@ -77,7 +77,22 @@ export function NextUpTile({
   const { data: pupilUnreadCount = 0 } = usePupilUnreadCount(instructorId, pupilId);
   const { data: adminUnreadCount = 0 } = useAdminUnreadForPupil(instructorId, pupilId, pupilName);
   const totalUnreadBadge = pupilUnreadCount + adminUnreadCount;
-  const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition, isLoading: etaLoading } = useTrafficETA(pickupPostcode);
+  const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition, isLoading: etaLoading, error: etaError } = useTrafficETA(pickupPostcode);
+
+  // Fetch instructor hourly rate for expected earnings
+  const [hourlyRate, setHourlyRate] = useState<number>(40);
+  useEffect(() => {
+    if (!instructorId) return;
+    supabase
+      .from("instructors")
+      .select("hourly_rate")
+      .eq("id", instructorId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.hourly_rate) setHourlyRate(Number(data.hourly_rate));
+      });
+  }, [instructorId]);
+  const expectedEarnings = (durationMinutes / 60) * hourlyRate;
   const { currentWeather } = useDrivingAlerts(instructorId);
   const { devices } = useVehicleHealth();
 
