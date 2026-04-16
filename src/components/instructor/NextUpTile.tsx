@@ -439,11 +439,10 @@ export function NextUpTile({
                 )}
 
                 {/* Stats row */}
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   {[
                     { icon: Hourglass, label: "Duration", value: formatDuration(), color: "hsl(220, 52%, 22%)" },
                     { icon: PoundSterling, label: "Earnings", value: `£${expectedEarnings.toFixed(0)}`, color: "#10b981" },
-                    { icon: PoundSterling, label: effectiveBalance < 0 ? "Due" : "Balance", value: `£${Math.abs(effectiveBalance).toFixed(0)}`, color: effectiveBalance < 0 ? "#f97316" : "#10b981" },
                   ].map((stat) => (
                     <div key={stat.label} className="flex flex-col items-center py-3 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)" }}>
                       <div className="w-8 h-8 rounded-2xl flex items-center justify-center mb-1.5" style={{ background: `${stat.color}15` }}>
