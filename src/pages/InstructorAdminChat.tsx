@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { PageSkeleton } from "@/components/ui/skeletons/PageSkeleton";
 import { AdminChatWindow } from "@/components/instructor/AdminChatWindow";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
@@ -17,7 +18,7 @@ export default function InstructorAdminChat() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <PageSkeleton />
       </div>
     );
   }

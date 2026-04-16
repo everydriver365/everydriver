@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { PageSkeleton } from "@/components/ui/skeletons/PageSkeleton";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
 import { AccountSettings } from "@/components/instructor/AccountSettings";
@@ -53,9 +54,7 @@ export default function InstructorAccounts() {
   if (!instructor?.id) {
     return (
       <InstructorPortalLayout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
+        <PageSkeleton />
       </InstructorPortalLayout>
     );
   }

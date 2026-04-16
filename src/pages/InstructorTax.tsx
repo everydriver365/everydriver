@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { PageSkeleton } from "@/components/ui/skeletons/PageSkeleton";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -225,9 +226,7 @@ export default function InstructorTax() {
   if (!instructorId) {
     return (
       <InstructorPortalLayout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
+        <PageSkeleton />
       </InstructorPortalLayout>
     );
   }

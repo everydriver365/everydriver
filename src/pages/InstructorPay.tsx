@@ -22,6 +22,7 @@ import { TakePaymentModal } from "@/components/instructor/TakePaymentModal";
 import { PaymentHistory } from "@/components/instructor/PaymentHistory";
 import { InstructorPayoutHistory } from "@/components/instructor/InstructorPayoutHistory";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { PageSkeleton } from "@/components/ui/skeletons/PageSkeleton";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
@@ -116,9 +117,7 @@ export default function InstructorPay() {
   if (!instructorId) {
     return (
       <InstructorPortalLayout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        </div>
+        <PageSkeleton />
       </InstructorPortalLayout>
     );
   }

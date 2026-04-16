@@ -443,6 +443,12 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Shimmer animation for skeleton placeholders */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
 /* Global safe-area chrome: fill status bar / notch area */
 html {
   background-color: hsl(var(--background));

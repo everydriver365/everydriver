@@ -1,4 +1,5 @@
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { FleetDashboard } from "@/components/instructor/FleetDashboard";
@@ -182,7 +183,11 @@ export default function InstructorFleetDashboard() {
             </div>
           </Tabs>
         ) : (
-          <p className="text-muted-foreground px-5">Loading...</p>
+          <div className="space-y-3 px-5">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 rounded-xl" />
+            ))}
+          </div>
         )}
       </div>
     </InstructorPortalLayout>

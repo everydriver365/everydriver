@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { PageSkeleton } from "@/components/ui/skeletons/PageSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { format, addWeeks, subWeeks, startOfWeek, addDays, isSameDay } from "date-fns";
 import { ChevronLeft, ChevronRight, Calendar, Plus, Trash2 } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -268,9 +270,7 @@ export default function InstructorQuickAvailability() {
   if (!instructorId) {
     return (
       <InstructorPortalLayout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
+        <PageSkeleton />
       </InstructorPortalLayout>
     );
   }
@@ -312,8 +312,10 @@ export default function InstructorQuickAvailability() {
         {/* Day Cards */}
         <div className="space-y-2">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            <div className="space-y-2 py-4">
+              {Array.from({ length: 7 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 rounded-xl" />
+              ))}
             </div>
           ) : (
             weekDays.map((date) => {
