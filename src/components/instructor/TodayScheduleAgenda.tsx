@@ -193,7 +193,6 @@ function AgendaList({ lessons }: { lessons: TodayLesson[] }) {
             </Link>
           );
         })}
-      </div>
     </div>
   );
 }
