@@ -357,6 +357,22 @@ export function NextUpTile({
               <div className="px-4 pb-4 flex flex-col gap-3">
                 <div className="h-px w-full" style={{ background: "rgba(0,0,0,0.06)" }} />
 
+                {/* Mini-map of pickup location */}
+                {pickupPostcode && (
+                  <div
+                    className="rounded-2xl overflow-hidden border cursor-pointer relative"
+                    style={{ borderColor: "rgba(0,0,0,0.06)" }}
+                    onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <div className="absolute top-2 right-2 z-[1] bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 pointer-events-none">
+                      <Navigation className="h-3 w-3" /> Tap to navigate
+                    </div>
+                    <PostcodeMapPreview postcode={pickupPostcode} />
+                  </div>
+                )}
+
                 {/* Stats row */}
                 <div className="grid grid-cols-3 gap-2">
                   {[
@@ -500,6 +516,21 @@ export function NextUpTile({
                     </div>
                     <span className="text-[13px] font-medium flex-1" style={{ color: "hsl(var(--foreground))" }}>
                       {pupilUnreadCount} unread from {firstName}
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                )}
+
+                {/* Admin notes about this pupil */}
+                {adminUnreadCount > 0 && (
+                  <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor-app/admin-chat`); }}
+                    className="flex items-center gap-3 p-3.5 rounded-2xl w-full text-left"
+                    style={{ background: "rgba(249,115,22,0.06)" }}>
+                    <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "rgba(249,115,22,0.12)" }}>
+                      <Mail className="h-5 w-5 text-orange-500" />
+                    </div>
+                    <span className="text-[13px] font-medium flex-1" style={{ color: "hsl(var(--foreground))" }}>
+                      {adminUnreadCount} admin note{adminUnreadCount !== 1 ? "s" : ""} about {firstName}
                     </span>
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </button>
