@@ -125,11 +125,12 @@ export function ActivityTilesGrid({
                 overflow: "hidden",
                 border: "0.5px solid rgba(26,111,212,0.1)",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
-                padding: "16px 12px 14px",
-                textAlign: "center",
+                padding: "16px 14px 14px",
+                textAlign: "left",
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "center",
+                justifyContent: "space-between",
+                height: 110,
               }}
             >
               {count > 0 && (
@@ -154,21 +155,34 @@ export function ActivityTilesGrid({
                   {count > 99 ? "99+" : count}
                 </span>
               )}
-              <div style={{ fontSize: 32, marginBottom: 10 }}>
-                {tile.icon}
+              <div>
+                <p style={{ fontSize: 15, fontWeight: 700, color: "#1c1c1e", marginBottom: 2, lineHeight: 1.2 }}>
+                  {tile.title}
+                </p>
               </div>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "#1c1c1e", letterSpacing: "0.01em" }}>
-                {tile.title}
-              </span>
-              <div
-                style={{
-                  height: 2,
-                  width: "100%",
-                  background: "linear-gradient(to right, #0d4fa0, #56a8f5)",
-                  borderRadius: 2,
-                  marginTop: 10,
-                }}
-              />
+              <div className="flex items-end justify-between" style={{ marginTop: "auto" }}>
+                <div
+                  style={{
+                    height: 2,
+                    flex: 1,
+                    background: "linear-gradient(to right, #0d4fa0, #56a8f5)",
+                    borderRadius: 2,
+                    marginRight: 10,
+                  }}
+                />
+                <div
+                  className="flex items-center justify-center"
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: "#E6E8EC",
+                    flexShrink: 0,
+                  }}
+                >
+                  {tile.icon}
+                </div>
+              </div>
             </motion.button>
           );
         })}
