@@ -618,14 +618,12 @@ export function AddLessonSheet({
           {tab === 'existing' && (
             <Section>
               <SectionLabel>Pickup Location</SectionLabel>
-              <div style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", overflow: "hidden" }}>
-                <GoogleAddressAutocomplete
-                  value={pickupAddress}
-                  onChange={setPickupAddress}
-                  onPostcodeChange={setPickupPostcode}
-                  placeholder="Start typing an address..."
-                />
-              </div>
+              <GoogleAddressAutocomplete
+                value={pickupAddress}
+                onChange={setPickupAddress}
+                onPostcodeChange={setPickupPostcode}
+                placeholder="Start typing an address..."
+              />
             </Section>
           )}
 
