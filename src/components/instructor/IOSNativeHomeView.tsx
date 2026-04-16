@@ -20,6 +20,9 @@ import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
+import { useAdminUnreadForPupil } from "@/hooks/useAdminUnreadForPupil";
+import { PostcodeMapPreview } from "@/components/instructor/PostcodeMapPreview";
+import { Mail } from "lucide-react";
 import { useRunningLateDetection } from "@/hooks/useRunningLateDetection";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { triggerHaptic } from "@/lib/haptics";
@@ -60,6 +63,8 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
   const pickupPostcode = nextLesson?.pickupPostcode ?? null;
   const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition } = useTrafficETA(pickupPostcode);
   const { data: pupilUnreadCount = 0 } = usePupilUnreadCount(instructorId, nextLesson?.pupilId);
+  const { data: adminUnreadCount = 0 } = useAdminUnreadForPupil(instructorId, nextLesson?.pupilId, nextLesson?.pupilName);
+  const totalUnreadBadge = pupilUnreadCount + adminUnreadCount;
   const { isRunningLate, lateByMinutes, suggestedMessage, arrivalTimeText, sendLateETA } = useRunningLateDetection({
     etaMinutes,
     minutesUntil: nextLesson?.minutesUntil ?? 999,
@@ -150,10 +155,10 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
                   <span className="text-[18px] font-bold text-white">{getInitials(nextLesson.pupilName)}</span>
                 )}
               </div>
-              {pupilUnreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
-                  {pupilUnreadCount}
-                </span>
+              {totalUnreadBadge > 0 && (
+                <div className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                  {totalUnreadBadge}
+                </div>
               )}
             </div>
             <div className="flex-1 min-w-0">
@@ -226,6 +231,24 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
                   </div>
                 </div>
 
+                {/* Mini-map of pickup location */}
+                {nextLesson.pickupPostcode && (
+                  <div
+                    className="rounded-2xl overflow-hidden border border-white/10 mb-3 cursor-pointer relative"
+                    onClick={() => {
+                      const q = nextLesson.pickupPostcode || nextLesson.pickupLocation || "";
+                      window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`, "_blank");
+                    }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <div className="absolute top-2 right-2 z-[1] bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 pointer-events-none">
+                      <Navigation className="h-3 w-3" /> Tap to navigate
+                    </div>
+                    <PostcodeMapPreview postcode={nextLesson.pickupPostcode} />
+                  </div>
+                )}
+
                 {/* ETA Row */}
                 {etaText && (
                   <div className="bg-white/[0.08] rounded-2xl p-3 flex items-center gap-3 mb-3">
@@ -250,6 +273,20 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
                     <MessageCircle className="h-5 w-5 shrink-0" style={{ color: "#FF9500" }} />
                     <span className="text-[13px] text-white/80 flex-1 text-left">
                       {pupilUnreadCount} unread message{pupilUnreadCount !== 1 ? "s" : ""} from {nextLesson.pupilName.split(" ")[0]}
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-white/30" />
+                  </button>
+                )}
+
+                {/* Admin notes about this pupil */}
+                {adminUnreadCount > 0 && (
+                  <button
+                    onClick={() => navigate("/instructor-app/admin-chat")}
+                    className="w-full bg-white/[0.08] rounded-2xl p-3 flex items-center gap-3 mb-3"
+                  >
+                    <Mail className="h-5 w-5 shrink-0" style={{ color: "#FF9500" }} />
+                    <span className="text-[13px] text-white/80 flex-1 text-left">
+                      {adminUnreadCount} admin note{adminUnreadCount !== 1 ? "s" : ""} about {nextLesson.pupilName.split(" ")[0]}
                     </span>
                     <ChevronRight className="h-4 w-4 text-white/30" />
                   </button>
