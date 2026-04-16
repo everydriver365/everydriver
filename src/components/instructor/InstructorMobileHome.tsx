@@ -499,6 +499,17 @@ export function InstructorMobileHome({
       {/* Morning Briefing — prominent position above activity tiles */}
       <MorningBriefingCard instructorId={instructorId} />
 
+      {/* Alerts */}
+      <div className="px-4 mt-3">
+        <WeatherAlertBanner
+          trafficAlerts={trafficAlerts}
+          onDismissTraffic={dismissAlert}
+          nextLessonMinutesUntil={nextLesson?.minutesUntil}
+          nextLessonEtaMinutes={etaToNextLesson > 0 ? etaToNextLesson : null}
+          nextLessonPupilName={nextLesson?.pupilName}
+        />
+      </div>
+
       {/* 2. Activity Tiles Grid */}
       <ActivityTilesGrid
         pendingJobsCount={pendingJobsCount}
@@ -509,17 +520,6 @@ export function InstructorMobileHome({
 
       {/* Telematics Tile */}
       <TelematicsTile />
-
-      {/* Weather, Traffic & Late Alerts */}
-      <div className="px-4 mt-3">
-        <WeatherAlertBanner
-          trafficAlerts={trafficAlerts}
-          onDismissTraffic={dismissAlert}
-          nextLessonMinutesUntil={nextLesson?.minutesUntil}
-          nextLessonEtaMinutes={etaToNextLesson > 0 ? etaToNextLesson : null}
-          nextLessonPupilName={nextLesson?.pupilName}
-        />
-      </div>
 
       {/* View Schedule Tile */}
       <div className="px-4 mt-3">
