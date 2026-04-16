@@ -520,23 +520,52 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         const startDt = parseISO(evt.start_time);
                         const endDt = parseISO(evt.end_time);
                         const colors = getCardColors(evt.color);
+                        const isExpanded = expandedEventId === evt.id;
+                        const durationMins = differenceInMinutes(endDt, startDt);
+                        const durationStr = durationMins >= 60 ? `${Math.floor(durationMins / 60)}h ${durationMins % 60 > 0 ? `${durationMins % 60}m` : ""}` : `${durationMins}m`;
 
                         elements.push(
                           <div
                             key={evt.id}
+                            onClick={() => setExpandedEventId(isExpanded ? null : evt.id)}
                             style={{
                               backgroundColor: colors.bg,
                               borderRadius: 8,
                               padding: "12px 16px",
                               minHeight: 48,
+                              cursor: "pointer",
+                              transition: "filter 0.12s",
                             }}
                           >
                             <div style={{ fontSize: 15, fontWeight: 500, color: colors.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                               {evt.title}
                             </div>
                             <div style={{ fontSize: 13, fontWeight: 400, color: colors.textMuted, marginTop: 2 }}>
-                              {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")}
+                              {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")} · {durationStr}
                             </div>
+                            {isExpanded && (
+                              <div style={{ marginTop: 10, borderTop: `1px solid ${colors.text}20`, paddingTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+                                {evt.location && (
+                                  <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                                    <MapPin style={{ width: 14, height: 14, color: colors.text, marginTop: 2, flexShrink: 0 }} />
+                                    <span style={{ fontSize: 13, color: colors.text }}>{evt.location}</span>
+                                  </div>
+                                )}
+                                {evt.description && (
+                                  <div style={{ fontSize: 13, color: colors.textMuted, whiteSpace: "pre-wrap", lineHeight: 1.4 }}>
+                                    {evt.description}
+                                  </div>
+                                )}
+                                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 2 }}>
+                                  <span style={{ fontSize: 11, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                                    {evt.is_busy ? "Busy" : "Free"} · Google Calendar
+                                  </span>
+                                </div>
+                                {!evt.location && !evt.description && (
+                                  <span style={{ fontSize: 12, color: colors.textMuted, fontStyle: "italic" }}>No additional details</span>
+                                )}
+                              </div>
+                            )}
                           </div>
                         );
                       }
@@ -546,23 +575,43 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         const startDt = parseISO(block.start_datetime);
                         const endDt = parseISO(block.end_datetime);
                         const colors = getBlockColors(block.block_type);
+                        const isExpanded = expandedEventId === `block-${block.id}`;
+                        const durationMins = differenceInMinutes(endDt, startDt);
+                        const durationStr = durationMins >= 60 ? `${Math.floor(durationMins / 60)}h ${durationMins % 60 > 0 ? `${durationMins % 60}m` : ""}` : `${durationMins}m`;
 
                         elements.push(
                           <div
                             key={block.id}
+                            onClick={() => setExpandedEventId(isExpanded ? null : `block-${block.id}`)}
                             style={{
                               backgroundColor: colors.bg,
                               borderRadius: 8,
                               padding: "12px 16px",
                               minHeight: 48,
+                              cursor: "pointer",
                             }}
                           >
                             <div style={{ fontSize: 15, fontWeight: 500, color: colors.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                               {block.title}
                             </div>
                             <div style={{ fontSize: 13, fontWeight: 400, color: colors.textMuted, marginTop: 2 }}>
-                              {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")}
+                              {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")} · {durationStr}
                             </div>
+                            {isExpanded && (
+                              <div style={{ marginTop: 10, borderTop: `1px solid ${colors.text}20`, paddingTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+                                <span style={{ fontSize: 12, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                                  {block.block_type === "break" ? "☕ Break" : block.block_type === "meeting" ? "📅 Meeting" : "🔒 Personal"}
+                                </span>
+                                {block.notes && (
+                                  <div style={{ fontSize: 13, color: colors.text, whiteSpace: "pre-wrap", lineHeight: 1.4 }}>
+                                    {block.notes}
+                                  </div>
+                                )}
+                                {!block.notes && (
+                                  <span style={{ fontSize: 12, color: colors.textMuted, fontStyle: "italic" }}>No notes</span>
+                                )}
+                              </div>
+                            )}
                           </div>
                         );
                       }
