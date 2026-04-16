@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import {
   Search, MapPin, Filter, ChevronDown, PoundSterling, Navigation,
-  Loader2, Calendar as CalendarIcon, X,
-, Car } from "lucide-react";
+  Loader2, Calendar as CalendarIcon, X, Car,
+} from "lucide-react";
 import { useWebsitePage } from "@/hooks/useInstructorWebsitePages";
 import { useMiniWebsiteLinks } from "@/hooks/useMiniWebsiteLinks";
 import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
