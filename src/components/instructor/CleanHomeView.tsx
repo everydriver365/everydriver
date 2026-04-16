@@ -395,8 +395,10 @@ export function CleanHomeView({
                   </motion.button>
                 );
               })}
-            </div>
-          )}
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* ── Quick Actions (editable tiles) ── */}
