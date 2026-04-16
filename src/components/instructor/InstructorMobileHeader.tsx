@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, ChevronLeft, Settings, Plus, PoundSterling, Bell, LogOut } from "lucide-react";
+import { ArrowLeft, ChevronLeft, Settings, Plus, PoundSterling, Bell, LogOut, Menu } from "lucide-react";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { SOSEmergencySheet } from "@/components/instructor/SOSEmergencySheet";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { supabase } from "@/integrations/supabase/client";
 import OfflineSyncIndicator from "@/components/pwa/OfflineSyncIndicator";
+import dsmLogo from "@/assets/dsm-logo.png";
 
 interface InstructorMobileHeaderProps {
   title?: string;
@@ -66,7 +67,6 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
     navigate(-1);
   };
 
-  // Get instructor initials
   const getInitials = () => {
     if (!instructor?.name) return "?";
     return instructor.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
@@ -74,79 +74,103 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
 
   return (
     <div className="sticky top-0 z-50">
-      {/* Safe area fill — frosted glass */}
-      <div className="bg-white/80 backdrop-blur-xl pt-[env(safe-area-inset-top)]" />
-      {/* Header bar */}
-      <div className="bg-white/80 backdrop-blur-xl border-b border-[hsl(240_5%_78%/0.5)] relative overflow-hidden">
-        <div className="relative flex items-center justify-between px-4 py-3">
-          {/* Left: Back button OR Avatar + Greeting */}
-          <div className="flex items-center gap-3">
+      {/* Safe area fill */}
+      <div className="bg-[#f2f2f7] pt-[env(safe-area-inset-top)]" />
+      {/* Premium iOS tile header */}
+      <div
+        className="mx-2 mt-1 rounded-[16px] overflow-hidden bg-white border-[0.5px] border-black/[0.06]"
+        style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)' }}
+      >
+        <div className="relative flex items-center justify-between px-4 py-[10px]">
+          {/* Left: Bell with badge (or back button) */}
+          <div className="flex items-center gap-2">
             {showBackButton ? (
               <button
                 onClick={handleBackClick}
-                className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center"
+                className="h-8 w-8 rounded-full bg-[#f2f2f7] flex items-center justify-center"
               >
-                <ChevronLeft className="h-5 w-5 text-[hsl(211_100%_50%)]" />
+                <ChevronLeft className="h-5 w-5 text-[#0d4fa0]" />
               </button>
             ) : (
-              <Avatar className="h-9 w-9 border-2 border-gray-200">
-                <AvatarImage src={undefined} />
-                <AvatarFallback className="bg-[hsl(211_100%_50%)]/10 text-[hsl(211_100%_50%)] text-xs font-bold">
-                  {getInitials()}
-                </AvatarFallback>
-              </Avatar>
+              <button
+                onClick={() => navigate("/instructor/notifications")}
+                className="relative h-8 w-8 flex items-center justify-center"
+              >
+                <Bell className="h-[20px] w-[20px] text-[#1c1c1e]" />
+                {totalNotifCount > 0 && (
+                  <span
+                    className="absolute flex items-center justify-center px-1 rounded-full"
+                    style={{
+                      top: '-3px',
+                      right: '-3px',
+                      minWidth: '18px',
+                      height: '18px',
+                      borderRadius: '9px',
+                      background: '#ff3b30',
+                      color: 'white',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {totalNotifCount > 9 ? "9+" : totalNotifCount}
+                  </span>
+                )}
+              </button>
             )}
-            <div>
-              {showBackButton ? (
-                <p className="text-sm font-semibold leading-tight text-[hsl(240_6%_11%)]">{title}</p>
-              ) : (
-                <p className="text-sm font-semibold leading-tight text-[hsl(240_6%_11%)]">
-                  {instructor?.name?.split(" ")[0] || "Instructor"}
-                </p>
-              )}
-            </div>
+            {showBackButton && title && (
+              <p className="text-[15px] font-semibold text-[#1c1c1e]">{title}</p>
+            )}
+          </div>
+
+          {/* Centre: DSM logo */}
+          <div className="absolute left-1/2 -translate-x-1/2">
+            <img
+              src={dsmLogo}
+              alt="DSM"
+              className="h-8 w-auto object-contain"
+            />
           </div>
 
           {/* Right: Action buttons */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-[10px]">
             <OfflineSyncIndicator instructorId={instructor?.id} showDetails />
+            {/* SOS */}
             <button
               onClick={() => setSosOpen(true)}
-              className="h-8 w-8 rounded-full bg-destructive flex items-center justify-center shadow-md"
+              className="flex items-center justify-center"
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: '50%',
+                background: '#ff3b30',
+                boxShadow: '0 2px 8px rgba(255,59,48,0.4)',
+              }}
             >
-              <span className="text-[10px] font-black text-destructive-foreground leading-none">SOS</span>
+              <span className="text-[11px] font-extrabold text-white leading-none">SOS</span>
             </button>
-            <button
-              onClick={() => navigate("/instructor/notifications")}
-              className="relative h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center"
-            >
-              <Bell className="h-4 w-4 text-[hsl(240_6%_11%)]" />
-              {totalNotifCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center animate-pulse">
-                  {totalNotifCount > 9 ? "9+" : totalNotifCount}
-                </span>
-              )}
-            </button>
+            {/* Add button */}
             {showAddButton && (
               <button
                 onClick={onAddClick}
-                className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center"
+                className="flex items-center justify-center text-white"
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #0f9e75, #1dcaa5)',
+                  boxShadow: '0 2px 8px rgba(15,158,117,0.3)',
+                  fontSize: 18,
+                }}
               >
-                <Plus className="h-5 w-5 text-[hsl(211_100%_50%)]" />
+                <Plus className="h-[18px] w-[18px]" />
               </button>
             )}
-            <button
-              onClick={() => setPaymentModalOpen(true)}
-              className="h-8 px-3 rounded-full bg-[hsl(211_100%_50%)] flex items-center gap-1.5 hover:bg-[hsl(211_100%_45%)] transition-colors"
-            >
-              <PoundSterling className="h-3.5 w-3.5 text-white" />
-              <span className="text-xs font-semibold text-white">Pay</span>
-            </button>
+            {/* Settings / hamburger menu */}
             {showSettings && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
-                    <Settings className="h-4 w-4 text-[hsl(240_6%_11%)]" />
+                  <button className="flex items-center justify-center h-8 w-8">
+                    <Menu className="h-5 w-5 text-[#8e8e93]" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -155,6 +179,10 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                   <DropdownMenuItem onClick={() => navigate("/instructor/settings")}>
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setPaymentModalOpen(true)}>
+                    <PoundSterling className="mr-2 h-4 w-4" />
+                    Take Payment
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
@@ -166,6 +194,8 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
             )}
           </div>
         </div>
+        {/* Gradient accent line */}
+        <div className="h-[2px] w-full" style={{ background: 'linear-gradient(to right, #0d4fa0, #56a8f5)' }} />
       </div>
       <TakePaymentModal
         open={paymentModalOpen}
