@@ -309,6 +309,7 @@ export function AddLessonSheet({
   const selectedPupilName = pupils.find(p => p.id === selectedPupil)?.name;
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
