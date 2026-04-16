@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Phone, Mail, MapPin, Globe, Facebook, Instagram, Twitter, Linkedin, Calendar, Clock, Loader2, CheckCircle, FileEdit , Car } from "lucide-react";
+import { Phone, Mail, MapPin, Globe, Facebook, Instagram, Twitter, Linkedin, Calendar, Clock, Loader2, CheckCircle, FileEdit, Car } from "lucide-react";
 import { motion } from "framer-motion";
 import { WaitlistJoinCard } from "@/components/mini-website/WaitlistJoinCard";
 import { BespokeEnquiryForm } from "@/components/BespokeEnquiryForm";

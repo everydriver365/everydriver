@@ -6,7 +6,7 @@ import { TestEnquiryDialog } from "@/components/mini-website/TestEnquiryDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RefreshCw, MapPin, Calendar, Clock, AlertCircle, Search, MessageCircle , Car } from "lucide-react";
+import { RefreshCw, MapPin, Calendar, Clock, AlertCircle, Search, MessageCircle, Car } from "lucide-react";
 import { motion } from "framer-motion";
 import { fetchTestCentres, fetchSlotsForCentre, type TestSlot } from "@/lib/api/firecrawl";
 import {
