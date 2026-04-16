@@ -28,6 +28,7 @@ export interface Conversation {
     id: string;
     name: string;
     phone: string | null;
+    profile_image_url: string | null;
   };
   unread_count?: number;
 }
@@ -45,7 +46,7 @@ export function useMessaging(instructorId: string | undefined) {
         .from("conversations")
         .select(`
           *,
-          pupil:pupils(id, name, phone)
+          pupil:pupils(id, name, phone, profile_image_url)
         `)
         .eq("instructor_id", instructorId)
         .order("last_message_at", { ascending: false });

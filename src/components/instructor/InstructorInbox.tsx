@@ -6,7 +6,7 @@ import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
@@ -28,6 +28,7 @@ interface Pupil {
   name: string;
   phone: string | null;
   email: string | null;
+  profile_image_url: string | null;
 }
 
 interface InstructorInboxProps {
