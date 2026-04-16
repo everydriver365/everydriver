@@ -59,7 +59,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "Availability", subtitle: "Working hours", icon: Clock, tintBg: "#ECFDF5", tintColor: "#059669", route: "/instructor/availability" },
   { title: "Expenses", subtitle: "Track costs", icon: Receipt, tintBg: "#FEF3C7", tintColor: "#92400E", route: "/instructor/expenses" },
   { title: "Nearby ADIs", subtitle: "Friends map", icon: Users, tintBg: "#EDE9FE", tintColor: "#5B21B6", route: "/instructor/nearby-friends" },
-  { title: "Find Colleague", subtitle: "School fleet", icon: Users, tintBg: "#DBEAFE", tintColor: "#1E40AF", route: "/instructor/fleet-map?mode=colleagues" },
+  { title: "Find Colleague", subtitle: "School fleet", icon: Users, tintBg: "#E8ECF1", tintColor: "#2A394F", route: "/instructor/fleet-map?mode=colleagues" },
   { title: "Month End", subtitle: "Review & submit", icon: FileBarChart, tintBg: "#EDE9FE", tintColor: "#5B21B6", route: "/instructor/month-end" },
   { title: "Weekly Report", subtitle: "AI summary", icon: BarChart3, tintBg: "#EDE9FE", tintColor: "#5B21B6", route: "/instructor/weekly-report" },
   { title: "Tasks Due", subtitle: "Outstanding", icon: ClipboardCheck, tintBg: "#FEF3C7", tintColor: "#92400E", route: "/instructor/outstanding-tasks" },

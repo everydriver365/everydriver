@@ -34,18 +34,18 @@ export function BottomPromoGroup({ className = "" }: { className?: string }) {
         >
           <div style={{
             width: 44, height: 44, borderRadius: 12,
-            backgroundColor: "#EEF2FF",
+            backgroundColor: "#E8ECF1",
             display: "flex", alignItems: "center", justifyContent: "center",
             flexShrink: 0,
           }}>
-            <Users size={22} strokeWidth={2} color="#4F46E5" />
+            <Users size={22} strokeWidth={2} color="#2A394F" />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <p style={{ fontSize: 15, fontWeight: 500, color: "#18181B", fontFamily: "Inter, sans-serif" }}>The Waiting Room</p>
               <span style={{
                 fontSize: 10, fontWeight: 500, padding: "2px 7px", borderRadius: 4,
-                backgroundColor: "#DBEAFE", color: "#1E40AF",
+                backgroundColor: "#E8ECF1", color: "#2A394F",
               }}>Weekly</span>
             </div>
             <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }}>Informal Zoom for driving instructors</p>
