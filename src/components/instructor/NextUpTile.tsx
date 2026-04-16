@@ -4,8 +4,10 @@ import {
   Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, ChevronDown,
   Send, Play, MapPin, Calendar, ClipboardList,
   Hourglass, PoundSterling, MessageCircle, AlertTriangle, CheckCircle2,
-  Thermometer, Battery, Wifi, BookOpen, Banknote, ChevronRight,
+  Thermometer, Battery, Wifi, BookOpen, Banknote, ChevronRight, Mail,
 } from "lucide-react";
+import { PostcodeMapPreview } from "@/components/instructor/PostcodeMapPreview";
+import { useAdminUnreadForPupil } from "@/hooks/useAdminUnreadForPupil";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { useNavigate } from "react-router-dom";
@@ -73,6 +75,8 @@ export function NextUpTile({
   const queryClient = useQueryClient();
 
   const { data: pupilUnreadCount = 0 } = usePupilUnreadCount(instructorId, pupilId);
+  const { data: adminUnreadCount = 0 } = useAdminUnreadForPupil(instructorId, pupilId, pupilName);
+  const totalUnreadBadge = pupilUnreadCount + adminUnreadCount;
   const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition, isLoading: etaLoading } = useTrafficETA(pickupPostcode);
   const { currentWeather } = useDrivingAlerts(instructorId);
   const { devices } = useVehicleHealth();
@@ -225,10 +229,10 @@ export function NextUpTile({
                   width: 12, height: 12, borderRadius: "50%",
                   backgroundColor: "#34C759", border: "2px solid #FFFFFF",
                 }} />
-                {hasUnread && (
+                {totalUnreadBadge > 0 && (
                   <span className="absolute -top-1 -right-1 flex items-center justify-center"
-                    style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: "#FF3B30", color: "#fff", fontSize: 9, fontWeight: 700, border: "2px solid #FFFFFF" }}>
-                    {pupilUnreadCount}
+                    style={{ minWidth: 18, height: 18, padding: "0 4px", borderRadius: 9, backgroundColor: "#FF3B30", color: "#fff", fontSize: 9, fontWeight: 700, border: "2px solid #FFFFFF" }}>
+                    {totalUnreadBadge}
                   </span>
                 )}
               </div>
