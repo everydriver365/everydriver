@@ -89,10 +89,10 @@ interface MenuItem {
   description?: string;
   path?: string;
   action?: () => void;
-  iconColor?: string;
-  iconBg?: string;
   gateKey?: string;
-  customIcon?: string;
+  iconSrc?: string;
+  tintBg: string;
+  tintColor: string;
 }
 
 interface InstructorProfile {
@@ -118,8 +118,8 @@ interface TileDef {
   title: string;
   description: string;
   icon: React.ElementType;
-  iconColor: string;
-  iconBg: string;
+  tintBg: string;
+  tintColor: string;
   iconSrc?: string;
   category: string;
   externalUrl?: string;
