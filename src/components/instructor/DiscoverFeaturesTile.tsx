@@ -11,7 +11,8 @@ export function DiscoverFeaturesTile({ className = "" }: { className?: string })
       <motion.div
         whileTap={{ scale: 0.97 }}
         onClick={() => setSheetOpen(true)}
-        className={`cursor-pointer flex overflow-hidden rounded-2xl border border-border shadow-sm ${className}`}
+        className={`cursor-pointer flex overflow-hidden ${className}`}
+        style={{ borderRadius: 14, border: '0.5px solid #E4E4E7' }}
       >
         <div className="bg-primary p-5 flex flex-col items-center justify-center shrink-0 min-w-[80px]">
           <Compass className="h-6 w-6 text-primary-foreground" />

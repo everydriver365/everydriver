@@ -28,13 +28,12 @@ export function InstructorCard({
   return (
     <motion.div
       className={cn(
-        "bg-white dark:bg-[#1C1C1E] rounded-2xl",
-        "ios-card-shadow",
-        "ring-1 ring-black/[0.04] dark:ring-white/[0.06]",
+        "overflow-hidden",
         !noPadding && "p-5",
         interactive && "cursor-pointer",
         className
       )}
+      style={{ backgroundColor: '#FFFFFF', borderRadius: 14, border: '0.5px solid #E4E4E7' }}
       whileTap={interactive ? { scale: 0.97 } : undefined}
       transition={interactive ? { type: "spring", stiffness: 400, damping: 25 } : undefined}
       {...motionProps}

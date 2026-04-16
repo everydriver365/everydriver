@@ -110,21 +110,19 @@ export function MoneyActionGrid({ bonusEarned, onTakePayment }: MoneyActionGridP
             transition={{ delay: 0.1 + index * 0.05 }}
             whileTap={{ scale: 0.95 }}
             className={cn(
-              "relative overflow-hidden rounded-2xl p-3.5",
-              "bg-card border border-border shadow-[0_2px_8px_rgba(20,37,66,0.08)]",
-              "active:shadow-md transition-shadow",
+              "relative overflow-hidden p-3.5 transition-shadow",
               isLarge && "col-span-2 row-span-1"
             )}
+            style={{ backgroundColor: '#FFFFFF', borderRadius: 14, border: '0.5px solid #E4E4E7' }}
           >
             <div className={cn(
               "relative z-10 flex",
               isLarge ? "flex-row items-center gap-3" : "flex-col items-start gap-2"
             )}>
               <div className={cn(
-                "rounded-full flex items-center justify-center",
-                action.iconBg,
-                isLarge ? "h-12 w-12" : "h-9 w-9"
-              )}>
+                "flex items-center justify-center",
+                action.iconBg
+              )} style={{ width: isLarge ? 48 : 44, height: isLarge ? 48 : 44, borderRadius: 12 }}>
                 <Icon className={cn(
                   action.iconColor,
                   isLarge ? "h-6 w-6" : "h-4.5 w-4.5"

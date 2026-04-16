@@ -159,9 +159,10 @@ export function KanbanBoard({ instructorId }: KanbanBoardProps) {
           return (
             <div
               key={stage.value}
-              className={`min-w-[260px] w-[260px] shrink-0 snap-start rounded-[14px] p-3 transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.04)] ${
-                dragOverStage === stage.value ? "bg-primary/5 border-primary/30 border-2" : "bg-card border border-border/40"
+              className={`min-w-[260px] w-[260px] shrink-0 snap-start p-3 transition-colors ${
+                dragOverStage === stage.value ? "bg-primary/5" : ""
               }`}
+              style={{ backgroundColor: dragOverStage === stage.value ? undefined : '#FFFFFF', borderRadius: 14, border: dragOverStage === stage.value ? '2px solid hsl(var(--primary) / 0.3)' : '0.5px solid #E4E4E7' }}
               onDragOver={(e) => { e.preventDefault(); setDragOverStage(stage.value); }}
               onDragLeave={() => setDragOverStage(null)}
               onDrop={(e) => handleDrop(e, stage.value)}
