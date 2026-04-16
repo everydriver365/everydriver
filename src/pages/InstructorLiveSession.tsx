@@ -302,23 +302,29 @@ export default function InstructorLiveSession() {
       )
       .subscribe();
     
-    // Direct poller trigger every 2s for near-realtime updates
-    const triggerPoller = () => {
-      supabase.functions.invoke("radius-poller").catch(() => {});
-    };
-    triggerPoller(); // Immediate first trigger
-    const pollerInterval = setInterval(triggerPoller, 2000);
+    // Only poll when a session is actively running
+    let pollerInterval: ReturnType<typeof setInterval> | null = null;
+    let fallbackInterval: ReturnType<typeof setInterval> | null = null;
 
-    // Fallback DB poll every 5s (safety net — Realtime is primary)
-    const fallbackInterval = setInterval(pollDevice, 5000);
+    if (device?.current_session_id) {
+      // Direct poller trigger every 2s for near-realtime updates
+      const triggerPoller = () => {
+        supabase.functions.invoke("radius-poller").catch(() => {});
+      };
+      triggerPoller(); // Immediate first trigger
+      pollerInterval = setInterval(triggerPoller, 2000);
+
+      // Fallback DB poll every 5s (safety net — Realtime is primary)
+      fallbackInterval = setInterval(pollDevice, 5000);
+    }
     
     return () => {
       deviceIdRef.current = null;
       supabase.removeChannel(channel);
-      clearInterval(pollerInterval);
-      clearInterval(fallbackInterval);
+      if (pollerInterval) clearInterval(pollerInterval);
+      if (fallbackInterval) clearInterval(fallbackInterval);
     };
-  }, [device?.id]);
+  }, [device?.id, device?.current_session_id]);
 
   // Additional realtime subscription for pupil sessions (live_pupil_positions)
   // This is supplementary - the main updates come from gps_devices subscription above
