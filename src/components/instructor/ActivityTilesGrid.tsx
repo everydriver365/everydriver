@@ -127,16 +127,7 @@ export function ActivityTilesGrid({
                   {tile.title}
                 </p>
               </div>
-              <div className="flex items-end justify-between" style={{ marginTop: "auto" }}>
-                <div
-                  style={{
-                    height: 2,
-                    flex: 1,
-                    background: "linear-gradient(to right, #0d4fa0, #56a8f5)",
-                    borderRadius: 2,
-                    marginRight: 10,
-                  }}
-                />
+              <div className="flex items-end justify-end" style={{ marginTop: "auto" }}>
                <span
                   style={{
                     fontSize: 30,
