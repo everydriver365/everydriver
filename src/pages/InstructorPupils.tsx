@@ -583,30 +583,45 @@ export default function InstructorPupils() {
           <GradientLine />
         </div>
 
-        {/* All / Active / Passed toggle card */}
-        <div className={cn(cardClass, "!shadow-none !border-0")}>
-          <div className="p-1.5 flex gap-1 bg-white rounded-[20px]">
-            {[
-              { value: "all", label: "All" },
-              { value: "active", label: "Active" },
-              { value: "passed", label: "Passed" },
-              ...(statusCounts.on_hold > 0 ? [{ value: "on_hold", label: "On Hold" }] : []),
-              ...(statusCounts.inactive > 0 ? [{ value: "inactive", label: "Inactive" }] : []),
-            ].map((seg) => (
-              <button
-                key={seg.value}
-                onClick={() => setActiveTab(seg.value as any)}
-                className={cn(
-                  "flex-1 py-[7px] px-3 rounded-[14px] text-[13px] font-semibold transition-all",
-                  activeTab === seg.value
-                    ? "bg-gradient-to-r from-[#0d4fa0] to-[#1a6fd4] text-white font-bold shadow-sm"
-                    : "text-[#8e8e93] bg-transparent"
-                )}
-              >
-                {seg.label}
-              </button>
-            ))}
-          </div>
+        {/* All / Active / Passed toggle */}
+        <div
+          style={{
+            display: "flex",
+            gap: 6,
+            backgroundColor: "#FFFFFF",
+            borderRadius: 14,
+            border: "0.5px solid #E4E4E7",
+            padding: 4,
+          }}
+        >
+          {[
+            { value: "all", label: "All" },
+            { value: "active", label: "Active" },
+            { value: "passed", label: "Passed" },
+            ...(statusCounts.on_hold > 0 ? [{ value: "on_hold", label: "Hold" }] : []),
+            ...(statusCounts.inactive > 0 ? [{ value: "inactive", label: "Inactive" }] : []),
+          ].map((seg) => (
+            <button
+              key={seg.value}
+              onClick={() => setActiveTab(seg.value as any)}
+              style={{
+                flex: 1,
+                padding: "7px 0",
+                borderRadius: 10,
+                fontSize: 13,
+                fontWeight: activeTab === seg.value ? 600 : 500,
+                fontFamily: "Inter, sans-serif",
+                transition: "all 0.15s ease",
+                cursor: "pointer",
+                border: "none",
+                ...(activeTab === seg.value
+                  ? { backgroundColor: "#18181B", color: "#FFFFFF" }
+                  : { backgroundColor: "transparent", color: "#71717A" }),
+              }}
+            >
+              {seg.label}
+            </button>
+          ))}
         </div>
 
         {/* Pupils List */}
