@@ -602,26 +602,27 @@ Deno.serve(async (req) => {
         if (recentEnded && recentEnded.length > 0) {
           console.log("[RadiusPoller] Skipping auto-create — session ended <60s ago for device:", device.device_name);
         } else {
-        console.log("[RadiusPoller] Auto-creating session for device:", device.device_name);
-        const { data: newSession, error: sessErr } = await supabase
-          .from("lesson_telematics")
-          .insert({
-            instructor_id: device.instructor_id,
-            pupil_id: device.current_pupil_id || null,
-            started_at: seenAt || new Date().toISOString(),
-          })
-          .select("id")
-          .single();
+          console.log("[RadiusPoller] Auto-creating session for device:", device.device_name);
+          const { data: newSession, error: sessErr } = await supabase
+            .from("lesson_telematics")
+            .insert({
+              instructor_id: device.instructor_id,
+              pupil_id: device.current_pupil_id || null,
+              started_at: seenAt || new Date().toISOString(),
+            })
+            .select("id")
+            .single();
 
-        if (newSession && !sessErr) {
-          device.current_session_id = newSession.id;
-          await supabase
-            .from("gps_devices")
-            .update({ current_session_id: newSession.id, is_active: true })
-            .eq("id", device.id);
-          console.log("[RadiusPoller] Session created:", newSession.id);
-        } else {
-          console.error("[RadiusPoller] Session create error:", sessErr?.message);
+          if (newSession && !sessErr) {
+            device.current_session_id = newSession.id;
+            await supabase
+              .from("gps_devices")
+              .update({ current_session_id: newSession.id, is_active: true })
+              .eq("id", device.id);
+            console.log("[RadiusPoller] Session created:", newSession.id);
+          } else {
+            console.error("[RadiusPoller] Session create error:", sessErr?.message);
+          }
         }
       }
 
