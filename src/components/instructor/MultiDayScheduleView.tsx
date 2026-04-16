@@ -83,7 +83,23 @@ const getEndTime = (startTime: string, durationMinutes: number) => {
   return `${String(Math.floor(endMin / 60)).padStart(2, "0")}:${String(endMin % 60).padStart(2, "0")}`;
 };
 
-// Google Calendar color mapping: map Google colorId or hex to card tints
+// Google Calendar color mapping — uses the exact hex values stored from the feed
+// Google Calendar colorId → hex: 1=#7986CB, 2=#33B679, 3=#8E24AA, 4=#E67C73,
+// 5=#F6BF26, 6=#F4511E, 7=#039BE5, 8=#616161, 9=#3F51B5, 10=#0B8043, 11=#D50000
+const GOOGLE_COLOR_MAP: Record<string, { bg: string; text: string; textMuted: string }> = {
+  "#7986cb": { bg: "#B3AFF5", text: "#2E2875", textMuted: "rgba(46,40,117,0.75)" },   // 1 Lavender
+  "#33b679": { bg: "#8FCFA5", text: "#1A4D2E", textMuted: "rgba(26,77,46,0.75)" },    // 2 Sage
+  "#8e24aa": { bg: "#C9A0DC", text: "#4A1162", textMuted: "rgba(74,17,98,0.75)" },     // 3 Grape
+  "#e67c73": { bg: "#E89999", text: "#5C1717", textMuted: "rgba(92,23,23,0.75)" },     // 4 Flamingo
+  "#f6bf26": { bg: "#F4D06F", text: "#5C4A0F", textMuted: "rgba(92,74,15,0.75)" },     // 5 Banana
+  "#f4511e": { bg: "#F0A68A", text: "#6B200A", textMuted: "rgba(107,32,10,0.75)" },    // 6 Tangerine
+  "#039be5": { bg: "#7FB3E3", text: "#0A3559", textMuted: "rgba(10,53,89,0.75)" },     // 7 Peacock
+  "#616161": { bg: "#B8B8B8", text: "#2A2A2A", textMuted: "rgba(42,42,42,0.75)" },     // 8 Graphite
+  "#3f51b5": { bg: "#8E9AE6", text: "#1A2266", textMuted: "rgba(26,34,102,0.75)" },    // 9 Blueberry
+  "#0b8043": { bg: "#7CC9A0", text: "#0A3D20", textMuted: "rgba(10,61,32,0.75)" },     // 10 Basil
+  "#d50000": { bg: "#E88A8A", text: "#5C0000", textMuted: "rgba(92,0,0,0.75)" },       // 11 Tomato
+};
+
 function getCardColors(color: string | null, lessonType?: string): { bg: string; text: string; textMuted: string } {
   // Lesson types get specific colors
   if (lessonType) {
@@ -101,17 +117,12 @@ function getCardColors(color: string | null, lessonType?: string): { bg: string;
     return lessonColors[lessonType] || { bg: "#7FB3E3", text: "#0A3559", textMuted: "rgba(10,53,89,0.75)" };
   }
 
-  // External events: map by color hex
+  // External events: match the exact hex from the Google Calendar feed
   if (!color) return { bg: "#D4D4D8", text: "#3F3F46", textMuted: "rgba(63,63,70,0.75)" };
   
-  const c = color.toLowerCase();
-  // Google Calendar color mappings
-  if (c.includes("f4d") || c.includes("f5a") || c.includes("fbd") || c === "#7") return { bg: "#F4D06F", text: "#5C4A0F", textMuted: "rgba(92,74,15,0.75)" };
-  if (c.includes("3b8") || c.includes("1a6") || c.includes("039") || c === "#9" || c === "#1") return { bg: "#7FB3E3", text: "#0A3559", textMuted: "rgba(10,53,89,0.75)" };
-  if (c.includes("0f9") || c.includes("10b") || c.includes("22c") || c === "#2" || c === "#10") return { bg: "#8FCFA5", text: "#1A4D2E", textMuted: "rgba(26,77,46,0.75)" };
-  if (c.includes("8b5") || c.includes("636") || c.includes("7c3") || c === "#3") return { bg: "#B3AFF5", text: "#2E2875", textMuted: "rgba(46,40,117,0.75)" };
-  if (c.includes("f43") || c.includes("e24") || c.includes("dc2") || c === "#11" || c === "#4") return { bg: "#E89999", text: "#5C1717", textMuted: "rgba(92,23,23,0.75)" };
-  
+  const mapped = GOOGLE_COLOR_MAP[color.toLowerCase()];
+  if (mapped) return mapped;
+
   return { bg: "#D4D4D8", text: "#3F3F46", textMuted: "rgba(63,63,70,0.75)" };
 }
 
