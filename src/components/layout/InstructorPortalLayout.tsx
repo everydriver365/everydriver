@@ -1,5 +1,6 @@
 import { ReactNode, useState, useEffect } from "react";
 import { RealtimeHubProvider } from "@/hooks/useRealtimeHub";
+import { useGlobalLessonSync } from "@/hooks/useGlobalLessonSync";
 import { motion } from "framer-motion";
 import { Mic, Loader2, Volume2 } from "lucide-react";
 import { useUrgentAlerts } from "@/hooks/useUrgentAlerts";
@@ -216,6 +217,12 @@ function MobileNotificationBell({ instructorId }: { instructorId: string | undef
   );
 }
 
+function GlobalSyncBridge({ instructorId }: { instructorId: string | undefined }) {
+  useGlobalLessonSync(instructorId);
+  return null;
+}
+
+
 interface InstructorPortalLayoutProps {
   children: ReactNode;
 }
@@ -383,6 +390,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   if (isMobile) {
     return (
       <RealtimeHubProvider instructorId={instructor?.id}>
+      <GlobalSyncBridge instructorId={instructor?.id} />
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
       {!endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
       {endWizardLesson && instructor?.id && (
@@ -759,6 +767,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   // Desktop Layout - Sidebar
   return (
     <RealtimeHubProvider instructorId={instructor?.id}>
+      <GlobalSyncBridge instructorId={instructor?.id} />
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
       {!endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
       {endWizardLesson && instructor?.id && (

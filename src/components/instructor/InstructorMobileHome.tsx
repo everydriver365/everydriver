@@ -125,7 +125,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { triggerHaptic } from "@/lib/haptics";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
-import { useRealtimeSubscription } from "@/hooks/useRealtimeHub";
+
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 
@@ -280,22 +280,6 @@ export function InstructorMobileHome({
 
   const { alerts: urgentAlerts, dismissAlert: dismissUrgentAlert } = useUrgentAlerts(instructorId);
 
-  // Realtime: auto-refresh all schedule queries when lessons change
-  const invalidateScheduleQueries = useCallback(() => {
-    const keys = [
-      "today-overview", "today-remaining-lessons", "next-lesson-details",
-      "weekly-goals", "monthly-goals", "tomorrow-preview", "instructor-streak",
-      "tomorrow-lessons", "gap-suggestions",
-    ];
-    keys.forEach(k => queryClient.invalidateQueries({ queryKey: [k] }));
-  }, [queryClient]);
-
-  useRealtimeSubscription(
-    "scheduled_lessons",
-    "*",
-    invalidateScheduleQueries,
-    { filter: instructorId ? `instructor_id=eq.${instructorId}` : undefined, enabled: !!instructorId }
-  );
 
   const { devices: vehicleDevices } = useVehicleHealth();
   const engineFaultCount = vehicleDevices.flatMap(d => d.last_fault_codes || []).length;
