@@ -190,10 +190,14 @@ export function AddLessonSheet({
     }
   }, [selectedPupil, pupils]);
 
-  // Conflict check
+  // Conflict check + travel-time suggestion based on previous lesson
   useEffect(() => {
-    if (!lessonDate || !lessonStartTime || !open) { setConflictWarning(null); return; }
-    const checkConflicts = async () => {
+    if (!lessonDate || !lessonStartTime || !open) {
+      setConflictWarning(null);
+      setTravelSuggestion(null);
+      return;
+    }
+    const run = async () => {
       setCheckingConflict(true);
       try {
         const dateStr = format(lessonDate, 'yyyy-MM-dd');
@@ -203,10 +207,12 @@ export function AddLessonSheet({
         const newEndMinutes = newStartMinutes + durationMinutes;
         const { data: existingLessons } = await supabase
           .from('scheduled_lessons')
-          .select('start_time, duration_minutes, pupil_id, pupils(name)')
+          .select('start_time, duration_minutes, pupil_id, pickup_location, dropoff_location, pupils(name, postcode, address)')
           .eq('instructor_id', instructorId)
           .eq('lesson_date', dateStr)
-          .neq('status', 'cancelled');
+          .neq('status', 'cancelled')
+          .order('start_time');
+
         if (existingLessons && existingLessons.length > 0) {
           const conflicts = existingLessons.filter((lesson: any) => {
             const [h, m] = (lesson.start_time || '00:00').split(':').map(Number);
@@ -217,14 +223,80 @@ export function AddLessonSheet({
           if (conflicts.length > 0) {
             const names = conflicts.map((c: any) => c.pupils?.name || 'Unknown').join(', ');
             setConflictWarning(`Overlaps with ${names}`);
-          } else { setConflictWarning(null); }
-        } else { setConflictWarning(null); }
-      } catch { setConflictWarning(null); }
-      finally { setCheckingConflict(false); }
+          } else {
+            setConflictWarning(null);
+          }
+
+          // Travel suggestion: find lesson that ends closest BEFORE the new start
+          const previous = existingLessons
+            .map((l: any) => {
+              const [h, m] = (l.start_time || '00:00').split(':').map(Number);
+              const start = h * 60 + m;
+              return { ...l, _start: start, _end: start + (l.duration_minutes || 60) };
+            })
+            .filter((l: any) => l._end <= newStartMinutes)
+            .sort((a: any, b: any) => b._end - a._end)[0];
+
+          // Determine destination postcode for the new lesson
+          let toPostcode = pickupPostcode;
+          if (!toPostcode && tab === 'existing' && selectedPupil) {
+            const p = pupils.find(x => x.id === selectedPupil);
+            toPostcode = p?.postcode || '';
+          }
+          if (!toPostcode && tab === 'new') toPostcode = newPupilPostcode;
+
+          const fromPostcode = previous?.pupils?.postcode || '';
+
+          if (previous && fromPostcode && toPostcode && fromPostcode.trim() && toPostcode.trim()) {
+            const gap = newStartMinutes - previous._end;
+            try {
+              const { data } = await supabase.functions.invoke('check-travel-buffer', {
+                body: {
+                  from_postcode: fromPostcode,
+                  to_postcode: toPostcode,
+                  available_gap_minutes: gap,
+                  padding_minutes: 5,
+                },
+              });
+              if (data?.travel_minutes != null) {
+                const required = (data.required_minutes ?? data.travel_minutes + 5);
+                if (gap < required) {
+                  // Suggest a start time = previous end + required, rounded up to next 5 min
+                  const suggestedMinutes = Math.ceil((previous._end + required) / 5) * 5;
+                  const sh = Math.floor(suggestedMinutes / 60);
+                  const sm = suggestedMinutes % 60;
+                  const suggestedTime = `${sh.toString().padStart(2, '0')}:${sm.toString().padStart(2, '0')}`;
+                  setTravelSuggestion({
+                    suggestedTime,
+                    travelMinutes: data.travel_minutes,
+                    fromName: previous.pupils?.name || 'previous lesson',
+                  });
+                } else {
+                  setTravelSuggestion(null);
+                }
+              } else {
+                setTravelSuggestion(null);
+              }
+            } catch {
+              setTravelSuggestion(null);
+            }
+          } else {
+            setTravelSuggestion(null);
+          }
+        } else {
+          setConflictWarning(null);
+          setTravelSuggestion(null);
+        }
+      } catch {
+        setConflictWarning(null);
+        setTravelSuggestion(null);
+      } finally {
+        setCheckingConflict(false);
+      }
     };
-    const timer = setTimeout(checkConflicts, 300);
+    const timer = setTimeout(run, 400);
     return () => clearTimeout(timer);
-  }, [lessonDate, lessonStartTime, lessonDuration, instructorId, open]);
+  }, [lessonDate, lessonStartTime, lessonDuration, instructorId, open, selectedPupil, pickupPostcode, newPupilPostcode, tab, pupils]);
 
   const buildDrivingTestNotes = () => {
     if (!isDrivingTest) return null;
