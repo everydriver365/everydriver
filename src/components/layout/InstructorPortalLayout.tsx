@@ -441,7 +441,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         onClick={() => navigate(-1)}
                         className="h-8 w-8 rounded-full bg-[#f2f2f7] flex items-center justify-center shrink-0"
                       >
-                        <ChevronLeft className="h-5 w-5 text-[#0d4fa0]" />
+                        <ChevronLeft className="h-5 w-5 text-[#2A394F]" />
                       </button>
                     ) : (
                       <MobileNotificationBell instructorId={instructor?.id} />
