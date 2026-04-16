@@ -12,8 +12,8 @@ export default function InstructorSettingsCategory() {
 
   useEffect(() => {
     const basePath = window.location.pathname.includes("/every-instructor")
-      ? "/every-instructor/settings"
-      : "/instructor/settings";
+      ? "/every-instructor/menu"
+      : "/instructor/menu";
     const openParam = searchParams.get("open");
     const qs = openParam ? `?open=${openParam}` : "";
     navigate(`${basePath}${qs}`, { replace: true });
