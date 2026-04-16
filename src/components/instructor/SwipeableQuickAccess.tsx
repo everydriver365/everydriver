@@ -117,6 +117,10 @@ export function SwipeableQuickAccess() {
                       });
                       return;
                     }
+                    if (tile.route === "__planner__") {
+                      setPlannerOpen(true);
+                      return;
+                    }
                     navigate(tile.route);
                   };
 
