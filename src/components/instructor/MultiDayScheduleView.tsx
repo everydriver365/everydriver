@@ -299,22 +299,47 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
     );
   }
 
+  // Event type accent bar colors
+  const eventAccentColors: Record<string, string> = {
+    personal: "#f5a623",
+    break: "#f5a623",
+    meeting: "#7c3aed",
+    standard: "#7c3aed",
+    test_prep: "#1a6fd4",
+    mock_test: "#1a6fd4",
+    motorway: "#0f9e75",
+    refresher: "#0f9e75",
+    intensive: "#7c3aed",
+    first_lesson: "#0f9e75",
+    pass_plus: "#1a6fd4",
+    driving_test: "#1a6fd4",
+  };
+
   return (
     <div className="space-y-0">
       {/* Add lesson button */}
       <div className="flex justify-end px-1 pb-2">
-        <Button
+        <button
           onClick={() => setAddLessonOpen(true)}
-          size="sm"
-          className="rounded-full bg-[#1a73e8] hover:bg-[#1557b0] text-white gap-1.5 h-9 px-4 shadow-md"
+          style={{
+            background: "white",
+            borderRadius: 20,
+            padding: "10px 20px",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
+            border: "0.5px solid rgba(0,0,0,0.06)",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            cursor: "pointer",
+          }}
         >
-          <Plus className="h-4 w-4" />
-          Add Lesson
-        </Button>
+          <Plus style={{ width: 14, height: 14, color: "#1a6fd4" }} />
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#1a6fd4" }}>Add Lesson</span>
+        </button>
       </div>
 
       {/* Multi-day infinite list */}
-      <div className="divide-y divide-border/40">
+      <div className="space-y-0">
         {dayData.map(({ day, dateStr, timeline, allDay }, idx) => {
           const prevDay = idx > 0 ? dayData[idx - 1].day : null;
           const showMonthHeader = !prevDay || day.getMonth() !== prevDay.getMonth();
@@ -324,8 +349,8 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
           return (
             <div key={dateStr}>
               {showMonthHeader && (
-                <div className="px-4 py-2.5 bg-muted/50 border-b border-border/40">
-                  <span className="text-[13px] font-bold text-foreground">
+                <div style={{ padding: "0 4px 12px" }}>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: "#1c1c1e" }}>
                     {format(day, "MMMM yyyy")}
                   </span>
                 </div>
@@ -337,31 +362,64 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
               >
               {/* Date column */}
               <div className="w-14 shrink-0 flex flex-col items-center pt-3 pb-2">
-                <span className={`text-[11px] font-semibold uppercase tracking-wide ${today ? "text-[#1a73e8]" : "text-muted-foreground"}`}>
+                <span style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#1a6fd4",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                }}>
                   {format(day, "EEE")}
                 </span>
-                <div className={`mt-0.5 w-9 h-9 flex items-center justify-center rounded-full text-[17px] font-bold ${
-                  today
-                    ? "bg-[#1a73e8] text-white"
-                    : "text-foreground"
-                }`}>
-                  {format(day, "d")}
+                <div style={{
+                  marginTop: 4,
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  ...(today
+                    ? {
+                        background: "linear-gradient(135deg, #0d4fa0, #1a6fd4)",
+                        boxShadow: "0 4px 12px rgba(26,111,212,0.35)",
+                      }
+                    : {}),
+                }}>
+                  <span style={{
+                    fontSize: 16,
+                    fontWeight: 700,
+                    color: today ? "white" : "#1c1c1e",
+                  }}>
+                    {format(day, "d")}
+                  </span>
                 </div>
               </div>
 
               {/* Events column */}
-              <div className="flex-1 py-2 pr-3 space-y-1.5 min-w-0">
+              <div className="flex-1 py-2 pr-3 space-y-2.5 min-w-0">
                 {/* All-day events */}
                 {allDay.map((evt) => {
-                  const bgColor = evt.color || "#039be5";
+                  const accentColor = evt.color || "#f5a623";
                   return (
                     <div
                       key={evt.id}
-                      className="rounded-lg px-3 py-2.5 space-y-0.5"
-                      style={{ backgroundColor: bgColor }}
+                      style={{
+                        background: "white",
+                        borderRadius: 20,
+                        overflow: "hidden",
+                        boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
+                        border: "0.5px solid rgba(0,0,0,0.06)",
+                      }}
                     >
-                      <span className={`text-[13px] font-bold ${contrastText(bgColor)}`}>{evt.title}</span>
-                      <div className={`text-[12px] ${contrastText(bgColor)} opacity-80`}>All day</div>
+                      <div style={{ padding: "14px 16px", display: "flex", gap: 12, alignItems: "stretch" }}>
+                        <div style={{ width: 4, borderRadius: 2, alignSelf: "stretch", backgroundColor: accentColor }} />
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontSize: 14, fontWeight: 700, color: "#1c1c1e", marginBottom: 3 }}>{evt.title}</p>
+                          <p style={{ fontSize: 12, color: "#8e8e93" }}>All day</p>
+                        </div>
+                      </div>
+                      <div style={{ height: 2, background: "linear-gradient(to right, #0d4fa0, #56a8f5)", borderRadius: 2 }} />
                     </div>
                   );
                 })}
@@ -370,7 +428,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                 {timeline.map((item) => {
                   if (item.kind === "lesson") {
                     const lesson = item.data;
-                    const barColor = lessonTypeBarColors[lesson.lesson_type] || "#3b82f6";
+                    const accentColor = eventAccentColors[lesson.lesson_type] || "#7c3aed";
                     const paid = lesson.payment_status === "paid";
 
                     return (
@@ -388,30 +446,46 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         onDelete={handleDeleteLesson}
                         renderCustomCollapsed={
                           <div
-                            className="rounded-lg px-3 py-2.5 space-y-0.5"
-                            style={{ backgroundColor: barColor }}
+                            style={{
+                              background: "white",
+                              borderRadius: 20,
+                              overflow: "hidden",
+                              boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
+                              border: "0.5px solid rgba(0,0,0,0.06)",
+                            }}
                           >
-                            <div className="flex items-center justify-between">
-                              <span className="text-[13px] font-bold text-white truncate">
-                                {lesson.pupil?.name || "Unknown"}
-                              </span>
-                              {!paid && (
-                                <span className="text-[10px] font-semibold bg-white/25 text-white rounded px-1.5 py-0.5">
-                                  Unpaid
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1.5 text-white/90 text-[12px]">
-                              <span>{formatTime(lesson.start_time)} – {getEndTime(lesson.start_time, lesson.duration_minutes)}</span>
-                              <span className="text-white/60">·</span>
-                              <span>{courseTypeLabels[lesson.lesson_type] || lesson.lesson_type}</span>
-                            </div>
-                            {(lesson.pickup_location || lesson.pupil?.address) && (
-                              <div className="flex items-center gap-1 text-white/75 text-[11px]">
-                                <MapPin className="h-3 w-3 shrink-0" />
-                                <span className="truncate">{lesson.pickup_location || lesson.pupil?.address}</span>
+                            <div style={{ padding: "14px 16px", display: "flex", gap: 12, alignItems: "stretch", position: "relative" }}>
+                              <div style={{ width: 4, borderRadius: 2, alignSelf: "stretch", backgroundColor: accentColor }} />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div className="flex items-center justify-between">
+                                  <span style={{ fontSize: 14, fontWeight: 700, color: "#1c1c1e" }} className="truncate">
+                                    {lesson.pupil?.name || "Unknown"}
+                                  </span>
+                                  {!paid && (
+                                    <span style={{
+                                      background: "#fff0f0",
+                                      color: "#e24b4a",
+                                      fontSize: 11,
+                                      fontWeight: 600,
+                                      padding: "3px 10px",
+                                      borderRadius: 20,
+                                    }}>
+                                      Unpaid
+                                    </span>
+                                  )}
+                                </div>
+                                <p style={{ fontSize: 12, color: "#8e8e93", marginTop: 3 }}>
+                                  {formatTime(lesson.start_time)} – {getEndTime(lesson.start_time, lesson.duration_minutes)} · {courseTypeLabels[lesson.lesson_type] || lesson.lesson_type}
+                                </p>
+                                {(lesson.pickup_location || lesson.pupil?.address) && (
+                                  <div className="flex items-center gap-1" style={{ marginTop: 2 }}>
+                                    <MapPin style={{ width: 11, height: 11, color: "#8e8e93", flexShrink: 0 }} />
+                                    <span style={{ fontSize: 12, color: "#8e8e93" }} className="truncate">{lesson.pickup_location || lesson.pupil?.address}</span>
+                                  </div>
+                                )}
                               </div>
-                            )}
+                            </div>
+                            <div style={{ height: 2, background: "linear-gradient(to right, #0d4fa0, #56a8f5)", borderRadius: 2 }} />
                           </div>
                         }
                       />
@@ -422,19 +496,28 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                     const evt = item.data;
                     const startDt = parseISO(evt.start_time);
                     const endDt = parseISO(evt.end_time);
-                    const bgColor = evt.color || "#039be5";
+                    const accentColor = evt.color || "#1a6fd4";
                     return (
                       <div
                         key={evt.id}
-                        className="rounded-lg px-3 py-2.5 space-y-0.5"
-                        style={{ backgroundColor: bgColor }}
+                        style={{
+                          background: "white",
+                          borderRadius: 20,
+                          overflow: "hidden",
+                          boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
+                          border: "0.5px solid rgba(0,0,0,0.06)",
+                        }}
                       >
-                        <span className={`text-[13px] font-bold ${contrastText(bgColor)}`}>
-                          {evt.title}
-                        </span>
-                        <div className={`text-[12px] ${contrastText(bgColor)} opacity-80`}>
-                          {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")}
+                        <div style={{ padding: "14px 16px", display: "flex", gap: 12, alignItems: "stretch" }}>
+                          <div style={{ width: 4, borderRadius: 2, alignSelf: "stretch", backgroundColor: accentColor }} />
+                          <div style={{ flex: 1 }}>
+                            <p style={{ fontSize: 14, fontWeight: 700, color: "#1c1c1e", marginBottom: 3 }}>{evt.title}</p>
+                            <p style={{ fontSize: 12, color: "#8e8e93" }}>
+                              {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")}
+                            </p>
+                          </div>
                         </div>
+                        <div style={{ height: 2, background: "linear-gradient(to right, #0d4fa0, #56a8f5)", borderRadius: 2 }} />
                       </div>
                     );
                   }
@@ -443,19 +526,28 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                     const block = item.data;
                     const startDt = parseISO(block.start_datetime);
                     const endDt = parseISO(block.end_datetime);
-                    const bgColor = blockTypeColors[block.block_type] || "#6b7280";
+                    const accentColor = "#f5a623";
                     return (
                       <div
                         key={block.id}
-                        className="rounded-lg px-3 py-2.5 space-y-0.5"
-                        style={{ backgroundColor: bgColor }}
+                        style={{
+                          background: "white",
+                          borderRadius: 20,
+                          overflow: "hidden",
+                          boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
+                          border: "0.5px solid rgba(0,0,0,0.06)",
+                        }}
                       >
-                        <span className={`text-[13px] font-bold ${contrastText(bgColor)}`}>
-                          {block.title}
-                        </span>
-                        <div className={`text-[12px] ${contrastText(bgColor)} opacity-80`}>
-                          {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")}
+                        <div style={{ padding: "14px 16px", display: "flex", gap: 12, alignItems: "stretch" }}>
+                          <div style={{ width: 4, borderRadius: 2, alignSelf: "stretch", backgroundColor: accentColor }} />
+                          <div style={{ flex: 1 }}>
+                            <p style={{ fontSize: 14, fontWeight: 700, color: "#1c1c1e", marginBottom: 3 }}>{block.title}</p>
+                            <p style={{ fontSize: 12, color: "#8e8e93" }}>
+                              {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")}
+                            </p>
+                          </div>
                         </div>
+                        <div style={{ height: 2, background: "linear-gradient(to right, #0d4fa0, #56a8f5)", borderRadius: 2 }} />
                       </div>
                     );
                   }
