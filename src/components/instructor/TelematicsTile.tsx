@@ -37,35 +37,47 @@ export function TelematicsTile() {
       <div
         style={{
           backgroundColor: "#FFFFFF",
-          borderRadius: 16,
-          border: "0.5px solid #E5E5EA",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+          borderRadius: 14,
+          border: "0.5px solid #E4E4E7",
           overflow: "hidden",
-          fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
+          fontFamily: "Inter, sans-serif",
         }}
       >
         <button
           onClick={() => setExpanded(v => !v)}
-          className="w-full flex items-center justify-between px-4 py-3 text-left"
+          className="w-full flex items-center justify-between px-[14px] py-[14px] text-left"
         >
           <div className="flex items-center gap-3">
-            <img src={telematicsIcon} alt="Telematics" className="w-9 h-9 rounded-[10px]" />
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                backgroundColor: "#EDE9FE",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <Activity size={22} strokeWidth={2} color="#5B21B6" />
+            </div>
             <div className="min-w-0">
-              <p style={{ fontSize: 15, fontWeight: 600, color: "#1C1C1E" }}>Telematics</p>
-              <p style={{ fontSize: 12, color: "#8E8E93" }} className="truncate">{vehicleLabel}</p>
+              <p style={{ fontSize: 15, fontWeight: 500, color: "#18181B", fontFamily: "Inter, sans-serif" }}>Telematics</p>
+              <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }} className="truncate">{vehicleLabel}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
             {isConnected ? (
-              <CheckCircle2 className="h-3.5 w-3.5" style={{ color: "#30D158" }} />
+              <CheckCircle2 className="h-3.5 w-3.5" style={{ color: "#059669" }} />
             ) : (
-              <WifiOff className="h-3.5 w-3.5" style={{ color: "#8E8E93" }} />
+              <WifiOff className="h-3.5 w-3.5" style={{ color: "#A1A1AA" }} />
             )}
-            <span style={{ fontSize: 12, color: "#8E8E93", fontWeight: 500 }}>
+            <span style={{ fontSize: 12, color: "#71717A", fontWeight: 500, fontFamily: "Inter, sans-serif" }}>
               {isConnected ? "Online" : "Offline"}
             </span>
-            <ChevronRight className="h-4 w-4" style={{ color: "#C7C7CC" }} />
+            <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" />
           </div>
         </button>
 
@@ -79,7 +91,7 @@ export function TelematicsTile() {
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div style={{ borderTop: "0.5px solid #E5E5EA" }} className="px-4 pb-3 pt-3 space-y-2">
+              <div style={{ borderTop: "0.5px solid #E4E4E7" }} className="px-[14px] pb-3 pt-3 space-y-2">
                 {hasData ? (
                   <>
                     <div className="grid grid-cols-3 gap-2">
