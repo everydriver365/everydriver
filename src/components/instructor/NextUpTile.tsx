@@ -4,8 +4,10 @@ import {
   Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, ChevronDown,
   Send, Play, MapPin, Calendar, ClipboardList,
   Hourglass, PoundSterling, MessageCircle, AlertTriangle, CheckCircle2,
-  Thermometer, Battery, Wifi, BookOpen, Banknote, ChevronRight,
+  Thermometer, Battery, Wifi, BookOpen, Banknote, ChevronRight, Mail,
 } from "lucide-react";
+import { PostcodeMapPreview } from "@/components/instructor/PostcodeMapPreview";
+import { useAdminUnreadForPupil } from "@/hooks/useAdminUnreadForPupil";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { useNavigate } from "react-router-dom";
@@ -73,6 +75,8 @@ export function NextUpTile({
   const queryClient = useQueryClient();
 
   const { data: pupilUnreadCount = 0 } = usePupilUnreadCount(instructorId, pupilId);
+  const { data: adminUnreadCount = 0 } = useAdminUnreadForPupil(instructorId, pupilId, pupilName);
+  const totalUnreadBadge = pupilUnreadCount + adminUnreadCount;
   const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition, isLoading: etaLoading } = useTrafficETA(pickupPostcode);
   const { currentWeather } = useDrivingAlerts(instructorId);
   const { devices } = useVehicleHealth();
@@ -225,10 +229,10 @@ export function NextUpTile({
                   width: 12, height: 12, borderRadius: "50%",
                   backgroundColor: "#34C759", border: "2px solid #FFFFFF",
                 }} />
-                {hasUnread && (
+                {totalUnreadBadge > 0 && (
                   <span className="absolute -top-1 -right-1 flex items-center justify-center"
-                    style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: "#FF3B30", color: "#fff", fontSize: 9, fontWeight: 700, border: "2px solid #FFFFFF" }}>
-                    {pupilUnreadCount}
+                    style={{ minWidth: 18, height: 18, padding: "0 4px", borderRadius: 9, backgroundColor: "#FF3B30", color: "#fff", fontSize: 9, fontWeight: 700, border: "2px solid #FFFFFF" }}>
+                    {totalUnreadBadge}
                   </span>
                 )}
               </div>
@@ -352,6 +356,22 @@ export function NextUpTile({
               className="overflow-hidden">
               <div className="px-4 pb-4 flex flex-col gap-3">
                 <div className="h-px w-full" style={{ background: "rgba(0,0,0,0.06)" }} />
+
+                {/* Mini-map of pickup location */}
+                {pickupPostcode && (
+                  <div
+                    className="rounded-2xl overflow-hidden border cursor-pointer relative"
+                    style={{ borderColor: "rgba(0,0,0,0.06)" }}
+                    onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <div className="absolute top-2 right-2 z-[1] bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 pointer-events-none">
+                      <Navigation className="h-3 w-3" /> Tap to navigate
+                    </div>
+                    <PostcodeMapPreview postcode={pickupPostcode} />
+                  </div>
+                )}
 
                 {/* Stats row */}
                 <div className="grid grid-cols-3 gap-2">
@@ -496,6 +516,21 @@ export function NextUpTile({
                     </div>
                     <span className="text-[13px] font-medium flex-1" style={{ color: "hsl(var(--foreground))" }}>
                       {pupilUnreadCount} unread from {firstName}
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                )}
+
+                {/* Admin notes about this pupil */}
+                {adminUnreadCount > 0 && (
+                  <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor-app/admin-chat`); }}
+                    className="flex items-center gap-3 p-3.5 rounded-2xl w-full text-left"
+                    style={{ background: "rgba(249,115,22,0.06)" }}>
+                    <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "rgba(249,115,22,0.12)" }}>
+                      <Mail className="h-5 w-5 text-orange-500" />
+                    </div>
+                    <span className="text-[13px] font-medium flex-1" style={{ color: "hsl(var(--foreground))" }}>
+                      {adminUnreadCount} admin note{adminUnreadCount !== 1 ? "s" : ""} about {firstName}
                     </span>
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </button>
