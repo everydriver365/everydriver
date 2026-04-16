@@ -158,7 +158,7 @@ export function ActivityTilesGrid({
               {/* Blue label bar */}
               <div
                 className="flex items-center justify-center"
-                style={{ backgroundColor: "#b5d0f4", padding: "6px 0" }}
+                style={{ backgroundColor: "#1a6fd4", padding: "6px 0" }}
               >
                 <span style={{ fontSize: 13, fontWeight: 500, color: "#FFFFFF" }}>
                   {tile.title}
