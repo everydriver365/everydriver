@@ -49,6 +49,9 @@ import {
   ArrowLeft,
   History,
   Globe,
+  CreditCard,
+  Banknote,
+  Send,
 } from "lucide-react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { format } from "date-fns";
