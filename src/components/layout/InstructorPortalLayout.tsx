@@ -225,9 +225,10 @@ function GlobalSyncBridge({ instructorId }: { instructorId: string | undefined }
 
 interface InstructorPortalLayoutProps {
   children: ReactNode;
+  hideHeader?: boolean;
 }
 
-export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps) {
+export function InstructorPortalLayout({ children, hideHeader }: InstructorPortalLayoutProps) {
   const { instructor, subscription, signOut, loading } = useInstructorAuth();
   useInstructorPresence(instructor?.id);
   usePaymentReceivedAlert(instructor?.id);
