@@ -760,31 +760,20 @@ export default function InstructorMenu() {
             <div>
               {/* Listed on Website */}
               <div className={cardClass}>
-                <div className="flex items-center justify-between px-4 py-[13px] gap-[14px]">
+                <div className="flex items-center justify-between px-4 py-[14px] gap-[14px]">
                   <div className="flex items-center gap-[14px]">
-                    <div
-                      className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
-                      style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)", boxShadow: "0 3px 8px rgba(124,58,237,0.3)" }}
-                    >
-                      <Eye className="h-5 w-5 text-white" />
-                    </div>
-                    <p className="text-[15px] font-semibold text-[#1c1c1e]">Listed on Website</p>
+                    {renderIconTile(Eye, "#EDE9FE", "#5B21B6")}
+                    <p className="text-[15px] font-medium text-[#18181B]" style={{ fontFamily: "Inter, sans-serif" }}>Listed on Website</p>
                   </div>
                   <Switch checked={isActive} onCheckedChange={handleVisibilityToggle} />
                 </div>
-                <GradientLine />
               </div>
               {/* Hey ED */}
               <div className={cardClass}>
-                <div className="flex items-center justify-between px-4 py-[13px] gap-[14px]">
+                <div className="flex items-center justify-between px-4 py-[14px] gap-[14px]">
                   <div className="flex items-center gap-[14px]">
-                    <div
-                      className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
-                      style={{ background: "linear-gradient(135deg, #4f46e5, #818cf8)", boxShadow: "0 3px 8px rgba(79,70,229,0.3)" }}
-                    >
-                      <Mic className="h-5 w-5 text-white" />
-                    </div>
-                    <p className="text-[15px] font-semibold text-[#1c1c1e]">"Hey ED" Always Listening</p>
+                    {renderIconTile(Mic, "#EEF2FF", "#4F46E5")}
+                    <p className="text-[15px] font-medium text-[#18181B]" style={{ fontFamily: "Inter, sans-serif" }}>"Hey ED" Always Listening</p>
                   </div>
                   <Switch
                     checked={heyEdEnabled}
@@ -795,19 +784,17 @@ export default function InstructorMenu() {
                     }}
                   />
                 </div>
-                <GradientLine />
               </div>
               {/* Feature Toggles */}
               <div className={cardClass}>
                 <div className="px-4 py-3">
                   <FeatureTogglesSettings instructorId={instructorId} />
                 </div>
-                <GradientLine />
               </div>
             </div>
             {!isActive && (
-              <div className="mt-2 rounded-[20px] bg-amber-500/10 border border-amber-500/30 p-3">
-                <p className="text-sm text-amber-700">You're currently hidden from the website.</p>
+              <div className="mt-2 rounded-[14px] bg-[#FEF3C7] border border-[#FDE68A] p-3">
+                <p className="text-sm text-[#92400E]">You're currently hidden from the website.</p>
               </div>
             )}
           </div>
@@ -844,18 +831,12 @@ export default function InstructorMenu() {
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 onClick={handleLogout}
-                className="w-full px-4 py-[13px] text-left flex items-center gap-[14px]"
+                className="w-full px-4 py-[14px] text-left flex items-center gap-[14px]"
               >
-                <div
-                  className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
-                  style={{ background: "linear-gradient(135deg, #dc2626, #ef4444)", boxShadow: "0 3px 8px rgba(220,38,38,0.3)" }}
-                >
-                  <LogOut className="h-5 w-5 text-white" />
-                </div>
-                <p className="flex-1 font-semibold text-[15px] text-[#1c1c1e]">Sign Out</p>
-                <span className="text-[16px] text-[#c7c7cc]">›</span>
+                {renderIconTile(LogOut, "#FEF2F2", "#DC2626")}
+                <p className="flex-1 font-medium text-[15px] text-[#18181B]" style={{ fontFamily: "Inter, sans-serif" }}>Sign Out</p>
+                <ChevronRight size={18} strokeWidth={2} color="#A1A1AA" className="shrink-0" />
               </motion.button>
-              <GradientLine />
             </div>
           </div>
         )}
