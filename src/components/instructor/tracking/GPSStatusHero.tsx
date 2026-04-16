@@ -82,8 +82,6 @@ export function GPSStatusHero({
           </div>
         </div>
 
-        {/* Gradient line */}
-        <div style={{ height: 2, background: "linear-gradient(to right, #0d4fa0, #56a8f5)", borderRadius: 2 }} />
 
         {/* Offline Actions */}
         <AnimatePresence>
