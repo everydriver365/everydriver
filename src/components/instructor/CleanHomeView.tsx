@@ -324,12 +324,31 @@ export function CleanHomeView({
             <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wide">Today's Schedule</p>
             <button onClick={() => navigate("/instructor/diary")} className="text-[13px] text-primary font-medium">See All</button>
           </div>
-          {lessons.length === 0 ? (
-            <div className="bg-card rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6 text-center">
-              <p className="text-muted-foreground text-sm">No lessons scheduled today</p>
-            </div>
-          ) : (
-            <div className="bg-card rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden divide-y divide-border/60">
+          {(() => {
+            const totalHours = lessons.reduce((sum, l) => sum + (l.durationMinutes || 60) / 60, 0);
+            const totalEarnings = lessons.reduce((sum, l) => sum + (l.amountDue || 0), 0);
+            const paidCount = lessons.filter(l => l.paymentStatus === "paid").length;
+            const statsBar = lessons.length > 0 ? (
+              <div style={{ backgroundColor: "#1a6fd4", padding: "8px 16px" }}>
+                <div className="flex items-center gap-0 text-xs">
+                  <span style={{ color: "#fff", fontWeight: 500 }}>{lessons.length} lesson{lessons.length !== 1 ? "s" : ""}</span>
+                  <span style={{ color: "rgba(255,255,255,0.4)", margin: "0 6px" }}>·</span>
+                  <span style={{ color: "rgba(255,255,255,0.85)" }}>{totalHours.toFixed(1)}h</span>
+                  <span style={{ color: "rgba(255,255,255,0.4)", margin: "0 6px" }}>·</span>
+                  <span style={{ color: "rgba(255,255,255,0.85)" }}>£{totalEarnings}</span>
+                  <span style={{ color: "rgba(255,255,255,0.4)", margin: "0 6px" }}>·</span>
+                  <span style={{ color: "rgba(255,255,255,0.85)" }}>{paidCount}/{lessons.length} paid</span>
+                </div>
+              </div>
+            ) : null;
+            return lessons.length === 0 ? (
+              <div className="bg-card rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6 text-center">
+                <p className="text-muted-foreground text-sm">No lessons scheduled today</p>
+              </div>
+            ) : (
+              <div className="bg-card rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+                {statsBar}
+                <div className="divide-y divide-border/60">
               {lessons.map((lesson, i) => {
                 const badge = getLessonTypeBadge(lesson);
                 const endMinutes =
