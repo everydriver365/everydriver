@@ -78,9 +78,15 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/80 backdrop-blur-xl border-t border-[hsl(240_5%_78%/0.5)]"
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden overflow-hidden bg-white border-t-[0.5px] border-black/[0.06]"
+      style={{
+        borderRadius: '20px 20px 0 0',
+        boxShadow: '0 -4px 16px rgba(0,0,0,0.08), 0 -1px 4px rgba(0,0,0,0.05)',
+      }}
     >
-      <div className="flex items-center justify-around h-16 w-full px-1">
+      {/* Gradient accent line */}
+      <div className="h-[2px] w-full" style={{ background: 'linear-gradient(to right, #0d4fa0, #56a8f5)' }} />
+      <div className="flex items-start justify-around" style={{ padding: '10px 0 16px' }}>
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const showNotification = item.showBadge && pendingJobsCount > 0;
@@ -103,51 +109,90 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
             <button
               key={item.path}
               onClick={() => handleNavClick(item.path)}
-              className="relative flex flex-col items-center justify-center gap-1 flex-1 h-full"
+              className="relative flex flex-col items-center cursor-pointer"
+              style={{ gap: 3, minWidth: 52 }}
             >
               <div className="relative">
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTab"
-                    className="absolute inset-0 rounded-2xl bg-[hsl(211_100%_50%)]/10"
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                )}
-                <div className="flex items-center justify-center rounded-2xl w-8 h-8 relative z-10">
-                  <item.icon
-                    className="h-5 w-5 transition-all duration-200"
-                    strokeWidth={isActive ? 2.2 : 1.8}
-                    color={
-                      trackIconColor
-                        ? trackIconColor
-                        : isActive
-                        ? "#007AFF"
-                        : "#8E8E93"
-                    }
-                  />
-                </div>
+                <item.icon
+                  className="transition-all duration-200"
+                  style={{ width: 22, height: 22 }}
+                  strokeWidth={isActive ? 2.2 : 1.8}
+                  color={
+                    trackIconColor
+                      ? trackIconColor
+                      : isActive
+                      ? "#1a6fd4"
+                      : "#8e8e93"
+                  }
+                />
+                {/* Pupils badge */}
                 {showNotification && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-white">
+                  <span
+                    className="absolute flex items-center justify-center"
+                    style={{
+                      top: -2,
+                      right: -4,
+                      minWidth: 16,
+                      height: 16,
+                      borderRadius: 8,
+                      padding: '0 4px',
+                      background: '#ff3b30',
+                      color: 'white',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      boxShadow: '0 1px 4px rgba(255,59,48,0.4)',
+                    }}
+                  >
                     {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                   </span>
                 )}
-                {isTrack && isTrackingActive && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-pulse" />
-                )}
+                {/* Schedule badge */}
                 {isSchedule && badgeCount > 0 && !isActive && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-[hsl(211_100%_50%)] text-white text-[10px] font-semibold flex items-center justify-center shadow-lg ring-2 ring-white">
+                  <span
+                    className="absolute flex items-center justify-center"
+                    style={{
+                      top: -2,
+                      right: -4,
+                      minWidth: 16,
+                      height: 16,
+                      borderRadius: 8,
+                      padding: '0 4px',
+                      background: '#ff3b30',
+                      color: 'white',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      boxShadow: '0 1px 4px rgba(255,59,48,0.4)',
+                    }}
+                  >
                     {badgeCount > 9 ? "9+" : badgeCount}
                   </span>
                 )}
+                {/* Track active dot */}
+                {isTrack && isTrackingActive && (
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                )}
+                {/* More dot */}
                 {showMoreDot && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-destructive ring-2 ring-white" />
+                  <span
+                    className="absolute"
+                    style={{
+                      top: 0,
+                      right: 4,
+                      width: 8,
+                      height: 8,
+                      background: '#ff3b30',
+                      borderRadius: '50%',
+                      boxShadow: '0 1px 3px rgba(255,59,48,0.4)',
+                    }}
+                  />
                 )}
               </div>
               <span
-                className={cn(
-                  "text-[12px] font-medium transition-all duration-200",
-                  isActive ? "text-[#007AFF] font-semibold" : "text-[#8E8E93]"
-                )}
+                style={{
+                  fontSize: 11,
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? '#1a6fd4' : '#8e8e93',
+                }}
               >
                 {item.label}
               </span>
@@ -155,8 +200,8 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
           );
         })}
       </div>
-      {/* Safe area for iOS — matches navy bg */}
-      <div className="h-safe-area-inset-bottom bg-white/80" />
+      {/* Safe area for iOS */}
+      <div className="h-safe-area-inset-bottom bg-white" />
     </nav>
   );
 }
