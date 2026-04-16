@@ -1,38 +1,51 @@
 
 
-## Plan: Fix session ending being immediately overridden by auto-create
+## Plan: Unify Menu + Settings into One Searchable Page
 
-### Root Cause
-When the user presses "End" on the tracking page:
-1. `stopSession` sets `ended_at` on the telematics session and clears `current_session_id` on the device
-2. The client is calling `radius-poller` every 2 seconds (line 350-353)
-3. The poller sees ignition ON + no `current_session_id` → auto-creates a new session immediately
-4. The realtime subscription picks up the new `current_session_id` → UI shows session is still active
+### Problem
+The "More" tab shows a menu with an "All Settings" row that navigates to a separate `/instructor/settings` page. This creates an unnecessary extra tap. The user wants one long, searchable, categorized list combining everything.
 
-The session IS ending in the DB, but a new one is created within 2 seconds.
+### Approach
+Merge the settings tiles (collapsible panels) directly into the Menu page, organized by category. Remove the separate "All Settings" navigation row. The result is a single scrollable page with:
+1. **Search bar** at the top (filters across all items)
+2. **Quick Actions** section (existing menu items like To Do, Messages, Jobs, etc.)
+3. **Money & Reports** section (existing menu items)
+4. **Schedule & Pupils** section
+5. **Tools** section
+6. **Resources** / **Wellbeing** sections
+7. **Profile & Identity** settings (collapsible tiles from current Settings page)
+8. **Compliance & Teaching** settings
+9. **Courses & Payments** settings
+10. **Website & Branding** settings
+11. **Scheduling** settings
+12. **Tracking & Routes** settings
+13. **Preferences & Data** settings (includes Quick Toggles like visibility, Hey ED)
+14. **Account** (Sign Out)
 
-### Changes
+### File Changes
 
-**File: `supabase/functions/radius-poller/index.ts`**
+**`src/pages/InstructorMenu.tsx`**
+- Import all settings tile content components (profile editor, working hours, courses manager, etc.) from InstructorSettings
+- Import the `allTiles`, `categories` arrays and `renderTileContent` logic (or refactor into a shared hook/module)
+- Add the Quick Toggles section (visibility, Hey ED, feature toggles) inline
+- Add all settings categories with collapsible tiles after the existing menu sections
+- Remove the "Settings" section that currently links to `/instructor/settings` (lines 150-157), keeping "FAQs & Help" in Resources
+- Keep the search bar filtering across both menu items AND settings tiles
 
-Add a cooldown check before auto-creating sessions. Before creating a new session at line 592, query the most recent `lesson_telematics` for this device's instructor to see if one was ended in the last 60 seconds. If so, skip auto-creation (the instructor just manually ended a session).
+**`src/pages/InstructorSettings.tsx`**
+- Redirect to `/instructor/menu` (or keep as-is for deep-link `/instructor/settings?open=profile` support by redirecting with params)
 
-```sql
--- Check: was a session for this instructor ended in the last 60s?
-SELECT id FROM lesson_telematics 
-WHERE instructor_id = device.instructor_id 
-  AND ended_at > now() - interval '60 seconds'
-LIMIT 1
-```
+**`src/pages/InstructorSettingsCategory.tsx`**
+- Update redirect target from `/instructor/settings` to `/instructor/menu`
 
-If a recently-ended session exists, skip the auto-create.
+### What stays the same
+- All existing functionality: search, filtering, collapsible panels, profile editing, all settings components
+- Navigation from menu items (schedule, pupils, etc.) works identically
+- Feature gating and lock badges on menu items
+- Deep links via `?open=` parameter still work
 
-**File: `src/pages/InstructorLiveSession.tsx`**
-
-1. Stop triggering the poller immediately after ending a session. After `stopSession` clears `current_session_id` locally (line 756), the `useEffect` at line 262 re-runs and the `device?.current_session_id` check at line 347 is falsy, so the poller interval should not restart. However, there's a race: the poller call that's already in-flight can still auto-create a session. The server-side cooldown above handles this.
-
-2. Additionally, stop the poller calls during the stop operation. Add the `isStopping` flag to the polling guard so no poller triggers fire while ending.
-
-### Result
-After pressing "End", the session ends cleanly. The poller won't auto-create a new session for 60 seconds, giving the UI time to settle. The pupil selector reappears.
+### Technical details
+- Extract `allTiles`, `categories`, `renderTileContent`, and related profile-fetching logic into a shared file `src/hooks/useSettingsTiles.tsx` to avoid duplicating ~400 lines
+- The Menu page will use `Collapsible` from radix for settings tiles (same pattern as current Settings page)
+- Settings tiles render inline with the same iOS grouped-list card style already used in the menu
 
