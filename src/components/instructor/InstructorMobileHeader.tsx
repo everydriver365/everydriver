@@ -78,8 +78,8 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
       <div className="bg-[#f2f2f7] pt-[env(safe-area-inset-top)]" />
       {/* Premium iOS tile header */}
       <div
-        className="mx-2 mt-1 rounded-[16px] overflow-hidden bg-white border-[0.5px] border-black/[0.06]"
-        style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)' }}
+        className="w-full overflow-hidden bg-white border-b border-black/[0.06]"
+        style={{ boxShadow: '0 1px 0 rgba(0,0,0,0.04)' }}
       >
         <div className="relative flex items-center justify-between px-4 py-[10px]">
           {/* Left: Bell with badge (or back button) */}
