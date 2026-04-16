@@ -16,9 +16,7 @@ export function BottomPromoGroup({ className = "" }: { className?: string }) {
     boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
   };
 
-  const gradientLine = (
-    <div style={{ height: 2, background: "linear-gradient(to right, #0d4fa0, #56a8f5)", borderRadius: 2 }} />
-  );
+  const gradientLine = null;
 
   return (
     <>
