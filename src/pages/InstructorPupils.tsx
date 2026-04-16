@@ -167,7 +167,10 @@ export default function InstructorPupils() {
     parent_phone: "",
     parent_name: "",
     date_of_birth: "",
+    payment_method: "tbc",
   });
+  const [newPupilId, setNewPupilId] = useState<string | null>(null);
+  const [showPostAddPayment, setShowPostAddPayment] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | PupilStatus>("all");
   const [isLookingUpW3W, setIsLookingUpW3W] = useState(false);
