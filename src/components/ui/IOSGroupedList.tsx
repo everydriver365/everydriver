@@ -21,7 +21,17 @@ export function IOSGroupedList({ header, footer, children, className }: IOSGroup
           {header}
         </p>
       )}
-      <div className="bg-card rounded-[10px] border border-border divide-y divide-border overflow-hidden">
+      <div className="bg-card rounded-[10px] border border-border overflow-hidden">
+        {React.Children.map(children, (child, index) => (
+          <>
+            {index > 0 && (
+              <div className="ml-[52px]">
+                <div className="h-px bg-border" />
+              </div>
+            )}
+            {child}
+          </>
+        ))}
         {children}
       </div>
       {footer && (
