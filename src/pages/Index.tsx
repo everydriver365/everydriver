@@ -1139,6 +1139,12 @@ export default function Index() {
           </div>
         </div>
       </section>
+      <CoursePlannerSheet
+        open={plannerOpen}
+        onOpenChange={setPlannerOpen}
+        mode="public"
+        source="drive365"
+      />
     </MainLayout>
   );
 }

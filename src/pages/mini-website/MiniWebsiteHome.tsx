@@ -14,7 +14,8 @@ import { PupilAvatar } from "@/components/instructor/PupilAvatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, Phone, Star, Award, MapPin, Search, CheckCircle, Gift, BookOpen, Shield, CreditCard, Clock, Heart, ArrowRight, Zap, User, ChevronRight, X, Car } from "lucide-react";
+import { Calendar, Phone, Star, Award, MapPin, Search, CheckCircle, Gift, BookOpen, Shield, CreditCard, Clock, Heart, ArrowRight, Zap, User, ChevronRight, X, Car, CalendarCheck } from "lucide-react";
+import { CoursePlannerSheet } from "@/components/course-planner/CoursePlannerSheet";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
@@ -56,6 +57,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   const [parentPortalOpen, setParentPortalOpen] = useState(false);
   const [liveBookingOpen, setLiveBookingOpen] = useState(false);
   const [trackProgressOpen, setTrackProgressOpen] = useState(false);
+  const [plannerOpen, setPlannerOpen] = useState(false);
 
   const openFeatureModal = (feature: typeof includedFeatures[0]) => {
     const mapped: FeatureData = {
@@ -277,6 +279,16 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               Search
             </Button>
           </form>
+
+          <button
+            type="button"
+            onClick={() => setPlannerOpen(true)}
+            className="inline-flex items-center gap-2 text-sm font-medium hover:underline"
+            style={{ color: primaryColor }}
+          >
+            <CalendarCheck className="h-4 w-4" />
+            Plan my course around my test date →
+          </button>
 
           {/* Course Tiles */}
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -696,6 +708,14 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         open={trackProgressOpen}
         onOpenChange={setTrackProgressOpen}
         primaryColor={primaryColor}
+      />
+      <CoursePlannerSheet
+        open={plannerOpen}
+        onOpenChange={setPlannerOpen}
+        mode="public"
+        source="mini_website"
+        instructorId={instructor.id}
+        instructorName={instructorName}
       />
     </MiniWebsiteLayout>
   );
