@@ -328,6 +328,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
                       )}
                     >
                       <Avatar className="h-10 w-10 shrink-0">
+                        <AvatarImage src={conversation.pupil?.profile_image_url || undefined} alt={conversation.pupil?.name} />
                         <AvatarFallback className="bg-primary text-primary-foreground text-[13px]">
                           {conversation.pupil?.name?.charAt(0) || <User className="h-4 w-4" />}
                         </AvatarFallback>
@@ -441,6 +442,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
                       className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-muted/50 transition-colors text-left"
                     >
                       <Avatar className="h-10 w-10 shrink-0">
+                        <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
                         <AvatarFallback className="bg-primary text-primary-foreground">
                           {pupil.name.charAt(0)}
                         </AvatarFallback>
