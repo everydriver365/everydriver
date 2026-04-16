@@ -1,12 +1,12 @@
 
 
-## Plan: Remove Daily Tip from Home Screen
+## Plan: Speed Up Active Session Refresh
 
 ### Change
-**File: `src/components/instructor/BriefingActionCards.tsx`**
+**File: `src/hooks/useActiveSession.ts`** — Change `refetchInterval` from `30000` (30s) to `5000` (5s) so the tracking bar updates near-instantly.
 
-Remove the `DAILY_TIPS` array (lines 84-92), the `tipIndex` variable (line 96), and the "Daily Tip" `motion.div` block (lines 145-153).
+This is the hook that powers the live tracking session indicator. 5 seconds strikes a good balance between responsiveness and avoiding excessive queries.
 
-### What stays
-Everything else in the component (quick stats strip, action cards) remains unchanged.
+### Files to modify
+- `src/hooks/useActiveSession.ts` — line 98: `30000` → `5000`
 
