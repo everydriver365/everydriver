@@ -21,6 +21,7 @@ import {
   BarChart2,
   FileText,
 } from "lucide-react";
+import { type LucideIcon } from "lucide-react";
 import { TakePaymentModal } from "@/components/instructor/TakePaymentModal";
 import { PaymentHistory } from "@/components/instructor/PaymentHistory";
 import { InstructorPayoutHistory } from "@/components/instructor/InstructorPayoutHistory";
@@ -169,7 +170,7 @@ export default function InstructorPay() {
     }
   };
 
-  const actions: { id: string; label: string; sublabel: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>; iconColor: string; iconBg: string; href?: string; onClick?: () => void; accent?: boolean }[] = [
+  const actions: { id: string; label: string; sublabel: string; icon: LucideIcon; iconColor: string; iconBg: string; href?: string; onClick?: () => void; accent?: boolean }[] = [
     {
       id: "take-payment",
       label: "Take Payment",
