@@ -268,7 +268,7 @@ Roads Visited: ${report.stats.roadsVisited}
                   <MapPin className="h-4 w-4" />
                   <span>{insufficientData.pointsRecorded} GPS points recorded</span>
                 </div>
-                <Button variant="outline" onClick={generateReport}>
+                <Button variant="outline" onClick={() => generateReport(0)}>
                   Try Again
                 </Button>
               </div>
