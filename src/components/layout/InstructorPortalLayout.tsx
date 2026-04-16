@@ -420,7 +420,7 @@ export function InstructorPortalLayout({ children, hideHeader }: InstructorPorta
             : undefined
         }
       >
-        {!isFullscreenMode && (
+        {!isFullscreenMode && !hideHeader && (
           <>
             {/* iOS Install Banner */}
             <IOSInstallBanner />
