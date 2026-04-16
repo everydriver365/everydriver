@@ -81,19 +81,10 @@ function extractActions(text: string): BriefingAction[] {
   return actions.slice(0, 3);
 }
 
-const DAILY_TIPS = [
-  "💡 Ask pupils to narrate what they see — builds hazard awareness.",
-  "💡 Start each lesson by reviewing the previous session's goals.",
-  "💡 Mix busy and quiet roads to build progressive confidence.",
-  "💡 Use the 'what if?' technique at junctions for critical thinking.",
-  "💡 End lessons with one thing the pupil did well and one to improve.",
-  "💡 Encourage pupils to check mirrors before signaling, not after.",
-  "💡 Practice parallel parking in different road widths.",
-];
 
 export const BriefingActionCards = forwardRef<HTMLDivElement, BriefingActionCardsProps>(({ briefingText, todayLessons, expectedEarnings, onActionClick }, ref) => {
   const actions = extractActions(briefingText);
-  const tipIndex = new Date().getDate() % DAILY_TIPS.length;
+  
 
   return (
     <div ref={ref} className="space-y-3 mt-3">
@@ -142,15 +133,6 @@ export const BriefingActionCards = forwardRef<HTMLDivElement, BriefingActionCard
         ))}
       </div>
 
-      {/* Daily Tip */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
-        className="bg-muted/50 rounded-2xl px-3 py-2 text-[11px] text-muted-foreground leading-relaxed"
-      >
-        {DAILY_TIPS[tipIndex]}
-      </motion.div>
     </div>
   );
 });
