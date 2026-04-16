@@ -582,102 +582,24 @@ export default function InstructorMenu() {
     return undefined;
   };
 
-  // ─── Premium card + gradient helpers ────────────────────────────────
-  const cardClass = "bg-white rounded-[20px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.05)] border-[0.5px] border-black/[0.06] mb-[10px]";
-  const GradientLine = () => <div className="h-[0.5px] w-full bg-black/[0.06]" />;
+  // ─── Tile styling ───────────────────────────────────────────────────
+  const cardClass = "bg-white rounded-[14px] overflow-hidden border-[0.5px] border-[#E4E4E7] mb-[10px]";
 
-  // Emoji map for menu items
-  const menuEmojis: Record<string, string> = {
-    "To Do": "📋", "Messages": "💬", "Job Offers": "📨", "New Bookings": "📅",
-    "Take Payment": "💳", "Live Tracking": "📡", "Find My Car": "📌",
-    "Expenses": "💰", "Test Swap": "🔄", "Payments": "💳",
-    "Income Summary": "📊", "In vs Out": "📈", "Mileage Tracker": "🚗",
-    "Tax Summary": "🧾", "Schedule": "📅", "Pupils": "👥",
-    "Telematics": "📡", "Dashcam": "🎥", "Reviews": "⭐",
-    "Vehicle Health": "🚗", "Quick Test Result": "✅", "Full Test Report": "📋",
-    "Saved Routes": "🗺️", "Jotter": "📝", "Fill Gaps": "➕",
-    "Notes": "📝", "Bulk Operations": "📦", "Reports Hub": "📊",
-    "Resources": "📁", "Platform Updates": "📢", "FAQs & Help": "❓",
-    "Health Hub": "❤️", "Sign Out": "🚪",
-  };
-
-  // Gradient palette for menu items
-  const menuGradients: Record<string, { bg: string; shadow: string }> = {
-    "To Do": { bg: "linear-gradient(135deg, #1a6fd4, #56a8f5)", shadow: "0 3px 8px rgba(26,111,212,0.3)" },
-    "Messages": { bg: "linear-gradient(135deg, #34c759, #30d158)", shadow: "0 3px 8px rgba(52,199,89,0.3)" },
-    "Job Offers": { bg: "linear-gradient(135deg, #7c3aed, #a855f7)", shadow: "0 3px 8px rgba(124,58,237,0.3)" },
-    "New Bookings": { bg: "linear-gradient(135deg, #f5a623, #f97316)", shadow: "0 3px 8px rgba(245,166,35,0.3)" },
-    "Take Payment": { bg: "linear-gradient(135deg, #0f9e75, #1dcaa5)", shadow: "0 3px 8px rgba(15,158,117,0.3)" },
-    "Live Tracking": { bg: "linear-gradient(135deg, #06b6d4, #22d3ee)", shadow: "0 3px 8px rgba(6,182,212,0.3)" },
-    "Find My Car": { bg: "linear-gradient(135deg, #e11d48, #f43f5e)", shadow: "0 3px 8px rgba(225,29,72,0.3)" },
-    "Expenses": { bg: "linear-gradient(135deg, #f59e0b, #fbbf24)", shadow: "0 3px 8px rgba(245,158,11,0.3)" },
-    "Test Swap": { bg: "linear-gradient(135deg, #d97706, #f59e0b)", shadow: "0 3px 8px rgba(217,119,6,0.3)" },
-    "Payments": { bg: "linear-gradient(135deg, #059669, #10b981)", shadow: "0 3px 8px rgba(5,150,105,0.3)" },
-    "Income Summary": { bg: "linear-gradient(135deg, #16a34a, #22c55e)", shadow: "0 3px 8px rgba(22,163,74,0.3)" },
-    "In vs Out": { bg: "linear-gradient(135deg, #0284c7, #38bdf8)", shadow: "0 3px 8px rgba(2,132,199,0.3)" },
-    "Mileage Tracker": { bg: "linear-gradient(135deg, #15803d, #4ade80)", shadow: "0 3px 8px rgba(21,128,61,0.3)" },
-    "Tax Summary": { bg: "linear-gradient(135deg, #7c3aed, #a78bfa)", shadow: "0 3px 8px rgba(124,58,237,0.3)" },
-    "Schedule": { bg: "linear-gradient(135deg, #0d4fa0, #56a8f5)", shadow: "0 3px 8px rgba(13,79,160,0.3)" },
-    "Pupils": { bg: "linear-gradient(135deg, #4f46e5, #818cf8)", shadow: "0 3px 8px rgba(79,70,229,0.3)" },
-    "Telematics": { bg: "linear-gradient(135deg, #059669, #34d399)", shadow: "0 3px 8px rgba(5,150,105,0.3)" },
-    "Dashcam": { bg: "linear-gradient(135deg, #0284c7, #38bdf8)", shadow: "0 3px 8px rgba(2,132,199,0.3)" },
-    "Reviews": { bg: "linear-gradient(135deg, #f59e0b, #fbbf24)", shadow: "0 3px 8px rgba(245,158,11,0.3)" },
-    "Vehicle Health": { bg: "linear-gradient(135deg, #06b6d4, #67e8f9)", shadow: "0 3px 8px rgba(6,182,212,0.3)" },
-    "Quick Test Result": { bg: "linear-gradient(135deg, #059669, #34d399)", shadow: "0 3px 8px rgba(5,150,105,0.3)" },
-    "Full Test Report": { bg: "linear-gradient(135deg, #0d9488, #2dd4bf)", shadow: "0 3px 8px rgba(13,148,136,0.3)" },
-    "Saved Routes": { bg: "linear-gradient(135deg, #e11d48, #fb7185)", shadow: "0 3px 8px rgba(225,29,72,0.3)" },
-    "Jotter": { bg: "linear-gradient(135deg, #ea580c, #fb923c)", shadow: "0 3px 8px rgba(234,88,12,0.3)" },
-    "Fill Gaps": { bg: "linear-gradient(135deg, #db2777, #f472b6)", shadow: "0 3px 8px rgba(219,39,119,0.3)" },
-    "Notes": { bg: "linear-gradient(135deg, #ca8a04, #facc15)", shadow: "0 3px 8px rgba(202,138,4,0.3)" },
-    "Bulk Operations": { bg: "linear-gradient(135deg, #4f46e5, #818cf8)", shadow: "0 3px 8px rgba(79,70,229,0.3)" },
-    "Reports Hub": { bg: "linear-gradient(135deg, #7c3aed, #a78bfa)", shadow: "0 3px 8px rgba(124,58,237,0.3)" },
-    "Resources": { bg: "linear-gradient(135deg, #0d4fa0, #56a8f5)", shadow: "0 3px 8px rgba(13,79,160,0.3)" },
-    "Platform Updates": { bg: "linear-gradient(135deg, #4f46e5, #818cf8)", shadow: "0 3px 8px rgba(79,70,229,0.3)" },
-    "FAQs & Help": { bg: "linear-gradient(135deg, #0d4fa0, #56a8f5)", shadow: "0 3px 8px rgba(13,79,160,0.3)" },
-    "Health Hub": { bg: "linear-gradient(135deg, #e11d48, #f43f5e)", shadow: "0 3px 8px rgba(225,29,72,0.3)" },
-    "Sign Out": { bg: "linear-gradient(135deg, #dc2626, #ef4444)", shadow: "0 3px 8px rgba(220,38,38,0.3)" },
-  };
-  const defaultGradient = { bg: "linear-gradient(135deg, #0d4fa0, #56a8f5)", shadow: "0 3px 8px rgba(13,79,160,0.3)" };
-
-  // Settings tile gradients
-  const settingsGradients: Record<string, { bg: string; shadow: string }> = {
-    "profile": { bg: "linear-gradient(135deg, #1a6fd4, #56a8f5)", shadow: "0 3px 8px rgba(26,111,212,0.3)" },
-    "details": { bg: "linear-gradient(135deg, #ea580c, #fb923c)", shadow: "0 3px 8px rgba(234,88,12,0.3)" },
-    "images": { bg: "linear-gradient(135deg, #7c3aed, #a855f7)", shadow: "0 3px 8px rgba(124,58,237,0.3)" },
-    "compliance": { bg: "linear-gradient(135deg, #059669, #34d399)", shadow: "0 3px 8px rgba(5,150,105,0.3)" },
-    "test-centres": { bg: "linear-gradient(135deg, #dc2626, #f87171)", shadow: "0 3px 8px rgba(220,38,38,0.3)" },
-    "terms": { bg: "linear-gradient(135deg, #78716c, #a8a29e)", shadow: "0 3px 8px rgba(120,113,108,0.3)" },
-    "courses-mgr": { bg: "linear-gradient(135deg, #059669, #34d399)", shadow: "0 3px 8px rgba(5,150,105,0.3)" },
-    "booking-mode": { bg: "linear-gradient(135deg, #0d9488, #2dd4bf)", shadow: "0 3px 8px rgba(13,148,136,0.3)" },
-    "deposits": { bg: "linear-gradient(135deg, #65a30d, #a3e635)", shadow: "0 3px 8px rgba(101,163,13,0.3)" },
-    "commission": { bg: "linear-gradient(135deg, #7c3aed, #a78bfa)", shadow: "0 3px 8px rgba(124,58,237,0.3)" },
-    "square-connect": { bg: "linear-gradient(135deg, #1a6fd4, #56a8f5)", shadow: "0 3px 8px rgba(26,111,212,0.3)" },
-    "referrals": { bg: "linear-gradient(135deg, #059669, #34d399)", shadow: "0 3px 8px rgba(5,150,105,0.3)" },
-    "bnpl": { bg: "linear-gradient(135deg, #db2777, #f472b6)", shadow: "0 3px 8px rgba(219,39,119,0.3)" },
-    "discount-codes": { bg: "linear-gradient(135deg, #ea580c, #fb923c)", shadow: "0 3px 8px rgba(234,88,12,0.3)" },
-    "lesson-packages": { bg: "linear-gradient(135deg, #7c3aed, #a78bfa)", shadow: "0 3px 8px rgba(124,58,237,0.3)" },
-    "intake-questions": { bg: "linear-gradient(135deg, #0891b2, #22d3ee)", shadow: "0 3px 8px rgba(8,145,178,0.3)" },
-    "pricing-rules": { bg: "linear-gradient(135deg, #d97706, #fbbf24)", shadow: "0 3px 8px rgba(217,119,6,0.3)" },
-    "mini-website": { bg: "linear-gradient(135deg, #0891b2, #22d3ee)", shadow: "0 3px 8px rgba(8,145,178,0.3)" },
-    "website-pages": { bg: "linear-gradient(135deg, #4f46e5, #818cf8)", shadow: "0 3px 8px rgba(79,70,229,0.3)" },
-    "website-theme": { bg: "linear-gradient(135deg, #db2777, #f472b6)", shadow: "0 3px 8px rgba(219,39,119,0.3)" },
-    "branding": { bg: "linear-gradient(135deg, #e11d48, #fb7185)", shadow: "0 3px 8px rgba(225,29,72,0.3)" },
-    "pupil-self-service": { bg: "linear-gradient(135deg, #059669, #34d399)", shadow: "0 3px 8px rgba(5,150,105,0.3)" },
-    "working-hours": { bg: "linear-gradient(135deg, #2563eb, #60a5fa)", shadow: "0 3px 8px rgba(37,99,235,0.3)" },
-    "calendar": { bg: "linear-gradient(135deg, #0284c7, #38bdf8)", shadow: "0 3px 8px rgba(2,132,199,0.3)" },
-    "cancellation": { bg: "linear-gradient(135deg, #475569, #94a3b8)", shadow: "0 3px 8px rgba(71,85,105,0.3)" },
-    "no-show-policy": { bg: "linear-gradient(135deg, #dc2626, #f87171)", shadow: "0 3px 8px rgba(220,38,38,0.3)" },
-    "reminders": { bg: "linear-gradient(135deg, #0284c7, #38bdf8)", shadow: "0 3px 8px rgba(2,132,199,0.3)" },
-    "gps-mobile": { bg: "linear-gradient(135deg, #0891b2, #22d3ee)", shadow: "0 3px 8px rgba(8,145,178,0.3)" },
-    "routes": { bg: "linear-gradient(135deg, #c026d3, #e879f9)", shadow: "0 3px 8px rgba(192,38,211,0.3)" },
-    "dashcam-portal": { bg: "linear-gradient(135deg, #475569, #94a3b8)", shadow: "0 3px 8px rgba(71,85,105,0.3)" },
-    "demo-mode": { bg: "linear-gradient(135deg, #d97706, #fbbf24)", shadow: "0 3px 8px rgba(217,119,6,0.3)" },
-    "appearance": { bg: "linear-gradient(135deg, #db2777, #f472b6)", shadow: "0 3px 8px rgba(219,39,119,0.3)" },
-    "dashboard-layout": { bg: "linear-gradient(135deg, #4f46e5, #818cf8)", shadow: "0 3px 8px rgba(79,70,229,0.3)" },
-    "notifications": { bg: "linear-gradient(135deg, #ca8a04, #facc15)", shadow: "0 3px 8px rgba(202,138,4,0.3)" },
-    "gdpr": { bg: "linear-gradient(135deg, #1a6fd4, #56a8f5)", shadow: "0 3px 8px rgba(26,111,212,0.3)" },
-    "data-backup": { bg: "linear-gradient(135deg, #52525b, #a1a1aa)", shadow: "0 3px 8px rgba(82,82,91,0.3)" },
-    "reset-stats": { bg: "linear-gradient(135deg, #dc2626, #ef4444)", shadow: "0 3px 8px rgba(220,38,38,0.3)" },
+  // Icon tile helper — muted tint rounded square
+  const renderIconTile = (icon: React.ElementType, tintBg: string, tintColor: string, iconSrc?: string) => {
+    const Icon = icon;
+    return (
+      <div
+        className="h-[44px] w-[44px] rounded-[12px] flex items-center justify-center shrink-0 overflow-hidden"
+        style={{ backgroundColor: tintBg }}
+      >
+        {iconSrc ? (
+          <img src={iconSrc} alt="" className="h-5 w-5 object-contain" />
+        ) : (
+          <Icon size={22} strokeWidth={2} color={tintColor} />
+        )}
+      </div>
+    );
   };
 
   // ─── Settings tile component ───────────────────────────────────────
