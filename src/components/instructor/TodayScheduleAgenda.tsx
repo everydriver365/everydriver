@@ -61,14 +61,14 @@ function SummaryBar({ lessons }: { lessons: TodayLesson[] }) {
   const totalEarnings = lessons.reduce((s, l) => s + (l.amountDue || 0), 0);
   const paid = lessons.filter(l => l.paymentStatus === "paid").length;
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#8E8E93", padding: "8px 16px 4px" }}>
-      <span className="font-semibold text-foreground">{lessons.length} lesson{lessons.length !== 1 ? "s" : ""}</span>
-      <span>·</span>
-      <span>{(totalMins / 60).toFixed(1)}h</span>
-      <span>·</span>
-      <span style={{ color: "#30D158" }}>£{Math.round(totalEarnings)}</span>
-      <span>·</span>
-      <span style={{ color: "#30D158" }}>{paid}/{lessons.length} paid</span>
+    <div style={{ backgroundColor: "#1a6fd4", padding: "8px 16px", display: "flex", alignItems: "center", gap: 0, fontSize: 12 }}>
+      <span style={{ color: "#fff", fontWeight: 500 }}>{lessons.length} lesson{lessons.length !== 1 ? "s" : ""}</span>
+      <span style={{ color: "rgba(255,255,255,0.4)", margin: "0 6px" }}>·</span>
+      <span style={{ color: "rgba(255,255,255,0.85)" }}>{(totalMins / 60).toFixed(1)}h</span>
+      <span style={{ color: "rgba(255,255,255,0.4)", margin: "0 6px" }}>·</span>
+      <span style={{ color: "rgba(255,255,255,0.85)" }}>£{Math.round(totalEarnings)}</span>
+      <span style={{ color: "rgba(255,255,255,0.4)", margin: "0 6px" }}>·</span>
+      <span style={{ color: "rgba(255,255,255,0.85)" }}>{paid}/{lessons.length} paid</span>
     </div>
   );
 }
@@ -87,7 +87,6 @@ function AgendaList({ lessons }: { lessons: TodayLesson[] }) {
 
   return (
     <div>
-      <SummaryBar lessons={lessons} />
       <div>
         {lessons.map((l, i) => {
           const state = states.get(l.id) || "upcoming";
@@ -248,6 +247,9 @@ export function TodayScheduleAgenda({ todayLessons, tomorrowLessons, className =
 
       {/* Divider */}
       <div className="bg-border" style={{ height: 0.5 }} />
+
+      {/* Stats bar */}
+      {activeLessons.length > 0 && <SummaryBar lessons={activeLessons} />}
 
       {/* Lesson list */}
       <div className="bg-card">
