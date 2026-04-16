@@ -193,7 +193,12 @@ export default function InstructorPay() {
 
   const GradientLine = () => null;
 
-  const cardClass = "bg-white rounded-[20px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.05)] border-[0.5px] border-black/[0.06]";
+  const tileStyle: React.CSSProperties = {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    border: "0.5px solid #E4E4E7",
+    overflow: "hidden",
+  };
 
   return (
     <InstructorPortalLayout>
