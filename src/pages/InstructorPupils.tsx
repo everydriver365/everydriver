@@ -380,6 +380,7 @@ export default function InstructorPupils() {
         parent_phone: addForm.parent_phone || null,
         parent_name: addForm.parent_name || null,
         date_of_birth: addForm.date_of_birth || null,
+        payment_method: addForm.payment_method || 'tbc',
         lessons_completed: 0,
         progress: 0,
       }).select();
@@ -390,6 +391,14 @@ export default function InstructorPupils() {
       }
 
       console.log("Pupil added successfully:", data);
+      const createdPupil = data?.[0];
+      
+      // If payment method requires action, show post-add options
+      if (addForm.payment_method === 'send_link' || addForm.payment_method === 'take_payment') {
+        setNewPupilId(createdPupil?.id || null);
+        setShowPostAddPayment(true);
+      }
+      
       toast.success("Pupil added successfully");
       setIsAddOpen(false);
       setAddForm({
@@ -404,6 +413,7 @@ export default function InstructorPupils() {
         parent_phone: "",
         parent_name: "",
         date_of_birth: "",
+        payment_method: "tbc",
       });
       fetchPupils();
     } catch (error: any) {
