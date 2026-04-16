@@ -67,16 +67,31 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
             transition={{ delay: idx * 0.04, type: "spring", stiffness: 400, damping: 25 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate(tile.route)}
-            className="relative h-[110px] p-5 rounded-2xl text-left flex flex-col justify-between border-0 transition-all duration-200 ease-out"
+            className="relative h-[110px] p-5 text-left flex flex-col justify-between transition-all duration-200 ease-out"
             style={{
-              backgroundColor: "#FFFFFF",
-              boxShadow: "0px 2px 12px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)",
+              backgroundColor: "white",
+              borderRadius: 20,
+              overflow: "hidden",
+              border: "0.5px solid rgba(26,111,212,0.1)",
+              boxShadow: "0 8px 24px rgba(26,111,212,0.2), 0 2px 6px rgba(0,0,0,0.06)",
             }}
           >
             {/* Badge */}
             {tile.badge && tile.badge > 0 && (
-              <div className="absolute top-3 right-3 min-w-[20px] h-5 px-1.5 rounded-full bg-destructive flex items-center justify-center">
-                <span className="text-[11px] font-bold text-destructive-foreground">{tile.badge}</span>
+              <div
+                className="absolute flex items-center justify-center"
+                style={{
+                  top: 10,
+                  right: 10,
+                  minWidth: 20,
+                  height: 20,
+                  borderRadius: 10,
+                  backgroundColor: "#ff3b30",
+                  padding: "0 6px",
+                  boxShadow: "0 2px 6px rgba(255,59,48,0.5)",
+                }}
+              >
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", lineHeight: 1 }}>{tile.badge}</span>
               </div>
             )}
             <div>
