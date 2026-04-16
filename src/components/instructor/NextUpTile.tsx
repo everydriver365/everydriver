@@ -269,6 +269,24 @@ export function NextUpTile({
                 <p style={{ fontSize: 12, color: "#8E8E93", marginTop: 2 }}>
                   {getDateLabel()} · {formatDuration()} · {getCountdownText()}
                 </p>
+                {(pupilUnreadCount > 0 || adminUnreadCount > 0) && (
+                  <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                    {pupilUnreadCount > 0 && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: "rgba(0,122,255,0.12)", color: "#007AFF", fontSize: 10, fontWeight: 600 }}>
+                        <MessageCircle className="h-2.5 w-2.5" />
+                        {pupilUnreadCount} from {firstName}
+                      </span>
+                    )}
+                    {adminUnreadCount > 0 && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: "rgba(255,149,0,0.12)", color: "#FF9500", fontSize: 10, fontWeight: 600 }}>
+                        <Mail className="h-2.5 w-2.5" />
+                        {adminUnreadCount} admin
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Expand */}
