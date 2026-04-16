@@ -1,78 +1,52 @@
 
 
-# Making the Instructor App Feel Premium iOS-Native
+# Elevate the Instructor App to Premium Quality
 
-## What's Already Working Well
-- White tile cards with rounded corners and layered shadows
-- Emoji icon set (consistent, playful)
-- #F2F2F7 system background
-- Frosted bottom nav with gradient accent line
-- Activity rings on the hero
+## Problem
+The app currently looks like a template due to flat coloured icon squares, repetitive horizontal scrolls, uniform shadows, and lack of visual hierarchy.
 
-## Areas to Improve
+## Changes
 
-### 1. Typography — Use SF Pro via System Font Stack Everywhere
-Currently only `IOSPageWrapper` sets `-apple-system, 'SF Pro Text'`. The rest of the app uses Inter (Google Fonts). Apply the iOS system font stack globally to the instructor portal so all text renders in SF Pro on Apple devices and the closest native equivalent elsewhere. This alone makes the biggest difference.
+### 1. Replace flat icon squares with SF Symbol-style roundels
+- Quick Actions (4-column grid): Replace the solid-colour squares with subtle tinted backgrounds (`accent + 12% opacity`) and coloured icons instead of white-on-colour. Smaller, 48px circles instead of full squares. This matches iOS Settings/Shortcuts style.
+- Tools & Features cards: Use a soft gradient (e.g. `linear-gradient(135deg, accent, accent-lighter)`) instead of flat colour. Add a subtle inner glow.
 
-### 2. Haptic-Style Micro-Interactions
-- Add subtle spring animations on card taps (scale 0.97 with `transition: { type: "spring", stiffness: 400, damping: 25 }`)
-- Implement press-and-hold feedback on Quick Action tiles using `whileTap`
-- Add rubber-band overscroll feel on scrollable lists using `-webkit-overflow-scrolling: touch`
+### 2. Introduce card hierarchy with 3 shadow tiers
+- **Elevated** (lessons, primary actions): Multi-layer shadow with blur 24px
+- **Resting** (stats, tools): Softer 2-layer shadow with blur 8px  
+- **Flat** (quick actions): No shadow, just tinted background
 
-### 3. Blur & Transparency Refinements
-- Make the header use `backdrop-filter: blur(20px) saturate(180%)` with `bg-white/80` instead of solid white — matching iOS navigation bars
-- Apply the same frosted treatment to any sticky sub-headers or floating elements
-- Add `backdrop-blur` to modal overlays
+### 3. Redesign Quick Actions as a grouped iOS list
+- Instead of 4 coloured squares, use a single white rounded card with 4 rows (icon + label + chevron + badge), separated by indented dividers. This matches iOS Settings and feels immediately native.
 
-### 4. Smoother Page Transitions
-- Wrap route changes in `AnimatePresence` with a subtle horizontal slide (like iOS push navigation)
-- Use `layoutId` animations for shared elements between pages (e.g., pupil avatar transitioning from list to detail)
+### 4. Add visual variety between sections
+- Today's Schedule: Keep horizontal scroll but make cards taller with a gradient strip instead of flat blue
+- Your Business: Switch from horizontal scroll to a 2x2 grid of stat cards (they're all visible on screen anyway)
+- Tools: Keep horizontal scroll but with refined icon treatment
+- Insights: Use a stacked list instead of scroll (only 3 items)
 
-### 5. Refined Card Shadows & Depth
-- Replace current box-shadow with a softer multi-layer system:
-  ```
-  box-shadow: 0 0.5px 0 rgba(0,0,0,0.04),
-              0 2px 8px rgba(0,0,0,0.04),
-              0 8px 24px rgba(0,0,0,0.06);
-  ```
-- Add `ring-1 ring-black/[0.04]` instead of `border-[0.5px]` for crisper card edges
-- Use iOS-style inset separator lines (left-indented dividers) in lists
+### 5. Improve spacing and typography
+- Increase section spacing from `mt-7` to `mt-9`
+- Add letter-spacing `-0.02em` to section titles
+- Use `font-weight: 600` (semibold) for card titles instead of 700 (bold) — less aggressive
+- Muted subtitles at `text-[13px]` with `text-gray-400` instead of `text-gray-500`
 
-### 6. Native-Feeling Pull-to-Refresh
-- Add a custom pull-to-refresh on the home page with an iOS-style spinner (not browser default)
-- Use a rotating circular indicator matching system blue
+### 6. Refine lesson cards
+- Replace solid `bg-blue-500` with a gradient: `linear-gradient(135deg, #007AFF, #5856D6)`
+- Add a frosted glass effect to the avatar ring
+- Slightly larger card width (220px vs 200px) for more breathing room
 
-### 7. Status Bar & Safe Area Polish
-- Ensure `env(safe-area-inset-top)` and `env(safe-area-inset-bottom)` are used consistently
-- Match the status bar background colour to the page background (#F2F2F7)
+### 7. Polish stat cards
+- Add a thin top-border accent line (2px, matching the icon colour) for visual interest
+- Use tabular numbers for values (`font-variant-numeric: tabular-nums`)
 
-### 8. iOS-Style Section Headers
-- Use uppercase, 13px, tracking-wide, muted text section headers (like iOS Settings) consistently across all pages — not just pages using `IOSSectionHeader`
+## Files to modify
+- `src/pages/EveryInstructorHome.tsx` — All component redesigns (ImageCard, StatCard, LessonCard, Quick Actions grid, section spacing)
+- `src/index.css` — Add iOS shadow tier utilities and tabular-nums class
 
-### 9. Smooth Skeleton Loading
-- Replace any loading spinners with iOS-style shimmer/skeleton placeholders that match card shapes
-- Use a gentle pulse animation with the same rounded corners as the content they replace
-
-### 10. Bottom Sheet Upgrades
-- Use spring-based snap points on all bottom sheets (already using vaul)
-- Add subtle shadow above the sheet
-- Ensure the grab handle matches iOS exactly: 36px wide, 5px tall, 2.5px radius, `bg-[#c7c7cc]`
-
-## Implementation Priority
-1. **Global SF Pro font stack** — biggest bang, single CSS change
-2. **Frosted glass header** — high visibility
-3. **Card shadow refinement** — subtle but impactful
-4. **Spring tap animations** — makes everything feel alive
-5. **Page transitions** — polished navigation feel
-6. **Pull-to-refresh + skeletons** — removes "web app" feel
-7. **Section headers + list separators** — consistency pass
-
-## Technical Approach
-- Font: Add `font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif` to the instructor portal root layout
-- Animations: Leverage existing Framer Motion setup; add shared `springTap` config
-- Frosted glass: CSS-only change to header component
-- Shadows: Create a shared `iosShadow` utility or Tailwind plugin
-- Transitions: Wrap instructor route outlet in `AnimatePresence`
-
-All changes are CSS/animation-level — no data or logic changes needed.
+## What stays the same
+- Hero image and greeting overlay
+- Bottom navigation
+- All routes, data hooks, and functionality
+- Overall page structure and section order
 
