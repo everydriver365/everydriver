@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ChevronRight, AlertCircle, CheckCircle2, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 interface Pupil {
@@ -8,6 +9,7 @@ interface Pupil {
   name: string;
   account_balance: number | null;
   phone: string | null;
+  profile_image_url?: string | null;
 }
 
 interface PupilBalancesListProps {
@@ -77,14 +79,19 @@ export function PupilBalancesList({ pupils, limit = 5 }: PupilBalancesListProps)
               )}
             >
               {/* Avatar */}
-              <div className={cn(
-                "h-10 w-10 rounded-full flex items-center justify-center text-sm font-semibold",
-                status === "debt" && "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
-                status === "credit" && "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-                status === "neutral" && "bg-muted text-muted-foreground"
+              <Avatar className={cn(
+                "h-10 w-10 shrink-0",
               )}>
-                {getInitials(pupil.name)}
-              </div>
+                <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
+                <AvatarFallback className={cn(
+                  "text-sm font-semibold",
+                  status === "debt" && "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
+                  status === "credit" && "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+                  status === "neutral" && "bg-muted text-muted-foreground"
+                )}>
+                  {getInitials(pupil.name)}
+                </AvatarFallback>
+              </Avatar>
 
               {/* Name and status */}
               <div className="flex-1 min-w-0">

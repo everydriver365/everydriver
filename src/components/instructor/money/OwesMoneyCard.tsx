@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, MessageSquare, Mail, Loader2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -13,6 +14,7 @@ interface Pupil {
   account_balance: number | null;
   phone: string | null;
   email: string | null;
+  profile_image_url?: string | null;
 }
 
 interface OwesMoneyCardProps {
@@ -119,9 +121,12 @@ export function OwesMoneyCard({ pupils, instructorId, instructorName, paymentLin
           return (
             <div key={pupil.id} className="p-3 flex items-center gap-3">
               {/* Avatar */}
-              <div className="h-10 w-10 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-sm font-semibold text-rose-700 dark:text-rose-400 flex-shrink-0">
-                {getInitials(pupil.name)}
-              </div>
+              <Avatar className="h-10 w-10 shrink-0">
+                <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
+                <AvatarFallback className="bg-rose-100 dark:bg-rose-900/30 text-sm font-semibold text-rose-700 dark:text-rose-400">
+                  {getInitials(pupil.name)}
+                </AvatarFallback>
+              </Avatar>
 
               {/* Info */}
               <Link

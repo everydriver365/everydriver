@@ -40,6 +40,7 @@ interface Pupil {
   account_balance: number | null;
   phone: string | null;
   email: string | null;
+  profile_image_url: string | null;
 }
 
 interface QuickAction {
@@ -97,7 +98,7 @@ export default function InstructorPay() {
     if (!instructorId) return;
     const { data } = await supabase
       .from("pupils")
-      .select("id, name, account_balance, phone, email")
+      .select("id, name, account_balance, phone, email, profile_image_url")
       .eq("instructor_id", instructorId)
       .order("name", { ascending: true });
     setPupils(data || []);
@@ -285,8 +286,14 @@ export default function InstructorPay() {
                       const amount = Math.abs(pupil.account_balance || 0);
                       return (
                         <div key={pupil.id} className="p-3 flex items-center gap-3">
-                          <div className="h-9 w-9 rounded-full bg-[#fff0f0] flex items-center justify-center text-xs font-semibold text-[#e24b4a] flex-shrink-0">
-                            {getInitials(pupil.name)}
+                          <div className="h-9 w-9 rounded-full overflow-hidden flex-shrink-0">
+                            {pupil.profile_image_url ? (
+                              <img src={pupil.profile_image_url} alt={pupil.name} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="h-full w-full bg-[#fff0f0] flex items-center justify-center text-xs font-semibold text-[#e24b4a]">
+                                {getInitials(pupil.name)}
+                              </div>
+                            )}
                           </div>
                           <Link to={`/instructor/pupils?pupil=${pupil.id}`} className="flex-1 min-w-0">
                             <p className="font-medium text-sm truncate text-[#1c1c1e]">{pupil.name}</p>

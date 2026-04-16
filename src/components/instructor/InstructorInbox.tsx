@@ -6,7 +6,7 @@ import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
@@ -28,6 +28,7 @@ interface Pupil {
   name: string;
   phone: string | null;
   email: string | null;
+  profile_image_url: string | null;
 }
 
 interface InstructorInboxProps {
@@ -152,7 +153,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
     try {
       const { data, error } = await supabase
         .from("pupils")
-        .select("id, name, phone, email")
+        .select("id, name, phone, email, profile_image_url")
         .eq("instructor_id", instructorId)
         .is("deleted_at", null)
         .order("name");
@@ -183,6 +184,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
           id: pupil.id,
           name: pupil.name,
           phone: pupil.phone,
+          profile_image_url: pupil.profile_image_url,
         },
       };
       setSelectedConversation(conv);
@@ -326,6 +328,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
                       )}
                     >
                       <Avatar className="h-10 w-10 shrink-0">
+                        <AvatarImage src={conversation.pupil?.profile_image_url || undefined} alt={conversation.pupil?.name} />
                         <AvatarFallback className="bg-primary text-primary-foreground text-[13px]">
                           {conversation.pupil?.name?.charAt(0) || <User className="h-4 w-4" />}
                         </AvatarFallback>
@@ -439,6 +442,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
                       className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-muted/50 transition-colors text-left"
                     >
                       <Avatar className="h-10 w-10 shrink-0">
+                        <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
                         <AvatarFallback className="bg-primary text-primary-foreground">
                           {pupil.name.charAt(0)}
                         </AvatarFallback>
