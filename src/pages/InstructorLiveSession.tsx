@@ -114,6 +114,62 @@ export default function InstructorLiveSession() {
   const location = useLocation();
   const isFullscreenMode = new URLSearchParams(location.search).get("fullscreen") === "true";
 
+  const buildDeviceSnapshot = useCallback((gpsDevice: GPSDevice) => {
+    return [
+      gpsDevice.last_seen_at ?? "",
+      gpsDevice.last_latitude ?? "",
+      gpsDevice.last_longitude ?? "",
+      gpsDevice.last_speed_kmh ?? "",
+      gpsDevice.last_road_name ?? "",
+      gpsDevice.last_speed_limit_kmh ?? "",
+      gpsDevice.current_session_id ?? "",
+      gpsDevice.current_pupil_id ?? "",
+      gpsDevice.is_test_route_mode ?? "",
+    ].join("|");
+  }, []);
+
+  const normalizeDeviceSessionState = useCallback(async (gpsDevice: GPSDevice): Promise<GPSDevice> => {
+    if (!gpsDevice.current_session_id) {
+      setSessionStartTime(null);
+      setTotalDistance(0);
+      return gpsDevice;
+    }
+
+    const { data: session, error } = await supabase
+      .from("lesson_telematics")
+      .select("id, started_at, total_distance_km, ended_at")
+      .eq("id", gpsDevice.current_session_id)
+      .maybeSingle();
+
+    if (error || !session || session.ended_at) {
+      setSessionStartTime(null);
+      setTotalDistance(0);
+
+      void supabase
+        .from("gps_devices")
+        .update({
+          current_session_id: null,
+          current_pupil_id: null,
+          is_test_route_mode: false,
+        })
+        .eq("id", gpsDevice.id);
+
+      return {
+        ...gpsDevice,
+        current_session_id: null,
+        current_pupil_id: null,
+        is_test_route_mode: false,
+      };
+    }
+
+    if (session.started_at) {
+      setSessionStartTime(new Date(session.started_at));
+    }
+    setTotalDistance(session.total_distance_km ?? 0);
+
+    return gpsDevice;
+  }, []);
+
   // Connection status derived from last_seen_at (no client polling needed)
   // Server-side poller runs via pg_cron
   const isReconnecting = false;
@@ -166,29 +222,11 @@ export default function InstructorLiveSession() {
         setActiveProvider("radius");
 
         const providerDevices = devices;
+        const chosen = (providerDevices[0] || devices[0]) as GPSDevice;
+        const normalizedDevice = await normalizeDeviceSessionState(chosen);
 
-        // Pick the best device from filtered set
-        const chosen = providerDevices[0] || devices[0];
-        setDevice(chosen as GPSDevice);
-        
-        // If session is active, restore timer and distance, and enter fullscreen
-        if (chosen.current_session_id) {
-          const { data: session } = await supabase
-            .from("lesson_telematics")
-            .select("started_at, total_distance_km")
-            .eq("id", chosen.current_session_id)
-            .single();
-          
-          if (session?.started_at) {
-            setSessionStartTime(new Date(session.started_at));
-          }
-          if (session?.total_distance_km) {
-            setTotalDistance(session.total_distance_km);
-          }
-          
-          // Don't auto-enter fullscreen — let the user see the tracking page first
-          // They can resume the session from there
-        }
+        lastSeenRef.current = buildDeviceSnapshot(normalizedDevice);
+        setDevice(normalizedDevice);
       }
 
       // Fetch pupils (without is_active filter since column doesn't exist)
