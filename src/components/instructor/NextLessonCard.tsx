@@ -155,8 +155,8 @@ export function NextLessonCard({
           {/* Slide action background */}
           <motion.div 
             className="absolute inset-y-0 left-0 flex items-center pl-4 bg-gradient-to-r from-primary to-primary/80"
-            style={{ borderRadius: 14 }}
             style={{ 
+              borderRadius: 14,
               width: maxSwipe + 20,
               opacity: actionOpacity
             }}
@@ -179,9 +179,8 @@ export function NextLessonCard({
             onDragStart={() => setIsDragging(true)}
             onDrag={handleDrag}
             onDragEnd={handleDragEnd}
-            style={{ x }}
+            style={{ x, backgroundColor: '#FFFFFF', borderRadius: 14, border: '0.5px solid #E4E4E7' }}
              className="relative p-3 cursor-grab active:cursor-grabbing"
-             style={{ backgroundColor: '#FFFFFF', borderRadius: 14, border: '0.5px solid #E4E4E7' }}
           >
             <div className="flex items-center gap-3">
               {/* Avatar */}
