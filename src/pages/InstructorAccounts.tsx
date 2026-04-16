@@ -53,9 +53,7 @@ export default function InstructorAccounts() {
   if (!instructor?.id) {
     return (
       <InstructorPortalLayout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
+        <PageSkeleton />
       </InstructorPortalLayout>
     );
   }
