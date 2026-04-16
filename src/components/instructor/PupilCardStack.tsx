@@ -684,8 +684,7 @@ export function PupilCardStack({
           <span className="text-[16px] text-[#c7c7cc] shrink-0">›</span>
         </button>
 
-        {/* Gradient line before expanded content or at bottom */}
-        {!isExpanded && <div className="h-[2px] w-full bg-gradient-to-r from-[#0d4fa0] to-[#56a8f5]" />}
+        {/* Subtle divider */}
 
         {/* Expanded Content - Desktop only (inline) */}
         <AnimatePresence>
@@ -721,7 +720,7 @@ export function PupilCardStack({
             </motion.div>
           )}
         </AnimatePresence>
-        {isExpanded && <div className="h-[2px] w-full bg-gradient-to-r from-[#0d4fa0] to-[#56a8f5]" />}
+        
       </motion.div>
 
       {/* Mobile: Full-screen pupil profile sheet */}
