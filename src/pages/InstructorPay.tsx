@@ -473,46 +473,37 @@ export default function InstructorPay() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 + i * 0.04 }}
                   whileTap={{ scale: 0.97 }}
+                  style={action.accent ? undefined : tileStyle}
                   className={cn(
-                    "rounded-[20px] overflow-hidden",
                     action.accent
-                      ? "bg-gradient-to-br from-[#0d4fa0] to-[#1a6fd4] shadow-[0_6px_20px_rgba(26,111,212,0.35)]"
-                      : cardClass
+                      ? "rounded-[14px] overflow-hidden bg-gradient-to-br from-[#0d4fa0] to-[#1a6fd4] shadow-[0_6px_20px_rgba(26,111,212,0.35)]"
+                      : ""
                   )}
                 >
-                  <div className="p-[16px_14px_12px] flex flex-col gap-3">
+                  <div style={{ padding: "14px", display: "flex", flexDirection: "column", gap: 12 }}>
                     <div
-                      className={cn(
-                        "h-9 w-9 rounded-[12px] flex items-center justify-center shrink-0",
-                      )}
-                      style={{ backgroundColor: action.accent ? "rgba(255,255,255,0.2)" : action.iconBg }}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 12,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        backgroundColor: action.accent ? "rgba(255,255,255,0.2)" : action.iconBg,
+                      }}
                     >
-                      <action.icon size={20} strokeWidth={2} color={action.iconColor} />
+                      <action.icon size={22} strokeWidth={2} color={action.iconColor} />
                     </div>
                     <div>
-                      <p
-                        className={cn(
-                          "text-[14px] font-bold leading-tight",
-                          action.accent ? "text-white" : "text-[#1c1c1e]"
-                        )}
-                      >
+                      <p style={{ fontSize: 15, fontWeight: 500, color: action.accent ? "#FFFFFF" : "#18181B", lineHeight: 1.2, fontFamily: "Inter, sans-serif" }}>
                         {action.label}
                       </p>
-                      <p
-                        className={cn(
-                          "text-[12px] mt-0.5",
-                          action.accent ? "text-white/65" : "text-[#8e8e93]"
-                        )}
-                      >
+                      <p style={{ fontSize: 12, fontWeight: 400, color: action.accent ? "rgba(255,255,255,0.65)" : "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }}>
                         {action.sublabel}
                       </p>
                     </div>
                   </div>
-                  {action.accent ? (
-                    <div className="h-[2px] w-full bg-white/25" />
-                  ) : (
-                    <GradientLine />
-                  )}
                 </motion.div>
               );
 
