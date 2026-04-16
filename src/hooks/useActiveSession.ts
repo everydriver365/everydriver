@@ -95,7 +95,7 @@ export function useActiveSession(instructorId: string | null | undefined) {
       } as ActiveSession;
     },
     enabled: !!instructorId,
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 5000, // Refresh every 5 seconds
   });
 
   // Update elapsed time every minute
