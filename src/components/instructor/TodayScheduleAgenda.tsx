@@ -16,7 +16,7 @@ const fmtTime24 = (t: string) => {
 };
 
 const typeColors: Record<string, { bg: string; text: string }> = {
-  Standard: { bg: "rgba(10,122,255,0.08)", text: "#0A7AFF" },
+  Standard: { bg: "#e8f0fc", text: "#185FA5" },
   "Test Prep": { bg: "rgba(217,119,6,0.08)", text: "#D97706" },
   "Mock Test": { bg: "rgba(139,92,246,0.08)", text: "#8B5CF6" },
   Motorway: { bg: "rgba(48,209,88,0.08)", text: "#30D158" },
@@ -61,14 +61,23 @@ function SummaryBar({ lessons }: { lessons: TodayLesson[] }) {
   const totalEarnings = lessons.reduce((s, l) => s + (l.amountDue || 0), 0);
   const paid = lessons.filter(l => l.paymentStatus === "paid").length;
   return (
-    <div style={{ backgroundColor: "#1a6fd4", padding: "8px 16px", display: "flex", alignItems: "center", gap: 0, fontSize: 12 }}>
-      <span style={{ color: "#fff", fontWeight: 500 }}>{lessons.length} lesson{lessons.length !== 1 ? "s" : ""}</span>
-      <span style={{ color: "rgba(255,255,255,0.4)", margin: "0 6px" }}>·</span>
-      <span style={{ color: "rgba(255,255,255,0.85)" }}>{(totalMins / 60).toFixed(1)}h</span>
-      <span style={{ color: "rgba(255,255,255,0.4)", margin: "0 6px" }}>·</span>
-      <span style={{ color: "rgba(255,255,255,0.85)" }}>£{Math.round(totalEarnings)}</span>
-      <span style={{ color: "rgba(255,255,255,0.4)", margin: "0 6px" }}>·</span>
-      <span style={{ color: "rgba(255,255,255,0.85)" }}>{paid}/{lessons.length} paid</span>
+    <div style={{
+      backgroundColor: "rgba(255,255,255,0.6)",
+      borderTop: "0.5px solid #b5d0f4",
+      borderBottom: "0.5px solid #b5d0f4",
+      padding: "7px 16px",
+      display: "flex",
+      alignItems: "center",
+      gap: 0,
+      fontSize: 12,
+    }}>
+      <span style={{ color: "#0c447c", fontWeight: 500 }}>{lessons.length} lesson{lessons.length !== 1 ? "s" : ""}</span>
+      <span style={{ color: "#b5d0f4", margin: "0 6px" }}>·</span>
+      <span style={{ color: "#185FA5" }}>{(totalMins / 60).toFixed(1)}h</span>
+      <span style={{ color: "#b5d0f4", margin: "0 6px" }}>·</span>
+      <span style={{ color: "#185FA5" }}>£{Math.round(totalEarnings)}</span>
+      <span style={{ color: "#b5d0f4", margin: "0 6px" }}>·</span>
+      <span style={{ color: "#185FA5" }}>{paid}/{lessons.length} paid</span>
     </div>
   );
 }
@@ -106,12 +115,12 @@ function AgendaList({ lessons }: { lessons: TodayLesson[] }) {
                   borderBottom: i < lessons.length - 1 ? "0.5px solid #F2F2F7" : "none",
                   opacity: done ? 0.55 : 1,
                   borderLeft: isNext ? "4px solid #0A7AFF" : "4px solid transparent",
-                  backgroundColor: isNext ? "rgba(10,122,255,0.04)" : isOverdue ? "rgba(255,149,0,0.04)" : "transparent",
+                  backgroundColor: "#ffffff",
                 }}
               >
                 {/* Time */}
                 <div style={{ width: 44, flexShrink: 0, textAlign: "center" }}>
-                  <span className="text-foreground" style={{ fontSize: 15, fontWeight: 700, lineHeight: 1 }}>{fmtTime24(l.startTime)}</span>
+                  <span style={{ fontSize: 15, fontWeight: 700, lineHeight: 1, color: "#0c447c" }}>{fmtTime24(l.startTime)}</span>
                   <div style={{ fontSize: 10, color: "#C7C7CC", marginTop: 2 }}>{l.durationMinutes}m</div>
                 </div>
 
@@ -123,13 +132,14 @@ function AgendaList({ lessons }: { lessons: TodayLesson[] }) {
                   <PupilAvatar name={l.pupilName} imageUrl={l.pupilProfileImageUrl} size="sm" />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span className="text-foreground" style={{
+                      <span style={{
                         fontSize: 14,
                         fontWeight: 600,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap" as const,
                         textDecoration: done ? "line-through" : "none",
+                        color: "#0c447c",
                       }}>
                         {l.pupilName}
                       </span>
@@ -149,7 +159,7 @@ function AgendaList({ lessons }: { lessons: TodayLesson[] }) {
                         </span>
                       )}
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#8E8E93", marginTop: 2, flexWrap: "wrap" as const }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#378add", marginTop: 2, flexWrap: "wrap" as const }}>
                       {l.pickupPostcode && (
                         <span style={{ display: "flex", alignItems: "center", gap: 2 }}>
                           <MapPin style={{ height: 10, width: 10 }} />{l.pickupPostcode}
@@ -205,38 +215,38 @@ export function TodayScheduleAgenda({ todayLessons, tomorrowLessons, className =
     <div
       className={className}
       style={{
-        borderRadius: 20,
-        border: "0.5px solid #E5E5EA",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+        borderRadius: 18,
+        border: "0.5px solid #b5d0f4",
+        background: "#eef4fd",
         overflow: "hidden",
         fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
       }}
     >
       {/* Header */}
-      <div className="bg-card" style={{ padding: "14px 16px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ padding: "14px 16px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <p className="text-foreground" style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Today's Schedule</p>
-          <p style={{ margin: "3px 0 0", fontSize: 12, color: "#8E8E93" }}>
+          <p style={{ margin: 0, fontSize: 16, fontWeight: 500, color: "#0c447c" }}>Today's Schedule</p>
+          <p style={{ margin: "3px 0 0", fontSize: 12, color: "#378add" }}>
             {format(tab === "today" ? new Date() : addDays(new Date(), 1), "EEE d MMM")} · {activeLessons.length} lesson{activeLessons.length !== 1 ? "s" : ""}
           </p>
         </div>
 
-        {/* iOS segmented control */}
-        <div className="bg-muted" style={{ borderRadius: 9, padding: 2, display: "flex" }}>
+        {/* Pill toggle */}
+        <div style={{ borderRadius: 20, border: "1.5px solid #1a6fd4", display: "flex", overflow: "hidden" }}>
           {(["today", "tomorrow"] as const).map((val) => (
             <button
               key={val}
               onClick={() => setTab(val)}
-              className={tab === val ? "bg-card text-foreground" : "text-muted-foreground"}
               style={{
                 border: "none",
                 cursor: "pointer",
-                borderRadius: 7,
+                borderRadius: 20,
                 padding: "5px 14px",
                 fontSize: 12,
                 fontWeight: 600,
-                boxShadow: tab === val ? "0 1px 2px rgba(0,0,0,0.12)" : "none",
                 fontFamily: "inherit",
+                backgroundColor: tab === val ? "#1a6fd4" : "transparent",
+                color: tab === val ? "#ffffff" : "#1a6fd4",
               }}
             >
               {val === "today" ? "Today" : "Tomorrow"}
@@ -245,14 +255,11 @@ export function TodayScheduleAgenda({ todayLessons, tomorrowLessons, className =
         </div>
       </div>
 
-      {/* Divider */}
-      <div className="bg-border" style={{ height: 0.5 }} />
-
       {/* Stats bar */}
       {activeLessons.length > 0 && <SummaryBar lessons={activeLessons} />}
 
       {/* Lesson list */}
-      <div className="bg-card">
+      <div>
         <AgendaList lessons={activeLessons} />
       </div>
     </div>
