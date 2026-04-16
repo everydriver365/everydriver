@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { format, addDays, isToday, parseISO, startOfDay, endOfDay, isSameDay } from "date-fns";
-import { Calendar, Clock, MapPin, Plus, Loader2 } from "lucide-react";
+import { format, addDays, isToday, parseISO, startOfDay, endOfDay, isSameDay, differenceInMinutes } from "date-fns";
+import { Calendar, Clock, MapPin, Plus, Loader2, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ExpandableLessonCard } from "./ExpandableLessonCard";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
@@ -83,37 +83,46 @@ const getEndTime = (startTime: string, durationMinutes: number) => {
   return `${String(Math.floor(endMin / 60)).padStart(2, "0")}:${String(endMin % 60).padStart(2, "0")}`;
 };
 
-// Determine if text should be white or dark on a given bg color
-function contrastText(hex: string | null): string {
-  if (!hex) return "text-white";
-  const c = hex.replace("#", "");
-  if (c.length < 6) return "text-white";
-  const r = parseInt(c.substring(0, 2), 16);
-  const g = parseInt(c.substring(2, 4), 16);
-  const b = parseInt(c.substring(4, 6), 16);
-  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return lum > 0.6 ? "text-gray-900" : "text-white";
+// Google Calendar color mapping: map Google colorId or hex to card tints
+function getCardColors(color: string | null, lessonType?: string): { bg: string; text: string; textMuted: string } {
+  // Lesson types get specific colors
+  if (lessonType) {
+    const lessonColors: Record<string, { bg: string; text: string; textMuted: string }> = {
+      standard: { bg: "#7FB3E3", text: "#0A3559", textMuted: "rgba(10,53,89,0.75)" },
+      test_prep: { bg: "#F4D06F", text: "#5C4A0F", textMuted: "rgba(92,74,15,0.75)" },
+      mock_test: { bg: "#E89999", text: "#5C1717", textMuted: "rgba(92,23,23,0.75)" },
+      motorway: { bg: "#8FCFA5", text: "#1A4D2E", textMuted: "rgba(26,77,46,0.75)" },
+      refresher: { bg: "#7FB3E3", text: "#0A3559", textMuted: "rgba(10,53,89,0.75)" },
+      intensive: { bg: "#B3AFF5", text: "#2E2875", textMuted: "rgba(46,40,117,0.75)" },
+      first_lesson: { bg: "#8FCFA5", text: "#1A4D2E", textMuted: "rgba(26,77,46,0.75)" },
+      pass_plus: { bg: "#B3AFF5", text: "#2E2875", textMuted: "rgba(46,40,117,0.75)" },
+      driving_test: { bg: "#F4D06F", text: "#5C4A0F", textMuted: "rgba(92,74,15,0.75)" },
+    };
+    return lessonColors[lessonType] || { bg: "#7FB3E3", text: "#0A3559", textMuted: "rgba(10,53,89,0.75)" };
+  }
+
+  // External events: map by color hex
+  if (!color) return { bg: "#D4D4D8", text: "#3F3F46", textMuted: "rgba(63,63,70,0.75)" };
+  
+  const c = color.toLowerCase();
+  // Google Calendar color mappings
+  if (c.includes("f4d") || c.includes("f5a") || c.includes("fbd") || c === "#7") return { bg: "#F4D06F", text: "#5C4A0F", textMuted: "rgba(92,74,15,0.75)" };
+  if (c.includes("3b8") || c.includes("1a6") || c.includes("039") || c === "#9" || c === "#1") return { bg: "#7FB3E3", text: "#0A3559", textMuted: "rgba(10,53,89,0.75)" };
+  if (c.includes("0f9") || c.includes("10b") || c.includes("22c") || c === "#2" || c === "#10") return { bg: "#8FCFA5", text: "#1A4D2E", textMuted: "rgba(26,77,46,0.75)" };
+  if (c.includes("8b5") || c.includes("636") || c.includes("7c3") || c === "#3") return { bg: "#B3AFF5", text: "#2E2875", textMuted: "rgba(46,40,117,0.75)" };
+  if (c.includes("f43") || c.includes("e24") || c.includes("dc2") || c === "#11" || c === "#4") return { bg: "#E89999", text: "#5C1717", textMuted: "rgba(92,23,23,0.75)" };
+  
+  return { bg: "#D4D4D8", text: "#3F3F46", textMuted: "rgba(63,63,70,0.75)" };
 }
 
-// Default block colors
-const blockTypeColors: Record<string, string> = {
-  personal: "#1e3a5f",
-  break: "#f59e0b",
-  meeting: "#8b5cf6",
-};
-
-// Lesson type colors (for the bar background)
-const lessonTypeBarColors: Record<string, string> = {
-  standard: "#3b82f6",
-  test_prep: "#f59e0b",
-  mock_test: "#f43f5e",
-  motorway: "#10b981",
-  refresher: "#06b6d4",
-  intensive: "#8b5cf6",
-  first_lesson: "#22c55e",
-  pass_plus: "#6366f1",
-  driving_test: "#f97316",
-};
+// Block type colors
+function getBlockColors(blockType: string): { bg: string; text: string; textMuted: string } {
+  switch (blockType) {
+    case "break": return { bg: "#F4D06F", text: "#5C4A0F", textMuted: "rgba(92,74,15,0.75)" };
+    case "meeting": return { bg: "#B3AFF5", text: "#2E2875", textMuted: "rgba(46,40,117,0.75)" };
+    default: return { bg: "#D4D4D8", text: "#3F3F46", textMuted: "rgba(63,63,70,0.75)" };
+  }
+}
 
 export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps) {
   const navigate = useNavigate();
@@ -128,11 +137,9 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   const [selectedLesson, setSelectedLesson] = useState<ScheduledLesson | null>(null);
   const [sendingMessage, setSendingMessage] = useState<string | null>(null);
 
-  // Date range: from today, load DAYS_TO_LOAD days
   const startDate = useMemo(() => startOfDay(new Date()), []);
   const days = useMemo(() => Array.from({ length: DAYS_TO_LOAD }, (_, i) => addDays(startDate, i)), [startDate]);
 
-  // Fetch all data for the range
   const fetchData = useCallback(async () => {
     setLoading(true);
     const from = format(startDate, "yyyy-MM-dd");
@@ -194,14 +201,13 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Scroll to today on mount
   useEffect(() => {
     if (!loading && todayRef.current) {
       todayRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [loading]);
 
-  // --- Handlers (same as NewMobileScheduleView) ---
+  // --- Handlers ---
   const handleNavigate = (address: string, postcode: string) => {
     const query = encodeURIComponent(`${address}, ${postcode}`);
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -258,16 +264,9 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
     return days.map((day) => {
       const dateStr = format(day, "yyyy-MM-dd");
       const dayLessons = lessons.filter((l) => l.lesson_date === dateStr);
-      const dayExternal = externalEvents.filter((e) => {
-        const evtDate = e.start_time.slice(0, 10);
-        return evtDate === dateStr;
-      });
-      const dayBlocks = manualBlocks.filter((b) => {
-        const blockDate = b.start_datetime.slice(0, 10);
-        return blockDate === dateStr;
-      });
+      const dayExternal = externalEvents.filter((e) => e.start_time.slice(0, 10) === dateStr);
+      const dayBlocks = manualBlocks.filter((b) => b.start_datetime.slice(0, 10) === dateStr);
 
-      // Merge all events into a single sorted timeline
       type TimelineItem =
         | { kind: "lesson"; time: string; data: ScheduledLesson }
         | { kind: "external"; time: string; data: ExternalEvent }
@@ -286,59 +285,56 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
       timeline.sort((a, b) => a.time.localeCompare(b.time));
 
       const allDay = dayExternal.filter((e) => e.is_all_day);
-
       return { day, dateStr, timeline, allDay, lessonCount: dayLessons.length };
     });
   }, [days, lessons, externalEvents, manualBlocks]);
 
+  // Now indicator time
+  const nowMinutes = useMemo(() => {
+    const now = new Date();
+    return now.getHours() * 60 + now.getMinutes();
+  }, []);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#6B63D6" }} />
       </div>
     );
   }
 
-  // Event type accent bar colors
-  const eventAccentColors: Record<string, string> = {
-    personal: "#f5a623",
-    break: "#f5a623",
-    meeting: "#7c3aed",
-    standard: "#7c3aed",
-    test_prep: "#1a6fd4",
-    mock_test: "#1a6fd4",
-    motorway: "#0f9e75",
-    refresher: "#0f9e75",
-    intensive: "#7c3aed",
-    first_lesson: "#0f9e75",
-    pass_plus: "#1a6fd4",
-    driving_test: "#1a6fd4",
-  };
-
   return (
     <div className="space-y-0">
-      {/* Add lesson button */}
-      <div className="flex justify-end px-1 pb-2">
-        <button
-          onClick={() => setAddLessonOpen(true)}
-          style={{
-            background: "white",
-            borderRadius: 20,
-            padding: "10px 20px",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
-            border: "0.5px solid rgba(0,0,0,0.06)",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            cursor: "pointer",
-          }}
-        >
-          <Plus style={{ width: 14, height: 14, color: "#1a6fd4" }} />
-          <span style={{ fontSize: 14, fontWeight: 700, color: "#1a6fd4" }}>Add Lesson</span>
-        </button>
+      {/* Add lesson FAB */}
+      <div
+        onClick={() => setAddLessonOpen(true)}
+        style={{
+          position: "fixed",
+          bottom: 80,
+          left: 20,
+          right: 20,
+          maxWidth: 420,
+          margin: "0 auto",
+          background: "#6B63D6",
+          color: "#FFFFFF",
+          borderRadius: 12,
+          padding: "14px 20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          cursor: "pointer",
+          fontSize: 14,
+          fontWeight: 500,
+          zIndex: 40,
+          boxShadow: "0 4px 12px rgba(107, 99, 214, 0.25)",
+        }}
+      >
+        <Plus style={{ width: 18, height: 18 }} />
+        Add Lesson
       </div>
 
-      {/* Multi-day infinite list */}
+      {/* Multi-day list */}
       <div className="space-y-0">
         {dayData.map(({ day, dateStr, timeline, allDay }, idx) => {
           const prevDay = idx > 0 ? dayData[idx - 1].day : null;
@@ -346,11 +342,14 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
           const today = isToday(day);
           const isEmpty = timeline.length === 0 && allDay.length === 0;
 
+          // Compute "now" indicator position for today
+          const shouldShowNow = today;
+
           return (
             <div key={dateStr}>
               {showMonthHeader && (
-                <div style={{ padding: "0 4px 12px" }}>
-                  <span style={{ fontSize: 15, fontWeight: 700, color: "#1c1c1e" }}>
+                <div style={{ padding: "16px 0 12px" }}>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: "#18181B" }}>
                     {format(day, "MMMM yyyy")}
                   </span>
                 </div>
@@ -358,215 +357,256 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
               <div
                 id={`schedule-day-${dateStr}`}
                 ref={today ? todayRef : undefined}
-                className="flex min-h-[72px]"
+                className="flex"
+                style={{ minHeight: 60, gap: 0, marginBottom: 24 }}
               >
-              {/* Date column */}
-              <div className="w-14 shrink-0 flex flex-col items-center pt-3 pb-2">
-                <span style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: "#1a6fd4",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.04em",
-                }}>
-                  {format(day, "EEE")}
-                </span>
-                <div style={{
-                  marginTop: 4,
-                  width: 40,
-                  height: 40,
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  ...(today
-                    ? {
-                        background: "linear-gradient(135deg, #0d4fa0, #1a6fd4)",
-                        boxShadow: "0 4px 12px rgba(26,111,212,0.35)",
-                      }
-                    : {}),
-                }}>
+                {/* Left date column */}
+                <div style={{ width: 56, flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 4 }}>
                   <span style={{
-                    fontSize: 16,
-                    fontWeight: 700,
-                    color: today ? "white" : "#1c1c1e",
+                    fontSize: 11,
+                    fontWeight: 500,
+                    textTransform: "uppercase",
+                    color: today ? "#6B63D6" : "#71717A",
+                    letterSpacing: "0.02em",
                   }}>
-                    {format(day, "d")}
+                    {format(day, "EEE")}
                   </span>
+                  <div style={{
+                    marginTop: 4,
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    ...(today ? { backgroundColor: "#C7C5FF" } : {}),
+                  }}>
+                    <span style={{
+                      fontSize: 28,
+                      fontWeight: 300,
+                      color: today ? "#1A1840" : "#18181B",
+                      lineHeight: 1,
+                    }}>
+                      {format(day, "d")}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Events column */}
-              <div className="flex-1 py-2 pr-3 space-y-2.5 min-w-0">
-                {/* All-day events */}
-                {allDay.map((evt) => {
-                  const accentColor = evt.color || "#f5a623";
-                  return (
-                    <div
-                      key={evt.id}
-                      style={{
-                        background: "white",
-                        borderRadius: 20,
-                        overflow: "hidden",
-                        boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
-                        border: "0.5px solid rgba(0,0,0,0.06)",
-                      }}
-                    >
-                      <div style={{ padding: "14px 16px", display: "flex", gap: 12, alignItems: "stretch" }}>
-                        <div style={{ width: 4, borderRadius: 2, alignSelf: "stretch", backgroundColor: accentColor }} />
-                        <div style={{ flex: 1 }}>
-                          <p style={{ fontSize: 14, fontWeight: 700, color: "#1c1c1e", marginBottom: 3 }}>{evt.title}</p>
-                          <p style={{ fontSize: 12, color: "#8e8e93" }}>All day</p>
-                        </div>
-                      </div>
-                      <div style={{ height: 2, background: "linear-gradient(to right, #0d4fa0, #56a8f5)", borderRadius: 2 }} />
-                    </div>
-                  );
-                })}
-
-                {/* Timeline items */}
-                {timeline.map((item) => {
-                  if (item.kind === "lesson") {
-                    const lesson = item.data;
-                    const accentColor = eventAccentColors[lesson.lesson_type] || "#7c3aed";
-                    const paid = lesson.payment_status === "paid";
-
-                    return (
-                      <ExpandableLessonCard
-                        key={lesson.id}
-                        lesson={lesson}
-                        onNavigate={handleNavigate}
-                        onCall={handleCall}
-                        onText={handleText}
-                        onOnWay={handleOnWay}
-                        onCancel={handleCancelLesson}
-                        onReschedule={handleRescheduleLesson}
-                        onNoShow={handleNoShow}
-                        sendingMessage={sendingMessage}
-                        onDelete={handleDeleteLesson}
-                        renderCustomCollapsed={
-                          <div
-                            style={{
-                              background: "white",
-                              borderRadius: 20,
-                              overflow: "hidden",
-                              boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
-                              border: "0.5px solid rgba(0,0,0,0.06)",
-                            }}
-                          >
-                            <div style={{ padding: "14px 16px", display: "flex", gap: 12, alignItems: "stretch", position: "relative" }}>
-                              <div style={{ width: 4, borderRadius: 2, alignSelf: "stretch", backgroundColor: accentColor }} />
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div className="flex items-center justify-between">
-                                  <span style={{ fontSize: 14, fontWeight: 700, color: "#1c1c1e" }} className="truncate">
-                                    {lesson.pupil?.name || "Unknown"}
-                                  </span>
-                                  {!paid && (
-                                    <span style={{
-                                      background: "#fff0f0",
-                                      color: "#e24b4a",
-                                      fontSize: 11,
-                                      fontWeight: 600,
-                                      padding: "3px 10px",
-                                      borderRadius: 20,
-                                    }}>
-                                      Unpaid
-                                    </span>
-                                  )}
-                                </div>
-                                <p style={{ fontSize: 12, color: "#8e8e93", marginTop: 3 }}>
-                                  {formatTime(lesson.start_time)} – {getEndTime(lesson.start_time, lesson.duration_minutes)} · {courseTypeLabels[lesson.lesson_type] || lesson.lesson_type}
-                                </p>
-                                {(lesson.pickup_location || lesson.pupil?.address) && (
-                                  <div className="flex items-center gap-1" style={{ marginTop: 2 }}>
-                                    <MapPin style={{ width: 11, height: 11, color: "#8e8e93", flexShrink: 0 }} />
-                                    <span style={{ fontSize: 12, color: "#8e8e93" }} className="truncate">{lesson.pickup_location || lesson.pupil?.address}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div style={{ height: 2, background: "linear-gradient(to right, #0d4fa0, #56a8f5)", borderRadius: 2 }} />
-                          </div>
-                        }
-                      />
-                    );
-                  }
-
-                  if (item.kind === "external") {
-                    const evt = item.data;
-                    const startDt = parseISO(evt.start_time);
-                    const endDt = parseISO(evt.end_time);
-                    const accentColor = evt.color || "#1a6fd4";
+                {/* Right events column */}
+                <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 8, position: "relative" }}>
+                  {/* All-day events */}
+                  {allDay.map((evt) => {
+                    const colors = getCardColors(evt.color);
                     return (
                       <div
                         key={evt.id}
                         style={{
-                          background: "white",
-                          borderRadius: 20,
-                          overflow: "hidden",
-                          boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
-                          border: "0.5px solid rgba(0,0,0,0.06)",
+                          backgroundColor: colors.bg,
+                          borderRadius: 8,
+                          padding: "12px 16px",
+                          minHeight: 48,
+                          display: "flex",
+                          alignItems: "center",
                         }}
                       >
-                        <div style={{ padding: "14px 16px", display: "flex", gap: 12, alignItems: "stretch" }}>
-                          <div style={{ width: 4, borderRadius: 2, alignSelf: "stretch", backgroundColor: accentColor }} />
-                          <div style={{ flex: 1 }}>
-                            <p style={{ fontSize: 14, fontWeight: 700, color: "#1c1c1e", marginBottom: 3 }}>{evt.title}</p>
-                            <p style={{ fontSize: 12, color: "#8e8e93" }}>
-                              {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")}
-                            </p>
-                          </div>
-                        </div>
-                        <div style={{ height: 2, background: "linear-gradient(to right, #0d4fa0, #56a8f5)", borderRadius: 2 }} />
+                        <span style={{ fontSize: 15, fontWeight: 500, color: colors.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {evt.title}
+                        </span>
                       </div>
                     );
-                  }
+                  })}
 
-                  if (item.kind === "block") {
-                    const block = item.data;
-                    const startDt = parseISO(block.start_datetime);
-                    const endDt = parseISO(block.end_datetime);
-                    const accentColor = "#f5a623";
-                    return (
-                      <div
-                        key={block.id}
-                        style={{
-                          background: "white",
-                          borderRadius: 20,
-                          overflow: "hidden",
-                          boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
-                          border: "0.5px solid rgba(0,0,0,0.06)",
-                        }}
-                      >
-                        <div style={{ padding: "14px 16px", display: "flex", gap: 12, alignItems: "stretch" }}>
-                          <div style={{ width: 4, borderRadius: 2, alignSelf: "stretch", backgroundColor: accentColor }} />
-                          <div style={{ flex: 1 }}>
-                            <p style={{ fontSize: 14, fontWeight: 700, color: "#1c1c1e", marginBottom: 3 }}>{block.title}</p>
-                            <p style={{ fontSize: 12, color: "#8e8e93" }}>
-                              {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")}
-                            </p>
+                  {/* Now indicator */}
+                  {shouldShowNow && timeline.length > 0 && (() => {
+                    // Find position: between which items does "now" fall?
+                    const nowTimeStr = `${String(Math.floor(nowMinutes / 60)).padStart(2, "0")}:${String(nowMinutes % 60).padStart(2, "0")}`;
+                    let insertIdx = timeline.length;
+                    for (let i = 0; i < timeline.length; i++) {
+                      if (timeline[i].time > nowTimeStr) { insertIdx = i; break; }
+                    }
+                    // We'll render it inline via the timeline below
+                    return null;
+                  })()}
+
+                  {/* Timeline items with now-indicator interleaved */}
+                  {(() => {
+                    const nowTimeStr = shouldShowNow
+                      ? `${String(Math.floor(nowMinutes / 60)).padStart(2, "0")}:${String(nowMinutes % 60).padStart(2, "0")}`
+                      : null;
+                    let nowRendered = false;
+
+                    const elements: React.ReactNode[] = [];
+
+                    timeline.forEach((item, i) => {
+                      // Insert now indicator before this item if needed
+                      if (shouldShowNow && nowTimeStr && !nowRendered && item.time > nowTimeStr) {
+                        elements.push(
+                          <div key="now-indicator" style={{ display: "flex", alignItems: "center", gap: 0, margin: "4px 0" }}>
+                            <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#18181B", flexShrink: 0, marginLeft: -32 }} />
+                            <div style={{ flex: 1, height: 1, backgroundColor: "rgba(24,24,27,0.6)" }} />
                           </div>
+                        );
+                        nowRendered = true;
+                      }
+
+                      if (item.kind === "lesson") {
+                        const lesson = item.data;
+                        const colors = getCardColors(null, lesson.lesson_type);
+                        const endTime = getEndTime(lesson.start_time, lesson.duration_minutes);
+                        const location = lesson.pickup_location || lesson.pupil?.address;
+
+                        elements.push(
+                          <ExpandableLessonCard
+                            key={lesson.id}
+                            lesson={lesson}
+                            onNavigate={handleNavigate}
+                            onCall={handleCall}
+                            onText={handleText}
+                            onOnWay={handleOnWay}
+                            onCancel={handleCancelLesson}
+                            onReschedule={handleRescheduleLesson}
+                            onNoShow={handleNoShow}
+                            sendingMessage={sendingMessage}
+                            onDelete={handleDeleteLesson}
+                            renderCustomCollapsed={
+                              <div
+                                style={{
+                                  backgroundColor: colors.bg,
+                                  borderRadius: 8,
+                                  padding: "12px 16px",
+                                  minHeight: 48,
+                                }}
+                              >
+                                <div style={{ fontSize: 15, fontWeight: 500, color: colors.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                  {lesson.pupil?.name || "Unknown"}
+                                </div>
+                                <div style={{ fontSize: 13, fontWeight: 400, color: colors.textMuted, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                  {formatTime(lesson.start_time)} – {endTime}
+                                  {location ? ` at ${location}` : ""}
+                                </div>
+                              </div>
+                            }
+                          />
+                        );
+                      }
+
+                      if (item.kind === "external") {
+                        const evt = item.data;
+                        const startDt = parseISO(evt.start_time);
+                        const endDt = parseISO(evt.end_time);
+                        const colors = getCardColors(evt.color);
+
+                        elements.push(
+                          <div
+                            key={evt.id}
+                            style={{
+                              backgroundColor: colors.bg,
+                              borderRadius: 8,
+                              padding: "12px 16px",
+                              minHeight: 48,
+                            }}
+                          >
+                            <div style={{ fontSize: 15, fontWeight: 500, color: colors.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {evt.title}
+                            </div>
+                            <div style={{ fontSize: 13, fontWeight: 400, color: colors.textMuted, marginTop: 2 }}>
+                              {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      if (item.kind === "block") {
+                        const block = item.data;
+                        const startDt = parseISO(block.start_datetime);
+                        const endDt = parseISO(block.end_datetime);
+                        const colors = getBlockColors(block.block_type);
+
+                        elements.push(
+                          <div
+                            key={block.id}
+                            style={{
+                              backgroundColor: colors.bg,
+                              borderRadius: 8,
+                              padding: "12px 16px",
+                              minHeight: 48,
+                            }}
+                          >
+                            <div style={{ fontSize: 15, fontWeight: 500, color: colors.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {block.title}
+                            </div>
+                            <div style={{ fontSize: 13, fontWeight: 400, color: colors.textMuted, marginTop: 2 }}>
+                              {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Gap insight: check gap to next item
+                      if (i < timeline.length - 1) {
+                        const nextItem = timeline[i + 1];
+                        const currentEndStr = item.kind === "lesson"
+                          ? getEndTime(item.data.start_time, item.data.duration_minutes)
+                          : item.kind === "external"
+                            ? format(parseISO(item.data.end_time), "HH:mm")
+                            : format(parseISO(item.data.end_datetime), "HH:mm");
+                        const nextStartStr = nextItem.time;
+                        const [cH, cM] = currentEndStr.split(":").map(Number);
+                        const [nH, nM] = nextStartStr.split(":").map(Number);
+                        const gapMin = (nH * 60 + nM) - (cH * 60 + cM);
+                        if (gapMin >= 60) {
+                          const hours = Math.floor(gapMin / 60);
+                          const mins = gapMin % 60;
+                          const label = mins > 0 ? `${hours}h ${mins}m gap` : `${hours}-hour gap`;
+                          elements.push(
+                            <div
+                              key={`gap-${i}`}
+                              onClick={() => setAddLessonOpen(true)}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                cursor: "pointer",
+                                margin: "4px 0",
+                              }}
+                            >
+                              <div style={{ flex: 1, borderTop: "1px dashed #D4D4D8" }} />
+                              <span style={{ fontSize: 11, color: "#A1A1AA", whiteSpace: "nowrap" }}>{label}</span>
+                              <div style={{ flex: 1, borderTop: "1px dashed #D4D4D8" }} />
+                            </div>
+                          );
+                        }
+                      }
+                    });
+
+                    // Now indicator at end if not yet rendered
+                    if (shouldShowNow && nowTimeStr && !nowRendered) {
+                      elements.push(
+                        <div key="now-indicator" style={{ display: "flex", alignItems: "center", gap: 0, margin: "4px 0" }}>
+                          <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#18181B", flexShrink: 0, marginLeft: -32 }} />
+                          <div style={{ flex: 1, height: 1, backgroundColor: "rgba(24,24,27,0.6)" }} />
                         </div>
-                        <div style={{ height: 2, background: "linear-gradient(to right, #0d4fa0, #56a8f5)", borderRadius: 2 }} />
-                      </div>
-                    );
-                  }
+                      );
+                    }
 
-                  return null;
-                })}
+                    return elements;
+                  })()}
 
-                {/* Empty state */}
-                {isEmpty && (
-                  <div className="flex items-center h-12 text-[13px] text-muted-foreground/50 italic pl-1">
-                    No events
-                  </div>
-                )}
-              </div>
+                  {/* Empty state */}
+                  {isEmpty && (
+                    <div style={{ display: "flex", alignItems: "center", height: 48, fontSize: 13, color: "#A1A1AA" }}>
+                      No events
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           );
         })}
       </div>
+
+      {/* Bottom spacer for FAB */}
+      <div style={{ height: 120 }} />
 
       {/* Cancel Dialog */}
       {selectedLesson && (
