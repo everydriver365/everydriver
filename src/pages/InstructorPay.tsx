@@ -263,7 +263,7 @@ export default function InstructorPay() {
               transition={{ delay: 0.12 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setOwesExpanded(!owesExpanded); }}
-              className={cn(cardClass, "w-full text-left")}
+              style={tileStyle} className={cn("", "w-full text-left")}
             >
               <div className="p-[14px_14px_12px]">
                 <div className="h-9 w-9 rounded-[12px] bg-[#FEF2F2] flex items-center justify-center mb-2">
@@ -289,7 +289,7 @@ export default function InstructorPay() {
                   transition={{ duration: 0.25 }}
                   className="overflow-hidden"
                 >
-                  <div className={cn(cardClass, "mt-2 divide-y divide-black/[0.06]")}>
+                  <div style={tileStyle} className={cn("", "mt-2 divide-y divide-black/[0.06]")}>
                     {debtors.map((pupil) => {
                       const amount = Math.abs(pupil.account_balance || 0);
                       return (
@@ -345,7 +345,7 @@ export default function InstructorPay() {
               transition={{ delay: 0.16 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setPaymentsExpanded(!paymentsExpanded); }}
-              className={cn(cardClass, "w-full text-left")}
+              style={tileStyle} className={cn("", "w-full text-left")}
             >
               <div className="p-[14px_14px_12px]">
                 <div className="h-9 w-9 rounded-[12px] bg-[#DBEAFE] flex items-center justify-center mb-2">
@@ -385,7 +385,7 @@ export default function InstructorPay() {
               transition={{ delay: 0.20 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setBonusExpanded(!bonusExpanded); }}
-              className={cn(cardClass, "w-full text-left")}
+              style={tileStyle} className={cn("", "w-full text-left")}
             >
               <div className="p-[14px_14px_12px]">
                 <div className="h-9 w-9 rounded-[12px] bg-[#FEF3C7] flex items-center justify-center mb-2">
@@ -425,7 +425,7 @@ export default function InstructorPay() {
               transition={{ delay: 0.24 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setBalancesExpanded(!balancesExpanded); }}
-              className={cn(cardClass, "w-full text-left")}
+              style={tileStyle} className={cn("", "w-full text-left")}
             >
               <div className="p-[14px_14px_12px]">
                 <div className="h-9 w-9 rounded-[12px] bg-[#EEF2FF] flex items-center justify-center mb-2">
@@ -449,7 +449,7 @@ export default function InstructorPay() {
                   transition={{ duration: 0.25 }}
                   className="overflow-hidden"
                 >
-                  <div className={cn(cardClass, "mt-2 p-4")}>
+                  <div style={tileStyle} className={cn("", "mt-2 p-4")}>
                     <PupilBalancesList pupils={pupils} limit={5} />
                     <GradientLine />
                   </div>
