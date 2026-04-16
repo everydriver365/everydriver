@@ -392,8 +392,20 @@ export function NextUpTile({
                     role="button"
                     tabIndex={0}
                   >
-                    {/* ETA pill (top-left) */}
-                    <div className="absolute top-2 left-2 z-[1] bg-black/70 backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 pointer-events-none">
+                    {/* ETA pill (top-left) — clickable when traffic alerts exist */}
+                    <button
+                      type="button"
+                      disabled={!hasTrafficAlerts}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (hasTrafficAlerts) setTrafficModalOpen(true);
+                      }}
+                      className={`absolute top-2 left-2 z-[2] backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 transition-transform active:scale-95 ${
+                        hasTrafficAlerts
+                          ? "bg-red-600/85 cursor-pointer ring-1 ring-white/30 animate-pulse"
+                          : "bg-black/70 cursor-default"
+                      }`}
+                    >
                       <Car className="h-3 w-3" />
                       {etaLoading ? (
                         <>
@@ -406,13 +418,19 @@ export function NextUpTile({
                           {trafficCondition && (
                             <span className={`w-1.5 h-1.5 rounded-full ${getTrafficDot()}`} />
                           )}
+                          {hasTrafficAlerts && (
+                            <>
+                              <AlertTriangle className="h-3 w-3" />
+                              <span>{trafficAlerts.length || "!"}</span>
+                            </>
+                          )}
                         </>
                       ) : etaError ? (
                         <span>ETA unavailable</span>
                       ) : (
                         <span>No ETA</span>
                       )}
-                    </div>
+                    </button>
                     <div className="absolute top-2 right-2 z-[1] bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 pointer-events-none">
                       <Navigation className="h-3 w-3" /> Navigate
                     </div>
@@ -437,28 +455,20 @@ export function NextUpTile({
                   ))}
                 </div>
 
-                {/* Stats row */}
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { icon: Clock, label: "Start", value: formatTime24(startTime), color: "hsl(220, 52%, 16%)" },
-                    { icon: Hourglass, label: "Duration", value: formatDuration(), color: "hsl(220, 52%, 22%)" },
-                    { icon: PoundSterling, label: effectiveBalance < 0 ? "Due" : "Balance", value: `£${Math.abs(effectiveBalance).toFixed(0)}`, color: effectiveBalance < 0 ? "#f97316" : "#10b981" },
-                  ].map((stat) => (
-                    <div key={stat.label} className="flex flex-col items-center py-3 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)" }}>
-                      <div className="w-8 h-8 rounded-2xl flex items-center justify-center mb-1.5" style={{ background: `${stat.color}15` }}>
-                        <stat.icon className="h-4 w-4" style={{ color: stat.color }} />
-                      </div>
-                      <span className="text-[15px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{stat.value}</span>
-                      <span className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Live ETA */}
+                {/* Live ETA — clickable when traffic alerts exist */}
                 {(etaLoading || etaMinutes > 0) && (
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: "rgba(21,30,48,0.05)" }}>
-                    <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "rgba(21,30,48,0.1)" }}>
-                      <Car className="h-5 w-5" style={{ color: "hsl(220, 52%, 16%)" }} />
+                  <button
+                    type="button"
+                    disabled={!hasTrafficAlerts}
+                    onClick={(e) => { e.stopPropagation(); if (hasTrafficAlerts) setTrafficModalOpen(true); }}
+                    className={`w-full flex items-center gap-3 p-3.5 rounded-2xl text-left transition-transform ${hasTrafficAlerts ? "active:scale-[0.99] cursor-pointer" : "cursor-default"}`}
+                    style={{
+                      background: hasTrafficAlerts ? "rgba(239,68,68,0.08)" : "rgba(21,30,48,0.05)",
+                      border: hasTrafficAlerts ? "1px solid rgba(239,68,68,0.2)" : "none",
+                    }}
+                  >
+                    <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0" style={{ background: hasTrafficAlerts ? "rgba(239,68,68,0.15)" : "rgba(21,30,48,0.1)" }}>
+                      {hasTrafficAlerts ? <AlertTriangle className="h-5 w-5" style={{ color: "#dc2626" }} /> : <Car className="h-5 w-5" style={{ color: "hsl(220, 52%, 16%)" }} />}
                     </div>
                     {etaLoading ? (
                       <div className="flex items-center gap-2">
@@ -478,10 +488,16 @@ export function NextUpTile({
                               </>
                             )}
                           </div>
+                          {hasTrafficAlerts && (
+                            <p className="text-[10px] mt-0.5 font-semibold" style={{ color: "#dc2626" }}>
+                              {trafficAlerts.length} alert{trafficAlerts.length !== 1 ? "s" : ""} on route — tap for details
+                            </p>
+                          )}
                         </div>
+                        {hasTrafficAlerts && <ChevronRight className="h-4 w-4" style={{ color: "#dc2626" }} />}
                       </div>
                     )}
-                  </div>
+                  </button>
                 )}
 
                 {/* Weather */}
