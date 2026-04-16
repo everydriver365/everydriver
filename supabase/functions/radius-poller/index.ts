@@ -615,25 +615,36 @@ Deno.serve(async (req) => {
 
       // ─── Auto-end session if ignition OFF and session active ───
       if (!ignition && device.current_session_id) {
-        console.log("[RadiusPoller] Auto-ending session:", device.current_session_id);
-        await supabase
+        // Check if session was manually started — don't auto-end those
+        const { data: sess } = await supabase
           .from("lesson_telematics")
-          .update({ ended_at: seenAt || new Date().toISOString() })
+          .select("manually_started")
           .eq("id", device.current_session_id)
-          .is("ended_at", null);
+          .single();
 
-        await supabase
-          .from("gps_devices")
-          .update({
-            current_session_id: null,
-            current_pupil_id: null,
-            session_start_ecu_odometer_km: null,
-            is_active: false,
-          })
-          .eq("id", device.id);
+        if (sess?.manually_started) {
+          console.log("[RadiusPoller] Skipping auto-end for manually started session:", device.current_session_id);
+        } else {
+          console.log("[RadiusPoller] Auto-ending session:", device.current_session_id);
+          await supabase
+            .from("lesson_telematics")
+            .update({ ended_at: seenAt || new Date().toISOString() })
+            .eq("id", device.current_session_id)
+            .is("ended_at", null);
 
-        device.current_session_id = null;
-        console.log("[RadiusPoller] Session ended");
+          await supabase
+            .from("gps_devices")
+            .update({
+              current_session_id: null,
+              current_pupil_id: null,
+              session_start_ecu_odometer_km: null,
+              is_active: false,
+            })
+            .eq("id", device.id);
+
+          device.current_session_id = null;
+          console.log("[RadiusPoller] Session ended");
+        }
       }
 
       // Record GPS point if session active

@@ -486,6 +486,7 @@ export default function InstructorLiveSession() {
           pupil_id: effectivePupilId,
           started_at: new Date().toISOString(),
           total_distance_km: 0,
+          manually_started: true,
         })
         .select()
         .single();

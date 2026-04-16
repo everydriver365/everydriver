@@ -92,10 +92,15 @@ const TripSummarySheet: React.FC<TripSummarySheetProps> = ({
     }
   }, [open, telematicsId]);
 
-  const generateReport = async () => {
+  const generateReport = async (retryCount = 0) => {
     setLoading(true);
     setInsufficientData(null);
     setReport(null);
+
+    // Short delay to allow final GPS points to be written
+    if (retryCount === 0) {
+      await new Promise(r => setTimeout(r, 3000));
+    }
     
     try {
       const { data, error } = await supabase.functions.invoke('generate-route-report', {
@@ -105,6 +110,12 @@ const TripSummarySheet: React.FC<TripSummarySheetProps> = ({
       if (error) throw error;
       
       if (data.error === 'insufficient_gps_data') {
+        // Retry once after 5 seconds to allow poller to finish writing points
+        if (retryCount < 1) {
+          console.log('[TripSummary] Insufficient data, retrying in 5s...');
+          await new Promise(r => setTimeout(r, 5000));
+          return generateReport(retryCount + 1);
+        }
         setInsufficientData({
           message: data.message,
           pointsRecorded: data.pointsRecorded
