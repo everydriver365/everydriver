@@ -171,23 +171,28 @@ export function HomepageHero({
       <div
         style={{
           background: "#FFFFFF",
-          borderRadius: 24,
+          borderRadius: 20,
           boxShadow: "0 4px 24px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
           overflow: "hidden",
         }}
       >
-        {/* Greeting + Avatar */}
-        <div className="flex items-center justify-between px-4 pt-4 pb-1">
-          <div>
-            <p style={{ fontSize: 22, fontWeight: 700, color: "#1C1C1E", lineHeight: 1.2 }}>
-              {getGreeting()}, <span style={{ display: "inline" }}>{firstName}</span>
-            </p>
-          </div>
+        {/* Blue Header Bar */}
+        <div
+          className="flex items-center justify-between"
+          style={{
+            backgroundColor: "#1a6fd4",
+            borderRadius: "20px 20px 0 0",
+            padding: 18,
+          }}
+        >
+          <p style={{ fontSize: 22, fontWeight: 500, color: "#FFFFFF", lineHeight: 1.2, margin: 0 }}>
+            {getGreeting()}, {firstName}
+          </p>
           <div className="relative shrink-0">
             <div
               style={{
-                width: 40, height: 40, borderRadius: "50%", overflow: "hidden",
-                boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+                width: 42, height: 42, borderRadius: "50%", overflow: "hidden",
+                border: "2.5px solid rgba(255,255,255,0.5)",
               }}
             >
               {profileImageUrl ? (
@@ -202,13 +207,13 @@ export function HomepageHero({
             <div
               style={{
                 position: "absolute",
-                bottom: 1,
-                right: 1,
+                bottom: 0,
+                right: 0,
                 width: 13,
                 height: 13,
                 borderRadius: "50%",
                 backgroundColor: "#34C759",
-                border: "2.5px solid #fff",
+                border: "2.5px solid rgba(255,255,255,0.5)",
               }}
             />
           </div>
