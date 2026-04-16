@@ -911,22 +911,47 @@ export default function InstructorLiveSession() {
   // When no session, use standard layout with hamburger menu
   return (
     <InstructorPortalLayout>
-       <div className="min-h-[calc(100dvh-120px)] bg-background -mx-4 md:mx-0 -mt-4 md:mt-0">
+       <div className="min-h-[calc(100dvh-120px)] -mx-4 md:mx-0 -mt-4 md:mt-0" style={{ background: "#f2f2f7" }}>
          {/* Modern card-based layout */}
-         <div className="p-4 pb-24 space-y-4">
-            {/* Live / Fleet toggle */}
-            <IOSSegmentedControl
-              segments={[
+         <div className="p-4 pb-24 space-y-3">
+            {/* Live / Fleet toggle — premium card */}
+            <div style={{
+              background: "white",
+              borderRadius: 20,
+              boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
+              border: "0.5px solid rgba(0,0,0,0.06)",
+              padding: 4,
+              display: "flex",
+              gap: 4,
+            }}>
+              {[
                 { value: "live", label: "Live" },
                 { value: "fleet", label: "Fleet" },
-              ]}
-              value={viewMode}
-              onChange={(v) => setViewMode(v as "live" | "fleet")}
-            />
+              ].map((seg) => (
+                <button
+                  key={seg.value}
+                  onClick={() => { setViewMode(seg.value as "live" | "fleet"); }}
+                  style={{
+                    flex: 1,
+                    padding: "6px 24px",
+                    borderRadius: 16,
+                    fontSize: 13,
+                    fontWeight: viewMode === seg.value ? 700 : 600,
+                    color: viewMode === seg.value ? "white" : "#8e8e93",
+                    background: viewMode === seg.value ? "linear-gradient(to right, #0d4fa0, #1a6fd4)" : "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {seg.label}
+                </button>
+              ))}
+            </div>
 
             {viewMode === "fleet" ? (
               <Suspense fallback={<div className="h-[70vh] flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
-                <div className="rounded-2xl overflow-hidden border border-border" style={{ height: "70vh" }}>
+                <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)", border: "0.5px solid rgba(0,0,0,0.06)", height: "70vh" }}>
                   <InstructorFleetMap />
                 </div>
               </Suspense>
@@ -938,7 +963,6 @@ export default function InstructorLiveSession() {
                 currentDeviceId={device.id}
                 onDeviceChange={(deviceId, provider) => {
                   setActiveProvider(provider);
-                  // Re-fetch full device data
                   supabase
                     .from("gps_devices")
                     .select("*")
@@ -951,7 +975,6 @@ export default function InstructorLiveSession() {
                         setDevice(data as GPSDevice);
                       }
                     });
-                  // Persist provider preference
                   if (provider) {
                     supabase
                       .from("instructors")
@@ -977,17 +1000,35 @@ export default function InstructorLiveSession() {
             />
 
 
-           {/* Dashcam Portal Link */}
-           <button
-             onClick={() => window.open("https://www.kinesisfleetpro.com/#/login;next=%2Fstatus", "_blank", "noopener,noreferrer")}
-             className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-muted/50 border border-slate-200 dark:border-muted hover:bg-slate-100 dark:hover:bg-muted transition-colors mb-3"
-           >
-             <div className="flex items-center gap-2">
-               <Camera className="h-4 w-4 text-slate-600" />
-               <span className="text-sm font-medium text-foreground">Dashcam Portal</span>
-             </div>
-             <span className="text-xs text-muted-foreground">View footage →</span>
-           </button>
+           {/* Dashcam Portal Link — premium card */}
+           <div style={{
+             background: "white",
+             borderRadius: 20,
+             overflow: "hidden",
+             boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
+             border: "0.5px solid rgba(0,0,0,0.06)",
+           }}>
+             <button
+               onClick={() => window.open("https://www.kinesisfleetpro.com/#/login;next=%2Fstatus", "_blank", "noopener,noreferrer")}
+               style={{
+                 width: "100%",
+                 display: "flex",
+                 alignItems: "center",
+                 justifyContent: "space-between",
+                 padding: "12px 16px",
+                 background: "transparent",
+                 border: "none",
+                 cursor: "pointer",
+               }}
+             >
+               <div className="flex items-center gap-2">
+                 <Camera className="h-4 w-4" style={{ color: "#8e8e93" }} />
+                 <span style={{ fontSize: 14, fontWeight: 700, color: "#1c1c1e" }}>Dashcam Portal</span>
+               </div>
+               <span style={{ fontSize: 13, color: "#1a6fd4", fontWeight: 600 }}>View footage →</span>
+             </button>
+             <div style={{ height: 2, background: "linear-gradient(to right, #0d4fa0, #56a8f5)", borderRadius: 2 }} />
+           </div>
 
            {/* Mini Live Map Preview */}
            <SatNavLiveMap

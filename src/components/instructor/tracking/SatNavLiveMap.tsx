@@ -241,7 +241,16 @@ export function SatNavLiveMap({
     : { height: "55vh", minHeight: 320 };
 
   return (
-    <div className={`${fullscreen ? "" : "rounded-2xl border bg-card text-card-foreground shadow-sm"} overflow-hidden ${className}`}>
+    <div
+      className={className}
+      style={fullscreen ? { overflow: "hidden" } : {
+        borderRadius: 20,
+        overflow: "hidden",
+        boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
+        border: "0.5px solid rgba(0,0,0,0.06)",
+        background: "white",
+      }}
+    >
       <div className="relative" style={containerStyle}>
         {/* Map canvas */}
         <div ref={mapDivRef} className="absolute inset-0 z-0" />
@@ -249,37 +258,37 @@ export function SatNavLiveMap({
         {hasPosition ? (
           <>
             {/* Top frosted bar: Live badge + road name */}
-            <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 py-2.5 bg-white/80 dark:bg-black/60 backdrop-blur-md border-b border-white/20">
+            <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 py-2.5" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
               <div>
                 {isLive ? (
-                  <Badge className="bg-green-600 text-white border-0 gap-1.5">
+                  <span style={{ background: "#0f9e75", color: "white", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 20, display: "inline-flex", alignItems: "center", gap: 5 }}>
                     <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
                     </span>
                     Live
-                  </Badge>
+                  </span>
                 ) : lastSeenLabel ? (
                   <Badge variant="secondary" className="gap-1 text-[10px]">
                     {lastSeenLabel}
                   </Badge>
                 ) : null}
               </div>
-              <p className="text-sm font-semibold text-foreground truncate ml-3 flex-1 text-right">
+              <p style={{ fontSize: 13, fontWeight: 600, color: "#1c1c1e" }} className="truncate ml-3 flex-1 text-right">
                 {roadName || "Awaiting location…"}
               </p>
             </div>
 
-            {/* Bottom HUD: Speed + limit + telemetry */}
-            <div className="absolute bottom-0 left-0 right-0 z-10 px-3 py-3 bg-white/80 dark:bg-black/60 backdrop-blur-md border-t border-white/20">
+            {/* Bottom HUD: Speed + limit — separate card below map */}
+            <div className="absolute bottom-0 left-0 right-0 z-10 px-3 py-3" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
               <div className="flex items-end justify-between">
                 {/* Speed readout */}
                 <div className="flex items-end gap-2.5">
                   <div className="text-center">
-                    <span className={`${fullscreen ? "text-5xl" : "text-4xl"} font-bold tabular-nums leading-none ${isOverSpeed ? "text-red-600 animate-pulse" : "text-foreground"}`}>
+                    <span style={{ fontSize: fullscreen ? 48 : 28, fontWeight: 700, color: isOverSpeed ? "#e24b4a" : "#1c1c1e", lineHeight: 1 }} className={`tabular-nums ${isOverSpeed ? "animate-pulse" : ""}`}>
                       {speedMph ?? 0}
                     </span>
-                    <p className="text-[10px] font-medium text-muted-foreground mt-0.5">mph</p>
+                    <p style={{ fontSize: 12, color: "#8e8e93", marginTop: 2 }}>mph</p>
                   </div>
                   {speedLimitKmh != null && speedLimitKmh > 0 && (
                     <SpeedLimitRoundel
@@ -295,13 +304,13 @@ export function SatNavLiveMap({
                   {ignitionOn != null && (
                     <div className="flex items-center gap-1">
                       <span className={`w-2 h-2 rounded-full ${ignitionOn ? "bg-emerald-500" : "bg-muted-foreground/40"}`} />
-                      <span className="text-[10px] font-medium text-muted-foreground">
+                      <span style={{ fontSize: 10, fontWeight: 500, color: "#8e8e93" }}>
                         {ignitionOn ? "Engine On" : "Engine Off"}
                       </span>
                     </div>
                   )}
                   {dailyMiles != null && dailyMiles > 0 && (
-                    <span className="text-[10px] font-medium text-muted-foreground">
+                    <span style={{ fontSize: 10, fontWeight: 500, color: "#8e8e93" }}>
                       Today: {dailyMiles} mi
                     </span>
                   )}
@@ -310,8 +319,8 @@ export function SatNavLiveMap({
             </div>
           </>
         ) : (
-          <div className="absolute inset-0 bg-muted/80 flex flex-col items-center justify-center z-[5]">
-            <p className="text-sm text-muted-foreground">No position data yet</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-[5]" style={{ background: "rgba(242,242,247,0.8)" }}>
+            <p style={{ fontSize: 14, color: "#8e8e93" }}>No position data yet</p>
           </div>
         )}
       </div>
