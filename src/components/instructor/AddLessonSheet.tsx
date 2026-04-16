@@ -521,14 +521,12 @@ export function AddLessonSheet({
                 <InputField label="Phone" placeholder="07123 456789" value={newPupilPhone} onChange={setNewPupilPhone} type="tel" />
                 <div>
                   <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Address</span>
-                  <div style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", overflow: "hidden" }}>
-                    <GoogleAddressAutocomplete
-                      value={newPupilAddress}
-                      onChange={setNewPupilAddress}
-                      onPostcodeChange={setNewPupilPostcode}
-                      placeholder="Start typing an address..."
-                    />
-                  </div>
+                  <GoogleAddressAutocomplete
+                    value={newPupilAddress}
+                    onChange={setNewPupilAddress}
+                    onPostcodeChange={setNewPupilPostcode}
+                    placeholder="Start typing an address..."
+                  />
                 </div>
               </div>
             )}
