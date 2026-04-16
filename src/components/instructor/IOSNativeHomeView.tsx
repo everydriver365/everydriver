@@ -160,10 +160,6 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
                   {totalUnreadBadge}
                 </div>
               )}
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
-                  {pupilUnreadCount}
-                </span>
-              )}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
