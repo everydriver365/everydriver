@@ -49,6 +49,9 @@ interface ExternalEvent {
   end_time: string;
   color: string | null;
   is_all_day: boolean;
+  location: string | null;
+  description: string | null;
+  is_busy: boolean;
 }
 
 interface ManualBlock {
