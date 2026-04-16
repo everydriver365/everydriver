@@ -37,7 +37,6 @@ export default function InstructorSchedule() {
   const isMobile = useIsMobile();
   const { wallpaperColor } = useInstructorAppearance(instructorId);
   
-  // Default to list on mobile, calendar on desktop
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem('instructor-schedule-view');
     if (saved && ['list', 'month', 'calendar', 'schedule'].includes(saved)) return saved as ViewMode;
@@ -51,7 +50,6 @@ export default function InstructorSchedule() {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [mobileListRefreshKey, setMobileListRefreshKey] = useState(0);
 
-  // Use the calendar hook for schedule view data
   const calendar = useInstructorCalendar(instructorId || '');
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -86,7 +84,6 @@ export default function InstructorSchedule() {
   }, [viewMode]);
 
   const handleAddEvent = (date?: Date) => {
-    // Ensure the data fetch range includes the date the user is adding an event for
     if (date) {
       calendar.goToDate(date);
     }
@@ -96,7 +93,7 @@ export default function InstructorSchedule() {
 
   const handleDeleteEvent = async (event: CalendarEvent) => {
     if (event.type === 'external') {
-      toast.error('External events can’t be deleted here');
+      toast.error('External events can\'t be deleted here');
       return;
     }
 
@@ -120,7 +117,6 @@ export default function InstructorSchedule() {
         await calendar.refetch();
       }
 
-      // Close sheet if it was open for this event
       setSelectedEvent((curr) => (curr?.id === event.id ? null : curr));
       toast.success('Updated');
     } catch (e) {
@@ -137,50 +133,102 @@ export default function InstructorSchedule() {
     );
   }
 
+  // Syncing progress bar
+  const syncProgressBar = isSyncing ? (
+    <div style={{ height: 2, backgroundColor: "#6B63D6", position: "absolute", bottom: 0, left: 0, right: 0, animation: "pulse 1.5s ease-in-out infinite" }} />
+  ) : null;
+
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4 h-full flex flex-col">
-        <div className="flex items-center justify-between gap-2 sticky top-0 z-20 py-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b sm:border-b-0" style={{ backgroundColor: wallpaperColor || "#F4F7F6" }}>
+      <div
+        className="h-full flex flex-col"
+        style={{ backgroundColor: "#F7F7F7", margin: "-16px -16px 0", padding: "0 20px" }}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between gap-2 sticky top-0 z-20 pt-3 pb-2"
+          style={{ backgroundColor: "#F7F7F7", position: "relative" }}
+        >
           {isMobile ? (
             <>
               {/* Mobile toggle: List / Month */}
-               <div className="flex bg-black/[0.04] dark:bg-white/[0.06] p-0.5 rounded-[12px]">
+              <div
+                style={{
+                  display: "flex",
+                  backgroundColor: "#EAEAEA",
+                  padding: 3,
+                  borderRadius: 10,
+                }}
+              >
                 <button
                   onClick={() => setViewMode('list')}
-                  className={cn(
-                    "flex items-center gap-1 px-2.5 py-1 rounded-[10px] text-xs font-medium transition-colors",
-                    viewMode === 'list'
-                      ? "bg-[#F2F3F5] dark:bg-[#1C1C1E] text-foreground shadow-[0px_2px_6px_rgba(0,0,0,0.06)] ring-1 ring-inset ring-white/60 dark:ring-white/5"
-                      : "text-muted-foreground"
-                  )}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                    padding: "5px 10px",
+                    borderRadius: 8,
+                    fontSize: 13,
+                    fontWeight: 500,
+                    transition: "all 0.2s",
+                    ...(viewMode === 'list'
+                      ? { backgroundColor: "#FFFFFF", color: "#18181B", border: "0.5px solid #E4E4E7" }
+                      : { backgroundColor: "transparent", color: "#71717A", border: "0.5px solid transparent" }),
+                  }}
                 >
-                  <List className="h-3.5 w-3.5" />
+                  <List style={{ width: 14, height: 14 }} />
                   List
                 </button>
                 <button
                   onClick={() => setViewMode('month')}
-                  className={cn(
-                    "flex items-center gap-1 px-2.5 py-1 rounded-[10px] text-xs font-medium transition-colors",
-                    viewMode === 'month'
-                      ? "bg-[#F2F3F5] dark:bg-[#1C1C1E] text-foreground shadow-[0px_2px_6px_rgba(0,0,0,0.06)] ring-1 ring-inset ring-white/60 dark:ring-white/5"
-                      : "text-muted-foreground"
-                  )}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                    padding: "5px 10px",
+                    borderRadius: 8,
+                    fontSize: 13,
+                    fontWeight: 500,
+                    transition: "all 0.2s",
+                    ...(viewMode === 'month'
+                      ? { backgroundColor: "#FFFFFF", color: "#18181B", border: "0.5px solid #E4E4E7" }
+                      : { backgroundColor: "transparent", color: "#71717A", border: "0.5px solid transparent" }),
+                  }}
                 >
-                  <CalendarRange className="h-3.5 w-3.5" />
+                  <CalendarRange style={{ width: 14, height: 14 }} />
                   Month
                 </button>
               </div>
-              <h1 className="text-lg font-bold text-foreground">Schedule</h1>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
+
+              {/* Center: SCHEDULE label + month */}
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 11, fontWeight: 500, color: "#71717A", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  Schedule
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 500, color: "#18181B" }}>
+                  {new Date().toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
+                </div>
+              </div>
+
+              {/* Sync button */}
+              <button
                 onClick={handleSync}
                 disabled={isSyncing}
-                title="Sync Google Calendar"
+                style={{
+                  width: 38,
+                  height: 38,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: "50%",
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  color: "#3F3F46",
+                }}
               >
-                <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
-              </Button>
+                <RefreshCw style={{ width: 18, height: 18, ...(isSyncing ? { animation: "spin 1s linear infinite" } : {}) }} />
+              </button>
             </>
           ) : (
             <>
@@ -228,33 +276,36 @@ export default function InstructorSchedule() {
               </div>
             </>
           )}
+          {syncProgressBar}
         </div>
 
-
-        {viewMode === 'list' ? (
-          <MultiDayScheduleView key={mobileListRefreshKey} instructorId={instructorId} />
-        ) : viewMode === 'month' ? (
-          <MobileMonthCalendarView instructorId={instructorId} />
-        ) : viewMode === 'schedule' ? (
-          <div className="h-[calc(100vh-12rem)] overflow-hidden">
-            <GoogleStyleScheduleView
-              events={calendar.events}
-              calendarColors={calendar.calendarColors}
-              currentDate={calendar.currentDate}
-              onNavigate={calendar.navigate}
-              loading={calendar.loading}
-              onColorSettingsClick={() => setColorSettingsOpen(true)}
-              onAddEvent={handleAddEvent}
-              onEventClick={(event) => setSelectedEvent(event)}
-              onDeleteEvent={handleDeleteEvent}
-              onGoToDate={calendar.goToDate}
-            />
-          </div>
-        ) : (
-          <div className="h-[calc(100vh-12rem)]">
-            <InstructorCalendar instructorId={instructorId} />
-          </div>
-        )}
+        {/* Content */}
+        <div className="flex-1 overflow-auto pb-4">
+          {viewMode === 'list' ? (
+            <MultiDayScheduleView key={mobileListRefreshKey} instructorId={instructorId} />
+          ) : viewMode === 'month' ? (
+            <MobileMonthCalendarView instructorId={instructorId} />
+          ) : viewMode === 'schedule' ? (
+            <div className="h-[calc(100vh-12rem)] overflow-hidden">
+              <GoogleStyleScheduleView
+                events={calendar.events}
+                calendarColors={calendar.calendarColors}
+                currentDate={calendar.currentDate}
+                onNavigate={calendar.navigate}
+                loading={calendar.loading}
+                onColorSettingsClick={() => setColorSettingsOpen(true)}
+                onAddEvent={handleAddEvent}
+                onEventClick={(event) => setSelectedEvent(event)}
+                onDeleteEvent={handleDeleteEvent}
+                onGoToDate={calendar.goToDate}
+              />
+            </div>
+          ) : (
+            <div className="h-[calc(100vh-12rem)]">
+              <InstructorCalendar instructorId={instructorId} />
+            </div>
+          )}
+        </div>
       </div>
 
       <CalendarEventSheet
@@ -266,7 +317,6 @@ export default function InstructorSchedule() {
         onRefetch={calendar.refetch}
       />
 
-      {/* Color Settings Dialog */}
       <CalendarColorSettings
         open={colorSettingsOpen}
         onOpenChange={setColorSettingsOpen}
@@ -275,7 +325,6 @@ export default function InstructorSchedule() {
         onColorsChange={calendar.setCalendarColors}
       />
 
-      {/* Add Event Dialog - for Schedule view */}
       <AddCalendarEventDialog
         open={addEventOpen}
         onOpenChange={setAddEventOpen}
@@ -287,8 +336,6 @@ export default function InstructorSchedule() {
         }}
       />
 
-
-      {/* FAB Add Lesson Sheet */}
       <AddLessonSheet
         open={fabLessonSheetOpen}
         onOpenChange={setFabLessonSheetOpen}
