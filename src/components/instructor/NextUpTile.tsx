@@ -34,6 +34,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Construction, Ban } from "lucide-react";
 
 interface NextUpTileProps {
   lessonId: string;
@@ -70,6 +78,7 @@ export function NextUpTile({
   const [wizardOpen, setWizardOpen] = useState(false);
   const [lateSheetOpen, setLateSheetOpen] = useState(false);
   const [showGPSRecorder, setShowGPSRecorder] = useState(false);
+  const [trafficModalOpen, setTrafficModalOpen] = useState(false);
   const [, setTick] = useState(0);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -93,8 +102,10 @@ export function NextUpTile({
       });
   }, [instructorId]);
   const expectedEarnings = (durationMinutes / 60) * hourlyRate;
-  const { currentWeather } = useDrivingAlerts(instructorId);
+  const { currentWeather, alerts: drivingAlerts } = useDrivingAlerts(instructorId);
   const { devices } = useVehicleHealth();
+  const trafficAlerts = drivingAlerts.filter(a => a.type === "traffic" || a.type === "road");
+  const hasTrafficAlerts = trafficAlerts.length > 0 || (trafficCondition && trafficCondition.toLowerCase() !== "light" && trafficCondition.toLowerCase() !== "free");
 
   const [lateDismissed, setLateDismissed] = useState(false);
   const lateAlertFiredRef = useRef(false);
@@ -381,8 +392,20 @@ export function NextUpTile({
                     role="button"
                     tabIndex={0}
                   >
-                    {/* ETA pill (top-left) */}
-                    <div className="absolute top-2 left-2 z-[1] bg-black/70 backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 pointer-events-none">
+                    {/* ETA pill (top-left) — clickable when traffic alerts exist */}
+                    <button
+                      type="button"
+                      disabled={!hasTrafficAlerts}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (hasTrafficAlerts) setTrafficModalOpen(true);
+                      }}
+                      className={`absolute top-2 left-2 z-[2] backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 transition-transform active:scale-95 ${
+                        hasTrafficAlerts
+                          ? "bg-red-600/85 cursor-pointer ring-1 ring-white/30 animate-pulse"
+                          : "bg-black/70 cursor-default"
+                      }`}
+                    >
                       <Car className="h-3 w-3" />
                       {etaLoading ? (
                         <>
@@ -395,13 +418,19 @@ export function NextUpTile({
                           {trafficCondition && (
                             <span className={`w-1.5 h-1.5 rounded-full ${getTrafficDot()}`} />
                           )}
+                          {hasTrafficAlerts && (
+                            <>
+                              <AlertTriangle className="h-3 w-3" />
+                              <span>{trafficAlerts.length || "!"}</span>
+                            </>
+                          )}
                         </>
                       ) : etaError ? (
                         <span>ETA unavailable</span>
                       ) : (
                         <span>No ETA</span>
                       )}
-                    </div>
+                    </button>
                     <div className="absolute top-2 right-2 z-[1] bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 pointer-events-none">
                       <Navigation className="h-3 w-3" /> Navigate
                     </div>
@@ -426,28 +455,20 @@ export function NextUpTile({
                   ))}
                 </div>
 
-                {/* Stats row */}
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { icon: Clock, label: "Start", value: formatTime24(startTime), color: "hsl(220, 52%, 16%)" },
-                    { icon: Hourglass, label: "Duration", value: formatDuration(), color: "hsl(220, 52%, 22%)" },
-                    { icon: PoundSterling, label: effectiveBalance < 0 ? "Due" : "Balance", value: `£${Math.abs(effectiveBalance).toFixed(0)}`, color: effectiveBalance < 0 ? "#f97316" : "#10b981" },
-                  ].map((stat) => (
-                    <div key={stat.label} className="flex flex-col items-center py-3 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)" }}>
-                      <div className="w-8 h-8 rounded-2xl flex items-center justify-center mb-1.5" style={{ background: `${stat.color}15` }}>
-                        <stat.icon className="h-4 w-4" style={{ color: stat.color }} />
-                      </div>
-                      <span className="text-[15px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{stat.value}</span>
-                      <span className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Live ETA */}
+                {/* Live ETA — clickable when traffic alerts exist */}
                 {(etaLoading || etaMinutes > 0) && (
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: "rgba(21,30,48,0.05)" }}>
-                    <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "rgba(21,30,48,0.1)" }}>
-                      <Car className="h-5 w-5" style={{ color: "hsl(220, 52%, 16%)" }} />
+                  <button
+                    type="button"
+                    disabled={!hasTrafficAlerts}
+                    onClick={(e) => { e.stopPropagation(); if (hasTrafficAlerts) setTrafficModalOpen(true); }}
+                    className={`w-full flex items-center gap-3 p-3.5 rounded-2xl text-left transition-transform ${hasTrafficAlerts ? "active:scale-[0.99] cursor-pointer" : "cursor-default"}`}
+                    style={{
+                      background: hasTrafficAlerts ? "rgba(239,68,68,0.08)" : "rgba(21,30,48,0.05)",
+                      border: hasTrafficAlerts ? "1px solid rgba(239,68,68,0.2)" : "none",
+                    }}
+                  >
+                    <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0" style={{ background: hasTrafficAlerts ? "rgba(239,68,68,0.15)" : "rgba(21,30,48,0.1)" }}>
+                      {hasTrafficAlerts ? <AlertTriangle className="h-5 w-5" style={{ color: "#dc2626" }} /> : <Car className="h-5 w-5" style={{ color: "hsl(220, 52%, 16%)" }} />}
                     </div>
                     {etaLoading ? (
                       <div className="flex items-center gap-2">
@@ -467,10 +488,16 @@ export function NextUpTile({
                               </>
                             )}
                           </div>
+                          {hasTrafficAlerts && (
+                            <p className="text-[10px] mt-0.5 font-semibold" style={{ color: "#dc2626" }}>
+                              {trafficAlerts.length} alert{trafficAlerts.length !== 1 ? "s" : ""} on route — tap for details
+                            </p>
+                          )}
                         </div>
+                        {hasTrafficAlerts && <ChevronRight className="h-4 w-4" style={{ color: "#dc2626" }} />}
                       </div>
                     )}
-                  </div>
+                  </button>
                 )}
 
                 {/* Weather */}
@@ -714,6 +741,101 @@ export function NextUpTile({
       )}
       <RunningLateSheet open={lateSheetOpen} onOpenChange={setLateSheetOpen}
         pupilName={pupilName} pupilPhone={pupilPhone} startTime={startTime} />
+
+      {/* Traffic Alerts Modal */}
+      <Dialog open={trafficModalOpen} onOpenChange={setTrafficModalOpen}>
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              Traffic & Road Alerts
+            </DialogTitle>
+            <DialogDescription>
+              On your route to {firstName} · {pickupPostcode}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 mt-2">
+            {/* ETA summary */}
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/50">
+              <div className="flex items-center gap-2">
+                <Car className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Drive time</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold">{etaText || `${etaMinutes} min`}</span>
+                {trafficCondition && (
+                  <span className="text-xs capitalize text-muted-foreground">· {trafficCondition} traffic</span>
+                )}
+              </div>
+            </div>
+
+            {/* Alerts list */}
+            {trafficAlerts.length === 0 ? (
+              <div className="p-4 text-center text-sm text-muted-foreground">
+                Heavier than usual traffic detected on your route. No specific incidents reported.
+              </div>
+            ) : (
+              trafficAlerts.map((alert, idx) => {
+                const sevColor = alert.severity === "severe" ? "#dc2626" : alert.severity === "moderate" ? "#f59e0b" : "#3b82f6";
+                const Icon = alert.type === "road" ? Construction : AlertTriangle;
+                return (
+                  <div
+                    key={`${alert.title}-${idx}`}
+                    className="flex items-start gap-3 p-3 rounded-2xl border"
+                    style={{ background: `${sevColor}10`, borderColor: `${sevColor}30` }}
+                  >
+                    <div
+                      className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0"
+                      style={{ background: `${sevColor}20` }}
+                    >
+                      <Icon className="h-5 w-5" style={{ color: sevColor }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-bold text-foreground">{alert.title}</p>
+                        <span
+                          className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded"
+                          style={{ background: `${sevColor}25`, color: sevColor }}
+                        >
+                          {alert.severity}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">{alert.description}</p>
+                      {alert.roadName && (
+                        <p className="text-[11px] mt-1 font-medium text-foreground">📍 {alert.roadName}</p>
+                      )}
+                      {alert.delay != null && alert.delay > 0 && (
+                        <p className="text-[11px] mt-1 font-semibold" style={{ color: sevColor }}>
+                          Delay: ~{alert.delay} min
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+
+            {/* Actions */}
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              <button
+                onClick={() => { setTrafficModalOpen(false); handleNavigate(); }}
+                className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-primary text-primary-foreground font-semibold text-sm active:scale-95 transition-transform"
+              >
+                <Navigation className="h-4 w-4" />
+                Navigate
+              </button>
+              <button
+                onClick={() => { setTrafficModalOpen(false); handleSendETA(); }}
+                className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-muted text-foreground font-semibold text-sm active:scale-95 transition-transform"
+              >
+                <Send className="h-4 w-4" />
+                Send ETA
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
