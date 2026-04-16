@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CalendarDays, ExternalLink, Clock } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
@@ -33,55 +33,79 @@ export function UpcomingEventsCard({ className = "" }: { className?: string }) {
   if (events.length === 0) return null;
 
   return (
-    <div className={`rounded-2xl bg-card border border-border overflow-hidden ${className}`}>
-      <div className="px-4 py-3 flex items-center gap-2 border-b border-border">
-        <div className="h-8 w-8 rounded-2xl bg-purple-500 flex items-center justify-center shrink-0">
-          <CalendarDays className="h-4 w-4 text-white" />
-        </div>
-        <p className="text-[15px] font-semibold text-foreground">Upcoming Events</p>
-      </div>
-
-      {events.map((event, i) => {
+    <div className={`flex flex-col gap-3 ${className}`}>
+      {events.map((event) => {
         const date = new Date(event.event_date);
         return (
           <div
             key={event.id}
-            className={`px-4 py-3 ${i < events.length - 1 ? "border-b border-border" : ""}`}
+            style={{
+              borderRadius: 20,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "row",
+              minHeight: 130,
+              boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
+              border: "0.5px solid rgba(0,0,0,0.06)",
+            }}
           >
-            <div className="flex items-start gap-3">
-              <div className="flex flex-col items-center bg-purple-50 dark:bg-purple-500/10 rounded-xl px-2 py-1.5 min-w-[48px]">
-                <span className="text-[11px] font-bold uppercase text-purple-600 dark:text-purple-400">
-                  {format(date, "MMM")}
-                </span>
-                <span className="text-lg font-bold text-purple-700 dark:text-purple-300 leading-tight">
-                  {format(date, "d")}
-                </span>
+            {/* Left date column */}
+            <div
+              style={{
+                width: 72,
+                flexShrink: 0,
+                background: "linear-gradient(to bottom, #0d4fa0, #1a6fd4)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "16px 8px",
+              }}
+            >
+              <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", textTransform: "uppercase" }}>
+                {format(date, "EEE")}
+              </span>
+              <span style={{ fontSize: 28, fontWeight: 700, color: "white", lineHeight: 1.1 }}>
+                {format(date, "d")}
+              </span>
+              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.75)", textTransform: "uppercase" }}>
+                {format(date, "MMM")}
+              </span>
+            </div>
+
+            {/* Right content area */}
+            <div
+              style={{
+                flex: 1,
+                padding: "14px 16px",
+                background: "white",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <div>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#8e8e93", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>
+                  Upcoming Event
+                </p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: "#1c1c1e", lineHeight: 1.3, marginBottom: 4 }}>
+                  {event.title}
+                </p>
+                <p style={{ fontSize: 12, color: "#8e8e93" }}>
+                  {format(date, "HH:mm")} · {event.duration_minutes} min
+                </p>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[14px] font-semibold text-foreground leading-snug">{event.title}</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <Clock className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-[12px] text-muted-foreground">
-                    {format(date, "EEE d MMM · HH:mm")} · {event.duration_minutes} min
-                  </span>
-                </div>
-                {event.description && (
-                  <p className="text-[12px] text-muted-foreground mt-1 line-clamp-2">
-                    {event.description}
-                  </p>
-                )}
-                {event.link_url && (
-                  <a
-                    href={event.link_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 mt-1.5 text-[13px] font-medium text-purple-600 dark:text-purple-400"
-                  >
-                    <ExternalLink className="h-3 w-3" />
-                    {event.link_label || "Join Event"}
-                  </a>
-                )}
-              </div>
+              {event.link_url && (
+                <a
+                  href={event.link_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 600, color: "#1a6fd4", marginTop: 8, textDecoration: "none" }}
+                >
+                  <ExternalLink style={{ width: 13, height: 13 }} />
+                  {event.link_label || "Join Event"}
+                </a>
+              )}
             </div>
           </div>
         );
