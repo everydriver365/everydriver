@@ -182,7 +182,7 @@ export function HomepageHero({
           style={{
             backgroundColor: "#1a6fd4",
             borderRadius: "20px 20px 0 0",
-            padding: "10px 16px",
+            padding: "6px 16px",
           }}
         >
           <p style={{ fontSize: 22, fontWeight: 500, color: "#FFFFFF", lineHeight: 1.2, margin: 0 }}>
