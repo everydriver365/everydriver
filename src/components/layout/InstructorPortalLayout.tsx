@@ -1,5 +1,6 @@
 import { ReactNode, useState, useEffect } from "react";
 import { RealtimeHubProvider } from "@/hooks/useRealtimeHub";
+import { useGlobalLessonSync } from "@/hooks/useGlobalLessonSync";
 import { motion } from "framer-motion";
 import { Mic, Loader2, Volume2 } from "lucide-react";
 import { useUrgentAlerts } from "@/hooks/useUrgentAlerts";
@@ -245,6 +246,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const { overdueLesson, dismiss: dismissLessonAlert } = useLessonEndAlert(instructor?.id);
   const [endWizardLesson, setEndWizardLesson] = useState<OverdueLesson | null>(null);
   useOfflinePrefetch({ instructorId: instructor?.id });
+  useGlobalLessonSync(instructor?.id);
 
   const handleCompleteLessonAlert = (lesson: OverdueLesson) => {
     dismissLessonAlert(lesson.id);
