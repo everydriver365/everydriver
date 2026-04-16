@@ -741,6 +741,101 @@ export function NextUpTile({
       )}
       <RunningLateSheet open={lateSheetOpen} onOpenChange={setLateSheetOpen}
         pupilName={pupilName} pupilPhone={pupilPhone} startTime={startTime} />
+
+      {/* Traffic Alerts Modal */}
+      <Dialog open={trafficModalOpen} onOpenChange={setTrafficModalOpen}>
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              Traffic & Road Alerts
+            </DialogTitle>
+            <DialogDescription>
+              On your route to {firstName} · {pickupPostcode}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 mt-2">
+            {/* ETA summary */}
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/50">
+              <div className="flex items-center gap-2">
+                <Car className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Drive time</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold">{etaText || `${etaMinutes} min`}</span>
+                {trafficCondition && (
+                  <span className="text-xs capitalize text-muted-foreground">· {trafficCondition} traffic</span>
+                )}
+              </div>
+            </div>
+
+            {/* Alerts list */}
+            {trafficAlerts.length === 0 ? (
+              <div className="p-4 text-center text-sm text-muted-foreground">
+                Heavier than usual traffic detected on your route. No specific incidents reported.
+              </div>
+            ) : (
+              trafficAlerts.map((alert, idx) => {
+                const sevColor = alert.severity === "severe" ? "#dc2626" : alert.severity === "moderate" ? "#f59e0b" : "#3b82f6";
+                const Icon = alert.type === "road" ? Construction : AlertTriangle;
+                return (
+                  <div
+                    key={`${alert.title}-${idx}`}
+                    className="flex items-start gap-3 p-3 rounded-2xl border"
+                    style={{ background: `${sevColor}10`, borderColor: `${sevColor}30` }}
+                  >
+                    <div
+                      className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0"
+                      style={{ background: `${sevColor}20` }}
+                    >
+                      <Icon className="h-5 w-5" style={{ color: sevColor }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-bold text-foreground">{alert.title}</p>
+                        <span
+                          className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded"
+                          style={{ background: `${sevColor}25`, color: sevColor }}
+                        >
+                          {alert.severity}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">{alert.description}</p>
+                      {alert.roadName && (
+                        <p className="text-[11px] mt-1 font-medium text-foreground">📍 {alert.roadName}</p>
+                      )}
+                      {alert.delay != null && alert.delay > 0 && (
+                        <p className="text-[11px] mt-1 font-semibold" style={{ color: sevColor }}>
+                          Delay: ~{alert.delay} min
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+
+            {/* Actions */}
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              <button
+                onClick={() => { setTrafficModalOpen(false); handleNavigate(); }}
+                className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-primary text-primary-foreground font-semibold text-sm active:scale-95 transition-transform"
+              >
+                <Navigation className="h-4 w-4" />
+                Navigate
+              </button>
+              <button
+                onClick={() => { setTrafficModalOpen(false); handleSendETA(); }}
+                className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-muted text-foreground font-semibold text-sm active:scale-95 transition-transform"
+              >
+                <Send className="h-4 w-4" />
+                Send ETA
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
