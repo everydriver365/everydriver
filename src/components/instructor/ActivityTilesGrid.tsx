@@ -118,49 +118,64 @@ export function ActivityTilesGrid({
               transition={{ delay: idx * 0.05 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(tile.route)}
-              className="relative flex flex-col"
+              className="flex flex-col"
               style={{
                 background: "#FFFFFF",
-                borderRadius: 16,
+                borderRadius: 20,
                 overflow: "hidden",
-                border: "0.5px solid #e5e7eb",
+                border: "0.5px solid rgba(0,0,0,0.06)",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06)",
               }}
             >
-              {/* Red notification badge */}
-              {count > 0 && (
-                <span
-                  className="absolute flex items-center justify-center"
-                  style={{
-                    top: 8,
-                    right: 8,
-                    minWidth: 20,
-                    height: 20,
-                    borderRadius: 10,
-                    backgroundColor: "#e24b4a",
-                    color: "#fff",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    paddingLeft: 5,
-                    paddingRight: 5,
-                    lineHeight: 1,
-                    zIndex: 1,
-                  }}
-                >
-                  {count > 99 ? "99+" : count}
-                </span>
-              )}
-
-              {/* Icon area */}
-              <div className="flex items-center justify-center" style={{ padding: "18px 0 12px" }}>
-                {tile.icon}
+              {/* Icon area with gradient bg */}
+              <div
+                style={{
+                  background: "linear-gradient(160deg, #f8faff 0%, #edf3fc 100%)",
+                  padding: "14px 12px 12px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                {/* Badge or spacer */}
+                {count > 0 ? (
+                  <span
+                    className="flex items-center justify-center"
+                    style={{
+                      alignSelf: "flex-end",
+                      minWidth: 20,
+                      height: 20,
+                      borderRadius: 10,
+                      backgroundColor: "#ff3b30",
+                      color: "#fff",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      padding: "0 6px",
+                      lineHeight: 1,
+                      marginBottom: 6,
+                      boxShadow: "0 1px 4px rgba(255,59,48,0.4)",
+                    }}
+                  >
+                    {count > 99 ? "99+" : count}
+                  </span>
+                ) : (
+                  <div style={{ height: 20, marginBottom: 6 }} />
+                )}
+                {/* Icon */}
+                <div style={{ fontSize: 32, filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.12))" }}>
+                  {tile.icon}
+                </div>
               </div>
 
-              {/* Blue label bar */}
+              {/* Label bar */}
               <div
-                className="flex items-center justify-center"
-                style={{ background: "linear-gradient(to right, #0d4fa0, #1a6fd4, #56a8f5)", padding: "6px 12px 7px", textAlign: "center" }}
+                style={{
+                  background: "linear-gradient(to right, #0d4fa0, #1a6fd4, #4da3f5)",
+                  padding: "7px 10px 8px",
+                  textAlign: "center",
+                }}
               >
-                <span style={{ fontSize: 12, fontWeight: 500, color: "#FFFFFF" }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#FFFFFF", letterSpacing: "0.01em" }}>
                   {tile.title}
                 </span>
               </div>
