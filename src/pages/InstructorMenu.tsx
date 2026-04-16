@@ -605,28 +605,19 @@ export default function InstructorMenu() {
   // ─── Settings tile component ───────────────────────────────────────
 
   const SettingsTile = ({ tile, statusBadge, children }: { tile: TileDef; statusBadge?: React.ReactNode; children: React.ReactNode }) => {
-    const Icon = tile.icon;
-    const grad = settingsGradients[tile.id] || defaultGradient;
-
     if (tile.externalUrl) {
       return (
         <div id={`settings-tile-${tile.id}`} className={cardClass}>
           <button
-            className="w-full flex items-center gap-[14px] px-4 py-[13px]"
+            className="w-full flex items-center gap-[14px] px-4 py-[14px]"
             onClick={() => window.open(tile.externalUrl, "_blank", "noopener,noreferrer")}
           >
-            <div
-              className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
-              style={{ background: grad.bg, boxShadow: grad.shadow }}
-            >
-              <Icon className="h-5 w-5 text-white" />
-            </div>
+            {renderIconTile(tile.icon, tile.tintBg, tile.tintColor, tile.iconSrc)}
             <div className="flex-1 text-left min-w-0">
-              <span className="text-[15px] font-semibold text-[#1c1c1e]">{tile.title}</span>
+              <span className="text-[15px] font-medium text-[#18181B]" style={{ fontFamily: "Inter, sans-serif" }}>{tile.title}</span>
             </div>
-            <ExternalLink className="h-4 w-4 text-[#c7c7cc] shrink-0" />
+            <ExternalLink size={18} strokeWidth={2} color="#A1A1AA" className="shrink-0" />
           </button>
-          <GradientLine />
         </div>
       );
     }
@@ -635,31 +626,21 @@ export default function InstructorMenu() {
       <div id={`settings-tile-${tile.id}`} className={cardClass}>
         <Collapsible open={isOpen(tile.id)} onOpenChange={() => toggleSection(tile.id)}>
           <CollapsibleTrigger asChild>
-            <button className="w-full flex items-center gap-[14px] px-4 py-[13px]">
-              <div
-                className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
-                style={{ background: grad.bg, boxShadow: grad.shadow }}
-              >
-                {tile.iconSrc ? (
-                  <img src={tile.iconSrc} alt={tile.title} className="h-5 w-5 object-contain" />
-                ) : (
-                  <Icon className="h-5 w-5 text-white" />
-                )}
-              </div>
+            <button className="w-full flex items-center gap-[14px] px-4 py-[14px]">
+              {renderIconTile(tile.icon, tile.tintBg, tile.tintColor, tile.iconSrc)}
               <div className="flex-1 text-left min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-[15px] font-semibold text-[#1c1c1e]">{tile.title}</span>
+                  <span className="text-[15px] font-medium text-[#18181B]" style={{ fontFamily: "Inter, sans-serif" }}>{tile.title}</span>
                   {statusBadge}
                 </div>
               </div>
-              <ChevronRight className={cn("h-4 w-4 text-[#c7c7cc] transition-transform duration-200 shrink-0", isOpen(tile.id) && "rotate-90")} />
+              <ChevronRight size={18} strokeWidth={2} color="#A1A1AA" className={cn("transition-transform duration-200 shrink-0", isOpen(tile.id) && "rotate-90")} />
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="px-4 pb-4 border-t border-black/[0.06] pt-4">{children}</div>
+            <div className="px-4 pb-4 border-t border-[#E4E4E7] pt-4">{children}</div>
           </CollapsibleContent>
         </Collapsible>
-        <GradientLine />
       </div>
     );
   };
