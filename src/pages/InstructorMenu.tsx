@@ -819,12 +819,12 @@ export default function InstructorMenu() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search menu & settings..."
-            className="pl-9 pr-8 rounded-2xl bg-card dark:bg-[#1C1C1E] shadow-sm border-0 h-10"
+            className="pl-9 pr-8 rounded-[20px] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.05)] border-[0.5px] border-black/[0.06] h-10"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8e8e93] hover:text-[#1c1c1e]"
             >
               <X className="h-4 w-4" />
             </button>
@@ -837,48 +837,60 @@ export default function InstructorMenu() {
         {/* Quick Toggles (hidden during search) */}
         {!lowerQuery && instructorId && (
           <div>
-            <div className="px-4 pb-1.5">
-              <span className="text-[13px] font-normal text-muted-foreground uppercase tracking-wide">Quick Toggles</span>
+            <div className="px-1 pb-[10px]">
+              <span className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em]">Quick Toggles</span>
             </div>
-            <div className="bg-card dark:bg-[#1C1C1E] rounded-2xl overflow-hidden shadow-sm divide-y divide-border/40">
-              <div className="flex items-center justify-between px-4 py-3 gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="h-[29px] w-[29px] rounded-[7px] bg-violet-500 flex items-center justify-center shrink-0">
-                    <Eye className="h-4 w-4 text-white" />
+            <div>
+              {/* Listed on Website */}
+              <div className={cardClass}>
+                <div className="flex items-center justify-between px-4 py-[13px] gap-[14px]">
+                  <div className="flex items-center gap-[14px]">
+                    <div
+                      className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
+                      style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)", boxShadow: "0 3px 8px rgba(124,58,237,0.3)" }}
+                    >
+                      <Eye className="h-5 w-5 text-white" />
+                    </div>
+                    <p className="text-[15px] font-semibold text-[#1c1c1e]">Listed on Website</p>
                   </div>
-                  <div>
-                    <p className="text-[15px] font-normal text-foreground">Listed on Website</p>
-                    <p className="text-[13px] text-muted-foreground">Appear in course searches</p>
-                  </div>
+                  <Switch checked={isActive} onCheckedChange={handleVisibilityToggle} />
                 </div>
-                <Switch checked={isActive} onCheckedChange={handleVisibilityToggle} />
+                <GradientLine />
               </div>
-              <div className="flex items-center justify-between px-4 py-3 gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="h-[29px] w-[29px] rounded-[7px] bg-indigo-500 flex items-center justify-center shrink-0">
-                    <Mic className="h-4 w-4 text-white" />
+              {/* Hey ED */}
+              <div className={cardClass}>
+                <div className="flex items-center justify-between px-4 py-[13px] gap-[14px]">
+                  <div className="flex items-center gap-[14px]">
+                    <div
+                      className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
+                      style={{ background: "linear-gradient(135deg, #4f46e5, #818cf8)", boxShadow: "0 3px 8px rgba(79,70,229,0.3)" }}
+                    >
+                      <Mic className="h-5 w-5 text-white" />
+                    </div>
+                    <p className="text-[15px] font-semibold text-[#1c1c1e]">"Hey ED" Always Listening</p>
                   </div>
-                  <div>
-                    <p className="text-[15px] font-normal text-foreground">"Hey ED" Always Listening</p>
-                    <p className="text-[13px] text-muted-foreground">Activate ED hands-free</p>
-                  </div>
+                  <Switch
+                    checked={heyEdEnabled}
+                    onCheckedChange={(checked) => {
+                      setHeyEdEnabled(checked);
+                      localStorage.setItem(`hey-ed-always-listen-${instructorId}`, String(checked));
+                      uiToast({ title: checked ? '"Hey ED" enabled' : '"Hey ED" disabled' });
+                    }}
+                  />
                 </div>
-                <Switch
-                  checked={heyEdEnabled}
-                  onCheckedChange={(checked) => {
-                    setHeyEdEnabled(checked);
-                    localStorage.setItem(`hey-ed-always-listen-${instructorId}`, String(checked));
-                    uiToast({ title: checked ? '"Hey ED" enabled' : '"Hey ED" disabled' });
-                  }}
-                />
+                <GradientLine />
               </div>
-              <div className="px-3">
-                <FeatureTogglesSettings instructorId={instructorId} />
+              {/* Feature Toggles */}
+              <div className={cardClass}>
+                <div className="px-4 py-3">
+                  <FeatureTogglesSettings instructorId={instructorId} />
+                </div>
+                <GradientLine />
               </div>
             </div>
             {!isActive && (
-              <div className="mt-2 mx-4 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
-                <p className="text-sm text-amber-700 dark:text-amber-400">You're currently hidden from the website.</p>
+              <div className="mt-2 rounded-[20px] bg-amber-500/10 border border-amber-500/30 p-3">
+                <p className="text-sm text-amber-700">You're currently hidden from the website.</p>
               </div>
             )}
           </div>
@@ -890,10 +902,10 @@ export default function InstructorMenu() {
           if (tilesInCat.length === 0) return null;
           return (
             <div key={cat.id}>
-              <div className="px-4 pb-1.5">
-                <span className="text-[13px] font-normal text-muted-foreground uppercase tracking-wide">{cat.title}</span>
+              <div className="px-1 pb-[10px]">
+                <span className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em]">{cat.title}</span>
               </div>
-              <div className="bg-card dark:bg-[#1C1C1E] rounded-2xl overflow-hidden shadow-sm divide-y divide-border/40">
+              <div>
                 {tilesInCat.map((tile) => (
                   <SettingsTile key={tile.id} tile={tile} statusBadge={getStatusBadge(tile.id)}>
                     {renderTileContent(tile.id)}
@@ -907,23 +919,26 @@ export default function InstructorMenu() {
         {/* Account */}
         {!lowerQuery && (
           <div>
-            <div className="px-4 pb-1.5">
-              <span className="text-[13px] font-normal text-muted-foreground uppercase">Account</span>
+            <div className="px-1 pb-[10px]">
+              <span className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em]">Account</span>
             </div>
-            <div className="bg-card dark:bg-[#1C1C1E] rounded-2xl overflow-hidden shadow-sm">
+            <div className={cardClass}>
               <motion.button
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 onClick={handleLogout}
-                className="w-full px-4 py-3 hover:bg-muted/40 active:bg-muted/60 transition-colors text-left"
+                className="w-full px-4 py-[13px] text-left flex items-center gap-[14px]"
               >
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 bg-destructive">
-                    <LogOut className="h-4 w-4 text-white" />
-                  </div>
-                  <p className="font-medium text-sm text-foreground">Sign Out</p>
+                <div
+                  className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
+                  style={{ background: "linear-gradient(135deg, #dc2626, #ef4444)", boxShadow: "0 3px 8px rgba(220,38,38,0.3)" }}
+                >
+                  <LogOut className="h-5 w-5 text-white" />
                 </div>
+                <p className="flex-1 font-semibold text-[15px] text-[#1c1c1e]">Sign Out</p>
+                <span className="text-[16px] text-[#c7c7cc]">›</span>
               </motion.button>
+              <GradientLine />
             </div>
           </div>
         )}
@@ -937,7 +952,7 @@ export default function InstructorMenu() {
           );
         }) && (
           <div className="text-center py-8">
-            <p className="text-sm text-muted-foreground">No results found for "{searchQuery}"</p>
+            <p className="text-sm text-[#8e8e93]">No results found for "{searchQuery}"</p>
           </div>
         )}
       </div>
