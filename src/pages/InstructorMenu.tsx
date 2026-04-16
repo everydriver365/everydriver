@@ -669,7 +669,7 @@ export default function InstructorMenu() {
           {filteredItems.map((item, itemIndex) => {
             const locked = item.gateKey ? isFeatureLocked(item.gateKey, subscription?.features) : false;
             const idx = globalIndex++;
-            const grad = menuGradients[item.label] || defaultGradient;
+            const ItemIcon = item.icon;
 
             return (
               <div key={idx} className={cardClass}>
@@ -691,36 +691,33 @@ export default function InstructorMenu() {
                     }
                   }}
                   className={cn(
-                    "w-full px-4 py-[13px] text-left flex items-center gap-[14px]",
+                    "w-full px-4 py-[14px] text-left flex items-center gap-[14px]",
                     locked && "opacity-60 cursor-not-allowed"
                   )}
                 >
                   <div
-                    className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0 overflow-hidden"
-                    style={locked ? { background: '#e5e7eb' } : { background: grad.bg, boxShadow: grad.shadow }}
+                    className="h-[44px] w-[44px] rounded-[12px] flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: locked ? "#F4F4F5" : item.tintBg }}
                   >
                     {locked ? (
-                      <Lock className="h-5 w-5 text-[#8e8e93]" />
-                    ) : menuEmojis[item.label] ? (
-                      <span style={{ fontSize: 20 }}>{menuEmojis[item.label]}</span>
-                    ) : item.customIcon ? (
-                      <img src={item.customIcon} alt={item.label} className="h-full w-full object-cover" />
+                      <Lock size={22} strokeWidth={2} color="#A1A1AA" />
+                    ) : item.iconSrc ? (
+                      <img src={item.iconSrc} alt={item.label} className="h-5 w-5 object-contain" />
                     ) : (
-                      <span style={{ fontSize: 20 }}>⚙️</span>
+                      <ItemIcon size={22} strokeWidth={2} color={item.tintColor} />
                     )}
                   </div>
-                  <p className="flex-1 min-w-0 font-semibold text-[15px] text-[#1c1c1e] truncate">
+                  <p className="flex-1 min-w-0 font-medium text-[15px] text-[#18181B] truncate" style={{ fontFamily: "Inter, sans-serif" }}>
                     {item.label}
                   </p>
                   {locked ? (
-                    <Badge variant="outline" className="text-[10px] border-[#c7c7cc]/30 text-[#8e8e93] shrink-0">
+                    <Badge variant="outline" className="text-[10px] border-[#E4E4E7] text-[#71717A] shrink-0">
                       {item.gateKey ? getMinimumPlanName(item.gateKey) : 'PRO'}
                     </Badge>
                   ) : (
-                    <span className="text-[16px] text-[#c7c7cc] shrink-0">›</span>
+                    <ChevronRight size={18} strokeWidth={2} color="#A1A1AA" className="shrink-0" />
                   )}
                 </motion.button>
-                <GradientLine />
               </div>
             );
           })}
