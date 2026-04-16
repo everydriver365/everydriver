@@ -416,62 +416,74 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             {/* iOS Install Banner */}
             <IOSInstallBanner />
 
-            {/* Mobile Header — iOS translucent nav bar */}
-            <header
-              className="sticky top-0 z-40"
-            >
-              {/* Safe area spacer — translucent */}
-              <div className="bg-white/80 backdrop-blur-xl" style={{ paddingTop: "env(safe-area-inset-top)" }} />
+            {/* Mobile Header — Premium iOS tile */}
+            <header className="sticky top-0 z-40">
+              {/* Safe area spacer */}
+              <div className="bg-[#f2f2f7]" style={{ paddingTop: "env(safe-area-inset-top)" }} />
 
-              <div className="relative overflow-hidden bg-white/80 backdrop-blur-xl border-b border-[hsl(240_5%_78%/0.5)]">
-
-                <div className="relative flex items-center justify-between px-3 sm:px-4 h-14">
-                   {/* Left: Back button + Logo + Notification */}
-                  <div className="flex items-center gap-1 sm:gap-2 min-w-0">
-                    {showBackButton && (
+              <div
+                className="mx-2 mt-1 rounded-[16px] overflow-hidden bg-white border-[0.5px] border-black/[0.06]"
+                style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)' }}
+              >
+                <div className="relative flex items-center justify-between px-4 py-[10px]">
+                  {/* Left: Back button or Bell */}
+                  <div className="flex items-center gap-2 min-w-0">
+                    {showBackButton ? (
                       <button
                         onClick={() => navigate(-1)}
-                        className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0"
+                        className="h-8 w-8 rounded-full bg-[#f2f2f7] flex items-center justify-center shrink-0"
                       >
-                        <ChevronLeft className="h-5 w-5 text-[hsl(211_100%_50%)]" />
+                        <ChevronLeft className="h-5 w-5 text-[#0d4fa0]" />
                       </button>
+                    ) : (
+                      <MobileNotificationBell instructorId={instructor?.id} />
                     )}
+                  </div>
 
+                  {/* Centre: DSM logo */}
+                  <div className="absolute left-1/2 -translate-x-1/2">
                     <img
                       src={dsmLogo}
                       alt="DSM"
-                      className="h-7 shrink-0"
+                      className="h-8 w-auto object-contain"
                     />
-                    <MobileNotificationBell instructorId={instructor?.id} />
                   </div>
 
                   {/* Right: Action buttons + Hamburger */}
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-[10px]">
                     <button
                       onClick={() => setShowSOS(true)}
-                      className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-destructive flex items-center justify-center shadow-md shrink-0"
+                      className="flex items-center justify-center shrink-0"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        background: '#ff3b30',
+                        boxShadow: '0 2px 8px rgba(255,59,48,0.4)',
+                      }}
                       title="Emergency SOS"
                     >
-                      <span className="text-[9px] sm:text-[10px] font-black text-destructive-foreground leading-none">SOS</span>
+                      <span className="text-[11px] font-extrabold text-white leading-none">SOS</span>
                     </button>
-                    <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/90 text-white shrink-0"
-                          title="Quick Actions"
-                          onClick={() => setHeaderQuickActionsOpen(true)}
-                        >
-                          <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={3} />
-                        </Button>
+                    <button
+                      onClick={() => setHeaderQuickActionsOpen(true)}
+                      className="flex items-center justify-center text-white shrink-0"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #0f9e75, #1dcaa5)',
+                        boxShadow: '0 2px 8px rgba(15,158,117,0.3)',
+                      }}
+                      title="Quick Actions"
+                    >
+                      <Plus className="h-[18px] w-[18px]" strokeWidth={3} />
+                    </button>
                     <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                       <SheetTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 text-[hsl(240_6%_11%)] hover:bg-gray-100"
-                        >
-                          <Menu className="h-5 w-5" />
-                        </Button>
+                        <button className="flex items-center justify-center h-8 w-8 shrink-0">
+                          <Menu className="h-5 w-5 text-[#8e8e93]" />
+                        </button>
                       </SheetTrigger>
                       <SheetContent side="right" className="w-[280px] p-0">
                         <SheetHeader className="p-4 border-b">
@@ -568,6 +580,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     </Sheet>
                   </div>
                 </div>
+                {/* Gradient accent line */}
+                <div className="h-[2px] w-full" style={{ background: 'linear-gradient(to right, #0d4fa0, #56a8f5)' }} />
               </div>
             </header>
 
