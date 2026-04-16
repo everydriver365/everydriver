@@ -182,7 +182,11 @@ export default function InstructorFleetDashboard() {
             </div>
           </Tabs>
         ) : (
-          <p className="text-muted-foreground px-5">Loading...</p>
+          <div className="space-y-3 px-5">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 rounded-xl" />
+            ))}
+          </div>
         )}
       </div>
     </InstructorPortalLayout>

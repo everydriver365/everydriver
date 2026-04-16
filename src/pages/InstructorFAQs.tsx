@@ -119,7 +119,11 @@ export default function InstructorFAQs() {
       </div>
 
       {loading ? (
-        <div className="text-center py-8 text-muted-foreground">Loading...</div>
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 rounded-xl" />
+          ))}
+        </div>
       ) : filteredFAQs.length === 0 ? (
         <Card>
           <CardContent className="py-8 text-center">
