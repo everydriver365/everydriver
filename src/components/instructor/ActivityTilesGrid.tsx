@@ -118,67 +118,57 @@ export function ActivityTilesGrid({
               transition={{ delay: idx * 0.05 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(tile.route)}
-              className="flex flex-col"
               style={{
-                background: "#FFFFFF",
+                position: "relative",
+                background: "white",
                 borderRadius: 20,
                 overflow: "hidden",
-                border: "0.5px solid rgba(0,0,0,0.06)",
-                boxShadow: "0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06)",
+                border: "0.5px solid rgba(26,111,212,0.1)",
+                boxShadow: "0 8px 24px rgba(26,111,212,0.2), 0 2px 6px rgba(0,0,0,0.06)",
+                padding: "16px 12px 14px",
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
               }}
             >
-              {/* Icon area with gradient bg */}
-              <div
-                style={{
-                  background: "linear-gradient(160deg, #f8faff 0%, #edf3fc 100%)",
-                  padding: "14px 12px 12px",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
-              >
-                {/* Badge or spacer */}
-                {count > 0 ? (
-                  <span
-                    className="flex items-center justify-center"
-                    style={{
-                      alignSelf: "flex-end",
-                      minWidth: 20,
-                      height: 20,
-                      borderRadius: 10,
-                      backgroundColor: "#ff3b30",
-                      color: "#fff",
-                      fontSize: 11,
-                      fontWeight: 600,
-                      padding: "0 6px",
-                      lineHeight: 1,
-                      marginBottom: 6,
-                      boxShadow: "0 1px 4px rgba(255,59,48,0.4)",
-                    }}
-                  >
-                    {count > 99 ? "99+" : count}
-                  </span>
-                ) : (
-                  <div style={{ height: 20, marginBottom: 6 }} />
-                )}
-                {/* Icon */}
-                <div style={{ fontSize: 32, filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.12))" }}>
-                  {tile.icon}
-                </div>
-              </div>
-
-              {/* Label bar */}
-              <div
-                style={{
-                  background: "linear-gradient(to right, #0d4fa0, #1a6fd4, #4da3f5)",
-                  padding: "7px 10px 8px",
-                  textAlign: "center",
-                }}
-              >
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#FFFFFF", letterSpacing: "0.01em" }}>
-                  {tile.title}
+              {count > 0 && (
+                <span
+                  className="flex items-center justify-center"
+                  style={{
+                    position: "absolute",
+                    top: 10,
+                    right: 10,
+                    minWidth: 20,
+                    height: 20,
+                    borderRadius: 10,
+                    backgroundColor: "#ff3b30",
+                    color: "#fff",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "0 6px",
+                    lineHeight: 1,
+                    boxShadow: "0 2px 6px rgba(255,59,48,0.5)",
+                  }}
+                >
+                  {count > 99 ? "99+" : count}
                 </span>
+              )}
+              <div style={{ fontSize: 32, marginBottom: 10 }}>
+                {tile.icon}
               </div>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#1c1c1e", letterSpacing: "0.01em" }}>
+                {tile.title}
+              </span>
+              <div
+                style={{
+                  height: 2,
+                  width: "100%",
+                  background: "linear-gradient(to right, #0d4fa0, #56a8f5)",
+                  borderRadius: 2,
+                  marginTop: 10,
+                }}
+              />
             </motion.button>
           );
         })}
