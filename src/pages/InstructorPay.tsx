@@ -263,21 +263,20 @@ export default function InstructorPay() {
               transition={{ delay: 0.12 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => { haptics.selection(); setOwesExpanded(!owesExpanded); }}
-              style={tileStyle} className={cn("", "w-full text-left")}
+              style={tileStyle} className="w-full text-left"
             >
-              <div className="p-[14px_14px_12px]">
-                <div className="h-9 w-9 rounded-[12px] bg-[#FEF2F2] flex items-center justify-center mb-2">
-                  <AlertCircle size={20} strokeWidth={2} color="#DC2626" />
+              <div style={{ padding: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#FEF2F2", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                  <AlertCircle size={22} strokeWidth={2} color="#DC2626" />
                 </div>
-                <p className="text-[22px] font-bold tabular-nums text-[#e24b4a]">
+                <p style={{ fontSize: 22, fontWeight: 700, color: "#DC2626", fontFamily: "Inter, sans-serif" }} className="tabular-nums">
                   {debtors.length > 0 ? `£${totalOwed.toFixed(0)}` : "£0"}
                 </p>
-                <div className="flex items-center justify-between mt-0.5">
-                  <p className="text-[12px] text-[#8e8e93]">Owes Money</p>
-                  <ChevronRight className={cn("h-4 w-4 text-[#c7c7cc] transition-transform", owesExpanded && "rotate-90")} />
+                <div className="flex items-center justify-between" style={{ marginTop: 2 }}>
+                  <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Owes Money</p>
+                  <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" className={cn("transition-transform", owesExpanded && "rotate-90")} />
                 </div>
               </div>
-              <GradientLine />
             </motion.button>
 
             <AnimatePresence>
