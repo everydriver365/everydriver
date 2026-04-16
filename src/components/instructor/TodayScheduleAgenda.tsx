@@ -89,8 +89,6 @@ function AgendaList({ lessons }: { lessons: TodayLesson[] }) {
 
   return (
     <div>
-      <SummaryBar lessons={lessons} />
-      <div>
         {lessons.map((l, i) => {
           const state = states.get(l.id) || "upcoming";
           const done = state === "done";
@@ -248,8 +246,8 @@ export function TodayScheduleAgenda({ todayLessons, tomorrowLessons, className =
         </div>
       </div>
 
-      {/* Divider */}
-      <div className="bg-border" style={{ height: 0.5 }} />
+      {/* Blue stats bar */}
+      <SummaryBar lessons={activeLessons} />
 
       {/* Lesson list */}
       <div className="bg-card">
