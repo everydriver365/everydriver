@@ -588,43 +588,7 @@ Deno.serve(async (req) => {
 
       updated++;
 
-      // ─── Auto-create session if ignition ON and no active session ───
-      if (ignition && !device.current_session_id && lat && lon) {
-        // Cooldown: skip auto-create if a session was manually ended in last 60s
-        const { data: recentEnded } = await supabase
-          .from("lesson_telematics")
-          .select("id")
-          .eq("instructor_id", device.instructor_id)
-          .not("ended_at", "is", null)
-          .gte("ended_at", new Date(Date.now() - 60_000).toISOString())
-          .limit(1);
-
-        if (recentEnded && recentEnded.length > 0) {
-          console.log("[RadiusPoller] Skipping auto-create — session ended <60s ago for device:", device.device_name);
-        } else {
-          console.log("[RadiusPoller] Auto-creating session for device:", device.device_name);
-          const { data: newSession, error: sessErr } = await supabase
-            .from("lesson_telematics")
-            .insert({
-              instructor_id: device.instructor_id,
-              pupil_id: device.current_pupil_id || null,
-              started_at: seenAt || new Date().toISOString(),
-            })
-            .select("id")
-            .single();
-
-          if (newSession && !sessErr) {
-            device.current_session_id = newSession.id;
-            await supabase
-              .from("gps_devices")
-              .update({ current_session_id: newSession.id, is_active: true })
-              .eq("id", device.id);
-            console.log("[RadiusPoller] Session created:", newSession.id);
-          } else {
-            console.error("[RadiusPoller] Session create error:", sessErr?.message);
-          }
-        }
-      }
+      // Auto-create removed — sessions must be started manually via the app
 
       // ─── Auto-end session if ignition OFF and session active ───
       if (!ignition && device.current_session_id) {
