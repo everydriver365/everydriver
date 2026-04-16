@@ -49,6 +49,9 @@ import {
   ArrowLeft,
   History,
   Globe,
+  CreditCard,
+  Banknote,
+  Send,
 } from "lucide-react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { format } from "date-fns";
@@ -164,7 +167,10 @@ export default function InstructorPupils() {
     parent_phone: "",
     parent_name: "",
     date_of_birth: "",
+    payment_method: "tbc",
   });
+  const [newPupilId, setNewPupilId] = useState<string | null>(null);
+  const [showPostAddPayment, setShowPostAddPayment] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | PupilStatus>("all");
   const [isLookingUpW3W, setIsLookingUpW3W] = useState(false);
@@ -374,6 +380,7 @@ export default function InstructorPupils() {
         parent_phone: addForm.parent_phone || null,
         parent_name: addForm.parent_name || null,
         date_of_birth: addForm.date_of_birth || null,
+        payment_method: addForm.payment_method || 'tbc',
         lessons_completed: 0,
         progress: 0,
       }).select();
@@ -384,6 +391,14 @@ export default function InstructorPupils() {
       }
 
       console.log("Pupil added successfully:", data);
+      const createdPupil = data?.[0];
+      
+      // If payment method requires action, show post-add options
+      if (addForm.payment_method === 'send_link' || addForm.payment_method === 'take_payment') {
+        setNewPupilId(createdPupil?.id || null);
+        setShowPostAddPayment(true);
+      }
+      
       toast.success("Pupil added successfully");
       setIsAddOpen(false);
       setAddForm({
@@ -398,6 +413,7 @@ export default function InstructorPupils() {
         parent_phone: "",
         parent_name: "",
         date_of_birth: "",
+        payment_method: "tbc",
       });
       fetchPupils();
     } catch (error: any) {
@@ -784,6 +800,41 @@ export default function InstructorPupils() {
             </div>
             <div className="border-t pt-4 mt-4">
               <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                <CreditCard className="h-4 w-4" />
+                Payment
+              </p>
+              <div className="space-y-2">
+                <Label>Payment Method</Label>
+                <Select
+                  value={addForm.payment_method}
+                  onValueChange={(val) => setAddForm({ ...addForm, payment_method: val })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select payment method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tbc">TBC — Decide Later</SelectItem>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="card">Card</SelectItem>
+                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                    <SelectItem value="send_link">Send Payment Link</SelectItem>
+                    <SelectItem value="take_payment">Take Payment Now (QR)</SelectItem>
+                  </SelectContent>
+                </Select>
+                {addForm.payment_method === 'send_link' && (
+                  <p className="text-xs text-muted-foreground">
+                    A payment link will be sent after saving the pupil
+                  </p>
+                )}
+                {addForm.payment_method === 'take_payment' && (
+                  <p className="text-xs text-muted-foreground">
+                    QR code will be shown after saving the pupil
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="border-t pt-4 mt-4">
+              <p className="text-sm font-medium mb-3 flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Parent/Guardian (for Parent Portal access)
               </p>
@@ -830,7 +881,100 @@ export default function InstructorPupils() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Pupil Dialog */}
+      {/* Post-Add Payment Action Dialog */}
+      <Dialog open={showPostAddPayment} onOpenChange={setShowPostAddPayment}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Payment Action
+            </DialogTitle>
+            <DialogDescription>
+              What would you like to do now?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            {addForm.payment_method === 'send_link' && newPupilId && (
+              <>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-3 h-12"
+                  onClick={async () => {
+                    if (!instructorId || !newPupilId) return;
+                    try {
+                      const { data: pupilData } = await supabase.from("pupils").select("name, email, phone").eq("id", newPupilId).single();
+                      if (pupilData?.email) {
+                        await supabase.functions.invoke("send-payment-link", {
+                          body: { instructorId, pupilId: newPupilId, method: "email" },
+                        });
+                        toast.success(`Payment link sent to ${pupilData.email}`);
+                      } else {
+                        toast.error("No email address on file");
+                      }
+                    } catch { toast.error("Failed to send payment link"); }
+                    setShowPostAddPayment(false);
+                  }}
+                >
+                  <Mail className="h-5 w-5 text-muted-foreground" />
+                  <div className="text-left">
+                    <p className="font-medium text-sm">Send via Email</p>
+                    <p className="text-xs text-muted-foreground">Email a payment link to the pupil</p>
+                  </div>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-3 h-12"
+                  onClick={async () => {
+                    if (!instructorId || !newPupilId) return;
+                    try {
+                      const { data: pupilData } = await supabase.from("pupils").select("name, phone").eq("id", newPupilId).single();
+                      if (pupilData?.phone) {
+                        await supabase.functions.invoke("send-payment-link", {
+                          body: { instructorId, pupilId: newPupilId, method: "sms" },
+                        });
+                        toast.success(`Payment link sent to ${pupilData.phone}`);
+                      } else {
+                        toast.error("No phone number on file");
+                      }
+                    } catch { toast.error("Failed to send payment link"); }
+                    setShowPostAddPayment(false);
+                  }}
+                >
+                  <Send className="h-5 w-5 text-muted-foreground" />
+                  <div className="text-left">
+                    <p className="font-medium text-sm">Send via SMS</p>
+                    <p className="text-xs text-muted-foreground">Text a payment link to the pupil</p>
+                  </div>
+                </Button>
+              </>
+            )}
+            {addForm.payment_method === 'take_payment' && (
+              <Button
+                className="w-full justify-start gap-3 h-12"
+                onClick={() => {
+                  setShowPostAddPayment(false);
+                  // Navigate to the payment page or open QR
+                  if (instructor?.app_slug) {
+                    window.open(`/pay/${instructor.app_slug}`, '_blank');
+                  } else {
+                    toast.info("Payment QR not configured yet");
+                  }
+                }}
+              >
+                <Banknote className="h-5 w-5" />
+                <div className="text-left">
+                  <p className="font-medium text-sm">Open Payment Page</p>
+                  <p className="text-xs opacity-80">Show QR code or payment page</p>
+                </div>
+              </Button>
+            )}
+            <Button variant="ghost" className="w-full" onClick={() => setShowPostAddPayment(false)}>
+              Skip for now
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent>
           <DialogHeader>
