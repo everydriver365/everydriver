@@ -619,7 +619,13 @@ export function PupilCardStack({
         layout
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-[20px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.05)] border-[0.5px] border-black/[0.06]"
+        style={{
+          backgroundColor: "#FFFFFF",
+          borderRadius: 14,
+          border: "0.5px solid #E4E4E7",
+          overflow: "hidden",
+          position: "relative",
+        }}
       >
         {/* Collapsed Card */}
         <button
