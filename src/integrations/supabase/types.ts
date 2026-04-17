@@ -7365,6 +7365,72 @@ export type Database = {
           },
         ]
       }
+      instructor_whatsapp_accounts: {
+        Row: {
+          access_token: string | null
+          connected_at: string | null
+          created_at: string
+          display_phone: string | null
+          id: string
+          instructor_id: string
+          last_health_check_at: string | null
+          last_health_status: Json | null
+          phone_number_id: string | null
+          quality_rating: string | null
+          status: string
+          updated_at: string
+          verified_name: string | null
+          waba_id: string | null
+        }
+        Insert: {
+          access_token?: string | null
+          connected_at?: string | null
+          created_at?: string
+          display_phone?: string | null
+          id?: string
+          instructor_id: string
+          last_health_check_at?: string | null
+          last_health_status?: Json | null
+          phone_number_id?: string | null
+          quality_rating?: string | null
+          status?: string
+          updated_at?: string
+          verified_name?: string | null
+          waba_id?: string | null
+        }
+        Update: {
+          access_token?: string | null
+          connected_at?: string | null
+          created_at?: string
+          display_phone?: string | null
+          id?: string
+          instructor_id?: string
+          last_health_check_at?: string | null
+          last_health_status?: Json | null
+          phone_number_id?: string | null
+          quality_rating?: string | null
+          status?: string
+          updated_at?: string
+          verified_name?: string | null
+          waba_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_whatsapp_accounts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_whatsapp_accounts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_working_hours: {
         Row: {
           created_at: string
@@ -12334,6 +12400,7 @@ export type Database = {
           updated_at: string
           weekly_driving_score: number | null
           what3words: string | null
+          whatsapp_opt_in: boolean
         }
         Insert: {
           account_balance?: number | null
@@ -12422,6 +12489,7 @@ export type Database = {
           updated_at?: string
           weekly_driving_score?: number | null
           what3words?: string | null
+          whatsapp_opt_in?: boolean
         }
         Update: {
           account_balance?: number | null
@@ -12510,6 +12578,7 @@ export type Database = {
           updated_at?: string
           weekly_driving_score?: number | null
           what3words?: string | null
+          whatsapp_opt_in?: boolean
         }
         Relationships: [
           {
@@ -15979,6 +16048,7 @@ export type Database = {
           instructor_id: string | null
           last_message_at: string | null
           phone_number: string
+          pupil_id: string | null
           visitor_name: string | null
         }
         Insert: {
@@ -15988,6 +16058,7 @@ export type Database = {
           instructor_id?: string | null
           last_message_at?: string | null
           phone_number: string
+          pupil_id?: string | null
           visitor_name?: string | null
         }
         Update: {
@@ -15997,6 +16068,7 @@ export type Database = {
           instructor_id?: string | null
           last_message_at?: string | null
           phone_number?: string
+          pupil_id?: string | null
           visitor_name?: string | null
         }
         Relationships: [
@@ -16014,6 +16086,13 @@ export type Database = {
             referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "whatsapp_conversations_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
         ]
       }
       whatsapp_messages: {
@@ -16024,6 +16103,9 @@ export type Database = {
           delivery_status: string
           direction: string
           id: string
+          media_mime: string | null
+          media_type: string | null
+          media_url: string | null
           sender_type: string
         }
         Insert: {
@@ -16033,6 +16115,9 @@ export type Database = {
           delivery_status?: string
           direction?: string
           id?: string
+          media_mime?: string | null
+          media_type?: string | null
+          media_url?: string | null
           sender_type?: string
         }
         Update: {
@@ -16042,6 +16127,9 @@ export type Database = {
           delivery_status?: string
           direction?: string
           id?: string
+          media_mime?: string | null
+          media_type?: string | null
+          media_url?: string | null
           sender_type?: string
         }
         Relationships: [
@@ -16050,6 +16138,66 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "whatsapp_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_templates: {
+        Row: {
+          body_text: string
+          category: string
+          created_at: string
+          id: string
+          instructor_id: string
+          language: string
+          meta_template_id: string | null
+          name: string
+          rejection_reason: string | null
+          status: string
+          updated_at: string
+          variables: Json
+        }
+        Insert: {
+          body_text: string
+          category?: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          language?: string
+          meta_template_id?: string | null
+          name: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+          variables?: Json
+        }
+        Update: {
+          body_text?: string
+          category?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          language?: string
+          meta_template_id?: string | null
+          name?: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+          variables?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_templates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_templates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]

@@ -56,33 +56,45 @@ Deno.serve(async (req) => {
 
     const message = value.messages[0];
     const senderPhone = message.from; // e.g. "447123456789"
-    const messageText = message.text?.body || "";
     const senderName = value.contacts?.[0]?.profile?.name || null;
-
-    if (!messageText.trim()) {
-      return new Response(JSON.stringify({ status: "empty_message" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Find instructor by WhatsApp phone number ID (the business number receiving the message)
+    // Identify which instructor owns this WhatsApp business number (by phone_number_id)
     const businessPhoneId = value.metadata?.phone_number_id;
-    
-    // Look up which instructor owns this WhatsApp number
-    // We match by whatsapp_phone or phone field on instructors table
-    const { data: instructor, error: instrError } = await supabase
-      .from("instructors")
-      .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone")
-      .or(`whatsapp_phone.eq.${senderPhone},phone.eq.${senderPhone}`)
-      .maybeSingle();
+    let perInstructorToken: string | null = null;
+    let targetInstructor: any = null;
 
-    // If no instructor matched by sender phone, try finding by the business phone ID
-    // For now, get the first instructor with AI receptionist enabled as fallback
-    let targetInstructor = instructor;
+    if (businessPhoneId) {
+      const { data: acct } = await supabase
+        .from("instructor_whatsapp_accounts")
+        .select("instructor_id, access_token")
+        .eq("phone_number_id", businessPhoneId)
+        .maybeSingle();
+      if (acct) {
+        perInstructorToken = acct.access_token;
+        const { data: instr } = await supabase
+          .from("instructors")
+          .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone")
+          .eq("id", acct.instructor_id)
+          .maybeSingle();
+        targetInstructor = instr;
+      }
+    }
+
+    // Fallback: match by sender phone matching instructor's own number
+    if (!targetInstructor) {
+      const { data: instructor } = await supabase
+        .from("instructors")
+        .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone")
+        .or(`whatsapp_phone.eq.${senderPhone},phone.eq.${senderPhone}`)
+        .maybeSingle();
+      targetInstructor = instructor;
+    }
+
+    // Last resort: first instructor with AI receptionist enabled
     if (!targetInstructor) {
       const { data: fallback } = await supabase
         .from("instructors")
@@ -91,6 +103,18 @@ Deno.serve(async (req) => {
         .limit(1)
         .maybeSingle();
       targetInstructor = fallback;
+    }
+
+    // Extract text + media from the inbound message
+    let messageText = message.text?.body || "";
+    const mediaInfo = await extractInboundMedia(message, supabase, perInstructorToken);
+    if (!messageText && mediaInfo?.caption) messageText = mediaInfo.caption;
+    if (!messageText && mediaInfo) messageText = `[${mediaInfo.type}]`;
+
+    if (!messageText.trim() && !mediaInfo) {
+      return new Response(JSON.stringify({ status: "empty_message" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     if (!targetInstructor) {
@@ -113,12 +137,17 @@ Deno.serve(async (req) => {
     // Get or create conversation
     const conversation = await getOrCreateConversation(supabase, targetInstructor.id, senderPhone, senderName);
 
-    // Log the inbound message
+    // Log the inbound message (with media columns when present)
     await supabase.from("whatsapp_messages").insert({
       conversation_id: conversation.id,
       content: messageText,
       direction: "inbound",
       sender_type: "visitor",
+      ...(mediaInfo ? {
+        media_url: mediaInfo.url,
+        media_type: mediaInfo.type,
+        media_mime: mediaInfo.mime,
+      } : {}),
     });
 
     // Update conversation timestamp
@@ -706,5 +735,56 @@ async function notifyInstructor(supabase: any, supabaseUrl: string, instructorId
     });
   } catch (err) {
     console.error("Failed to notify instructor:", err);
+  }
+}
+
+// ── Download an inbound media file from Meta and stash it in chat-attachments ──
+async function extractInboundMedia(
+  message: any,
+  supabase: any,
+  perInstructorToken: string | null
+): Promise<{ url: string; type: string; mime: string | null; caption: string | null } | null> {
+  const mediaTypes = ["image", "video", "audio", "document", "voice", "sticker"];
+  const type = mediaTypes.find((t) => message[t]);
+  if (!type) return null;
+
+  const mediaObj = message[type];
+  const mediaId = mediaObj?.id;
+  const caption = mediaObj?.caption || null;
+  const mime = mediaObj?.mime_type || null;
+  if (!mediaId) return null;
+
+  const token = perInstructorToken || Deno.env.get("WHATSAPP_BUSINESS_TOKEN");
+  if (!token) return null;
+
+  try {
+    const metaRes = await fetch(`https://graph.facebook.com/v18.0/${mediaId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!metaRes.ok) return null;
+    const metaData = await metaRes.json();
+    const downloadUrl = metaData.url;
+    if (!downloadUrl) return null;
+
+    const fileRes = await fetch(downloadUrl, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!fileRes.ok) return null;
+    const blob = await fileRes.arrayBuffer();
+
+    const ext = (mime?.split("/")?.[1] || "bin").split(";")[0];
+    const path = `whatsapp/${mediaId}.${ext}`;
+    const { error: upErr } = await supabase.storage
+      .from("chat-attachments")
+      .upload(path, blob, { contentType: mime || "application/octet-stream", upsert: true });
+    if (upErr) {
+      console.error("Media upload failed:", upErr);
+      return null;
+    }
+    const { data: pub } = supabase.storage.from("chat-attachments").getPublicUrl(path);
+    return { url: pub.publicUrl, type, mime, caption };
+  } catch (e) {
+    console.error("extractInboundMedia error:", e);
+    return null;
   }
 }

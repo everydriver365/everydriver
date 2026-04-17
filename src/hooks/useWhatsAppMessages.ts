@@ -10,6 +10,9 @@ export interface WhatsAppMessage {
   sender_type: string;
   created_at: string;
   delivery_status?: string;
+  media_url?: string | null;
+  media_type?: string | null;
+  media_mime?: string | null;
 }
 
 export function useWhatsAppMessages(conversationId: string | null) {

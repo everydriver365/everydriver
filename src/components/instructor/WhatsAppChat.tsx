@@ -102,7 +102,22 @@ export function WhatsAppChat({ conversation, onBack }: WhatsAppChatProps) {
                       : "bg-muted text-foreground rounded-bl-md"
                   )}
                 >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                  {msg.media_url && (
+                    <div className="mb-2">
+                      {msg.media_type === "image" && (
+                        <img src={msg.media_url} alt="" className="rounded-lg max-w-full max-h-64 object-cover" />
+                      )}
+                      {(msg.media_type === "audio" || msg.media_type === "voice") && (
+                        <audio controls src={msg.media_url} className="w-full" />
+                      )}
+                      {msg.media_type === "document" && (
+                        <a href={msg.media_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 p-2 rounded bg-background/50 text-xs underline">
+                          📎 Open document
+                        </a>
+                      )}
+                    </div>
+                  )}
+                  {msg.content && <p className="whitespace-pre-wrap">{msg.content}</p>}
                   <div className={cn(
                     "flex items-center gap-1 mt-1",
                     isOutbound ? (isAI ? "justify-end" : "justify-end") : ""
