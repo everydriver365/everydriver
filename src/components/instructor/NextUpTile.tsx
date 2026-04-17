@@ -268,14 +268,14 @@ export function NextUpTile({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}`);
+                  navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
                 }}
                 className="flex items-center gap-1 px-2 py-1 active:scale-95 transition-transform"
                 style={{ borderRadius: 100, backgroundColor: "#FBBF24", color: "#1C1C1E" }}
-                title="Start tracker for this pupil"
+                title="Start tracking session for this lesson"
               >
                 <Smartphone className="h-3 w-3" />
-                <span style={{ fontSize: 11, fontWeight: 700 }}>Tracker</span>
+                <span style={{ fontSize: 11, fontWeight: 700 }}>Start Track</span>
                 <X
                   className="h-3 w-3 ml-0.5 opacity-70 hover:opacity-100"
                   onClick={(e) => {
