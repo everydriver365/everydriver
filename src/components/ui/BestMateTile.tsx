@@ -50,30 +50,30 @@ export function BestMateTile({
       whileTap={onClick ? { scale: 0.98 } : undefined}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       className={cn(
-        "flex flex-col bg-white rounded-2xl shadow-lift p-3 min-h-[130px]",
+        "flex flex-col bg-white rounded-2xl shadow-lift p-4 min-h-[170px]",
         onClick && "cursor-pointer",
         className
       )}
     >
       {/* Top row: icon + chevron */}
-      <div className="flex items-start justify-between mb-2">
+      <div className="flex items-start justify-between mb-3">
         <div
           className="flex items-center justify-center"
-          style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: c.iconBg }}
+          style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: c.iconBg }}
         >
-          <Icon size={15} strokeWidth={2.25} color={c.iconFg} />
+          <Icon size={18} strokeWidth={2.25} color={c.iconFg} />
         </div>
-        <ChevronRight size={14} className="text-zinc-400 mt-0.5" />
+        <ChevronRight size={18} className="text-zinc-400 mt-1" />
       </div>
 
       {/* Value + label */}
       <div className="flex-1">
-        <div className="text-lg font-bold text-zinc-900 leading-tight tracking-tight">
+        <div className="text-2xl font-bold text-zinc-900 leading-tight tracking-tight">
           {value}
         </div>
-        <div className="text-xs font-semibold text-zinc-900 mt-0.5">{label}</div>
+        <div className="text-sm font-semibold text-zinc-900 mt-0.5">{label}</div>
         {subtitle && (
-          <div className="text-[10px] text-zinc-500 mt-0.5 leading-snug">{subtitle}</div>
+          <div className="text-[11px] text-zinc-500 mt-0.5 leading-snug">{subtitle}</div>
         )}
       </div>
 
@@ -85,7 +85,7 @@ export function BestMateTile({
             e.stopPropagation();
             onCtaClick?.();
           }}
-          className="mt-2 w-full rounded-lg py-1.5 text-[10px] font-bold tracking-wider uppercase transition-opacity hover:opacity-90 active:opacity-80"
+          className="mt-3 w-full rounded-xl py-2.5 text-[11px] font-bold tracking-wider uppercase transition-opacity hover:opacity-90 active:opacity-80"
           style={{ backgroundColor: c.ctaBg, color: c.ctaFg }}
         >
           {ctaLabel}
