@@ -142,12 +142,12 @@ export default function InstructorSchedule() {
     <InstructorPortalLayout>
       <div
         className="h-full flex flex-col"
-        style={{ backgroundColor: "#F7F7F7", margin: "-16px -16px 0", padding: "0 20px" }}
+        style={{ backgroundColor: "transparent", margin: "-16px -16px 0", padding: "0 20px" }}
       >
         {/* Header */}
         <div
           className="flex items-center justify-between gap-2 sticky top-0 z-20 pt-3 pb-2"
-          style={{ backgroundColor: "#F7F7F7", position: "relative" }}
+          style={{ backgroundColor: "transparent", position: "relative" }}
         >
           {isMobile ? (
             <>

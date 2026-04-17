@@ -353,7 +353,7 @@ export function InstructorMobileHome({
        <div
          className="min-h-screen flex flex-col overflow-x-hidden relative"
          style={{
-           background: "linear-gradient(180deg, #F2F2F7 0%, #E5E5EA 100%)",
+           background: "transparent",
            fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
          }}
         >

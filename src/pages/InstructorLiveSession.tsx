@@ -984,7 +984,7 @@ export default function InstructorLiveSession() {
   // When no session, use standard layout with hamburger menu
   return (
     <InstructorPortalLayout>
-       <div className="min-h-[calc(100dvh-120px)] -mx-4 md:mx-0 -mt-4 md:mt-0" style={{ background: "#f2f2f7" }}>
+       <div className="min-h-[calc(100dvh-120px)] -mx-4 md:mx-0 -mt-4 md:mt-0" style={{ background: "transparent" }}>
          {/* Modern card-based layout */}
          <div className="p-4 pb-24 space-y-3">
             {/* Live / Fleet toggle — premium card */}
