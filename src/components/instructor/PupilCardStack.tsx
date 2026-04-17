@@ -240,11 +240,47 @@ export function PupilCardStack({
   }
   const [recentLessons, setRecentLessons] = useState<RecentLesson[]>([]);
   const [recentDrivingSessions, setRecentDrivingSessions] = useState<RecentDrivingSession[]>([]);
+  const [lessonSummary, setLessonSummary] = useState<{ type: "next" | "last"; date: string } | null>(null);
 
   // Fetch test stats on mount
   useEffect(() => {
     fetchTestStats();
+    fetchLessonSummary();
   }, [pupil.id]);
+
+  const fetchLessonSummary = async () => {
+    try {
+      const today = format(new Date(), "yyyy-MM-dd");
+      const { data: next } = await supabase
+        .from("scheduled_lessons")
+        .select("lesson_date")
+        .eq("pupil_id", pupil.id)
+        .gte("lesson_date", today)
+        .neq("status", "cancelled")
+        .is("deleted_at", null)
+        .order("lesson_date", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (next?.lesson_date) {
+        setLessonSummary({ type: "next", date: next.lesson_date });
+        return;
+      }
+      const { data: last } = await supabase
+        .from("scheduled_lessons")
+        .select("lesson_date")
+        .eq("pupil_id", pupil.id)
+        .lt("lesson_date", today)
+        .is("deleted_at", null)
+        .order("lesson_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (last?.lesson_date) {
+        setLessonSummary({ type: "last", date: last.lesson_date });
+      }
+    } catch (err) {
+      // silent
+    }
+  };
 
   // Fetch data when card expands
   useEffect(() => {
