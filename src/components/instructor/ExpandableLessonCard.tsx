@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { UserX, Radio } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -107,8 +107,20 @@ export function ExpandableLessonCard({
   renderCustomCollapsed
 }: ExpandableLessonCardProps) {
   const navigate = useNavigate();
+  const cardRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Scroll into view when expanded so details panel is visible
+  useEffect(() => {
+    if (isExpanded && cardRef.current) {
+      // small delay so animated height is partially open before scrolling
+      const t = setTimeout(() => {
+        cardRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 120);
+      return () => clearTimeout(t);
+    }
+  }, [isExpanded]);
   const [quickMessageOpen, setQuickMessageOpen] = useState(false);
   const [upcomingLessons, setUpcomingLessons] = useState<Array<{ id: string; lesson_date: string; start_time: string; duration_minutes: number }>>([]);
   const [loadingUpcoming, setLoadingUpcoming] = useState(false);
@@ -197,7 +209,7 @@ export function ExpandableLessonCard({
     (lesson.pupil?.account_balance ?? 0) < 0;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl">
+    <div ref={cardRef} className="relative overflow-hidden rounded-2xl">
       {/* Delete background */}
       {onDelete && (
         <motion.div 
@@ -303,7 +315,15 @@ export function ExpandableLessonCard({
           className="w-full text-left"
         >
           {renderCustomCollapsed ? (
-            renderCustomCollapsed
+            <div className="relative">
+              {renderCustomCollapsed}
+              <ChevronDown
+                className={cn(
+                  "absolute top-1/2 -translate-y-1/2 right-3 h-4 w-4 text-muted-foreground shrink-0 transition-transform pointer-events-none",
+                  isExpanded && "rotate-180"
+                )}
+              />
+            </div>
           ) : (
             <div className="px-3 py-2 flex gap-3 items-center">
               <span className="text-sm font-bold text-foreground min-w-[44px]">{formatTime(lesson.start_time)}</span>
