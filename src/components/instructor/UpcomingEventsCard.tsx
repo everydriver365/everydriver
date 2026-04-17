@@ -37,77 +37,61 @@ export function UpcomingEventsCard({ className = "" }: { className?: string }) {
       {events.map((event) => {
         const date = new Date(event.event_date);
         return (
-          <div
+          <a
             key={event.id}
+            href={event.link_url || undefined}
+            target={event.link_url ? "_blank" : undefined}
+            rel={event.link_url ? "noopener noreferrer" : undefined}
             style={{
-              borderRadius: 20,
-              overflow: "hidden",
+              background: "#FFFFFF",
+              borderRadius: 14,
+              border: "0.5px solid #E4E4E7",
+              padding: "10px 14px 10px 10px",
               display: "flex",
-              flexDirection: "row",
-              minHeight: 130,
-              boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
-              border: "0.5px solid rgba(0,0,0,0.06)",
+              alignItems: "center",
+              gap: 12,
+              cursor: event.link_url ? "pointer" : "default",
+              textDecoration: "none",
             }}
           >
-            {/* Left date column */}
+            {/* Left date tile (blue, matching waiting room icon size) */}
             <div
               style={{
-                width: 72,
+                width: 44,
+                height: 44,
+                borderRadius: 12,
                 flexShrink: 0,
                 background: "linear-gradient(to bottom, #1F2B3D, #2A394F)",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: "16px 8px",
               }}
             >
-              <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", textTransform: "uppercase" }}>
-                {format(date, "EEE")}
-              </span>
-              <span style={{ fontSize: 28, fontWeight: 700, color: "white", lineHeight: 1.1 }}>
-                {format(date, "d")}
-              </span>
-              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.75)", textTransform: "uppercase" }}>
+              <span style={{ fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.65)", textTransform: "uppercase", lineHeight: 1 }}>
                 {format(date, "MMM")}
+              </span>
+              <span style={{ fontSize: 17, fontWeight: 700, color: "white", lineHeight: 1.1 }}>
+                {format(date, "d")}
               </span>
             </div>
 
-            {/* Right content area */}
-            <div
-              style={{
-                flex: 1,
-                padding: "14px 16px",
-                background: "white",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-              }}
-            >
-              <div>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "#8e8e93", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>
-                  Upcoming Event
-                </p>
-                <p style={{ fontSize: 14, fontWeight: 700, color: "#1c1c1e", lineHeight: 1.3, marginBottom: 4 }}>
+            {/* Content */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <p style={{ fontSize: 15, fontWeight: 500, color: "#18181B", fontFamily: "Inter, sans-serif", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {event.title}
                 </p>
-                <p style={{ fontSize: 12, color: "#8e8e93" }}>
-                  {format(date, "HH:mm")} · {event.duration_minutes} min
-                </p>
               </div>
-              {event.link_url && (
-                <a
-                  href={event.link_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 600, color: "#2A394F", marginTop: 8, textDecoration: "none" }}
-                >
-                  <ExternalLink style={{ width: 13, height: 13 }} />
-                  {event.link_label || "Join Event"}
-                </a>
-              )}
+              <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }}>
+                {format(date, "EEE HH:mm")} · {event.duration_minutes} min
+              </p>
             </div>
-          </div>
+
+            {event.link_url && (
+              <ExternalLink size={16} strokeWidth={2} color="#A1A1AA" style={{ flexShrink: 0 }} />
+            )}
+          </a>
         );
       })}
     </div>
