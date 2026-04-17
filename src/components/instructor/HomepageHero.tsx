@@ -292,7 +292,6 @@ export function HomepageHero({
                     />
                     <ConcentricRings
                       rings={[
-                        { completed: todayCompleted, total: todayTotal, gradId: "ringToday", start: "#007AFF", end: "#5AC8FA", trackColor: "rgba(0,122,255,0.15)" },
                         { completed: weeklyLessonsCompleted, total: weeklyLessonsTotal, gradId: "ringWeek", start: "#A8E063", end: "#34C759", trackColor: "rgba(52,199,89,0.15)" },
                       ]}
                       centerCompleted={slide.completed}
