@@ -41,7 +41,34 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Construction, Ban } from "lucide-react";
+import { Construction, Ban, Smartphone } from "lucide-react";
+
+const TRACKER_DISMISSED_KEY = "tracker_reminder_dismissed";
+const TRACKER_DATE_KEY = "tracker_reminder_date";
+
+const isTrackerDismissed = (lessonId: string): boolean => {
+  try {
+    const today = new Date().toDateString();
+    if (localStorage.getItem(TRACKER_DATE_KEY) !== today) return false;
+    const dismissed = JSON.parse(localStorage.getItem(TRACKER_DISMISSED_KEY) || "{}");
+    return dismissed[lessonId] === true;
+  } catch { return false; }
+};
+
+const dismissTracker = (lessonId: string) => {
+  try {
+    const today = new Date().toDateString();
+    const storedDate = localStorage.getItem(TRACKER_DATE_KEY);
+    const dismissed = storedDate === today
+      ? JSON.parse(localStorage.getItem(TRACKER_DISMISSED_KEY) || "{}")
+      : {};
+    dismissed[lessonId] = true;
+    localStorage.setItem(TRACKER_DISMISSED_KEY, JSON.stringify(dismissed));
+    localStorage.setItem(TRACKER_DATE_KEY, today);
+  } catch {
+    localStorage.setItem(TRACKER_DISMISSED_KEY, JSON.stringify({ [lessonId]: true }));
+  }
+};
 
 interface NextUpTileProps {
   lessonId: string;
@@ -79,6 +106,7 @@ export function NextUpTile({
   const [lateSheetOpen, setLateSheetOpen] = useState(false);
   const [showGPSRecorder, setShowGPSRecorder] = useState(false);
   const [trafficModalOpen, setTrafficModalOpen] = useState(false);
+  const [trackerDismissed, setTrackerDismissed] = useState<boolean>(() => isTrackerDismissed(lessonId));
   const [, setTick] = useState(0);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -235,12 +263,36 @@ export function NextUpTile({
               <LessonCheckInBadge status={checkInStatus} className="text-[9px] py-0 px-1.5 h-4 ml-1" />
             )}
           </div>
-          <div
-            className="flex items-center gap-1 px-2.5 py-1"
-            style={{ borderRadius: 100, backgroundColor: "rgba(255,255,255,0.2)" }}
-          >
-            <Clock className="h-3 w-3 text-white" />
-            <span style={{ fontSize: 12, fontWeight: 600, color: "#FFFFFF" }}>{formatTime24(startTime)}</span>
+          <div className="flex items-center gap-1.5">
+            {minutesUntil <= 30 && !trackerDismissed && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/instructor/tracking?lessonId=${lessonId}`);
+                }}
+                className="flex items-center gap-1 px-2 py-1 active:scale-95 transition-transform"
+                style={{ borderRadius: 100, backgroundColor: "#FBBF24", color: "#1C1C1E" }}
+                title="Open live tracking"
+              >
+                <Smartphone className="h-3 w-3" />
+                <span style={{ fontSize: 11, fontWeight: 700 }}>Tracker</span>
+                <X
+                  className="h-3 w-3 ml-0.5 opacity-70 hover:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    dismissTracker(lessonId);
+                    setTrackerDismissed(true);
+                  }}
+                />
+              </button>
+            )}
+            <div
+              className="flex items-center gap-1 px-2.5 py-1"
+              style={{ borderRadius: 100, backgroundColor: "rgba(255,255,255,0.2)" }}
+            >
+              <Clock className="h-3 w-3 text-white" />
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#FFFFFF" }}>{formatTime24(startTime)}</span>
+            </div>
           </div>
         </div>
 

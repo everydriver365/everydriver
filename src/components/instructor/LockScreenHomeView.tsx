@@ -30,7 +30,7 @@ import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
 import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
 
-import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
+
 import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
 import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
@@ -183,12 +183,8 @@ export function LockScreenHomeView({
         )}
 
 
-        {/* Tracker reminder */}
-        {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
-          <FrostedCard className="overflow-hidden">
-            <TrackerReminderBanner lessonId={nextLesson.lessonId} minutesUntil={nextLesson.minutesUntil} />
-          </FrostedCard>
-        )}
+
+
 
         {/* ── Next Lesson notification ── */}
         {nextLesson && (
