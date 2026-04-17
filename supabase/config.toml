@@ -284,3 +284,6 @@ verify_jwt = false
 
 [functions.auto-start-lesson-tracker]
 verify_jwt = false
+
+[functions.auto-stop-lesson-tracker]
+verify_jwt = false
