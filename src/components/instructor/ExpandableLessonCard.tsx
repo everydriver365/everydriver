@@ -120,7 +120,7 @@ export function ExpandableLessonCard({
       return () => clearTimeout(t);
     }
   }, [isExpanded]);
-  const [quickMessageOpen, setQuickMessageOpen] = useState(false);
+  
   const [upcomingLessons, setUpcomingLessons] = useState<Array<{ id: string; lesson_date: string; start_time: string; duration_minutes: number }>>([]);
   const [loadingUpcoming, setLoadingUpcoming] = useState(false);
   const x = useMotionValue(0);

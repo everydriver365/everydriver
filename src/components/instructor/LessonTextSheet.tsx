@@ -94,12 +94,12 @@ export function LessonTextSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="rounded-t-2xl border-t bg-background p-0 max-h-[85vh] overflow-y-auto">
         <div className="px-5 pt-5 pb-8">
-          <SheetHeader className="text-left mb-5">
+          <div className="text-left mb-5">
             <SheetTitle className="text-xl font-semibold">Text {lesson.pupilName}</SheetTitle>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-1">
               Sends a tracked SMS via your school number — {lesson.pupilName} can reply YES to confirm.
             </p>
-          </SheetHeader>
+          </div>
 
           {/* Slot summary */}
           <div className="rounded-xl border bg-muted/40 p-4 mb-5 space-y-2">
