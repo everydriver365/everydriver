@@ -106,18 +106,14 @@
 
      --spacing: 0.25rem;
 
-     /* Instructor mobile app — road sign pattern backdrop */
-     --instructor-bg-start: #EEF0F2;
-     --instructor-bg-end: #E2E5E9;
-     --instructor-bg-overlay: rgba(238, 240, 242, 0.85);
+     /* Instructor mobile app — clean white surface */
+     --instructor-bg-start: #FFFFFF;
+     --instructor-bg-end: #FFFFFF;
+     --instructor-bg-overlay: rgba(255, 255, 255, 0.85);
   }
 
   .instructor-shell-bg {
     background-color: var(--instructor-bg-start);
-    background-image: url('/src/assets/instructor-bg-pattern.png');
-    background-repeat: repeat;
-    background-size: 600px auto;
-    background-attachment: fixed;
     min-height: 100dvh;
   }
 

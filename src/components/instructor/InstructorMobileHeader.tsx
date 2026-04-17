@@ -75,7 +75,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
   return (
     <div className="sticky top-0 z-50">
       {/* Safe area fill */}
-      <div className="bg-[#f2f2f7] pt-[env(safe-area-inset-top)]" />
+      <div className="bg-white pt-[env(safe-area-inset-top)]" />
       {/* Premium iOS tile header */}
       <div
         className="w-full overflow-hidden bg-white border-b border-black/[0.06]"
