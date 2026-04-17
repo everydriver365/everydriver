@@ -180,7 +180,7 @@ export function CoursePlannerSheet({
         lead_postcode: pupilPostcode || null,
         test_date: format(testDate, "yyyy-MM-dd"),
         test_time: testTime || null,
-        test_centre_name: testCentre || null,
+        test_centre_name: testCentreName || null,
         hours_remaining: Number(hoursRemaining),
         lesson_length_minutes: Number(lessonLength),
         lessons_per_week: Number(lessonsPerWeek),
