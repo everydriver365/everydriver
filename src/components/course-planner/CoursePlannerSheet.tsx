@@ -310,7 +310,7 @@ export function CoursePlannerSheet({
         </div>
       </div>
 
-      <ScrollArea className="flex-1 px-5 py-4">
+      <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4">
         {step === "form" ? (
           <div className="space-y-5">
             {/* Pupil/lead info */}
