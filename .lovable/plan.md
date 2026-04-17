@@ -1,62 +1,63 @@
 
 ## Goal
-Bring every instructor mobile page in line with the "Waiting Room tile" design language already used on the home dashboard.
+Replace the flat `#F2F2F7` background across the instructor mobile app with a more characterful, contrasting backdrop — without breaking the "Waiting Room" white tile language.
 
-## Canonical tokens (the "Waiting Room" style)
-| Token | Value |
-|---|---|
-| Tile background | `#FFFFFF` |
-| Tile border | `0.5px solid #E4E4E7` |
-| Tile radius | `14px` |
-| Tile padding | `14px 16px` (compact) / `16px` (standard) |
-| Icon roundel | `44×44`, `borderRadius: 12`, `#E8ECF1` bg, `#2A394F` icon |
-| Primary text | `#18181B`, 15px / 500, Inter |
-| Secondary text | `#71717A`, 12px / 400, Inter |
-| Chevron | `#A1A1AA`, 18px |
-| Page background | `#F2F2F7` |
-| Section header | uppercase 13px, `text-muted-foreground`, `px-4 pb-1.5` |
+## Constraints
+- White tiles (`#FFFFFF`, `0.5px #E4E4E7` border, `14px` radius) must still pop against the new background.
+- Frosted nav and headers (`rgba(255,255,255,0.8)` + blur) must still read as "above" the page.
+- Mobile-only — no changes to `MobileHomepage` or learner Drive365 surfaces.
+- Must not clash with the new DSM logo (white background, dark slate mark).
 
-## What gets removed
-- Purple/rose/indigo gradient "Hero Cards" at the top of pages (Notifications, Health, Pipeline, etc.) → replaced with `IOSPageTitle` (compact icon + title).
-- `rounded-xl` / `rounded-2xl` + `shadow-sm` + `border-border/50` patterns → replaced with the canonical tile.
-- `bg-muted/30`, `bg-card border` ad-hoc tiles → canonical tile.
-- Inconsistent font stacks → Inter / SF Pro across the board.
+## Recommended option (my pick)
+**Soft slate-tinted gradient** — keeps it iOS-native but adds depth and ties to the DSM dark slate brand (`#2A394F`).
 
-## Approach — single shared primitive
-Introduce one component everyone uses, so future pages stay consistent:
-
-```tsx
-// src/components/instructor/IOSTile.tsx
-<IOSTile interactive onClick={...}>
-  <IOSTile.Icon><Users /></IOSTile.Icon>
-  <IOSTile.Body title="…" subtitle="…" badge="Weekly" />
-  <IOSTile.Chevron />
-</IOSTile>
+```text
+top:    #EEF2F7  (cool off-white, hint of slate)
+bottom: #E4E9F0  (slightly deeper slate-grey)
+fixed gradient, no scroll parallax
 ```
-Plus a matching `IOSTileGroup` for grouped lists with indented dividers (already a memory pattern).
+Why: white tiles gain ~6% contrast vs current `#F2F2F7`, the slate undertone echoes the DSM icon roundel colour (`#E8ECF1`) so the whole app feels designed as one system, and it stays neutral enough that status colours (amber weather, red payments owing, green success) still read clearly.
 
-`InstructorCard` and `WaitingRoomPromoTile` get refactored to render `IOSTile` so existing callers keep working.
+## Alternatives to choose from
+1. **Slate gradient** (above) — `#EEF2F7 → #E4E9F0`. Calm, brand-aligned, premium feel.
+2. **Warm paper** — `#F5F2EC → #ECE6DA`. Cosy, "notebook" feel; pairs well with the diary/schedule metaphor. Risk: warm tones can fight the cool slate icon roundels.
+3. **Subtle dotted slate** — solid `#ECEFF3` + faint 1px dot grid at 6% opacity, 16px spacing. Texture without colour shift. Risk: can look busy on small screens at 390px width.
+4. **Deep mode (opt-in)** — keep light default, but add a "Graphite" theme: bg `#1C1C1E`, tiles `#2C2C2E`, border `#3A3A3C`. Useful for night-driving instructors. Larger scope — would be a follow-up.
 
-## Pages to sweep (grouped by area)
-Instead of hand-editing 80 files, work in 6 batches — each batch swaps hero gradients for `IOSPageTitle` and converts ad-hoc cards to `IOSTile`:
+## Where it changes
+Single source — the page-background colour is set in:
+- `src/components/instructor/InstructorMobileLayout.tsx` (or wherever `#F2F2F7` is hard-coded for the mobile shell)
+- `src/components/instructor/InstructorPageHeader.tsx` — sticky header `rgba(242,242,247,0.9)` overlay needs to match new base so the blur doesn't show a colour seam
+- Any page that hard-codes `backgroundColor: "#F2F2F7"` inline (Schedule, Pupils, Finance pages from the recent sweep) — switch to a CSS variable `--instructor-bg` so future changes are one-line
 
-1. **Dashboard & home** — `InstructorPortal`, `InstructorMenu`, `InstructorNotifications`, `InstructorPlatformUpdates`
-2. **Schedule & jobs** — `InstructorSchedule`, `InstructorDiary`, `InstructorJobs`, `InstructorGaps`, `InstructorWaitingList`, `InstructorPendingScheduling`, `InstructorQuickAvailability`, `InstructorAvailabilityWindows`, `InstructorTestSlotFinder`, `InstructorTestRequests`
-3. **Pupils & comms** — `InstructorPupils`, `InstructorUnifiedInbox`, `InstructorAdminChat`, `InstructorContact`, `InstructorTeamChannels`
-4. **Finance** — `InstructorPay`, `InstructorTakePayment`, `InstructorIncome`, `InstructorExpenses`, `InstructorAccounts`, `InstructorTax`, `InstructorSubscriptions`, `InstructorInOut`, `MonthEndReview`, `WeeklyReportPage`
-5. **Vehicle/GPS/Health** — `InstructorSatNav`, `InstructorFindMyCar`, `InstructorVehicleHealth`, `InstructorFuel`, `InstructorMileageTracker`, `InstructorRoutes`, `InstructorFleetDashboard`, `InstructorLiveSession`, `InstructorGPSSetup`, `InstructorFleetMap`, `InstructorOverspeedHistory`, `InstructorFindNearby`, `InstructorNearbyFriends`, `InstructorLocations`, `InstructorHealth`, `InstructorWellbeing`, `DashcamGallery`
-6. **Marketing, tools & settings** — `InstructorMiniWebsiteSettings`, `InstructorDomainsManagement`, `InstructorWebsiteAddons`, `InstructorReviews`, `InstructorReferrals`, `InstructorPipeline`, `InstructorAutomations`, `InstructorAbandonedCheckouts`, `InstructorTestResults`, `InstructorStandardsCheck`, `InstructorCPD`, `InstructorCertifications`, `InstructorPerformance`, `InstructorFAQs`, `InstructorDoodlepad`, `InstructorTodos`, `InstructorNotes`, `InstructorPlans`, `InstructorResources`, `InstructorDocumentTemplates`, `InstructorChecklists`, `InstructorDocumentVault`, `InstructorClockInOut`, `InstructorAICommand`, `InstructorWorkflows`, `InstructorWaivers`, `InstructorDailyManifest`, `InstructorEODReport`, `InstructorBulkOperations`, `InstructorReportsHub`, `InstructorDataImport`, `OutstandingTasksPage`, `EndOfDayPage`, `InstructorSettings`, `InstructorSettingsCategory`, `InstructorWhatsAppSettings`, `InstructorWhatsAppTemplates`, `InstructorSubscriptions`
+## Implementation sketch
+1. Add CSS vars in `src/index.css`:
+   ```css
+   :root {
+     --instructor-bg-start: #EEF2F7;
+     --instructor-bg-end:   #E4E9F0;
+     --instructor-bg-overlay: rgba(238,242,247,0.85); /* for sticky headers */
+   }
+   ```
+2. Apply on the instructor shell:
+   ```css
+   .instructor-shell {
+     background: linear-gradient(180deg, var(--instructor-bg-start) 0%, var(--instructor-bg-end) 100%);
+     background-attachment: fixed;
+     min-height: 100dvh;
+   }
+   ```
+3. Replace inline `backgroundColor: "#F2F2F7"` and `rgba(242,242,247,0.9)` across instructor pages with the new vars.
+4. Update `mem://style/instructor-portal-design-system` so future pages use the variable, not the literal.
 
 ## Out of scope
-- Bottom-nav `InstructorMobileBottomNav` — already canonical.
-- Header `InstructorMobileHeader` — already canonical.
-- The `Every Instructor` portal (`/every-instructor/*`) — separate brand per memory, not touched.
-- Functional behaviour, RLS, edge functions — purely visual.
+- Drive365 learner pages
+- Every Instructor portal (`/every-instructor/*`)
+- Tile, header, bottom-nav internals — purely the page background
 
-## Save memory
-Add `mem://style/ios-tile-primitive` documenting `IOSTile` as the single source of truth for instructor portal tiles.
-
-## Confirm before I start
-Two questions:
-1. **Hero gradients** — I'll remove the purple/rose/indigo gradient hero cards on Notifications / Health / Pipeline etc. and replace with the compact `IOSPageTitle`. OK to drop the gradients entirely?
-2. **Order** — should I do all 6 batches in one go, or stop after batch 1 (Dashboard) so you can review the look first?
+## One quick question
+Which direction do you want?
+- **A. Slate gradient** (recommended — `#EEF2F7 → #E4E9F0`, brand-aligned)
+- **B. Warm paper** (`#F5F2EC → #ECE6DA`, cosy diary feel)
+- **C. Dotted slate texture** (solid + faint dot grid)
+- **D. Add a dark "Graphite" theme as opt-in** (bigger scope)
