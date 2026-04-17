@@ -297,7 +297,7 @@ export function HomepageHero({
                       ]}
                       centerCompleted={slide.completed}
                       centerTotal={slide.total}
-                      centerColor={i === 0 ? "#FF2D55" : i === 1 ? "#34C759" : "#30B0C7"}
+                      centerColor={i === 0 ? "#007AFF" : "#34C759"}
                     />
                     <div className="flex-1 min-w-0 relative z-10">
                       <p style={{ fontSize: 15, fontWeight: 700, color: "#1C1C1E", marginBottom: 1 }}>
