@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendWhatsAppTemplate } from "../_shared/whatsapp-template.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -301,7 +302,7 @@ Deno.serve(async (req) => {
         if (item.action === "syncLesson") {
           const { data: lessonRaw } = await supabase
             .from("scheduled_lessons")
-            .select(`*, pupils:pupil_id (name, postcode)`)
+            .select(`*, pupils:pupil_id (id, name, phone, postcode, whatsapp_opt_in, whatsapp_confirmed_at)`)
             .eq("id", item.lesson_id)
             .maybeSingle();
 
@@ -368,6 +369,43 @@ Deno.serve(async (req) => {
             .from("scheduled_lessons")
             .update({ google_event_id: googleEventId })
             .eq("id", item.lesson_id);
+
+          // Send WhatsApp lesson confirmation on first sync (new lesson) if pupil opted in
+          const isNewLesson = !freshLesson?.google_event_id && !lesson.google_event_id;
+          const pupil: any = (lesson as any).pupils;
+          if (
+            isNewLesson &&
+            pupil?.phone &&
+            pupil?.whatsapp_opt_in &&
+            !pupil?.whatsapp_confirmed_at
+          ) {
+            try {
+              const waResult = await sendWhatsAppTemplate({
+                supabase,
+                instructorId: item.instructor_id,
+                to: pupil.phone,
+                templateName: "lesson_confirmation",
+                variables: [
+                  pupil.name,
+                  lesson.lesson_date,
+                  lesson.start_time?.slice(0, 5) || "",
+                  lesson.pickup_location || lesson.pickup_postcode || "your pickup point",
+                ],
+                pupilId: pupil.id,
+              });
+              if (waResult.ok) {
+                await supabase
+                  .from("pupils")
+                  .update({ whatsapp_confirmed_at: new Date().toISOString() })
+                  .eq("id", pupil.id);
+                console.log(`Sent WhatsApp confirmation for lesson ${item.lesson_id}`);
+              } else {
+                console.log(`WhatsApp confirmation skipped: ${waResult.reason}`);
+              }
+            } catch (waErr) {
+              console.warn(`WhatsApp confirmation failed for lesson ${item.lesson_id}:`, waErr);
+            }
+          }
 
           console.log(`Synced lesson ${item.lesson_id} to Google Calendar`);
         } else if (item.action === "deleteLesson") {
