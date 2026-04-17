@@ -1,31 +1,40 @@
 
-## Diagnosis
 
-On the instructor mobile schedule page (`MultiDayScheduleView`), tapping a lesson event doesn't visually open details. Root cause analysis:
+## Why details are missing
 
-1. **Lesson cards** use `ExpandableLessonCard` with a `renderCustomCollapsed` prop. The custom collapsed view is a self-contained styled `<div>` with its own white background, border, and `borderRadius: 14`. When tapped, the parent toggles `isExpanded` and renders the expanded panel **below** that styled div — but visually it appears detached/outside the "card", and there's **no chevron / affordance** so users assume nothing happened.
-2. **Calendar events & manual blocks** (lines 580–686) render as inline divs with their own `onClick` toggling `expandedEventId`. These do work, but the expanded body is minimal and the click target is subtle.
-3. The custom collapsed view also has no visual "pressed" state, no chevron, and no scroll-into-view when expanded — so on a tightly packed day the expansion can happen below the fold.
+The "WDU" event row in our DB has `description = NULL`, `location = NULL` — confirmed via DB query. The Zoom info on the original Google event lives in **Google's `conferenceData` object** (and possibly `hangoutLink`), which our sync **does not request or store**. Plain `description` is also empty for this particular event because the organiser put the Zoom link only into the conferencing block, not the body.
+
+So the panel correctly shows "No additional details" — the sync simply never captured the meeting link.
 
 ## Plan
 
-### 1. Fix lesson card expansion (primary fix)
-In `MultiDayScheduleView.tsx`:
-- Add a small chevron indicator to the `renderCustomCollapsed` lesson div (rotates when expanded — pass `isExpanded` down via a new render-prop signature, or simpler: drop the custom border/background so the parent `ExpandableLessonCard` owns the visual frame and the expansion looks integrated).
-- Preferred approach: change `renderCustomCollapsed` from a flat styled div into content that sits **inside** the parent card frame (remove inner `backgroundColor`, `border`, `borderRadius` — let `ExpandableLessonCard`'s outer container provide them). The expanded panel will then visually flow inside the same card.
+### 1. Sync — capture conference + link fields
+`supabase/functions/google-calendar-service/index.ts`:
+- Add `conferenceDataVersion=1` to the Google list params and request the extra fields (`fields=...,items(conferenceData,hangoutLink,htmlLink,attendees)`).
+- Extract:
+  - `meeting_url` — first of `conferenceData.entryPoints[].uri` where `entryPointType=video`, fallback to `hangoutLink`, fallback to first URL found in `description`.
+  - `meeting_provider` — `conferenceData.conferenceSolution.name` (e.g. "Zoom Meeting", "Google Meet").
+  - `html_link` — `htmlLink` (link back to the Google event).
+- Save them on insert/upsert.
 
-### 2. Improve `ExpandableLessonCard` affordance
-In `ExpandableLessonCard.tsx`:
-- Always render a chevron in the top-right (even when `renderCustomCollapsed` is used) so users see the card is tappable.
-- After expanding, scroll the card into view (`scrollIntoView({ block: "nearest" })`) so the details panel is visible.
+### 2. DB — add columns
+Migration: add to `instructor_calendar_events`:
+- `meeting_url text`
+- `meeting_provider text`
+- `html_link text`
 
-### 3. Make calendar events & manual blocks consistent
-In `MultiDayScheduleView.tsx` (lines 580–686):
-- Add a chevron to the right of external events and manual blocks.
-- Match the expanded panel styling with the lesson card so all three event types feel uniform.
+### 3. UI — render meeting link in the expanded panel
+`src/components/instructor/MultiDayScheduleView.tsx` (both expansion blocks ~lines 470–490 and 620–640):
+- Select the new fields.
+- When `meeting_url` exists → show a primary "Join {provider}" button (e.g. "Join Zoom Meeting") that opens the URL in a new tab.
+- Always show an "Open in Google Calendar" link if `html_link` exists.
+- Keep "No additional details" only when description, location, and meeting_url are all empty.
 
-### 4. Files
-- EDIT `src/components/instructor/ExpandableLessonCard.tsx` — always show chevron; scroll-into-view on expand.
-- EDIT `src/components/instructor/MultiDayScheduleView.tsx` — strip custom border/bg from lesson `renderCustomCollapsed`; add chevron to external events and blocks.
+### 4. Re-sync trigger
+After deploy, the next scheduled sync will backfill the new fields. Add a one-shot manual "Sync now" call note for the user (no code needed — they already have the Sync button in calendar settings).
 
-No DB changes. No new components.
+### Files
+- EDIT `supabase/functions/google-calendar-service/index.ts` — request + capture conference fields.
+- NEW migration — add 3 columns.
+- EDIT `src/components/instructor/MultiDayScheduleView.tsx` — render meeting link / Google Calendar link.
+
