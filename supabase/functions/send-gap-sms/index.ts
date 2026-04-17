@@ -20,6 +20,7 @@ interface SendGapSmsRequest {
   discountType: "percentage" | "fixed" | null;
   discountValue: number | null;
   customMessage?: string;
+  pupilId?: string; // Optional: target a single pupil instead of all instructor pupils
 }
 
 function formatPhoneToE164(rawPhone: string): string {
@@ -53,21 +54,27 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { instructorId, instructorName, slots, discountType, discountValue, customMessage }: SendGapSmsRequest = await req.json();
+    const { instructorId, instructorName, slots, discountType, discountValue, customMessage, pupilId }: SendGapSmsRequest = await req.json();
 
-    console.log(`Sending gap SMS for instructor ${instructorId}, ${slots.length} slots`);
+    console.log(`Sending gap SMS for instructor ${instructorId}, ${slots.length} slots${pupilId ? `, single pupil ${pupilId}` : ""}`);
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch all pupils for this instructor with phone numbers
-    const { data: pupils, error: pupilsError } = await supabase
+    // Fetch pupils — either a single targeted pupil or all instructor pupils with phone numbers
+    let pupilsQuery = supabase
       .from("pupils")
       .select("id, name, phone")
       .eq("instructor_id", instructorId)
       .not("phone", "is", null);
+
+    if (pupilId) {
+      pupilsQuery = pupilsQuery.eq("id", pupilId);
+    }
+
+    const { data: pupils, error: pupilsError } = await pupilsQuery;
 
     if (pupilsError) {
       console.error("Error fetching pupils:", pupilsError);

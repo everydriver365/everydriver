@@ -68,7 +68,7 @@ interface ExpandableLessonCardProps {
   lesson: ScheduledLesson;
   onNavigate: (address: string, postcode: string) => void;
   onCall: (phone: string | null) => void;
-  onText: (phone: string | null) => void;
+  onText: (lesson: ScheduledLesson) => void;
   onOnWay: (lesson: ScheduledLesson, delayMinutes?: number) => void;
   onCancel: (lesson: ScheduledLesson) => void;
   onReschedule: (lesson: ScheduledLesson) => void;
@@ -509,7 +509,7 @@ export function ExpandableLessonCard({
                     className="flex-col h-auto py-2 gap-1 text-[10px]"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onText(lesson.pupil?.phone);
+                      onText(lesson);
                     }}
                   >
                     <MessageSquare className="h-4 w-4 text-primary" />
