@@ -100,7 +100,7 @@ export function SwipeableQuickAccess() {
 
   return (
     <div>
-      <div ref={emblaRef} className="overflow-hidden">
+      <div ref={emblaRef} className="overflow-hidden -mx-2 px-2 -my-3 py-3">
         <div className="flex">
           {pages.map((page, pageIdx) => (
             <div key={pageIdx} className="flex-[0_0_100%] min-w-0">
