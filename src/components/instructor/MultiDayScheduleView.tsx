@@ -329,7 +329,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   }
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-0 pb-32">
       {/* Add lesson FAB */}
       <div
         onClick={() => setAddLessonOpen(true)}
