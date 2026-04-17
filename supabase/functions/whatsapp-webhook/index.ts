@@ -737,3 +737,54 @@ async function notifyInstructor(supabase: any, supabaseUrl: string, instructorId
     console.error("Failed to notify instructor:", err);
   }
 }
+
+// ── Download an inbound media file from Meta and stash it in chat-attachments ──
+async function extractInboundMedia(
+  message: any,
+  supabase: any,
+  perInstructorToken: string | null
+): Promise<{ url: string; type: string; mime: string | null; caption: string | null } | null> {
+  const mediaTypes = ["image", "video", "audio", "document", "voice", "sticker"];
+  const type = mediaTypes.find((t) => message[t]);
+  if (!type) return null;
+
+  const mediaObj = message[type];
+  const mediaId = mediaObj?.id;
+  const caption = mediaObj?.caption || null;
+  const mime = mediaObj?.mime_type || null;
+  if (!mediaId) return null;
+
+  const token = perInstructorToken || Deno.env.get("WHATSAPP_BUSINESS_TOKEN");
+  if (!token) return null;
+
+  try {
+    const metaRes = await fetch(`https://graph.facebook.com/v18.0/${mediaId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!metaRes.ok) return null;
+    const metaData = await metaRes.json();
+    const downloadUrl = metaData.url;
+    if (!downloadUrl) return null;
+
+    const fileRes = await fetch(downloadUrl, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!fileRes.ok) return null;
+    const blob = await fileRes.arrayBuffer();
+
+    const ext = (mime?.split("/")?.[1] || "bin").split(";")[0];
+    const path = `whatsapp/${mediaId}.${ext}`;
+    const { error: upErr } = await supabase.storage
+      .from("chat-attachments")
+      .upload(path, blob, { contentType: mime || "application/octet-stream", upsert: true });
+    if (upErr) {
+      console.error("Media upload failed:", upErr);
+      return null;
+    }
+    const { data: pub } = supabase.storage.from("chat-attachments").getPublicUrl(path);
+    return { url: pub.publicUrl, type, mime, caption };
+  } catch (e) {
+    console.error("extractInboundMedia error:", e);
+    return null;
+  }
+}
