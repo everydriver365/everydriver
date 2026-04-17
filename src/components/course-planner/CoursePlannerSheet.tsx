@@ -93,7 +93,10 @@ export function CoursePlannerSheet({
   const [pupilPostcode, setPupilPostcode] = useState("");
   const [testDate, setTestDate] = useState<Date | undefined>();
   const [testTime, setTestTime] = useState("10:00");
-  const [testCentre, setTestCentre] = useState("");
+  const [testCentreId, setTestCentreId] = useState<string>("");
+  const [testCentreName, setTestCentreName] = useState<string>("");
+  const [testCentres, setTestCentres] = useState<Array<{ id: string; name: string; postcode: string | null }>>([]);
+  const [centrePickerOpen, setCentrePickerOpen] = useState(false);
   const [hoursRemaining, setHoursRemaining] = useState("20");
   const [lessonLength, setLessonLength] = useState("120");
   const [lessonsPerWeek, setLessonsPerWeek] = useState("2");
@@ -102,8 +105,22 @@ export function CoursePlannerSheet({
   // Result state
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [booking, setBooking] = useState(false);
   const [result, setResult] = useState<PlannerResult | null>(null);
   const [step, setStep] = useState<"form" | "result">("form");
+
+  // Load test centres once when sheet opens
+  useEffect(() => {
+    if (!open || testCentres.length > 0) return;
+    supabase
+      .from("test_centres")
+      .select("id, name, postcode")
+      .eq("is_active", true)
+      .order("name")
+      .then(({ data }) => {
+        if (data) setTestCentres(data as any);
+      });
+  }, [open, testCentres.length]);
 
   const reset = () => {
     setResult(null);
