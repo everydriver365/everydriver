@@ -41,7 +41,34 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Construction, Ban } from "lucide-react";
+import { Construction, Ban, Smartphone } from "lucide-react";
+
+const TRACKER_DISMISSED_KEY = "tracker_reminder_dismissed";
+const TRACKER_DATE_KEY = "tracker_reminder_date";
+
+const isTrackerDismissed = (lessonId: string): boolean => {
+  try {
+    const today = new Date().toDateString();
+    if (localStorage.getItem(TRACKER_DATE_KEY) !== today) return false;
+    const dismissed = JSON.parse(localStorage.getItem(TRACKER_DISMISSED_KEY) || "{}");
+    return dismissed[lessonId] === true;
+  } catch { return false; }
+};
+
+const dismissTracker = (lessonId: string) => {
+  try {
+    const today = new Date().toDateString();
+    const storedDate = localStorage.getItem(TRACKER_DATE_KEY);
+    const dismissed = storedDate === today
+      ? JSON.parse(localStorage.getItem(TRACKER_DISMISSED_KEY) || "{}")
+      : {};
+    dismissed[lessonId] = true;
+    localStorage.setItem(TRACKER_DISMISSED_KEY, JSON.stringify(dismissed));
+    localStorage.setItem(TRACKER_DATE_KEY, today);
+  } catch {
+    localStorage.setItem(TRACKER_DISMISSED_KEY, JSON.stringify({ [lessonId]: true }));
+  }
+};
 
 interface NextUpTileProps {
   lessonId: string;
