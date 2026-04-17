@@ -11,10 +11,10 @@ interface PWAMetaConfig {
 
 const pwaConfigs: Record<string, PWAMetaConfig> = {
   instructor: {
-    icon: "/apple-touch-icon.png",
-    favicon: "/favicon.png",
+    icon: "/apple-touch-icon-instructor.png",
+    favicon: "/dsm-icon-192.png",
     splash: "/splash-1170x2532.png",
-    title: "EveryDriver",
+    title: "DSM",
     themeColor: "#FFFFFF",
   },
   learner: {
