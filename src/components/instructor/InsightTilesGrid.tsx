@@ -74,7 +74,7 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
               position: "relative",
               background: "#FFFFFF",
               borderRadius: 14,
-              border: "0.5px solid #E4E4E7",
+              boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)",
               padding: "14px",
               textAlign: "left",
               display: "flex",

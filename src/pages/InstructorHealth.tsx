@@ -45,7 +45,7 @@ export default function InstructorHealth() {
           ].map(({ Icon, label, value }) => (
             <div
               key={label}
-              style={{ background: "#FFFFFF", borderRadius: 14, border: "0.5px solid #E4E4E7", padding: 10 }}
+              style={{ background: "#FFFFFF", borderRadius: 14, boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)", padding: 10 }}
               className="text-center"
             >
               <Icon className="h-4 w-4 mx-auto mb-0.5" style={{ color: "#2A394F" }} />

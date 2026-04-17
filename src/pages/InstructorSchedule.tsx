@@ -172,7 +172,7 @@ export default function InstructorSchedule() {
                     fontWeight: 500,
                     transition: "all 0.2s",
                     ...(viewMode === 'list'
-                      ? { backgroundColor: "#FFFFFF", color: "#18181B", border: "0.5px solid #E4E4E7" }
+                      ? { backgroundColor: "#FFFFFF", color: "#18181B", boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)" }
                       : { backgroundColor: "transparent", color: "#71717A", border: "0.5px solid transparent" }),
                   }}
                 >
@@ -191,7 +191,7 @@ export default function InstructorSchedule() {
                     fontWeight: 500,
                     transition: "all 0.2s",
                     ...(viewMode === 'month'
-                      ? { backgroundColor: "#FFFFFF", color: "#18181B", border: "0.5px solid #E4E4E7" }
+                      ? { backgroundColor: "#FFFFFF", color: "#18181B", boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)" }
                       : { backgroundColor: "transparent", color: "#71717A", border: "0.5px solid transparent" }),
                   }}
                 >

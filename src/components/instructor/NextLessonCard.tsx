@@ -179,7 +179,7 @@ export function NextLessonCard({
             onDragStart={() => setIsDragging(true)}
             onDrag={handleDrag}
             onDragEnd={handleDragEnd}
-            style={{ x, backgroundColor: '#FFFFFF', borderRadius: 14, border: '0.5px solid #E4E4E7' }}
+            style={{ x, backgroundColor: '#FFFFFF', borderRadius: 14, boxShadow: '0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)' }}
              className="relative p-3 cursor-grab active:cursor-grabbing"
           >
             <div className="flex items-center gap-3">

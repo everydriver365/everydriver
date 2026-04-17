@@ -145,7 +145,7 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
   if (loading) {
     return (
       <div className={cn("", className)}>
-        <div className="p-4 animate-pulse" style={{ backgroundColor: '#FFFFFF', borderRadius: 14, border: '0.5px solid #E4E4E7' }}>
+        <div className="p-4 animate-pulse" style={{ backgroundColor: '#FFFFFF', borderRadius: 14, boxShadow: '0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)' }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gray-200" />
             <div className="flex-1 space-y-2">
@@ -163,7 +163,7 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
       <div className={cn("", className)}>
         <div
           className="p-4 cursor-pointer active:scale-[0.99] transition-transform"
-          style={{ backgroundColor: '#FFFFFF', borderRadius: 14, border: '0.5px solid #E4E4E7' }}
+          style={{ backgroundColor: '#FFFFFF', borderRadius: 14, boxShadow: '0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)' }}
           onClick={handleCardClick}
         >
           <div className="flex items-center justify-between">
@@ -199,7 +199,7 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
     <div className={cn("", className)}>
       <div
         className="overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
-        style={{ backgroundColor: '#FFFFFF', borderRadius: 14, border: '0.5px solid #E4E4E7' }}
+        style={{ backgroundColor: '#FFFFFF', borderRadius: 14, boxShadow: '0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)' }}
         onClick={handleCardClick}
       >
         {/* Header */}

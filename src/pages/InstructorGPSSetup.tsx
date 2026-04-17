@@ -250,7 +250,7 @@ export default function InstructorGPSSetup() {
       <div className="space-y-6 max-w-2xl mx-auto">
        {/* Active Provider Banner */}
         {activeProvider && (
-          <div className="overflow-hidden p-4" style={{ backgroundColor: "#FFFFFF", borderRadius: 14, border: "0.5px solid #E4E4E7" }}>
+          <div className="overflow-hidden p-4" style={{ backgroundColor: "#FFFFFF", borderRadius: 14, boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)" }}>
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Satellite className="h-5 w-5 text-primary" />
@@ -302,7 +302,7 @@ export default function InstructorGPSSetup() {
         )}
 
         {/* Register New Device */}
-        <div className="overflow-hidden p-4 space-y-4" style={{ backgroundColor: "#FFFFFF", borderRadius: 14, border: "0.5px solid #E4E4E7" }}>
+        <div className="overflow-hidden p-4 space-y-4" style={{ backgroundColor: "#FFFFFF", borderRadius: 14, boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)" }}>
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Search className="h-5 w-5 text-primary" />
             Register a Tracker
@@ -349,14 +349,14 @@ export default function InstructorGPSSetup() {
           <h2 className="text-lg font-semibold">Your Devices</h2>
           
           {devices.length === 0 ? (
-            <div className="overflow-hidden py-8 text-center text-muted-foreground" style={{ backgroundColor: "#FFFFFF", borderRadius: 14, border: "0.5px solid #E4E4E7" }}>
+            <div className="overflow-hidden py-8 text-center text-muted-foreground" style={{ backgroundColor: "#FFFFFF", borderRadius: 14, boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)" }}>
               <Cpu className="h-12 w-12 mx-auto mb-3 opacity-50" />
               <p>No devices configured yet</p>
               <p className="text-sm">Your GPS tracker will appear here automatically</p>
             </div>
           ) : (
             devices.map((device) => (
-              <div key={device.id} className="overflow-hidden p-4" style={{ backgroundColor: "#FFFFFF", borderRadius: 14, border: "0.5px solid #E4E4E7" }}>
+              <div key={device.id} className="overflow-hidden p-4" style={{ backgroundColor: "#FFFFFF", borderRadius: 14, boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)" }}>
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
