@@ -357,8 +357,59 @@ export function CoursePlannerSheet({
                 </div>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">Test centre (optional)</Label>
-                <Input placeholder="e.g. Winchester" value={testCentre} onChange={(e) => setTestCentre(e.target.value)} />
+                <Label className="text-xs text-muted-foreground mb-1 block">Test centre</Label>
+                <Popover open={centrePickerOpen} onOpenChange={setCentrePickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        "w-full justify-between font-normal",
+                        !testCentreName && "text-muted-foreground",
+                      )}
+                    >
+                      <span className="truncate text-left">
+                        {testCentreName || "Search 314 UK test centres…"}
+                      </span>
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search by name or postcode…" />
+                      <CommandList>
+                        <CommandEmpty>No test centre found.</CommandEmpty>
+                        <CommandGroup>
+                          {testCentres.map((c) => (
+                            <CommandItem
+                              key={c.id}
+                              value={`${c.name} ${c.postcode || ""}`}
+                              onSelect={() => {
+                                setTestCentreId(c.id);
+                                setTestCentreName(c.name);
+                                setCentrePickerOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  testCentreId === c.id ? "opacity-100" : "opacity-0",
+                                )}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm truncate">{c.name}</div>
+                                {c.postcode && (
+                                  <div className="text-[11px] text-muted-foreground">{c.postcode}</div>
+                                )}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
             </section>
 
