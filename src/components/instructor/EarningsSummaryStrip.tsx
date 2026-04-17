@@ -15,7 +15,7 @@ export function EarningsSummaryStrip({
 
   return (
     <div className="mx-4 mb-4">
-      <div className="bg-card border border-border px-4 py-3 rounded-2xl">
+      <div className="bg-card px-4 py-3 rounded-2xl shadow-lift">
         <div className="flex items-center justify-around">
           <div className="flex flex-col items-center gap-0.5">
             <div className="flex items-center gap-1.5 text-foreground">
