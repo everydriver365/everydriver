@@ -583,7 +583,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                               backgroundColor: "#FFFFFF",
                               borderRadius: 14,
                               border: "0.5px solid #E4E4E7",
-                              padding: "12px 16px 12px 20px",
+                              padding: "12px 32px 12px 20px",
                               minHeight: 48,
                               cursor: "pointer",
                               overflow: "hidden",
@@ -592,6 +592,20 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                           >
                             {/* Left color accent */}
                             <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: 4, backgroundColor: colors.bg, borderRadius: "14px 0 0 14px" }} />
+                            {/* Chevron */}
+                            <ChevronDown
+                              style={{
+                                position: "absolute",
+                                top: "50%",
+                                right: 12,
+                                transform: `translateY(-50%) ${isExpanded ? "rotate(180deg)" : "rotate(0deg)"}`,
+                                width: 16,
+                                height: 16,
+                                color: "#71717A",
+                                transition: "transform 200ms ease",
+                                pointerEvents: "none",
+                              }}
+                            />
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                               <div style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: colors.bg, flexShrink: 0 }} />
                               <span style={{ fontSize: 15, fontWeight: 500, color: "#18181B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, fontFamily: "Inter, sans-serif" }}>
@@ -646,7 +660,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                               backgroundColor: "#FFFFFF",
                               borderRadius: 14,
                               border: "0.5px solid #E4E4E7",
-                              padding: "12px 16px 12px 20px",
+                              padding: "12px 32px 12px 20px",
                               minHeight: 48,
                               cursor: "pointer",
                               overflow: "hidden",
@@ -654,6 +668,20 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                           >
                             {/* Left color accent */}
                             <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: 4, backgroundColor: colors.bg, borderRadius: "14px 0 0 14px" }} />
+                            {/* Chevron */}
+                            <ChevronDown
+                              style={{
+                                position: "absolute",
+                                top: "50%",
+                                right: 12,
+                                transform: `translateY(-50%) ${isExpanded ? "rotate(180deg)" : "rotate(0deg)"}`,
+                                width: 16,
+                                height: 16,
+                                color: "#71717A",
+                                transition: "transform 200ms ease",
+                                pointerEvents: "none",
+                              }}
+                            />
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                               <div style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: colors.bg, flexShrink: 0 }} />
                               <span style={{ fontSize: 15, fontWeight: 500, color: "#18181B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, fontFamily: "Inter, sans-serif" }}>
