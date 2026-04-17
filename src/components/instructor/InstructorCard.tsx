@@ -28,12 +28,12 @@ export function InstructorCard({
   return (
     <motion.div
       className={cn(
-        "overflow-hidden",
+        "overflow-hidden shadow-lift hover:shadow-lift-hover active:shadow-lift-pressed transition-shadow duration-200",
         !noPadding && "p-5",
         interactive && "cursor-pointer",
         className
       )}
-      style={{ backgroundColor: '#FFFFFF', borderRadius: 14, border: '0.5px solid #E4E4E7', boxShadow: '0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.06)' }}
+      style={{ backgroundColor: '#FFFFFF', borderRadius: 14 }}
       whileTap={interactive ? { scale: 0.97 } : undefined}
       transition={interactive ? { type: "spring", stiffness: 400, damping: 25 } : undefined}
       {...motionProps}
