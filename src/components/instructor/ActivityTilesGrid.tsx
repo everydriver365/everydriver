@@ -73,7 +73,7 @@ export function ActivityTilesGrid({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="flex items-center justify-center gap-2 py-3 px-4"
-          style={{ backgroundColor: "#ECFDF5", borderRadius: 14, border: "0.5px solid #E4E4E7" }}
+          style={{ backgroundColor: "#ECFDF5", borderRadius: 14, boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)" }}
         >
           <CheckCircle2 size={18} strokeWidth={2} color="#059669" />
           <span style={{ fontSize: 14, fontWeight: 500, color: "#059669", fontFamily: "Inter, sans-serif" }}>
