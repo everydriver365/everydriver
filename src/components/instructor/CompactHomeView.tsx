@@ -35,7 +35,7 @@ import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
-import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
+
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { SmartScheduleCard } from "@/components/instructor/SmartScheduleCard";
@@ -335,12 +335,8 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
           />
         )}
 
-        {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
-          <TrackerReminderBanner
-            lessonId={nextLesson.lessonId}
-            minutesUntil={nextLesson.minutesUntil}
-          />
-        )}
+
+
 
         {/* Your Day section */}
         {isQuietDay ? (

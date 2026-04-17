@@ -62,7 +62,7 @@ import { NextUpTile } from "@/components/instructor/NextUpTile";
 import planAheadIcon from "@/assets/plan-ahead-icon.png";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
-import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
+
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 
@@ -559,12 +559,8 @@ export function InstructorMobileHome({
 
         
 
-        {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
-          <TrackerReminderBanner
-            lessonId={nextLesson.lessonId}
-            minutesUntil={nextLesson.minutesUntil}
-          />
-        )}
+
+
       </div>
 
       {/* Pupil Milestone Feed */}
