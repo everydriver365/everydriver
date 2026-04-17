@@ -290,7 +290,16 @@ export function HomepageHero({
                         opacity: 0.65,
                       }}
                     />
-                    <ActivityRing completed={slide.completed} total={slide.total} />
+                    <ConcentricRings
+                      rings={[
+                        { completed: todayCompleted, total: todayTotal, gradId: "ringToday", start: "#FF2D55", end: "#FF6B9D", trackColor: "rgba(255,45,85,0.15)" },
+                        { completed: weeklyLessonsCompleted, total: weeklyLessonsTotal, gradId: "ringWeek", start: "#A8E063", end: "#34C759", trackColor: "rgba(52,199,89,0.15)" },
+                        { completed: monthlyCompleted, total: monthlyTotal, gradId: "ringMonth", start: "#30B0C7", end: "#5AC8FA", trackColor: "rgba(48,176,199,0.15)" },
+                      ]}
+                      centerCompleted={slide.completed}
+                      centerTotal={slide.total}
+                      centerColor={i === 0 ? "#FF2D55" : i === 1 ? "#34C759" : "#30B0C7"}
+                    />
                     <div className="flex-1 min-w-0 relative z-10">
                       <p style={{ fontSize: 15, fontWeight: 700, color: "#1C1C1E", marginBottom: 1 }}>
                         {slide.completed === slide.total && slide.total > 0 ? "All done! 🎉" : slide.label === "TODAY" ? "Lessons Today" : slide.label === "THIS WEEK" ? "Lessons This Week" : "Lessons This Month"}
