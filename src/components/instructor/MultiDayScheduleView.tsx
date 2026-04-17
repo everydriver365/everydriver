@@ -542,10 +542,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                               <div
                                 style={{
                                   position: "relative",
-                                  backgroundColor: "#FFFFFF",
-                                  borderRadius: 14,
-                                  border: "0.5px solid #E4E4E7",
-                                  padding: "12px 16px 12px 20px",
+                                  padding: "12px 32px 12px 20px",
                                   minHeight: 48,
                                   overflow: "hidden",
                                 }}
