@@ -12400,6 +12400,7 @@ export type Database = {
           updated_at: string
           weekly_driving_score: number | null
           what3words: string | null
+          whatsapp_confirmed_at: string | null
           whatsapp_opt_in: boolean
         }
         Insert: {
@@ -12489,6 +12490,7 @@ export type Database = {
           updated_at?: string
           weekly_driving_score?: number | null
           what3words?: string | null
+          whatsapp_confirmed_at?: string | null
           whatsapp_opt_in?: boolean
         }
         Update: {
@@ -12578,6 +12580,7 @@ export type Database = {
           updated_at?: string
           weekly_driving_score?: number | null
           what3words?: string | null
+          whatsapp_confirmed_at?: string | null
           whatsapp_opt_in?: boolean
         }
         Relationships: [

@@ -1,0 +1,1 @@
+ALTER TABLE public.pupils ADD COLUMN IF NOT EXISTS whatsapp_confirmed_at TIMESTAMPTZ;
