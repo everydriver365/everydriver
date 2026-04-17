@@ -1,28 +1,33 @@
 
-The user wants the "Open Tracker" reminder integrated into the Next Lesson tile (not a separate banner) and the action should actually do something useful.
+Goal: Add a "Start Tracker" action to every Next Lesson / schedule tile that jumps to the tracking page with the pupil pre-selected, removing the manual reselect step.
 
-Looking at context: hardware tracker auto-records, so "Open Tracker" as an app launcher is meaningless. The most useful action is to navigate to `/instructor/tracking` (the live tracking map) so the instructor can confirm the vehicle/tracker is online before the lesson starts.
+## Investigation needed
+- `NextUpTile.tsx` — already has a Tracker pill (≤30 min). Need to extend to all upcoming lessons and pass `pupilId`.
+- `ExpandableLessonCard` (used in `MultiDayScheduleView`) — schedule tiles where the button must also live.
+- `/instructor/tracking` page — how it reads URL params today and selects a pupil.
 
 ## Plan
 
-**1. Remove the standalone `TrackerReminderBanner`** from wherever it's rendered on the home page (likely `Instructor.tsx` or a home component).
+**1. Tracking page — accept `?pupilId=` param**
+- Read `pupilId` from `useSearchParams` on mount
+- If present and pupil exists in instructor's list → auto-select that pupil and (optionally) auto-start the tracker view
+- Falls back to current manual selection if param missing/invalid
 
-**2. Add a tracker indicator to the Next Lesson tile**
-Find the Next Lesson tile component (uses `useNextLessonDetails`). When `minutesUntil <= 30` (configurable threshold), show:
-- A small amber pill/marker on the tile: phone icon + "Tracker ready" or "Check tracker"
-- Tapping the tile (or the marker) navigates to `/instructor/tracking?lessonId={id}` so the instructor lands on the live map and can verify the hardware tracker is reporting
+**2. Next Lesson tile (`NextUpTile.tsx`)**
+- Show the "Tracker" pill on EVERY upcoming lesson (drop the ≤30 min gate, or relax to "today + tomorrow")
+- Link target becomes `/instructor/tracking?pupilId={pupilId}&lessonId={lessonId}`
+- Keep dismiss (X) optional — or remove since it's now a useful primary action, not a reminder
+- Decision needed: keep dismiss or not (see question)
 
-**3. Make the marker actionable**
-- Marker is a tappable chip with `onClick` that calls `navigate('/instructor/tracking')`
-- Stops event propagation so it doesn't conflict with the tile's main tap target (which goes to pupil details)
-- Persists dismissal logic (per-lesson, daily reset) preserved from the old banner so instructors can hide it once acknowledged
+**3. Schedule tiles (`ExpandableLessonCard`)**
+- Add a small "Start Tracker" button/icon in the card actions row
+- Same link: `/instructor/tracking?pupilId={pupilId}&lessonId={lessonId}`
+- Only render when the lesson has a `pupilId` (skip blocks/external events)
 
-**4. Files**
-- EDIT the Next Lesson tile component (need to locate — likely `NextLessonCard.tsx` or similar in `src/components/instructor/`)
-- EDIT wherever `TrackerReminderBanner` is rendered — remove it
-- DELETE or leave `TrackerReminderBanner.tsx` unused (keep file, just stop rendering)
+**4. Files to edit**
+- `src/pages/InstructorTracking.tsx` (or equivalent) — read & apply `pupilId` param
+- `src/components/instructor/NextUpTile.tsx` — always show pill, pass pupilId
+- `src/components/instructor/ExpandableLessonCard.tsx` — add tracker button
 
-## UX
-- Marker only appears when a lesson is ≤30 min away
-- Amber dot + "Tracker" label, top-right of tile
-- Tap → live tracking map; long-press / X to dismiss for that lesson
+## Open question
+Auto-start behaviour on the tracking page when `pupilId` is provided — just preselect, or also auto-begin live view?
