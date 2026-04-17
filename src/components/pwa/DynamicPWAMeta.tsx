@@ -63,7 +63,11 @@ function getPortalType(pathname: string): string {
   }
 
   // Fall back to path-based detection for localhost/lovable.app
-  if (pathname.startsWith("/instructor") || pathname.startsWith("/instructor-app")) {
+  if (
+    pathname.startsWith("/instructor") ||
+    pathname.startsWith("/instructor-app") ||
+    pathname.startsWith("/every-instructor")
+  ) {
     return "instructor";
   }
   if (pathname.startsWith("/pupil") || pathname.startsWith("/p/")) {
