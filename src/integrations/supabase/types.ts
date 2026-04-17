@@ -5186,10 +5186,13 @@ export type Database = {
           description: string | null
           end_time: string
           external_event_id: string
+          html_link: string | null
           id: string
           instructor_id: string
           is_busy: boolean
           location: string | null
+          meeting_provider: string | null
+          meeting_url: string | null
           start_time: string
           synced_at: string
           title: string | null
@@ -5199,10 +5202,13 @@ export type Database = {
           description?: string | null
           end_time: string
           external_event_id: string
+          html_link?: string | null
           id?: string
           instructor_id: string
           is_busy?: boolean
           location?: string | null
+          meeting_provider?: string | null
+          meeting_url?: string | null
           start_time: string
           synced_at?: string
           title?: string | null
@@ -5212,10 +5218,13 @@ export type Database = {
           description?: string | null
           end_time?: string
           external_event_id?: string
+          html_link?: string | null
           id?: string
           instructor_id?: string
           is_busy?: boolean
           location?: string | null
+          meeting_provider?: string | null
+          meeting_url?: string | null
           start_time?: string
           synced_at?: string
           title?: string | null
