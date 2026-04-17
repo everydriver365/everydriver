@@ -164,10 +164,10 @@ export function IOSTileGroup({ header, footer, children, className }: IOSTileGro
       )}
       <div
         style={{
-          background: "#FFFFFF",
-          borderRadius: 14,
-          border: "0.5px solid #E4E4E7",
-          boxShadow: "0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.06)",
+          background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)",
+          borderRadius: 20,
+          border: "1px solid rgba(255, 255, 255, 0.6)",
+          boxShadow: "0px 8px 24px rgba(15, 23, 42, 0.06), 0px 2px 6px rgba(15, 23, 42, 0.04)",
           overflow: "hidden",
         }}
       >
