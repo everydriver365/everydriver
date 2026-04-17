@@ -62,22 +62,22 @@ function SummaryBar({ lessons }: { lessons: TodayLesson[] }) {
   const paid = lessons.filter(l => l.paymentStatus === "paid").length;
   return (
     <div style={{
-      backgroundColor: "rgba(255,255,255,0.6)",
-      borderTop: "0.5px solid #b5d0f4",
-      borderBottom: "0.5px solid #b5d0f4",
+      backgroundColor: "#FAFAFA",
+      borderTop: "0.5px solid #E4E4E7",
+      borderBottom: "0.5px solid #E4E4E7",
       padding: "7px 16px",
       display: "flex",
       alignItems: "center",
       gap: 0,
       fontSize: 12,
     }}>
-      <span style={{ color: "#0c447c", fontWeight: 500 }}>{lessons.length} lesson{lessons.length !== 1 ? "s" : ""}</span>
-      <span style={{ color: "#b5d0f4", margin: "0 6px" }}>·</span>
-      <span style={{ color: "#185FA5" }}>{(totalMins / 60).toFixed(1)}h</span>
-      <span style={{ color: "#b5d0f4", margin: "0 6px" }}>·</span>
-      <span style={{ color: "#185FA5" }}>£{Math.round(totalEarnings)}</span>
-      <span style={{ color: "#b5d0f4", margin: "0 6px" }}>·</span>
-      <span style={{ color: "#185FA5" }}>{paid}/{lessons.length} paid</span>
+      <span style={{ color: "#18181B", fontWeight: 500 }}>{lessons.length} lesson{lessons.length !== 1 ? "s" : ""}</span>
+      <span style={{ color: "#D4D4D8", margin: "0 6px" }}>·</span>
+      <span style={{ color: "#71717A" }}>{(totalMins / 60).toFixed(1)}h</span>
+      <span style={{ color: "#D4D4D8", margin: "0 6px" }}>·</span>
+      <span style={{ color: "#71717A" }}>£{Math.round(totalEarnings)}</span>
+      <span style={{ color: "#D4D4D8", margin: "0 6px" }}>·</span>
+      <span style={{ color: "#71717A" }}>{paid}/{lessons.length} paid</span>
     </div>
   );
 }
@@ -120,8 +120,8 @@ function AgendaList({ lessons }: { lessons: TodayLesson[] }) {
               >
                 {/* Time */}
                 <div style={{ width: 44, flexShrink: 0, textAlign: "center" }}>
-                  <span style={{ fontSize: 15, fontWeight: 700, lineHeight: 1, color: "#0c447c" }}>{fmtTime24(l.startTime)}</span>
-                  <div style={{ fontSize: 10, color: "#C7C7CC", marginTop: 2 }}>{l.durationMinutes}m</div>
+                  <span style={{ fontSize: 15, fontWeight: 700, lineHeight: 1, color: "#18181B" }}>{fmtTime24(l.startTime)}</span>
+                  <div style={{ fontSize: 10, color: "#A1A1AA", marginTop: 2 }}>{l.durationMinutes}m</div>
                 </div>
 
                 {/* Divider */}
@@ -139,7 +139,7 @@ function AgendaList({ lessons }: { lessons: TodayLesson[] }) {
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap" as const,
                         textDecoration: done ? "line-through" : "none",
-                        color: "#0c447c",
+                        color: "#18181B",
                       }}>
                         {l.pupilName}
                       </span>
@@ -159,7 +159,7 @@ function AgendaList({ lessons }: { lessons: TodayLesson[] }) {
                         </span>
                       )}
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#378add", marginTop: 2, flexWrap: "wrap" as const }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#71717A", marginTop: 2, flexWrap: "wrap" as const }}>
                       {l.pickupPostcode && (
                         <span style={{ display: "flex", alignItems: "center", gap: 2 }}>
                           <MapPin style={{ height: 10, width: 10 }} />{l.pickupPostcode}
@@ -215,18 +215,18 @@ export function TodayScheduleAgenda({ todayLessons, tomorrowLessons, className =
     <div
       className={className}
       style={{
-        borderRadius: 18,
-        border: "0.5px solid #b5d0f4",
-        background: "#eef4fd",
+        borderRadius: 14,
+        border: "0.5px solid #E4E4E7",
+        background: "#FFFFFF",
         overflow: "hidden",
-        fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
+        fontFamily: "Inter, -apple-system, 'SF Pro Text', sans-serif",
       }}
     >
       {/* Header */}
       <div style={{ padding: "14px 16px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <p style={{ margin: 0, fontSize: 16, fontWeight: 500, color: "#0c447c" }}>Today's Schedule</p>
-          <p style={{ margin: "3px 0 0", fontSize: 12, color: "#378add" }}>
+          <p style={{ margin: 0, fontSize: 15, fontWeight: 500, color: "#18181B", fontFamily: "Inter, sans-serif" }}>Today's Schedule</p>
+          <p style={{ margin: "2px 0 0", fontSize: 12, color: "#71717A", fontFamily: "Inter, sans-serif" }}>
             {format(tab === "today" ? new Date() : addDays(new Date(), 1), "EEE d MMM")} · {activeLessons.length} lesson{activeLessons.length !== 1 ? "s" : ""}
           </p>
         </div>
