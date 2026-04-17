@@ -106,10 +106,10 @@
 
      --spacing: 0.25rem;
 
-     /* Instructor mobile app — slate gradient backdrop */
-     --instructor-bg-start: #EEF2F7;
-     --instructor-bg-end: #E4E9F0;
-     --instructor-bg-overlay: rgba(238, 242, 247, 0.85);
+     /* Instructor mobile app — deep slate gradient backdrop (premium) */
+     --instructor-bg-start: #C9D2DF;
+     --instructor-bg-end: #AEBAC9;
+     --instructor-bg-overlay: rgba(201, 210, 223, 0.85);
   }
 
   .instructor-shell-bg {
