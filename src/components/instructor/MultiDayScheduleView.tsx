@@ -4,6 +4,7 @@ import { format, addDays, isToday, parseISO, startOfDay, endOfDay, isSameDay, di
 import { Calendar, Clock, MapPin, Plus, Loader2, CheckCircle2, ChevronDown, Video, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ExpandableLessonCard } from "./ExpandableLessonCard";
+import { LessonTextSheet } from "./LessonTextSheet";
 import { GapFillCard } from "./GapFillCard";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
@@ -156,6 +157,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   const [sendingMessage, setSendingMessage] = useState<string | null>(null);
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [instructorName, setInstructorName] = useState<string>("Your instructor");
+  const [lessonForText, setLessonForText] = useState<ScheduledLesson | null>(null);
 
   const startDate = useMemo(() => startOfDay(new Date()), []);
   const days = useMemo(() => Array.from({ length: DAYS_TO_LOAD }, (_, i) => addDays(startDate, i)), [startDate]);
@@ -265,9 +267,8 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
     if (!phone) { toast({ title: "No phone number", variant: "destructive" }); return; }
     window.location.href = `tel:${phone}`;
   };
-  const handleText = (phone: string | null) => {
-    if (!phone) { toast({ title: "No phone number", variant: "destructive" }); return; }
-    window.location.href = `sms:${phone}`;
+  const handleText = (lesson: ScheduledLesson) => {
+    setLessonForText(lesson);
   };
   const handleOnWay = async (lesson: ScheduledLesson, delayMinutes?: number) => {
     if (!lesson.pupil?.phone) { toast({ title: "No phone number", variant: "destructive" }); return; }
@@ -882,6 +883,29 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
         instructorId={instructorId}
         defaultDate={new Date()}
         onSuccess={fetchData}
+      />
+
+      {/* Text Pupil Sheet */}
+      <LessonTextSheet
+        open={!!lessonForText}
+        onOpenChange={(open) => { if (!open) setLessonForText(null); }}
+        instructorId={instructorId}
+        instructorName={instructorName}
+        lesson={lessonForText ? {
+          id: lessonForText.id,
+          pupilId: lessonForText.pupil.id,
+          pupilName: lessonForText.pupil.name,
+          pupilPhone: lessonForText.pupil.phone,
+          date: lessonForText.lesson_date,
+          startTime: lessonForText.start_time.slice(0, 5),
+          endTime: (() => {
+            const [h, m] = lessonForText.start_time.split(":").map(Number);
+            const total = h * 60 + m + lessonForText.duration_minutes;
+            const eh = Math.floor(total / 60) % 24;
+            const em = total % 60;
+            return `${String(eh).padStart(2, "0")}:${String(em).padStart(2, "0")}`;
+          })(),
+        } : null}
       />
     </div>
   );

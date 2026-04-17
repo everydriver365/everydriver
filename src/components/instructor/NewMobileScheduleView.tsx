@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { ScheduleDayTabs } from "./ScheduleDayTabs";
 import { ExpandableLessonCard } from "./ExpandableLessonCard";
+import { LessonTextSheet } from "./LessonTextSheet";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { AddLessonSheet } from "./AddLessonSheet";
@@ -92,6 +93,14 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
   const [selectedLesson, setSelectedLesson] = useState<ScheduledLesson | null>(null);
   const [sendingMessage, setSendingMessage] = useState<string | null>(null);
   const [lessonColors, setLessonColors] = useState<Record<string, string>>({});
+  const [instructorName, setInstructorName] = useState<string>("Your instructor");
+  const [lessonForText, setLessonForText] = useState<ScheduledLesson | null>(null);
+
+  useEffect(() => {
+    if (!instructorId) return;
+    supabase.from("instructors").select("name").eq("id", instructorId).maybeSingle()
+      .then(({ data }) => { if (data?.name) setInstructorName(data.name); });
+  }, [instructorId]);
 
   useEffect(() => {
     fetchLessons();
@@ -184,9 +193,8 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
     window.location.href = `tel:${phone}`;
   };
 
-  const handleText = (phone: string | null) => {
-    if (!phone) { toast({ title: "No phone number", description: "This pupil doesn't have a phone number on file", variant: "destructive" }); return; }
-    window.location.href = `sms:${phone}`;
+  const handleText = (lesson: ScheduledLesson) => {
+    setLessonForText(lesson);
   };
 
   const handleOnWay = async (lesson: ScheduledLesson, delayMinutes?: number) => {
@@ -533,6 +541,29 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
         instructorId={instructorId}
         defaultDate={selectedDate}
         onSuccess={fetchLessons}
+      />
+
+      {/* Text Pupil Sheet */}
+      <LessonTextSheet
+        open={!!lessonForText}
+        onOpenChange={(open) => { if (!open) setLessonForText(null); }}
+        instructorId={instructorId}
+        instructorName={instructorName}
+        lesson={lessonForText ? {
+          id: lessonForText.id,
+          pupilId: lessonForText.pupil.id,
+          pupilName: lessonForText.pupil.name,
+          pupilPhone: lessonForText.pupil.phone,
+          date: lessonForText.lesson_date,
+          startTime: lessonForText.start_time.slice(0, 5),
+          endTime: (() => {
+            const [h, m] = lessonForText.start_time.split(":").map(Number);
+            const total = h * 60 + m + lessonForText.duration_minutes;
+            const eh = Math.floor(total / 60) % 24;
+            const em = total % 60;
+            return `${String(eh).padStart(2, "0")}:${String(em).padStart(2, "0")}`;
+          })(),
+        } : null}
       />
     </div>
   );
