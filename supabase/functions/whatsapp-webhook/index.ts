@@ -56,33 +56,45 @@ Deno.serve(async (req) => {
 
     const message = value.messages[0];
     const senderPhone = message.from; // e.g. "447123456789"
-    const messageText = message.text?.body || "";
     const senderName = value.contacts?.[0]?.profile?.name || null;
-
-    if (!messageText.trim()) {
-      return new Response(JSON.stringify({ status: "empty_message" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Find instructor by WhatsApp phone number ID (the business number receiving the message)
+    // Identify which instructor owns this WhatsApp business number (by phone_number_id)
     const businessPhoneId = value.metadata?.phone_number_id;
-    
-    // Look up which instructor owns this WhatsApp number
-    // We match by whatsapp_phone or phone field on instructors table
-    const { data: instructor, error: instrError } = await supabase
-      .from("instructors")
-      .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone")
-      .or(`whatsapp_phone.eq.${senderPhone},phone.eq.${senderPhone}`)
-      .maybeSingle();
+    let perInstructorToken: string | null = null;
+    let targetInstructor: any = null;
 
-    // If no instructor matched by sender phone, try finding by the business phone ID
-    // For now, get the first instructor with AI receptionist enabled as fallback
-    let targetInstructor = instructor;
+    if (businessPhoneId) {
+      const { data: acct } = await supabase
+        .from("instructor_whatsapp_accounts")
+        .select("instructor_id, access_token")
+        .eq("phone_number_id", businessPhoneId)
+        .maybeSingle();
+      if (acct) {
+        perInstructorToken = acct.access_token;
+        const { data: instr } = await supabase
+          .from("instructors")
+          .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone")
+          .eq("id", acct.instructor_id)
+          .maybeSingle();
+        targetInstructor = instr;
+      }
+    }
+
+    // Fallback: match by sender phone matching instructor's own number
+    if (!targetInstructor) {
+      const { data: instructor } = await supabase
+        .from("instructors")
+        .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone")
+        .or(`whatsapp_phone.eq.${senderPhone},phone.eq.${senderPhone}`)
+        .maybeSingle();
+      targetInstructor = instructor;
+    }
+
+    // Last resort: first instructor with AI receptionist enabled
     if (!targetInstructor) {
       const { data: fallback } = await supabase
         .from("instructors")
@@ -91,6 +103,18 @@ Deno.serve(async (req) => {
         .limit(1)
         .maybeSingle();
       targetInstructor = fallback;
+    }
+
+    // Extract text + media from the inbound message
+    let messageText = message.text?.body || "";
+    const mediaInfo = await extractInboundMedia(message, supabase, perInstructorToken);
+    if (!messageText && mediaInfo?.caption) messageText = mediaInfo.caption;
+    if (!messageText && mediaInfo) messageText = `[${mediaInfo.type}]`;
+
+    if (!messageText.trim() && !mediaInfo) {
+      return new Response(JSON.stringify({ status: "empty_message" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     if (!targetInstructor) {
