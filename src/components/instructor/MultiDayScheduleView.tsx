@@ -698,10 +698,9 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         const [nH, nM] = nextStartStr.split(":").map(Number);
                         const gapMin = (nH * 60 + nM) - (cH * 60 + cM);
                         if (gapMin >= 60) {
-                          const bothLessons = item.kind === "lesson" && nextItem.kind === "lesson";
-                          const isSignificant = gapMin >= 90;
+                          const isSignificant = gapMin >= 60;
 
-                          if (bothLessons && isSignificant) {
+                          if (isSignificant) {
                             elements.push(
                               <GapFillCard
                                 key={`gap-${i}`}
