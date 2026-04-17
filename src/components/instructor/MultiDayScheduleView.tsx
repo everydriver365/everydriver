@@ -4,6 +4,7 @@ import { format, addDays, isToday, parseISO, startOfDay, endOfDay, isSameDay, di
 import { Calendar, Clock, MapPin, Plus, Loader2, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ExpandableLessonCard } from "./ExpandableLessonCard";
+import { GapFillCard } from "./GapFillCard";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { AddLessonSheet } from "./AddLessonSheet";
