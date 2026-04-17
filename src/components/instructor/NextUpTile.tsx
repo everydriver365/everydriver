@@ -106,6 +106,7 @@ export function NextUpTile({
   const [lateSheetOpen, setLateSheetOpen] = useState(false);
   const [showGPSRecorder, setShowGPSRecorder] = useState(false);
   const [trafficModalOpen, setTrafficModalOpen] = useState(false);
+  const [trackerDismissed, setTrackerDismissed] = useState<boolean>(() => isTrackerDismissed(lessonId));
   const [, setTick] = useState(0);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
