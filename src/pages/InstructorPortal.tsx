@@ -220,9 +220,6 @@ export default function InstructorPortal() {
       <InstructorPortalLayout>
         <div className="space-y-3">
         <DemoModeBanner />
-        {!isDemoMode && pupils.length === 0 && todaysLessonCount === 0 && (
-          <DemoModeInviteCard />
-        )}
         <InstructorMobileHome 
           instructor={instructorData}
           todaysLessonCount={todaysLessonCount}
