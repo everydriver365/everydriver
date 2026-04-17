@@ -411,13 +411,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
       <div
         className={cn(
           "min-h-screen instructor-portal ios-instructor",
-           isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : "pb-16"
+           isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : "pb-16 instructor-shell-bg"
         )}
-        style={
-          !isFullscreenMode
-            ? { backgroundColor: "#F2F2F7" }
-            : undefined
-        }
       >
         {!isFullscreenMode && (
           <>
@@ -427,7 +422,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             {/* Mobile Header — Premium iOS tile */}
             <header className="sticky top-0 z-40">
               {/* Safe area spacer */}
-              <div className="bg-[#f2f2f7]" style={{ paddingTop: "env(safe-area-inset-top)" }} />
+              <div style={{ paddingTop: "env(safe-area-inset-top)", background: "var(--instructor-bg-start)" }} />
 
               <div
                 className="w-full overflow-hidden bg-white border-b border-black/[0.06]"
@@ -657,7 +652,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         ) : (
           <>
             <OfflineBanner />
-            <main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`} style={{ backgroundColor: isHomePage ? 'transparent' : '#F2F2F7' }}>{children}</main>
+            <main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`} style={{ backgroundColor: 'transparent' }}>{children}</main>
             <InstructorBottomNav wallpaperColor={appStyleBg} />
             {/* Floating Ask ED button */}
             <div className="fixed bottom-[88px] right-4 z-40 flex flex-col items-center gap-1">
