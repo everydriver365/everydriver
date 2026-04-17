@@ -30,10 +30,10 @@ Deno.serve(async (req) => {
 
     const userId = claimsData.claims.sub;
 
-    const { to, message, template } = await req.json();
+    const { to, message, media } = await req.json();
 
-    if (!to || !message) {
-      return new Response(JSON.stringify({ error: "Missing 'to' or 'message'" }), { status: 400, headers: corsHeaders });
+    if (!to || (!message && !media?.url)) {
+      return new Response(JSON.stringify({ error: "Missing 'to' or 'message'/'media'" }), { status: 400, headers: corsHeaders });
     }
 
     // Use service role client for logging
@@ -49,8 +49,21 @@ Deno.serve(async (req) => {
       .eq("auth_user_id", userId)
       .maybeSingle();
 
-    const WHATSAPP_TOKEN = Deno.env.get("WHATSAPP_BUSINESS_TOKEN");
-    const WHATSAPP_PHONE_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
+    // Per-instructor token first, fall back to global
+    let WHATSAPP_TOKEN = Deno.env.get("WHATSAPP_BUSINESS_TOKEN");
+    let WHATSAPP_PHONE_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
+
+    if (instructor) {
+      const { data: acct } = await serviceClient
+        .from("instructor_whatsapp_accounts")
+        .select("access_token, phone_number_id, status")
+        .eq("instructor_id", instructor.id)
+        .maybeSingle();
+      if (acct?.access_token && acct?.phone_number_id && acct.status === "connected") {
+        WHATSAPP_TOKEN = acct.access_token;
+        WHATSAPP_PHONE_ID = acct.phone_number_id;
+      }
+    }
 
     let sentVia: string = "whatsapp";
     let messageId: string | null = null;
@@ -59,7 +72,7 @@ Deno.serve(async (req) => {
     if (!WHATSAPP_TOKEN || !WHATSAPP_PHONE_ID) {
       // WhatsApp not configured — fall back to SMS via Twilio
       console.log("WhatsApp not configured, falling back to SMS");
-      
+
       const TWILIO_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
       const TWILIO_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
       const TWILIO_FROM = Deno.env.get("TWILIO_PHONE_NUMBER");
@@ -72,13 +85,10 @@ Deno.serve(async (req) => {
       }
 
       const params = new URLSearchParams();
-      if (TWILIO_MSG_SID) {
-        params.append("MessagingServiceSid", TWILIO_MSG_SID);
-      } else if (TWILIO_FROM) {
-        params.append("From", TWILIO_FROM);
-      }
+      if (TWILIO_MSG_SID) params.append("MessagingServiceSid", TWILIO_MSG_SID);
+      else if (TWILIO_FROM) params.append("From", TWILIO_FROM);
       params.append("To", to);
-      params.append("Body", message);
+      params.append("Body", message || (media?.caption ?? "(media attachment)"));
 
       const smsRes = await fetch(
         `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`,
@@ -95,7 +105,29 @@ Deno.serve(async (req) => {
       sentVia = "sms";
       smsSid = smsData.sid;
     } else {
-      // Send via WhatsApp Business Cloud API
+      // Build WhatsApp payload (text or media)
+      let payload: any;
+      if (media?.url) {
+        const t = media.type || "image";
+        payload = {
+          messaging_product: "whatsapp",
+          to: to.replace(/\D/g, ""),
+          type: t,
+          [t]: {
+            link: media.url,
+            ...(media.caption && (t === "image" || t === "document" || t === "video") ? { caption: media.caption } : {}),
+            ...(t === "document" && media.filename ? { filename: media.filename } : {}),
+          },
+        };
+      } else {
+        payload = {
+          messaging_product: "whatsapp",
+          to: to.replace(/\D/g, ""),
+          type: "text",
+          text: { body: message },
+        };
+      }
+
       const waRes = await fetch(
         `https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_ID}/messages`,
         {
@@ -104,12 +136,7 @@ Deno.serve(async (req) => {
             Authorization: `Bearer ${WHATSAPP_TOKEN}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            messaging_product: "whatsapp",
-            to: to.replace(/\D/g, ""),
-            type: "text",
-            text: { body: message },
-          }),
+          body: JSON.stringify(payload),
         }
       );
 
@@ -128,7 +155,6 @@ Deno.serve(async (req) => {
       try {
         const phoneClean = to.replace(/\D/g, "");
 
-        // Upsert conversation
         const { data: conv } = await serviceClient
           .from("whatsapp_conversations")
           .select("id")
@@ -158,23 +184,26 @@ Deno.serve(async (req) => {
           conversationId = newConv!.id;
         }
 
-        // Log outbound message
         await serviceClient
           .from("whatsapp_messages")
           .insert({
             conversation_id: conversationId,
-            content: message,
+            content: message || media?.caption || "",
             direction: "outbound",
             sender_type: "instructor",
+            ...(media?.url ? {
+              media_url: media.url,
+              media_type: media.type || "image",
+              media_mime: media.mime || null,
+            } : {}),
           });
       } catch (logErr) {
         console.error("Failed to log WhatsApp message:", logErr);
-        // Don't fail the whole request if logging fails
       }
     }
 
-    return new Response(JSON.stringify({ 
-      sent_via: sentVia, 
+    return new Response(JSON.stringify({
+      sent_via: sentVia,
       message_id: messageId,
       sid: smsSid,
     }), {
