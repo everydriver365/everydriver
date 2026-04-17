@@ -496,7 +496,7 @@ export function QuickActionTiles({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.03 + index * 0.02 }}
                   whileTap={{ scale: 0.97 }}
-                  className="ios-tile relative rounded-2xl px-3.5 py-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card flex items-center gap-3"
+                  className="ios-tile relative rounded-2xl px-3.5 py-3.5 shadow-[0_2px_4px_rgba(16,24,40,0.06),0_8px_20px_rgba(16,24,40,0.10)] border border-border/40 bg-card flex items-center gap-3"
                 >
                   {/* Icon */}
                   <div className="relative shrink-0">
