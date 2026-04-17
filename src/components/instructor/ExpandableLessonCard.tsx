@@ -343,6 +343,103 @@ export function ExpandableLessonCard({
                   </div>
                 </div>
 
+                {/* Calendar Details */}
+                <div className="rounded-xl bg-muted/40 border border-border/50 p-2.5 space-y-2">
+                  <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                    <CalendarClock className="h-3 w-3" />
+                    Calendar Details
+                  </div>
+
+                  {/* Date + Time + Duration */}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-foreground font-medium">
+                      {new Date(`${lesson.lesson_date}T${lesson.start_time}`).toLocaleDateString("en-GB", {
+                        weekday: "short", day: "numeric", month: "short", year: "numeric",
+                      })}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {formatTime(lesson.start_time)} · {lesson.duration_minutes}m
+                    </span>
+                  </div>
+
+                  {/* Lesson type */}
+                  {lesson.lesson_type && (
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Type</span>
+                      <span className="text-foreground capitalize">{lesson.lesson_type.replace(/_/g, " ")}</span>
+                    </div>
+                  )}
+
+                  {/* Recurrence */}
+                  {isRecurring && (
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground flex items-center gap-1">
+                        <Repeat className="h-3 w-3" /> Recurs
+                      </span>
+                      <span className="text-foreground">
+                        {(() => {
+                          const r = lesson.recurrence_rule || "";
+                          const freq = /FREQ=([A-Z]+)/.exec(r)?.[1];
+                          const interval = /INTERVAL=(\d+)/.exec(r)?.[1];
+                          const until = /UNTIL=(\d{8})/.exec(r)?.[1];
+                          const count = /COUNT=(\d+)/.exec(r)?.[1];
+                          const freqLabel: Record<string, string> = { DAILY: "day", WEEKLY: "week", MONTHLY: "month" };
+                          const base = freq && freqLabel[freq]
+                            ? (interval && interval !== "1" ? `Every ${interval} ${freqLabel[freq]}s` : `Every ${freqLabel[freq]}`)
+                            : "Repeating";
+                          if (until) {
+                            const u = `${until.slice(0, 4)}-${until.slice(4, 6)}-${until.slice(6, 8)}`;
+                            return `${base} · until ${new Date(u).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
+                          }
+                          if (count) return `${base} · ${count}×`;
+                          return base;
+                        })()}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Google Calendar sync status */}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Google Calendar</span>
+                    {lesson.google_event_id ? (
+                      <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
+                        <Check className="h-3 w-3" /> Synced
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">Not synced</span>
+                    )}
+                  </div>
+
+                  {/* Upcoming lessons for this pupil */}
+                  <div className="pt-2 border-t border-border/40">
+                    <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-1.5">
+                      Upcoming for {lesson.pupil?.name?.split(" ")[0] || "pupil"}
+                    </div>
+                    {loadingUpcoming ? (
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Loader2 className="h-3 w-3 animate-spin" /> Loading…
+                      </div>
+                    ) : upcomingLessons.length === 0 ? (
+                      <div className="text-xs text-muted-foreground italic">No upcoming lessons</div>
+                    ) : (
+                      <ul className="space-y-1">
+                        {upcomingLessons.map((u) => (
+                          <li key={u.id} className="flex items-center justify-between text-xs">
+                            <span className="text-foreground">
+                              {new Date(`${u.lesson_date}T${u.start_time}`).toLocaleDateString("en-GB", {
+                                weekday: "short", day: "numeric", month: "short",
+                              })}
+                            </span>
+                            <span className="text-muted-foreground">
+                              {formatTime(u.start_time)} · {u.duration_minutes}m
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+
                 {/* Action Buttons - Compact Grid with Quick Message */}
                 <div className="grid grid-cols-5 gap-1.5">
                   <Button
