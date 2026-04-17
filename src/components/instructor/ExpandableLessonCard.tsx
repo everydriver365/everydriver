@@ -552,7 +552,7 @@ export function ExpandableLessonCard({
                   </DropdownMenu>
                 </div>
 
-                {/* Start Tracker (pupil pre-selected) */}
+                {/* Start Track (pupil pre-selected, auto-starts session) */}
                 {lesson.pupil?.id && (
                   <Button
                     variant="outline"
@@ -560,11 +560,11 @@ export function ExpandableLessonCard({
                     className="w-full h-9 gap-1.5 text-xs border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:border-amber-700 dark:text-amber-300"
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/instructor/tracking?pupilId=${lesson.pupil.id}&lessonId=${lesson.id}`);
+                      navigate(`/instructor/tracking?pupilId=${lesson.pupil.id}&lessonId=${lesson.id}&autoStart=1`);
                     }}
                   >
                     <Radio className="h-3.5 w-3.5" />
-                    Start Tracker for {lesson.pupil?.name?.split(" ")[0] || "pupil"}
+                    Start Track for {lesson.pupil?.name?.split(" ")[0] || "pupil"}
                   </Button>
                 )}
 

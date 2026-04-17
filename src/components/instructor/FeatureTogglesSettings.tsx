@@ -27,6 +27,7 @@ const featureToggles: FeatureToggle[] = [
   { key: "instant_bank_pay_enabled", label: "Instant Bank Pay", description: "Offer one-off bank payments at checkout via GoCardless (lower fees than card)", defaultValue: false },
   { key: "direct_debit_enabled", label: "Direct Debit for Pupils", description: "Collect weekly lesson payments via Direct Debit from recurring pupils", defaultValue: false },
   { key: "prefer_earliest_slot", label: "Earliest Slot Priority", description: "Offer pupils the earliest available slot first to keep your day compact and avoid gaps", defaultValue: false },
+  { key: "auto_start_tracker", label: "Auto-Start Tracker for Every Lesson", description: "Automatically begins a tracking session at the start of every lesson — no tap required.", defaultValue: false },
 ];
 
 const aiFeatureToggles: FeatureToggle[] = [
