@@ -241,7 +241,8 @@ export default function InstructorLiveSession() {
       setPupils(loadedPupils);
 
       // Auto-select pupil from URL param (?pupilId=...)
-      const urlPupilId = new URLSearchParams(window.location.search).get("pupilId");
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlPupilId = urlParams.get("pupilId");
       if (urlPupilId && loadedPupils.some(p => p.id === urlPupilId)) {
         setSelectedPupilId(urlPupilId);
       }
@@ -257,6 +258,27 @@ export default function InstructorLiveSession() {
       setIsLoading(false);
     }
   };
+
+  // Auto-start session when ?autoStart=1 is present in URL (after pupil + device loaded)
+  const autoStartFiredRef = React.useRef(false);
+  useEffect(() => {
+    if (autoStartFiredRef.current) return;
+    if (!device || !instructor?.id || !selectedPupilId) return;
+    if (device.current_session_id) return; // already running
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("autoStart") !== "1") return;
+
+    autoStartFiredRef.current = true;
+
+    // Strip the autoStart flag so refresh doesn't re-trigger
+    params.delete("autoStart");
+    const newSearch = params.toString();
+    navigate(`/instructor/tracking${newSearch ? `?${newSearch}` : ""}`, { replace: true });
+
+    // Fire the existing start handler (defaults to "practice" route type)
+    void startSession("practice");
+  }, [device, instructor?.id, selectedPupilId, navigate]);
 
   // Store device ID in a ref to avoid re-creating subscriptions when device object updates
   const deviceIdRef = React.useRef<string | null>(null);
