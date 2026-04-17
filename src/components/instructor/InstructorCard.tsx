@@ -33,17 +33,9 @@ export function InstructorCard({
         interactive && "cursor-pointer",
         className
       )}
-      style={{
-        background: 'linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)',
-        borderRadius: 20,
-        border: '1px solid rgba(255, 255, 255, 0.6)',
-        boxShadow: '0px 8px 24px rgba(15, 23, 42, 0.06), 0px 2px 6px rgba(15, 23, 42, 0.04)',
-      }}
-      whileTap={interactive ? {
-        scale: 0.98,
-        boxShadow: '0px 4px 12px rgba(15, 23, 42, 0.05), 0px 1px 3px rgba(15, 23, 42, 0.03)',
-      } : undefined}
-      transition={interactive ? { type: "spring", stiffness: 400, damping: 28 } : undefined}
+      style={{ backgroundColor: '#FFFFFF', borderRadius: 14, border: '0.5px solid #E4E4E7', boxShadow: '0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.06)' }}
+      whileTap={interactive ? { scale: 0.97 } : undefined}
+      transition={interactive ? { type: "spring", stiffness: 400, damping: 25 } : undefined}
       {...motionProps}
     >
       {children}

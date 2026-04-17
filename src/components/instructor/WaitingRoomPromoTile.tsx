@@ -7,22 +7,20 @@ export function WaitingRoomPromoTile({ className = "" }: { className?: string })
 
   return (
     <motion.div
-      whileTap={{
-        scale: 0.98,
-        boxShadow: "0px 4px 12px rgba(15, 23, 42, 0.05), 0px 1px 3px rgba(15, 23, 42, 0.03)",
-      }}
-      transition={{ type: "spring", stiffness: 400, damping: 28 }}
+      whileTap={{ scale: 0.99, backgroundColor: "#F4F4F5" }}
+      whileHover={{ backgroundColor: "#FAFAFA" }}
       onClick={() => navigate("/instructor/waiting-room")}
       style={{
-        background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)",
-        borderRadius: 20,
-        border: "1px solid rgba(255, 255, 255, 0.6)",
-        boxShadow: "0px 8px 24px rgba(15, 23, 42, 0.06), 0px 2px 6px rgba(15, 23, 42, 0.04)",
+        background: "#FFFFFF",
+        borderRadius: 14,
+        border: "0.5px solid #E4E4E7",
+        boxShadow: "0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.06)",
         padding: "14px 16px",
         display: "flex",
         alignItems: "center",
         gap: 14,
         cursor: "pointer",
+        transition: "background 120ms ease",
       }}
       className={`focus-visible:ring-2 focus-visible:ring-[#2A394F] outline-none ${className}`}
       tabIndex={0}
