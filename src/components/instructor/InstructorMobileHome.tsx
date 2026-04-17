@@ -491,6 +491,7 @@ export function InstructorMobileHome({
           nextLessonMinutesUntil={nextLesson?.minutesUntil}
           nextLessonEtaMinutes={etaToNextLesson > 0 ? etaToNextLesson : null}
           nextLessonPupilName={nextLesson?.pupilName}
+          nextLessonPupilPhone={nextLesson?.pupilPhone}
         />
       </div>
 

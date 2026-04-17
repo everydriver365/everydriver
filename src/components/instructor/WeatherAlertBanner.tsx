@@ -2,8 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CloudRain, Snowflake, Wind, CloudFog, Sun, CloudLightning,
-  AlertTriangle, Car, Clock, Construction, Ban, MapPin,
+  AlertTriangle, Car, Clock, Construction, Ban, MapPin, MessageSquare,
 } from "lucide-react";
+import { format, addMinutes } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { DrivingAlert } from "@/hooks/useDrivingAlerts";
 
@@ -49,6 +50,7 @@ interface WeatherAlertBannerProps {
   nextLessonMinutesUntil?: number;
   nextLessonEtaMinutes?: number | null;
   nextLessonPupilName?: string;
+  nextLessonPupilPhone?: string | null;
 }
 
 async function fetchWeather(lat: number, lon: number): Promise<WeatherData> {
@@ -71,6 +73,7 @@ export function WeatherAlertBanner({
   nextLessonMinutesUntil,
   nextLessonEtaMinutes,
   nextLessonPupilName,
+  nextLessonPupilPhone,
 }: WeatherAlertBannerProps) {
   const { data: weather } = useQuery({
     queryKey: ["weather-alert"],
@@ -141,6 +144,20 @@ export function WeatherAlertBanner({
                 ETA {Math.round(nextLessonEtaMinutes!)} min, lesson in {nextLessonMinutesUntil} min.
               </p>
             </div>
+            {nextLessonPupilPhone && (() => {
+              const firstName = (nextLessonPupilName || "there").split(" ")[0];
+              const arrivalTime = format(addMinutes(new Date(), Math.round(nextLessonEtaMinutes!)), "HH:mm");
+              const body = `Hi ${firstName}, I'm running about ${lateByMinutes} mins late. ETA ${arrivalTime}. Sorry!`;
+              return (
+                <a
+                  href={`sms:${nextLessonPupilPhone}?body=${encodeURIComponent(body)}`}
+                  className="shrink-0 inline-flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-semibold bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-700 dark:text-red-300 transition-colors"
+                >
+                  <MessageSquare className="h-3 w-3" />
+                  Text
+                </a>
+              );
+            })()}
           </motion.div>
         )}
 
