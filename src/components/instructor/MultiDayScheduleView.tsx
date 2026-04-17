@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, addDays, isToday, parseISO, startOfDay, endOfDay, isSameDay, differenceInMinutes } from "date-fns";
-import { Calendar, Clock, MapPin, Plus, Loader2, CheckCircle2, ChevronDown } from "lucide-react";
+import { Calendar, Clock, MapPin, Plus, Loader2, CheckCircle2, ChevronDown, Video, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ExpandableLessonCard } from "./ExpandableLessonCard";
 import { GapFillCard } from "./GapFillCard";
@@ -53,6 +53,9 @@ interface ExternalEvent {
   location: string | null;
   description: string | null;
   is_busy: boolean;
+  meeting_url: string | null;
+  meeting_provider: string | null;
+  html_link: string | null;
 }
 
 interface ManualBlock {
@@ -181,7 +184,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
           .order("start_time", { ascending: true }),
         supabase
           .from("instructor_calendar_events")
-          .select("id, title, start_time, end_time, color, location, description, is_busy")
+          .select("id, title, start_time, end_time, color, location, description, is_busy, meeting_url, meeting_provider, html_link")
           .eq("instructor_id", instructorId)
           .gte("start_time", fromISO)
           .lte("start_time", toISO),
@@ -215,6 +218,9 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
           location: evt.location || null,
           description: evt.description || null,
           is_busy: evt.is_busy ?? true,
+          meeting_url: evt.meeting_url || null,
+          meeting_provider: evt.meeting_provider || null,
+          html_link: evt.html_link || null,
         };
       });
       setExternalEvents(events);
