@@ -914,8 +914,31 @@ Deno.serve(async (req) => {
           const now = new Date();
           const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
           const oneYearLater = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
-          const allEvents: Array<{ id: string; summary: string; start: string; end: string; color: string }> = [];
+          const allEvents: Array<{ id: string; summary: string; start: string; end: string; color: string; location: string | null; description: string | null; meeting_url: string | null; meeting_provider: string | null; html_link: string | null }> = [];
           let pageToken: string | undefined;
+
+          const extractFirstUrl = (text: string | null | undefined): string | null => {
+            if (!text) return null;
+            const m = text.match(/https?:\/\/[^\s<>"')]+/i);
+            return m ? m[0] : null;
+          };
+          const extractMeetingInfo = (item: any): { url: string | null; provider: string | null } => {
+            const cd = item.conferenceData;
+            if (cd?.entryPoints && Array.isArray(cd.entryPoints)) {
+              const video = cd.entryPoints.find((ep: any) => ep.entryPointType === "video");
+              if (video?.uri) return { url: video.uri, provider: cd.conferenceSolution?.name || "Video meeting" };
+            }
+            if (item.hangoutLink) return { url: item.hangoutLink, provider: "Google Meet" };
+            const fromDesc = extractFirstUrl(item.description);
+            if (fromDesc) {
+              const provider = /zoom\.us/i.test(fromDesc) ? "Zoom" :
+                /teams\.microsoft/i.test(fromDesc) ? "Microsoft Teams" :
+                /meet\.google/i.test(fromDesc) ? "Google Meet" :
+                /webex/i.test(fromDesc) ? "Webex" : "Meeting link";
+              return { url: fromDesc, provider };
+            }
+            return { url: null, provider: null };
+          };
 
           do {
             const params = new URLSearchParams({
@@ -924,6 +947,7 @@ Deno.serve(async (req) => {
               singleEvents: "true",
               orderBy: "startTime",
               maxResults: "2500",
+              conferenceDataVersion: "1",
             });
             if (pageToken) params.set("pageToken", pageToken);
 
@@ -939,16 +963,24 @@ Deno.serve(async (req) => {
 
             const data = await response.json();
             const pageEvents = (data.items || [])
-              .filter((item: { start?: { dateTime?: string; date?: string }; end?: { dateTime?: string; date?: string } }) =>
+              .filter((item: any) =>
                 (item.start?.dateTime || item.start?.date) && (item.end?.dateTime || item.end?.date)
               )
-              .map((item: { id: string; summary?: string; colorId?: string; start: { dateTime?: string; date?: string }; end: { dateTime?: string; date?: string } }) => ({
-                id: item.id,
-                summary: item.summary || "Busy",
-                start: item.start.dateTime || `${item.start.date}T00:00:00`,
-                end: item.end.dateTime || `${item.end.date}T23:59:59`,
-                color: item.colorId ? (googleColorMap[item.colorId] || calendarDefaultColor) : calendarDefaultColor,
-              }));
+              .map((item: any) => {
+                const meeting = extractMeetingInfo(item);
+                return {
+                  id: item.id,
+                  summary: item.summary || "Busy",
+                  start: item.start.dateTime || `${item.start.date}T00:00:00`,
+                  end: item.end.dateTime || `${item.end.date}T23:59:59`,
+                  color: item.colorId ? (googleColorMap[item.colorId] || calendarDefaultColor) : calendarDefaultColor,
+                  location: item.location || null,
+                  description: item.description || null,
+                  meeting_url: meeting.url,
+                  meeting_provider: meeting.provider,
+                  html_link: item.htmlLink || null,
+                };
+              });
 
             allEvents.push(...pageEvents);
             pageToken = data.nextPageToken;
