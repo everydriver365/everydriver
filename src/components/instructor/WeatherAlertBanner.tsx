@@ -151,10 +151,11 @@ export function WeatherAlertBanner({
               return (
                 <a
                   href={`sms:${nextLessonPupilPhone}?body=${encodeURIComponent(body)}`}
-                  className="shrink-0 inline-flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-semibold bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-700 dark:text-red-300 transition-colors"
+                  className="shrink-0 inline-flex flex-col items-center justify-center gap-0.5 h-11 px-3 rounded-xl text-[10px] font-bold uppercase tracking-wider text-white shadow-lg shadow-red-500/30 active:scale-95 transition-transform"
+                  style={{ background: "linear-gradient(135deg, #FF3B30, #C81E14)" }}
                 >
-                  <MessageSquare className="h-3 w-3" />
-                  Text
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  Notify
                 </a>
               );
             })()}
