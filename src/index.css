@@ -106,14 +106,14 @@
 
      --spacing: 0.25rem;
 
-     /* Instructor mobile app — deep navy background image */
-     --instructor-bg-start: #14223C;
-     --instructor-bg-end: #14223C;
-     --instructor-bg-overlay: rgba(20, 34, 60, 0.85);
+     /* Instructor mobile app — soft road background */
+     --instructor-bg-start: #F4F6F8;
+     --instructor-bg-end: #F4F6F8;
+     --instructor-bg-overlay: rgba(244, 246, 248, 0.85);
   }
 
   .instructor-shell-bg {
-    background-color: #14223C;
+    background-color: #F4F6F8;
     background-image: url('/instructor-app-bg.png');
     background-size: cover;
     background-position: center;
