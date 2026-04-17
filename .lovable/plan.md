@@ -1,54 +1,62 @@
 
 ## Goal
-Build out all 5 WhatsApp Business enhancements on top of the existing integration.
+Bring every instructor mobile page in line with the "Waiting Room tile" design language already used on the home dashboard.
 
-## 1. Verify it's live (health check)
-- New edge function `whatsapp-health-check`: pings Meta `/v18.0/{PHONE_ID}?fields=verified_name,quality_rating` with the stored token, returns token validity, days until expiry, webhook subscription status, and quality rating.
-- New admin tile in Instructor Settings → Integrations → "WhatsApp Business" showing: ✅/❌ status, business display name, quality rating, token expiry warning if <14 days.
+## Canonical tokens (the "Waiting Room" style)
+| Token | Value |
+|---|---|
+| Tile background | `#FFFFFF` |
+| Tile border | `0.5px solid #E4E4E7` |
+| Tile radius | `14px` |
+| Tile padding | `14px 16px` (compact) / `16px` (standard) |
+| Icon roundel | `44×44`, `borderRadius: 12`, `#E8ECF1` bg, `#2A394F` icon |
+| Primary text | `#18181B`, 15px / 500, Inter |
+| Secondary text | `#71717A`, 12px / 400, Inter |
+| Chevron | `#A1A1AA`, 18px |
+| Page background | `#F2F2F7` |
+| Section header | uppercase 13px, `text-muted-foreground`, `px-4 pb-1.5` |
 
-## 2. Per-instructor numbers (Embedded Signup)
-- DB migration: new table `instructor_whatsapp_accounts` (instructor_id PK, waba_id, phone_number_id, display_phone, access_token encrypted, verified_name, quality_rating, connected_at, status).
-- New edge function `whatsapp-embedded-signup-callback`: exchanges Meta's auth code → long-lived System User token via Graph API, stores per-instructor token.
-- New page `/instructor/settings/whatsapp` with Meta JS SDK Embedded Signup button (`FB.login` + `extras: { feature: 'whatsapp_embedded_signup' }`).
-- Update `send-whatsapp` and `whatsapp-webhook` to look up the per-instructor token first, falling back to the global `WHATSAPP_BUSINESS_TOKEN` for instructors who haven't connected.
-- Webhook routing: identify which instructor owns the inbound message by matching `phone_number_id` → `instructor_whatsapp_accounts`.
+## What gets removed
+- Purple/rose/indigo gradient "Hero Cards" at the top of pages (Notifications, Health, Pipeline, etc.) → replaced with `IOSPageTitle` (compact icon + title).
+- `rounded-xl` / `rounded-2xl` + `shadow-sm` + `border-border/50` patterns → replaced with the canonical tile.
+- `bg-muted/30`, `bg-card border` ad-hoc tiles → canonical tile.
+- Inconsistent font stacks → Inter / SF Pro across the board.
 
-## 3. Message templates
-- DB migration: `whatsapp_templates` (id, instructor_id, meta_template_id, name, category [marketing|utility|authentication], language, body_text, variables jsonb, status [pending|approved|rejected], created_at).
-- New edge function `whatsapp-templates`:
-  - `GET /list` — fetch from Meta `/v18.0/{WABA_ID}/message_templates`
-  - `POST /create` — submit new template to Meta for approval
-  - `POST /send` — send a template message to a number (uses `type: "template"` payload)
-- New UI under `/instructor/settings/whatsapp/templates`: list templates with status badges, create-template form (name, category, body with `{{1}}` placeholders), "Send template" picker that appears in `LessonTextSheet` when conversation is outside the 24-hr window.
-- Hook `useWhatsAppTemplates` for fetching + sending.
+## Approach — single shared primitive
+Introduce one component everyone uses, so future pages stay consistent:
 
-## 4. Media messages
-- Extend `send-whatsapp`: accept `media: { type: 'image'|'document'|'audio', url, caption? }`, build Meta payload `{ type: 'image', image: { link, caption } }`.
-- DB migration: add `media_url`, `media_type`, `media_mime` columns to `whatsapp_messages`.
-- Update `whatsapp-webhook` to download inbound media via Meta `/v18.0/{MEDIA_ID}` → upload to existing `chat-attachments` storage bucket → store public URL on the message row.
-- UI: add paperclip button to `WhatsAppChat` composer (image/doc/voice picker), render inline previews for image/audio/PDF in the message list.
+```tsx
+// src/components/instructor/IOSTile.tsx
+<IOSTile interactive onClick={...}>
+  <IOSTile.Icon><Users /></IOSTile.Icon>
+  <IOSTile.Body title="…" subtitle="…" badge="Weekly" />
+  <IOSTile.Chevron />
+</IOSTile>
+```
+Plus a matching `IOSTileGroup` for grouped lists with indented dividers (already a memory pattern).
 
-## 5. Pupil-facing WhatsApp
-- DB migration: add `pupil_id` (nullable) to `whatsapp_conversations` so pupil chats are linked to the pupil record.
-- Reminders: extend the existing scheduled reminders job to send via WhatsApp first (using approved utility template `lesson_reminder_24h`) and fall back to SMS if the pupil hasn't opted in / no WABA template approved.
-- Payment links: in `LessonTextSheet` and pupil profile, add "Send payment link via WhatsApp" — generates the existing GoCardless/Square link and sends with template `payment_request`.
-- Lesson confirmations: after `lessons.insert`, the `calendar_sync_queue` worker also enqueues a WhatsApp confirmation using template `lesson_confirmation`.
-- Pupil opt-in: add `whatsapp_opt_in` boolean to `pupils` table; surface a toggle in pupil settings + first-message auto-prompt.
+`InstructorCard` and `WaitingRoomPromoTile` get refactored to render `IOSTile` so existing callers keep working.
 
-## Files / functions
-**New edge functions:** `whatsapp-health-check`, `whatsapp-embedded-signup-callback`, `whatsapp-templates`
-**Modified edge functions:** `send-whatsapp`, `whatsapp-webhook`
-**New tables:** `instructor_whatsapp_accounts`, `whatsapp_templates`
-**Schema changes:** `whatsapp_messages` (+media cols), `whatsapp_conversations` (+pupil_id), `pupils` (+whatsapp_opt_in)
-**New pages:** `/instructor/settings/whatsapp`, `/instructor/settings/whatsapp/templates`
-**Modified UI:** `WhatsAppChat` (media composer), `LessonTextSheet` (template picker + payment link), pupil profile (opt-in toggle)
+## Pages to sweep (grouped by area)
+Instead of hand-editing 80 files, work in 6 batches — each batch swaps hero gradients for `IOSPageTitle` and converts ad-hoc cards to `IOSTile`:
 
-## Order of work
-1. Health check (smallest, validates current setup) →
-2. Templates (unlocks #5) →
-3. Media messages →
-4. Pupil-facing flows (reminders, payments, confirmations) →
-5. Per-instructor Embedded Signup (largest; needs Meta App Review for `whatsapp_business_management` scope — flagged as a follow-up if the App isn't yet approved).
+1. **Dashboard & home** — `InstructorPortal`, `InstructorMenu`, `InstructorNotifications`, `InstructorPlatformUpdates`
+2. **Schedule & jobs** — `InstructorSchedule`, `InstructorDiary`, `InstructorJobs`, `InstructorGaps`, `InstructorWaitingList`, `InstructorPendingScheduling`, `InstructorQuickAvailability`, `InstructorAvailabilityWindows`, `InstructorTestSlotFinder`, `InstructorTestRequests`
+3. **Pupils & comms** — `InstructorPupils`, `InstructorUnifiedInbox`, `InstructorAdminChat`, `InstructorContact`, `InstructorTeamChannels`
+4. **Finance** — `InstructorPay`, `InstructorTakePayment`, `InstructorIncome`, `InstructorExpenses`, `InstructorAccounts`, `InstructorTax`, `InstructorSubscriptions`, `InstructorInOut`, `MonthEndReview`, `WeeklyReportPage`
+5. **Vehicle/GPS/Health** — `InstructorSatNav`, `InstructorFindMyCar`, `InstructorVehicleHealth`, `InstructorFuel`, `InstructorMileageTracker`, `InstructorRoutes`, `InstructorFleetDashboard`, `InstructorLiveSession`, `InstructorGPSSetup`, `InstructorFleetMap`, `InstructorOverspeedHistory`, `InstructorFindNearby`, `InstructorNearbyFriends`, `InstructorLocations`, `InstructorHealth`, `InstructorWellbeing`, `DashcamGallery`
+6. **Marketing, tools & settings** — `InstructorMiniWebsiteSettings`, `InstructorDomainsManagement`, `InstructorWebsiteAddons`, `InstructorReviews`, `InstructorReferrals`, `InstructorPipeline`, `InstructorAutomations`, `InstructorAbandonedCheckouts`, `InstructorTestResults`, `InstructorStandardsCheck`, `InstructorCPD`, `InstructorCertifications`, `InstructorPerformance`, `InstructorFAQs`, `InstructorDoodlepad`, `InstructorTodos`, `InstructorNotes`, `InstructorPlans`, `InstructorResources`, `InstructorDocumentTemplates`, `InstructorChecklists`, `InstructorDocumentVault`, `InstructorClockInOut`, `InstructorAICommand`, `InstructorWorkflows`, `InstructorWaivers`, `InstructorDailyManifest`, `InstructorEODReport`, `InstructorBulkOperations`, `InstructorReportsHub`, `InstructorDataImport`, `OutstandingTasksPage`, `EndOfDayPage`, `InstructorSettings`, `InstructorSettingsCategory`, `InstructorWhatsAppSettings`, `InstructorWhatsAppTemplates`, `InstructorSubscriptions`
 
-## One thing to confirm
-Per-instructor Embedded Signup (#2) requires your Meta App to have **Advanced Access** for `whatsapp_business_management` and `whatsapp_business_messaging`. If your app is still in Development Mode, instructors won't be able to connect their own numbers until you submit for App Review. I'll build the flow regardless — it just won't go live for end users until Meta approves.
+## Out of scope
+- Bottom-nav `InstructorMobileBottomNav` — already canonical.
+- Header `InstructorMobileHeader` — already canonical.
+- The `Every Instructor` portal (`/every-instructor/*`) — separate brand per memory, not touched.
+- Functional behaviour, RLS, edge functions — purely visual.
+
+## Save memory
+Add `mem://style/ios-tile-primitive` documenting `IOSTile` as the single source of truth for instructor portal tiles.
+
+## Confirm before I start
+Two questions:
+1. **Hero gradients** — I'll remove the purple/rose/indigo gradient hero cards on Notifications / Health / Pipeline etc. and replace with the compact `IOSPageTitle`. OK to drop the gradients entirely?
+2. **Order** — should I do all 6 batches in one go, or stop after batch 1 (Dashboard) so you can review the look first?
