@@ -640,41 +640,56 @@ export function CoursePlannerSheet({
               </div>
             </section>
 
-            <Separator />
+          </div>
+        ) : null}
+      </div>
 
-            <div className="space-y-2">
-              {mode === "instructor" && instructorId && defaultPupilId && (
-                <Button
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-                  onClick={handleBookAll}
-                  disabled={booking || saving || result.slots.length === 0 || !result.feasible}
-                >
-                  {booking
-                    ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Booking {result.slots.length} lessons…</>
-                    : <><CalendarCheck className="mr-2 h-4 w-4" /> Book all {result.slots.length} lessons into diary</>}
-                </Button>
-              )}
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setStep("form")}
-                  disabled={booking || saving}
-                >
-                  Revise plan
-                </Button>
-                <Button
-                  className="flex-1 bg-[#2A394F] hover:bg-[#1F2B3D] text-white"
-                  onClick={handleSaveDraft}
-                  disabled={saving || booking || result.slots.length === 0}
-                >
-                  {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving…</> : "Save as draft"}
-                </Button>
-              </div>
+      {/* Sticky footer */}
+      <div className="border-t bg-card px-5 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        {step === "form" ? (
+          <Button
+            className="w-full bg-[#2A394F] hover:bg-[#1F2B3D] text-white"
+            onClick={handleGenerate}
+            disabled={generating}
+          >
+            {generating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating…</> : <><Sparkles className="mr-2 h-4 w-4" /> Generate plan</>}
+          </Button>
+        ) : result ? (
+          <div className="space-y-2">
+            {mode === "instructor" && instructorId && (
+              <Button
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                onClick={handleBookAll}
+                disabled={booking || saving || result.slots.length === 0 || !result.feasible || !effectivePupilId}
+              >
+                {booking
+                  ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Booking {result.slots.length} lessons…</>
+                  : <><CalendarCheck className="mr-2 h-4 w-4" /> Book all {result.slots.length} lessons into diary</>}
+              </Button>
+            )}
+            {mode === "instructor" && !effectivePupilId && (
+              <p className="text-[11px] text-center text-muted-foreground">Pick a pupil on the form to enable direct booking.</p>
+            )}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setStep("form")}
+                disabled={booking || saving}
+              >
+                Revise plan
+              </Button>
+              <Button
+                className="flex-1 bg-[#2A394F] hover:bg-[#1F2B3D] text-white"
+                onClick={handleSaveDraft}
+                disabled={saving || booking || result.slots.length === 0}
+              >
+                {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving…</> : "Save as draft"}
+              </Button>
             </div>
           </div>
         ) : null}
-      </ScrollArea>
+      </div>
     </div>
   );
 
