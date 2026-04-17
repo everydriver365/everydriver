@@ -102,6 +102,12 @@ export function CoursePlannerSheet({
   const [lessonsPerWeek, setLessonsPerWeek] = useState("2");
   const [availability, setAvailability] = useState<Record<DayKey, DayWindow>>(DEFAULT_AVAILABILITY);
 
+  // Inline pupil picker (when instructor opens planner without a pupil)
+  const [pupils, setPupils] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedPupilId, setSelectedPupilId] = useState<string | null>(defaultPupilId || null);
+  const [selectedPupilName, setSelectedPupilName] = useState<string | null>(defaultPupilName || null);
+  const [pupilPickerOpen, setPupilPickerOpen] = useState(false);
+
   // Result state
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -121,6 +127,23 @@ export function CoursePlannerSheet({
         if (data) setTestCentres(data as any);
       });
   }, [open, testCentres.length]);
+
+  // Load instructor's pupils for the inline picker
+  useEffect(() => {
+    if (!open || mode !== "instructor" || !instructorId || defaultPupilId) return;
+    if (pupils.length > 0) return;
+    supabase
+      .from("pupils")
+      .select("id, name")
+      .eq("instructor_id", instructorId)
+      .order("name")
+      .then(({ data }) => {
+        if (data) setPupils(data as any);
+      });
+  }, [open, mode, instructorId, defaultPupilId, pupils.length]);
+
+  const effectivePupilId = selectedPupilId ?? defaultPupilId ?? null;
+  const effectivePupilName = selectedPupilName ?? defaultPupilName ?? null;
 
   const reset = () => {
     setResult(null);
