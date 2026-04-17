@@ -51,6 +51,7 @@ interface ScheduledLesson {
   amount_due: number;
   notes: string | null;
   recurrence_rule?: string | null;
+  google_event_id?: string | null;
   pupil: {
     id: string;
     name: string;
