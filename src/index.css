@@ -106,19 +106,14 @@
 
      --spacing: 0.25rem;
 
-     /* Instructor mobile app — soft road background */
-     --instructor-bg-start: #F4F6F8;
-     --instructor-bg-end: #F4F6F8;
-     --instructor-bg-overlay: rgba(244, 246, 248, 0.85);
+     /* Instructor mobile app — soft Facebook blue */
+     --instructor-bg-start: #E7EFFB;
+     --instructor-bg-end: #E7EFFB;
+     --instructor-bg-overlay: rgba(231, 239, 251, 0.85);
   }
 
   .instructor-shell-bg {
-    background-color: #F4F6F8;
-    background-image: url('/instructor-app-bg.png');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+    background-color: #E7EFFB;
     min-height: 100dvh;
   }
 
