@@ -183,13 +183,37 @@ export function LessonTextSheet({
             </div>
 
             {customEnabled && (
-              <Textarea
-                value={customMessage}
-                onChange={(e) => setCustomMessage(e.target.value)}
-                placeholder={`Hi ${lesson.pupilName.split(" ")[0]}, just confirming your lesson on ${dayLabel} at ${lesson.startTime}…`}
-                rows={4}
-                className="text-sm"
-              />
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    "On my way",
+                    "5 mins late",
+                    "10 mins late",
+                    "Please be ready",
+                    "Lesson cancelled",
+                  ].map((tpl) => {
+                    const firstName = lesson.pupilName.split(" ")[0];
+                    const text = `Hi ${firstName}, ${tpl.toLowerCase()}.`;
+                    return (
+                      <button
+                        key={tpl}
+                        type="button"
+                        onClick={() => setCustomMessage(text)}
+                        className="px-2.5 h-7 rounded-full border border-input bg-background text-xs font-medium hover:bg-accent transition-colors"
+                      >
+                        {tpl}
+                      </button>
+                    );
+                  })}
+                </div>
+                <Textarea
+                  value={customMessage}
+                  onChange={(e) => setCustomMessage(e.target.value)}
+                  placeholder={`Hi ${lesson.pupilName.split(" ")[0]}, just confirming your lesson on ${dayLabel} at ${lesson.startTime}…`}
+                  rows={4}
+                  className="text-sm"
+                />
+              </div>
             )}
           </div>
 
