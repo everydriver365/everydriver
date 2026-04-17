@@ -103,8 +103,8 @@ export function SwipeableQuickAccess() {
       <div ref={emblaRef} className="overflow-hidden -mx-2 px-2 -my-3 py-3">
         <div className="flex">
           {pages.map((page, pageIdx) => (
-            <div key={pageIdx} className="flex-[0_0_100%] min-w-0">
-              <div className="grid grid-cols-2 gap-[10px]">
+            <div key={pageIdx} className="flex-[0_0_100%] min-w-0 px-1">
+              <div className="grid grid-cols-2 gap-3">
                 {page.map((tile) => {
                   const Icon = tile.icon;
                   const requiredFeature = TILE_FEATURE_MAP[tile.title];
