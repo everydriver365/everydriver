@@ -1,40 +1,40 @@
 
 
-## Two fixes for the Course Planner
+## Why the Quick Access tiles look "on a background"
 
-### 1. Allow booking lessons (the real blocker)
+Looking at `SwipeableQuickAccess.tsx` lines 103 and 106:
 
-When opened from the instructor app's quick-access tile, no pupil is attached, so the "Book all lessons" button is hidden and any attempt errors with *"Open the planner from a pupil to book lessons directly"*.
+```tsx
+<div ref={emblaRef} className="overflow-hidden -mx-2 px-2 -my-3 py-3">
+  <div className="flex">
+    {pages.map((page, pageIdx) => (
+      <div key={pageIdx} className="flex-[0_0_100%] min-w-0 px-1">
+```
 
-Fix: add an inline **pupil picker** at the top of the planner when `mode === "instructor"` and no `defaultPupilId` was passed.
+There are **two stacked padding/margin layers** that create the visual "frame" effect:
 
-- New section "Pupil" with a searchable Combobox (same pattern already used for test centres) listing the instructor's active pupils (`pupils` table filtered by `instructor_id`, ordered by name).
-- Selecting a pupil sets local `selectedPupilId` + `selectedPupilName`, prefills the name field, and unlocks the green **"Book all N lessons into diary"** button on the result step.
-- "Book all" uses `selectedPupilId ?? defaultPupilId`. Same for the proposal `pupil_id`.
-- If still no pupil chosen when they hit Generate, that's fine — they can still save as draft. Booking just stays disabled with helper text *"Pick a pupil to enable direct booking"*.
+1. **Embla viewport** uses `-my-3 py-3` (vertical) and `-mx-2 px-2` (horizontal). This was added earlier so tile shadows wouldn't get clipped by `overflow-hidden`.
+2. **Each carousel slide** uses `px-1` for spacing between pages.
 
-### 2. Mobile layout fixes
+Combined with the **heavy drop shadow** on each tile (`0 12px 28px rgba(20, 30, 60, 0.14)` — line 140), the tiles cast a dark, layered shadow onto the page bg. The Insight tiles use the same shadow but sit in a plain `grid` with no nested padded carousel wrapper, so they look flatter and cleaner.
 
-At 390×495 the sheet (`h-[92vh]` ≈ 455px) cuts off the form and the action buttons get stuck below the fold inside an inner `ScrollArea`.
+So it's not a real background — it's the **shadow blooming inside the padded carousel viewport**, making the area behind look slightly darker / framed.
 
-Changes to `CoursePlannerSheet.tsx`:
+### Fix
 
-- **Sheet height**: switch to `h-[100dvh] max-h-[100dvh]` with safe-area padding, so it uses the full mobile viewport reliably (dvh handles iOS URL-bar resize).
-- **Sticky footer**: lift the primary action buttons (`Generate plan` on form step, `Book all / Save draft / Revise` on result step) **out of** the `ScrollArea` into a sticky bottom bar inside the sheet — `border-t bg-card px-5 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]`. They're always tappable.
-- **Replace ScrollArea with native scroll** on mobile (`overflow-y-auto overscroll-contain`) — the Radix ScrollArea inside flex columns has known measurement bugs in embedded webviews and is what's causing the form to look "broken".
-- **Responsive grids**: 
-  - "Hours / Lesson length / Per week" → `grid-cols-1 sm:grid-cols-3` so each control gets full width on mobile.
-  - "Date / Time" → keep `grid-cols-2` but ensure the date button truncates with `truncate` and uses shorter format `d MMM` on `<sm`.
-- **Availability rows**: on narrow widths the two time inputs + switch + label overflow. Tighten with `text-xs`, `h-9`, and allow the time inputs to shrink (`min-w-0`).
-- **Calendar ref warning** (visible in console) — wrap the `Calendar` component export in `React.forwardRef` so Radix Popover's ref-forwarding stops warning. Quick stability fix.
+Lighten the tile shadow to match the activity/insight tiles' visual weight. The Insights grid uses the same shadow value, but the issue is more visible on Quick Access because there are 6 tiles densely packed inside a padded carousel.
 
-### Files touched
+Two options:
 
-- `src/components/course-planner/CoursePlannerSheet.tsx` — pupil picker section, sticky footer, mobile grid tweaks, dvh height.
-- `src/components/ui/calendar.tsx` — wrap in `forwardRef` to silence the warning.
+**A. Reduce shadow intensity (recommended)** — drop from `rgba(20,30,60,0.14)` to `rgba(20,30,60,0.06)` and second layer from `0.06` to `0.03`. Matches the lighter, flatter look elsewhere.
 
-### Outcome
+**B. Match Insights exactly** — Insights uses the identical shadow, so if the user wants them to look identical, no change needed there. The "background" perception is purely from the carousel's padded viewport. We could remove `-my-3 py-3` and instead allow horizontal-only shadow space (`-mx-2 px-2` only), accepting minor vertical clipping — usually invisible since shadow is mostly bottom.
 
-- From any pupil-less entry point (instructor home tile), users can pick a pupil inside the planner and book the whole course straight into the diary.
-- Sheet fills the screen, scrolls smoothly, and the Book/Save buttons are always reachable on a 390-wide phone.
+### Recommendation
+
+Go with **A** (lighter shadow on Quick Access tiles). Keeps shadow space intact, removes the heavy "framed" look, and makes Quick Access visually match Insight tiles which have the same dimensions but feel airier in a static grid.
+
+### File touched
+
+- `src/components/instructor/SwipeableQuickAccess.tsx` — soften `boxShadow` on the `motion.button` style (line 140).
 
