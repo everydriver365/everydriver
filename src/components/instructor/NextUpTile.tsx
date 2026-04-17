@@ -263,12 +263,36 @@ export function NextUpTile({
               <LessonCheckInBadge status={checkInStatus} className="text-[9px] py-0 px-1.5 h-4 ml-1" />
             )}
           </div>
-          <div
-            className="flex items-center gap-1 px-2.5 py-1"
-            style={{ borderRadius: 100, backgroundColor: "rgba(255,255,255,0.2)" }}
-          >
-            <Clock className="h-3 w-3 text-white" />
-            <span style={{ fontSize: 12, fontWeight: 600, color: "#FFFFFF" }}>{formatTime24(startTime)}</span>
+          <div className="flex items-center gap-1.5">
+            {minutesUntil <= 30 && !trackerDismissed && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/instructor/tracking?lessonId=${lessonId}`);
+                }}
+                className="flex items-center gap-1 px-2 py-1 active:scale-95 transition-transform"
+                style={{ borderRadius: 100, backgroundColor: "#FBBF24", color: "#1C1C1E" }}
+                title="Open live tracking"
+              >
+                <Smartphone className="h-3 w-3" />
+                <span style={{ fontSize: 11, fontWeight: 700 }}>Tracker</span>
+                <X
+                  className="h-3 w-3 ml-0.5 opacity-70 hover:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    dismissTracker(lessonId);
+                    setTrackerDismissed(true);
+                  }}
+                />
+              </button>
+            )}
+            <div
+              className="flex items-center gap-1 px-2.5 py-1"
+              style={{ borderRadius: 100, backgroundColor: "rgba(255,255,255,0.2)" }}
+            >
+              <Clock className="h-3 w-3 text-white" />
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#FFFFFF" }}>{formatTime24(startTime)}</span>
+            </div>
           </div>
         </div>
 
