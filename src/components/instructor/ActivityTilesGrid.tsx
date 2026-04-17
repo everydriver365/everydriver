@@ -148,18 +148,19 @@ export function ActivityTilesGrid({
                   <span
                     className="flex items-center justify-center"
                     style={{
-                      minWidth: 20,
-                      height: 20,
-                      borderRadius: 10,
-                      backgroundColor: "#FEF2F2",
-                      color: "#DC2626",
-                      fontSize: 11,
-                      fontWeight: 600,
-                      padding: "0 6px",
+                      minWidth: 16,
+                      height: 16,
+                      borderRadius: 8,
+                      padding: "0 4px",
+                      background: "#ff3b30",
+                      color: "white",
+                      fontSize: 10,
+                      fontWeight: 700,
                       lineHeight: 1,
+                      boxShadow: "0 1px 4px rgba(255,59,48,0.4)",
                     }}
                   >
-                    {count > 99 ? "99+" : count}
+                    {count > 9 ? "9+" : count}
                   </span>
                 ) : (
                   <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" style={{ marginTop: 2 }} />
