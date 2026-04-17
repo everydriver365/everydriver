@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { format, parse, addDays, addMinutes, isAfter } from "date-fns";
-import { CalendarX, CheckCircle2, MapPin, Clock, ArrowRight } from "lucide-react";
+import { CalendarX, CheckCircle2, MapPin, Clock, ArrowRight, CloudRain, PoundSterling } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PupilAvatar } from "./PupilAvatar";
 import { TodayLesson } from "@/hooks/useTodayRemainingLessons";
@@ -207,9 +207,143 @@ function AgendaList({ lessons }: { lessons: TodayLesson[] }) {
   );
 }
 
+interface TomorrowAlert {
+  icon: typeof CloudRain;
+  text: string;
+  bg: string;
+  fg: string;
+}
+
+function useTomorrowWeather(lessons: TodayLesson[]): TomorrowAlert | null {
+  const postcode = lessons.find((l) => l.pickupPostcode)?.pickupPostcode || null;
+  const [alert, setAlert] = useState<TomorrowAlert | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!postcode) {
+      setAlert(null);
+      return;
+    }
+    (async () => {
+      try {
+        // postcodes.io for lat/lon
+        const geo = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+        if (!geo.ok) return;
+        const geoJson = await geo.json();
+        const lat = geoJson?.result?.latitude;
+        const lon = geoJson?.result?.longitude;
+        if (typeof lat !== "number" || typeof lon !== "number") return;
+
+        // Open-Meteo daily forecast for tomorrow
+        const wx = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weather_code,precipitation_probability_max,wind_speed_10m_max&forecast_days=2&timezone=auto`
+        );
+        if (!wx.ok) return;
+        const wxJson = await wx.json();
+        const code: number = wxJson?.daily?.weather_code?.[1];
+        const precip: number = wxJson?.daily?.precipitation_probability_max?.[1] ?? 0;
+        const wind: number = wxJson?.daily?.wind_speed_10m_max?.[1] ?? 0;
+        if (cancelled) return;
+
+        // Severe codes: thunderstorm 95-99, snow 71-77/85-86, freezing rain 66-67, heavy rain 65/82
+        let label: string | null = null;
+        if (code >= 95) label = "Thunderstorms forecast";
+        else if (code >= 71 && code <= 77) label = "Snow forecast";
+        else if (code === 85 || code === 86) label = "Snow showers forecast";
+        else if (code === 66 || code === 67) label = "Freezing rain forecast";
+        else if (code === 65 || code === 82) label = "Heavy rain forecast";
+        else if (precip >= 70) label = `Rain likely (${Math.round(precip)}%)`;
+        else if (wind >= 50) label = `Strong winds (${Math.round(wind)} km/h)`;
+
+        if (label) {
+          setAlert({
+            icon: CloudRain,
+            text: label,
+            bg: "#FEF3C7",
+            fg: "#92400E",
+          });
+        }
+      } catch {
+        // silently ignore
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [postcode]);
+
+  return alert;
+}
+
+function TomorrowHeadsUp({ lessons }: { lessons: TodayLesson[] }) {
+  const weather = useTomorrowWeather(lessons);
+
+  const owingCount = useMemo(
+    () => lessons.filter((l) => l.paymentStatus !== "paid" && (l.amountDue || 0) > 0).length,
+    [lessons]
+  );
+  const owingTotal = useMemo(
+    () =>
+      lessons
+        .filter((l) => l.paymentStatus !== "paid")
+        .reduce((s, l) => s + (l.amountDue || 0), 0),
+    [lessons]
+  );
+
+  const items: TomorrowAlert[] = [];
+  if (weather) items.push(weather);
+  if (owingCount > 0) {
+    items.push({
+      icon: PoundSterling,
+      text: `${owingCount} payment${owingCount !== 1 ? "s" : ""} owing · £${Math.round(owingTotal)}`,
+      bg: "#FEE2E2",
+      fg: "#991B1B",
+    });
+  }
+
+  if (items.length === 0) return null;
+
+  return (
+    <div
+      style={{
+        padding: "10px 12px 4px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 6,
+        backgroundColor: "#FFFFFF",
+      }}
+    >
+      {items.map((it, i) => {
+        const Icon = it.icon;
+        return (
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "8px 10px",
+              borderRadius: 10,
+              backgroundColor: it.bg,
+              fontSize: 12,
+              fontWeight: 500,
+              color: it.fg,
+              fontFamily: "Inter, sans-serif",
+            }}
+          >
+            <Icon style={{ height: 14, width: 14, flexShrink: 0 }} />
+            <span>{it.text}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function TodayScheduleAgenda({ todayLessons, tomorrowLessons, className = "" }: TodayScheduleAgendaProps) {
   const [tab, setTab] = useState<"today" | "tomorrow">("today");
   const activeLessons = tab === "today" ? todayLessons : tomorrowLessons;
+  const title = tab === "today" ? "Today's Schedule" : "Tomorrow's Schedule";
 
   return (
     <div
@@ -225,7 +359,7 @@ export function TodayScheduleAgenda({ todayLessons, tomorrowLessons, className =
       {/* Header */}
       <div style={{ padding: "14px 16px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <p style={{ margin: 0, fontSize: 15, fontWeight: 500, color: "#18181B", fontFamily: "Inter, sans-serif" }}>Today's Schedule</p>
+          <p style={{ margin: 0, fontSize: 15, fontWeight: 500, color: "#18181B", fontFamily: "Inter, sans-serif" }}>{title}</p>
           <p style={{ margin: "2px 0 0", fontSize: 12, color: "#71717A", fontFamily: "Inter, sans-serif" }}>
             {format(tab === "today" ? new Date() : addDays(new Date(), 1), "EEE d MMM")} · {activeLessons.length} lesson{activeLessons.length !== 1 ? "s" : ""}
           </p>
@@ -254,6 +388,9 @@ export function TodayScheduleAgenda({ todayLessons, tomorrowLessons, className =
           ))}
         </div>
       </div>
+
+      {/* Tomorrow heads-up: weather, payments owing */}
+      {tab === "tomorrow" && <TomorrowHeadsUp lessons={tomorrowLessons} />}
 
       {/* Stats bar */}
       {activeLessons.length > 0 && <SummaryBar lessons={activeLessons} />}
