@@ -79,20 +79,6 @@ export function BestMateTile({
         )}
       </div>
 
-      {/* CTA */}
-      {ctaLabel && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onCtaClick?.();
-          }}
-          className="mt-1.5 w-full rounded-lg py-1.5 text-[10px] font-bold tracking-wider uppercase transition-opacity hover:opacity-90 active:opacity-80"
-          style={{ backgroundColor: c.ctaBg, color: c.ctaFg }}
-        >
-          {ctaLabel}
-        </button>
-      )}
     </motion.div>
   );
 }
