@@ -4,6 +4,7 @@ import { format, addDays, isToday, parseISO, startOfDay, endOfDay, isSameDay, di
 import { Calendar, Clock, MapPin, Plus, Loader2, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ExpandableLessonCard } from "./ExpandableLessonCard";
+import { GapFillCard } from "./GapFillCard";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { AddLessonSheet } from "./AddLessonSheet";
@@ -151,6 +152,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   const [selectedLesson, setSelectedLesson] = useState<ScheduledLesson | null>(null);
   const [sendingMessage, setSendingMessage] = useState<string | null>(null);
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
+  const [instructorName, setInstructorName] = useState<string>("Your instructor");
 
   const startDate = useMemo(() => startOfDay(new Date()), []);
   const days = useMemo(() => Array.from({ length: DAYS_TO_LOAD }, (_, i) => addDays(startDate, i)), [startDate]);
@@ -225,6 +227,18 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   }, [instructorId, startDate]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  useEffect(() => {
+    if (!instructorId) return;
+    supabase
+      .from("instructors")
+      .select("name")
+      .eq("id", instructorId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.name) setInstructorName(data.name);
+      });
+  }, [instructorId]);
 
   useEffect(() => {
     if (!loading && todayRef.current) {
@@ -684,26 +698,43 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         const [nH, nM] = nextStartStr.split(":").map(Number);
                         const gapMin = (nH * 60 + nM) - (cH * 60 + cM);
                         if (gapMin >= 60) {
-                          const hours = Math.floor(gapMin / 60);
-                          const mins = gapMin % 60;
-                          const label = mins > 0 ? `${hours}h ${mins}m gap` : `${hours}-hour gap`;
-                          elements.push(
-                            <div
-                              key={`gap-${i}`}
-                              onClick={() => setAddLessonOpen(true)}
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 8,
-                                cursor: "pointer",
-                                margin: "4px 0",
-                              }}
-                            >
-                              <div style={{ flex: 1, borderTop: "1px dashed #D4D4D8" }} />
-                              <span style={{ fontSize: 11, color: "#A1A1AA", whiteSpace: "nowrap" }}>{label}</span>
-                              <div style={{ flex: 1, borderTop: "1px dashed #D4D4D8" }} />
-                            </div>
-                          );
+                          const bothLessons = item.kind === "lesson" && nextItem.kind === "lesson";
+                          const isSignificant = gapMin >= 90;
+
+                          if (bothLessons && isSignificant) {
+                            elements.push(
+                              <GapFillCard
+                                key={`gap-${i}`}
+                                instructorId={instructorId}
+                                instructorName={instructorName}
+                                date={dateStr}
+                                startTime={currentEndStr}
+                                endTime={nextStartStr}
+                                gapMinutes={gapMin}
+                              />
+                            );
+                          } else {
+                            const hours = Math.floor(gapMin / 60);
+                            const mins = gapMin % 60;
+                            const label = mins > 0 ? `${hours}h ${mins}m gap` : `${hours}-hour gap`;
+                            elements.push(
+                              <div
+                                key={`gap-${i}`}
+                                onClick={() => setAddLessonOpen(true)}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  cursor: "pointer",
+                                  margin: "4px 0",
+                                }}
+                              >
+                                <div style={{ flex: 1, borderTop: "1px dashed #D4D4D8" }} />
+                                <span style={{ fontSize: 11, color: "#A1A1AA", whiteSpace: "nowrap" }}>{label}</span>
+                                <div style={{ flex: 1, borderTop: "1px dashed #D4D4D8" }} />
+                              </div>
+                            );
+                          }
                         }
                       }
                     });
