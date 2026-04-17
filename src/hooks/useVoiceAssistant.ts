@@ -36,6 +36,12 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
   }, [instructorId]);
 
   const speak = useCallback(async (text: string) => {
+    // Pre-create utterance in the current (possibly gesture) context so the
+    // browser TTS fallback can speak even after the awaited fetch resolves.
+    const fallbackUtterance = new SpeechSynthesisUtterance(text);
+    fallbackUtterance.rate = 1.1;
+    fallbackUtterance.lang = "en-GB";
+
     try {
       setState("speaking");
 
