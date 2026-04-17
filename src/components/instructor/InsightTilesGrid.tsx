@@ -73,25 +73,25 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
             style={{
               position: "relative",
               background: "#FFFFFF",
-              borderRadius: 14,
+              borderRadius: 16,
               boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)",
-              padding: "14px",
+              padding: "10px",
               textAlign: "left",
               display: "flex",
               flexDirection: "column",
-              gap: 12,
               cursor: "pointer",
               overflow: "hidden",
               transition: "background 120ms ease",
+              minHeight: 85,
             }}
           >
-            {/* Icon tile + badge row */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+            {/* Top row: icon + badge/chevron */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
               <div
                 style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 12,
+                  width: 28,
+                  height: 28,
+                  borderRadius: 8,
                   backgroundColor: tile.iconBg,
                   display: "flex",
                   alignItems: "center",
@@ -99,36 +99,36 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
                   flexShrink: 0,
                 }}
               >
-                <Icon size={22} strokeWidth={2} color={tile.iconColor} />
+                <Icon size={15} strokeWidth={2.25} color={tile.iconColor} />
               </div>
               {tile.badge && tile.badge > 0 ? (
                 <span
                   className="flex items-center justify-center"
                   style={{
-                    minWidth: 20,
-                    height: 20,
-                    borderRadius: 10,
+                    minWidth: 18,
+                    height: 18,
+                    borderRadius: 9,
                     backgroundColor: "#FEF2F2",
                     color: "#DC2626",
-                    fontSize: 11,
+                    fontSize: 10,
                     fontWeight: 600,
-                    padding: "0 6px",
+                    padding: "0 5px",
                     lineHeight: 1,
                   }}
                 >
                   {tile.badge > 99 ? "99+" : tile.badge}
                 </span>
               ) : (
-                <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" style={{ marginTop: 2 }} />
+                <ChevronRight size={14} strokeWidth={2} color="#A1A1AA" />
               )}
             </div>
 
             {/* Text */}
-            <div>
-              <p style={{ fontSize: 15, fontWeight: 500, color: "#18181B", lineHeight: 1.2, fontFamily: "Inter, sans-serif" }}>
+            <div style={{ marginTop: 6, flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: "#18181B", lineHeight: 1.2, fontFamily: "Inter, sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {tile.title}
               </p>
-              <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }}>
+              <p style={{ fontSize: 10, fontWeight: 400, color: "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {tile.subtitle}
               </p>
             </div>
