@@ -41,8 +41,6 @@ function IOSTileRoot({
       style={{
         background: "#FFFFFF",
         borderRadius: 14,
-        border: "0.5px solid #E4E4E7",
-        boxShadow: "0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.06)",
         padding,
         display: "flex",
         alignItems: "center",
@@ -51,7 +49,7 @@ function IOSTileRoot({
         fontFamily: "Inter, -apple-system, 'SF Pro Text', sans-serif",
       }}
       className={cn(
-        "outline-none focus-visible:ring-2 focus-visible:ring-[#2A394F]",
+        "outline-none focus-visible:ring-2 focus-visible:ring-[#2A394F] shadow-lift hover:shadow-lift-hover active:shadow-lift-pressed transition-shadow duration-200",
         className
       )}
       tabIndex={interactive || onClick ? 0 : undefined}
@@ -161,11 +159,10 @@ export function IOSTileGroup({ header, footer, children, className }: IOSTileGro
         </p>
       )}
       <div
+        className="shadow-lift"
         style={{
           background: "#FFFFFF",
           borderRadius: 14,
-          border: "0.5px solid #E4E4E7",
-          boxShadow: "0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.06)",
           overflow: "hidden",
         }}
       >

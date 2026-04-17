@@ -42,10 +42,10 @@ export function UpcomingEventsCard({ className = "" }: { className?: string }) {
             href={event.link_url || undefined}
             target={event.link_url ? "_blank" : undefined}
             rel={event.link_url ? "noopener noreferrer" : undefined}
+            className="shadow-lift hover:shadow-lift-hover active:shadow-lift-pressed transition-shadow duration-200"
             style={{
               background: "#FFFFFF",
               borderRadius: 14,
-              border: "0.5px solid #E4E4E7",
               padding: "10px 14px 10px 10px",
               display: "flex",
               alignItems: "center",
