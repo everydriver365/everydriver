@@ -237,7 +237,14 @@ export default function InstructorLiveSession() {
         .order("name");
       
       if (pupilError) throw pupilError;
-      setPupils((pupilData || []) as Pupil[]);
+      const loadedPupils = (pupilData || []) as Pupil[];
+      setPupils(loadedPupils);
+
+      // Auto-select pupil from URL param (?pupilId=...)
+      const urlPupilId = new URLSearchParams(window.location.search).get("pupilId");
+      if (urlPupilId && loadedPupils.some(p => p.id === urlPupilId)) {
+        setSelectedPupilId(urlPupilId);
+      }
 
     } catch (err) {
       console.error("Error fetching data:", err);

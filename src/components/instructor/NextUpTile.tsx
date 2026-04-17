@@ -264,15 +264,15 @@ export function NextUpTile({
             )}
           </div>
           <div className="flex items-center gap-1.5">
-            {minutesUntil <= 30 && !trackerDismissed && (
+            {!trackerDismissed && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/instructor/tracking?lessonId=${lessonId}`);
+                  navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}`);
                 }}
                 className="flex items-center gap-1 px-2 py-1 active:scale-95 transition-transform"
                 style={{ borderRadius: 100, backgroundColor: "#FBBF24", color: "#1C1C1E" }}
-                title="Open live tracking"
+                title="Start tracker for this pupil"
               >
                 <Smartphone className="h-3 w-3" />
                 <span style={{ fontSize: 11, fontWeight: 700 }}>Tracker</span>

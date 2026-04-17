@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { UserX } from "lucide-react";
+import { UserX, Radio } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { 
@@ -105,6 +106,7 @@ export function ExpandableLessonCard({
   onDelete,
   renderCustomCollapsed
 }: ExpandableLessonCardProps) {
+  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [quickMessageOpen, setQuickMessageOpen] = useState(false);
@@ -549,6 +551,22 @@ export function ExpandableLessonCard({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
+
+                {/* Start Tracker (pupil pre-selected) */}
+                {lesson.pupil?.id && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full h-9 gap-1.5 text-xs border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:border-amber-700 dark:text-amber-300"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/instructor/tracking?pupilId=${lesson.pupil.id}&lessonId=${lesson.id}`);
+                    }}
+                  >
+                    <Radio className="h-3.5 w-3.5" />
+                    Start Tracker for {lesson.pupil?.name?.split(" ")[0] || "pupil"}
+                  </Button>
+                )}
 
                 {/* Secondary Actions */}
                 <div className="flex gap-2 pt-2 border-t border-border/50">
