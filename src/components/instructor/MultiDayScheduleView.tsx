@@ -152,6 +152,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   const [selectedLesson, setSelectedLesson] = useState<ScheduledLesson | null>(null);
   const [sendingMessage, setSendingMessage] = useState<string | null>(null);
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
+  const [instructorName, setInstructorName] = useState<string>("Your instructor");
 
   const startDate = useMemo(() => startOfDay(new Date()), []);
   const days = useMemo(() => Array.from({ length: DAYS_TO_LOAD }, (_, i) => addDays(startDate, i)), [startDate]);
