@@ -342,11 +342,81 @@ export function CoursePlannerSheet({
               </section>
             )}
 
-            {mode === "instructor" && defaultPupilName && (
-              <div className="rounded-lg bg-muted/50 px-3 py-2 text-sm">
-                <span className="text-muted-foreground">Pupil: </span>
-                <span className="font-medium">{defaultPupilName}</span>
-              </div>
+            {mode === "instructor" && (
+              <section className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Pupil</p>
+                {defaultPupilId ? (
+                  <div className="rounded-lg bg-muted/50 px-3 py-2 text-sm">
+                    <span className="text-muted-foreground">Pupil: </span>
+                    <span className="font-medium">{defaultPupilName || effectivePupilName}</span>
+                  </div>
+                ) : (
+                  <Popover open={pupilPickerOpen} onOpenChange={setPupilPickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        role="combobox"
+                        className={cn(
+                          "w-full justify-between font-normal",
+                          !effectivePupilName && "text-muted-foreground",
+                        )}
+                      >
+                        <span className="truncate text-left flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          {effectivePupilName || "Pick a pupil (optional)"}
+                        </span>
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search pupils…" />
+                        <CommandList>
+                          <CommandEmpty>No pupils found.</CommandEmpty>
+                          <CommandGroup>
+                            {selectedPupilId && (
+                              <CommandItem
+                                value="__clear__"
+                                onSelect={() => {
+                                  setSelectedPupilId(null);
+                                  setSelectedPupilName(null);
+                                  setPupilPickerOpen(false);
+                                }}
+                              >
+                                <span className="text-muted-foreground">Clear selection</span>
+                              </CommandItem>
+                            )}
+                            {pupils.map((p) => (
+                              <CommandItem
+                                key={p.id}
+                                value={p.name}
+                                onSelect={() => {
+                                  setSelectedPupilId(p.id);
+                                  setSelectedPupilName(p.name);
+                                  setPupilName(p.name);
+                                  setPupilPickerOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    selectedPupilId === p.id ? "opacity-100" : "opacity-0",
+                                  )}
+                                />
+                                {p.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                )}
+                {!effectivePupilId && (
+                  <p className="text-[11px] text-muted-foreground">Pick a pupil to enable direct booking into the diary.</p>
+                )}
+              </section>
             )}
 
             {/* Test details */}
