@@ -148,13 +148,13 @@ export function ActivityTilesGrid({
                   <span
                     className="flex items-center justify-center"
                     style={{
-                      minWidth: 16,
-                      height: 16,
-                      borderRadius: 8,
-                      padding: "0 4px",
+                      minWidth: 22,
+                      height: 22,
+                      borderRadius: 11,
+                      padding: "0 6px",
                       background: "#ff3b30",
                       color: "white",
-                      fontSize: 10,
+                      fontSize: 13,
                       fontWeight: 700,
                       lineHeight: 1,
                       boxShadow: "0 1px 4px rgba(255,59,48,0.4)",
