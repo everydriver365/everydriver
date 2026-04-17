@@ -710,6 +710,13 @@ export function PupilCardStack({
               {pupil.lessons_completed || 0} lessons · {totalHours}h
               {pupil.test_date && ` · Test: ${format(parseISO(pupil.test_date), "yyyy-MM-dd")}`}
             </p>
+            {lessonSummary && (
+              <p style={{ fontSize: 11, fontWeight: 500, marginTop: 2, fontFamily: "Inter, sans-serif" }}
+                 className={cn("flex items-center gap-1", lessonSummary.type === "next" ? "text-emerald-600" : "text-zinc-500")}>
+                <Calendar className="h-3 w-3" />
+                {lessonSummary.type === "next" ? "Next" : "Last"}: {format(parseISO(lessonSummary.date), "d MMM")}
+              </p>
+            )}
           </div>
 
           {/* Balance badge */}
