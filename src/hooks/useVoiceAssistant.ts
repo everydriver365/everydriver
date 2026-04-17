@@ -36,6 +36,12 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
   }, [instructorId]);
 
   const speak = useCallback(async (text: string) => {
+    // Pre-create utterance in the current (possibly gesture) context so the
+    // browser TTS fallback can speak even after the awaited fetch resolves.
+    const fallbackUtterance = new SpeechSynthesisUtterance(text);
+    fallbackUtterance.rate = 1.1;
+    fallbackUtterance.lang = "en-GB";
+
     try {
       setState("speaking");
 
@@ -68,10 +74,8 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
 
       if (!response.ok) {
         // Fallback to browser TTS
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 1.1;
-        utterance.onend = () => autoListenAfter();
-        speechSynthesis.speak(utterance);
+        fallbackUtterance.onend = () => autoListenAfter();
+        speechSynthesis.speak(fallbackUtterance);
         return;
       }
 
@@ -85,10 +89,8 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
       };
       audio.onerror = () => {
         // Fallback to browser TTS if audio fails
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 1.1;
-        utterance.onend = () => autoListenAfter();
-        speechSynthesis.speak(utterance);
+        fallbackUtterance.onend = () => autoListenAfter();
+        speechSynthesis.speak(fallbackUtterance);
         URL.revokeObjectURL(audioUrl);
       };
       await audio.play();
@@ -102,10 +104,8 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
         }
       };
       // Fallback to browser TTS
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.1;
-      utterance.onend = () => autoListenAfter();
-      speechSynthesis.speak(utterance);
+      fallbackUtterance.onend = () => autoListenAfter();
+      speechSynthesis.speak(fallbackUtterance);
     }
   }, []);
 
