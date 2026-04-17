@@ -509,7 +509,7 @@ export function CoursePlannerSheet({
             {/* Hours + lesson params */}
             <section className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Course Details</p>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div>
                   <Label className="text-xs text-muted-foreground mb-1 block">Hours left</Label>
                   <Input type="number" min={1} value={hoursRemaining} onChange={(e) => setHoursRemaining(e.target.value)} />
@@ -548,19 +548,19 @@ export function CoursePlannerSheet({
                 {DAY_KEYS.map((k) => {
                   const w = availability[k];
                   return (
-                    <div key={k} className="flex items-center gap-2 px-3 py-2">
+                    <div key={k} className="flex items-center gap-1.5 px-2 py-1.5 min-w-0">
                       <Switch checked={w.enabled} onCheckedChange={(v) => updateDay(k, { enabled: v })} />
-                      <span className="w-10 text-sm font-medium">{DAY_LABEL[k]}</span>
+                      <span className="w-9 text-xs font-medium">{DAY_LABEL[k]}</span>
                       <Input
                         type="time" disabled={!w.enabled} value={w.start}
                         onChange={(e) => updateDay(k, { start: e.target.value })}
-                        className="h-8 flex-1"
+                        className="h-9 flex-1 min-w-0 text-xs px-2"
                       />
-                      <span className="text-xs text-muted-foreground">to</span>
+                      <span className="text-[11px] text-muted-foreground">to</span>
                       <Input
                         type="time" disabled={!w.enabled} value={w.end}
                         onChange={(e) => updateDay(k, { end: e.target.value })}
-                        className="h-8 flex-1"
+                        className="h-9 flex-1 min-w-0 text-xs px-2"
                       />
                     </div>
                   );
@@ -568,13 +568,6 @@ export function CoursePlannerSheet({
               </div>
             </section>
 
-            <Button
-              className="w-full bg-[#2A394F] hover:bg-[#1F2B3D] text-white"
-              onClick={handleGenerate}
-              disabled={generating}
-            >
-              {generating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating…</> : <><Sparkles className="mr-2 h-4 w-4" /> Generate plan</>}
-            </Button>
           </div>
         ) : result ? (
           <div className="space-y-5">
