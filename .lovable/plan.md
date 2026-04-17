@@ -1,49 +1,39 @@
 
 
-## Mobile-friendliness audit
+The user wants automatic mileage logging per pupil based on the Radius hardware tracker, tied to lesson times.
 
-**Honest answer:** No — not every screen, modal, and popup in the app is guaranteed mobile-friendly. The instructor mobile app shell (home, schedule, track, money, pupils, more) is heavily polished for mobile, but the codebase has **150+ instructor pages, 156 files containing dialogs, and dozens of admin/school/demo pages** — many of which were built desktop-first and only partially adapted.
+Existing pieces I can use:
+- `auto-start-lesson-tracker` edge function already creates a `lesson_telematics` session at lesson start time (when instructor has `auto_start_tracker` on) and attaches it to the active GPS device.
+- `radius-poller` writes GPS points and accumulates `total_distance_km` on the session.
+- `auto_log_mileage` trigger already writes a `mileage_logs` row when a session ends with distance > 0.1km, marking it `business` and linking the pupil — exactly what's needed.
+- Memory confirms Radius is the active hardware provider.
 
-### What I found in a quick scan
+What's missing:
+1. No auto-stop. `auto-start-lesson-tracker` opens the session at lesson start, but nothing closes it at lesson end. Without `ended_at`, the `auto_log_mileage` trigger never fires, so no mileage row is created per pupil.
+2. The auto-log trigger exists as a function but no DB trigger is currently attached (the schema dump shows "no triggers"). Needs to be wired up.
+3. Settings UI toggle for instructors to opt in (`auto_start_tracker` already exists in the `instructors` table — verify a UI toggle exists in settings).
 
-**Mostly mobile-friendly:**
-- Instructor home, schedule, track, money, pupils, more (the 6 bottom-nav destinations) — recent shadow + iOS tile work confirms these
-- Pupil portal (uses `vaul` bottom sheets per memory)
-- Mini-websites (mobile-first)
-- Public site (`MainLayout` with `MobileBottomNav`)
+## Plan
 
-**Likely problem areas:**
-1. **Dialogs without mobile sizing** — many use `sm:max-w-md` or `max-w-lg` with no `max-h-[90vh] overflow-y-auto`, so tall forms get cut off on small screens (e.g. `EditVehicleDialog`, `RewardTiersManager`, `WeightTracker`).
-2. **Tab bars** — some pages cram 8 tabs (e.g. `InstructorVehicleHealth` has DVSA/Fleet/Service/Mileage/Costs/Security/Live/Speed). Already horizontally scrollable but cramped.
-3. **Admin pages** (`AdminPortal`, `AdminPaymentsManager`, `CMSManager`, `LiveChatManager`, `PupilRecordsManager`, `RewardTiersManager`) — built desktop-first, tables likely overflow.
-4. **Demo/design pages** (`DemoInstructorHomeDesigns`, `HomepageRedesignDemo`, `TileDesignDemo`, etc.) — internal showcase pages, often desktop-only.
-5. **Deep instructor utility pages** — many of the 100+ `Instructor*.tsx` pages (Workflows, Automations, BulkOperations, DataImport, DocumentTemplates, Pipeline, ReportsHub, etc.) were likely built without thorough mobile QA.
-6. **Modals with fixed widths** — `RecordPaymentModal` uses `sm:max-w-[400px] max-w-[90vw]` (good pattern), but many others use only `max-w-md` which can overflow on 320px devices.
+**1. New edge function: `auto-stop-lesson-tracker`**
+Runs every minute via pg_cron. Finds open `lesson_telematics` sessions whose linked lesson has ended (lesson `end_time` passed by ≥1 min), sets `ended_at = now()`, clears the GPS device's `current_session_id` / `current_pupil_id`. To match session→lesson, look up the most recent lesson for that instructor+pupil today whose end_time has just passed.
 
-### Proposed approach
+**2. Re-attach the `auto_log_mileage` trigger**
+Add a DB trigger on `lesson_telematics` AFTER UPDATE so when `ended_at` flips from NULL → value, a `mileage_logs` row is auto-created with pupil_id, distance, lesson_date, trip_type='business', purpose='Driving lesson', is_auto_logged=true. The function already exists; just needs the trigger.
 
-Rather than attempt a single mega-pass that breaks things, do a **systematic mobile audit and fix in waves**:
+**3. pg_cron schedule**
+Add a cron job that calls `auto-stop-lesson-tracker` every minute (mirroring how `auto-start-lesson-tracker` is invoked).
 
-**Wave 1 — Global safety net (low risk, high impact)**
-- Patch `DialogContent` base component to enforce `max-w-[calc(100vw-2rem)] max-h-[90dvh] overflow-y-auto` by default, so every dialog in the app becomes scrollable on mobile automatically.
-- Patch `Sheet` and `Drawer` defaults the same way.
-- Add `overflow-x-hidden` to admin/school portal layouts.
+**4. Settings toggle**
+Confirm/add a toggle in instructor settings: "Auto-track lesson mileage (Radius)" that flips `instructors.auto_start_tracker`. If missing, add it under the Telematics/Tracking section in `InstructorMenu` settings.
 
-**Wave 2 — High-traffic instructor pages**
-- Audit the top 20 most-used instructor pages (Settings, Pupils detail, Take Payment, Vehicle Health tabs, Pay/Income, Messages, Notifications, Subscriptions, Mini-Website settings).
-- Fix any tables, fixed-width grids, or off-screen content.
+## Outcome
 
-**Wave 3 — Admin & school portals**
-- Convert key admin tables to card lists below `md:` breakpoint.
-- Wrap wide controls in `overflow-x-auto`.
+Once enabled, every booked lesson with a pupil will:
+- Auto-open a Radius tracking session at lesson start
+- Accumulate live GPS distance during the lesson
+- Auto-close at lesson end
+- Auto-write a per-pupil `mileage_logs` row (business mileage, HMRC-ready)
 
-**Wave 4 — Long tail**
-- Touch each remaining instructor utility page only when reported or used.
-- Demo/design pages: deprioritised (internal only).
-
-### Recommendation
-
-I'd suggest starting with **Wave 1** today — it's a single focused change to the shared `DialogContent`, `SheetContent`, and `DrawerContent` components that will instantly improve hundreds of modals across the app without touching individual pages. Then we tackle Wave 2 next.
-
-Want me to proceed with Wave 1 first?
+No manual start/stop required. Mileage shows up in the existing Mileage Tracking screen attributed to the correct pupil and lesson.
 
