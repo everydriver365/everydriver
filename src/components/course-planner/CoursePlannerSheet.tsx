@@ -196,8 +196,8 @@ export function CoursePlannerSheet({
     try {
       const payload: any = {
         instructor_id: instructorId || null,
-        pupil_id: defaultPupilId || null,
-        lead_name: pupilName || null,
+        pupil_id: effectivePupilId || null,
+        lead_name: pupilName || effectivePupilName || null,
         lead_email: pupilEmail || null,
         lead_phone: pupilPhone || null,
         lead_postcode: pupilPostcode || null,
