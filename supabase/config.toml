@@ -287,3 +287,6 @@ verify_jwt = false
 
 [functions.auto-stop-lesson-tracker]
 verify_jwt = false
+
+[functions.radius-dashcam-probe]
+verify_jwt = false
