@@ -511,26 +511,28 @@ export default function InstructorRoutes() {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-6 text-[10px]">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="timesheets">
-                <Clock className="h-3 w-3 mr-0.5" />
-                Hours
-              </TabsTrigger>
-              <TabsTrigger value="leaderboard">
-                <TrendingUp className="h-3 w-3 mr-0.5" />
-                Scores
-              </TabsTrigger>
-              <TabsTrigger value="driving_test">
-                <CheckCircle className="h-3 w-3 mr-0.5" />
-                Tests
-              </TabsTrigger>
-              <TabsTrigger value="test">
-                <Flag className="h-3 w-3 mr-0.5" />
-                Routes
-              </TabsTrigger>
-              <TabsTrigger value="practice">Practice</TabsTrigger>
-            </TabsList>
+            <div className="-mx-4 px-4 overflow-x-auto sm:mx-0 sm:px-0 sm:overflow-visible">
+              <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-6 text-[11px] gap-1">
+                <TabsTrigger value="all" className="whitespace-nowrap">All</TabsTrigger>
+                <TabsTrigger value="timesheets" className="whitespace-nowrap">
+                  <Clock className="h-3 w-3 mr-0.5" />
+                  Hours
+                </TabsTrigger>
+                <TabsTrigger value="leaderboard" className="whitespace-nowrap">
+                  <TrendingUp className="h-3 w-3 mr-0.5" />
+                  Scores
+                </TabsTrigger>
+                <TabsTrigger value="driving_test" className="whitespace-nowrap">
+                  <CheckCircle className="h-3 w-3 mr-0.5" />
+                  Tests
+                </TabsTrigger>
+                <TabsTrigger value="test" className="whitespace-nowrap">
+                  <Flag className="h-3 w-3 mr-0.5" />
+                  Routes
+                </TabsTrigger>
+                <TabsTrigger value="practice" className="whitespace-nowrap">Practice</TabsTrigger>
+              </TabsList>
+            </div>
 
             {/* GPS Trips Tab Content */}
             {activeTab === "timesheets" ? (
