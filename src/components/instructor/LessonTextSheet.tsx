@@ -94,12 +94,12 @@ export function LessonTextSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="rounded-t-2xl border-t bg-background p-0 max-h-[85vh] overflow-y-auto">
         <div className="px-5 pt-5 pb-8">
-          <SheetHeader className="text-left mb-5">
+          <div className="text-left mb-5">
             <SheetTitle className="text-xl font-semibold">Text {lesson.pupilName}</SheetTitle>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-1">
               Sends a tracked SMS via your school number — {lesson.pupilName} can reply YES to confirm.
             </p>
-          </SheetHeader>
+          </div>
 
           {/* Slot summary */}
           <div className="rounded-xl border bg-muted/40 p-4 mb-5 space-y-2">
@@ -183,13 +183,37 @@ export function LessonTextSheet({
             </div>
 
             {customEnabled && (
-              <Textarea
-                value={customMessage}
-                onChange={(e) => setCustomMessage(e.target.value)}
-                placeholder={`Hi ${lesson.pupilName.split(" ")[0]}, just confirming your lesson on ${dayLabel} at ${lesson.startTime}…`}
-                rows={4}
-                className="text-sm"
-              />
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    "On my way",
+                    "5 mins late",
+                    "10 mins late",
+                    "Please be ready",
+                    "Lesson cancelled",
+                  ].map((tpl) => {
+                    const firstName = lesson.pupilName.split(" ")[0];
+                    const text = `Hi ${firstName}, ${tpl.toLowerCase()}.`;
+                    return (
+                      <button
+                        key={tpl}
+                        type="button"
+                        onClick={() => setCustomMessage(text)}
+                        className="px-2.5 h-7 rounded-full border border-input bg-background text-xs font-medium hover:bg-accent transition-colors"
+                      >
+                        {tpl}
+                      </button>
+                    );
+                  })}
+                </div>
+                <Textarea
+                  value={customMessage}
+                  onChange={(e) => setCustomMessage(e.target.value)}
+                  placeholder={`Hi ${lesson.pupilName.split(" ")[0]}, just confirming your lesson on ${dayLabel} at ${lesson.startTime}…`}
+                  rows={4}
+                  className="text-sm"
+                />
+              </div>
             )}
           </div>
 

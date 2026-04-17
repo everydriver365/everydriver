@@ -79,12 +79,12 @@ export function GapFillSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="rounded-t-2xl border-t bg-background p-0 max-h-[85vh] overflow-y-auto">
         <div className="px-5 pt-5 pb-8">
-          <SheetHeader className="text-left mb-5">
+          <div className="text-left mb-5">
             <SheetTitle className="text-xl font-semibold">Fill this gap</SheetTitle>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-1">
               Text all active pupils with a phone number to offer this slot.
             </p>
-          </SheetHeader>
+          </div>
 
           {/* Slot summary */}
           <div className="rounded-xl border bg-muted/40 p-4 mb-5 space-y-2">

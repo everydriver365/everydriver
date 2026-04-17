@@ -36,7 +36,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { QuickMessageSheet } from "./QuickMessageSheet";
 
 interface ScheduledLesson {
   id: string;
@@ -121,7 +120,7 @@ export function ExpandableLessonCard({
       return () => clearTimeout(t);
     }
   }, [isExpanded]);
-  const [quickMessageOpen, setQuickMessageOpen] = useState(false);
+  
   const [upcomingLessons, setUpcomingLessons] = useState<Array<{ id: string; lesson_date: string; start_time: string; duration_minutes: number }>>([]);
   const [loadingUpcoming, setLoadingUpcoming] = useState(false);
   const x = useMotionValue(0);
@@ -462,8 +461,8 @@ export function ExpandableLessonCard({
                   </div>
                 </div>
 
-                {/* Action Buttons - Compact Grid with Quick Message */}
-                <div className="grid grid-cols-5 gap-1.5">
+                {/* Action Buttons - Compact Grid */}
+                <div className="grid grid-cols-4 gap-1.5">
                   <Button
                     variant="outline"
                     size="sm"
@@ -488,19 +487,6 @@ export function ExpandableLessonCard({
                   >
                     <Phone className="h-4 w-4 text-emerald-500" />
                     Call
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-col h-auto py-2 gap-1 text-[10px]"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setQuickMessageOpen(true);
-                    }}
-                  >
-                    <Zap className="h-4 w-4 text-amber-500" />
-                    Quick
                   </Button>
 
                   <Button
@@ -635,13 +621,6 @@ export function ExpandableLessonCard({
         </AnimatePresence>
       </motion.div>
 
-      {/* Quick Message Sheet */}
-      <QuickMessageSheet
-        open={quickMessageOpen}
-        onOpenChange={setQuickMessageOpen}
-        pupilName={lesson.pupil?.name || "Pupil"}
-        pupilPhone={lesson.pupil?.phone || null}
-      />
     </div>
   );
 }
