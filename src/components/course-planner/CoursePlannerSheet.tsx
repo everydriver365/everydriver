@@ -207,7 +207,68 @@ export function CoursePlannerSheet({
     }
   };
 
-  const Body = (
+  const handleBookAll = async () => {
+    if (!result || !testDate) return;
+    if (!instructorId) {
+      toast.error("Need an instructor to book lessons");
+      return;
+    }
+    if (!defaultPupilId) {
+      toast.error("Open the planner from a pupil to book lessons directly");
+      return;
+    }
+    if (result.slots.length === 0) {
+      toast.error("No slots to book");
+      return;
+    }
+
+    setBooking(true);
+    try {
+      const lessons = result.slots.map((s) => ({
+        instructor_id: instructorId,
+        pupil_id: defaultPupilId,
+        lesson_date: s.date,
+        start_time: s.start_time,
+        duration_minutes: s.duration_minutes,
+        status: "scheduled",
+        payment_status: "not_paid",
+        lesson_type: "lesson",
+        notes: testCentreName ? `Course Plan · Test at ${testCentreName}` : "Course Plan",
+      }));
+
+      const { error: lessonError } = await supabase
+        .from("scheduled_lessons")
+        .insert(lessons);
+      if (lessonError) throw lessonError;
+
+      // Also save proposal as confirmed for record-keeping
+      await supabase.from("course_proposals").insert({
+        instructor_id: instructorId,
+        pupil_id: defaultPupilId,
+        lead_name: pupilName || defaultPupilName || null,
+        test_date: format(testDate, "yyyy-MM-dd"),
+        test_time: testTime || null,
+        test_centre_name: testCentreName || null,
+        hours_remaining: Number(hoursRemaining),
+        lesson_length_minutes: Number(lessonLength),
+        lessons_per_week: Number(lessonsPerWeek),
+        weekly_availability: availability,
+        pattern_summary: result.pattern_summary,
+        generated_slots: result.slots,
+        feasible: result.feasible,
+        shortfall_hours: result.shortfall_hours,
+        status: "booked",
+        source,
+      } as any);
+
+      toast.success(`Booked all ${lessons.length} lessons into the diary`);
+      handleClose(false);
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to book lessons");
+    } finally {
+      setBooking(false);
+    }
+  };
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="px-5 pt-4 pb-3 border-b">
