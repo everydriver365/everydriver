@@ -269,6 +269,8 @@ export function CoursePlannerSheet({
       setBooking(false);
     }
   };
+
+  const Body = (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="px-5 pt-4 pb-3 border-b">
