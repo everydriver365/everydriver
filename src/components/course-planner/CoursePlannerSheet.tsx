@@ -102,6 +102,12 @@ export function CoursePlannerSheet({
   const [lessonsPerWeek, setLessonsPerWeek] = useState("2");
   const [availability, setAvailability] = useState<Record<DayKey, DayWindow>>(DEFAULT_AVAILABILITY);
 
+  // Inline pupil picker (when instructor opens planner without a pupil)
+  const [pupils, setPupils] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedPupilId, setSelectedPupilId] = useState<string | null>(defaultPupilId || null);
+  const [selectedPupilName, setSelectedPupilName] = useState<string | null>(defaultPupilName || null);
+  const [pupilPickerOpen, setPupilPickerOpen] = useState(false);
+
   // Result state
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -121,6 +127,23 @@ export function CoursePlannerSheet({
         if (data) setTestCentres(data as any);
       });
   }, [open, testCentres.length]);
+
+  // Load instructor's pupils for the inline picker
+  useEffect(() => {
+    if (!open || mode !== "instructor" || !instructorId || defaultPupilId) return;
+    if (pupils.length > 0) return;
+    supabase
+      .from("pupils")
+      .select("id, name")
+      .eq("instructor_id", instructorId)
+      .order("name")
+      .then(({ data }) => {
+        if (data) setPupils(data as any);
+      });
+  }, [open, mode, instructorId, defaultPupilId, pupils.length]);
+
+  const effectivePupilId = selectedPupilId ?? defaultPupilId ?? null;
+  const effectivePupilName = selectedPupilName ?? defaultPupilName ?? null;
 
   const reset = () => {
     setResult(null);
@@ -173,8 +196,8 @@ export function CoursePlannerSheet({
     try {
       const payload: any = {
         instructor_id: instructorId || null,
-        pupil_id: defaultPupilId || null,
-        lead_name: pupilName || null,
+        pupil_id: effectivePupilId || null,
+        lead_name: pupilName || effectivePupilName || null,
         lead_email: pupilEmail || null,
         lead_phone: pupilPhone || null,
         lead_postcode: pupilPostcode || null,
@@ -213,8 +236,8 @@ export function CoursePlannerSheet({
       toast.error("Need an instructor to book lessons");
       return;
     }
-    if (!defaultPupilId) {
-      toast.error("Open the planner from a pupil to book lessons directly");
+    if (!effectivePupilId) {
+      toast.error("Pick a pupil to enable direct booking");
       return;
     }
     if (result.slots.length === 0) {
@@ -226,7 +249,7 @@ export function CoursePlannerSheet({
     try {
       const lessons = result.slots.map((s) => ({
         instructor_id: instructorId,
-        pupil_id: defaultPupilId,
+        pupil_id: effectivePupilId,
         lesson_date: s.date,
         start_time: s.start_time,
         duration_minutes: s.duration_minutes,
@@ -244,8 +267,8 @@ export function CoursePlannerSheet({
       // Also save proposal as confirmed for record-keeping
       await supabase.from("course_proposals").insert({
         instructor_id: instructorId,
-        pupil_id: defaultPupilId,
-        lead_name: pupilName || defaultPupilName || null,
+        pupil_id: effectivePupilId,
+        lead_name: pupilName || effectivePupilName || null,
         test_date: format(testDate, "yyyy-MM-dd"),
         test_time: testTime || null,
         test_centre_name: testCentreName || null,
@@ -287,7 +310,7 @@ export function CoursePlannerSheet({
         </div>
       </div>
 
-      <ScrollArea className="flex-1 px-5 py-4">
+      <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4">
         {step === "form" ? (
           <div className="space-y-5">
             {/* Pupil/lead info */}
@@ -319,11 +342,81 @@ export function CoursePlannerSheet({
               </section>
             )}
 
-            {mode === "instructor" && defaultPupilName && (
-              <div className="rounded-lg bg-muted/50 px-3 py-2 text-sm">
-                <span className="text-muted-foreground">Pupil: </span>
-                <span className="font-medium">{defaultPupilName}</span>
-              </div>
+            {mode === "instructor" && (
+              <section className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Pupil</p>
+                {defaultPupilId ? (
+                  <div className="rounded-lg bg-muted/50 px-3 py-2 text-sm">
+                    <span className="text-muted-foreground">Pupil: </span>
+                    <span className="font-medium">{defaultPupilName || effectivePupilName}</span>
+                  </div>
+                ) : (
+                  <Popover open={pupilPickerOpen} onOpenChange={setPupilPickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        role="combobox"
+                        className={cn(
+                          "w-full justify-between font-normal",
+                          !effectivePupilName && "text-muted-foreground",
+                        )}
+                      >
+                        <span className="truncate text-left flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          {effectivePupilName || "Pick a pupil (optional)"}
+                        </span>
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search pupils…" />
+                        <CommandList>
+                          <CommandEmpty>No pupils found.</CommandEmpty>
+                          <CommandGroup>
+                            {selectedPupilId && (
+                              <CommandItem
+                                value="__clear__"
+                                onSelect={() => {
+                                  setSelectedPupilId(null);
+                                  setSelectedPupilName(null);
+                                  setPupilPickerOpen(false);
+                                }}
+                              >
+                                <span className="text-muted-foreground">Clear selection</span>
+                              </CommandItem>
+                            )}
+                            {pupils.map((p) => (
+                              <CommandItem
+                                key={p.id}
+                                value={p.name}
+                                onSelect={() => {
+                                  setSelectedPupilId(p.id);
+                                  setSelectedPupilName(p.name);
+                                  setPupilName(p.name);
+                                  setPupilPickerOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    selectedPupilId === p.id ? "opacity-100" : "opacity-0",
+                                  )}
+                                />
+                                {p.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                )}
+                {!effectivePupilId && (
+                  <p className="text-[11px] text-muted-foreground">Pick a pupil to enable direct booking into the diary.</p>
+                )}
+              </section>
             )}
 
             {/* Test details */}
@@ -416,7 +509,7 @@ export function CoursePlannerSheet({
             {/* Hours + lesson params */}
             <section className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Course Details</p>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div>
                   <Label className="text-xs text-muted-foreground mb-1 block">Hours left</Label>
                   <Input type="number" min={1} value={hoursRemaining} onChange={(e) => setHoursRemaining(e.target.value)} />
@@ -455,19 +548,19 @@ export function CoursePlannerSheet({
                 {DAY_KEYS.map((k) => {
                   const w = availability[k];
                   return (
-                    <div key={k} className="flex items-center gap-2 px-3 py-2">
+                    <div key={k} className="flex items-center gap-1.5 px-2 py-1.5 min-w-0">
                       <Switch checked={w.enabled} onCheckedChange={(v) => updateDay(k, { enabled: v })} />
-                      <span className="w-10 text-sm font-medium">{DAY_LABEL[k]}</span>
+                      <span className="w-9 text-xs font-medium">{DAY_LABEL[k]}</span>
                       <Input
                         type="time" disabled={!w.enabled} value={w.start}
                         onChange={(e) => updateDay(k, { start: e.target.value })}
-                        className="h-8 flex-1"
+                        className="h-9 flex-1 min-w-0 text-xs px-2"
                       />
-                      <span className="text-xs text-muted-foreground">to</span>
+                      <span className="text-[11px] text-muted-foreground">to</span>
                       <Input
                         type="time" disabled={!w.enabled} value={w.end}
                         onChange={(e) => updateDay(k, { end: e.target.value })}
-                        className="h-8 flex-1"
+                        className="h-9 flex-1 min-w-0 text-xs px-2"
                       />
                     </div>
                   );
@@ -475,13 +568,6 @@ export function CoursePlannerSheet({
               </div>
             </section>
 
-            <Button
-              className="w-full bg-[#2A394F] hover:bg-[#1F2B3D] text-white"
-              onClick={handleGenerate}
-              disabled={generating}
-            >
-              {generating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating…</> : <><Sparkles className="mr-2 h-4 w-4" /> Generate plan</>}
-            </Button>
           </div>
         ) : result ? (
           <div className="space-y-5">
@@ -554,48 +640,63 @@ export function CoursePlannerSheet({
               </div>
             </section>
 
-            <Separator />
+          </div>
+        ) : null}
+      </div>
 
-            <div className="space-y-2">
-              {mode === "instructor" && instructorId && defaultPupilId && (
-                <Button
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-                  onClick={handleBookAll}
-                  disabled={booking || saving || result.slots.length === 0 || !result.feasible}
-                >
-                  {booking
-                    ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Booking {result.slots.length} lessons…</>
-                    : <><CalendarCheck className="mr-2 h-4 w-4" /> Book all {result.slots.length} lessons into diary</>}
-                </Button>
-              )}
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setStep("form")}
-                  disabled={booking || saving}
-                >
-                  Revise plan
-                </Button>
-                <Button
-                  className="flex-1 bg-[#2A394F] hover:bg-[#1F2B3D] text-white"
-                  onClick={handleSaveDraft}
-                  disabled={saving || booking || result.slots.length === 0}
-                >
-                  {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving…</> : "Save as draft"}
-                </Button>
-              </div>
+      {/* Sticky footer */}
+      <div className="border-t bg-card px-5 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        {step === "form" ? (
+          <Button
+            className="w-full bg-[#2A394F] hover:bg-[#1F2B3D] text-white"
+            onClick={handleGenerate}
+            disabled={generating}
+          >
+            {generating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating…</> : <><Sparkles className="mr-2 h-4 w-4" /> Generate plan</>}
+          </Button>
+        ) : result ? (
+          <div className="space-y-2">
+            {mode === "instructor" && instructorId && (
+              <Button
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                onClick={handleBookAll}
+                disabled={booking || saving || result.slots.length === 0 || !result.feasible || !effectivePupilId}
+              >
+                {booking
+                  ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Booking {result.slots.length} lessons…</>
+                  : <><CalendarCheck className="mr-2 h-4 w-4" /> Book all {result.slots.length} lessons into diary</>}
+              </Button>
+            )}
+            {mode === "instructor" && !effectivePupilId && (
+              <p className="text-[11px] text-center text-muted-foreground">Pick a pupil on the form to enable direct booking.</p>
+            )}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setStep("form")}
+                disabled={booking || saving}
+              >
+                Revise plan
+              </Button>
+              <Button
+                className="flex-1 bg-[#2A394F] hover:bg-[#1F2B3D] text-white"
+                onClick={handleSaveDraft}
+                disabled={saving || booking || result.slots.length === 0}
+              >
+                {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving…</> : "Save as draft"}
+              </Button>
             </div>
           </div>
         ) : null}
-      </ScrollArea>
+      </div>
     </div>
   );
 
   if (variant === "dialog") {
     return (
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="max-w-lg p-0 h-[85vh] flex flex-col">
+        <DialogContent className="max-w-lg p-0 h-[85dvh] max-h-[85dvh] flex flex-col">
           {Body}
         </DialogContent>
       </Dialog>
@@ -604,7 +705,7 @@ export function CoursePlannerSheet({
 
   return (
     <Sheet open={open} onOpenChange={handleClose}>
-      <SheetContent side="bottom" className="rounded-t-[20px] p-0 border-0 h-[92vh] flex flex-col">
+      <SheetContent side="bottom" className="rounded-t-[20px] p-0 border-0 h-[100dvh] max-h-[100dvh] flex flex-col">
         <div className="flex justify-center pt-2 pb-1">
           <div className="w-9 h-1.5 rounded-full bg-muted-foreground/30" />
         </div>
