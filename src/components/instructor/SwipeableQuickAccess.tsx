@@ -137,7 +137,7 @@ export function SwipeableQuickAccess() {
                         background: "#FFFFFF",
                         borderRadius: 16,
                         overflow: "hidden",
-                        boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)",
+                        boxShadow: "0 12px 28px rgba(20, 30, 60, 0.06), 0 4px 10px rgba(20, 30, 60, 0.03)",
                         padding: "10px",
                         textAlign: "left",
                         display: "flex",
