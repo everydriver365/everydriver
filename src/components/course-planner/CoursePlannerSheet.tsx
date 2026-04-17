@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
 import {
   CalendarIcon, Clock, Sparkles, AlertTriangle, Loader2,
-  GraduationCap, MapPin, User, Mail, Phone, Check,
+  GraduationCap, MapPin, User, Mail, Phone, Check, ChevronsUpDown, CalendarCheck,
 } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -92,7 +93,10 @@ export function CoursePlannerSheet({
   const [pupilPostcode, setPupilPostcode] = useState("");
   const [testDate, setTestDate] = useState<Date | undefined>();
   const [testTime, setTestTime] = useState("10:00");
-  const [testCentre, setTestCentre] = useState("");
+  const [testCentreId, setTestCentreId] = useState<string>("");
+  const [testCentreName, setTestCentreName] = useState<string>("");
+  const [testCentres, setTestCentres] = useState<Array<{ id: string; name: string; postcode: string | null }>>([]);
+  const [centrePickerOpen, setCentrePickerOpen] = useState(false);
   const [hoursRemaining, setHoursRemaining] = useState("20");
   const [lessonLength, setLessonLength] = useState("120");
   const [lessonsPerWeek, setLessonsPerWeek] = useState("2");
@@ -101,8 +105,22 @@ export function CoursePlannerSheet({
   // Result state
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [booking, setBooking] = useState(false);
   const [result, setResult] = useState<PlannerResult | null>(null);
   const [step, setStep] = useState<"form" | "result">("form");
+
+  // Load test centres once when sheet opens
+  useEffect(() => {
+    if (!open || testCentres.length > 0) return;
+    supabase
+      .from("test_centres")
+      .select("id, name, postcode")
+      .eq("is_active", true)
+      .order("name")
+      .then(({ data }) => {
+        if (data) setTestCentres(data as any);
+      });
+  }, [open, testCentres.length]);
 
   const reset = () => {
     setResult(null);
@@ -162,7 +180,7 @@ export function CoursePlannerSheet({
         lead_postcode: pupilPostcode || null,
         test_date: format(testDate, "yyyy-MM-dd"),
         test_time: testTime || null,
-        test_centre_name: testCentre || null,
+        test_centre_name: testCentreName || null,
         hours_remaining: Number(hoursRemaining),
         lesson_length_minutes: Number(lessonLength),
         lessons_per_week: Number(lessonsPerWeek),
@@ -186,6 +204,69 @@ export function CoursePlannerSheet({
       toast.error(e?.message || "Failed to save proposal");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleBookAll = async () => {
+    if (!result || !testDate) return;
+    if (!instructorId) {
+      toast.error("Need an instructor to book lessons");
+      return;
+    }
+    if (!defaultPupilId) {
+      toast.error("Open the planner from a pupil to book lessons directly");
+      return;
+    }
+    if (result.slots.length === 0) {
+      toast.error("No slots to book");
+      return;
+    }
+
+    setBooking(true);
+    try {
+      const lessons = result.slots.map((s) => ({
+        instructor_id: instructorId,
+        pupil_id: defaultPupilId,
+        lesson_date: s.date,
+        start_time: s.start_time,
+        duration_minutes: s.duration_minutes,
+        status: "scheduled",
+        payment_status: "not_paid",
+        lesson_type: "lesson",
+        notes: testCentreName ? `Course Plan · Test at ${testCentreName}` : "Course Plan",
+      }));
+
+      const { error: lessonError } = await supabase
+        .from("scheduled_lessons")
+        .insert(lessons);
+      if (lessonError) throw lessonError;
+
+      // Also save proposal as confirmed for record-keeping
+      await supabase.from("course_proposals").insert({
+        instructor_id: instructorId,
+        pupil_id: defaultPupilId,
+        lead_name: pupilName || defaultPupilName || null,
+        test_date: format(testDate, "yyyy-MM-dd"),
+        test_time: testTime || null,
+        test_centre_name: testCentreName || null,
+        hours_remaining: Number(hoursRemaining),
+        lesson_length_minutes: Number(lessonLength),
+        lessons_per_week: Number(lessonsPerWeek),
+        weekly_availability: availability,
+        pattern_summary: result.pattern_summary,
+        generated_slots: result.slots,
+        feasible: result.feasible,
+        shortfall_hours: result.shortfall_hours,
+        status: "booked",
+        source,
+      } as any);
+
+      toast.success(`Booked all ${lessons.length} lessons into the diary`);
+      handleClose(false);
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to book lessons");
+    } finally {
+      setBooking(false);
     }
   };
 
@@ -276,8 +357,59 @@ export function CoursePlannerSheet({
                 </div>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">Test centre (optional)</Label>
-                <Input placeholder="e.g. Winchester" value={testCentre} onChange={(e) => setTestCentre(e.target.value)} />
+                <Label className="text-xs text-muted-foreground mb-1 block">Test centre</Label>
+                <Popover open={centrePickerOpen} onOpenChange={setCentrePickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        "w-full justify-between font-normal",
+                        !testCentreName && "text-muted-foreground",
+                      )}
+                    >
+                      <span className="truncate text-left">
+                        {testCentreName || "Search 314 UK test centres…"}
+                      </span>
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search by name or postcode…" />
+                      <CommandList>
+                        <CommandEmpty>No test centre found.</CommandEmpty>
+                        <CommandGroup>
+                          {testCentres.map((c) => (
+                            <CommandItem
+                              key={c.id}
+                              value={`${c.name} ${c.postcode || ""}`}
+                              onSelect={() => {
+                                setTestCentreId(c.id);
+                                setTestCentreName(c.name);
+                                setCentrePickerOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  testCentreId === c.id ? "opacity-100" : "opacity-0",
+                                )}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm truncate">{c.name}</div>
+                                {c.postcode && (
+                                  <div className="text-[11px] text-muted-foreground">{c.postcode}</div>
+                                )}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
             </section>
 
@@ -424,17 +556,35 @@ export function CoursePlannerSheet({
 
             <Separator />
 
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setStep("form")}>
-                Edit
-              </Button>
-              <Button
-                className="flex-1 bg-[#2A394F] hover:bg-[#1F2B3D] text-white"
-                onClick={handleSaveDraft}
-                disabled={saving || result.slots.length === 0}
-              >
-                {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving…</> : "Save as draft"}
-              </Button>
+            <div className="space-y-2">
+              {mode === "instructor" && instructorId && defaultPupilId && (
+                <Button
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                  onClick={handleBookAll}
+                  disabled={booking || saving || result.slots.length === 0 || !result.feasible}
+                >
+                  {booking
+                    ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Booking {result.slots.length} lessons…</>
+                    : <><CalendarCheck className="mr-2 h-4 w-4" /> Book all {result.slots.length} lessons into diary</>}
+                </Button>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setStep("form")}
+                  disabled={booking || saving}
+                >
+                  Revise plan
+                </Button>
+                <Button
+                  className="flex-1 bg-[#2A394F] hover:bg-[#1F2B3D] text-white"
+                  onClick={handleSaveDraft}
+                  disabled={saving || booking || result.slots.length === 0}
+                >
+                  {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving…</> : "Save as draft"}
+                </Button>
+              </div>
             </div>
           </div>
         ) : null}
