@@ -36,7 +36,7 @@ const TILE_FEATURE_MAP: Record<string, string> = {
 };
 
 const ALL_TILES: QuickTile[] = [
-  { title: "Course Planner", subtitle: "Plan to test day", icon: GraduationCap, tintBg: "#E8ECF1", tintColor: "#2A394F", route: "__planner__" },
+  { title: "Course Planner", subtitle: "Plan to test day", icon: GraduationCap, tintBg: "#E8ECF1", tintColor: "#2A394F", route: "/instructor/course-planner" },
   { title: "Agenda", subtitle: "Your schedule", icon: CalendarDays, tintBg: "#E8ECF1", tintColor: "#2A394F", route: "/instructor/schedule" },
   { title: "Pupils", subtitle: "Manage learners", icon: Users, tintBg: "#E8ECF1", tintColor: "#2A394F", route: "/instructor/pupils" },
   { title: "Track Lesson", subtitle: "Start GPS", icon: MapPin, tintBg: "#FEF2F2", tintColor: "#DC2626", route: "/instructor/tracking" },
@@ -115,10 +115,6 @@ export function SwipeableQuickAccess() {
                       toast.info(`${tile.title} requires a plan upgrade`, {
                         action: { label: "View Plans", onClick: () => navigate("/instructor/plans") },
                       });
-                      return;
-                    }
-                    if (tile.route === "__planner__") {
-                      setPlannerOpen(true);
                       return;
                     }
                     navigate(tile.route);
@@ -209,14 +205,6 @@ export function SwipeableQuickAccess() {
         onClose={() => setQuickActionsMenuOpen(false)}
       />
 
-      <CoursePlannerSheet
-        open={plannerOpen}
-        onOpenChange={setPlannerOpen}
-        mode="instructor"
-        instructorId={instructor?.id || null}
-        instructorName={instructor?.name || null}
-        source="instructor_app"
-      />
     </div>
   );
 }

@@ -18,6 +18,7 @@ const InstallInstructor = lazy(() => import("@/pages/InstallInstructor"));
 
 // Jobs & scheduling
 const InstructorJobs = lazy(() => import("@/pages/InstructorJobs"));
+const CoursePlannerPage = lazy(() => import("@/pages/instructor/CoursePlannerPage"));
 const InstructorPendingScheduling = lazy(() => import("@/pages/InstructorPendingScheduling"));
 const InstructorQuickAvailability = lazy(() => import("@/pages/InstructorQuickAvailability"));
 const InstructorAvailabilityWindows = lazy(() => import("@/pages/InstructorAvailabilityWindows"));
@@ -133,6 +134,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/pupils" element={<InstructorPupils />} />
     <Route path="/instructor/pupils/:pupilId" element={<InstructorPupils />} />
     <Route path="/instructor/schedule" element={<InstructorSchedule />} />
+    <Route path="/instructor/course-planner" element={<CoursePlannerPage />} />
     <Route path="/instructor/diary" element={<InstructorDiary />} />
     <Route path="/instructor/menu" element={<InstructorMenu />} />
     <Route path="/instructor/settings" element={<InstructorSettings />} />
