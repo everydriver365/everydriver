@@ -85,19 +85,6 @@ export function InsightTilesGrid({ gapCount = 0 }: InsightTilesGridProps) {
               transition: "background 120ms ease",
             }}
           >
-            {/* Blue gradient accent line at bottom */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: 2,
-                background: "linear-gradient(90deg, #2A394F, #3D5377)",
-                borderRadius: "0 0 14px 14px",
-              }}
-            />
-
             {/* Icon tile + badge row */}
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
               <div
