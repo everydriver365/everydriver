@@ -105,6 +105,17 @@
      --tracking-normal: 0em;
 
      --spacing: 0.25rem;
+
+     /* Instructor mobile app — slate gradient backdrop */
+     --instructor-bg-start: #EEF2F7;
+     --instructor-bg-end: #E4E9F0;
+     --instructor-bg-overlay: rgba(238, 242, 247, 0.85);
+  }
+
+  .instructor-shell-bg {
+    background: linear-gradient(180deg, var(--instructor-bg-start) 0%, var(--instructor-bg-end) 100%);
+    background-attachment: fixed;
+    min-height: 100dvh;
   }
 
   .dark {
