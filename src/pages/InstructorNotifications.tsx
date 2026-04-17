@@ -59,28 +59,23 @@ export default function InstructorNotifications() {
     <div className="min-h-screen bg-primary">
       <InstructorMobileHeader title="Notifications" showBackButton showSettings={false} />
 
-      <div className="bg-background min-h-screen px-4 py-4 space-y-4" style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
-        {/* Hero Card */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-700 p-5 text-white shadow-lg">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-          <div className="relative z-10 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-white/20 rounded-[10px] backdrop-blur-md">
-                <Bell className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-[17px] font-semibold tracking-[-0.02em]">Notifications</h1>
-                <p className="text-[13px] text-white/60">
-                  {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
-                </p>
-              </div>
+      <div className="bg-background min-h-screen px-4 py-4 space-y-4" style={{ fontFamily: "Inter, -apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
+        {/* Page title — canonical iOS style */}
+        <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center gap-2.5">
+            <div className="h-[29px] w-[29px] rounded-[7px] flex items-center justify-center" style={{ backgroundColor: "#E8ECF1" }}>
+              <Bell className="h-3.5 w-3.5" style={{ color: "#2A394F" }} />
             </div>
-            {unreadCount > 0 && (
-              <div className="h-8 w-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
-                <span className="text-sm font-bold">{unreadCount}</span>
-              </div>
-            )}
+            <div>
+              <h1 className="text-[17px] font-semibold tracking-[-0.02em]" style={{ color: "#18181B" }}>Notifications</h1>
+              <p className="text-[13px]" style={{ color: "#71717A" }}>
+                {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
+              </p>
+            </div>
           </div>
+          {unreadCount > 0 && (
+            <Badge variant="destructive" className="text-[10px]">{unreadCount}</Badge>
+          )}
         </div>
 
         {/* Messages tile - always visible */}
