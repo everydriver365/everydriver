@@ -468,7 +468,18 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                           <span style={{ fontSize: 11, fontWeight: 500, color: "#71717A", flexShrink: 0 }}>All day</span>
                         </div>
                         {isExpanded && (
-                          <div style={{ marginTop: 10, borderTop: "1px solid #E4E4E7", paddingTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+                          <div style={{ marginTop: 10, borderTop: "1px solid #E4E4E7", paddingTop: 10, display: "flex", flexDirection: "column", gap: 8 }} onClick={(e) => e.stopPropagation()}>
+                            {evt.meeting_url && (
+                              <a
+                                href={evt.meeting_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, backgroundColor: "#007AFF", color: "#FFFFFF", fontSize: 14, fontWeight: 600, padding: "10px 14px", borderRadius: 10, textDecoration: "none" }}
+                              >
+                                <Video style={{ width: 16, height: 16 }} />
+                                Join {evt.meeting_provider || "Meeting"}
+                              </a>
+                            )}
                             {evt.location && (
                               <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                                 <MapPin style={{ width: 14, height: 14, color: "#71717A", marginTop: 2, flexShrink: 0 }} />
@@ -480,10 +491,21 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                                 {evt.description}
                               </div>
                             )}
+                            {evt.html_link && (
+                              <a
+                                href={evt.html_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "#007AFF", textDecoration: "none" }}
+                              >
+                                <ExternalLink style={{ width: 12, height: 12 }} />
+                                Open in Google Calendar
+                              </a>
+                            )}
                             <span style={{ fontSize: 11, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                               {evt.is_busy ? "Busy" : "Free"} · Google Calendar
                             </span>
-                            {!evt.location && !evt.description && (
+                            {!evt.location && !evt.description && !evt.meeting_url && !evt.html_link && (
                               <span style={{ fontSize: 12, color: "#A1A1AA", fontStyle: "italic" }}>No additional details</span>
                             )}
                           </div>
@@ -622,7 +644,18 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                               {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")} · {durationStr}
                             </div>
                             {isExpanded && (
-                              <div style={{ marginTop: 10, borderTop: "1px solid #E4E4E7", paddingTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+                              <div style={{ marginTop: 10, borderTop: "1px solid #E4E4E7", paddingTop: 10, display: "flex", flexDirection: "column", gap: 8 }} onClick={(e) => e.stopPropagation()}>
+                                {evt.meeting_url && (
+                                  <a
+                                    href={evt.meeting_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, backgroundColor: "#007AFF", color: "#FFFFFF", fontSize: 14, fontWeight: 600, padding: "10px 14px", borderRadius: 10, textDecoration: "none" }}
+                                  >
+                                    <Video style={{ width: 16, height: 16 }} />
+                                    Join {evt.meeting_provider || "Meeting"}
+                                  </a>
+                                )}
                                 {evt.location && (
                                   <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                                     <MapPin style={{ width: 14, height: 14, color: "#71717A", marginTop: 2, flexShrink: 0 }} />
@@ -634,12 +667,23 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                                     {evt.description}
                                   </div>
                                 )}
+                                {evt.html_link && (
+                                  <a
+                                    href={evt.html_link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "#007AFF", textDecoration: "none" }}
+                                  >
+                                    <ExternalLink style={{ width: 12, height: 12 }} />
+                                    Open in Google Calendar
+                                  </a>
+                                )}
                                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 2 }}>
                                   <span style={{ fontSize: 11, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                                     {evt.is_busy ? "Busy" : "Free"} · Google Calendar
                                   </span>
                                 </div>
-                                {!evt.location && !evt.description && (
+                                {!evt.location && !evt.description && !evt.meeting_url && !evt.html_link && (
                                   <span style={{ fontSize: 12, color: "#A1A1AA", fontStyle: "italic" }}>No additional details</span>
                                 )}
                               </div>
