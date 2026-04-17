@@ -12,7 +12,7 @@ import {
   MessageSquare, MapPinned, BookOpen, Settings,
   Gift, Clock, Receipt, FileBarChart, BarChart3, Moon, Megaphone, Lock, ChevronRight, GraduationCap,
 } from "lucide-react";
-import { CoursePlannerSheet } from "@/components/course-planner/CoursePlannerSheet";
+
 
 interface QuickTile {
   title: string;
@@ -78,7 +78,7 @@ export function SwipeableQuickAccess() {
   const features = subscription?.features || [];
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [quickActionsMenuOpen, setQuickActionsMenuOpen] = useState(false);
-  const [plannerOpen, setPlannerOpen] = useState(false);
+  
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
 
   const pages: QuickTile[][] = [];
