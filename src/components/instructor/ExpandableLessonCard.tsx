@@ -160,6 +160,11 @@ export function ExpandableLessonCard({
   // Check if this is a recurring lesson
   const isRecurring = !!lesson.recurrence_rule;
 
+  // Payment overdue: negative balance and lesson not already paid/prepaid
+  const isPaymentOverdue =
+    lesson.payment_status !== "paid" &&
+    (lesson.pupil?.account_balance ?? 0) < 0;
+
   return (
     <div className="relative overflow-hidden rounded-2xl">
       {/* Delete background */}
