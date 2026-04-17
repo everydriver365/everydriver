@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { format, parse, addDays, addMinutes, isAfter } from "date-fns";
-import { CalendarX, CheckCircle2, MapPin, Clock, ArrowRight } from "lucide-react";
+import { CalendarX, CheckCircle2, MapPin, Clock, ArrowRight, CloudRain, PoundSterling } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PupilAvatar } from "./PupilAvatar";
 import { TodayLesson } from "@/hooks/useTodayRemainingLessons";
