@@ -1000,6 +1000,11 @@ Deno.serve(async (req) => {
               end_time: event.end,
               is_busy: true,
               color: event.color,
+              location: event.location,
+              description: event.description,
+              meeting_url: event.meeting_url,
+              meeting_provider: event.meeting_provider,
+              html_link: event.html_link,
               synced_at: new Date().toISOString(),
             }));
 
