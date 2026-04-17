@@ -1,44 +1,29 @@
 
-## Add mini-map + admin/pupil message awareness to the iOS Next Up tile
+The "Running Late" alert in `WeatherAlertBanner.tsx` currently shows the late status but has no action. I'll add a "Text Pupil" button that opens the native SMS app pre-filled with an apologetic message including the ETA.
 
-**Target**: `src/components/instructor/IOSNativeHomeView.tsx` → `IOSNextLessonCard` (the mobile "Next Up" tile shown on `/instructor` home, ios-native layout). No other layouts will be touched (per mobile update policy this is the active mobile layout the user is looking at).
+The hook `useRunningLateDetection.ts` already exists with `sendLateETA()` logic — I'll mirror that pattern but inline since the banner needs pupil phone info passed through.
 
-### What to add (inside the expanded section only — keep collapsed view compact)
+## Plan
 
-1. **Mini-map of pickup location**
-   - Reuse the existing `PostcodeMapPreview` component (already used elsewhere, geocodes via `geocode-postcode` edge fn).
-   - Render only when `nextLesson.pickupPostcode` exists, inside the expanded panel above the Live ETA row.
-   - Tap-to-navigate: opens Google/Apple Maps directions to the postcode.
-   - Styled to match dark gradient tile (rounded-2xl, white/10 border).
+**1. Extend `WeatherAlertBanner.tsx` props**
+Add two optional props:
+- `nextLessonPupilPhone?: string | null`
+- `nextLessonArrivalTime?: string` (formatted HH:mm) — or compute inside from `nextLessonEtaMinutes`
 
-2. **Admin message indicator (pupil-related)**
-   - New hook `useAdminUnreadForPupil(instructorId, pupilId)` querying `admin_messages` joined to `admin_conversations` for that instructor, filtered by messages whose body mentions the pupil's name OR by a future `pupil_id` column. For now: count any unread `admin_messages` where `sender_type='admin'` and `read_at IS NULL` for this instructor's conversation, AND `content ILIKE '%<pupil first name>%'`.
-   - Show as a second message row in the expanded section: orange envelope, "X note(s) from admin about {pupilName}".
-   - Tap → navigate to `/instructor/admin-chat` (or wherever admin chat lives).
-   - Realtime invalidation via `useRealtimeSubscription("admin_messages", ...)`.
+**2. Add "Text Pupil" button to Running Late alert**
+Inside the running-late motion.div, append a compact button (right-aligned) that:
+- Uses `MessageSquare` icon + "Text" label
+- Builds message: `"Hi {firstName}, I'm running about {lateByMinutes} mins late. ETA {arrivalTime}. Sorry!"`
+- Triggers `sms:` link via anchor click (matches existing pattern in `useRunningLateDetection`)
+- Disabled if no phone number
+- Uses red-tinted styling to match the alert's danger theme
 
-3. **Collapsed badge**
-   - Combine pupil + admin unread into the existing red badge on the avatar so the user sees attention is needed without expanding.
+**3. Wire up in parent**
+Find where `WeatherAlertBanner` is rendered (instructor mobile dashboard) and pass through `nextLessonPupilPhone` from the same source as `nextLessonPupilName`.
 
-### Files to change
-- `src/components/instructor/IOSNativeHomeView.tsx` — render `PostcodeMapPreview`, render admin row, sum badge counts.
-- `src/hooks/useAdminUnreadForPupil.ts` *(new)* — query + realtime.
+## Files to change
+- `src/components/instructor/WeatherAlertBanner.tsx` — add props + button
+- Parent component rendering the banner (likely `MobileHomepage.tsx` or `HomepageHero.tsx`) — pass phone prop. **Per memory rule, mobile layouts must not be modified unless explicitly instructed** — but this change is the user's explicit instruction targeting the warning tile shown on mobile, so it's permitted.
 
-### Out of scope
-- No DB migrations (we filter client-side by name match — good enough until an explicit `pupil_id` column is added on `admin_messages`).
-- No changes to other home layouts (lock-screen, clean, compact, best-mate, mission-control) — per mobile update policy.
-- No changes to marketing pages.
-
-### Visual sketch (expanded tile)
-```text
-┌─────────────────────────────┐
-│ Avatar(2)  NEXT UP · in 25m │
-│            Sarah Mitchell   │
-├─────────────────────────────┤
-│  [ mini-map @ SO22 6XX  ↗ ] │  ← NEW
-│  Live ETA · ~12 min  • light│
-│  💬 2 unread from Sarah   › │
-│  ✉️  1 admin note re Sarah › │  ← NEW
-│  [ Start Lesson ]           │
-└─────────────────────────────┘
-```
+## UX
+Button sits inline on the right of the alert text, small (h-7), red outline style, opens native SMS composer. Pre-filled message uses pupil's first name and computed arrival time (now + ETA minutes).
