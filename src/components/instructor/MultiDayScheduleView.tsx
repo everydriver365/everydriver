@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, addDays, isToday, parseISO, startOfDay, endOfDay, isSameDay, differenceInMinutes } from "date-fns";
-import { Calendar, Clock, MapPin, Plus, Loader2, CheckCircle2 } from "lucide-react";
+import { Calendar, Clock, MapPin, Plus, Loader2, CheckCircle2, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ExpandableLessonCard } from "./ExpandableLessonCard";
 import { GapFillCard } from "./GapFillCard";
