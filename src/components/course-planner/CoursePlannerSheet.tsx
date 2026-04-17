@@ -236,8 +236,8 @@ export function CoursePlannerSheet({
       toast.error("Need an instructor to book lessons");
       return;
     }
-    if (!defaultPupilId) {
-      toast.error("Open the planner from a pupil to book lessons directly");
+    if (!effectivePupilId) {
+      toast.error("Pick a pupil to enable direct booking");
       return;
     }
     if (result.slots.length === 0) {
@@ -249,7 +249,7 @@ export function CoursePlannerSheet({
     try {
       const lessons = result.slots.map((s) => ({
         instructor_id: instructorId,
-        pupil_id: defaultPupilId,
+        pupil_id: effectivePupilId,
         lesson_date: s.date,
         start_time: s.start_time,
         duration_minutes: s.duration_minutes,
@@ -267,8 +267,8 @@ export function CoursePlannerSheet({
       // Also save proposal as confirmed for record-keeping
       await supabase.from("course_proposals").insert({
         instructor_id: instructorId,
-        pupil_id: defaultPupilId,
-        lead_name: pupilName || defaultPupilName || null,
+        pupil_id: effectivePupilId,
+        lead_name: pupilName || effectivePupilName || null,
         test_date: format(testDate, "yyyy-MM-dd"),
         test_time: testTime || null,
         test_centre_name: testCentreName || null,
