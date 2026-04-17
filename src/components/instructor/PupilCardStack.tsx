@@ -649,6 +649,8 @@ export function PupilCardStack({
   // Calculate total hours from lessons_completed (approximate 2h per lesson if no better data)
   const totalHours = (pupil.lessons_completed || 0) * 2;
 
+  const isOverdue = hasDebt && !!pupil.balance_due_date && new Date(pupil.balance_due_date) < new Date();
+
   return (
     <>
       <motion.div
@@ -663,6 +665,43 @@ export function PupilCardStack({
           position: "relative",
         }}
       >
+        {/* Overdue corner ribbon */}
+        {isOverdue && (
+          <div
+            aria-label="Payment overdue"
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              width: 78,
+              height: 78,
+              overflow: "hidden",
+              pointerEvents: "none",
+              zIndex: 5,
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                transform: "rotate(45deg)",
+                background: "linear-gradient(135deg, #FF6B6B, #FF3B30)",
+                color: "#FFFFFF",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: 0.4,
+                textAlign: "center",
+                lineHeight: "20px",
+                width: 110,
+                top: 18,
+                right: -32,
+                boxShadow: "0 2px 6px rgba(255,59,48,0.35)",
+                fontFamily: "Inter, sans-serif",
+              }}
+            >
+              OVERDUE
+            </div>
+          </div>
+        )}
         {/* Collapsed Card */}
         <button
           onClick={handleCardClick}
