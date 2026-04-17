@@ -235,6 +235,53 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
         </div>
       </div>
 
+      {/* ── Curated Color Themes ── */}
+      <div className="space-y-2">
+        <div className="flex items-baseline justify-between">
+          <Label className="text-sm font-medium">Color Theme</Label>
+          <a
+            href="/demo/instructor-app-redesigns"
+            target="_blank"
+            rel="noreferrer"
+            className="text-[10px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+          >
+            Preview all
+          </a>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {COLOR_THEMES.map((t) => {
+            const selected = wallpaperColor === t.shell;
+            return (
+              <button
+                key={t.id}
+                onClick={() => handleWallpaperSelect(t.shell)}
+                className={cn(
+                  "relative flex items-center gap-2 p-2 rounded-2xl border-2 transition-all text-left",
+                  selected
+                    ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                    : "border-border hover:border-primary/40"
+                )}
+              >
+                <div
+                  className="w-10 h-10 rounded-xl flex-shrink-0 border border-border/40 overflow-hidden relative"
+                  style={{ backgroundColor: t.shell }}
+                >
+                  <div
+                    className="absolute inset-x-0 bottom-0 h-1/2"
+                    style={{ background: `linear-gradient(135deg, ${t.accent}, ${t.deep})` }}
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-medium leading-tight truncate">{t.name}</div>
+                  <div className="text-[10px] text-muted-foreground leading-tight truncate">{t.tagline}</div>
+                </div>
+                {selected && <Check className="h-3.5 w-3.5 text-primary flex-shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* ── Live Preview ── */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">Preview</Label>
