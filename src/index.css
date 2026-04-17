@@ -106,14 +106,19 @@
 
      --spacing: 0.25rem;
 
-     /* Instructor mobile app — clean white surface */
-     --instructor-bg-start: #FFFFFF;
-     --instructor-bg-end: #FFFFFF;
-     --instructor-bg-overlay: rgba(255, 255, 255, 0.85);
+     /* Instructor mobile app — deep navy background image */
+     --instructor-bg-start: #14223C;
+     --instructor-bg-end: #14223C;
+     --instructor-bg-overlay: rgba(20, 34, 60, 0.85);
   }
 
   .instructor-shell-bg {
-    background-color: var(--instructor-bg-start);
+    background-color: #14223C;
+    background-image: url('/instructor-app-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
     min-height: 100dvh;
   }
 
