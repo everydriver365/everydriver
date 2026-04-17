@@ -1,90 +1,230 @@
 import { useState } from "react";
-import { Bell, Menu, Plus, Car, Calendar, MessageSquare, MapPin, Clock, ChevronRight, Home, ListChecks, Map, User, Sparkles, Zap, Award, TrendingUp } from "lucide-react";
+import { Bell, Menu, Car, MessageSquare, MapPin, Clock, ChevronRight, Home, Calendar, Map, User, Sparkles, Zap, Award, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * 10 alternative visual designs for the instructor mobile app.
- * Each preserves the same layout & functions:
- *   - Header (bell, logo, SOS, menu)
- *   - Greeting / hero
- *   - "Next Up" lesson tile
- *   - Activity grid (Job Offers, Messages, Tests, Fill Gaps)
- *   - Recent activity list
- *   - Bottom nav (Home, Schedule, Track, Profile)
+ * 10 professionally coordinated visual systems for the instructor mobile app.
+ * Each design uses a tonal palette (50-900) so color is woven through:
+ * shell tint, header accent strip, hero, tile icons, schedule rail,
+ * time labels, dividers, stats highlight, nav active state.
+ * Layout & functions remain identical.
  */
+
+type Palette = {
+  /** very subtle shell tint */
+  shellTint: string;
+  /** card surface */
+  surface: string;
+  /** soft accent fill (badges, icon bg) */
+  soft: string;
+  /** medium accent (rails, dividers) */
+  medium: string;
+  /** primary accent */
+  accent: string;
+  /** deep accent (hero gradient end) */
+  deep: string;
+  /** hero gradient start */
+  heroStart: string;
+  /** hero gradient end */
+  heroEnd: string;
+};
 
 type Design = {
   id: number;
   name: string;
   tagline: string;
-  shellBg: string;
-  headerBg: string;
-  headerText: string;
-  cardBg: string;
-  cardBorder: string;
-  cardRadius: string;
-  cardShadow: string;
-  textPrimary: string;
-  textMuted: string;
-  accent: string;
-  accentText: string;
-  navBg: string;
-  navActive: string;
-  navInactive: string;
+  palette: Palette;
   font: string;
-  heroBg?: string;
-  heroText?: string;
-  tileIconBg?: string;
-  tileIconColor?: string;
+  /** "rounded" | "sharp" | "soft" — affects radii & borders */
+  shape: "rounded" | "sharp" | "soft";
 };
 
-// Crisp White base — 10 variants with different accent colors and subtle hero tints
-const makeCrispVariant = (
-  id: number,
-  name: string,
-  tagline: string,
-  accent: string,
-  heroBg: string,
-  tileIconBg: string,
-): Design => ({
-  id,
-  name,
-  tagline,
-  shellBg: "#FFFFFF",
-  headerBg: "#FFFFFF",
-  headerText: "#1c1c1e",
-  cardBg: "#FFFFFF",
-  cardBorder: "0.5px solid #E4E4E7",
-  cardRadius: "14px",
-  cardShadow: "none",
-  textPrimary: "#1c1c1e",
-  textMuted: "#8e8e93",
-  accent,
-  accentText: "#FFFFFF",
-  navBg: "rgba(255,255,255,0.92)",
-  navActive: accent,
-  navInactive: "#8e8e93",
-  font: "-apple-system, 'SF Pro Text', system-ui, sans-serif",
-  heroBg,
-  heroText: "#FFFFFF",
-  tileIconBg,
-  tileIconColor: accent,
-});
-
 const DESIGNS: Design[] = [
-  makeCrispVariant(1, "Ocean Breeze", "Crisp white + cool blue accents", "#0A84FF", "linear-gradient(135deg, #0A84FF 0%, #5AC8FA 100%)", "#E5F1FF"),
-  makeCrispVariant(2, "Emerald Drive", "Crisp white + vivid green", "#34C759", "linear-gradient(135deg, #1FAE5C 0%, #34C759 100%)", "#E4F7EA"),
-  makeCrispVariant(3, "Sunrise Coral", "Crisp white + warm coral", "#FF6B6B", "linear-gradient(135deg, #FF6B6B 0%, #FFA07A 100%)", "#FFE9E9"),
-  makeCrispVariant(4, "Royal Indigo", "Crisp white + deep indigo", "#5E5CE6", "linear-gradient(135deg, #5E5CE6 0%, #8E8AF0 100%)", "#ECEBFE"),
-  makeCrispVariant(5, "Mango Sun", "Crisp white + bright tangerine", "#FF9500", "linear-gradient(135deg, #FF9500 0%, #FFB340 100%)", "#FFF1DC"),
-  makeCrispVariant(6, "Magenta Pop", "Crisp white + bold magenta", "#FF2D92", "linear-gradient(135deg, #FF2D92 0%, #FF6BB5 100%)", "#FFE4F1"),
-  makeCrispVariant(7, "Teal Calm", "Crisp white + relaxed teal", "#00B5AD", "linear-gradient(135deg, #00B5AD 0%, #4FD6CE 100%)", "#DEF6F4"),
-  makeCrispVariant(8, "Plum Velvet", "Crisp white + rich purple", "#8E44AD", "linear-gradient(135deg, #8E44AD 0%, #B57BD0 100%)", "#F1E4F7"),
-  makeCrispVariant(9, "Lime Zest", "Crisp white + electric lime", "#7BC043", "linear-gradient(135deg, #5BAA28 0%, #9DD55E 100%)", "#EBF6DD"),
-  makeCrispVariant(10, "Crimson Edge", "Crisp white + sharp red", "#E63946", "linear-gradient(135deg, #C81D2A 0%, #E63946 100%)", "#FCE2E5"),
+  {
+    id: 1,
+    name: "Atlantic",
+    tagline: "Cool blue, professional, trustworthy",
+    palette: {
+      shellTint: "#F5F8FC",
+      surface: "#FFFFFF",
+      soft: "#E3EEFB",
+      medium: "#A9C9EE",
+      accent: "#2B6CB0",
+      deep: "#1A4A85",
+      heroStart: "#2B6CB0",
+      heroEnd: "#1A4A85",
+    },
+    font: "-apple-system, 'SF Pro Text', system-ui, sans-serif",
+    shape: "rounded",
+  },
+  {
+    id: 2,
+    name: "Forest Court",
+    tagline: "Deep evergreen with cream highlights",
+    palette: {
+      shellTint: "#F6F8F4",
+      surface: "#FFFFFF",
+      soft: "#E1ECDD",
+      medium: "#9CC09A",
+      accent: "#2F6B4A",
+      deep: "#1E4A33",
+      heroStart: "#2F6B4A",
+      heroEnd: "#1E4A33",
+    },
+    font: "-apple-system, 'SF Pro Text', system-ui, sans-serif",
+    shape: "rounded",
+  },
+  {
+    id: 3,
+    name: "Burgundy Press",
+    tagline: "Editorial wine red, refined typography",
+    palette: {
+      shellTint: "#FAF6F6",
+      surface: "#FFFFFF",
+      soft: "#F2E2E4",
+      medium: "#D4A1A6",
+      accent: "#8B2942",
+      deep: "#5E1A2C",
+      heroStart: "#8B2942",
+      heroEnd: "#5E1A2C",
+    },
+    font: "'Lora', Georgia, serif",
+    shape: "soft",
+  },
+  {
+    id: 4,
+    name: "Nordic Slate",
+    tagline: "Muted slate-blue, Scandinavian calm",
+    palette: {
+      shellTint: "#F4F6F8",
+      surface: "#FFFFFF",
+      soft: "#E2E8EE",
+      medium: "#A8B6C5",
+      accent: "#475A6E",
+      deep: "#2E3D4F",
+      heroStart: "#475A6E",
+      heroEnd: "#2E3D4F",
+    },
+    font: "'Inter', system-ui, sans-serif",
+    shape: "sharp",
+  },
+  {
+    id: 5,
+    name: "Amber Atelier",
+    tagline: "Warm amber & cream, craft studio feel",
+    palette: {
+      shellTint: "#FBF7F0",
+      surface: "#FFFFFF",
+      soft: "#FAEAD0",
+      medium: "#E8C383",
+      accent: "#B8801F",
+      deep: "#7E5712",
+      heroStart: "#B8801F",
+      heroEnd: "#7E5712",
+    },
+    font: "'Inter', system-ui, sans-serif",
+    shape: "soft",
+  },
+  {
+    id: 6,
+    name: "Heather",
+    tagline: "Soft purple-grey, gentle & modern",
+    palette: {
+      shellTint: "#F7F5FA",
+      surface: "#FFFFFF",
+      soft: "#EAE3F4",
+      medium: "#BFB0D8",
+      accent: "#6B4FA0",
+      deep: "#48336F",
+      heroStart: "#6B4FA0",
+      heroEnd: "#48336F",
+    },
+    font: "-apple-system, 'SF Pro Text', system-ui, sans-serif",
+    shape: "rounded",
+  },
+  {
+    id: 7,
+    name: "Marina",
+    tagline: "Teal & sand, fresh maritime",
+    palette: {
+      shellTint: "#F4F9F9",
+      surface: "#FFFFFF",
+      soft: "#D9EDED",
+      medium: "#8FCFCB",
+      accent: "#1F857F",
+      deep: "#0F5C57",
+      heroStart: "#1F857F",
+      heroEnd: "#0F5C57",
+    },
+    font: "'Inter', system-ui, sans-serif",
+    shape: "rounded",
+  },
+  {
+    id: 8,
+    name: "Graphite & Ember",
+    tagline: "Charcoal neutrals, ember accent",
+    palette: {
+      shellTint: "#F6F6F7",
+      surface: "#FFFFFF",
+      soft: "#FCE5DD",
+      medium: "#F0A88E",
+      accent: "#D85A2C",
+      deep: "#9B3A14",
+      heroStart: "#3A3A3D",
+      heroEnd: "#1F1F22",
+    },
+    font: "'Inter', system-ui, sans-serif",
+    shape: "sharp",
+  },
+  {
+    id: 9,
+    name: "Sage Linen",
+    tagline: "Soft sage green, natural & airy",
+    palette: {
+      shellTint: "#F5F8F4",
+      surface: "#FFFFFF",
+      soft: "#E2EDD9",
+      medium: "#A8C99A",
+      accent: "#5C8C4F",
+      deep: "#3E6135",
+      heroStart: "#5C8C4F",
+      heroEnd: "#3E6135",
+    },
+    font: "'Lora', Georgia, serif",
+    shape: "soft",
+  },
+  {
+    id: 10,
+    name: "Indigo Mono",
+    tagline: "Single deep indigo on warm white",
+    palette: {
+      shellTint: "#FAFAFB",
+      surface: "#FFFFFF",
+      soft: "#E4E5F4",
+      medium: "#A8ABDD",
+      accent: "#3D43B5",
+      deep: "#262A7A",
+      heroStart: "#3D43B5",
+      heroEnd: "#262A7A",
+    },
+    font: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
+    shape: "rounded",
+  },
 ];
 
+const radiusFor = (shape: Design["shape"]) =>
+  shape === "sharp" ? 4 : shape === "soft" ? 18 : 14;
+
 function PhoneFrame({ design }: { design: Design }) {
+  const p = design.palette;
+  const R = radiusFor(design.shape);
+  const cardStyle: React.CSSProperties = {
+    background: p.surface,
+    borderRadius: R,
+    border: `0.5px solid ${p.medium}40`,
+    boxShadow: design.shape === "sharp" ? "none" : `0 1px 2px ${p.deep}08`,
+  };
+
   return (
     <div
       className="relative mx-auto overflow-hidden"
@@ -93,30 +233,33 @@ function PhoneFrame({ design }: { design: Design }) {
         height: 640,
         borderRadius: 36,
         border: "8px solid #1c1c1e",
-        background: design.shellBg,
+        background: p.shellTint,
         fontFamily: design.font,
         boxShadow: "0 20px 50px rgba(0,0,0,0.18)",
       }}
     >
-      <div className="h-full overflow-y-auto" style={{ background: design.shellBg }}>
+      <div className="h-full overflow-y-auto" style={{ background: p.shellTint }}>
+        {/* Accent strip above header */}
+        <div style={{ height: 3, background: `linear-gradient(90deg, ${p.accent}, ${p.deep})` }} />
+
         {/* Header */}
         <div
           className="sticky top-0 z-10 flex items-center justify-between px-4 py-3"
           style={{
-            background: design.headerBg,
-            borderBottom: design.cardBorder !== "none" ? "1px solid rgba(0,0,0,0.06)" : undefined,
+            background: p.surface,
+            borderBottom: `0.5px solid ${p.medium}40`,
           }}
         >
           <div className="relative">
-            <Bell className="h-5 w-5" style={{ color: design.headerText }} />
+            <Bell className="h-5 w-5" style={{ color: p.accent }} />
             <span
-              className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full text-[8px] font-bold flex items-center justify-center"
-              style={{ background: "#ff3b30", color: "#fff" }}
+              className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full text-[8px] font-bold flex items-center justify-center text-white"
+              style={{ background: p.accent }}
             >
               3
             </span>
           </div>
-          <span className="text-[13px] font-bold tracking-wide" style={{ color: design.headerText }}>
+          <span className="text-[13px] font-bold tracking-wide" style={{ color: p.deep }}>
             DSM
           </span>
           <div className="flex items-center gap-2">
@@ -126,57 +269,60 @@ function PhoneFrame({ design }: { design: Design }) {
             >
               SOS
             </div>
-            <Menu className="h-5 w-5" style={{ color: design.textMuted }} />
+            <Menu className="h-5 w-5" style={{ color: p.deep, opacity: 0.6 }} />
           </div>
         </div>
 
         <div className="p-3 space-y-3 pb-20">
           {/* Greeting */}
-          <div className="px-1">
-            <p className="text-[11px]" style={{ color: design.textMuted }}>
-              Good morning
-            </p>
-            <p className="text-[18px] font-bold" style={{ color: design.textPrimary }}>
-              Sarah Mitchell
-            </p>
+          <div className="px-1 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: p.accent }}>
+                Good morning
+              </p>
+              <p className="text-[18px] font-bold" style={{ color: p.deep }}>
+                Sarah Mitchell
+              </p>
+            </div>
+            <div
+              className="h-9 w-9 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+              style={{ background: `linear-gradient(135deg, ${p.accent}, ${p.deep})` }}
+            >
+              SM
+            </div>
           </div>
 
           {/* Hero / Next Up */}
           <div
             className="p-4 relative overflow-hidden"
             style={{
-              background: design.heroBg,
-              borderRadius: design.cardRadius,
-              border: design.cardBorder,
-              boxShadow: design.cardShadow,
+              background: `linear-gradient(135deg, ${p.heroStart} 0%, ${p.heroEnd} 100%)`,
+              borderRadius: R,
+              boxShadow: `0 4px 14px ${p.deep}25`,
             }}
           >
-            <div className="flex items-center gap-2 mb-2">
-              <Clock className="h-3.5 w-3.5" style={{ color: design.heroText }} />
-              <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: design.heroText, opacity: 0.8 }}>
-                Next Up · 14 min
+            {/* decorative corner badge */}
+            <div
+              className="absolute top-0 right-0 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-white"
+              style={{ background: "rgba(255,255,255,0.18)", borderBottomLeftRadius: R / 2 }}
+            >
+              Next · 14m
+            </div>
+            <div className="flex items-center gap-2 mb-1.5 mt-1">
+              <Clock className="h-3 w-3 text-white opacity-80" />
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-white opacity-80">
+                10:00 — 12:00
               </span>
             </div>
-            <p className="text-[20px] font-bold leading-tight" style={{ color: design.heroText }}>
-              James Carter
-            </p>
-            <p className="text-[12px] mt-1" style={{ color: design.heroText, opacity: 0.85 }}>
-              2hr lesson · Manual
-            </p>
+            <p className="text-[20px] font-bold leading-tight text-white">James Carter</p>
+            <p className="text-[12px] mt-0.5 text-white opacity-85">2hr lesson · Manual</p>
             <div className="flex items-center gap-1.5 mt-3">
-              <MapPin className="h-3 w-3" style={{ color: design.heroText, opacity: 0.7 }} />
-              <span className="text-[11px]" style={{ color: design.heroText, opacity: 0.85 }}>
-                12 Oakwood Rd · 4.2mi
-              </span>
+              <MapPin className="h-3 w-3 text-white opacity-70" />
+              <span className="text-[11px] text-white opacity-85">12 Oakwood Rd · 4.2mi</span>
             </div>
             <button
-              className="mt-3 px-3 py-1.5 text-[11px] font-semibold"
-              style={{
-                background: design.accent,
-                color: design.accentText,
-                borderRadius: design.cardRadius === "0px" ? "0px" : "8px",
-                border: design.id === 4 ? "2px solid #000" : "none",
-              }}
+              className="mt-3 px-3 py-1.5 text-[11px] font-semibold rounded-lg"
+              style={{ background: "#fff", color: p.deep }}
             >
               Start lesson →
             </button>
@@ -190,29 +336,22 @@ function PhoneFrame({ design }: { design: Design }) {
               { icon: Award, label: "Tests", count: "1" },
               { icon: Zap, label: "Fill Gaps", count: "3" },
             ].map((tile) => (
-              <div
-                key={tile.label}
-                className="p-3"
-                style={{
-                  background: design.cardBg,
-                  borderRadius: design.cardRadius,
-                  border: design.cardBorder,
-                  boxShadow: design.cardShadow,
-                }}
-              >
+              <div key={tile.label} className="p-3 relative overflow-hidden" style={cardStyle}>
+                {/* left accent rail */}
+                <div
+                  className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r"
+                  style={{ background: p.accent }}
+                />
                 <div
                   className="h-8 w-8 flex items-center justify-center mb-2"
-                  style={{
-                    background: design.tileIconBg,
-                    borderRadius: design.cardRadius === "0px" ? "0px" : "8px",
-                  }}
+                  style={{ background: p.soft, borderRadius: design.shape === "sharp" ? 2 : 8 }}
                 >
-                  <tile.icon className="h-4 w-4" style={{ color: design.tileIconColor }} />
+                  <tile.icon className="h-4 w-4" style={{ color: p.accent }} />
                 </div>
-                <p className="text-[11px] font-medium" style={{ color: design.textMuted }}>
+                <p className="text-[11px] font-medium" style={{ color: p.deep, opacity: 0.6 }}>
                   {tile.label}
                 </p>
-                <p className="text-[18px] font-bold mt-0.5" style={{ color: design.textPrimary }}>
+                <p className="text-[18px] font-bold mt-0.5" style={{ color: p.deep }}>
                   {tile.count}
                 </p>
               </div>
@@ -220,22 +359,18 @@ function PhoneFrame({ design }: { design: Design }) {
           </div>
 
           {/* Section header */}
-          <p
-            className="text-[10px] font-semibold uppercase tracking-wider px-1 pt-1"
-            style={{ color: design.textMuted }}
-          >
-            Today's Schedule
-          </p>
+          <div className="flex items-center gap-2 px-1 pt-1">
+            <div className="h-[1px] w-3" style={{ background: p.accent }} />
+            <p
+              className="text-[10px] font-semibold uppercase tracking-wider"
+              style={{ color: p.accent }}
+            >
+              Today's Schedule
+            </p>
+          </div>
 
           {/* Schedule list */}
-          <div
-            style={{
-              background: design.cardBg,
-              borderRadius: design.cardRadius,
-              border: design.cardBorder,
-              boxShadow: design.cardShadow,
-            }}
-          >
+          <div style={cardStyle}>
             {[
               { time: "10:00", name: "Emma Wilson", dur: "1hr" },
               { time: "12:30", name: "Tom Patel", dur: "2hr" },
@@ -245,47 +380,55 @@ function PhoneFrame({ design }: { design: Design }) {
                 key={item.time}
                 className="flex items-center justify-between px-3 py-2.5"
                 style={{
-                  borderBottom: i < arr.length - 1 ? "0.5px solid rgba(0,0,0,0.08)" : "none",
+                  borderBottom: i < arr.length - 1 ? `0.5px solid ${p.medium}30` : "none",
                 }}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-[11px] font-bold" style={{ color: design.accent }}>
+                  <div
+                    className="px-1.5 py-0.5 rounded text-[10px] font-bold text-white"
+                    style={{ background: p.accent }}
+                  >
                     {item.time}
-                  </span>
+                  </div>
                   <div>
-                    <p className="text-[13px] font-semibold" style={{ color: design.textPrimary }}>
+                    <p className="text-[13px] font-semibold" style={{ color: p.deep }}>
                       {item.name}
                     </p>
-                    <p className="text-[10px]" style={{ color: design.textMuted }}>
+                    <p className="text-[10px]" style={{ color: p.deep, opacity: 0.55 }}>
                       {item.dur}
                     </p>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4" style={{ color: design.textMuted }} />
+                <ChevronRight className="h-4 w-4" style={{ color: p.medium }} />
               </div>
             ))}
           </div>
 
           {/* Stats row */}
           <div
-            className="p-3 flex items-center justify-around"
-            style={{
-              background: design.cardBg,
-              borderRadius: design.cardRadius,
-              border: design.cardBorder,
-              boxShadow: design.cardShadow,
-            }}
+            className="p-3 flex items-center justify-around relative overflow-hidden"
+            style={cardStyle}
           >
+            <div
+              className="absolute top-0 left-0 right-0 h-[2px]"
+              style={{ background: `linear-gradient(90deg, ${p.accent}, ${p.medium})` }}
+            />
             {[
               { label: "Today", val: "6" },
               { label: "Week", val: "32" },
-              { label: "£", val: "1.2k" },
+              { label: "£", val: "1.2k", highlight: true },
             ].map((s) => (
               <div key={s.label} className="text-center">
-                <p className="text-[16px] font-bold" style={{ color: design.textPrimary }}>
+                <p
+                  className="text-[16px] font-bold"
+                  style={{ color: s.highlight ? p.accent : p.deep }}
+                >
                   {s.val}
                 </p>
-                <p className="text-[9px] uppercase tracking-wide" style={{ color: design.textMuted }}>
+                <p
+                  className="text-[9px] uppercase tracking-wide font-medium"
+                  style={{ color: p.deep, opacity: 0.55 }}
+                >
                   {s.label}
                 </p>
               </div>
@@ -297,8 +440,8 @@ function PhoneFrame({ design }: { design: Design }) {
         <div
           className="absolute bottom-0 left-0 right-0 flex items-center justify-around py-2.5 backdrop-blur-md"
           style={{
-            background: design.navBg,
-            borderTop: "0.5px solid rgba(0,0,0,0.08)",
+            background: `${p.surface}E6`,
+            borderTop: `0.5px solid ${p.medium}40`,
           }}
         >
           {[
@@ -307,11 +450,20 @@ function PhoneFrame({ design }: { design: Design }) {
             { icon: Map, label: "Track", active: false },
             { icon: User, label: "Profile", active: false },
           ].map((n) => (
-            <div key={n.label} className="flex flex-col items-center gap-0.5">
-              <n.icon className="h-5 w-5" style={{ color: n.active ? design.navActive : design.navInactive }} />
+            <div key={n.label} className="flex flex-col items-center gap-0.5 relative">
+              {n.active && (
+                <div
+                  className="absolute -top-2.5 left-1/2 -translate-x-1/2 h-[3px] w-6 rounded-full"
+                  style={{ background: p.accent }}
+                />
+              )}
+              <n.icon
+                className="h-5 w-5"
+                style={{ color: n.active ? p.accent : `${p.deep}80` }}
+              />
               <span
                 className="text-[9px] font-medium"
-                style={{ color: n.active ? design.navActive : design.navInactive }}
+                style={{ color: n.active ? p.accent : `${p.deep}80` }}
               >
                 {n.label}
               </span>
@@ -330,9 +482,11 @@ export default function DemoInstructorAppRedesigns() {
     <div className="min-h-screen bg-slate-50 py-10 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900">Instructor App — 10 Design Directions</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900">
+            Instructor App — 10 Refined Design Systems
+          </h1>
           <p className="mt-2 text-slate-600">
-            Same layout, same functions. Pick the visual style that resonates.
+            Cohesive palettes woven through every element. Same layout, same functions.
           </p>
         </div>
 
@@ -342,7 +496,9 @@ export default function DemoInstructorAppRedesigns() {
               key={d.id}
               className={cn(
                 "rounded-2xl bg-white p-6 transition-all cursor-pointer border-2",
-                selected === d.id ? "border-emerald-500 shadow-2xl scale-[1.02]" : "border-transparent shadow-md hover:shadow-xl"
+                selected === d.id
+                  ? "border-emerald-500 shadow-2xl scale-[1.02]"
+                  : "border-transparent shadow-md hover:shadow-xl"
               )}
               onClick={() => setSelected(d.id)}
             >
@@ -354,6 +510,16 @@ export default function DemoInstructorAppRedesigns() {
                   <h2 className="text-lg font-bold text-slate-900">{d.name}</h2>
                 </div>
                 <p className="text-sm text-slate-500">{d.tagline}</p>
+                {/* palette swatches */}
+                <div className="flex gap-1 mt-2">
+                  {[d.palette.soft, d.palette.medium, d.palette.accent, d.palette.deep].map((c) => (
+                    <div
+                      key={c}
+                      className="h-4 w-4 rounded-full border border-slate-200"
+                      style={{ background: c }}
+                    />
+                  ))}
+                </div>
               </div>
               <PhoneFrame design={d} />
               {selected === d.id && (
@@ -369,7 +535,7 @@ export default function DemoInstructorAppRedesigns() {
         </div>
 
         {selected && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3">
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 z-50">
             <span className="text-sm">
               Selected: <strong>#{selected} {DESIGNS.find((d) => d.id === selected)?.name}</strong>
             </span>
