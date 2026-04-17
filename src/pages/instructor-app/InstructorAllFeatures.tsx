@@ -202,7 +202,7 @@ export default function InstructorAllFeatures() {
 
           {/* How to use */}
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="mb-12">
-            <div className="bg-card rounded-2xl border p-6 md:p-8">
+            <div className="bg-card rounded-2xl shadow-lift border p-6 md:p-8">
               <h3 className="text-lg font-bold text-foreground mb-4">How It Works</h3>
               <div className="grid md:grid-cols-3 gap-6">
                 {[
@@ -291,7 +291,7 @@ export default function InstructorAllFeatures() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.1 + gi * 0.05 }}
-                  className="bg-card rounded-2xl border p-5"
+                  className="bg-card rounded-2xl shadow-lift border p-5"
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -342,7 +342,7 @@ export default function InstructorAllFeatures() {
                   >
                     <button
                       onClick={() => toggleCategory(category)}
-                      className="w-full flex items-center gap-3 p-5 rounded-2xl bg-card border hover:shadow-md transition-all text-left"
+                      className="w-full flex items-center gap-3 p-5 rounded-2xl bg-card shadow-lift border hover:shadow-md transition-all text-left"
                     >
                       <div className="h-10 w-10 rounded-xl bg-[#0075c9]/10 flex items-center justify-center shrink-0">
                         <CatIcon className="h-5 w-5 text-[#0075c9]" />

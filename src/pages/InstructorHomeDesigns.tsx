@@ -306,7 +306,7 @@ export default function InstructorHomeDesigns() {
         <div className="px-4 mt-6">
           <button
             onClick={() => navigate("/instructor/next-up-redesigns")}
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-[#1C1C1E] shadow-[0px_2px_12px_rgba(0,0,0,0.06)] active:scale-[0.98] transition-transform"
+            className="w-full flex items-center justify-between p-4 rounded-2xl bg-white shadow-lift dark:bg-[#1C1C1E] shadow-[0px_2px_12px_rgba(0,0,0,0.06)] active:scale-[0.98] transition-transform"
           >
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-blue-500/20 flex items-center justify-center">

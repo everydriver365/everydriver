@@ -867,7 +867,7 @@ export function PupilCardStack({
               </div>
 
               {/* ── Stats Strip ── */}
-              <div className="mx-4 -mt-4 bg-card rounded-2xl border border-border shadow-md">
+              <div className="mx-4 -mt-4 bg-card rounded-2xl shadow-lift border border-border shadow-md">
                 <div className="grid grid-cols-4 divide-x divide-border py-4">
                   {[
                     { value: pupil.lessons_completed || 0, label: "Lessons" },

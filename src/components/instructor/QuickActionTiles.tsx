@@ -343,7 +343,7 @@ export function QuickActionTiles({
     return (
       <div className="grid grid-cols-2 gap-3">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-card rounded-2xl p-4 h-[68px] animate-pulse shadow-[0_1px_3px_rgba(0,0,0,0.06)]" />
+          <div key={i} className="bg-card rounded-2xl shadow-lift p-4 h-[68px] animate-pulse shadow-[0_1px_3px_rgba(0,0,0,0.06)]" />
         ))}
       </div>
     );

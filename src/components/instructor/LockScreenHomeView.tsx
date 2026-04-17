@@ -213,28 +213,28 @@ export function LockScreenHomeView({
         {/* ── Stats card ── */}
         <FrostedCard className="p-3">
           <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center gap-2 p-2 rounded-2xl bg-white/5">
+            <div className="flex items-center gap-2 p-2 rounded-2xl bg-white shadow-lift/5">
               <BookOpen className="h-4 w-4 text-blue-300" />
               <div>
                 <p className="text-sm font-bold text-white leading-none">{todayOverview?.lessonCount || 0}</p>
                 <p className="text-[10px] text-white/50 mt-0.5">Lessons</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-2xl bg-white/5">
+            <div className="flex items-center gap-2 p-2 rounded-2xl bg-white shadow-lift/5">
               <PoundSterling className="h-4 w-4 text-emerald-300" />
               <div>
                 <p className="text-sm font-bold text-white leading-none">£{todayOverview?.expectedEarnings || 0}</p>
                 <p className="text-[10px] text-white/50 mt-0.5">Expected</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-2xl bg-white/5">
+            <div className="flex items-center gap-2 p-2 rounded-2xl bg-white shadow-lift/5">
               <Target className="h-4 w-4 text-violet-300" />
               <div>
                 <p className="text-sm font-bold text-white leading-none">{Math.min(weeklyGoals?.progressPercent || 0, 100)}%</p>
                 <p className="text-[10px] text-white/50 mt-0.5">Weekly</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-2xl bg-white/5">
+            <div className="flex items-center gap-2 p-2 rounded-2xl bg-white shadow-lift/5">
               <Timer className="h-4 w-4 text-amber-300" />
               <div>
                 <p className="text-sm font-bold text-white leading-none">
@@ -370,7 +370,7 @@ export function LockScreenHomeView({
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="h-9 w-9 rounded-2xl bg-white/10 flex items-center justify-center overflow-hidden">
+                <div className="h-9 w-9 rounded-2xl bg-white shadow-lift/10 flex items-center justify-center overflow-hidden">
                   <img src={planAheadIcon} alt="Plan Ahead" className="h-7 w-7 object-contain" />
                 </div>
                 <div>

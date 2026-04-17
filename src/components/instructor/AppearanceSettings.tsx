@@ -62,7 +62,7 @@ function PhonePreview({
           </div>
           <div className="px-1.5 space-y-0.5 mt-1">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="rounded-2xl bg-white/10 h-4 w-full" />
+              <div key={i} className="rounded-2xl bg-white shadow-lift/10 h-4 w-full" />
             ))}
           </div>
         </>
@@ -96,12 +96,12 @@ function PhonePreview({
             <div className="h-1 w-10 rounded bg-foreground/10 mb-2" />
             <div className="grid grid-cols-2 gap-1">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="rounded-2xl bg-card h-6 border border-border/40" />
+                <div key={i} className="rounded-2xl bg-card shadow-lift h-6 border border-border/40" />
               ))}
             </div>
             <div className="mt-2 space-y-1">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="rounded-2xl bg-card h-5 border-l-2 border-l-primary/40 border border-border/40" />
+                <div key={i} className="rounded-2xl bg-card shadow-lift h-5 border-l-2 border-l-primary/40 border border-border/40" />
               ))}
             </div>
           </div>

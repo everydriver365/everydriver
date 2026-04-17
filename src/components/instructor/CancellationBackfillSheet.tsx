@@ -139,7 +139,7 @@ export function CancellationBackfillSheet({
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="w-full max-w-lg bg-card rounded-2xl p-5 pb-safe shadow-2xl"
+          className="w-full max-w-lg bg-card rounded-2xl shadow-lift p-5 pb-safe shadow-2xl"
           onClick={e => e.stopPropagation()}
         >
           {/* Handle bar */}

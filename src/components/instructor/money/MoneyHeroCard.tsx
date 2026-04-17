@@ -145,16 +145,16 @@ export function MoneyHeroCard({
 
           {/* Stats column */}
           <div className="flex-1 space-y-3">
-            <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-sm">
+            <div className="p-3 rounded-2xl bg-white shadow-lift/10 backdrop-blur-sm">
               <p className="text-[10px] text-primary-foreground/60 uppercase tracking-wide">This Week</p>
               <p className="text-xl font-bold">£{thisWeek.toLocaleString()}</p>
             </div>
             <div className="flex gap-2">
-              <div className="flex-1 p-2.5 rounded-2xl bg-white/10 backdrop-blur-sm">
+              <div className="flex-1 p-2.5 rounded-2xl bg-white shadow-lift/10 backdrop-blur-sm">
                 <p className="text-[9px] text-primary-foreground/60 uppercase">Hours</p>
                 <p className="text-lg font-semibold">{hoursThisMonth}h</p>
               </div>
-              <div className="flex-1 p-2.5 rounded-2xl bg-white/10 backdrop-blur-sm">
+              <div className="flex-1 p-2.5 rounded-2xl bg-white shadow-lift/10 backdrop-blur-sm">
                 <p className="text-[9px] text-primary-foreground/60 uppercase">Rate</p>
                 <p className="text-lg font-semibold">£{hourlyRate}</p>
               </div>

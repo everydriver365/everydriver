@@ -59,7 +59,7 @@ export function WeatherWidget({ weather, loading, className }: WeatherWidgetProp
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, height: 0 }}
-        className={cn("bg-card rounded-2xl shadow-sm border border-border overflow-hidden relative", className)}
+        className={cn("bg-card rounded-2xl shadow-lift shadow-sm border border-border overflow-hidden relative", className)}
       >
         {/* Dismiss button */}
         <button

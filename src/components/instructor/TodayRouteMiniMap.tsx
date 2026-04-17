@@ -70,7 +70,7 @@ export function TodayRouteMiniMap({ locations }: TodayRouteMiniMapProps) {
       animate={{ opacity: 1, y: 0 }}
       className="mx-4 mb-4"
     >
-      <div className="bg-card rounded-2xl border border-border/50 overflow-hidden shadow-sm">
+      <div className="bg-card rounded-2xl shadow-lift border border-border/50 overflow-hidden shadow-sm">
         {/* Header */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}

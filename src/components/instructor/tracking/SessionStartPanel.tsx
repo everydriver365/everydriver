@@ -49,7 +49,7 @@
 
    return (
      <motion.div 
-       className="bg-white dark:bg-card rounded-2xl shadow-xl overflow-hidden"
+       className="bg-white dark:bg-card rounded-2xl shadow-lift shadow-xl overflow-hidden"
        initial={{ opacity: 0, y: 20 }}
        animate={{ opacity: 1, y: 0 }}
        transition={{ duration: 0.4, delay: 0.1 }}
@@ -95,7 +95,7 @@
            <AnimatePresence>
              {showPupilList && (
                <motion.div
-                 className="absolute top-full left-0 right-0 mt-2 z-50 bg-white dark:bg-card rounded-2xl shadow-2xl border border-border overflow-hidden max-h-64 overflow-y-auto"
+                 className="absolute top-full left-0 right-0 mt-2 z-50 bg-white dark:bg-card rounded-2xl shadow-lift shadow-2xl border border-border overflow-hidden max-h-64 overflow-y-auto"
                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
                  animate={{ opacity: 1, y: 0, scale: 1 }}
                  exit={{ opacity: 0, y: -10, scale: 0.95 }}

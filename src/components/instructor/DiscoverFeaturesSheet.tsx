@@ -92,7 +92,7 @@ export function DiscoverFeaturesSheet({ open, onOpenChange }: DiscoverFeaturesSh
                         transition={{ duration: 0.2 }}
                         className="overflow-hidden"
                       >
-                        <div className="bg-card rounded-2xl border border-border divide-y divide-border overflow-hidden">
+                        <div className="bg-card rounded-2xl shadow-lift border border-border divide-y divide-border overflow-hidden">
                           {features.map((feature) => (
                             <FeatureRow
                               key={feature.title}

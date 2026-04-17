@@ -421,7 +421,7 @@ export function MiniWebsiteShare({ instructorId }: MiniWebsiteShareProps) {
 
       {/* QR Code Display */}
       {showQR && qrCodeUrl && (
-        <div className="flex flex-col items-center gap-3 p-4 bg-white rounded-2xl border">
+        <div className="flex flex-col items-center gap-3 p-4 bg-white rounded-2xl shadow-lift border">
           <img 
             src={qrCodeUrl} 
             alt="QR Code for mini-website"

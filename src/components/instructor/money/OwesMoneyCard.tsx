@@ -97,7 +97,7 @@ export function OwesMoneyCard({ pupils, instructorId, instructorName, paymentLin
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.08 }}
-      className="bg-card rounded-2xl border border-rose-200 dark:border-rose-900/50"
+      className="bg-card rounded-2xl shadow-lift border border-rose-200 dark:border-rose-900/50"
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-rose-100 dark:border-rose-900/30">

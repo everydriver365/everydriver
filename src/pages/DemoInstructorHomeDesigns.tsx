@@ -1087,7 +1087,7 @@ function IOSStackDesign() {
       </div>
 
       {/* Next lesson widget */}
-      <div className="rounded-2xl bg-card border border-border overflow-hidden">
+      <div className="rounded-2xl bg-card shadow-lift border border-border overflow-hidden">
         <div className="px-4 py-2.5 bg-muted/30 border-b border-border">
           <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
             <Play className="h-3 w-3" /> Next Lesson
@@ -1113,7 +1113,7 @@ function IOSStackDesign() {
       </div>
 
       {/* Stats group */}
-      <div className="rounded-2xl bg-card border border-border overflow-hidden divide-y divide-border">
+      <div className="rounded-2xl bg-card shadow-lift border border-border overflow-hidden divide-y divide-border">
         <div className="px-4 py-2.5 bg-muted/30">
           <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Today's Summary</p>
         </div>
@@ -1134,7 +1134,7 @@ function IOSStackDesign() {
       </div>
 
       {/* Quick Actions group */}
-      <div className="rounded-2xl bg-card border border-border overflow-hidden divide-y divide-border">
+      <div className="rounded-2xl bg-card shadow-lift border border-border overflow-hidden divide-y divide-border">
         <div className="px-4 py-2.5 bg-muted/30">
           <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Quick Actions</p>
         </div>
@@ -1163,7 +1163,7 @@ function IOSStackDesign() {
       </div>
 
       {/* Remaining schedule group */}
-      <div className="rounded-2xl bg-card border border-border overflow-hidden divide-y divide-border">
+      <div className="rounded-2xl bg-card shadow-lift border border-border overflow-hidden divide-y divide-border">
         <div className="px-4 py-2.5 bg-muted/30">
           <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Remaining Today</p>
         </div>
