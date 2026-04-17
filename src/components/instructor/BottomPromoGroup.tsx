@@ -76,7 +76,7 @@ export function BottomPromoGroup({ className = "" }: { className?: string }) {
               <span style={{
                 fontSize: 10, fontWeight: 500, padding: "2px 7px", borderRadius: 4,
                 backgroundColor: "#DCFCE7", color: "#166534",
-              }}>30+</span>
+              }}>45+</span>
             </div>
             <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }}>See everything your app can do</p>
           </div>
