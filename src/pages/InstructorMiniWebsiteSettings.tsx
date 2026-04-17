@@ -147,36 +147,38 @@ export default function InstructorMiniWebsiteSettings() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="pages" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-7">
-            <TabsTrigger value="pages" className="gap-1.5 text-xs sm:text-sm">
-              <Layout className="h-4 w-4" />
-              <span className="hidden sm:inline">Pages</span>
-            </TabsTrigger>
-            <TabsTrigger value="design" className="gap-1.5 text-xs sm:text-sm">
-              <Palette className="h-4 w-4" />
-              <span className="hidden sm:inline">Design</span>
-            </TabsTrigger>
-            <TabsTrigger value="share" className="gap-1.5 text-xs sm:text-sm">
-              <Share2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Share</span>
-            </TabsTrigger>
-            <TabsTrigger value="sticker" className="gap-1.5 text-xs sm:text-sm">
-              <Car className="h-4 w-4" />
-              <span className="hidden sm:inline">Sticker</span>
-            </TabsTrigger>
-            <TabsTrigger value="editor" className="gap-1.5 text-xs sm:text-sm">
-              <Pencil className="h-4 w-4" />
-              <span className="hidden sm:inline">Editor</span>
-            </TabsTrigger>
-            <TabsTrigger value="embed" className="gap-1.5 text-xs sm:text-sm">
-              <Code className="h-4 w-4" />
-              <span className="hidden sm:inline">Embed</span>
-            </TabsTrigger>
-            <TabsTrigger value="visibility" className="gap-1.5 text-xs sm:text-sm">
-              <Eye className="h-4 w-4" />
-              <span className="hidden sm:inline">Settings</span>
-            </TabsTrigger>
-          </TabsList>
+          <div className="-mx-4 px-4 overflow-x-auto sm:mx-0 sm:px-0 sm:overflow-visible">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-7 gap-1">
+              <TabsTrigger value="pages" className="gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                <Layout className="h-4 w-4" />
+                <span className="sm:inline">Pages</span>
+              </TabsTrigger>
+              <TabsTrigger value="design" className="gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                <Palette className="h-4 w-4" />
+                <span className="sm:inline">Design</span>
+              </TabsTrigger>
+              <TabsTrigger value="share" className="gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                <Share2 className="h-4 w-4" />
+                <span className="sm:inline">Share</span>
+              </TabsTrigger>
+              <TabsTrigger value="sticker" className="gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                <Car className="h-4 w-4" />
+                <span className="sm:inline">Sticker</span>
+              </TabsTrigger>
+              <TabsTrigger value="editor" className="gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                <Pencil className="h-4 w-4" />
+                <span className="sm:inline">Editor</span>
+              </TabsTrigger>
+              <TabsTrigger value="embed" className="gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                <Code className="h-4 w-4" />
+                <span className="sm:inline">Embed</span>
+              </TabsTrigger>
+              <TabsTrigger value="visibility" className="gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                <Eye className="h-4 w-4" />
+                <span className="sm:inline">Settings</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Pages Tab */}
           <TabsContent value="pages">
