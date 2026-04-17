@@ -64,6 +64,7 @@ import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
 
 import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
+import { BestMateHeroPair } from "@/components/instructor/BestMateHeroPair";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 
 import { PupilMilestoneFeed } from "@/components/instructor/PupilMilestoneFeed";
@@ -482,6 +483,9 @@ export function InstructorMobileHome({
 
       {/* Morning Briefing — prominent position above activity tiles */}
       <MorningBriefingCard instructorId={instructorId} />
+
+      {/* "Best Mate" hero pair: Invoices + Jobs */}
+      <BestMateHeroPair instructorId={instructorId} />
 
       {/* Alerts */}
       <div className="px-4 mt-3">
