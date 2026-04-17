@@ -24,6 +24,20 @@ const WALLPAPER_PRESETS = [
   { color: "#ECEFF1", label: "Slate" },
 ];
 
+/** Curated iOS-style themes — preview at /demo/instructor-app-redesigns */
+const COLOR_THEMES = [
+  { id: "slate-mist",    name: "Slate Mist",    tagline: "Cool grey-blue, Apple-clean",     shell: "#EEF1F5", accent: "#3B6EA5", deep: "#1F3B5F" },
+  { id: "sage-stone",    name: "Sage Stone",    tagline: "Soft sage, organic calm",         shell: "#EEF2EC", accent: "#5C8C5A", deep: "#3A5C3A" },
+  { id: "warm-linen",    name: "Warm Linen",    tagline: "Cream + terracotta",              shell: "#F4EFE7", accent: "#B5562C", deep: "#7E3818" },
+  { id: "graphite-pro",  name: "Graphite Pro",  tagline: "Dark, electric blue",             shell: "#0F1115", accent: "#4A9EFF", deep: "#2675D6" },
+  { id: "pearl-rose",    name: "Pearl Rose",    tagline: "Blush + dusty rose",              shell: "#F5EDED", accent: "#A24A5C", deep: "#6E2D3C" },
+  { id: "marine-steel",  name: "Marine Steel",  tagline: "Steel + deep marine",             shell: "#EAEEF2", accent: "#0B5F8A", deep: "#063D5C" },
+  { id: "olive-field",   name: "Olive Field",   tagline: "Warm olive, forest accent",       shell: "#EFEFE5", accent: "#5F6B2E", deep: "#3D461A" },
+  { id: "lavender-fog",  name: "Lavender Fog",  tagline: "Soft lavender, deep violet",      shell: "#EFEDF5", accent: "#5E4B9E", deep: "#3D2D6E" },
+  { id: "deep-forest",   name: "Deep Forest",   tagline: "Dark, emerald accent",            shell: "#0E1614", accent: "#34D399", deep: "#0F8C5C" },
+  { id: "almond-cocoa",  name: "Almond Cocoa",  tagline: "Almond + rich cocoa",             shell: "#F2EBE2", accent: "#7A4E2E", deep: "#4F2F18" },
+];
+
 /* ── tiny phone-frame preview ── */
 function PhonePreview({
   bg,
@@ -218,6 +232,53 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
               {opt.label}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* ── Curated Color Themes ── */}
+      <div className="space-y-2">
+        <div className="flex items-baseline justify-between">
+          <Label className="text-sm font-medium">Color Theme</Label>
+          <a
+            href="/demo/instructor-app-redesigns"
+            target="_blank"
+            rel="noreferrer"
+            className="text-[10px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+          >
+            Preview all
+          </a>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {COLOR_THEMES.map((t) => {
+            const selected = wallpaperColor === t.shell;
+            return (
+              <button
+                key={t.id}
+                onClick={() => handleWallpaperSelect(t.shell)}
+                className={cn(
+                  "relative flex items-center gap-2 p-2 rounded-2xl border-2 transition-all text-left",
+                  selected
+                    ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                    : "border-border hover:border-primary/40"
+                )}
+              >
+                <div
+                  className="w-10 h-10 rounded-xl flex-shrink-0 border border-border/40 overflow-hidden relative"
+                  style={{ backgroundColor: t.shell }}
+                >
+                  <div
+                    className="absolute inset-x-0 bottom-0 h-1/2"
+                    style={{ background: `linear-gradient(135deg, ${t.accent}, ${t.deep})` }}
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-medium leading-tight truncate">{t.name}</div>
+                  <div className="text-[10px] text-muted-foreground leading-tight truncate">{t.tagline}</div>
+                </div>
+                {selected && <Check className="h-3.5 w-3.5 text-primary flex-shrink-0" />}
+              </button>
+            );
+          })}
         </div>
       </div>
 
