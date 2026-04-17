@@ -696,7 +696,7 @@ export function CoursePlannerSheet({
   if (variant === "dialog") {
     return (
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="max-w-lg p-0 h-[85vh] flex flex-col">
+        <DialogContent className="max-w-lg p-0 h-[85dvh] max-h-[85dvh] flex flex-col">
           {Body}
         </DialogContent>
       </Dialog>
@@ -705,7 +705,7 @@ export function CoursePlannerSheet({
 
   return (
     <Sheet open={open} onOpenChange={handleClose}>
-      <SheetContent side="bottom" className="rounded-t-[20px] p-0 border-0 h-[92vh] flex flex-col">
+      <SheetContent side="bottom" className="rounded-t-[20px] p-0 border-0 h-[100dvh] max-h-[100dvh] flex flex-col">
         <div className="flex justify-center pt-2 pb-1">
           <div className="w-9 h-1.5 rounded-full bg-muted-foreground/30" />
         </div>
