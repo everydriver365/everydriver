@@ -292,12 +292,12 @@ export function HomepageHero({
                     />
                     <ConcentricRings
                       rings={[
-                        { completed: todayCompleted, total: todayTotal, gradId: "ringToday", start: "#FF2D55", end: "#FF6B9D", trackColor: "rgba(255,45,85,0.15)" },
+                        { completed: todayCompleted, total: todayTotal, gradId: "ringToday", start: "#007AFF", end: "#5AC8FA", trackColor: "rgba(0,122,255,0.15)" },
                         { completed: weeklyLessonsCompleted, total: weeklyLessonsTotal, gradId: "ringWeek", start: "#A8E063", end: "#34C759", trackColor: "rgba(52,199,89,0.15)" },
                       ]}
                       centerCompleted={slide.completed}
                       centerTotal={slide.total}
-                      centerColor={i === 0 ? "#FF2D55" : i === 1 ? "#34C759" : "#30B0C7"}
+                      centerColor={i === 0 ? "#007AFF" : "#34C759"}
                     />
                     <div className="flex-1 min-w-0 relative z-10">
                       <p style={{ fontSize: 15, fontWeight: 700, color: "#1C1C1E", marginBottom: 1 }}>
