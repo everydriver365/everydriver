@@ -7425,6 +7425,7 @@ export type Database = {
           app_slug: string | null
           auth_user_id: string | null
           auto_reengagement_enabled: boolean | null
+          auto_start_tracker: boolean
           availability_paused: boolean
           available_from: string | null
           bio: string | null
@@ -7577,6 +7578,7 @@ export type Database = {
           app_slug?: string | null
           auth_user_id?: string | null
           auto_reengagement_enabled?: boolean | null
+          auto_start_tracker?: boolean
           availability_paused?: boolean
           available_from?: string | null
           bio?: string | null
@@ -7729,6 +7731,7 @@ export type Database = {
           app_slug?: string | null
           auth_user_id?: string | null
           auto_reengagement_enabled?: boolean | null
+          auto_start_tracker?: boolean
           availability_paused?: boolean
           available_from?: string | null
           bio?: string | null
