@@ -74,10 +74,8 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
 
       if (!response.ok) {
         // Fallback to browser TTS
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 1.1;
-        utterance.onend = () => autoListenAfter();
-        speechSynthesis.speak(utterance);
+        fallbackUtterance.onend = () => autoListenAfter();
+        speechSynthesis.speak(fallbackUtterance);
         return;
       }
 
@@ -91,10 +89,8 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
       };
       audio.onerror = () => {
         // Fallback to browser TTS if audio fails
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 1.1;
-        utterance.onend = () => autoListenAfter();
-        speechSynthesis.speak(utterance);
+        fallbackUtterance.onend = () => autoListenAfter();
+        speechSynthesis.speak(fallbackUtterance);
         URL.revokeObjectURL(audioUrl);
       };
       await audio.play();
@@ -108,10 +104,8 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
         }
       };
       // Fallback to browser TTS
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.1;
-      utterance.onend = () => autoListenAfter();
-      speechSynthesis.speak(utterance);
+      fallbackUtterance.onend = () => autoListenAfter();
+      speechSynthesis.speak(fallbackUtterance);
     }
   }, []);
 
