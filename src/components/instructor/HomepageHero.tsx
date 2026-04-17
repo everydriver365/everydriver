@@ -30,43 +30,74 @@ interface HomepageHeroProps {
   pendingJobs?: number;
 }
 
-function ActivityRing({ completed, total }: { completed: number; total: number }) {
-  const size = 68;
-  const stroke = 6;
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const progress = total > 0 ? Math.min(completed / total, 1) : 0;
-  const offset = circumference * (1 - progress);
+interface RingDef {
+  completed: number;
+  total: number;
+  gradId: string;
+  start: string;
+  end: string;
+  trackColor: string;
+}
+
+function ConcentricRings({
+  rings,
+  centerCompleted,
+  centerTotal,
+  centerColor,
+}: {
+  rings: RingDef[]; // outer -> inner
+  centerCompleted: number;
+  centerTotal: number;
+  centerColor: string;
+}) {
+  const size = 78;
+  const stroke = 8;
+  const gap = 2;
+  const cx = size / 2;
+  const cy = size / 2;
 
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full" style={{ transform: "rotate(-90deg)" }}>
         <defs>
-          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#34C759" />
-            <stop offset="100%" stopColor="#30B0C7" />
-          </linearGradient>
+          {rings.map((r) => (
+            <linearGradient key={r.gradId} id={r.gradId} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={r.start} />
+              <stop offset="100%" stopColor={r.end} />
+            </linearGradient>
+          ))}
         </defs>
-        <circle
-          cx={size / 2} cy={size / 2} r={radius}
-          fill="none" stroke={total === 0 ? "rgba(0,122,255,0.15)" : "#E5E5EA"} strokeWidth={stroke}
-        />
-        <motion.circle
-          cx={size / 2} cy={size / 2} r={radius}
-          fill="none" stroke="url(#ringGrad)" strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1], delay: 0.3 }}
-        />
+        {rings.map((r, i) => {
+          const radius = (size - stroke) / 2 - i * (stroke + gap);
+          if (radius <= 0) return null;
+          const circumference = 2 * Math.PI * radius;
+          const progress = r.total > 0 ? Math.min(r.completed / r.total, 1) : 0;
+          const offset = circumference * (1 - progress);
+          return (
+            <g key={r.gradId}>
+              <circle
+                cx={cx} cy={cy} r={radius}
+                fill="none" stroke={r.trackColor} strokeWidth={stroke}
+              />
+              <motion.circle
+                cx={cx} cy={cy} r={radius}
+                fill="none" stroke={`url(#${r.gradId})`} strokeWidth={stroke}
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                initial={{ strokeDashoffset: circumference }}
+                animate={{ strokeDashoffset: offset }}
+                transition={{ duration: 1.1, ease: [0.4, 0, 0.2, 1], delay: 0.2 + i * 0.1 }}
+              />
+            </g>
+          );
+        })}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span style={{ fontSize: 18, fontWeight: 700, color: "#1C1C1E", lineHeight: 1, fontFamily: "-apple-system, 'SF Pro Display', sans-serif" }}>
-          {completed}
+        <span style={{ fontSize: 17, fontWeight: 700, color: centerColor, lineHeight: 1, fontFamily: "-apple-system, 'SF Pro Display', sans-serif" }}>
+          {centerCompleted}
         </span>
-        <span style={{ fontSize: 10, color: "#8E8E93", lineHeight: 1, marginTop: 2 }}>
-          of {total || 0}
+        <span style={{ fontSize: 9, color: "#8E8E93", lineHeight: 1, marginTop: 2 }}>
+          of {centerTotal || 0}
         </span>
       </div>
     </div>
@@ -259,7 +290,16 @@ export function HomepageHero({
                         opacity: 0.65,
                       }}
                     />
-                    <ActivityRing completed={slide.completed} total={slide.total} />
+                    <ConcentricRings
+                      rings={[
+                        { completed: todayCompleted, total: todayTotal, gradId: "ringToday", start: "#FF2D55", end: "#FF6B9D", trackColor: "rgba(255,45,85,0.15)" },
+                        { completed: weeklyLessonsCompleted, total: weeklyLessonsTotal, gradId: "ringWeek", start: "#A8E063", end: "#34C759", trackColor: "rgba(52,199,89,0.15)" },
+                        { completed: monthlyCompleted, total: monthlyTotal, gradId: "ringMonth", start: "#30B0C7", end: "#5AC8FA", trackColor: "rgba(48,176,199,0.15)" },
+                      ]}
+                      centerCompleted={slide.completed}
+                      centerTotal={slide.total}
+                      centerColor={i === 0 ? "#FF2D55" : i === 1 ? "#34C759" : "#30B0C7"}
+                    />
                     <div className="flex-1 min-w-0 relative z-10">
                       <p style={{ fontSize: 15, fontWeight: 700, color: "#1C1C1E", marginBottom: 1 }}>
                         {slide.completed === slide.total && slide.total > 0 ? "All done! 🎉" : slide.label === "TODAY" ? "Lessons Today" : slide.label === "THIS WEEK" ? "Lessons This Week" : "Lessons This Month"}
