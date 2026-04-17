@@ -14,6 +14,7 @@ export function WaitingRoomPromoTile({ className = "" }: { className?: string })
         background: "#FFFFFF",
         borderRadius: 14,
         border: "0.5px solid #E4E4E7",
+        boxShadow: "0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.06)",
         padding: "14px 16px",
         display: "flex",
         alignItems: "center",
