@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { MessageSquare, Check } from "lucide-react";
-import { GapFillSheet } from "./GapFillSheet";
+import { MessageSquare } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 interface GapFillCardProps {
   instructorId: string;
@@ -12,96 +12,46 @@ interface GapFillCardProps {
 }
 
 export function GapFillCard({
-  instructorId,
-  instructorName,
   date,
   startTime,
   endTime,
   gapMinutes,
 }: GapFillCardProps) {
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [sentCount, setSentCount] = useState<number | null>(null);
+  const navigate = useNavigate();
 
   const hours = Math.floor(gapMinutes / 60);
   const mins = gapMinutes % 60;
   const gapLabel = mins > 0 ? `${hours}h ${mins}m gap` : `${hours}h gap`;
 
-  return (
-    <>
-      <div
-        style={{
-          position: "relative",
-          backgroundColor: "#FFF5F5",
-          borderRadius: 12,
-          border: "1px dashed #FCA5A5",
-          padding: "10px 12px",
-          minHeight: 44,
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          margin: "2px 0",
-        }}
-      >
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "#991B1B", fontFamily: "Inter, sans-serif" }}>
-            {gapLabel}
-          </div>
-          <div style={{ fontSize: 11, color: "#9A3412", fontFamily: "Inter, sans-serif" }}>
-            {startTime} – {endTime}
-          </div>
-        </div>
+  const handleOpenFillGaps = () => {
+    const search = new URLSearchParams({
+      date,
+      start: startTime,
+      end: endTime,
+      source: "schedule",
+    });
 
-        {sentCount !== null ? (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-              fontSize: 12,
-              fontWeight: 600,
-              color: "#15803D",
-              padding: "6px 10px",
-            }}
-          >
-            <Check style={{ width: 14, height: 14 }} />
-            Sent to {sentCount}
-          </div>
-        ) : (
-          <button
-            onClick={() => setSheetOpen(true)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 5,
-              background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
-              color: "#FFFFFF",
-              border: "none",
-              borderRadius: 8,
-              padding: "7px 12px",
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: "pointer",
-              flexShrink: 0,
-              boxShadow: "0 1px 3px rgba(220, 38, 38, 0.3)",
-              fontFamily: "Inter, sans-serif",
-            }}
-          >
-            <MessageSquare style={{ width: 13, height: 13 }} />
-            Text Pupils
-          </button>
-        )}
+    navigate(`/instructor/gaps?${search.toString()}`);
+  };
+
+  return (
+    <div className="relative my-0.5 flex min-h-11 items-center gap-2 rounded-xl border border-dashed border-destructive/30 bg-destructive/5 px-3 py-2">
+      <div className="min-w-0 flex-1">
+        <div className="text-xs font-semibold text-foreground">{gapLabel}</div>
+        <div className="text-[11px] text-muted-foreground">
+          {startTime} – {endTime}
+        </div>
       </div>
 
-      <GapFillSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-        instructorId={instructorId}
-        instructorName={instructorName}
-        date={date}
-        startTime={startTime}
-        endTime={endTime}
-        onSent={(c) => setSentCount(c)}
-      />
-    </>
+      <Button
+        type="button"
+        size="sm"
+        onClick={handleOpenFillGaps}
+        className="h-8 shrink-0 gap-1.5 bg-destructive px-3 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90"
+      >
+        <MessageSquare className="h-3.5 w-3.5" />
+        Text Pupils
+      </Button>
+    </div>
   );
 }

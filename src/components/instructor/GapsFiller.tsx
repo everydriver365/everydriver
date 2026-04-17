@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Calendar, MessageSquare, Percent, PoundSterling, Send, Clock, CheckCircle2, AlertCircle, Radio } from "lucide-react";
 import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ interface GapsFillerProps {
 }
 
 export function GapsFiller({ instructorId }: GapsFillerProps) {
+  const [searchParams] = useSearchParams();
   const [instructorName, setInstructorName] = useState("");
   const [gaps, setGaps] = useState<GapSlot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,6 +34,7 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
   const [discountType, setDiscountType] = useState<"none" | "percentage" | "fixed">("none");
   const [discountValue, setDiscountValue] = useState<number>(10);
   const [pupilCount, setPupilCount] = useState(0);
+  const [pendingPreselectedSlotId, setPendingPreselectedSlotId] = useState<string | null>(null);
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [isLive, setIsLive] = useState(false);
@@ -62,6 +65,12 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [instructorId]);
+
+  useEffect(() => {
+    const date = searchParams.get("date");
+    const start = searchParams.get("start");
+    setPendingPreselectedSlotId(date && start ? `${date}-${start}` : null);
+  }, [searchParams]);
 
   // Use hub for all realtime subscriptions instead of individual channels
   const hubCallback = useCallback(() => debouncedRefetch(), [debouncedRefetch]);
@@ -280,15 +289,25 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
 
       const newGaps = calculatedGaps.slice(0, 20);
       const newGapIds = newGaps.map(g => g.id);
+      const hydratedGaps = pendingPreselectedSlotId
+        ? newGaps.map((gap) =>
+            gap.id === pendingPreselectedSlotId ? { ...gap, selected: true } : gap
+          )
+        : newGaps;
       
       // Find new slots that weren't in the previous list
       if (isRealtime && previousGapsRef.current.length > 0) {
         const addedIds = newGapIds.filter(id => !previousGapsRef.current.includes(id));
         triggerHighlight(addedIds);
       }
+
+      if (pendingPreselectedSlotId && newGapIds.includes(pendingPreselectedSlotId)) {
+        triggerHighlight([pendingPreselectedSlotId]);
+        setPendingPreselectedSlotId(null);
+      }
       
       previousGapsRef.current = newGapIds;
-      setGaps(newGaps);
+      setGaps(hydratedGaps);
     } catch (error) {
       console.error("Error fetching gaps:", error);
       toast.error("Failed to load available slots");
