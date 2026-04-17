@@ -11,13 +11,13 @@ export function BottomPromoGroup({ className = "" }: { className?: string }) {
   const tileStyle: React.CSSProperties = {
     background: "#FFFFFF",
     borderRadius: 14,
-    border: "0.5px solid #E4E4E7",
+    boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)",
     padding: "14px 16px",
     display: "flex",
     alignItems: "center",
     gap: 14,
     cursor: "pointer",
-    transition: "background 120ms ease",
+    transition: "background 120ms ease, box-shadow 180ms ease",
   };
 
   return (
