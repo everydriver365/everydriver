@@ -110,6 +110,8 @@ const EndOfDayPage = lazy(() => import("@/pages/instructor/EndOfDayPage"));
 const WaitingRoomPage = lazy(() => import("@/pages/instructor-app/WaitingRoomPage"));
 const InstructorHomeDesigns = lazy(() => import("@/pages/InstructorHomeDesigns"));
 const NextUpTileRedesigns = lazy(() => import("@/pages/demo/DemoNextUpRedesigns"));
+const InstructorWhatsAppSettings = lazy(() => import("@/pages/instructor/InstructorWhatsAppSettings"));
+const InstructorWhatsAppTemplates = lazy(() => import("@/pages/instructor/InstructorWhatsAppTemplates"));
 
 
 // Helper to wrap a component with FeatureGate
@@ -134,6 +136,8 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/diary" element={<InstructorDiary />} />
     <Route path="/instructor/menu" element={<InstructorMenu />} />
     <Route path="/instructor/settings" element={<InstructorSettings />} />
+    <Route path="/instructor/settings/whatsapp" element={<InstructorWhatsAppSettings />} />
+    <Route path="/instructor/settings/whatsapp/templates" element={<InstructorWhatsAppTemplates />} />
     <Route path="/instructor/settings/:categoryId" element={<InstructorSettingsCategory />} />
     <Route path="/instructor/notifications" element={<InstructorNotifications />} />
     <Route path="/instructor/install" element={<InstallInstructor />} />
