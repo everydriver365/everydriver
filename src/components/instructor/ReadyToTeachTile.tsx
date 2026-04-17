@@ -61,7 +61,7 @@ export function ReadyToTeachTile({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className="bg-white rounded-2xl border border-border/40 p-4"
+      className="bg-white rounded-2xl shadow-lift border border-border/40 p-4"
       style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
     >
       {/* Header row */}

@@ -96,7 +96,7 @@ export function WelcomeTour({ instructorId, hasCompletedTour }: WelcomeTourProps
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-card rounded-2xl shadow-xl max-w-sm w-full overflow-hidden"
+          className="bg-card rounded-2xl shadow-lift shadow-xl max-w-sm w-full overflow-hidden"
         >
           {/* Header with gradient */}
           <div className="bg-gradient-to-br from-primary to-primary/80 p-6 text-center">

@@ -246,7 +246,7 @@ export function FleetDashboard({ instructorId, onTabChange }: FleetDashboardProp
 
       {/* ── Live vehicle strip ── */}
       {primaryDevice && (
-        <div className="bg-card rounded-2xl border border-border p-3 flex items-center gap-3 shadow-sm">
+        <div className="bg-card rounded-2xl shadow-lift border border-border p-3 flex items-center gap-3 shadow-sm">
           <div className={cn(
             "h-10 w-10 rounded-2xl flex items-center justify-center",
             primaryState === "moving" ? "bg-success/10" : primaryState === "idle" ? "bg-warning/10" : "bg-muted/50"
@@ -295,7 +295,7 @@ export function FleetDashboard({ instructorId, onTabChange }: FleetDashboardProp
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.1em] mb-2 px-0.5">
             Vehicles
           </p>
-          <div className="bg-card rounded-2xl border border-border divide-y divide-border overflow-hidden shadow-sm">
+          <div className="bg-card rounded-2xl shadow-lift border border-border divide-y divide-border overflow-hidden shadow-sm">
             {devices.map(device => {
               const state = getVehicleState(device);
               return (
@@ -341,7 +341,7 @@ export function FleetDashboard({ instructorId, onTabChange }: FleetDashboardProp
         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.1em] mb-2 px-0.5">
           Activity
         </p>
-        <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+        <div className="bg-card rounded-2xl shadow-lift border border-border p-4 shadow-sm">
           <p className="text-sm font-semibold text-foreground mb-3">
             {period === "day" ? "Today's" : period === "week" ? "Weekly" : "Monthly"} Mileage
           </p>
@@ -391,7 +391,7 @@ function CategorySection({ title, items, onItemClick }: {
       <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.1em] mb-2 px-0.5">
         {title}
       </p>
-      <div className="bg-card rounded-2xl border border-border divide-y divide-border overflow-hidden shadow-sm">
+      <div className="bg-card rounded-2xl shadow-lift border border-border divide-y divide-border overflow-hidden shadow-sm">
         {items.map(item => (
           <div
             key={item.label}

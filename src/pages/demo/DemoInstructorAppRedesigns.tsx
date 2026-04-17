@@ -387,7 +387,7 @@ export default function DemoInstructorAppRedesigns() {
             <div
               key={t.id}
               className={cn(
-                "rounded-2xl bg-white p-6 transition-all cursor-pointer border-2",
+                "rounded-2xl bg-white shadow-lift p-6 transition-all cursor-pointer border-2",
                 selected === t.id
                   ? "border-emerald-500 shadow-2xl scale-[1.02]"
                   : "border-transparent shadow-md hover:shadow-xl"

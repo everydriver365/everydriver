@@ -94,7 +94,7 @@ export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMe
             transition={{ type: "spring", stiffness: 400, damping: 28 }}
             className="fixed inset-x-4 bottom-20 z-[81] max-w-sm mx-auto max-h-[calc(100vh-8rem)] flex flex-col"
           >
-            <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden flex flex-col min-h-0">
+            <div className="bg-card rounded-2xl shadow-lift shadow-xl border border-border overflow-hidden flex flex-col min-h-0">
               <ScrollArea className="max-h-[55vh]">
                 <div className="p-2 pt-1">
 

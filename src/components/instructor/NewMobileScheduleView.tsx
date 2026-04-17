@@ -335,7 +335,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : lessons.length === 0 && externalEvents.length === 0 ? (
-        <div className="bg-card rounded-2xl border border-border flex flex-col items-center justify-center py-12 text-center">
+        <div className="bg-card rounded-2xl shadow-lift border border-border flex flex-col items-center justify-center py-12 text-center">
           <Calendar className="h-12 w-12 text-muted-foreground/50 mb-4" />
           <p className="text-muted-foreground font-medium">No lessons scheduled</p>
           <p className="text-sm text-muted-foreground/70">
@@ -482,7 +482,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
             return (
               <div
                 key={evt.id}
-                className="bg-card rounded-2xl border border-border p-4 space-y-1.5"
+                className="bg-card rounded-2xl shadow-lift border border-border p-4 space-y-1.5"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0">

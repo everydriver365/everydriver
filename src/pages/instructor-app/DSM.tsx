@@ -131,7 +131,7 @@ export default function DSM() {
               transition={{ delay: i * 0.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate(tile.route)}
-              className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+              className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-white shadow-lift shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
             >
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center"
@@ -153,7 +153,7 @@ export default function DSM() {
           transition={{ delay: 0.2 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate("/instructor/schedule")}
-          className="w-full flex items-center justify-between p-4 rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+          className="w-full flex items-center justify-between p-4 rounded-2xl bg-white shadow-lift shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
         >
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-[#007AFF] flex items-center justify-center">
@@ -174,7 +174,7 @@ export default function DSM() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden"
+          className="rounded-2xl bg-white shadow-lift shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden"
         >
           <div className="flex items-center gap-2 px-4 pt-3 pb-1">
             <Clock size={14} className="text-[#8E8E93]" />
@@ -227,7 +227,7 @@ export default function DSM() {
                   transition={{ delay: 0.3 + i * 0.01 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => navigate(tile.route)}
-                  className="flex flex-col items-center justify-center w-[72px] h-[76px] rounded-2xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+                  className="flex flex-col items-center justify-center w-[72px] h-[76px] rounded-2xl bg-white shadow-lift shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
                 >
                   <Icon size={22} strokeWidth={1.6} className="text-[#3A3A3C]" />
                   <span className="text-[10px] font-medium text-[#3A3A3C] mt-1.5 leading-tight text-center">{tile.label}</span>

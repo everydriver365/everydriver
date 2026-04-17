@@ -79,7 +79,7 @@ export function VoiceAssistantOverlay({
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
           className="fixed top-12 left-4 right-4 z-[60] mx-auto max-w-sm"
         >
-          <div className="bg-card rounded-2xl shadow-lg border overflow-hidden">
+          <div className="bg-card rounded-2xl shadow-lift shadow-lg border overflow-hidden">
             {/* Header */}
             <div className={cn("px-3 py-2 flex items-center justify-between", config.color)}>
               <div className="flex items-center gap-1.5">

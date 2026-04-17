@@ -284,7 +284,7 @@ export function CarStickerGenerator({
             padding: 6,
           }}
         >
-          <div className="bg-white rounded-2xl h-full flex flex-col items-center justify-center text-center px-2 py-1 relative overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-lift h-full flex flex-col items-center justify-center text-center px-2 py-1 relative overflow-hidden">
             {/* Top bar */}
             <div
               className="absolute top-0 left-0 right-0 h-1.5"

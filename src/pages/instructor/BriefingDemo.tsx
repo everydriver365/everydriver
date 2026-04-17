@@ -27,7 +27,7 @@ function OptionA() {
         <div className="relative p-5">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-white shadow-lift/20 backdrop-blur-sm flex items-center justify-center">
                 <CloudSun className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -101,7 +101,7 @@ function OptionC() {
         <div className="relative p-5">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-white shadow-lift/20 flex items-center justify-center">
                 <Coffee className="h-5 w-5 text-white" />
               </div>
               <div>

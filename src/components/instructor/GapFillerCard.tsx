@@ -438,7 +438,7 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="w-full max-w-lg bg-card rounded-2xl p-5 pb-safe shadow-2xl"
+                className="w-full max-w-lg bg-card rounded-2xl shadow-lift p-5 pb-safe shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Handle bar */}
@@ -470,7 +470,7 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                           <p className="text-xs text-muted-foreground">{pupil.phone}</p>
                         </div>
                       </div>
-                      <div className="bg-card rounded-2xl p-3 border border-border text-sm text-foreground leading-relaxed">
+                      <div className="bg-card rounded-2xl shadow-lift p-3 border border-border text-sm text-foreground leading-relaxed">
                         {generateMessage(pupil)}
                       </div>
                     </div>

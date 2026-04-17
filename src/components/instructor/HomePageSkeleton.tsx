@@ -22,7 +22,7 @@ export function HomePageSkeleton() {
       
       {/* Overlapping card skeleton */}
       <div className="relative -mt-16 mx-3">
-        <div className="bg-card rounded-2xl border border-border p-4">
+        <div className="bg-card rounded-2xl shadow-lift border border-border p-4">
           <div className="flex items-start gap-3">
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-20" />

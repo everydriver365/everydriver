@@ -242,7 +242,7 @@ export function PupilAssignmentsPanel({ pupilId, instructorId, pupilName }: Pupi
                     return (
                       <div
                         key={assignment.id}
-                        className="bg-card rounded-2xl border p-3 space-y-2"
+                        className="bg-card rounded-2xl shadow-lift border p-3 space-y-2"
                       >
                         {/* Assignment Header */}
                         <div className="flex items-start justify-between gap-2">

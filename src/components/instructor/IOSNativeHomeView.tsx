@@ -364,7 +364,7 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setRescheduleOpen(true)}
-                    className="py-2.5 rounded-2xl bg-white/[0.08] text-white/80 text-[13px] font-medium"
+                    className="py-2.5 rounded-2xl bg-white shadow-lift/[0.08] text-white/80 text-[13px] font-medium"
                   >
                     Reschedule
                   </button>

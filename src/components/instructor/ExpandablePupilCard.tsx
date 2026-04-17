@@ -486,7 +486,7 @@ export function ExpandablePupilCard({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         onClick={() => setIsExpanded(!isExpanded)}
-        className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow relative z-10"
+        className="bg-card rounded-2xl shadow-lift border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow relative z-10"
       >
       {/* Main Card - Always Visible */}
       <button

@@ -149,7 +149,7 @@ export function PassRateDashboard({ instructorId }: PassRateDashboardProps) {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card rounded-2xl border border-border p-5"
+        className="bg-card rounded-2xl shadow-lift border border-border p-5"
       >
         <div className="flex items-center gap-3 mb-4">
           <div className="h-8 w-8 rounded-2xl bg-primary/10 flex items-center justify-center">
@@ -209,7 +209,7 @@ export function PassRateDashboard({ instructorId }: PassRateDashboardProps) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-card rounded-2xl border border-border p-5"
+        className="bg-card rounded-2xl shadow-lift border border-border p-5"
       >
         <div className="flex items-center gap-3 mb-4">
           <div className="h-8 w-8 rounded-2xl bg-primary/10 flex items-center justify-center">
@@ -239,7 +239,7 @@ export function PassRateDashboard({ instructorId }: PassRateDashboardProps) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-card rounded-2xl border border-border p-5"
+          className="bg-card rounded-2xl shadow-lift border border-border p-5"
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="h-8 w-8 rounded-2xl bg-primary/10 flex items-center justify-center">
@@ -267,7 +267,7 @@ export function PassRateDashboard({ instructorId }: PassRateDashboardProps) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="bg-card rounded-2xl border border-border p-5"
+        className="bg-card rounded-2xl shadow-lift border border-border p-5"
       >
         <h3 className="font-semibold text-foreground mb-4">Average Minor Faults</h3>
         <div className="grid grid-cols-2 gap-3">

@@ -175,7 +175,7 @@ export function CleanHomeView({
 
       <div className="px-4">
         {/* ── iOS Grouped Stats Card ── */}
-        <div className="mt-4 bg-card rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+        <div className="mt-4 bg-card rounded-2xl shadow-lift shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
           <div className="divide-y divide-border/60">
             {/* Row 1 */}
             <div className="flex divide-x divide-border/60">
@@ -232,7 +232,7 @@ export function CleanHomeView({
         )}
 
         {/* ── Job Offers & Messages (iOS grouped card) ── */}
-        <div className="mt-3 bg-card rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden divide-y divide-border/60">
+        <div className="mt-3 bg-card rounded-2xl shadow-lift shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden divide-y divide-border/60">
           {pendingJobsCount > 0 && (
             <button onClick={() => navigate("/instructor/jobs")} className="w-full px-4 py-3 flex items-center gap-3 active:bg-muted/50 transition-colors">
               <img src={jobOffersIcon} alt="" className="h-9 w-9 rounded-2xl" />
@@ -274,7 +274,7 @@ export function CleanHomeView({
               <button
                 key={item.label}
                 onClick={() => navigate(item.path)}
-                className="bg-card rounded-2xl p-3 text-center flex flex-col items-center justify-center gap-1.5 active:scale-[0.92] active:brightness-95 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.08)] aspect-square"
+                className="bg-card rounded-2xl shadow-lift p-3 text-center flex flex-col items-center justify-center gap-1.5 active:scale-[0.92] active:brightness-95 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.08)] aspect-square"
               >
                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${item.bg}`}>
                   <item.icon className={`h-6 w-6 ${item.color}`} strokeWidth={1.6} />
@@ -342,11 +342,11 @@ export function CleanHomeView({
               </div>
             ) : null;
             return lessons.length === 0 ? (
-              <div className="bg-card rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6 text-center">
+              <div className="bg-card rounded-2xl shadow-lift shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6 text-center">
                 <p className="text-muted-foreground text-sm">No lessons scheduled today</p>
               </div>
             ) : (
-              <div className="bg-card rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+              <div className="bg-card rounded-2xl shadow-lift shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
                 {statsBar}
                 <div className="divide-y divide-border/60">
               {lessons.map((lesson, i) => {
@@ -440,7 +440,7 @@ export function CleanHomeView({
             instructorId={instructorId}
           />
         ) : tomorrowPreview && tomorrowPreview.lessonCount === 0 ? (
-          <button onClick={() => navigate("/instructor/gaps")} className="w-full bg-card rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] px-4 py-3.5 flex items-center gap-3 active:bg-muted/50 transition-colors text-left">
+          <button onClick={() => navigate("/instructor/gaps")} className="w-full bg-card rounded-2xl shadow-lift shadow-[0_1px_3px_rgba(0,0,0,0.08)] px-4 py-3.5 flex items-center gap-3 active:bg-muted/50 transition-colors text-left">
             <div className="h-9 w-9 rounded-2xl bg-primary/10 flex items-center justify-center overflow-hidden">
               <img src={planAheadIcon} alt="" className="h-7 w-7 object-contain" />
             </div>
