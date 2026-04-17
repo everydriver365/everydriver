@@ -137,12 +137,17 @@ Deno.serve(async (req) => {
     // Get or create conversation
     const conversation = await getOrCreateConversation(supabase, targetInstructor.id, senderPhone, senderName);
 
-    // Log the inbound message
+    // Log the inbound message (with media columns when present)
     await supabase.from("whatsapp_messages").insert({
       conversation_id: conversation.id,
       content: messageText,
       direction: "inbound",
       sender_type: "visitor",
+      ...(mediaInfo ? {
+        media_url: mediaInfo.url,
+        media_type: mediaInfo.type,
+        media_mime: mediaInfo.mime,
+      } : {}),
     });
 
     // Update conversation timestamp
