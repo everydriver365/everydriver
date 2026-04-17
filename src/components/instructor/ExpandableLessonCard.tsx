@@ -108,9 +108,36 @@ export function ExpandableLessonCard({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [quickMessageOpen, setQuickMessageOpen] = useState(false);
+  const [upcomingLessons, setUpcomingLessons] = useState<Array<{ id: string; lesson_date: string; start_time: string; duration_minutes: number }>>([]);
+  const [loadingUpcoming, setLoadingUpcoming] = useState(false);
   const x = useMotionValue(0);
   const deleteOpacity = useTransform(x, [-120, -60], [1, 0]);
   const deleteScale = useTransform(x, [-120, -60], [1, 0.8]);
+
+  // Fetch upcoming lessons for this pupil when expanded
+  useEffect(() => {
+    if (!isExpanded || !lesson.pupil?.id) return;
+    let cancelled = false;
+    setLoadingUpcoming(true);
+    (async () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const { data } = await supabase
+        .from("scheduled_lessons")
+        .select("id, lesson_date, start_time, duration_minutes")
+        .eq("pupil_id", lesson.pupil.id)
+        .neq("id", lesson.id)
+        .gte("lesson_date", today)
+        .in("status", ["scheduled", "confirmed"])
+        .order("lesson_date", { ascending: true })
+        .order("start_time", { ascending: true })
+        .limit(5);
+      if (!cancelled) {
+        setUpcomingLessons(data || []);
+        setLoadingUpcoming(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [isExpanded, lesson.pupil?.id, lesson.id]);
 
   const formatTime = (timeStr: string) => {
     const [hours, minutes] = timeStr.split(":");
