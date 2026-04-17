@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserX } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { 
   Clock, 
