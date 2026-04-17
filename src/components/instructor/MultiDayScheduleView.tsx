@@ -229,6 +229,18 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   useEffect(() => { fetchData(); }, [fetchData]);
 
   useEffect(() => {
+    if (!instructorId) return;
+    supabase
+      .from("instructors")
+      .select("name")
+      .eq("id", instructorId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.name) setInstructorName(data.name);
+      });
+  }, [instructorId]);
+
+  useEffect(() => {
     if (!loading && todayRef.current) {
       todayRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
