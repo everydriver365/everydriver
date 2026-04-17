@@ -107,18 +107,13 @@
      --spacing: 0.25rem;
 
      /* Instructor mobile app — soft Facebook blue */
-     --instructor-bg-start: #6FA8D6;
-     --instructor-bg-end: #6FA8D6;
-     --instructor-bg-overlay: rgba(111, 168, 214, 0.85);
+     --instructor-bg-start: #EAF1FE;
+     --instructor-bg-end: #EAF1FE;
+     --instructor-bg-overlay: rgba(234, 241, 254, 0.85);
   }
 
   .instructor-shell-bg {
-    background-color: #6FA8D6;
-    background-image: url('/instructor-app-bg.png');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+    background-color: #EAF1FE;
     min-height: 100dvh;
   }
 
