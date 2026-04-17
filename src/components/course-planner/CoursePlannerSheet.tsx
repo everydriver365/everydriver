@@ -556,17 +556,35 @@ export function CoursePlannerSheet({
 
             <Separator />
 
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setStep("form")}>
-                Edit
-              </Button>
-              <Button
-                className="flex-1 bg-[#2A394F] hover:bg-[#1F2B3D] text-white"
-                onClick={handleSaveDraft}
-                disabled={saving || result.slots.length === 0}
-              >
-                {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving…</> : "Save as draft"}
-              </Button>
+            <div className="space-y-2">
+              {mode === "instructor" && instructorId && defaultPupilId && (
+                <Button
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                  onClick={handleBookAll}
+                  disabled={booking || saving || result.slots.length === 0 || !result.feasible}
+                >
+                  {booking
+                    ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Booking {result.slots.length} lessons…</>
+                    : <><CalendarCheck className="mr-2 h-4 w-4" /> Book all {result.slots.length} lessons into diary</>}
+                </Button>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setStep("form")}
+                  disabled={booking || saving}
+                >
+                  Revise plan
+                </Button>
+                <Button
+                  className="flex-1 bg-[#2A394F] hover:bg-[#1F2B3D] text-white"
+                  onClick={handleSaveDraft}
+                  disabled={saving || booking || result.slots.length === 0}
+                >
+                  {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving…</> : "Save as draft"}
+                </Button>
+              </div>
             </div>
           </div>
         ) : null}
