@@ -135,26 +135,26 @@ export function SwipeableQuickAccess() {
                       style={{
                         position: "relative",
                         background: "#FFFFFF",
-                        borderRadius: 14,
+                        borderRadius: 16,
                         overflow: "hidden",
                         boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)",
-                        padding: "14px",
+                        padding: "10px",
                         textAlign: "left",
                         display: "flex",
                         flexDirection: "column",
-                        gap: 12,
                         cursor: "pointer",
                         transition: "background 120ms ease",
                         opacity: locked ? 0.5 : 1,
+                        minHeight: 85,
                       }}
                     >
-                      {/* Icon tile + lock/chevron row */}
-                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                      {/* Top row: icon + chevron/lock */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                         <div
                           style={{
-                            width: 44,
-                            height: 44,
-                            borderRadius: 12,
+                            width: 28,
+                            height: 28,
+                            borderRadius: 8,
                             backgroundColor: tile.tintBg,
                             display: "flex",
                             alignItems: "center",
@@ -162,21 +162,21 @@ export function SwipeableQuickAccess() {
                             flexShrink: 0,
                           }}
                         >
-                          <Icon size={22} strokeWidth={2} color={tile.tintColor} />
+                          <Icon size={15} strokeWidth={2.25} color={tile.tintColor} />
                         </div>
                         {locked ? (
-                          <Lock size={14} strokeWidth={2} color="#A1A1AA" style={{ marginTop: 2 }} />
+                          <Lock size={14} strokeWidth={2} color="#A1A1AA" />
                         ) : (
-                          <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" style={{ marginTop: 2 }} />
+                          <ChevronRight size={14} strokeWidth={2} color="#A1A1AA" />
                         )}
                       </div>
 
                       {/* Text */}
-                      <div>
-                        <p style={{ fontSize: 15, fontWeight: 500, color: "#18181B", lineHeight: 1.2, fontFamily: "Inter, sans-serif" }}>
+                      <div style={{ marginTop: 6, flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: "#18181B", lineHeight: 1.2, fontFamily: "Inter, sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {tile.title}
                         </p>
-                        <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }}>
+                        <p style={{ fontSize: 10, fontWeight: 400, color: "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {tile.subtitle}
                         </p>
                       </div>
