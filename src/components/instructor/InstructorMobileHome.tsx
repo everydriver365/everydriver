@@ -623,9 +623,7 @@ export function InstructorMobileHome({
 
         {/* 7. Quick Access — Swipeable Grid */}
         <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Quick Access</p>
-        <div className="pb-4">
-          <SwipeableQuickAccess />
-        </div>
+        <SwipeableQuickAccess />
 
         {/* Impact Alerts */}
         <div className="mt-4">
@@ -637,7 +635,7 @@ export function InstructorMobileHome({
         <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
 
         {/* Vehicle Health & Idle Time */}
-        <VehicleHealthCard instructorId={instructorId} className="mt-4" />
+        <VehicleHealthCard instructorId={instructorId} className="mt-3" />
         <IdleTimeCostCard instructorId={instructorId} className="mt-3" />
 
         <div className="h-6" />
