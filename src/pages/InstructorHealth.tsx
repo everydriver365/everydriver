@@ -24,43 +24,35 @@ export default function InstructorHealth() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4 pb-24" style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
-        {/* Hero Card */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-500 via-rose-600 to-pink-700 p-5 text-white shadow-lg">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-          <div className="relative z-10">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="p-2 bg-white/20 rounded-[10px] backdrop-blur-md">
-                <Heart className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-[17px] font-semibold tracking-[-0.02em]">Health & Wellness</h1>
-                <p className="text-[13px] text-white/60">Track your wellbeing</p>
-              </div>
+      <div className="space-y-4 pb-24" style={{ fontFamily: "Inter, -apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
+        <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center gap-2.5">
+            <div className="h-[29px] w-[29px] rounded-[7px] flex items-center justify-center" style={{ backgroundColor: "#E8ECF1" }}>
+              <Heart className="h-3.5 w-3.5" style={{ color: "#2A394F" }} />
             </div>
-            <div className="grid grid-cols-4 gap-2">
-              <div className="bg-white/15 backdrop-blur-md rounded-[10px] p-2.5 text-center">
-                <Scale className="h-4 w-4 mx-auto mb-0.5 text-white/80" />
-                <p className="text-[10px] text-white/60">Weight</p>
-                <p className="font-semibold text-xs">Track</p>
-              </div>
-              <div className="bg-white/15 backdrop-blur-md rounded-[10px] p-2.5 text-center">
-                <Droplets className="h-4 w-4 mx-auto mb-0.5 text-white/80" />
-                <p className="text-[10px] text-white/60">Water</p>
-                <p className="font-semibold text-xs">{waterProgress}%</p>
-              </div>
-              <div className="bg-white/15 backdrop-blur-md rounded-[10px] p-2.5 text-center">
-                <Heart className="h-4 w-4 mx-auto mb-0.5 text-white/80" />
-                <p className="text-[10px] text-white/60">BP</p>
-                <p className="font-semibold text-xs">Log</p>
-              </div>
-              <div className="bg-white/15 backdrop-blur-md rounded-[10px] p-2.5 text-center">
-                <Activity className="h-4 w-4 mx-auto mb-0.5 text-white/80" />
-                <p className="text-[10px] text-white/60">Glucose</p>
-                <p className="font-semibold text-xs">Log</p>
-              </div>
+            <div>
+              <h1 className="text-[17px] font-semibold tracking-[-0.02em]" style={{ color: "#18181B" }}>Health & Wellness</h1>
+              <p className="text-[13px]" style={{ color: "#71717A" }}>Track your wellbeing</p>
             </div>
           </div>
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { Icon: Scale, label: "Weight", value: "Track" },
+            { Icon: Droplets, label: "Water", value: `${waterProgress}%` },
+            { Icon: Heart, label: "BP", value: "Log" },
+            { Icon: Activity, label: "Glucose", value: "Log" },
+          ].map(({ Icon, label, value }) => (
+            <div
+              key={label}
+              style={{ background: "#FFFFFF", borderRadius: 14, border: "0.5px solid #E4E4E7", padding: 10 }}
+              className="text-center"
+            >
+              <Icon className="h-4 w-4 mx-auto mb-0.5" style={{ color: "#2A394F" }} />
+              <p className="text-[10px]" style={{ color: "#71717A" }}>{label}</p>
+              <p className="font-semibold text-xs" style={{ color: "#18181B" }}>{value}</p>
+            </div>
+          ))}
         </div>
 
         {/* Tabs */}
