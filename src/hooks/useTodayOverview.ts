@@ -78,6 +78,8 @@ export function useTodayOverview(instructorId: string | undefined) {
       };
     },
     enabled: !!instructorId,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 15 * 1000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 }
