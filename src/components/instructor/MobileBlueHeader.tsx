@@ -105,8 +105,6 @@ export function MobileBlueHeader({
         className="relative overflow-hidden"
         style={{
           background: HEADER_GRADIENT,
-          borderBottomLeftRadius: 32,
-          borderBottomRightRadius: 32,
           boxShadow: "0 12px 32px -8px rgba(26,39,68,0.45)",
         }}
       >
