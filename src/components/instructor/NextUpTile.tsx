@@ -260,9 +260,14 @@ export function NextUpTile({
             {/* Overlaid header content */}
             <div className="absolute inset-x-0 top-0 flex items-center justify-between px-3 py-2 z-10">
               <div className="flex items-center gap-1.5 min-w-0">
-                <Calendar className="h-3.5 w-3.5 text-white shrink-0" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.5))" }} />
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#FFFFFF", textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}>
-                  Next Lesson
+                <span
+                  className="inline-flex items-center gap-1 px-2 py-1"
+                  style={{ borderRadius: 100, backgroundColor: "#2A394F", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }}
+                >
+                  <Calendar className="h-3 w-3 text-white shrink-0" />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", letterSpacing: 0.2 }}>
+                    Next Lesson
+                  </span>
                 </span>
                 {effectiveBalance < 0 && (
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full animate-pulse"
