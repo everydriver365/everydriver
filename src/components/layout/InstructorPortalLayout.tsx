@@ -420,174 +420,115 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             {/* iOS Install Banner */}
             <IOSInstallBanner />
 
-            {/* Mobile Header — Premium iOS tile */}
-            <header className="sticky top-0 z-40">
-              {/* Safe area spacer */}
-              <div style={{ paddingTop: "env(safe-area-inset-top)", background: "var(--instructor-bg-start)" }} />
+            {/* Mobile Header — iOS Blue Gradient */}
+            <MobileBlueHeader
+              instructorId={instructor?.id}
+              firstName={firstName}
+              profileImageUrl={instructor?.profile_image_url}
+              isOnline={instructor?.is_active ?? true}
+              showBackButton={showBackButton}
+              showGreeting={!showBackButton}
+              onBack={() => navigate(-1)}
+              onSOS={() => setShowSOS(true)}
+              onPlus={() => setHeaderQuickActionsOpen(true)}
+              onMenu={() => setIsMobileMenuOpen(true)}
+            />
 
-              <div
-                className="w-full overflow-hidden bg-white border-b border-black/[0.06]"
-                style={{ boxShadow: '0 1px 0 rgba(0,0,0,0.04)' }}
-              >
-                <div className="relative flex items-center justify-between px-4 py-[10px]">
-                  {/* Left: Back button or Bell */}
-                  <div className="flex items-center gap-2 min-w-0">
-                    {showBackButton ? (
+            {/* Hidden mobile menu Sheet (controlled via header) */}
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetContent side="right" className="w-[280px] p-0">
+                <SheetHeader className="p-4 border-b">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={instructor?.profile_image_url || undefined} />
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {instructor?.name?.charAt(0) || "I"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="font-medium text-sm truncate">{instructor?.name || "Instructor"}</p>
+                      <p className="text-xs text-muted-foreground truncate">{instructor?.email}</p>
+                    </div>
+                  </div>
+                </SheetHeader>
+
+                {/* Navigation Links */}
+                <nav className="flex-1 p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]">
+                  <button
+                    onClick={() => { setIsMobileMenuOpen(false); setMobileSearchOpen(true); setMobileSearchQuery(""); setMobileSearchResults([]); }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-left"
+                  >
+                    <Search className="h-5 w-5" />
+                    Search
+                  </button>
+                  <button
+                    onClick={() => { setIsMobileMenuOpen(false); handleVoiceTap(); }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-left"
+                  >
+                    <Headphones className="h-5 w-5" />
+                    Voice Assistant
+                  </button>
+                  <div className="h-px bg-border my-2" />
+                  {sidebarLinks.map((link) => {
+                    const isActive = location.pathname === link.href;
+                    const isMessages = link.href === "/instructor/messages";
+                    const isAdminChat = link.href === "/instructor/admin-chat";
+                    const isVisitorChats = link.href === "/instructor/visitor-chats";
+                    const isPendingScheduling = link.href === "/instructor/pending-scheduling";
+                    const isHighlighted = "highlight" in link && link.highlight;
+                    return (
                       <button
-                        onClick={() => navigate(-1)}
-                        className="h-8 w-8 rounded-full bg-[#f2f2f7] flex items-center justify-center shrink-0"
+                        key={link.href}
+                        onClick={() => handleNavClick(link.href)}
+                        className={cn(
+                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left",
+                          isActive
+                            ? "bg-primary text-primary-foreground"
+                            : isHighlighted
+                            ? "bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        )}
                       >
-                        <ChevronLeft className="h-5 w-5 text-[#2A394F]" />
+                        <span className="relative">
+                          <link.icon
+                            className={cn(
+                              "h-5 w-5",
+                              isHighlighted && !isActive && "text-emerald-500"
+                            )}
+                          />
+                          {isAdminChat && !isActive && <AdminMessageBadge />}
+                        </span>
+                        {link.label}
+                        {isVisitorChats && !isActive && (
+                          <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
+                        )}
+                        {isMessages && !isActive && (
+                          <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
+                        )}
+                        {isPendingScheduling && !isActive && (
+                          <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
+                        )}
                       </button>
-                    ) : (
-                      <MobileNotificationBell instructorId={instructor?.id} />
-                    )}
-                  </div>
+                    );
+                  })}
+                </nav>
 
-                  {/* Centre: DSM logo */}
-                  <div className="absolute left-1/2 -translate-x-1/2">
-                    <img
-                      src={dsmLogo}
-                      alt="DSM"
-                      className="h-8 w-auto object-contain"
-                    />
-                  </div>
-
-                  {/* Right: Action buttons + Hamburger */}
-                  <div className="flex items-center gap-[10px]">
-                    <button
-                      onClick={() => setShowSOS(true)}
-                      className="flex items-center justify-center shrink-0"
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: '50%',
-                        background: '#ff3b30',
-                        boxShadow: '0 2px 8px rgba(255,59,48,0.4)',
-                      }}
-                      title="Emergency SOS"
-                    >
-                      <span className="text-[11px] font-extrabold text-white leading-none">SOS</span>
-                    </button>
-                    <button
-                      onClick={() => setHeaderQuickActionsOpen(true)}
-                      className="flex items-center justify-center text-white shrink-0"
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #0f9e75, #1dcaa5)',
-                        boxShadow: '0 2px 8px rgba(15,158,117,0.3)',
-                      }}
-                      title="Quick Actions"
-                    >
-                      <Plus className="h-[18px] w-[18px]" strokeWidth={3} />
-                    </button>
-                    <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                      <SheetTrigger asChild>
-                        <button className="flex items-center justify-center h-8 w-8 shrink-0">
-                          <Menu className="h-5 w-5 text-[#8e8e93]" />
-                        </button>
-                      </SheetTrigger>
-                      <SheetContent side="right" className="w-[280px] p-0">
-                        <SheetHeader className="p-4 border-b">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={instructor?.profile_image_url || undefined} />
-                              <AvatarFallback className="bg-primary text-primary-foreground">
-                                {instructor?.name?.charAt(0) || "I"}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0 text-left">
-                              <p className="font-medium text-sm truncate">{instructor?.name || "Instructor"}</p>
-                              <p className="text-xs text-muted-foreground truncate">{instructor?.email}</p>
-                            </div>
-                          </div>
-                        </SheetHeader>
-
-                        {/* Navigation Links */}
-                        <nav className="flex-1 p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]">
-                          <button
-                            onClick={() => { setIsMobileMenuOpen(false); setMobileSearchOpen(true); setMobileSearchQuery(""); setMobileSearchResults([]); }}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-left"
-                          >
-                            <Search className="h-5 w-5" />
-                            Search
-                          </button>
-                          <button
-                            onClick={() => { setIsMobileMenuOpen(false); handleVoiceTap(); }}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-left"
-                          >
-                            <Headphones className="h-5 w-5" />
-                            Voice Assistant
-                          </button>
-                          <div className="h-px bg-border my-2" />
-                          {sidebarLinks.map((link) => {
-                            const isActive = location.pathname === link.href;
-                            const isMessages = link.href === "/instructor/messages";
-                            const isAdminChat = link.href === "/instructor/admin-chat";
-                            const isVisitorChats = link.href === "/instructor/visitor-chats";
-                            const isPendingScheduling = link.href === "/instructor/pending-scheduling";
-                            const isHighlighted = "highlight" in link && link.highlight;
-                            return (
-                              <button
-                                key={link.href}
-                                onClick={() => handleNavClick(link.href)}
-                                className={cn(
-                                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left",
-                                  isActive
-                                    ? "bg-primary text-primary-foreground"
-                                    : isHighlighted
-                                    ? "bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                                )}
-                              >
-                                <span className="relative">
-                                  <link.icon
-                                    className={cn(
-                                      "h-5 w-5",
-                                      isHighlighted && !isActive && "text-emerald-500"
-                                    )}
-                                  />
-                                  {isAdminChat && !isActive && <AdminMessageBadge />}
-                                </span>
-                                {link.label}
-                                {isVisitorChats && !isActive && (
-                                  <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
-                                )}
-                                {isMessages && !isActive && (
-                                  <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
-                                )}
-                                {isPendingScheduling && !isActive && (
-                                  <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
-                                )}
-                              </button>
-                            );
-                          })}
-                        </nav>
-
-                        {/* Menu Footer */}
-                        <div className="p-3 border-t mt-auto">
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-start text-muted-foreground hover:text-foreground"
-                            onClick={() => {
-                              handleSignOut();
-                              setIsMobileMenuOpen(false);
-                            }}
-                          >
-                            <LogOut className="h-5 w-5 mr-3" />
-                            Sign Out
-                          </Button>
-                        </div>
-                      </SheetContent>
-                    </Sheet>
-                  </div>
+                {/* Menu Footer */}
+                <div className="p-3 border-t mt-auto">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      handleSignOut();
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    <LogOut className="h-5 w-5 mr-3" />
+                    Sign Out
+                  </Button>
                 </div>
-                {/* Bottom edge */}
-                <div className="h-px w-full bg-black/[0.06]" />
-              </div>
-            </header>
+              </SheetContent>
+            </Sheet>
 
             {/* Mobile Search Overlay */}
             {mobileSearchOpen && (
