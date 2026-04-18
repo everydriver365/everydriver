@@ -110,40 +110,6 @@ export function MobileBlueHeader({
           boxShadow: "0 12px 32px -8px rgba(26,39,68,0.45)",
         }}
       >
-        {/* Decorative translucent circles */}
-        <div
-          aria-hidden
-          className="absolute pointer-events-none rounded-full"
-          style={{
-            top: -60,
-            right: -40,
-            width: 180,
-            height: 180,
-            background: "rgba(255,255,255,0.12)",
-          }}
-        />
-        <div
-          aria-hidden
-          className="absolute pointer-events-none rounded-full"
-          style={{
-            top: 18,
-            right: 90,
-            width: 60,
-            height: 60,
-            background: "rgba(255,255,255,0.10)",
-          }}
-        />
-        <div
-          aria-hidden
-          className="absolute pointer-events-none rounded-full"
-          style={{
-            bottom: -40,
-            left: -30,
-            width: 140,
-            height: 140,
-            background: "rgba(255,255,255,0.08)",
-          }}
-        />
 
         {/* Top nav row */}
         <div className="relative flex items-center justify-between px-4 py-[10px]">
