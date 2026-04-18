@@ -98,7 +98,7 @@ export function MobileBlueHeader({
       <div
         style={{
           paddingTop: "env(safe-area-inset-top)",
-          background: "#1a2744",
+          background: HEADER_GRADIENT,
         }}
       />
       <div
