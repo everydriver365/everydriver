@@ -1,9 +1,10 @@
-import { useCallback, useState } from "react";
-import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from "@react-google-maps/api";
+import { useEffect, useState } from "react";
+import { GoogleMap, MarkerF, InfoWindowF } from "@react-google-maps/api";
 import { NearbyFriend } from "@/hooks/useNearbyFriends";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Loader2, Coffee, Car } from "lucide-react";
 import { format } from "date-fns";
+import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
 
 interface NearbyFriendsMapProps {
   myPosition: { lat: number; lng: number } | null;
@@ -16,10 +17,22 @@ const mapContainerStyle = { width: "100%", height: "100%" };
 
 export function NearbyFriendsMap({ myPosition, friends, onMessageFriend, isLoading }: NearbyFriendsMapProps) {
   const [selectedFriend, setSelectedFriend] = useState<NearbyFriend | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
-  });
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const key = await fetchGoogleMapsKey();
+        if (!key) return;
+        await loadGoogleMaps(key);
+        if (!cancelled) setIsLoaded(true);
+      } catch (e) {
+        console.error("Failed to load Google Maps:", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const center = myPosition || { lat: 53.5, lng: -1.5 };
 

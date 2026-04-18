@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { GoogleMap, useJsApiLoader, MarkerF } from "@react-google-maps/api";
+import { GoogleMap, MarkerF } from "@react-google-maps/api";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchGoogleMapsKey } from "@/lib/googleMapsLoader";
+import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
 import { Loader2, X, Navigation } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -46,19 +46,22 @@ export function GoogleMapPreview({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [open, setOpen] = useState(false);
-  const [apiKey, setApiKey] = useState<string>("");
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    fetchGoogleMapsKey()
-      .then((k) => { if (!cancelled) setApiKey(k || ""); })
-      .catch(() => { if (!cancelled) setApiKey(""); });
+    (async () => {
+      try {
+        const key = await fetchGoogleMapsKey();
+        if (!key) return;
+        await loadGoogleMaps(key);
+        if (!cancelled) setIsLoaded(true);
+      } catch (e) {
+        console.error("Failed to load Google Maps:", e);
+      }
+    })();
     return () => { cancelled = true; };
   }, []);
-
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: apiKey,
-  });
 
   useEffect(() => {
     let cancelled = false;
@@ -97,7 +100,7 @@ export function GoogleMapPreview({
     if (dest) window.open(`https://www.google.com/maps/dir/?api=1&destination=${dest}`, "_blank");
   };
 
-  if (loading || !apiKey || !isLoaded) {
+  if (loading || !isLoaded) {
     return (
       <div
         className={`flex items-center justify-center bg-muted ${className}`}
