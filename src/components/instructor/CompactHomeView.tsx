@@ -25,7 +25,7 @@ import { useInstructorStreak } from "@/hooks/useInstructorStreak";
 import { ActivityTilesGrid } from "@/components/instructor/ActivityTilesGrid";
 import { NextUpTile } from "@/components/instructor/NextUpTile";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
-import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
+
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
@@ -374,12 +374,6 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
             {todayLessons && todayLessons.length > 0 && (
               <TodayMiniTimeline lessons={todayLessons} className="mt-4" />
             )}
-
-            <TodayRoutePreview
-              instructorId={instructorId}
-              onTap={() => navigate("/instructor/diary")}
-              className="mt-4"
-            />
           </>
         )}
 

@@ -36,7 +36,7 @@ import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { NextUpTile } from "@/components/instructor/NextUpTile";
 
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
-import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
+
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
 
 import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
@@ -317,7 +317,7 @@ export function CleanHomeView({
           <TodayMiniTimeline lessons={todayLessons} className="mt-3" />
         )}
 
-        <TodayRoutePreview instructorId={instructorId} onTap={() => navigate("/instructor/diary")} className="mt-3" />
+        
 
         {/* ── Today's Schedule — iOS grouped card ── */}
         <div className="mt-6">
