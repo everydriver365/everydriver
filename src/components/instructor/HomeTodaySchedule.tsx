@@ -148,7 +148,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             </h3>
             <div className="flex items-center gap-1.5 mt-1 flex-wrap">
               <span style={{ fontSize: 12, color: "#6b7280" }}>
-                {todayLabel} · {lessonCount} lesson{lessonCount === 1 ? "" : "s"}
+                {dateLabel} · {lessons.length} lesson{lessons.length === 1 ? "" : "s"}
               </span>
               {totalHours > 0 && (
                 <span
