@@ -35,21 +35,22 @@ function IOSTileRoot({
   return (
     <motion.div
       onClick={onClick}
-      whileTap={interactive || onClick ? { scale: 0.99, backgroundColor: "#F4F4F5" } : undefined}
-      whileHover={interactive || onClick ? { backgroundColor: "#FAFAFA" } : undefined}
+      whileTap={interactive || onClick ? { scale: 0.97 } : undefined}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       style={{
         background: "#FFFFFF",
-        borderRadius: 14,
+        borderRadius: 16,
+        border: "0.5px solid rgba(15,23,42,0.06)",
         padding,
         display: "flex",
         alignItems: "center",
         gap: 14,
         cursor: interactive || onClick ? "pointer" : undefined,
-        fontFamily: "Inter, -apple-system, 'SF Pro Text', sans-serif",
+        fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', Inter, sans-serif",
+        fontVariantNumeric: "tabular-nums",
       }}
       className={cn(
-        "outline-none focus-visible:ring-2 focus-visible:ring-[#2A394F] shadow-lift hover:shadow-lift-hover active:shadow-lift-pressed transition-shadow duration-200",
+        "outline-none focus-visible:ring-2 focus-visible:ring-[#2A394F] shadow-premium hover:shadow-premium-lg transition-shadow duration-200",
         className
       )}
       tabIndex={interactive || onClick ? 0 : undefined}
@@ -159,10 +160,11 @@ export function IOSTileGroup({ header, footer, children, className }: IOSTileGro
         </p>
       )}
       <div
-        className="shadow-lift"
+        className="shadow-premium tabular-nums"
         style={{
           background: "#FFFFFF",
-          borderRadius: 14,
+          borderRadius: 16,
+          border: "0.5px solid rgba(15,23,42,0.06)",
           overflow: "hidden",
         }}
       >
