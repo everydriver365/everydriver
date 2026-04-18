@@ -17,6 +17,7 @@ const PREVIEW_OPTIONS: google.maps.MapOptions = {
   gestureHandling: "none",
   clickableIcons: false,
   zoomControl: false,
+  mapTypeId: "roadmap",
   styles: [
     { featureType: "poi", stylers: [{ visibility: "off" }] },
     { featureType: "transit", stylers: [{ visibility: "off" }] },
@@ -30,6 +31,7 @@ const FULL_OPTIONS: google.maps.MapOptions = {
   fullscreenControl: false,
   streetViewControl: false,
   mapTypeControl: false,
+  mapTypeId: "roadmap",
 };
 
 export function GoogleMapPreview({
