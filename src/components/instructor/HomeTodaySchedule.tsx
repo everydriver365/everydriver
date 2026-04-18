@@ -212,7 +212,9 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
       {hasLessons && (
         <div className="grid grid-cols-3" style={{ gap: 8, margin: "0 16px 14px" }}>
           {[
-            { label: "Completed", value: `${completedCount} / ${lessonCount}`, color: "#1a1a1a" },
+            completedCount > 0
+              ? { label: "Completed", value: `${completedCount} / ${lessonCount}`, color: "#1a1a1a" }
+              : { label: "Lessons", value: `${lessonCount}`, color: "#1a1a1a" },
             { label: "Earnings", value: `£${earnings}`, color: "#059669" },
             {
               label: "Next in",
@@ -231,8 +233,8 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             >
               <div
                 style={{
-                  fontSize: 9,
-                  letterSpacing: "0.6px",
+                  fontSize: 10,
+                  letterSpacing: "0.5px",
                   textTransform: "uppercase",
                   color: "#9ca3af",
                   fontWeight: 600,
@@ -296,13 +298,13 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           </div>
         ) : (
           <div className="relative">
-            {/* Vertical connecting line */}
+            {/* Vertical connecting line — aligned to status node column (time col 48 + gap 8 + node center 8) */}
             <div
               style={{
                 position: "absolute",
-                left: 38 + 8 - 1, // time col (48 right-aligned approx) + gap; use 38 from spec
-                top: 8,
-                bottom: 8,
+                left: 48 + 8 + 8 - 1,
+                top: 14,
+                bottom: 14,
                 width: 2,
                 background: "#e5e7eb",
                 zIndex: 0,

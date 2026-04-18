@@ -25,7 +25,6 @@ const navItems: NavItem[] = [
   { label: "Home", icon: Home, path: "/instructor" },
   { label: "Schedule", icon: CalendarDays, path: "/instructor/schedule", isSchedule: true },
   { label: "Track", icon: Radio, path: "/instructor/tracking", isTrack: true },
-  { label: "Money", icon: PoundSterling, path: "/instructor/pay" },
   { label: "Pupils", icon: Users, path: "/instructor/pupils", showBadge: true },
   { label: "More", icon: LayoutGrid, path: "/instructor/menu", isMore: true },
 ];
