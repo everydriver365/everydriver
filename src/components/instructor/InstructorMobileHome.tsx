@@ -510,42 +510,6 @@ export function InstructorMobileHome({
       {/* Telematics Tile */}
       <TelematicsTile />
 
-      {/* View Schedule Tile */}
-      <div className="px-4 mt-3">
-        <button
-          onClick={() => navigate("/instructor/schedule")}
-          className="w-full flex items-center justify-between"
-          style={{
-            backgroundColor: "#FFFFFF",
-            borderRadius: 14,
-            boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)",
-            padding: "14px",
-          }}
-        >
-          <div className="flex items-center gap-3">
-            <div
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 12,
-                backgroundColor: "#DBEAFE",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <Calendar size={22} strokeWidth={2} color="#1E40AF" />
-            </div>
-            <div>
-              <p style={{ fontSize: 15, fontWeight: 500, color: "#18181B", fontFamily: "Inter, sans-serif" }}>View Schedule</p>
-              <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>Calendar & lessons</p>
-            </div>
-          </div>
-          <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" />
-        </button>
-      </div>
-
       <div className="px-4">
         <CelebrationConfetti
           trigger={showConfetti}
@@ -631,14 +595,9 @@ export function InstructorMobileHome({
         <VehicleHealthCard instructorId={instructorId} className="mt-3" />
         <IdleTimeCostCard instructorId={instructorId} className="mt-3" />
 
-        <div className="h-6" />
-
-
         {/* End of Day Summary */}
         <EndOfDaySummary instructorId={instructorId} />
 
-        {/* Waiting Room & Discover Features */}
-        <BottomPromoGroup className="mt-6 mb-2" />
         <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Upcoming Events</p>
         <UpcomingEventsCard className="mb-6" />
 
