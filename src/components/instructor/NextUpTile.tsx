@@ -774,27 +774,6 @@ export function NextUpTile({
                   </button>
                 </div>
 
-                {/* GPS Route Recorder */}
-                <button onClick={(e) => { e.stopPropagation(); setShowGPSRecorder(!showGPSRecorder); }}
-                  className="w-full flex items-center justify-center gap-2 py-[11px] rounded-2xl font-bold text-[12px] transition-transform active:scale-[0.98]"
-                  style={{
-                    background: showGPSRecorder ? "rgba(239,68,68,0.08)" : "rgba(34,197,94,0.08)",
-                    color: showGPSRecorder ? "#dc2626" : "#16a34a",
-                  }}>
-                  <Play className="h-3.5 w-3.5" />
-                  {showGPSRecorder ? "Hide GPS Recorder" : "📍 Record Route (GPS)"}
-                </button>
-
-                <AnimatePresence>
-                  {showGPSRecorder && instructorId && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}
-                      className="overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                      <LessonRouteRecorder instructorId={instructorId} pupilId={pupilId} lessonId={lessonId}
-                        onRouteRecorded={() => setShowGPSRecorder(false)} />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
             </motion.div>
           )}
