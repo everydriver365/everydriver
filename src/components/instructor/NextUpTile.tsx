@@ -7,6 +7,7 @@ import {
   Thermometer, Battery, Wifi, BookOpen, Banknote, ChevronRight, Mail,
 } from "lucide-react";
 import { PostcodeMapPreview } from "@/components/instructor/PostcodeMapPreview";
+import { GoogleMapPreview } from "@/components/instructor/GoogleMapPreview";
 import { useAdminUnreadForPupil } from "@/hooks/useAdminUnreadForPupil";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
@@ -246,8 +247,8 @@ export function NextUpTile({
       >
         {/* ── MINI MAP ── */}
         {pickupPostcode && (
-          <div className="w-full" style={{ height: 120, borderRadius: "20px 20px 0 0", overflow: "hidden" }}>
-            <PostcodeMapPreview postcode={pickupPostcode} />
+          <div className="w-full" style={{ borderRadius: "20px 20px 0 0", overflow: "hidden" }}>
+            <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={120} />
           </div>
         )}
 
