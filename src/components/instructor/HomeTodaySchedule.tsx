@@ -95,9 +95,13 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
   const isLoading = (tab === "today" && overviewLoading) || lessonsLoading;
   const hasLessons = lessons.length > 0;
 
-  const completedCount = overview?.completedCount ?? 0;
-  const lessonCount = overview?.lessonCount ?? 0;
-  const totalHours = overview?.totalHours ?? 0;
+  const dayCompletedCount = lessons.filter((l) => l.status === "completed").length;
+  const dayLessonCount = lessons.length;
+  const dayTotalHours = lessons.reduce((sum, l) => sum + (l.durationMinutes || 0), 0) / 60;
+
+  const completedCount = isTomorrow ? dayCompletedCount : (overview?.completedCount ?? 0);
+  const lessonCount = isTomorrow ? dayLessonCount : (overview?.lessonCount ?? 0);
+  const totalHours = isTomorrow ? dayTotalHours : (overview?.totalHours ?? 0);
   const earnings = overview?.expectedEarnings ?? 0;
 
   return (
