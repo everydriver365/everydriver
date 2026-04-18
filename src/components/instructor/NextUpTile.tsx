@@ -323,19 +323,22 @@ export function NextUpTile({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (isRunningLate) setLateSheetOpen(true);
+                        if (isRunningLate) {
+                          setLateSheetOpen(true);
+                        } else {
+                          handleNavigate();
+                        }
                       }}
-                      disabled={!isRunningLate}
-                      className={`flex items-center gap-1 px-2 py-1 transition-transform ${isRunningLate ? "active:scale-95 animate-pulse" : ""}`}
+                      className={`flex items-center gap-1 px-2 py-1 transition-transform active:scale-95 ${isRunningLate ? "animate-pulse" : ""}`}
                       style={{
                         borderRadius: 100,
                         backgroundColor: isRunningLate ? "#FF3B30" : "rgba(0,0,0,0.45)",
                         backdropFilter: "blur(6px)",
                         WebkitBackdropFilter: "blur(6px)",
                         boxShadow: isRunningLate ? "0 1px 4px rgba(255,59,48,0.5)" : "none",
-                        cursor: isRunningLate ? "pointer" : "default",
+                        cursor: "pointer",
                       }}
-                      title={isRunningLate ? "Running late — tap to notify pupil" : "Estimated arrival"}
+                      title={isRunningLate ? "Running late — tap to notify pupil" : "Tap to open in Google Maps"}
                     >
                       <Navigation className="h-3 w-3 text-white" />
                       <span style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", letterSpacing: 0.2 }}>
