@@ -250,7 +250,10 @@ export function NextUpTile({
           <div className="px-3 pt-3">
             <div
               className="w-full relative rounded-2xl overflow-hidden border"
-              style={{ borderColor: "rgba(0,0,0,0.06)" }}
+              style={{
+                borderColor: "rgba(0,0,0,0.12)",
+                boxShadow: "0 6px 16px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.06)",
+              }}
             >
               <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={120} />
               {/* Gradient scrim for legibility */}
