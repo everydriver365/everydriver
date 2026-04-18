@@ -248,7 +248,9 @@ export function NextUpTile({
         {/* ── MINI MAP with overlaid header ── */}
         {pickupPostcode && (
           <div className="w-full relative" style={{ borderRadius: "20px 20px 0 0", overflow: "hidden" }}>
-            <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={120} />
+            <div style={{ height: 120 }}>
+              <PostcodeMapPreview postcode={pickupPostcode} />
+            </div>
             {/* Gradient scrim for legibility */}
             <div
               className="absolute inset-x-0 top-0 pointer-events-none"
