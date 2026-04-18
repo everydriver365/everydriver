@@ -1,5 +1,30 @@
+import { useEffect, useRef, useState } from "react";
 import { format, parse } from "date-fns";
 import { Navigation, Phone, MessageSquare, MapPin, Clock, Calendar } from "lucide-react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Module-level cache for geocoded postcodes (survives re-renders)
+const geocodeCache = new Map<string, { lat: number; lng: number } | null>();
+
+async function geocodePostcode(postcode: string): Promise<{ lat: number; lng: number } | null> {
+  const key = postcode.trim().toUpperCase();
+  if (geocodeCache.has(key)) return geocodeCache.get(key)!;
+  try {
+    const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(key)}`);
+    if (!res.ok) {
+      geocodeCache.set(key, null);
+      return null;
+    }
+    const json = await res.json();
+    const result = json?.result ? { lat: json.result.latitude, lng: json.result.longitude } : null;
+    geocodeCache.set(key, result);
+    return result;
+  } catch {
+    geocodeCache.set(key, null);
+    return null;
+  }
+}
 
 interface NextLessonHeroCardProps {
   pupilName: string;
