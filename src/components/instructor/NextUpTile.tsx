@@ -244,9 +244,16 @@ export function NextUpTile({
           fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
         }}
       >
+        {/* ── MINI MAP ── */}
+        {pickupPostcode && (
+          <div className="w-full" style={{ height: 120, borderRadius: "20px 20px 0 0", overflow: "hidden" }}>
+            <PostcodeMapPreview postcode={pickupPostcode} />
+          </div>
+        )}
+
         {/* ── HEADER ROW ── */}
         <div className="flex items-center justify-between px-4 py-3"
-          style={{ backgroundColor: "#2A394F", borderRadius: "16px 16px 0 0" }}>
+          style={{ backgroundColor: "#2A394F" }}>
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-white" />
             <span style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF" }}>
