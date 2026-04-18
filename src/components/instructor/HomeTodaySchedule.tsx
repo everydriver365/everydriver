@@ -298,13 +298,13 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           </div>
         ) : (
           <div className="relative">
-            {/* Vertical connecting line */}
+            {/* Vertical connecting line — aligned to status node column (time col 48 + gap 8 + node center 8) */}
             <div
               style={{
                 position: "absolute",
-                left: 38 + 8 - 1, // time col (48 right-aligned approx) + gap; use 38 from spec
-                top: 8,
-                bottom: 8,
+                left: 48 + 8 + 8 - 1,
+                top: 14,
+                bottom: 14,
                 width: 2,
                 background: "#e5e7eb",
                 zIndex: 0,
