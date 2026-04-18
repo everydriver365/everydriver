@@ -364,21 +364,21 @@ export function NextUpTile({
           </div>
 
           {/* ── STAT ROW ── */}
-          <div className="mx-4 mt-1 mb-2" style={{ borderRadius: 14, overflow: "hidden" }}>
+          <div className="mx-4 mt-1 mb-2" style={{ borderRadius: 10, overflow: "hidden" }}>
             <div className="grid grid-cols-3">
-              <div className="flex flex-col items-center py-2.5" style={{ backgroundColor: effectiveBalance < 0 ? "rgba(255,149,0,0.08)" : "rgba(52,199,89,0.08)" }}>
-                <span style={{ fontSize: 9, fontWeight: 600, color: effectiveBalance < 0 ? "#FF9500" : "#34C759", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Balance</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: effectiveBalance < 0 ? "#FF9500" : "#34C759", marginTop: 1 }}>
+              <div className="flex flex-col items-center py-1.5" style={{ backgroundColor: effectiveBalance < 0 ? "rgba(255,149,0,0.08)" : "rgba(52,199,89,0.08)" }}>
+                <span style={{ fontSize: 8, fontWeight: 600, color: effectiveBalance < 0 ? "#FF9500" : "#34C759", textTransform: "uppercase" as const, letterSpacing: 0.4 }}>Balance</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: effectiveBalance < 0 ? "#FF9500" : "#34C759", marginTop: 1 }}>
                   £{Math.abs(effectiveBalance).toFixed(0)}
                 </span>
               </div>
-              <div className="flex flex-col items-center py-2.5" style={{ backgroundColor: "rgba(88,86,214,0.08)", borderLeft: "1px solid rgba(0,0,0,0.04)", borderRight: "1px solid rgba(0,0,0,0.04)" }}>
-                <span style={{ fontSize: 9, fontWeight: 600, color: "#5856D6", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Duration</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "#5856D6", marginTop: 1 }}>{formatDuration()}</span>
+              <div className="flex flex-col items-center py-1.5" style={{ backgroundColor: "rgba(88,86,214,0.08)", borderLeft: "1px solid rgba(0,0,0,0.04)", borderRight: "1px solid rgba(0,0,0,0.04)" }}>
+                <span style={{ fontSize: 8, fontWeight: 600, color: "#5856D6", textTransform: "uppercase" as const, letterSpacing: 0.4 }}>Duration</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#5856D6", marginTop: 1 }}>{formatDuration()}</span>
               </div>
-              <div className="flex flex-col items-center py-2.5" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
-                <span style={{ fontSize: 9, fontWeight: 600, color: "#007AFF", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>ETA</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "#007AFF", marginTop: 1 }}>
+              <div className="flex flex-col items-center py-1.5" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
+                <span style={{ fontSize: 8, fontWeight: 600, color: "#007AFF", textTransform: "uppercase" as const, letterSpacing: 0.4 }}>ETA</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#007AFF", marginTop: 1 }}>
                   {etaLoading ? "..." : etaMinutes > 0 ? `${etaMinutes}m` : "—"}
                 </span>
               </div>
