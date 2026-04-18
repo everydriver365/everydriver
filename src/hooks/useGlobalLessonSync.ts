@@ -20,6 +20,7 @@ const LESSON_QUERY_KEYS = [
   "quick-tile-actions",
   "gap-slots",
   "last-week-comparison",
+  "day-lessons",
 ];
 
 const PUPIL_QUERY_KEYS = [
