@@ -1,12 +1,4 @@
 
-Remove the Today's Route preview from the instructor dashboard.
+The user is on `/instructor` at 390px wide (iPhone) and asking for visual improvement ideas for the instructor mobile app. This is a research/opinion question, not an implementation task — but they may want to act on suggestions.
 
-## Changes
-
-1. **`src/pages/instructor/Index.tsx`** (or wherever `TodayRoutePreview` is rendered on `/instructor`) — remove the `<TodayRoutePreview />` usage and its import.
-2. **Delete `src/components/instructor/TodayRoutePreview.tsx`** — no longer used.
-3. **Delete `src/hooks/useTodayRoute.ts`** — only consumed by the component above.
-
-I'll grep first to confirm there are no other consumers before deleting, and fall back to just removing the render if anything else references them.
-
-No backend, schema, or styling changes. Today's Schedule list and the Next Up ETA tile remain untouched.
+Let me look at the current home view to ground suggestions in what's actually rendered.
