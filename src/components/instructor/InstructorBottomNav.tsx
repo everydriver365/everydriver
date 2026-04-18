@@ -77,7 +77,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
     >
       {/* Top edge */}
       <div className="h-px w-full bg-black/[0.06]" />
-      <div className="flex items-start justify-around" style={{ padding: '10px 0 16px' }}>
+      <div className="flex items-start justify-around" style={{ padding: '10px 8px 16px' }}>
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const showNotification = item.showBadge && pendingJobsCount > 0;
@@ -103,7 +103,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
               key={item.path}
               onClick={() => handleNavClick(item.path)}
               className="relative flex flex-col items-center cursor-pointer"
-              style={{ gap: 3, minWidth: 52 }}
+              style={{ gap: 3, minWidth: 60 }}
             >
               <div className="relative">
                 <Icon 
