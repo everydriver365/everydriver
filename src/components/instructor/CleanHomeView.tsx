@@ -34,7 +34,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { NextUpTile } from "@/components/instructor/NextUpTile";
-import { NextLessonHeroCard } from "@/components/instructor/NextLessonHeroCard";
+
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
@@ -293,22 +293,23 @@ export function CleanHomeView({
         )}
 
         {nextLesson && (
-          <NextLessonHeroCard
+          <NextUpTile
+            lessonId={nextLesson.lessonId}
+            pupilId={nextLesson.pupilId}
             pupilName={nextLesson.pupilName}
             pupilProfileImage={nextLesson.pupilProfileImage}
             pupilPhone={nextLesson.pupilPhone}
-            startTime={nextLesson.startTime}
             lessonDate={nextLesson.lessonDate}
-            durationMinutes={nextLesson.durationMinutes}
-            daysUntil={Math.max(0, Math.ceil((new Date(nextLesson.lessonDate).getTime() - Date.now()) / 86400000))}
-            accountBalance={nextLesson.accountBalance}
-            pickupLocation={nextLesson.pickupLocation}
             pickupPostcode={nextLesson.pickupPostcode}
-            onNavigate={() => {
-              const dest = encodeURIComponent([nextLesson.pickupLocation, nextLesson.pickupPostcode].filter(Boolean).join(", "));
-              if (dest) window.open(`https://www.google.com/maps/dir/?api=1&destination=${dest}`, "_blank");
-            }}
-            onArrived={() => navigate(`/instructor/lesson/${nextLesson.lessonId}`)}
+            pickupLocation={nextLesson.pickupLocation}
+            startTime={nextLesson.startTime}
+            minutesUntil={nextLesson.minutesUntil}
+            accountBalance={nextLesson.accountBalance}
+            prepaidHours={nextLesson.prepaidHours}
+            durationMinutes={nextLesson.durationMinutes}
+            instructorId={instructorId}
+            checkInStatus={nextLesson.checkInStatus}
+            lastLessonPlan={nextLesson.lastLessonPlan}
           />
         )}
 
