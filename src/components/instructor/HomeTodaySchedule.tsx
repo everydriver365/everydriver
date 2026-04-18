@@ -144,7 +144,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                 lineHeight: 1.2,
               }}
             >
-              {isTomorrow ? "Tomorrow's Schedule" : "Today's Schedule"}
+              {isTomorrow ? "Tomorrow" : "Today's Schedule"}
             </h3>
             <div className="flex items-center gap-1.5 mt-1 flex-wrap">
               <span style={{ fontSize: 12, color: "#6b7280" }}>
