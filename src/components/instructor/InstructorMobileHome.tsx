@@ -607,11 +607,9 @@ export function InstructorMobileHome({
               </div>
             )}
 
-            <TodayScheduleAgenda
-              todayLessons={todayLessons || []}
-              tomorrowLessons={tomorrowLessons || []}
-              className="mt-4"
-            />
+            <div className="mt-4">
+              <HomeTodaySchedule instructorId={instructorId} />
+            </div>
 
             {/* 5. Today's Route Map Preview */}
             <TodayRoutePreview
