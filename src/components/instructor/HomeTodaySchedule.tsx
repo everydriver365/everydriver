@@ -141,9 +141,9 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             <h3
               className="whitespace-nowrap"
               style={{
-                fontSize: 18,
-                fontWeight: 700,
-                letterSpacing: "-0.3px",
+                fontSize: 17,
+                fontWeight: 600,
+                letterSpacing: "-0.4px",
                 color: "#1a1a1a",
                 lineHeight: 1.2,
               }}
@@ -151,7 +151,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               {isTomorrow ? "Tomorrow" : "Today's Schedule"}
             </h3>
             <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-              <span style={{ fontSize: 12, color: "#6b7280" }}>
+              <span style={{ fontSize: 13, color: "#6b7280" }}>
                 {dateLabel} · {lessons.length} lesson{lessons.length === 1 ? "" : "s"}
               </span>
               {totalHours > 0 && (
@@ -159,15 +159,13 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                   style={{
                     background: "#ecfdf5",
                     color: "#047857",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.4px",
-                    padding: "2px 6px",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "2px 7px",
                     borderRadius: 6,
                   }}
                 >
-                  {totalHours}h total
+                  {totalHours}h
                 </span>
               )}
             </div>
@@ -339,9 +337,9 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                       </div>
                       <div
                         style={{
-                          fontSize: 9,
+                          fontSize: 10,
                           color: "#9ca3af",
-                          letterSpacing: "0.5px",
+                          letterSpacing: "0.4px",
                           marginTop: 2,
                         }}
                       >
