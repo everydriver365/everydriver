@@ -262,36 +262,37 @@ export function NextUpTile({
                 }}
               />
               {/* Overlaid header content */}
-              <div className="absolute inset-x-0 top-0 flex items-center justify-between px-2.5 py-2 z-10">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span
-                    className="inline-flex items-center gap-1 px-2 py-1"
-                    style={{ borderRadius: 100, backgroundColor: "#2A394F", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }}
-                  >
-                    <Calendar className="h-3 w-3 text-white shrink-0" />
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", letterSpacing: 0.2 }}>
-                      Next Lesson
+              <div className="absolute inset-x-0 top-0 flex items-start justify-between px-2.5 py-2 z-10 gap-2">
+                {/* LEFT column: Next Lesson label + Start Track underneath */}
+                <div className="flex flex-col gap-1.5 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span
+                      className="inline-flex items-center gap-1 px-2 py-1"
+                      style={{ borderRadius: 100, backgroundColor: "#2A394F", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }}
+                    >
+                      <Calendar className="h-3 w-3 text-white shrink-0" />
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", letterSpacing: 0.2 }}>
+                        Next Lesson
+                      </span>
                     </span>
-                  </span>
-                  {effectiveBalance < 0 && (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full animate-pulse"
-                      style={{ backgroundColor: "#FF3B30", color: "#FFFFFF", fontSize: 9, fontWeight: 700, letterSpacing: 0.3 }}>
-                      <AlertTriangle className="h-2.5 w-2.5" />
-                      £{Math.abs(effectiveBalance).toFixed(0)} OWED
-                    </span>
-                  )}
-                  {checkInStatus && (
-                    <LessonCheckInBadge status={checkInStatus} className="text-[9px] py-0 px-1.5 h-4 ml-1" />
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0">
+                    {effectiveBalance < 0 && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full animate-pulse"
+                        style={{ backgroundColor: "#FF3B30", color: "#FFFFFF", fontSize: 9, fontWeight: 700, letterSpacing: 0.3 }}>
+                        <AlertTriangle className="h-2.5 w-2.5" />
+                        £{Math.abs(effectiveBalance).toFixed(0)} OWED
+                      </span>
+                    )}
+                    {checkInStatus && (
+                      <LessonCheckInBadge status={checkInStatus} className="text-[9px] py-0 px-1.5 h-4" />
+                    )}
+                  </div>
                   {!trackerDismissed && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
                       }}
-                      className="flex items-center gap-1 px-2 py-1 active:scale-95 transition-transform"
+                      className="self-start flex items-center gap-1 px-2 py-1 active:scale-95 transition-transform"
                       style={{ borderRadius: 100, backgroundColor: "#FBBF24", color: "#1C1C1E", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }}
                       title="Start tracking session for this lesson"
                     >
@@ -307,6 +308,10 @@ export function NextUpTile({
                       />
                     </button>
                   )}
+                </div>
+
+                {/* RIGHT column: Start time + ETA */}
+                <div className="flex flex-col items-end gap-1 shrink-0">
                   <div
                     className="flex items-center gap-1 px-2.5 py-1"
                     style={{ borderRadius: 100, backgroundColor: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
@@ -314,6 +319,31 @@ export function NextUpTile({
                     <Clock className="h-3 w-3 text-white" />
                     <span style={{ fontSize: 12, fontWeight: 600, color: "#FFFFFF" }}>{formatTime24(startTime)}</span>
                   </div>
+                  {etaText && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (isRunningLate) setLateSheetOpen(true);
+                      }}
+                      disabled={!isRunningLate}
+                      className={`flex items-center gap-1 px-2 py-1 transition-transform ${isRunningLate ? "active:scale-95 animate-pulse" : ""}`}
+                      style={{
+                        borderRadius: 100,
+                        backgroundColor: isRunningLate ? "#FF3B30" : "rgba(0,0,0,0.45)",
+                        backdropFilter: "blur(6px)",
+                        WebkitBackdropFilter: "blur(6px)",
+                        boxShadow: isRunningLate ? "0 1px 4px rgba(255,59,48,0.5)" : "none",
+                        cursor: isRunningLate ? "pointer" : "default",
+                      }}
+                      title={isRunningLate ? "Running late — tap to notify pupil" : "Estimated arrival"}
+                    >
+                      <Navigation className="h-3 w-3 text-white" />
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", letterSpacing: 0.2 }}>
+                        ETA {etaText}
+                        {isRunningLate && lateByMinutes > 0 ? ` · +${lateByMinutes}m` : ""}
+                      </span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
