@@ -310,8 +310,8 @@ export function NextUpTile({
                   )}
                 </div>
 
-                {/* RIGHT column: Start time + ETA */}
-                <div className="flex flex-col items-end gap-1 shrink-0">
+                {/* RIGHT column: Start time + ETA side by side */}
+                <div className="flex items-center gap-1.5 shrink-0">
                   <div
                     className="flex items-center gap-1 px-2.5 py-1"
                     style={{ borderRadius: 100, backgroundColor: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
