@@ -255,7 +255,7 @@ export function NextUpTile({
                 boxShadow: "0 6px 16px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.06)",
               }}
             >
-              <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={120} />
+              <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={160} />
               {/* Gradient scrim for legibility */}
               <div
                 className="absolute inset-x-0 top-0 pointer-events-none"
