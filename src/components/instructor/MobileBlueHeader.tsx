@@ -98,7 +98,7 @@ export function MobileBlueHeader({
       <div
         style={{
           paddingTop: "env(safe-area-inset-top)",
-          background: "#007AFF",
+          background: "#1a2744",
         }}
       />
       <div
@@ -107,7 +107,7 @@ export function MobileBlueHeader({
           background: HEADER_GRADIENT,
           borderBottomLeftRadius: 32,
           borderBottomRightRadius: 32,
-          boxShadow: "0 12px 32px -8px rgba(0,122,255,0.45)",
+          boxShadow: "0 12px 32px -8px rgba(26,39,68,0.45)",
         }}
       >
         {/* Decorative translucent circles */}
