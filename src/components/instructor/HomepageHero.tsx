@@ -207,48 +207,7 @@ export function HomepageHero({
           overflow: "hidden",
         }}
       >
-        {/* Blue Header Bar */}
-        <div
-          className="flex items-center justify-between"
-          style={{
-            backgroundColor: "#2A394F",
-            borderRadius: "20px 20px 0 0",
-            padding: "6px 16px",
-          }}
-        >
-          <p style={{ fontSize: 22, fontWeight: 500, color: "#FFFFFF", lineHeight: 1.2, margin: 0 }}>
-            {getGreeting()}, {firstName}
-          </p>
-          <div className="relative shrink-0">
-            <div
-              style={{
-                width: 42, height: 42, borderRadius: "50%", overflow: "hidden",
-                border: "2.5px solid rgba(255,255,255,0.5)",
-              }}
-            >
-              {profileImageUrl ? (
-                <img src={profileImageUrl} alt={firstName} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, #E8622A, #FF8C42)" }}>
-                  <span style={{ fontSize: 17, fontWeight: 700, color: "#fff" }}>{firstName.charAt(0)}</span>
-                </div>
-              )}
-            </div>
-            {/* Green available dot */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: 0,
-                right: 0,
-                width: 13,
-                height: 13,
-                borderRadius: "50%",
-                backgroundColor: "#34C759",
-                border: "2.5px solid rgba(255,255,255,0.5)",
-              }}
-            />
-          </div>
-        </div>
+        {/* Greeting now lives in the global blue header — start directly with carousel */}
 
         {/* Carousel */}
         <div ref={emblaRef} className="overflow-hidden">
