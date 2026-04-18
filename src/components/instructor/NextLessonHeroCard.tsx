@@ -104,78 +104,13 @@ export function NextLessonHeroCard({
         boxShadow: "0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04)",
       }}
     >
-      {/* 1. MAP PREVIEW */}
-      <div
-        className="relative w-full overflow-hidden"
-        style={{
-          height: 120,
-          background: "#eef4fb",
-          backgroundImage:
-            "linear-gradient(rgba(148,163,184,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.18) 1px, transparent 1px), repeating-linear-gradient(45deg, rgba(148,163,184,0.06) 0 2px, transparent 2px 8px)",
-          backgroundSize: "20px 20px, 20px 20px, auto",
-        }}
-      >
-        <svg
-          className="absolute inset-0 w-full h-full"
-          viewBox="0 0 400 120"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <path d="M -20 95 Q 80 80 160 90 T 420 70" stroke="#ffffff" strokeWidth="8" fill="none" strokeLinecap="round" />
-          <path d="M 50 -10 Q 70 40 90 70 T 130 130" stroke="#ffffff" strokeWidth="6" fill="none" strokeLinecap="round" />
-          <path d="M 250 -10 Q 240 40 270 70 T 320 130" stroke="#ffffff" strokeWidth="6" fill="none" strokeLinecap="round" />
-          <path d="M -20 40 Q 100 30 200 45 T 420 30" stroke="#ffffff" strokeWidth="5" fill="none" strokeLinecap="round" />
-          <path d="M 180 -10 Q 200 50 220 120" stroke="#ffffff" strokeWidth="5" fill="none" strokeLinecap="round" />
-          <path
-            d="M 30 100 Q 120 90 200 70 T 370 25"
-            stroke="#3b82f6"
-            strokeWidth="3.5"
-            fill="none"
-            strokeLinecap="round"
-          />
-          <path
-            d="M 30 100 Q 120 90 200 70 T 370 25"
-            stroke="#93c5fd"
-            strokeWidth="3.5"
-            fill="none"
-            strokeLinecap="round"
-            strokeDasharray="4 6"
-            opacity="0.9"
-          />
-        </svg>
-
-        {/* Start marker */}
-        <div
-          className="absolute"
-          style={{
-            left: "calc(7.5% - 7px)",
-            top: "calc(83.3% - 7px)",
-            width: 14,
-            height: 14,
-            background: "#ffffff",
-            border: "2px solid #3b82f6",
-            borderRadius: "50%",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-          }}
-        >
-          <div style={{ position: "absolute", inset: 3, background: "#3b82f6", borderRadius: "50%" }} />
-        </div>
-
-        {/* End marker */}
-        <div className="absolute" style={{ left: "calc(92.5% - 10px)", top: "calc(20.8% - 22px)" }}>
-          <svg width="20" height="26" viewBox="0 0 20 26" fill="none" aria-hidden="true">
-            <path
-              d="M10 0C4.477 0 0 4.477 0 10c0 7 10 16 10 16s10-9 10-16c0-5.523-4.477-10-10-10z"
-              fill="#ef4444"
-              style={{ filter: "drop-shadow(0 2px 3px rgba(0,0,0,0.25))" }}
-            />
-            <circle cx="10" cy="10" r="3.5" fill="#ffffff" />
-          </svg>
-        </div>
+      {/* 1. MAP PREVIEW (real Leaflet mini-map) */}
+      <div className="relative w-full overflow-hidden" style={{ height: 120 }}>
+        <MiniMap postcode={pickupPostcode} />
 
         {/* ETA pill */}
         <div
-          className="absolute"
+          className="absolute pointer-events-none"
           style={{
             left: "50%",
             top: "55%",
@@ -189,6 +124,7 @@ export function NextLessonHeroCard({
             fontWeight: 700,
             color: "#2563eb",
             whiteSpace: "nowrap",
+            zIndex: 500,
           }}
         >
           {etaMinutes} min · {etaMiles}mi
@@ -196,7 +132,7 @@ export function NextLessonHeroCard({
 
         {/* Top-left chip */}
         <div
-          className="absolute flex items-center gap-2"
+          className="absolute flex items-center gap-2 pointer-events-none"
           style={{
             top: 8,
             left: 8,
@@ -205,6 +141,7 @@ export function NextLessonHeroCard({
             WebkitBackdropFilter: "blur(8px)",
             borderRadius: 999,
             padding: "5px 10px",
+            zIndex: 500,
           }}
         >
           <span
@@ -227,7 +164,7 @@ export function NextLessonHeroCard({
 
         {/* Top-right chip */}
         <div
-          className="absolute flex items-center gap-1.5"
+          className="absolute flex items-center gap-1.5 pointer-events-none"
           style={{
             top: 8,
             right: 8,
@@ -236,6 +173,7 @@ export function NextLessonHeroCard({
             boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
             borderRadius: 999,
             padding: "4px 9px",
+            zIndex: 500,
           }}
         >
           <span
