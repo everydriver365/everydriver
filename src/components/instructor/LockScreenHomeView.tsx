@@ -25,7 +25,7 @@ import type { TodayLesson } from "@/hooks/useTodayRemainingLessons";
 import { NextUpTile } from "@/components/instructor/NextUpTile";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
-import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
+
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
 import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
@@ -310,13 +310,6 @@ export function LockScreenHomeView({
             />
           </FrostedCard>
         )}
-
-        <FrostedCard className="overflow-hidden">
-          <TodayRoutePreview
-            instructorId={instructorId}
-            onTap={() => navigate("/instructor/diary")}
-          />
-        </FrostedCard>
 
         {/* ── QUICK ACTIONS ── */}
         <SectionLabel>QUICK ACTIONS</SectionLabel>
