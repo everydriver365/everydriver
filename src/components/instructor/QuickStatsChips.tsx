@@ -102,10 +102,11 @@ export function QuickStatsChips({
               onClick={() => handleChipClick(chip.route)}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5",
-                "bg-card border border-border rounded-full",
+                "bg-card rounded-full tabular-nums shadow-premium",
                 "snap-start shrink-0",
                 "active:scale-95 transition-transform duration-150"
               )}
+              style={{ border: "0.5px solid rgba(15,23,42,0.06)" }}
             >
               <Icon className="h-3 w-3 text-muted-foreground" />
               <span className="text-xs font-semibold tabular-nums text-foreground">

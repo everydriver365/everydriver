@@ -24,7 +24,10 @@ export function DesktopNavigationCard({
   showChevron = true,
 }: DesktopNavigationCardProps) {
   const content = (
-    <div className="flex items-center gap-4 p-4 rounded-2xl bg-card shadow-lift hover:shadow-lift-hover active:shadow-lift-pressed transition-shadow duration-200 cursor-pointer group">
+    <div
+      className="flex items-center gap-4 p-4 bg-card shadow-premium hover:shadow-premium-lg transition-shadow duration-200 cursor-pointer group tabular-nums"
+      style={{ borderRadius: 16, border: "0.5px solid rgba(15,23,42,0.06)" }}
+    >
       <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", iconBgColor)}>
         <Icon className={cn("w-5 h-5", iconColor)} />
       </div>
