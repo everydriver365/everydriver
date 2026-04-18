@@ -110,6 +110,21 @@
      --instructor-bg-start: #E4EEFB;
      --instructor-bg-end: #E4EEFB;
      --instructor-bg-overlay: rgba(228, 238, 251, 0.85);
+
+     /* Instructor schedule card semantic tokens (HSL) */
+     --schedule-surface: 0 0% 100%;
+     --schedule-surface-soft: 210 40% 98%;
+     --schedule-border: 214 32% 91%;
+     --schedule-border-soft: 214 30% 95%;
+     --schedule-text: 222 47% 11%;
+     --schedule-text-muted: 220 9% 46%;
+     --schedule-text-subtle: 220 9% 65%;
+     --schedule-accent: 217 91% 60%;
+     --schedule-accent-soft: 214 95% 93%;
+     --schedule-accent-deep: 222 47% 18%;
+     --schedule-success: 160 84% 32%;
+     --schedule-success-soft: 152 81% 96%;
+     --schedule-rail: 220 13% 91%;
   }
 
   .instructor-shell-bg {
