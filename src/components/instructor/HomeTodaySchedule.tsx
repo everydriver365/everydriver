@@ -12,6 +12,8 @@ import {
 import { format, parse } from "date-fns";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useTodayRemainingLessons, type TodayLesson } from "@/hooks/useTodayRemainingLessons";
+import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface HomeTodayScheduleProps {
   instructorId: string | undefined;
@@ -57,6 +59,8 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
   const { data: overview, isLoading: overviewLoading } = useTodayOverview(instructorId);
   const { data: lessons = [], isLoading: lessonsLoading } = useTodayRemainingLessons(instructorId);
   const [tab, setTab] = useState<"today" | "tomorrow">("today");
+  const [addOpen, setAddOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const now = new Date();
   const nowSec = now.getHours() * 3600 + now.getMinutes() * 60;
@@ -260,23 +264,22 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             <div style={{ fontSize: 14, color: "#6b7280", marginBottom: 12 }}>
               No lessons scheduled
             </div>
-            <Link to="/instructor/schedule">
-              <button
-                style={{
-                  background: "#1e2a3d",
-                  color: "#fff",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  padding: "8px 14px",
-                  borderRadius: 10,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 4,
-                }}
-              >
-                <Plus size={14} strokeWidth={2.5} /> Schedule a lesson
-              </button>
-            </Link>
+            <button
+              onClick={() => setAddOpen(true)}
+              style={{
+                background: "#1e2a3d",
+                color: "#fff",
+                fontSize: 12,
+                fontWeight: 600,
+                padding: "8px 14px",
+                borderRadius: 10,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              <Plus size={14} strokeWidth={2.5} /> Schedule a lesson
+            </button>
           </div>
         ) : (
           <div className="relative">
@@ -466,22 +469,35 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           View full calendar
           <ChevronRight size={14} strokeWidth={2.5} />
         </Link>
-        <Link to="/instructor/schedule">
-          <button
-            className="flex items-center gap-1"
-            style={{
-              background: "#1e2a3d",
-              color: "#fff",
-              fontSize: 12,
-              fontWeight: 600,
-              padding: "6px 12px",
-              borderRadius: 10,
-            }}
-          >
-            <Plus size={13} strokeWidth={2.5} /> Add lesson
-          </button>
-        </Link>
+        <button
+          onClick={() => setAddOpen(true)}
+          className="flex items-center gap-1"
+          style={{
+            background: "#1e2a3d",
+            color: "#fff",
+            fontSize: 12,
+            fontWeight: 600,
+            padding: "6px 12px",
+            borderRadius: 10,
+          }}
+        >
+          <Plus size={13} strokeWidth={2.5} /> Add lesson
+        </button>
       </div>
+
+      {instructorId && (
+        <AddLessonSheet
+          open={addOpen}
+          onOpenChange={setAddOpen}
+          instructorId={instructorId}
+          defaultDate={new Date()}
+          onSuccess={() => {
+            setAddOpen(false);
+            queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+            queryClient.invalidateQueries({ queryKey: ["today-overview"] });
+          }}
+        />
+      )}
     </motion.div>
   );
 }
