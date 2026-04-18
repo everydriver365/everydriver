@@ -14,6 +14,7 @@ import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { type TodayLesson } from "@/hooks/useTodayRemainingLessons";
 import { useDayLessons } from "@/hooks/useDayLessons";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { PremiumStatTile } from "@/components/instructor/PremiumStatTile";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface HomeTodayScheduleProps {
@@ -140,17 +141,17 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
-      className="font-sans"
+      className="font-sans shadow-premium-lg"
       style={{
         fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+          "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
         background: C.surface,
         borderRadius: 20,
-        border: `1px solid ${C.border}`,
-        boxShadow: "0 4px 20px hsl(var(--schedule-text) / 0.06)",
+        border: "0.5px solid rgba(15,23,42,0.06)",
         maxWidth: 420,
         width: "100%",
         overflow: "hidden",
+        fontVariantNumeric: "tabular-nums",
       }}
     >
       {/* Header */}
@@ -238,45 +239,34 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
         </div>
       </div>
 
-      {/* Summary strip */}
+      {/* Summary strip — premium animated stat tiles */}
       {hasLessons && (
         <div className="grid grid-cols-3" style={{ gap: 8, margin: "0 16px 14px" }}>
-          {[
-            completedCount > 0
-              ? { label: "Completed", value: `${completedCount} / ${lessonCount}`, color: C.text }
-              : { label: "Lessons", value: `${lessonCount}`, color: C.text },
-            { label: "Earnings", value: `£${earnings}`, color: C.success },
-            {
-              label: "Next in",
-              value: minutesUntilNext != null ? (minutesUntilNext >= 60 ? `${Math.floor(minutesUntilNext / 60)}h ${minutesUntilNext % 60}m` : `${minutesUntilNext}m`) : "—",
-              color: C.accent,
-            },
-          ].map((c) => (
-            <div
-              key={c.label}
-              style={{
-                background: C.surfaceSoft,
-                border: `1px solid ${C.borderSoft}`,
-                borderRadius: 10,
-                padding: "8px 10px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 10,
-                  letterSpacing: "0.5px",
-                  textTransform: "uppercase",
-                  color: C.textSubtle,
-                  fontWeight: 600,
-                }}
-              >
-                {c.label}
-              </div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: c.color, marginTop: 2 }}>
-                {c.value}
-              </div>
-            </div>
-          ))}
+          <PremiumStatTile
+            label={completedCount > 0 ? "Done" : "Lessons"}
+            value={completedCount > 0 ? `${completedCount}/${lessonCount}` : `${lessonCount}`}
+            animateKey={`${tab}-l-${completedCount}-${lessonCount}`}
+          />
+          <PremiumStatTile
+            label="Earnings"
+            value={`£${earnings}`}
+            color={C.success}
+            animateKey={`${tab}-e-${earnings}`}
+          />
+          <PremiumStatTile
+            label={isTomorrow ? "Hours" : "Next in"}
+            value={
+              isTomorrow
+                ? `${totalHours}h`
+                : minutesUntilNext != null
+                ? minutesUntilNext >= 60
+                  ? `${Math.floor(minutesUntilNext / 60)}h ${minutesUntilNext % 60}m`
+                  : `${minutesUntilNext}m`
+                : "—"
+            }
+            color={C.accent}
+            animateKey={`${tab}-n-${minutesUntilNext}-${totalHours}`}
+          />
         </div>
       )}
 
