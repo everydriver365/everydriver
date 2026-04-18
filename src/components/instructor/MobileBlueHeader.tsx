@@ -165,19 +165,9 @@ export function MobileBlueHeader({
             )}
           </div>
 
-          {/* Centre: DSM logo on white pill */}
+          {/* Centre: DSM logo (transparent) */}
           <div className="absolute left-1/2 -translate-x-1/2">
-            <div
-              className="flex items-center justify-center"
-              style={{
-                background: "#FFFFFF",
-                borderRadius: 999,
-                padding: "5px 14px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-              }}
-            >
-              <img src={dsmLogo} alt="DSM" className="h-6 w-auto object-contain" />
-            </div>
+            <img src={dsmLogo} alt="DSM" className="h-7 w-auto object-contain" />
           </div>
 
           {/* Right: SOS, +, menu */}
