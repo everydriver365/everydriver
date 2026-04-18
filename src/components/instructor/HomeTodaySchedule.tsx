@@ -20,12 +20,13 @@ interface HomeTodayScheduleProps {
   instructorId: string | undefined;
 }
 
+// Token-based avatar gradients (still distinctive but using HSL channels for theming)
 const AVATAR_GRADIENTS = [
-  "linear-gradient(135deg, #fb923c, #ea580c)",
-  "linear-gradient(135deg, #a78bfa, #7c3aed)",
-  "linear-gradient(135deg, #f472b6, #db2777)",
-  "linear-gradient(135deg, #2dd4bf, #0d9488)",
-  "linear-gradient(135deg, #fbbf24, #d97706)",
+  "linear-gradient(135deg, hsl(25 95% 60%), hsl(20 91% 48%))",
+  "linear-gradient(135deg, hsl(258 90% 70%), hsl(262 83% 58%))",
+  "linear-gradient(135deg, hsl(330 81% 70%), hsl(336 78% 50%))",
+  "linear-gradient(135deg, hsl(172 76% 55%), hsl(174 84% 32%))",
+  "linear-gradient(135deg, hsl(43 96% 56%), hsl(35 92% 44%))",
 ];
 
 function gradientFor(name: string) {
@@ -55,6 +56,23 @@ function deriveState(lesson: TodayLesson, nowSec: number, nextUpcomingId: string
   if (lesson.id === nextUpcomingId) return "current";
   return "upcoming";
 }
+
+// Semantic token shortcuts
+const C = {
+  surface: "hsl(var(--schedule-surface))",
+  surfaceSoft: "hsl(var(--schedule-surface-soft))",
+  border: "hsl(var(--schedule-border))",
+  borderSoft: "hsl(var(--schedule-border-soft))",
+  text: "hsl(var(--schedule-text))",
+  textMuted: "hsl(var(--schedule-text-muted))",
+  textSubtle: "hsl(var(--schedule-text-subtle))",
+  accent: "hsl(var(--schedule-accent))",
+  accentSoft: "hsl(var(--schedule-accent-soft))",
+  accentDeep: "hsl(var(--schedule-accent-deep))",
+  success: "hsl(var(--schedule-success))",
+  successSoft: "hsl(var(--schedule-success-soft))",
+  rail: "hsl(var(--schedule-rail))",
+};
 
 export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
   const [tab, setTab] = useState<"today" | "tomorrow">("today");
@@ -113,10 +131,10 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
       style={{
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-        background: "#ffffff",
+        background: C.surface,
         borderRadius: 20,
-        border: "1px solid #e5edf7",
-        boxShadow: "0 4px 20px rgba(30,42,61,0.08)",
+        border: `1px solid ${C.border}`,
+        boxShadow: "0 4px 20px hsl(var(--schedule-text) / 0.06)",
         maxWidth: 420,
         width: "100%",
         overflow: "hidden",
@@ -131,8 +149,8 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               width: 26,
               height: 26,
               borderRadius: 8,
-              background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
-              boxShadow: "0 2px 6px rgba(37,99,235,0.35)",
+              background: `linear-gradient(135deg, ${C.accent}, hsl(var(--schedule-accent) / 0.85))`,
+              boxShadow: "0 2px 6px hsl(var(--schedule-accent) / 0.35)",
             }}
           >
             <Calendar size={14} color="#fff" strokeWidth={2.5} />
@@ -144,21 +162,21 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                 fontSize: 17,
                 fontWeight: 600,
                 letterSpacing: "-0.4px",
-                color: "#1a1a1a",
+                color: C.text,
                 lineHeight: 1.2,
               }}
             >
               {isTomorrow ? "Tomorrow" : "Today's Schedule"}
             </h3>
             <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-              <span style={{ fontSize: 13, color: "#6b7280" }}>
+              <span style={{ fontSize: 13, color: C.textMuted }}>
                 {dateLabel} · {lessons.length} lesson{lessons.length === 1 ? "" : "s"}
               </span>
               {totalHours > 0 && (
                 <span
                   style={{
-                    background: "#ecfdf5",
-                    color: "#047857",
+                    background: C.successSoft,
+                    color: C.success,
                     fontSize: 11,
                     fontWeight: 600,
                     padding: "2px 7px",
@@ -176,9 +194,10 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
         <div
           className="flex shrink-0"
           style={{
-            background: "#f3f4f6",
+            background: C.surfaceSoft,
             padding: 3,
             borderRadius: 18,
+            border: `1px solid ${C.borderSoft}`,
           }}
         >
           {(["today", "tomorrow"] as const).map((t) => {
@@ -188,13 +207,13 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                 key={t}
                 onClick={() => setTab(t)}
                 style={{
-                  background: active ? "#1e2a3d" : "transparent",
-                  color: active ? "#fff" : "#6b7280",
+                  background: active ? C.accentDeep : "transparent",
+                  color: active ? "#fff" : C.textMuted,
                   fontSize: 11,
                   fontWeight: 600,
                   padding: "5px 10px",
                   borderRadius: 15,
-                  boxShadow: active ? "0 1px 3px rgba(30,42,61,0.25)" : "none",
+                  boxShadow: active ? "0 1px 3px hsl(var(--schedule-accent-deep) / 0.25)" : "none",
                   textTransform: "capitalize",
                   transition: "all 0.15s",
                 }}
@@ -211,20 +230,20 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
         <div className="grid grid-cols-3" style={{ gap: 8, margin: "0 16px 14px" }}>
           {[
             completedCount > 0
-              ? { label: "Completed", value: `${completedCount} / ${lessonCount}`, color: "#1a1a1a" }
-              : { label: "Lessons", value: `${lessonCount}`, color: "#1a1a1a" },
-            { label: "Earnings", value: `£${earnings}`, color: "#059669" },
+              ? { label: "Completed", value: `${completedCount} / ${lessonCount}`, color: C.text }
+              : { label: "Lessons", value: `${lessonCount}`, color: C.text },
+            { label: "Earnings", value: `£${earnings}`, color: C.success },
             {
               label: "Next in",
               value: minutesUntilNext != null ? (minutesUntilNext >= 60 ? `${Math.floor(minutesUntilNext / 60)}h ${minutesUntilNext % 60}m` : `${minutesUntilNext}m`) : "—",
-              color: "#2563eb",
+              color: C.accent,
             },
           ].map((c) => (
             <div
               key={c.label}
               style={{
-                background: "#f8fafc",
-                border: "1px solid #eef2f7",
+                background: C.surfaceSoft,
+                border: `1px solid ${C.borderSoft}`,
                 borderRadius: 10,
                 padding: "8px 10px",
               }}
@@ -234,7 +253,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                   fontSize: 10,
                   letterSpacing: "0.5px",
                   textTransform: "uppercase",
-                  color: "#9ca3af",
+                  color: C.textSubtle,
                   fontWeight: 600,
                 }}
               >
@@ -268,19 +287,19 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                 width: 56,
                 height: 56,
                 borderRadius: 16,
-                background: "#f8fafc",
-                border: "1px solid #eef2f7",
+                background: C.surfaceSoft,
+                border: `1px solid ${C.borderSoft}`,
               }}
             >
-              <CalendarX size={28} color="#cbd5e1" strokeWidth={1.8} />
+              <CalendarX size={28} color={C.textSubtle} strokeWidth={1.8} />
             </div>
-            <div style={{ fontSize: 14, color: "#6b7280", marginBottom: 12 }}>
+            <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 12 }}>
               No lessons scheduled
             </div>
             <button
               onClick={() => setAddOpen(true)}
               style={{
-                background: "#1e2a3d",
+                background: C.accentDeep,
                 color: "#fff",
                 fontSize: 12,
                 fontWeight: 600,
@@ -296,7 +315,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           </div>
         ) : (
           <div className="relative">
-            {/* Vertical connecting line — aligned to status node column (time col 48 + gap 8 + node center 8) */}
+            {/* Vertical connecting line — aligned to status node column */}
             <div
               style={{
                 position: "absolute",
@@ -304,7 +323,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                 top: 14,
                 bottom: 14,
                 width: 2,
-                background: "#e5e7eb",
+                background: C.rail,
                 zIndex: 0,
               }}
             />
@@ -332,13 +351,13 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                         paddingTop: 6,
                       }}
                     >
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a", lineHeight: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: C.text, lineHeight: 1 }}>
                         {time.hour}
                       </div>
                       <div
                         style={{
                           fontSize: 10,
-                          color: "#9ca3af",
+                          color: C.textSubtle,
                           letterSpacing: "0.4px",
                           marginTop: 2,
                         }}
@@ -354,13 +373,13 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                           width: 16,
                           height: 16,
                           borderRadius: "50%",
-                          background: isDone ? "#10b981" : "#fff",
+                          background: isDone ? C.success : C.surface,
                           border: isDone
-                            ? "3px solid #10b981"
+                            ? `3px solid ${C.success}`
                             : isCurrent
-                            ? "3px solid #2563eb"
-                            : "3px solid #cbd5e1",
-                          boxShadow: isCurrent ? "0 0 0 4px rgba(37,99,235,0.15)" : "none",
+                            ? `3px solid ${C.accent}`
+                            : `3px solid ${C.rail}`,
+                          boxShadow: isCurrent ? `0 0 0 4px hsl(var(--schedule-accent) / 0.15)` : "none",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -377,10 +396,10 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                         borderRadius: 12,
                         padding: "10px 12px",
                         background: isCurrent
-                          ? "linear-gradient(135deg, #eff6ff, #dbeafe)"
-                          : "#f8fafc",
-                        border: isCurrent ? "1px solid #bfdbfe" : "1px solid #eef2f7",
-                        boxShadow: isCurrent ? "0 2px 8px rgba(37,99,235,0.10)" : "none",
+                          ? `linear-gradient(135deg, hsl(var(--schedule-accent-soft) / 0.6), hsl(var(--schedule-accent-soft)))`
+                          : C.surfaceSoft,
+                        border: `1px solid ${isCurrent ? C.accentSoft : C.borderSoft}`,
+                        boxShadow: isCurrent ? `0 2px 8px hsl(var(--schedule-accent) / 0.10)` : "none",
                       }}
                     >
                       <div className="flex items-center gap-2">
@@ -402,9 +421,9 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                           style={{
                             fontSize: 13,
                             fontWeight: 700,
-                            color: "#1a1a1a",
+                            color: C.text,
                             textDecoration: isDone ? "line-through" : "none",
-                            textDecorationColor: "#9ca3af",
+                            textDecorationColor: C.textSubtle,
                           }}
                         >
                           {lesson.pupilName}
@@ -412,8 +431,8 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                         {isCurrent && (
                           <span
                             style={{
-                              background: "#fef3c7",
-                              color: "#92400e",
+                              background: "hsl(45 93% 89%)",
+                              color: "hsl(28 80% 28%)",
                               fontSize: 9,
                               fontWeight: 700,
                               letterSpacing: "0.4px",
@@ -431,9 +450,9 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                             fontWeight: 700,
                             padding: "2px 7px",
                             borderRadius: 8,
-                            background: isCurrent ? "#2563eb" : "#fff",
-                            color: isCurrent ? "#fff" : "#1a1a1a",
-                            border: isCurrent ? "none" : "1px solid #eef2f7",
+                            background: isCurrent ? C.accent : C.surface,
+                            color: isCurrent ? "#fff" : C.text,
+                            border: isCurrent ? "none" : `1px solid ${C.borderSoft}`,
                           }}
                         >
                           {durationLabel(lesson.durationMinutes)}
@@ -442,7 +461,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
 
                       <div
                         className="flex items-center gap-1.5 mt-1.5 truncate"
-                        style={{ fontSize: 11, color: "#6b7280" }}
+                        style={{ fontSize: 11, color: C.textMuted }}
                       >
                         <MapPin size={11} strokeWidth={2} />
                         <span className="truncate">
@@ -450,8 +469,8 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                         </span>
                         {lesson.amountDue != null && (
                           <>
-                            <span style={{ color: "#cbd5e1" }}>·</span>
-                            <span style={{ fontWeight: 600, color: "#1a1a1a" }}>
+                            <span style={{ color: C.textSubtle }}>·</span>
+                            <span style={{ fontWeight: 600, color: C.text }}>
                               £{lesson.amountDue}
                             </span>
                           </>
@@ -470,14 +489,14 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
       <div
         className="flex items-center justify-between"
         style={{
-          borderTop: "1px solid #f3f4f6",
+          borderTop: `1px solid ${C.borderSoft}`,
           padding: "10px 16px",
         }}
       >
         <Link
           to="/instructor/schedule"
           className="flex items-center gap-1"
-          style={{ color: "#2563eb", fontSize: 12, fontWeight: 600 }}
+          style={{ color: C.accent, fontSize: 12, fontWeight: 600 }}
         >
           View full calendar
           <ChevronRight size={14} strokeWidth={2.5} />
@@ -486,7 +505,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           onClick={() => setAddOpen(true)}
           className="flex items-center gap-1"
           style={{
-            background: "#1e2a3d",
+            background: C.accentDeep,
             color: "#fff",
             fontSize: 12,
             fontWeight: 600,
