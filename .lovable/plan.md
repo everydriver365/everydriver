@@ -1,18 +1,12 @@
 
-## Problem
+Remove the Today's Route preview from the instructor dashboard.
 
-`@react-google-maps/api`'s `useJsApiLoader` is a singleton — once called with one apiKey it cannot be re-called with a different one. Our `GoogleMapPreview` first renders with `apiKey=""` (before fetch resolves) and then with the real key → crash. Other components (e.g. `NearbyFriendsMap`) also call `useJsApiLoader` with `import.meta.env.VITE_GOOGLE_MAPS_API_KEY` (empty), which conflicts further.
+## Changes
 
-## Fix
+1. **`src/pages/instructor/Index.tsx`** (or wherever `TodayRoutePreview` is rendered on `/instructor`) — remove the `<TodayRoutePreview />` usage and its import.
+2. **Delete `src/components/instructor/TodayRoutePreview.tsx`** — no longer used.
+3. **Delete `src/hooks/useTodayRoute.ts`** — only consumed by the component above.
 
-Bypass `useJsApiLoader` in `GoogleMapPreview` and use the existing `loadGoogleMaps(apiKey)` helper from `src/lib/googleMapsLoader.ts`, which is idempotent and key-stable.
+I'll grep first to confirm there are no other consumers before deleting, and fall back to just removing the render if anything else references them.
 
-Steps in `src/components/instructor/GoogleMapPreview.tsx`:
-1. Remove `useJsApiLoader` import.
-2. On mount: `fetchGoogleMapsKey()` → then `loadGoogleMaps(key)` → set `isLoaded=true`.
-3. Don't render `<GoogleMap>` until both key fetched and script loaded.
-4. Keep all other behaviour (preview, dialog, geocode, light roadmap).
-
-Also fix `src/components/instructor/NearbyFriendsMap.tsx` the same way (it uses the missing env var and contributes to the loader conflict). Replace `useJsApiLoader` with the same `fetchGoogleMapsKey` + `loadGoogleMaps` pattern.
-
-No backend changes.
+No backend, schema, or styling changes. Today's Schedule list and the Next Up ETA tile remain untouched.
