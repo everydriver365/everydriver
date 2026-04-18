@@ -24,6 +24,7 @@ import { useTomorrowPreview } from "@/hooks/useTomorrowPreview";
 import { triggerHaptic } from "@/lib/haptics";
 
 import { NextUpTile } from "@/components/instructor/NextUpTile";
+import { NextLessonHeroCard } from "@/components/instructor/NextLessonHeroCard";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
@@ -261,23 +262,22 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
             ) : (
               <>
                 {nextLesson && (
-                  <NextUpTile
-                    lessonId={nextLesson.lessonId}
-                    pupilId={nextLesson.pupilId}
+                  <NextLessonHeroCard
                     pupilName={nextLesson.pupilName}
                     pupilProfileImage={nextLesson.pupilProfileImage}
                     pupilPhone={nextLesson.pupilPhone}
-                    lessonDate={nextLesson.lessonDate}
-                    pickupPostcode={nextLesson.pickupPostcode}
-                    pickupLocation={nextLesson.pickupLocation}
                     startTime={nextLesson.startTime}
-                    minutesUntil={nextLesson.minutesUntil}
-                    accountBalance={nextLesson.accountBalance}
-                    prepaidHours={nextLesson.prepaidHours}
+                    lessonDate={nextLesson.lessonDate}
                     durationMinutes={nextLesson.durationMinutes}
-                    instructorId={instructorId}
-                    checkInStatus={nextLesson.checkInStatus}
-                    lastLessonPlan={nextLesson.lastLessonPlan}
+                    daysUntil={Math.max(0, Math.ceil((new Date(nextLesson.lessonDate).getTime() - Date.now()) / 86400000))}
+                    accountBalance={nextLesson.accountBalance}
+                    pickupLocation={nextLesson.pickupLocation}
+                    pickupPostcode={nextLesson.pickupPostcode}
+                    onNavigate={() => {
+                      const dest = encodeURIComponent([nextLesson.pickupLocation, nextLesson.pickupPostcode].filter(Boolean).join(", "));
+                      if (dest) window.open(`https://www.google.com/maps/dir/?api=1&destination=${dest}`, "_blank");
+                    }}
+                    onArrived={() => navigate(`/instructor/lesson/${nextLesson.lessonId}`)}
                   />
                 )}
 
