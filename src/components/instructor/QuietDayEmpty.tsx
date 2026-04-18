@@ -15,7 +15,7 @@ const quickActions = [
 export function QuietDayEmpty({ className = "" }: QuietDayEmptyProps) {
   return (
     <div className={`text-center ${className}`}>
-      <div className="bg-card border border-border/40 rounded-2xl p-6">
+      <div className="bg-card p-6 shadow-premium tabular-nums" style={{ borderRadius: 16, border: "0.5px solid rgba(15,23,42,0.06)" }}>
         <div className="inline-flex items-center justify-center w-12 h-12 bg-muted/50 rounded-2xl mb-4">
           <Calendar className="h-6 w-6 text-muted-foreground" />
         </div>

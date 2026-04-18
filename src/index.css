@@ -483,6 +483,30 @@
     0 0 0 0.5px rgba(15, 23, 42, 0.04);
 }
 
+/* Alias legacy shadow utilities to premium so all instructor tiles inherit
+   the same layered depth without per-component rewrites. */
+.shadow-lift,
+.shadow-lift\/10,
+.shadow-lift\/\[0\.08\] {
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 4px 12px rgba(15, 23, 42, 0.04),
+    0 0 0 0.5px rgba(15, 23, 42, 0.04) !important;
+}
+.shadow-lift-hover,
+.hover\:shadow-lift-hover:hover {
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 8px 24px rgba(15, 23, 42, 0.06),
+    0 0 0 0.5px rgba(15, 23, 42, 0.04) !important;
+}
+.shadow-lift-pressed,
+.active\:shadow-lift-pressed:active {
+  box-shadow:
+    0 0 0 0.5px rgba(15, 23, 42, 0.06),
+    inset 0 1px 2px rgba(15, 23, 42, 0.06) !important;
+}
+
 /* True hairline divider (renders as 0.5px on retina) */
 .hairline-b { position: relative; }
 .hairline-b::after {

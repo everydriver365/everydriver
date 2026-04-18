@@ -42,7 +42,7 @@ export function InstructorPageHeader({
           ) : null}
         </div>
         <div>
-          <h1 className="text-xl font-bold text-foreground">{title}</h1>
+          <h1 className="text-xl font-bold text-foreground tabular-nums" style={{ letterSpacing: "-0.01em" }}>{title}</h1>
           {subtitle && (
             <p className="text-sm text-muted-foreground">{subtitle}</p>
           )}
