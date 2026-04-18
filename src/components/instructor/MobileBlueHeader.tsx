@@ -239,38 +239,6 @@ export function MobileBlueHeader({
               >
                 {getGreeting()}, {firstName}
               </h1>
-              <div
-                className="inline-flex items-center gap-2 mt-2"
-                style={{
-                  background: "rgba(255,255,255,0.18)",
-                  backdropFilter: "blur(12px)",
-                  WebkitBackdropFilter: "blur(12px)",
-                  border: "0.5px solid rgba(255,255,255,0.32)",
-                  padding: "5px 11px",
-                  borderRadius: 999,
-                }}
-              >
-                <span
-                  className="rounded-full"
-                  style={{
-                    width: 7,
-                    height: 7,
-                    background: isOnline ? "#34C759" : "#8E8E93",
-                    boxShadow: isOnline ? "0 0 6px rgba(52,199,89,0.7)" : undefined,
-                  }}
-                />
-                <span
-                  className="text-white"
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    letterSpacing: 0.4,
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {dateBadge}
-                </span>
-              </div>
             </div>
 
             {/* Avatar */}
@@ -298,54 +266,6 @@ export function MobileBlueHeader({
           </div>
         )}
 
-        {/* Lessons Today frosted card (home only) */}
-        {showGreeting && (
-          <div className="relative px-4 pb-5">
-            <button
-              onClick={() => navigate("/instructor/schedule")}
-              className="w-full text-left flex items-center gap-3"
-              style={{
-                background: "rgba(255,255,255,0.20)",
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                border: "1px solid rgba(255,255,255,0.35)",
-                borderRadius: 18,
-                padding: "12px 14px",
-                boxShadow: "0 6px 18px -6px rgba(0,0,0,0.18)",
-              }}
-            >
-              <ProgressRing completed={todayCompleted} total={todayTotal} />
-              <div className="flex-1 min-w-0">
-                <p
-                  className="text-white"
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 700,
-                    letterSpacing: "-0.01em",
-                    fontFamily: "-apple-system, 'SF Pro Display', sans-serif",
-                  }}
-                >
-                  Lessons Today
-                </p>
-                <p
-                  className="text-white"
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 500,
-                    opacity: 0.92,
-                    marginTop: 2,
-                  }}
-                >
-                  {todayTotal === 0
-                    ? "No lessons scheduled"
-                    : todayCompleted === todayTotal
-                    ? "All done — great job! 🎉"
-                    : `${todayCompleted} done · ${todayTotal - todayCompleted} to go`}
-                </p>
-              </div>
-            </button>
-          </div>
-        )}
       </div>
     </header>
   );
