@@ -79,7 +79,7 @@ import messagesIcon from "@/assets/messages-icon.png";
 import testRequestsIcon from "@/assets/test-requests-icon.png";
 import { RadialFAB } from "@/components/instructor/RadialFAB";
 import { UrgentAlertOverlay } from "@/components/instructor/UrgentAlertOverlay";
-import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
+
 import waitingRoomIcon from "@/assets/waiting-room-icon.png";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
 import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
@@ -611,12 +611,6 @@ export function InstructorMobileHome({
               <HomeTodaySchedule instructorId={instructorId} />
             </div>
 
-            {/* 5. Today's Route Map Preview */}
-            <TodayRoutePreview
-              instructorId={instructorId}
-              onTap={() => navigate("/instructor/diary")}
-              className="mt-4"
-            />
           </>
         )}
 
