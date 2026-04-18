@@ -116,11 +116,19 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
   const dayCompletedCount = lessons.filter((l) => l.status === "completed").length;
   const dayLessonCount = lessons.length;
   const dayTotalHours = lessons.reduce((sum, l) => sum + (l.durationMinutes || 0), 0) / 60;
+  const dayAmountDueSum = lessons.reduce((sum, l) => sum + (l.amountDue ?? 0), 0);
+  const dayHasAnyAmount = lessons.some((l) => l.amountDue != null && l.amountDue > 0);
 
   const completedCount = isTomorrow ? dayCompletedCount : (overview?.completedCount ?? 0);
   const lessonCount = isTomorrow ? dayLessonCount : (overview?.lessonCount ?? 0);
   const totalHours = isTomorrow ? dayTotalHours : (overview?.totalHours ?? 0);
-  const earnings = overview?.expectedEarnings ?? 0;
+  // Earnings: prefer per-lesson amount_due sum (matches the lessons shown);
+  // fall back to overview's hourly-rate calc for Today when no amount_due is set.
+  const earnings = dayHasAnyAmount
+    ? Math.round(dayAmountDueSum)
+    : isTomorrow
+    ? 0
+    : (overview?.expectedEarnings ?? 0);
 
   return (
     <motion.div
