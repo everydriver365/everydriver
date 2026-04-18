@@ -517,60 +517,7 @@ export function NextUpTile({
               <div className="px-4 pb-4 flex flex-col gap-3">
                 <div className="h-px w-full" style={{ background: "rgba(0,0,0,0.06)" }} />
 
-                {/* Mini-map of pickup location with ETA overlay */}
-                {pickupPostcode && (
-                  <div
-                    className="rounded-2xl overflow-hidden border cursor-pointer relative"
-                    style={{ borderColor: "rgba(0,0,0,0.06)" }}
-                    onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    {/* ETA pill (top-left) — clickable when traffic alerts exist */}
-                    <button
-                      type="button"
-                      disabled={!hasTrafficAlerts}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (hasTrafficAlerts) setTrafficModalOpen(true);
-                      }}
-                      className={`absolute top-2 left-2 z-[2] backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 transition-transform active:scale-95 ${
-                        hasTrafficAlerts
-                          ? "bg-red-600/85 cursor-pointer ring-1 ring-white/30 animate-pulse"
-                          : "bg-black/70 cursor-default"
-                      }`}
-                    >
-                      <Car className="h-3 w-3" />
-                      {etaLoading ? (
-                        <>
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                          <span>ETA…</span>
-                        </>
-                      ) : etaMinutes > 0 ? (
-                        <>
-                          <span>{etaMinutes} min</span>
-                          {trafficCondition && (
-                            <span className={`w-1.5 h-1.5 rounded-full ${getTrafficDot()}`} />
-                          )}
-                          {hasTrafficAlerts && (
-                            <>
-                              <AlertTriangle className="h-3 w-3" />
-                              <span>{trafficAlerts.length || "!"}</span>
-                            </>
-                          )}
-                        </>
-                      ) : etaError ? (
-                        <span>ETA unavailable</span>
-                      ) : (
-                        <span>No ETA</span>
-                      )}
-                    </button>
-                    <div className="absolute top-2 right-2 z-[1] bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 pointer-events-none">
-                      <Navigation className="h-3 w-3" /> Navigate
-                    </div>
-                    <PostcodeMapPreview postcode={pickupPostcode} />
-                  </div>
-                )}
+                {/* Mini-map removed — already shown at top of tile */}
 
                 {/* Stats row */}
                 <div className="grid grid-cols-2 gap-2">
