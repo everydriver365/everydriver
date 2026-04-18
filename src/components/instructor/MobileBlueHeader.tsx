@@ -105,8 +105,6 @@ export function MobileBlueHeader({
         className="relative overflow-hidden"
         style={{
           background: HEADER_GRADIENT,
-          borderBottomLeftRadius: 32,
-          borderBottomRightRadius: 32,
           boxShadow: "0 12px 32px -8px rgba(26,39,68,0.45)",
         }}
       >
@@ -222,47 +220,22 @@ export function MobileBlueHeader({
           </div>
         </div>
 
-        {/* Greeting + avatar (home only) */}
+        {/* Greeting (home only) */}
         {showGreeting && (
-          <div className="relative px-5 pt-2 pb-3 flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <h1
-                className="text-white truncate"
-                style={{
-                  fontSize: 26,
-                  fontWeight: 800,
-                  letterSpacing: "-0.02em",
-                  lineHeight: 1.15,
-                  fontFamily: "-apple-system, 'SF Pro Display', sans-serif",
-                  textShadow: "0 1px 2px rgba(0,0,0,0.08)",
-                }}
-              >
-                {getGreeting()}, {firstName}
-              </h1>
-            </div>
-
-            {/* Avatar */}
-            <div
-              className="shrink-0 overflow-hidden"
+          <div className="relative px-5 pt-2 pb-3">
+            <h1
+              className="text-white truncate"
               style={{
-                width: 46,
-                height: 46,
-                borderRadius: "50%",
-                border: "2px solid rgba(255,255,255,0.85)",
-                background: "rgba(255,255,255,0.2)",
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                fontSize: 26,
+                fontWeight: 800,
+                letterSpacing: "-0.02em",
+                lineHeight: 1.15,
+                fontFamily: "-apple-system, 'SF Pro Display', sans-serif",
+                textShadow: "0 1px 2px rgba(0,0,0,0.08)",
               }}
             >
-              {profileImageUrl ? (
-                <img src={profileImageUrl} alt={firstName} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-white" style={{ fontSize: 18, fontWeight: 700 }}>
-                  {firstName.charAt(0)}
-                </div>
-              )}
-            </div>
+              {getGreeting()}, {firstName}
+            </h1>
           </div>
         )}
 
