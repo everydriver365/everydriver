@@ -213,7 +213,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
         <div className="grid grid-cols-3" style={{ gap: 8, margin: "0 16px 14px" }}>
           {[
             { label: "Completed", value: `${completedCount} / ${lessonCount}`, color: "#1a1a1a" },
-            { label: "Today's earnings", value: `£${earnings}`, color: "#059669" },
+            { label: "Earnings", value: `£${earnings}`, color: "#059669" },
             {
               label: "Next in",
               value: minutesUntilNext != null ? (minutesUntilNext >= 60 ? `${Math.floor(minutesUntilNext / 60)}h ${minutesUntilNext % 60}m` : `${minutesUntilNext}m`) : "—",
