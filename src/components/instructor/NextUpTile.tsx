@@ -245,70 +245,75 @@ export function NextUpTile({
           fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
         }}
       >
-        {/* ── MINI MAP with overlaid header ── */}
+        {/* ── MINI MAP with overlaid header (inset like expanded section) ── */}
         {pickupPostcode && (
-          <div className="w-full relative" style={{ borderRadius: "20px 20px 0 0", overflow: "hidden" }}>
-            <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={120} />
-            {/* Gradient scrim for legibility */}
+          <div className="px-3 pt-3">
             <div
-              className="absolute inset-x-0 top-0 pointer-events-none"
-              style={{
-                height: 56,
-                background: "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 60%, rgba(0,0,0,0) 100%)",
-              }}
-            />
-            {/* Overlaid header content */}
-            <div className="absolute inset-x-0 top-0 flex items-center justify-between px-3 py-2 z-10">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span
-                  className="inline-flex items-center gap-1 px-2 py-1"
-                  style={{ borderRadius: 100, backgroundColor: "#2A394F", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }}
-                >
-                  <Calendar className="h-3 w-3 text-white shrink-0" />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", letterSpacing: 0.2 }}>
-                    Next Lesson
-                  </span>
-                </span>
-                {effectiveBalance < 0 && (
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full animate-pulse"
-                    style={{ backgroundColor: "#FF3B30", color: "#FFFFFF", fontSize: 9, fontWeight: 700, letterSpacing: 0.3 }}>
-                    <AlertTriangle className="h-2.5 w-2.5" />
-                    £{Math.abs(effectiveBalance).toFixed(0)} OWED
-                  </span>
-                )}
-                {checkInStatus && (
-                  <LessonCheckInBadge status={checkInStatus} className="text-[9px] py-0 px-1.5 h-4 ml-1" />
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                {!trackerDismissed && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
-                    }}
-                    className="flex items-center gap-1 px-2 py-1 active:scale-95 transition-transform"
-                    style={{ borderRadius: 100, backgroundColor: "#FBBF24", color: "#1C1C1E", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }}
-                    title="Start tracking session for this lesson"
+              className="w-full relative rounded-2xl overflow-hidden border"
+              style={{ borderColor: "rgba(0,0,0,0.06)" }}
+            >
+              <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={120} />
+              {/* Gradient scrim for legibility */}
+              <div
+                className="absolute inset-x-0 top-0 pointer-events-none"
+                style={{
+                  height: 56,
+                  background: "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 60%, rgba(0,0,0,0) 100%)",
+                }}
+              />
+              {/* Overlaid header content */}
+              <div className="absolute inset-x-0 top-0 flex items-center justify-between px-2.5 py-2 z-10">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span
+                    className="inline-flex items-center gap-1 px-2 py-1"
+                    style={{ borderRadius: 100, backgroundColor: "#2A394F", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }}
                   >
-                    <Smartphone className="h-3 w-3" />
-                    <span style={{ fontSize: 11, fontWeight: 700 }}>Start Track</span>
-                    <X
-                      className="h-3 w-3 ml-0.5 opacity-70 hover:opacity-100"
+                    <Calendar className="h-3 w-3 text-white shrink-0" />
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", letterSpacing: 0.2 }}>
+                      Next Lesson
+                    </span>
+                  </span>
+                  {effectiveBalance < 0 && (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full animate-pulse"
+                      style={{ backgroundColor: "#FF3B30", color: "#FFFFFF", fontSize: 9, fontWeight: 700, letterSpacing: 0.3 }}>
+                      <AlertTriangle className="h-2.5 w-2.5" />
+                      £{Math.abs(effectiveBalance).toFixed(0)} OWED
+                    </span>
+                  )}
+                  {checkInStatus && (
+                    <LessonCheckInBadge status={checkInStatus} className="text-[9px] py-0 px-1.5 h-4 ml-1" />
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {!trackerDismissed && (
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        dismissTracker(lessonId);
-                        setTrackerDismissed(true);
+                        navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
                       }}
-                    />
-                  </button>
-                )}
-                <div
-                  className="flex items-center gap-1 px-2.5 py-1"
-                  style={{ borderRadius: 100, backgroundColor: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
-                >
-                  <Clock className="h-3 w-3 text-white" />
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "#FFFFFF" }}>{formatTime24(startTime)}</span>
+                      className="flex items-center gap-1 px-2 py-1 active:scale-95 transition-transform"
+                      style={{ borderRadius: 100, backgroundColor: "#FBBF24", color: "#1C1C1E", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }}
+                      title="Start tracking session for this lesson"
+                    >
+                      <Smartphone className="h-3 w-3" />
+                      <span style={{ fontSize: 11, fontWeight: 700 }}>Start Track</span>
+                      <X
+                        className="h-3 w-3 ml-0.5 opacity-70 hover:opacity-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          dismissTracker(lessonId);
+                          setTrackerDismissed(true);
+                        }}
+                      />
+                    </button>
+                  )}
+                  <div
+                    className="flex items-center gap-1 px-2.5 py-1"
+                    style={{ borderRadius: 100, backgroundColor: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
+                  >
+                    <Clock className="h-3 w-3 text-white" />
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "#FFFFFF" }}>{formatTime24(startTime)}</span>
+                  </div>
                 </div>
               </div>
             </div>
