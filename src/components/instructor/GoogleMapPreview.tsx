@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { GoogleMap, MarkerF } from "@react-google-maps/api";
+import { GoogleMap, MarkerF, DirectionsRenderer } from "@react-google-maps/api";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
 import { Loader2, X, Navigation } from "lucide-react";
@@ -43,6 +43,8 @@ export function GoogleMapPreview({
   className = "",
 }: GoogleMapPreviewProps) {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [myCoords, setMyCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [open, setOpen] = useState(false);
@@ -95,6 +97,49 @@ export function GoogleMapPreview({
     return () => { cancelled = true; };
   }, [postcode]);
 
+  // Get device geolocation
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    let cancelled = false;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        if (!cancelled) {
+          setMyCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        }
+      },
+      (err) => console.warn("Geolocation unavailable:", err.message),
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
+    );
+    return () => { cancelled = true; };
+  }, []);
+
+  // Fetch driving directions once both points + SDK are ready
+  useEffect(() => {
+    if (!isLoaded || !coords || !myCoords) return;
+    let cancelled = false;
+    try {
+      const svc = new google.maps.DirectionsService();
+      svc.route(
+        {
+          origin: myCoords,
+          destination: coords,
+          travelMode: google.maps.TravelMode.DRIVING,
+        },
+        (result, status) => {
+          if (cancelled) return;
+          if (status === google.maps.DirectionsStatus.OK && result) {
+            setDirections(result);
+          } else {
+            console.warn("Directions request failed:", status);
+          }
+        }
+      );
+    } catch (e) {
+      console.warn("Directions error:", e);
+    }
+    return () => { cancelled = true; };
+  }, [isLoaded, coords, myCoords]);
+
   const openExternal = () => {
     const dest = encodeURIComponent([address, postcode].filter(Boolean).join(", "));
     if (dest) window.open(`https://www.google.com/maps/dir/?api=1&destination=${dest}`, "_blank");
@@ -113,6 +158,12 @@ export function GoogleMapPreview({
 
   if (error || !coords) return null;
 
+  const routePolyline = {
+    strokeColor: "#0075c9",
+    strokeOpacity: 0.9,
+    strokeWeight: 4,
+  };
+
   return (
     <>
       <button
@@ -128,6 +179,29 @@ export function GoogleMapPreview({
           zoom={14}
           options={PREVIEW_OPTIONS}
         >
+          {directions ? (
+            <DirectionsRenderer
+              directions={directions}
+              options={{
+                suppressMarkers: true,
+                preserveViewport: false,
+                polylineOptions: routePolyline,
+              }}
+            />
+          ) : null}
+          {myCoords && (
+            <MarkerF
+              position={myCoords}
+              icon={{
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 6,
+                fillColor: "#0075c9",
+                fillOpacity: 1,
+                strokeColor: "#ffffff",
+                strokeWeight: 2,
+              }}
+            />
+          )}
           <MarkerF position={coords} />
         </GoogleMap>
         <div className="absolute inset-0 pointer-events-none" />
@@ -151,7 +225,31 @@ export function GoogleMapPreview({
               zoom={15}
               options={FULL_OPTIONS}
             >
-              <MarkerF position={coords} />
+              {directions ? (
+                <DirectionsRenderer
+                  directions={directions}
+                  options={{
+                    suppressMarkers: true,
+                    preserveViewport: false,
+                    polylineOptions: routePolyline,
+                  }}
+                />
+              ) : null}
+              {myCoords && (
+                <MarkerF
+                  position={myCoords}
+                  icon={{
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 7,
+                    fillColor: "#0075c9",
+                    fillOpacity: 1,
+                    strokeColor: "#ffffff",
+                    strokeWeight: 2,
+                  }}
+                  title="You"
+                />
+              )}
+              <MarkerF position={coords} title="Pickup" />
             </GoogleMap>
             <button
               onClick={() => setOpen(false)}
