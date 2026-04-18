@@ -122,6 +122,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           </div>
           <div className="min-w-0">
             <h3
+              className="whitespace-nowrap"
               style={{
                 fontSize: 18,
                 fontWeight: 700,
