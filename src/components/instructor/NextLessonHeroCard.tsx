@@ -210,24 +210,18 @@ export function NextLessonHeroCard({
             {pupilProfileImage ? (
               <img src={pupilProfileImage} alt={pupilName} className="w-full h-full object-cover" />
             ) : (
-              <div
-                className="w-full h-full flex items-center justify-center"
-                style={{
-                  background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
-                  color: "#ffffff",
-                  fontSize: 18,
-                  fontWeight: 700,
-                  letterSpacing: "-0.5px",
-                }}
-              >
-                {pupilName
-                  .split(" ")
-                  .map((n) => n[0])
-                  .filter(Boolean)
-                  .slice(0, 2)
-                  .join("")
-                  .toUpperCase() || "?"}
-              </div>
+              <svg viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+                <rect width="52" height="52" fill="#fde7d3" />
+                <path d="M10 22c0-9 7-16 16-16s16 7 16 16v6H10v-6z" fill="#3b2417" />
+                <ellipse cx="26" cy="28" rx="13" ry="14" fill="#f5c9a3" />
+                <path d="M13 22c2-6 7-10 13-10s11 4 13 10c-3-2-6-3-9-3-3 2-9 4-17 3z" fill="#2a1810" />
+                <ellipse cx="21" cy="27" rx="1.4" ry="1.6" fill="#1a1a1a" />
+                <ellipse cx="31" cy="27" rx="1.4" ry="1.6" fill="#1a1a1a" />
+                <path d="M26 30 Q25 33 26.5 34" stroke="#c89678" strokeWidth="1" fill="none" strokeLinecap="round" />
+                <path d="M22 36 Q26 39 30 36" stroke="#8b4a3a" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+                <path d="M8 52 Q8 44 18 42 L26 48 L34 42 Q44 44 44 52 Z" fill="#2563eb" />
+                <path d="M22 42 L26 48 L30 42 L26 46 Z" fill="#ffffff" />
+              </svg>
             )}
           </div>
         </div>
