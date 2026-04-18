@@ -212,7 +212,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             { label: "Today's earnings", value: `£${earnings}`, color: "#059669" },
             {
               label: "Next in",
-              value: minutesUntilNext != null ? `${minutesUntilNext}m` : "—",
+              value: minutesUntilNext != null ? (minutesUntilNext >= 60 ? `${Math.floor(minutesUntilNext / 60)}h ${minutesUntilNext % 60}m` : `${minutesUntilNext}m`) : "—",
               color: "#2563eb",
             },
           ].map((c) => (
