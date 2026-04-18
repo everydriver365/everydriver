@@ -222,25 +222,6 @@ export function MobileBlueHeader({
           </div>
         </div>
 
-        {/* Greeting (home only) */}
-        {showGreeting && (
-          <div className="relative px-5 pt-2 pb-3">
-            <h1
-              className="text-white truncate"
-              style={{
-                fontSize: 26,
-                fontWeight: 800,
-                letterSpacing: "-0.02em",
-                lineHeight: 1.15,
-                fontFamily: "-apple-system, 'SF Pro Display', sans-serif",
-                textShadow: "0 1px 2px rgba(0,0,0,0.08)",
-              }}
-            >
-              {getGreeting()}, {firstName}
-            </h1>
-          </div>
-        )}
-
       </div>
     </header>
   );

@@ -207,7 +207,21 @@ export function HomepageHero({
           overflow: "hidden",
         }}
       >
-        {/* Greeting now lives in the global blue header — start directly with carousel */}
+        {/* Greeting */}
+        <div className="px-4 pt-4 pb-1">
+          <h2
+            style={{
+              fontSize: 22,
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+              color: "#1c1c1e",
+              lineHeight: 1.2,
+              fontFamily: "-apple-system, 'SF Pro Display', sans-serif",
+            }}
+          >
+            {getGreeting()}, {firstName}
+          </h2>
+        </div>
 
         {/* Carousel */}
         <div ref={emblaRef} className="overflow-hidden">
