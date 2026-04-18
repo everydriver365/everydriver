@@ -435,3 +435,100 @@ function NlhcActionButton({
     </button>
   );
 }
+
+function MiniMap({ postcode }: { postcode?: string | null }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [loading, setLoading] = useState<boolean>(!!postcode);
+
+  // Geocode postcode
+  useEffect(() => {
+    let cancelled = false;
+    if (!postcode) {
+      setCoords(null);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    geocodePostcode(postcode).then((result) => {
+      if (!cancelled) {
+        setCoords(result);
+        setLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [postcode]);
+
+  // Render map when coords are available
+  useEffect(() => {
+    if (!containerRef.current || !coords) return;
+
+    // Clean up previous instance
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
+
+    const map = L.map(containerRef.current, {
+      center: [coords.lat, coords.lng],
+      zoom: 15,
+      zoomControl: false,
+      attributionControl: false,
+      dragging: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      touchZoom: false,
+      keyboard: false,
+    });
+    mapRef.current = map;
+
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      maxZoom: 19,
+    }).addTo(map);
+
+    // Red teardrop pin at destination
+    const pinIcon = L.divIcon({
+      className: "nlhc-pin",
+      html: `<svg width="20" height="26" viewBox="0 0 20 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 0C4.477 0 0 4.477 0 10c0 7 10 16 10 16s10-9 10-16c0-5.523-4.477-10-10-10z" fill="#ef4444" style="filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25));"/>
+        <circle cx="10" cy="10" r="3.5" fill="#ffffff"/>
+      </svg>`,
+      iconSize: [20, 26],
+      iconAnchor: [10, 26],
+    });
+    L.marker([coords.lat, coords.lng], { icon: pinIcon }).addTo(map);
+
+    // Force size recalc once mounted
+    setTimeout(() => map.invalidateSize(), 0);
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, [coords]);
+
+  // No postcode or geocode failed → fallback gradient background
+  if (!coords) {
+    return (
+      <div
+        className="absolute inset-0 flex items-center justify-center"
+        style={{
+          background: "linear-gradient(135deg, #eef4fb, #e2eef9)",
+        }}
+      >
+        {loading && (
+          <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600, letterSpacing: "0.05em" }}>
+            LOADING MAP…
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return <div ref={containerRef} className="absolute inset-0" style={{ zIndex: 0 }} />;
+}
