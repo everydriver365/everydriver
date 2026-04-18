@@ -110,6 +110,7 @@ import { OfflineBanner } from "@/components/instructor/OfflineBanner";
 import { useOfflinePrefetch } from "@/hooks/useOfflinePrefetch";
 import instructorBg from "@/assets/instructor-bg-signs.png";
 import dsmLogo from "@/assets/dsm-logo.png";
+import { MobileBlueHeader } from "@/components/instructor/MobileBlueHeader";
 const sidebarGroups = [
   {
     label: "TEACHING",
