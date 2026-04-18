@@ -123,11 +123,16 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
   const lessonCount = isTomorrow ? dayLessonCount : (overview?.lessonCount ?? 0);
   const totalHours = isTomorrow ? dayTotalHours : (overview?.totalHours ?? 0);
   // Earnings: prefer per-lesson amount_due sum (matches the lessons shown);
-  // fall back to overview's hourly-rate calc for Today when no amount_due is set.
+  // fall back to hourly-rate × hours for the selected day when no amount_due is set.
+  // Derive hourly rate from today's overview (expectedEarnings / totalHours) so Tomorrow uses the same rate.
+  const derivedHourlyRate =
+    overview && overview.totalHours > 0
+      ? overview.expectedEarnings / overview.totalHours
+      : 35;
   const earnings = dayHasAnyAmount
     ? Math.round(dayAmountDueSum)
     : isTomorrow
-    ? 0
+    ? Math.round(dayTotalHours * derivedHourlyRate)
     : (overview?.expectedEarnings ?? 0);
 
   return (
