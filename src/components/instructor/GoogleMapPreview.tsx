@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { GoogleMap, useJsApiLoader, MarkerF } from "@react-google-maps/api";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchGoogleMapsKey } from "@/lib/googleMapsLoader";
 import { Loader2, X, Navigation } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface GoogleMapPreviewProps {
   postcode: string;
@@ -44,9 +46,18 @@ export function GoogleMapPreview({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [open, setOpen] = useState(false);
+  const [apiKey, setApiKey] = useState<string>("");
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchGoogleMapsKey()
+      .then((k) => { if (!cancelled) setApiKey(k || ""); })
+      .catch(() => { if (!cancelled) setApiKey(""); });
+    return () => { cancelled = true; };
+  }, []);
 
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
+    googleMapsApiKey: apiKey,
   });
 
   useEffect(() => {
@@ -86,7 +97,7 @@ export function GoogleMapPreview({
     if (dest) window.open(`https://www.google.com/maps/dir/?api=1&destination=${dest}`, "_blank");
   };
 
-  if (loading || !isLoaded) {
+  if (loading || !apiKey || !isLoaded) {
     return (
       <div
         className={`flex items-center justify-center bg-muted ${className}`}
@@ -124,6 +135,12 @@ export function GoogleMapPreview({
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="p-0 max-w-3xl w-[95vw] h-[80vh] overflow-hidden">
+          <VisuallyHidden>
+            <DialogTitle>Pickup location map</DialogTitle>
+            <DialogDescription>
+              Interactive map showing the pupil pickup location.
+            </DialogDescription>
+          </VisuallyHidden>
           <div className="relative w-full h-full">
             <GoogleMap
               mapContainerStyle={{ width: "100%", height: "100%" }}
