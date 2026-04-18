@@ -9,9 +9,10 @@ import {
   MapPin,
   Plus,
 } from "lucide-react";
-import { format, parse } from "date-fns";
+import { format, parse, addDays } from "date-fns";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
-import { useTodayRemainingLessons, type TodayLesson } from "@/hooks/useTodayRemainingLessons";
+import { type TodayLesson } from "@/hooks/useTodayRemainingLessons";
+import { useDayLessons } from "@/hooks/useDayLessons";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -56,34 +57,42 @@ function deriveState(lesson: TodayLesson, nowSec: number, nextUpcomingId: string
 }
 
 export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
-  const { data: overview, isLoading: overviewLoading } = useTodayOverview(instructorId);
-  const { data: lessons = [], isLoading: lessonsLoading } = useTodayRemainingLessons(instructorId);
   const [tab, setTab] = useState<"today" | "tomorrow">("today");
   const [addOpen, setAddOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const now = new Date();
+  const targetDate = tab === "today" ? now : addDays(now, 1);
+  const isTomorrow = tab === "tomorrow";
+
+  const { data: overview, isLoading: overviewLoading } = useTodayOverview(instructorId);
+  const { data: lessons = [], isLoading: lessonsLoading } = useDayLessons(instructorId, targetDate);
+
   const nowSec = now.getHours() * 3600 + now.getMinutes() * 60;
 
   const nextUpcomingId = useMemo(() => {
+    if (isTomorrow) {
+      const first = lessons.find((l) => l.status !== "completed");
+      return first?.id || null;
+    }
     const upcoming = lessons.find((l) => {
       if (l.status === "completed") return false;
       const [h, m] = l.startTime.split(":").map(Number);
       return h * 3600 + m * 60 >= nowSec;
     });
     return upcoming?.id || null;
-  }, [lessons, nowSec]);
+  }, [lessons, nowSec, isTomorrow]);
 
   const minutesUntilNext = useMemo(() => {
-    if (!nextUpcomingId) return null;
+    if (isTomorrow || !nextUpcomingId) return null;
     const next = lessons.find((l) => l.id === nextUpcomingId);
     if (!next) return null;
     const [h, m] = next.startTime.split(":").map(Number);
     return Math.max(0, Math.round((h * 60 + m) - (now.getHours() * 60 + now.getMinutes())));
-  }, [lessons, nextUpcomingId]);
+  }, [lessons, nextUpcomingId, isTomorrow]);
 
-  const todayLabel = format(now, "EEE d MMM");
-  const isLoading = overviewLoading || lessonsLoading;
+  const dateLabel = format(targetDate, "EEE d MMM");
+  const isLoading = (tab === "today" && overviewLoading) || lessonsLoading;
   const hasLessons = lessons.length > 0;
 
   const completedCount = overview?.completedCount ?? 0;
@@ -139,7 +148,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             </h3>
             <div className="flex items-center gap-1.5 mt-1 flex-wrap">
               <span style={{ fontSize: 12, color: "#6b7280" }}>
-                {todayLabel} · {lessonCount} lesson{lessonCount === 1 ? "" : "s"}
+                {dateLabel} · {lessons.length} lesson{lessons.length === 1 ? "" : "s"}
               </span>
               {totalHours > 0 && (
                 <span
