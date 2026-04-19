@@ -105,7 +105,6 @@ import { CompactHomeView } from "@/components/instructor/CompactHomeView";
 import { BestMateHomeView } from "@/components/instructor/BestMateHomeView";
 import { MissionControlHomeView } from "@/components/instructor/MissionControlHomeView";
 import { WidgetsHomeView } from "@/components/instructor/WidgetsHomeView";
-import { RedesignedMobileHome } from "@/components/instructor/redesign/RedesignedMobileHome";
 
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { HomeTodaySchedule } from "@/components/instructor/HomeTodaySchedule";
@@ -443,7 +442,170 @@ export function InstructorMobileHome({
           instructor={instructor}
         />
       ) : (
-      <RedesignedMobileHome instructorId={instructorId} firstName={firstName} />
+      <>
+      {/* 1. Hero Banner */}
+      <HomepageHero
+        firstName={firstName}
+        heroImageUrl={personalHeroUrl || content?.hero_image_url}
+        profileImageUrl={instructor?.profile_image_url}
+        weeklyLessonsScheduled={weeklyGoals?.lessonsScheduled || 0}
+        weeklyLessonsCompleted={weeklyGoals?.lessonsCompleted || 0}
+        weeklyLessonsTotal={weeklyGoals?.lessonsThisWeek || 0}
+        todayCompleted={todayOverview?.completedCount || 0}
+        todayTotal={todayOverview?.lessonCount || 0}
+        monthlyCompleted={monthlyGoals?.lessonsCompleted || 0}
+        monthlyScheduled={monthlyGoals?.lessonsScheduled || 0}
+        monthlyTotal={monthlyGoals?.lessonsThisMonth || 0}
+        weeklyEarnings={weeklyGoals?.earningsThisWeek || 0}
+        unreadMessages={pupilMsgCount || 0}
+        pendingJobs={pendingJobsCount}
+      />
+
+      {/* Sticky next-up bar */}
+      <AnimatePresence>
+        {showFAB && nextLesson && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-2 left-3 right-3 z-50 bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between shadow-lg rounded-2xl"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <Timer className="h-3.5 w-3.5 shrink-0" />
+              <span className="text-[10px] font-medium uppercase tracking-wider text-yellow-300 mr-1">Next Up</span>
+              <span className="text-sm font-semibold truncate">{nextLesson.pupilName}</span>
+            </div>
+            <span className="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full shrink-0">
+              {nextLesson.minutesUntil <= 0 ? "Now" : nextLesson.minutesUntil < 60 ? `${nextLesson.minutesUntil}m` : `${Math.floor(nextLesson.minutesUntil / 60)}h ${nextLesson.minutesUntil % 60}m`}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Morning Briefing — prominent position above activity tiles */}
+      <MorningBriefingCard instructorId={instructorId} />
+
+
+
+      {/* Alerts */}
+      <div className="px-4 mt-3">
+        <WeatherAlertBanner
+          trafficAlerts={trafficAlerts}
+          onDismissTraffic={dismissAlert}
+          nextLessonMinutesUntil={nextLesson?.minutesUntil}
+          nextLessonEtaMinutes={etaToNextLesson > 0 ? etaToNextLesson : null}
+          nextLessonPupilName={nextLesson?.pupilName}
+          nextLessonPupilPhone={nextLesson?.pupilPhone}
+        />
+      </div>
+
+      {/* 2. Activity Tiles Grid */}
+      <ActivityTilesGrid
+        pendingJobsCount={pendingJobsCount}
+        unreadMessagesCount={pupilMsgCount}
+        testRequestsCount={testSwapCount}
+        gapSlotsCount={gapSuggestions?.length || 0}
+      />
+
+      {/* Telematics Tile */}
+      <TelematicsTile />
+
+      <div className="px-4">
+        <CelebrationConfetti
+          trigger={showConfetti}
+          onComplete={() => setShowConfetti(false)}
+        />
+
+        {alerts.filter(a => a.type !== "weather").length > 0 && (
+          <DrivingAlertsStrip
+            alerts={alerts.filter(a => a.type !== "weather")}
+            onDismiss={dismissAlert}
+            location={alertsLocation}
+            className="mt-4"
+          />
+        )}
+
+        
+
+
+
+      </div>
+
+      {/* Pupil Milestone Feed */}
+      <div className="px-4">
+        <PupilMilestoneFeed instructorId={instructorId} />
+      </div>
+
+      {/* 4. Your Day */}
+      <div className="px-4">
+
+        {/* Empty state or lessons */}
+        {!nextLesson && (!todayLessons || todayLessons.length === 0) && (todayOverview?.lessonCount || 0) === 0 ? (
+          <QuietDayEmpty className="mt-4" />
+        ) : (
+          <>
+            {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
+              <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Your Day</p>
+            )}
+
+            {nextLesson && (
+              <div className="mt-2">
+                <NextUpTile
+                  lessonId={nextLesson.lessonId}
+                  pupilId={nextLesson.pupilId}
+                  pupilName={nextLesson.pupilName}
+                  pupilProfileImage={nextLesson.pupilProfileImage}
+                  pupilPhone={nextLesson.pupilPhone}
+                  lessonDate={nextLesson.lessonDate}
+                  pickupPostcode={nextLesson.pickupPostcode}
+                  pickupLocation={nextLesson.pickupLocation}
+                  startTime={nextLesson.startTime}
+                  minutesUntil={nextLesson.minutesUntil}
+                  accountBalance={nextLesson.accountBalance}
+                  prepaidHours={nextLesson.prepaidHours}
+                  durationMinutes={nextLesson.durationMinutes}
+                  instructorId={instructorId}
+                  checkInStatus={nextLesson.checkInStatus}
+                  lastLessonPlan={nextLesson.lastLessonPlan}
+                />
+              </div>
+            )}
+
+            <div className="mt-4">
+              <HomeTodaySchedule instructorId={instructorId} />
+            </div>
+
+          </>
+        )}
+
+        {/* 7. Quick Access — Swipeable Grid */}
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Quick Access</p>
+        <SwipeableQuickAccess />
+
+        {/* Impact Alerts */}
+        <div className="mt-4">
+          <ImpactAlertCard instructorId={instructorId} />
+        </div>
+
+        {/* Insights Tiles */}
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Insights</p>
+        <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
+
+        {/* Vehicle Health & Idle Time */}
+        <VehicleHealthCard instructorId={instructorId} className="mt-3" />
+        <IdleTimeCostCard instructorId={instructorId} className="mt-3" />
+
+        {/* End of Day Summary */}
+        <EndOfDaySummary instructorId={instructorId} />
+
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Upcoming Events</p>
+        <UpcomingEventsCard className="mb-6" />
+
+
+        {/* 10. Floating Session Bar */}
+        <FloatingSessionBar instructorId={instructorId} />
+      </div>
+      </>
       )}
       </div>
     </PullToRefresh>
