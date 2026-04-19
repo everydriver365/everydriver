@@ -1,27 +1,39 @@
 
-## Issue
-The "Next lesson", "Today's schedule", and "Quick actions" sections render narrower than the top tiles (Action needed / Activity tiles / Telematics) because they get **double horizontal padding**:
+The user reports that in dark mode, some tiles still appear light. Looking at `ActivityTilesGrid.tsx`, the empty-state "All clear" card uses hardcoded colors (`#FFFFFF` bg, `#D3D1C7` border, `#2C2C2A` text) instead of DSM theme tokens. Same issue likely in other tile components.
 
-- `InstructorMobileHome.tsx` wraps them in `<div className="px-4">` (16px)
-- Each child component (`NextUpTile`, `HomeTodaySchedule`, `SwipeableQuickAccess`) also applies its own `padding: "0 16px"` internally
+Let me check what's hardcoded.
 
-Result: 32px total horizontal padding vs 16px on the top tiles — visible width inconsistency.
+## The Problem
 
-The top tiles (`WarmHomeTiles`, `ActivityTilesGrid`, `TelematicsTile`) all manage their own 16px padding without an outer wrapper.
+Several tile/card components still use hardcoded hex colors instead of the `--dsm-*` theme tokens, so they don't react to dark mode:
 
-## Fix (single file)
+1. **`ActivityTilesGrid.tsx`** — "All clear" empty state card uses `#FFFFFF`, `#D3D1C7`, `#2C2C2A` hardcoded.
+2. **`InsightTilesGrid.tsx`** — tiles render fine via `WarmTile` but icons have no `iconColor`, falling back to category stroke colors which may not contrast well on dark navy.
+3. **Other instructor tiles** likely affected: `TelematicsTile`, any custom cards on Schedule / Pupils / Money / Menu pages still using `#F7F5F0`, `#FFFFFF`, `#2C2C2A`, `#D3D1C7` literals.
 
-**`src/components/instructor/InstructorMobileHome.tsx`** — remove the outer `px-4` wrappers for these three sections so the children's own 16px padding is the only source of horizontal inset. They will then align flush with the top tiles.
+## The Fix
 
-Specifically, around lines 558–606:
+**Sweep all hardcoded warm-paper colors → DSM tokens** inside the instructor portal:
 
-1. Change the outer `<div className="px-4">` wrapping the Your Day block (Next lesson + HomeTodaySchedule) to a plain `<div>` (drop `px-4`).
-2. The "Quick actions" section header (`SectionHeader`) is currently un-padded inside that `px-4` wrapper — wrap just the `<SectionHeader title="Quick actions" …/>` in its own `style={{ padding: "0 16px" }}` so it stays aligned, since `SwipeableQuickAccess` already self-pads.
-3. Same for the empty state (`<QuietDayEmpty />`) — give it its own padded wrapper since it previously inherited `px-4`.
+| Hardcoded | Replace with |
+|---|---|
+| `#FFFFFF` (card bg) | `hsl(var(--dsm-card))` |
+| `#F7F5F0` (page bg) | `hsl(var(--dsm-bg))` |
+| `#D3D1C7` (border) | `hsl(var(--dsm-border))` |
+| `#2C2C2A` (primary text) | `hsl(var(--dsm-text))` |
+| `#888780` / `#5F5E5A` (secondary text) | `hsl(var(--dsm-text-secondary))` |
+| `#A32D2D` (red) | `hsl(var(--dsm-accent-red))` |
 
-No changes to `NextUpTile.tsx`, `HomeTodaySchedule.tsx`, or `SwipeableQuickAccess.tsx` — their internal 16px padding is already correct and matches the top tiles.
+### Files to update
+1. `src/components/instructor/ActivityTilesGrid.tsx` — "All clear" empty card.
+2. `src/components/instructor/TelematicsTile.tsx` — verify card surface uses tokens.
+3. `src/components/instructor/InsightTilesGrid.tsx` — add `iconBg` + `iconColor` so icons have proper contrast in both modes (matching the filled SF-style used in `ActivityTilesGrid`).
+4. Audit `src/pages/instructor/**` and `src/components/instructor/**` for any remaining hardcoded `#FFFFFF` / `#F7F5F0` / `#D3D1C7` / `#2C2C2A` and replace with tokens.
+5. Audit page-level wrappers (Schedule, Pupils, Money, Menu, Settings) — replace `background: "#F7F5F0"` with `hsl(var(--dsm-bg))`.
 
-## Untouched
-- All data hooks, routes, tap behaviour
-- All visual styling within the tiles themselves
-- All other sections (`PupilMilestoneFeed`, `ImpactAlertCard`, etc.) keep their existing `px-4`
+### Out of scope
+- Logic, routing, data, layout, and category stroke palette stay unchanged.
+- Marketing / pupil / school portals untouched (instructor-only per prior scope).
+
+### Verification
+After the sweep, toggle the sun/moon on Home, Schedule, Pupils, Money, Menu, Telematics, Insights — every surface should flip to navy `#162035` cards on `#0F1B2D` background with no white islands.
