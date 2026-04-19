@@ -155,6 +155,8 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
     return `${Math.round(hours / 24)}d`;
   })();
 
+  const totalMinutes = lessons.reduce((sum, l) => sum + (l.durationMinutes || 0), 0);
+
   return (
     <div
       style={{
@@ -164,125 +166,125 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
         fontVariantNumeric: "tabular-nums",
       }}
     >
-      {/* ── Section header (sits on warm paper, with day toggle as right slot) ── */}
+      {/* ── Section header (sits on warm paper, above the tray) ── */}
       <SectionHeader
         title={isTomorrow ? "Tomorrow's schedule" : "Today's schedule"}
         category="schedule"
-        rightSlot={
-          <div
-            className="flex shrink-0"
-            style={{
-              background: PAL.card,
-              border: `0.5px solid ${PAL.hairline}`,
-              borderRadius: 999,
-              padding: 3,
-            }}
-          >
-            {(["today", "tomorrow"] as const).map((t) => {
-              const active = tab === t;
-              return (
-                <button
-                  key={t}
-                  onClick={() => setTab(t)}
-                  style={{
-                    background: active ? PAL.toggleActive : "transparent",
-                    color: active ? "#FFFFFF" : PAL.textMuted,
-                    fontSize: 11,
-                    fontWeight: 500,
-                    padding: "4px 10px",
-                    borderRadius: 999,
-                    transition: "all 0.15s",
-                  }}
-                >
-                  {t === "today" ? "Today" : "Tomorrow"}
-                </button>
-              );
-            })}
-          </div>
+        titleColor={PAL.textNavyDeep}
+        meta={
+          isLoading
+            ? undefined
+            : `${dateLabel} · ${lessonCount} lesson${lessonCount === 1 ? "" : "s"}`
         }
+        metaLoading={isLoading}
       />
 
       <div style={{ padding: "0 16px" }}>
-
-      {/* ── Date / summary line ── */}
-      <div
-        className="flex items-center"
-        style={{ marginBottom: 14, gap: 8, flexWrap: "wrap" }}
-      >
-        {isLoading ? (
-          <SkeletonBlock width={140} />
-        ) : (
-          <span style={{ fontSize: 12, color: PAL.textMuted }}>
-            {dateLabel} · {lessonCount} lesson{lessonCount === 1 ? "" : "s"}
-          </span>
-        )}
-        {!isLoading && totalHours > 0 && (
-          <span
-            style={{
-              background: PAL.accentGreenSoft,
-              color: PAL.accentGreen,
-              fontSize: 10,
-              fontWeight: 500,
-              padding: "2px 7px",
-              borderRadius: 999,
-            }}
-          >
-            {totalHoursLabel(totalHours)} total
-          </span>
-        )}
-      </div>
-
-      {/* ── Stats row (3 tiles) ── */}
-      <div className="grid grid-cols-3" style={{ gap: 8, marginBottom: 14 }}>
-        {[
-          {
-            label: "LESSONS",
-            value: isLoading ? null : String(lessonCount),
-            color: PAL.text,
-          },
-          {
-            label: "EARNINGS",
-            value: isLoading ? null : `£${earnings}`,
-            color: PAL.accentGreen,
-          },
-          {
-            label: "NEXT IN",
-            value: isLoading ? null : nextInLabel ?? "—",
-            color: nextInLabel ? PAL.text : PAL.textSubtle,
-          },
-        ].map((s) => (
-          <div
-            key={s.label}
-            style={{
-              background: PAL.card,
-              border: `0.5px solid ${PAL.hairline}`,
-              borderRadius: 12,
-              padding: 12,
-            }}
-          >
+        {/* ── Cream tray ── */}
+        <div
+          style={{
+            background: PAL.trayBg,
+            border: `0.5px solid ${PAL.trayBorder}`,
+            borderRadius: 16,
+            padding: 12,
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+          }}
+        >
+          {/* ── Day toggle + duration chip ── */}
+          <div className="flex items-center justify-between">
             <div
+              className="flex shrink-0"
               style={{
-                fontSize: 10,
-                color: PAL.textSubtle,
-                letterSpacing: 0.5,
-                marginBottom: 6,
-                fontWeight: 500,
+                background: PAL.card,
+                border: `0.5px solid ${PAL.hairline}`,
+                borderRadius: 999,
+                padding: 3,
               }}
             >
-              {s.label}
+              {(["today", "tomorrow"] as const).map((t) => {
+                const active = tab === t;
+                return (
+                  <button
+                    key={t}
+                    onClick={() => setTab(t)}
+                    style={{
+                      background: active ? PAL.toggleActive : "transparent",
+                      color: active ? "#FFFFFF" : PAL.textMuted,
+                      fontSize: 11,
+                      fontWeight: 500,
+                      padding: "4px 10px",
+                      borderRadius: 999,
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    {t === "today" ? "Today" : "Tomorrow"}
+                  </button>
+                );
+              })}
             </div>
-            {s.value == null ? (
-              <SkeletonBlock width={48} height={20} />
-            ) : (
-              <div
-                style={{ fontSize: 20, fontWeight: 500, color: s.color, lineHeight: 1 }}
+            {!isLoading && totalMinutes > 0 && (
+              <span
+                style={{
+                  background: PAL.accentBlueSoft,
+                  color: PAL.accentBlue,
+                  fontSize: 10,
+                  fontWeight: 500,
+                  padding: "3px 8px",
+                  borderRadius: 999,
+                }}
               >
-                {s.value}
-              </div>
+                {totalDurationLabel(totalMinutes)}
+              </span>
             )}
           </div>
-        ))}
-      </div>
+
+          {/* ── Inline summary strip ── */}
+          <div
+            className="flex items-center"
+            style={{
+              gap: 14,
+              paddingBottom: 10,
+              borderBottom: `0.5px solid ${PAL.trayBorder}`,
+            }}
+          >
+            {isLoading ? (
+              <SkeletonBlock width={180} height={16} />
+            ) : (
+              <>
+                <span style={{ display: "inline-flex", alignItems: "baseline", gap: 4 }}>
+                  <span style={{ fontSize: 16, fontWeight: 500, color: PAL.textNavyDeep, lineHeight: 1 }}>
+                    {lessonCount}
+                  </span>
+                  <span style={{ fontSize: 11, color: PAL.textSubtle }}>
+                    {lessonCount === 1 ? "lesson" : "lessons"}
+                  </span>
+                </span>
+                <span style={{ display: "inline-flex", alignItems: "baseline", gap: 4 }}>
+                  <span style={{ fontSize: 16, fontWeight: 500, color: PAL.textNavyDeep, lineHeight: 1 }}>
+                    £{formatCurrency(earnings)}
+                  </span>
+                  <span style={{ fontSize: 11, color: PAL.textSubtle }}>earned</span>
+                </span>
+                {nextInLabel && (
+                  <span
+                    style={{
+                      marginLeft: "auto",
+                      display: "inline-flex",
+                      alignItems: "baseline",
+                      gap: 4,
+                    }}
+                  >
+                    <span style={{ fontSize: 11, color: PAL.textSubtle }}>Next in</span>
+                    <span style={{ fontSize: 16, fontWeight: 500, color: PAL.textNavyDeep, lineHeight: 1 }}>
+                      {nextInLabel}
+                    </span>
+                  </span>
+                )}
+              </>
+            )}
+          </div>
 
       {/* ── Lesson timeline card ── */}
       <div
