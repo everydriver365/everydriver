@@ -113,12 +113,12 @@ export function MobileBlueHeader({
 
         {/* Top nav row */}
         <div className="relative flex items-center justify-between px-3 py-3 min-h-[64px] gap-2">
-          {/* Left: bell or back */}
-          <div className="flex items-center">
+          {/* Left: bell + SOS */}
+          <div className="flex items-center gap-[10px]">
             {showBackButton ? (
               <button
                 onClick={onBack}
-                className="h-7 w-7 rounded-full flex items-center justify-center"
+                className="h-9 w-9 rounded-full flex items-center justify-center"
                 style={{
                   background: "rgba(255,255,255,0.18)",
                   backdropFilter: "blur(12px)",
@@ -126,12 +126,12 @@ export function MobileBlueHeader({
                   border: "0.5px solid rgba(255,255,255,0.35)",
                 }}
               >
-                <ChevronLeft className="h-4 w-4 text-white" strokeWidth={2.4} />
+                <ChevronLeft className="h-5 w-5 text-white" strokeWidth={2.4} />
               </button>
             ) : (
               <button
                 onClick={() => navigate("/instructor/notifications")}
-                className="relative h-7 w-7 rounded-full flex items-center justify-center"
+                className="relative h-9 w-9 rounded-full flex items-center justify-center"
                 style={{
                   background: "rgba(255,255,255,0.18)",
                   backdropFilter: "blur(12px)",
@@ -140,7 +140,7 @@ export function MobileBlueHeader({
                 }}
                 aria-label="Notifications"
               >
-                <Bell className="h-[15px] w-[15px] text-white" strokeWidth={2.2} />
+                <Bell className="h-[18px] w-[18px] text-white" strokeWidth={2.2} />
                 {notifCount > 0 && (
                   <span
                     className="absolute flex items-center justify-center"
@@ -163,11 +163,26 @@ export function MobileBlueHeader({
                 )}
               </button>
             )}
+            <button
+              onClick={onSOS}
+              className="flex items-center justify-center"
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: "50%",
+                background: "#ff3b30",
+                boxShadow: "0 2px 10px rgba(255,59,48,0.5)",
+                border: "1.5px solid rgba(255,255,255,0.5)",
+              }}
+              aria-label="SOS"
+            >
+              <span className="text-[10px] font-extrabold text-white leading-none">SOS</span>
+            </button>
           </div>
 
           {/* Centre: Logo + wordmark stack */}
-          <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
-            <img src={dsmLogo} alt="DSM" className="h-6 w-auto object-contain" />
+          <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
+            <img src={dsmLogo} alt="DSM" className="h-7 w-auto object-contain" />
             <span
               className="text-white/70 mt-[2px]"
               style={{
@@ -182,29 +197,14 @@ export function MobileBlueHeader({
             </span>
           </div>
 
-          {/* Right: SOS, +, menu */}
-          <div className="flex items-center gap-[6px]">
-            <button
-              onClick={onSOS}
-              className="flex items-center justify-center"
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: "50%",
-                background: "#ff3b30",
-                boxShadow: "0 2px 8px rgba(255,59,48,0.5)",
-                border: "1px solid rgba(255,255,255,0.5)",
-              }}
-              aria-label="SOS"
-            >
-              <span className="text-[8px] font-extrabold text-white leading-none">SOS</span>
-            </button>
+          {/* Right: +, menu */}
+          <div className="flex items-center gap-[10px]">
             <button
               onClick={onPlus}
               className="flex items-center justify-center"
               style={{
-                width: 28,
-                height: 28,
+                width: 34,
+                height: 34,
                 borderRadius: "50%",
                 background: "rgba(255,255,255,0.22)",
                 backdropFilter: "blur(12px)",
@@ -213,14 +213,14 @@ export function MobileBlueHeader({
               }}
               aria-label="Quick Actions"
             >
-              <Plus className="h-[15px] w-[15px] text-white" strokeWidth={2.6} />
+              <Plus className="h-[18px] w-[18px] text-white" strokeWidth={2.6} />
             </button>
             <button
               onClick={onMenu}
               className="flex items-center justify-center"
               style={{
-                width: 28,
-                height: 28,
+                width: 34,
+                height: 34,
                 borderRadius: "50%",
                 background: "rgba(255,255,255,0.18)",
                 backdropFilter: "blur(12px)",
@@ -229,7 +229,7 @@ export function MobileBlueHeader({
               }}
               aria-label="Menu"
             >
-              <Menu className="h-[15px] w-[15px] text-white" strokeWidth={2.2} />
+              <Menu className="h-[18px] w-[18px] text-white" strokeWidth={2.2} />
             </button>
           </div>
         </div>
