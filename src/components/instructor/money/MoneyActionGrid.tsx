@@ -1,30 +1,14 @@
-import { motion } from "framer-motion";
 import { 
   QrCode, 
   Wallet, 
   Receipt, 
   Gift, 
-  TrendingUp, 
-  FileText,
   Car,
   Calculator
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { cn } from "@/lib/utils";
 import { haptics } from "@/lib/haptics";
-
-interface ActionItem {
-  id: string;
-  label: string;
-  sublabel?: string;
-  icon: React.ElementType;
-  href?: string;
-  onClick?: () => void;
-  iconColor: string;
-  iconBg: string;
-  size?: "normal" | "large";
-  value?: string | number;
-}
+import { WarmTile, WarmTileGrid, WarmTileCategory } from "../WarmTile";
 
 interface MoneyActionGridProps {
   bonusEarned: number;
@@ -32,149 +16,81 @@ interface MoneyActionGridProps {
 }
 
 export function MoneyActionGrid({ bonusEarned, onTakePayment }: MoneyActionGridProps) {
-  const actions: ActionItem[] = [
+  const actions: Array<{
+    id: string;
+    label: string;
+    sublabel: string;
+    icon: typeof QrCode;
+    category: WarmTileCategory;
+    href?: string;
+    onClick?: () => void;
+    primary?: boolean;
+  }> = [
     {
       id: "take-payment",
-      label: "Take Payment",
+      label: "Take payment",
       sublabel: "QR or manual",
       icon: QrCode,
-      onClick: onTakePayment,
-      iconColor: "text-primary",
-      iconBg: "bg-primary/10",
-      size: "large",
+      category: "money",
+      onClick: () => { haptics.selection(); onTakePayment(); },
+      primary: true,
     },
     {
       id: "accounts",
       label: "Accounts",
       sublabel: "Income & outgoings",
       icon: Wallet,
+      category: "money",
       href: "/instructor/accounts",
-      iconColor: "text-primary",
-      iconBg: "bg-primary/10",
     },
     {
       id: "expenses",
       label: "Expenses",
       sublabel: "Track costs",
       icon: Receipt,
+      category: "money",
       href: "/instructor/expenses",
-      iconColor: "text-primary",
-      iconBg: "bg-primary/10",
     },
     {
       id: "bonus",
       label: "Bonus",
-      value: `£${bonusEarned}`,
+      sublabel: `£${bonusEarned} earned`,
       icon: Gift,
+      category: "money",
       href: "/instructor/bonus",
-      iconColor: "text-primary",
-      iconBg: "bg-primary/10",
     },
     {
       id: "mileage",
       label: "Mileage",
       sublabel: "Tax tracker",
       icon: Car,
+      category: "money",
       href: "/instructor/mileage",
-      iconColor: "text-primary",
-      iconBg: "bg-primary/10",
     },
     {
       id: "tax",
-      label: "Tax Summary",
+      label: "Tax summary",
       sublabel: "HMRC ready",
       icon: Calculator,
+      category: "money",
       href: "/instructor/accounts?tab=tax",
-      iconColor: "text-primary",
-      iconBg: "bg-primary/10",
     },
   ];
 
-  const handleClick = (action: ActionItem) => {
-    haptics.selection();
-    if (action.onClick) {
-      action.onClick();
-    }
-  };
-
   return (
-    <div className="grid grid-cols-3 gap-2.5">
-      {actions.map((action, index) => {
-        const Icon = action.icon;
-        const isLarge = action.size === "large";
-        
-        const content = (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 + index * 0.05 }}
-            whileTap={{ scale: 0.95 }}
-            className={cn(
-              "relative overflow-hidden p-3.5 transition-shadow",
-              isLarge && "col-span-2 row-span-1"
-            )}
-            style={{ backgroundColor: '#FFFFFF', borderRadius: 14, boxShadow: '0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)' }}
-          >
-            <div className={cn(
-              "relative z-10 flex",
-              isLarge ? "flex-row items-center gap-3" : "flex-col items-start gap-2"
-            )}>
-              <div className={cn(
-                "flex items-center justify-center",
-                action.iconBg
-              )} style={{ width: isLarge ? 48 : 44, height: isLarge ? 48 : 44, borderRadius: 12 }}>
-                <Icon className={cn(
-                  action.iconColor,
-                  isLarge ? "h-6 w-6" : "h-4.5 w-4.5"
-                )} />
-              </div>
-              
-              <div className={isLarge ? "flex-1" : ""}>
-                {action.value && (
-                  <p className="text-xl font-bold text-foreground mb-0.5">{action.value}</p>
-                )}
-                <p className={cn(
-                  "font-semibold text-foreground",
-                  isLarge ? "text-base" : "text-xs"
-                )}>
-                  {action.label}
-                </p>
-                {action.sublabel && (
-                  <p className={cn(
-                    "text-muted-foreground",
-                    isLarge ? "text-xs" : "text-[10px]"
-                  )}>
-                    {action.sublabel}
-                  </p>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        );
-
-        if (action.href) {
-          return (
-            <Link 
-              key={action.id} 
-              to={action.href}
-              className={cn(isLarge && "col-span-2")}
-              onClick={() => haptics.selection()}
-            >
-              {content}
-            </Link>
-          );
-        }
-
-        return (
-          <button
-            key={action.id}
-            onClick={() => handleClick(action)}
-            className={cn("text-left", isLarge && "col-span-2")}
-          >
-            {content}
-          </button>
-        );
-      })}
-    </div>
+    <WarmTileGrid>
+      {actions.map((action) => (
+        <WarmTile
+          key={action.id}
+          icon={action.icon}
+          title={action.label}
+          subtitle={action.sublabel}
+          category={action.category}
+          primary={action.primary}
+          to={action.href}
+          onClick={action.onClick}
+        />
+      ))}
+    </WarmTileGrid>
   );
 }

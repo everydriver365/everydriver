@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Briefcase, MessageSquare, ClipboardCheck, CalendarPlus, CheckCircle2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { BestMateTile } from "@/components/ui/BestMateTile";
+import { WarmTile, WarmTileGrid, WarmTileCategory } from "./WarmTile";
 
 interface ActivityTilesGridProps {
   pendingJobsCount: number;
@@ -11,55 +11,48 @@ interface ActivityTilesGridProps {
   gapSlotsCount: number;
 }
 
-type TileColor = "purple" | "red" | "blue" | "emerald" | "amber" | "indigo";
-
 const tileConfig: {
   title: string;
   icon: LucideIcon;
-  color: TileColor;
+  category: WarmTileCategory;
   route: string;
   key: "pendingJobsCount" | "unreadMessagesCount" | "testRequestsCount" | "gapSlotsCount";
-  ctaLabel: string;
   emptySubtitle: string;
   filledSubtitle: (n: number) => string;
 }[] = [
   {
-    title: "Job Offers",
+    title: "Job offers",
     icon: Briefcase,
-    color: "red",
+    category: "urgent",
     route: "/instructor/jobs",
     key: "pendingJobsCount",
-    ctaLabel: "View Jobs",
     emptySubtitle: "No pending jobs",
     filledSubtitle: (n) => `${n} pending ${n === 1 ? "job" : "jobs"}`,
   },
   {
     title: "Messages",
     icon: MessageSquare,
-    color: "blue",
+    category: "messages",
     route: "/instructor/messages",
     key: "unreadMessagesCount",
-    ctaLabel: "Open Inbox",
     emptySubtitle: "All caught up",
     filledSubtitle: (n) => `${n} unread ${n === 1 ? "chat" : "chats"}`,
   },
   {
     title: "Tests",
     icon: ClipboardCheck,
-    color: "amber",
+    category: "schedule",
     route: "/instructor/test-requests",
     key: "testRequestsCount",
-    ctaLabel: "Review Tests",
     emptySubtitle: "No swap requests",
     filledSubtitle: (n) => `${n} swap ${n === 1 ? "request" : "requests"}`,
   },
   {
-    title: "Fill Gaps",
+    title: "Fill gaps",
     icon: CalendarPlus,
-    color: "emerald",
+    category: "schedule",
     route: "/instructor/gaps",
     key: "gapSlotsCount",
-    ctaLabel: "Fill Gaps",
     emptySubtitle: "No open slots",
     filledSubtitle: (n) => `${n} open ${n === 1 ? "slot" : "slots"}`,
   },
@@ -84,14 +77,23 @@ export function ActivityTilesGrid({
 
   if (allZero) {
     return (
-      <div className="px-4 mt-3">
+      <div style={{ padding: "0 16px", marginTop: 12 }}>
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex items-center justify-center gap-2 py-3 px-4 bg-emerald-50 rounded-2xl shadow-lift"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            padding: "10px 14px",
+            background: "#FFFFFF",
+            border: "0.5px solid #D3D1C7",
+            borderRadius: 12,
+          }}
         >
-          <CheckCircle2 size={18} strokeWidth={2} className="text-emerald-600" />
-          <span className="text-sm font-medium text-emerald-700" style={{ fontFamily: "Inter, sans-serif" }}>
+          <CheckCircle2 size={16} strokeWidth={2} color="#0F6E56" />
+          <span style={{ fontSize: 13, fontWeight: 500, color: "#2C2C2A", fontFamily: "Inter, sans-serif" }}>
             All clear — no actions needed
           </span>
         </motion.div>
@@ -100,23 +102,23 @@ export function ActivityTilesGrid({
   }
 
   return (
-    <div className="px-4 mt-3 grid grid-cols-2 gap-3">
-      {tileConfig.map((tile) => {
-        const count = counts[tile.key];
-        return (
-          <BestMateTile
-            key={tile.title}
-            icon={tile.icon}
-            iconColor={tile.color}
-            value={count > 0 ? (count > 99 ? "99+" : count) : "0"}
-            label={tile.title}
-            subtitle={count > 0 ? tile.filledSubtitle(count) : tile.emptySubtitle}
-            ctaLabel={tile.ctaLabel}
-            onClick={() => navigate(tile.route)}
-            onCtaClick={() => navigate(tile.route)}
-          />
-        );
-      })}
+    <div style={{ marginTop: 12 }}>
+      <WarmTileGrid>
+        {tileConfig.map((tile) => {
+          const count = counts[tile.key];
+          return (
+            <WarmTile
+              key={tile.title}
+              icon={tile.icon}
+              title={tile.title}
+              subtitle={count > 0 ? tile.filledSubtitle(count) : tile.emptySubtitle}
+              category={tile.category}
+              badgeCount={count}
+              onClick={() => navigate(tile.route)}
+            />
+          );
+        })}
+      </WarmTileGrid>
     </div>
   );
 }
