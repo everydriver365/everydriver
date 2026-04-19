@@ -237,25 +237,28 @@ export function NextUpTile({
 
   return (
     <>
-      <div className="w-full overflow-hidden"
+      <div
+        className="w-full"
         style={{
-          background: "#FFFFFF",
-          borderRadius: 20,
-          boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+          background: "#F7F5F0",
+          padding: "0 16px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
           fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
         }}
       >
-        {/* ── MINI MAP with overlaid header (inset like expanded section) ── */}
+        {/* ── MINI MAP CARD (live Google Map preserved) ── */}
         {pickupPostcode && (
-          <div className="px-3 pt-3">
-            <div
-              className="w-full relative rounded-2xl overflow-hidden border"
-              style={{
-                borderColor: "rgba(0,0,0,0.12)",
-                boxShadow: "0 6px 16px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.06)",
-              }}
-            >
-              <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={160} />
+          <div
+            className="w-full relative overflow-hidden"
+            style={{
+              background: "#FFFFFF",
+              borderRadius: 12,
+              border: "0.5px solid #D3D1C7",
+            }}
+          >
+            <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={160} />
               {/* Gradient scrim for legibility */}
               <div
                 className="absolute inset-x-0 top-0 pointer-events-none"
