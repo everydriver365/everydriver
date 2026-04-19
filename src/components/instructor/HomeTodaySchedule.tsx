@@ -286,16 +286,15 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             )}
           </div>
 
-      {/* ── Lesson timeline card ── */}
-      <div
-        style={{
-          background: PAL.card,
-          border: `0.5px solid ${PAL.hairline}`,
-          borderRadius: 12,
-          padding: "14px 16px",
-          marginBottom: 14,
-        }}
-      >
+          {/* ── Lesson timeline card ── */}
+          <div
+            style={{
+              background: PAL.card,
+              border: `0.5px solid ${PAL.hairline}`,
+              borderRadius: 10,
+              padding: "12px 14px",
+            }}
+          >
         {isLoading ? (
           <div className="flex flex-col" style={{ gap: 14 }}>
             {[0, 1, 2].map((i) => (
