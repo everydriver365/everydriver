@@ -70,7 +70,7 @@ const ALL_TILES: QuickTile[] = [
   { title: "Platform updates", subtitle: "News & ideas", icon: Megaphone, category: "neutral", route: "/instructor/platform-updates" },
 ];
 
-const TILES_PER_PAGE = 6;
+const TILES_PER_PAGE = 4;
 
 export function SwipeableQuickAccess() {
   const navigate = useNavigate();
