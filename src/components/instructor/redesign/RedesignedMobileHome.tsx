@@ -13,7 +13,7 @@ import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
-import { useInstructorVehicles } from "@/hooks/useInstructorVehicles";
+import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 
 interface Props {
   instructorId: string | undefined;
@@ -40,17 +40,14 @@ export function RedesignedMobileHome({ instructorId, firstName }: Props) {
     nextLesson && nextLesson.minutesUntil <= 120 ? nextLesson.pickupPostcode : null
   );
 
-  // Vehicle (best-effort; tolerates missing hook shape)
-  let vehicleReg: string | null = null;
-  let vehicleName: string | null = null;
-  try {
-    const { vehicles } = useInstructorVehicles(instructorId) as any;
-    const primary = vehicles?.[0];
-    vehicleReg = primary?.registration || primary?.reg || null;
-    vehicleName = [primary?.make, primary?.model].filter(Boolean).join(" ") || null;
-  } catch {
-    // ignore — telematics panel will show fallback
-  }
+  // Vehicle (best-effort)
+  const { devices, vehicles } = useVehicleHealth() as any;
+  const primaryDevice = devices?.[0];
+  const primaryVehicle = primaryDevice?.vehicle || vehicles?.[0];
+  const vehicleReg: string | null = primaryVehicle?.registration || null;
+  const vehicleName: string | null =
+    [primaryVehicle?.make, primaryVehicle?.model].filter(Boolean).join(" ") || null;
+  const vehicleOnline: boolean = primaryDevice?.is_connected ?? false;
 
   // Re-render every 60s to keep countdown live
   const [, setTick] = useState(0);
