@@ -390,90 +390,115 @@ export function NextUpTile({
           </div>
         )}
 
-        {/* ── MAIN CONTENT ── */}
-        <button onClick={() => setExpanded(!expanded)} className="w-full text-left">
-          <div className="px-4 py-3">
-            <div className="flex items-center gap-3.5">
-              {/* Avatar */}
-              <div className="relative shrink-0">
-                <div className="flex items-center justify-center font-bold text-base overflow-hidden"
-                  style={{ width: 48, height: 48, borderRadius: 16, background: "linear-gradient(135deg, #FF6B6B, #FF8E53)", color: "white" }}>
-                  {pupilProfileImage ? (
-                    <img src={pupilProfileImage} alt={pupilName} className="w-full h-full object-cover" style={{ borderRadius: 16 }} />
-                  ) : getInitials(pupilName)}
-                </div>
-                {/* Online dot */}
-                <span style={{
-                  position: "absolute", bottom: -1, right: -1,
-                  width: 12, height: 12, borderRadius: "50%",
-                  backgroundColor: "#34C759", border: "2px solid #FFFFFF",
-                }} />
-                {totalUnreadBadge > 0 && (
-                  <span className="absolute -top-1 -right-1 flex items-center justify-center"
-                    style={{ minWidth: 18, height: 18, padding: "0 4px", borderRadius: 9, backgroundColor: "#FF3B30", color: "#fff", fontSize: 9, fontWeight: 700, border: "2px solid #FFFFFF" }}>
-                    {totalUnreadBadge}
+        {/* ── STUDENT ROW (white card) ── */}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full text-left flex items-center"
+          style={{
+            background: "#FFFFFF",
+            border: "0.5px solid #D3D1C7",
+            borderRadius: 12,
+            padding: "14px 16px",
+            gap: 12,
+          }}
+        >
+          {/* Avatar */}
+          <div className="relative shrink-0">
+            <div
+              className="flex items-center justify-center overflow-hidden"
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: "50%",
+                background: "#E6F1FB",
+                color: "#185FA5",
+                fontSize: 13,
+                fontWeight: 500,
+              }}
+            >
+              {pupilProfileImage ? (
+                <img src={pupilProfileImage} alt={pupilName} className="w-full h-full object-cover" />
+              ) : getInitials(pupilName)}
+            </div>
+            {/* Online dot */}
+            <span style={{
+              position: "absolute", bottom: -1, right: -1,
+              width: 10, height: 10, borderRadius: "50%",
+              backgroundColor: "#639922", border: "2px solid #FFFFFF",
+            }} />
+            {totalUnreadBadge > 0 && (
+              <span className="absolute -top-1 -right-1 flex items-center justify-center"
+                style={{ minWidth: 18, height: 18, padding: "0 4px", borderRadius: 9, backgroundColor: "#A32D2D", color: "#fff", fontSize: 9, fontWeight: 500, border: "2px solid #FFFFFF" }}>
+                {totalUnreadBadge}
+              </span>
+            )}
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <p style={{ fontSize: 14, fontWeight: 500, color: "#2C2C2A" }} className="truncate">{toSentenceName(pupilName)}</p>
+            <p style={{ fontSize: 12, color: "#5F5E5A", marginTop: 2 }}>
+              {formatMetaDate(lessonDate)} · {formatHoursLong(durationMinutes)} · {getCountdownText()}
+            </p>
+            {(pupilUnreadCount > 0 || adminUnreadCount > 0) && (
+              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                {pupilUnreadCount > 0 && (
+                  <span className="inline-flex items-center gap-1"
+                    style={{ background: "#E6F1FB", color: "#185FA5", fontSize: 10, fontWeight: 500, padding: "2px 8px", borderRadius: 999 }}>
+                    <MessageCircle className="h-2.5 w-2.5" />
+                    {pupilUnreadCount} from {firstName}
+                  </span>
+                )}
+                {adminUnreadCount > 0 && (
+                  <span className="inline-flex items-center gap-1"
+                    style={{ background: "#FCEBEB", color: "#A32D2D", fontSize: 10, fontWeight: 500, padding: "2px 8px", borderRadius: 999 }}>
+                    <Mail className="h-2.5 w-2.5" />
+                    {adminUnreadCount} admin
                   </span>
                 )}
               </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p style={{ fontSize: 16, fontWeight: 700, color: "#1C1C1E" }} className="truncate">{pupilName}</p>
-                <p style={{ fontSize: 12, color: "#8E8E93", marginTop: 2 }}>
-                  {getDateLabel()} · {formatDuration()} · {getCountdownText()}
-                </p>
-                {(pupilUnreadCount > 0 || adminUnreadCount > 0) && (
-                  <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                    {pupilUnreadCount > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full"
-                        style={{ backgroundColor: "rgba(0,122,255,0.12)", color: "#007AFF", fontSize: 10, fontWeight: 600 }}>
-                        <MessageCircle className="h-2.5 w-2.5" />
-                        {pupilUnreadCount} from {firstName}
-                      </span>
-                    )}
-                    {adminUnreadCount > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full"
-                        style={{ backgroundColor: "rgba(255,149,0,0.12)", color: "#FF9500", fontSize: 10, fontWeight: 600 }}>
-                        <Mail className="h-2.5 w-2.5" />
-                        {adminUnreadCount} admin
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Expand */}
-              <div className="shrink-0">
-                <ExpandChevron isExpanded={expanded} />
-              </div>
-            </div>
+            )}
           </div>
 
-
-          {/* ── PICK-UP ROW ── */}
-          {(pickupLocation || pickupPostcode) && (
-            <div className="px-4 pb-3">
-              <div className="flex items-center gap-3" style={{ backgroundColor: "#F8F9FA", borderRadius: 14, padding: "10px 12px" }}>
-                <div className="flex items-center justify-center shrink-0" style={{ width: 30, height: 30, borderRadius: 10, backgroundColor: "rgba(0,122,255,0.1)" }}>
-                  <MapPin className="h-3.5 w-3.5" style={{ color: "#007AFF" }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span style={{ fontSize: 9, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Pick-up</span>
-                  <p style={{ fontSize: 12, fontWeight: 500, color: "#1C1C1E", marginTop: 1 }} className="truncate">
-                    {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
-                  </p>
-                </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
-                  className="flex items-center justify-center shrink-0"
-                  style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: "#007AFF" }}
-                >
-                  <Navigation className="h-3.5 w-3.5 text-white" />
-                </button>
-              </div>
-            </div>
-          )}
+          {/* Chevron */}
+          <ChevronRight style={{ width: 14, height: 14, color: "#888780" }} strokeWidth={2} />
         </button>
+
+        {/* ── PICK-UP ROW (white card) ── */}
+        {(pickupLocation || pickupPostcode) && (
+          <div
+            className="flex items-center"
+            style={{
+              background: "#FFFFFF",
+              border: "0.5px solid #D3D1C7",
+              borderRadius: 12,
+              padding: "14px 16px",
+              gap: 12,
+            }}
+          >
+            <div
+              className="flex items-center justify-center shrink-0"
+              style={{ width: 32, height: 32, borderRadius: 8, background: "#E6F1FB" }}
+            >
+              <MapPin style={{ width: 14, height: 14, color: "#185FA5" }} strokeWidth={2} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <span style={{ fontSize: 10, fontWeight: 500, color: "#888780", letterSpacing: 0.8 }}>PICK-UP</span>
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "#2C2C2A",
+                  marginTop: 1,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* ── RUNNING LATE ALERT ── */}
         <AnimatePresence>
