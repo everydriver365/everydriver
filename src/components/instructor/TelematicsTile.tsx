@@ -50,17 +50,22 @@ export function TelematicsTile() {
           <div className="flex items-center gap-3">
             <div
               style={{
-                width: 44,
-                height: 44,
+                width: 36,
+                height: 36,
                 borderRadius: 12,
-                backgroundColor: "#EDE9FE",
+                backgroundColor: "hsl(var(--dsm-tint-purple-bg))",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
               }}
             >
-              <Activity size={22} strokeWidth={2} color="#5B21B6" />
+              <Activity
+                size={18}
+                strokeWidth={1.4}
+                color="hsl(var(--dsm-tint-purple-fg))"
+                fill="hsl(var(--dsm-tint-purple-fg))"
+              />
             </div>
             <div className="min-w-0">
               <p style={{ fontSize: 15, fontWeight: 500, color: "#18181B", fontFamily: "Inter, sans-serif" }}>Telematics</p>
