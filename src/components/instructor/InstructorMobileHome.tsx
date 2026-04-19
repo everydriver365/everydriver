@@ -564,8 +564,10 @@ export function InstructorMobileHome({
               <div className="mt-2">
                 <SectionHeader
                   title="Next lesson"
-                  category="schedule"
+                  category="navigation"
+                  titleColor="#042C53"
                   meta={nextLesson.pupilName}
+                  metaColor="#185FA5"
                 />
                 <NextUpTile
                   lessonId={nextLesson.lessonId}
