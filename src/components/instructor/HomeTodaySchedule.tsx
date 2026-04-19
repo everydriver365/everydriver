@@ -15,22 +15,38 @@ interface HomeTodayScheduleProps {
 // Warm palette (matches global app theme)
 const PAL = {
   paper: "#F7F5F0",
+  trayBg: "#FAF8F3",
+  trayBorder: "#E8E5DC",
   card: "#FFFFFF",
   hairline: "#D3D1C7",
   text: "#2C2C2A",
   textMuted: "#5F5E5A",
   textSubtle: "#888780",
+  textNavyDeep: "#042C53",
   accentBlue: "#185FA5",
   accentBlueSoft: "#E6F1FB",
   accentBlueRing: "#B5D4F4",
   accentRed: "#A32D2D",
   accentGreen: "#0F6E56",
   accentGreenSoft: "#E1F5EE",
-  avatarBg: "#FAEEDA",
-  avatarText: "#854F0B",
+  avatarBg: "#F1EFE8",
+  avatarText: "#5F5E5A",
   chipNeutralBg: "#F1EFE8",
-  toggleActive: "#2C2C2A",
+  toggleActive: "#042C53",
 };
+
+function totalDurationLabel(mins: number): string {
+  if (mins <= 0) return "0h";
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h === 0) return `${m}m total`;
+  if (m === 0) return `${h}h total`;
+  return `${h}h ${m}m total`;
+}
+
+function formatCurrency(amount: number): string {
+  return amount.toLocaleString("en-GB");
+}
 
 function fmtTime(time: string) {
   try {
