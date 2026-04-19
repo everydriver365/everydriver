@@ -15,6 +15,7 @@ const InstructorSettings = lazy(() => import("@/pages/InstructorSettings"));
 const InstructorSettingsCategory = lazy(() => import("@/pages/InstructorSettingsCategory"));
 const InstructorNotifications = lazy(() => import("@/pages/InstructorNotifications"));
 const InstallInstructor = lazy(() => import("@/pages/InstallInstructor"));
+const IconPreviewPage = lazy(() => import("@/pages/instructor/IconPreviewPage"));
 
 // Jobs & scheduling
 const InstructorJobs = lazy(() => import("@/pages/InstructorJobs"));
