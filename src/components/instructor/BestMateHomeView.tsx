@@ -28,6 +28,7 @@ import { NextUpTile } from "@/components/instructor/NextUpTile";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
+import { SectionHeader } from "@/components/instructor/SectionHeader";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
 import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
@@ -288,16 +289,18 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
               </>
             )}
 
-            <div>
-              <p style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: 0.8, textTransform: "uppercase", margin: "0 16px 12px", fontFamily: "Inter, sans-serif" }}>Quick access</p>
+            <div className="-mx-4">
+              <SectionHeader title="Quick actions" category="navigation" />
               <SwipeableQuickAccess />
             </div>
 
 
             <TodayLessonsList lessons={todayLessons || []} instructorId={instructorId || ""} />
 
-            <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-2 mb-2">Insights</p>
-            <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
+            <div className="-mx-4 mt-2">
+              <SectionHeader title="Insights" category="navigation" />
+              <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
+            </div>
 
             <div className="h-6" />
 

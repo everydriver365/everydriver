@@ -54,6 +54,7 @@ import { TelematicsTile } from "@/components/instructor/TelematicsTile";
 import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
+import { SectionHeader } from "@/components/instructor/SectionHeader";
 
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
 import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
@@ -559,12 +560,13 @@ export function InstructorMobileHome({
           <QuietDayEmpty className="mt-4" />
         ) : (
           <>
-            {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
-              <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Your Day</p>
-            )}
-
             {nextLesson && (
               <div className="mt-2">
+                <SectionHeader
+                  title="Next lesson"
+                  category="schedule"
+                  meta={nextLesson.pupilName}
+                />
                 <NextUpTile
                   lessonId={nextLesson.lessonId}
                   pupilId={nextLesson.pupilId}
@@ -586,25 +588,29 @@ export function InstructorMobileHome({
               </div>
             )}
 
-            <div className="mt-4">
+            <div className="mt-5">
               <HomeTodaySchedule instructorId={instructorId} />
             </div>
 
           </>
         )}
 
-        {/* 7. Quick Access — Swipeable Grid */}
-        <p style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: 0.8, textTransform: "uppercase", margin: "24px 16px 12px", fontFamily: "Inter, sans-serif" }}>Quick access</p>
-        <SwipeableQuickAccess />
+        {/* Quick Access — Swipeable Grid */}
+        <div className="mt-5">
+          <SectionHeader title="Quick actions" category="navigation" />
+          <SwipeableQuickAccess />
+        </div>
 
         {/* Impact Alerts */}
-        <div className="mt-4">
+        <div className="mt-5">
           <ImpactAlertCard instructorId={instructorId} />
         </div>
 
         {/* Insights Tiles */}
-        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Insights</p>
-        <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
+        <div className="mt-5">
+          <SectionHeader title="Insights" category="navigation" />
+          <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
+        </div>
 
         {/* Vehicle Health & Idle Time */}
         <VehicleHealthCard instructorId={instructorId} className="mt-3" />
