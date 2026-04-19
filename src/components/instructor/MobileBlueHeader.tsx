@@ -118,7 +118,7 @@ export function MobileBlueHeader({
             {showBackButton ? (
               <button
                 onClick={onBack}
-                className="h-9 w-9 rounded-full flex items-center justify-center"
+                className="h-7 w-7 rounded-full flex items-center justify-center"
                 style={{
                   background: "rgba(255,255,255,0.18)",
                   backdropFilter: "blur(12px)",
@@ -126,12 +126,12 @@ export function MobileBlueHeader({
                   border: "0.5px solid rgba(255,255,255,0.35)",
                 }}
               >
-                <ChevronLeft className="h-5 w-5 text-white" strokeWidth={2.4} />
+                <ChevronLeft className="h-4 w-4 text-white" strokeWidth={2.4} />
               </button>
             ) : (
               <button
                 onClick={() => navigate("/instructor/notifications")}
-                className="relative h-9 px-3 rounded-full flex items-center justify-center"
+                className="relative h-7 w-7 rounded-full flex items-center justify-center"
                 style={{
                   background: "rgba(255,255,255,0.18)",
                   backdropFilter: "blur(12px)",
@@ -140,7 +140,7 @@ export function MobileBlueHeader({
                 }}
                 aria-label="Notifications"
               >
-                <Bell className="h-[18px] w-[18px] text-white" strokeWidth={2.2} />
+                <Bell className="h-[15px] w-[15px] text-white" strokeWidth={2.2} />
                 {notifCount > 0 && (
                   <span
                     className="absolute flex items-center justify-center"
