@@ -530,23 +530,30 @@ export function NextUpTile({
           )}
         </AnimatePresence>
 
-        {/* ── QUICK ACTION BAR (always visible) ── */}
-        <div className="px-4 pb-4">
-          <div className="flex items-center gap-2">
-            {[
-              { icon: Navigation, label: "Navigate", color: "#007AFF", bg: "rgba(0,122,255,0.08)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
-              { icon: Phone, label: "Call", color: "#34C759", bg: "rgba(52,199,89,0.08)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
-              { icon: MessageSquare, label: "SMS", color: "#FF9500", bg: "rgba(255,149,0,0.08)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleMessage(); } },
-              { icon: MapPin, label: "I'm Here", color: "#34C759", bg: "rgba(52,199,89,0.08)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
-            ].map((btn) => (
-              <button key={btn.label} onClick={btn.action}
-                className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-transform active:scale-95"
-                style={{ background: btn.bg }}>
-                <btn.icon className="h-4 w-4" style={{ color: btn.color }} />
-                <span className="text-[9px] font-semibold" style={{ color: btn.color }}>{btn.label}</span>
-              </button>
-            ))}
-          </div>
+        {/* ── QUICK ACTION GRID (4 columns) ── */}
+        <div className="grid grid-cols-4" style={{ gap: 8 }}>
+          {[
+            { icon: Navigation, label: "Navigate", color: "#185FA5", action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
+            { icon: Phone, label: "Call", color: "#0F6E56", action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
+            { icon: MessageSquare, label: "SMS", color: "#BA7517", action: (e: React.MouseEvent) => { e.stopPropagation(); handleMessage(); } },
+            { icon: MapPin, label: "I\u2019m here", color: "#A32D2D", action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
+          ].map((btn) => (
+            <button
+              key={btn.label}
+              onClick={btn.action}
+              className="flex flex-col items-center justify-center transition-transform active:scale-95"
+              style={{
+                background: "#FFFFFF",
+                border: "0.5px solid #D3D1C7",
+                borderRadius: 8,
+                padding: "12px 6px",
+                gap: 6,
+              }}
+            >
+              <btn.icon style={{ width: 16, height: 16, color: btn.color }} strokeWidth={2} />
+              <span style={{ fontSize: 11, fontWeight: 500, color: "#2C2C2A" }}>{btn.label}</span>
+            </button>
+          ))}
         </div>
 
         {/* ── EXPANDED CONTENT ── */}
