@@ -16,12 +16,22 @@ import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 
 import { HomeQuickActions } from "@/components/instructor/HomeQuickActions";
+import { ActivityTilesGrid } from "@/components/instructor/ActivityTilesGrid";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
-import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
-import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
+import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
+import { NextUpTile } from "@/components/instructor/NextUpTile";
+import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
+import { PupilMilestoneFeed } from "@/components/instructor/PupilMilestoneFeed";
+import { ImpactAlertCard } from "@/components/instructor/ImpactAlertCard";
+import { IdleTimeCostCard } from "@/components/instructor/IdleTimeCostCard";
 import { VehicleHealthCard } from "@/components/instructor/VehicleHealthCard";
 import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
+import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
+import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
+import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
+import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
+import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
 
 interface Props {
   instructorId: string | undefined;
