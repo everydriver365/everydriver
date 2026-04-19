@@ -127,8 +127,37 @@
      --schedule-rail: 220 13% 91%;
   }
 
+  /* ===== Instructor app theme tokens (scoped to .instructor-portal) ===== */
+  /* Light mode (default when .instructor-portal is present without .dsm-dark) */
+  .instructor-portal {
+    --dsm-bg: 218 27% 95%;          /* #EEF1F5 */
+    --dsm-card: 0 0% 100%;          /* #FFFFFF */
+    --dsm-text: 217 51% 12%;        /* #0F1B2D */
+    --dsm-text-secondary: 213 22% 57%; /* #7A8FAA */
+    --dsm-accent-red: 0 75% 50%;    /* #E02020 */
+    --dsm-accent-blue: 226 100% 57%; /* #2255FF */
+    --dsm-border: 218 18% 88%;
+    --dsm-tile-icon-bg: 218 27% 95%;
+  }
+  /* Dark mode for instructor app — toggled via .dsm-dark on .instructor-portal */
+  .instructor-portal.dsm-dark {
+    --dsm-bg: 217 51% 12%;          /* #0F1B2D */
+    --dsm-card: 217 38% 14%;        /* #162035 */
+    --dsm-text: 217 100% 95%;       /* #E8F0FF */
+    --dsm-text-secondary: 215 27% 40%; /* #4A6280 */
+    --dsm-accent-red: 0 100% 65%;   /* #FF4D4D */
+    --dsm-accent-blue: 222 100% 65%; /* #4D7DFF */
+    --dsm-border: 217 30% 20%;
+    --dsm-tile-icon-bg: 217 38% 18%;
+  }
+  /* Smooth 200ms theme transitions on instructor surfaces */
+  .instructor-portal,
+  .instructor-portal * {
+    transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+  }
+
   .instructor-shell-bg {
-    background-color: #F7F5F0;
+    background-color: hsl(var(--dsm-bg, 35 17% 96%));
     min-height: 100dvh;
     position: relative;
   }
