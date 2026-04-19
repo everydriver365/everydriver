@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Bell, Plus, Menu, ChevronLeft } from "lucide-react";
 import dsmLogo from "@/assets/dsm-logo.png";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { DSMThemeToggle } from "@/components/instructor/DSMThemeToggle";
 
 interface Props {
   instructorId: string | undefined;
