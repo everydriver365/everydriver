@@ -15,7 +15,7 @@ const pwaConfigs: Record<string, PWAMetaConfig> = {
     favicon: "/dsm-icon-192.png",
     splash: "/splash-1170x2532.png",
     title: "DSM",
-    themeColor: "#050818",
+    themeColor: "#F7F5F0",
   },
   learner: {
     icon: "/favicon-365.png",
