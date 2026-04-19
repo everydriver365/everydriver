@@ -524,7 +524,9 @@ export function InstructorMobileHome({
       />
 
       {/* Telematics Tile */}
-      <TelematicsTile />
+      <div className="mb-6">
+        <TelematicsTile />
+      </div>
 
       <div className="px-4">
         <CelebrationConfetti
@@ -561,7 +563,7 @@ export function InstructorMobileHome({
         ) : (
           <>
             {nextLesson && (
-              <div className="mt-2">
+              <div className="mt-2 mb-6">
                 <SectionHeader
                   title="Next lesson"
                   category="navigation"
