@@ -183,28 +183,28 @@ export function MobileBlueHeader({
           </div>
 
           {/* Right: SOS, +, menu */}
-          <div className="flex items-center gap-[10px]">
+          <div className="flex items-center gap-[6px]">
             <button
               onClick={onSOS}
               className="flex items-center justify-center"
               style={{
-                width: 34,
-                height: 34,
+                width: 28,
+                height: 28,
                 borderRadius: "50%",
                 background: "#ff3b30",
-                boxShadow: "0 2px 10px rgba(255,59,48,0.5)",
-                border: "1.5px solid rgba(255,255,255,0.5)",
+                boxShadow: "0 2px 8px rgba(255,59,48,0.5)",
+                border: "1px solid rgba(255,255,255,0.5)",
               }}
               aria-label="SOS"
             >
-              <span className="text-[10px] font-extrabold text-white leading-none">SOS</span>
+              <span className="text-[8px] font-extrabold text-white leading-none">SOS</span>
             </button>
             <button
               onClick={onPlus}
               className="flex items-center justify-center"
               style={{
-                width: 34,
-                height: 34,
+                width: 28,
+                height: 28,
                 borderRadius: "50%",
                 background: "rgba(255,255,255,0.22)",
                 backdropFilter: "blur(12px)",
@@ -213,14 +213,14 @@ export function MobileBlueHeader({
               }}
               aria-label="Quick Actions"
             >
-              <Plus className="h-[18px] w-[18px] text-white" strokeWidth={2.6} />
+              <Plus className="h-[15px] w-[15px] text-white" strokeWidth={2.6} />
             </button>
             <button
               onClick={onMenu}
               className="flex items-center justify-center"
               style={{
-                width: 34,
-                height: 34,
+                width: 28,
+                height: 28,
                 borderRadius: "50%",
                 background: "rgba(255,255,255,0.18)",
                 backdropFilter: "blur(12px)",
@@ -229,7 +229,7 @@ export function MobileBlueHeader({
               }}
               aria-label="Menu"
             >
-              <Menu className="h-[18px] w-[18px] text-white" strokeWidth={2.2} />
+              <Menu className="h-[15px] w-[15px] text-white" strokeWidth={2.2} />
             </button>
           </div>
         </div>
