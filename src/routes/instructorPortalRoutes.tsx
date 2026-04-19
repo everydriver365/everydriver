@@ -131,6 +131,7 @@ export const instructorPortalRoutes = (
 
     {/* Core — always accessible */}
     <Route path="/instructor" element={<InstructorPortal />} />
+    <Route path="/instructor/icon-preview" element={<IconPreviewPage />} />
     <Route path="/instructor/pupils" element={<InstructorPupils />} />
     <Route path="/instructor/pupils/:pupilId" element={<InstructorPupils />} />
     <Route path="/instructor/schedule" element={<InstructorSchedule />} />
