@@ -194,15 +194,11 @@ export function RedesignedMobileHome({
           </h2>
         </div>
 
-        {todayLessons && todayLessons.length > 0 && (
-          <TodayLessonsList lessons={todayLessons} />
+        {todayLessons && todayLessons.length > 0 && instructorId && (
+          <TodayLessonsList lessons={todayLessons} instructorId={instructorId} />
         )}
 
-        {instructorId && <SmartRemindersCard instructorId={instructorId} />}
-
-        {tomorrowLessons && tomorrowLessons.length > 0 && (
-          <TomorrowPreviewCard lessons={tomorrowLessons} />
-        )}
+        <SmartRemindersCard />
 
         <div className="pt-4 pb-1">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
