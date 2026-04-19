@@ -259,17 +259,22 @@ export function NextUpTile({
 
   return (
     <>
-      <div
-        className="w-full"
-        style={{
-          background: "#F7F5F0",
-          padding: "0 16px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 10,
-          fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
-        }}
-      >
+      {/* Outer cream-paper margin (so the tray hugs the same 16px gutter as other sections) */}
+      <div style={{ padding: "0 16px" }}>
+        {/* ── LIGHT-NAVY TRAY ── */}
+        <div
+          className="w-full"
+          style={{
+            background: "#E6F1FB",
+            border: "0.5px solid #B5D4F4",
+            borderRadius: 16,
+            padding: 12,
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
+          }}
+        >
         {/* ── MINI MAP CARD (live Google Map preserved) ── */}
         {pickupPostcode && (
           <div
