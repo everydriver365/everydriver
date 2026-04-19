@@ -15,9 +15,27 @@ import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 
+import { HomeQuickActions } from "@/components/instructor/HomeQuickActions";
+import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
+import { TomorrowPreviewCard } from "@/components/instructor/TomorrowPreviewCard";
+import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
+import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
+import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
+import { VehicleHealthCard } from "@/components/instructor/VehicleHealthCard";
+import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
+
 interface Props {
   instructorId: string | undefined;
   firstName: string;
+  instructor?: any;
+  onPaymentClick?: () => void;
+  pendingJobsCount?: number;
+  unreadCount?: number;
+  testSwapCount?: number;
+  gapSlotsCount?: number;
+  todayLessons?: any;
+  tomorrowLessons?: any;
+  nextLesson?: any;
 }
 
 const getGreeting = () => {
