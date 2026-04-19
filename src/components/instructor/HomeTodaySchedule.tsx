@@ -336,9 +336,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               const isLast = idx === lessons.length - 1;
               const initials = (lesson.pupilInitials || lesson.pupilName.slice(0, 2)).slice(0, 2).toUpperCase();
               const meta: string[] = [];
-              if (lesson.pickupPostcode || lesson.pickupLocation) {
-                meta.push(lesson.pickupPostcode || lesson.pickupLocation || "");
-              }
+              if (lesson.pickupPostcode) meta.push(lesson.pickupPostcode);
               meta.push(`£${lesson.amountDue ?? 0} outstanding`);
 
               return (
