@@ -70,6 +70,12 @@ export interface WarmTileProps {
   className?: string;
   /** Optional override: use a custom node inside the icon square (e.g. img). */
   iconSlot?: ReactNode;
+  /** Optional override: tinted background colour for the icon square. */
+  iconBg?: string;
+  /** Optional override: explicit icon colour (used as fill + stroke for SF-style filled icons). */
+  iconColor?: string;
+  /** Render the icon filled SF-style (fill = iconColor). Defaults to true when iconColor is supplied. */
+  iconFilled?: boolean;
 }
 
 export function WarmTile({
