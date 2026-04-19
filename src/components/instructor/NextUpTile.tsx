@@ -94,6 +94,28 @@ function getInitials(name: string): string {
   return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 }
 
+function toSentenceName(name: string): string {
+  return name
+    .toLowerCase()
+    .split(/\s+/)
+    .map(w => (w.length > 0 ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(" ");
+}
+
+function formatMetaDate(dateStr: string): string {
+  try {
+    const d = parseISO(dateStr);
+    if (isToday(d)) return "Today";
+    if (isTomorrow(d)) return "Tomorrow";
+    return format(d, "EEE d MMM");
+  } catch { return dateStr; }
+}
+
+function formatHoursLong(minutes: number): string {
+  const h = minutes / 60;
+  return Number.isInteger(h) ? `${h}h` : `${h.toFixed(1)}h`;
+}
+
 export function NextUpTile({
   lessonId, pupilId, pupilName, pupilProfileImage, pupilPhone,
   lessonDate, pickupPostcode, pickupLocation, startTime,
