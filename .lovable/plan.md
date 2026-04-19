@@ -1,31 +1,27 @@
 
-The PWA safe area is still showing white because:
+## Issue
+The "Next lesson", "Today's schedule", and "Quick actions" sections render narrower than the top tiles (Action needed / Activity tiles / Telematics) because they get **double horizontal padding**:
 
-1. **`index.html` still has `theme-color` = `#FFFFFF`** — the previous edit didn't actually save (only `bun.lock` was edited last turn). The `<meta name="theme-color" content="#FFFFFF" />` is still in `index.html`.
+- `InstructorMobileHome.tsx` wraps them in `<div className="px-4">` (16px)
+- Each child component (`NextUpTile`, `HomeTodaySchedule`, `SwipeableQuickAccess`) also applies its own `padding: "0 16px"` internally
 
-2. **`DynamicPWAMeta.tsx` overrides it at runtime** — even if I fix `index.html`, this component runs on every route change and forces `themeColor: "#FFFFFF"` for the `instructor` portal config. So the meta tag gets reset to white on the instructor routes (which is exactly where this dark header lives).
+Result: 32px total horizontal padding vs 16px on the top tiles — visible width inconsistency.
 
-Both must change together, otherwise `DynamicPWAMeta` will undo the static fix.
+The top tiles (`WarmHomeTiles`, `ActivityTilesGrid`, `TelematicsTile`) all manage their own 16px padding without an outer wrapper.
 
-## Plan
+## Fix (single file)
 
-**1. `index.html`** — change static fallback:
-```html
-<meta name="theme-color" content="#050818" />
-```
+**`src/components/instructor/InstructorMobileHome.tsx`** — remove the outer `px-4` wrappers for these three sections so the children's own 16px padding is the only source of horizontal inset. They will then align flush with the top tiles.
 
-**2. `src/components/pwa/DynamicPWAMeta.tsx`** — update the `instructor` portal config so the runtime `theme-color` matches the dark header gradient start:
-```ts
-instructor: {
-  ...,
-  themeColor: "#050818",  // was "#FFFFFF"
-},
-```
+Specifically, around lines 558–606:
 
-Leave `learner`, `pupil`, `parent`, and `default` configs untouched — they have their own (correct) brand colors.
+1. Change the outer `<div className="px-4">` wrapping the Your Day block (Next lesson + HomeTodaySchedule) to a plain `<div>` (drop `px-4`).
+2. The "Quick actions" section header (`SectionHeader`) is currently un-padded inside that `px-4` wrapper — wrap just the `<SectionHeader title="Quick actions" …/>` in its own `style={{ padding: "0 16px" }}` so it stays aligned, since `SwipeableQuickAccess` already self-pads.
+3. Same for the empty state (`<QuietDayEmpty />`) — give it its own padded wrapper since it previously inherited `px-4`.
 
-**Important note:** The status-bar color from `theme-color` only takes visible effect in:
-- Installed PWA (Add to Home Screen) standalone mode on iOS/Android
-- Chrome on Android address bar
+No changes to `NextUpTile.tsx`, `HomeTodaySchedule.tsx`, or `SwipeableQuickAccess.tsx` — their internal 16px padding is already correct and matches the top tiles.
 
-It does **not** apply inside the Lovable preview iframe or in regular desktop browser tabs. To verify, the user needs to reinstall the PWA from the home screen (delete and re-add) after publishing, since iOS caches the manifest/theme aggressively.
+## Untouched
+- All data hooks, routes, tap behaviour
+- All visual styling within the tiles themselves
+- All other sections (`PupilMilestoneFeed`, `ImpactAlertCard`, etc.) keep their existing `px-4`
