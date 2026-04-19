@@ -21,6 +21,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useMenuFeatureGates } from "@/hooks/useMenuFeatureGates";
 import { QuickTestResultForm } from "@/components/instructor/QuickTestResultForm";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { WarmTile, WarmTileGrid, type WarmTileCategory } from "@/components/instructor/WarmTile";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
