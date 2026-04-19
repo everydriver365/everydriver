@@ -648,7 +648,7 @@ export default function InstructorMenu() {
       case "#DC2626":
       case "#BE123C": return "urgent";      // red / rose
       case "#92400E": return "messages";    // amber
-      case "#2A394F": return "navigation";  // slate
+      case "#2A394F": return "people";      // slate
       default: return "neutral";
     }
   };
@@ -703,7 +703,7 @@ export default function InstructorMenu() {
             return (
               <div key={item.label} style={{ opacity: locked ? 0.6 : 1 }}>
                 <WarmTile
-                  icon={item.icon}
+                  icon={item.icon as LucideIcon}
                   title={item.label}
                   subtitle={item.description}
                   category={category}
