@@ -1,37 +1,31 @@
 
-**Goal:** Apply the DSM logo's tri-color palette (Red, Blue, Charcoal) consistently across the instructor portal.
+The PWA safe area is still showing white because:
 
-**Logo colors extracted:**
-- Red `#E63329` (D block)
-- Blue `#1F86FF` (S block) 
-- Charcoal `#1C1C1E` (M block)
+1. **`index.html` still has `theme-color` = `#FFFFFF`** — the previous edit didn't actually save (only `bun.lock` was edited last turn). The `<meta name="theme-color" content="#FFFFFF" />` is still in `index.html`.
 
-**Changes:**
+2. **`DynamicPWAMeta.tsx` overrides it at runtime** — even if I fix `index.html`, this component runs on every route change and forces `themeColor: "#FFFFFF"` for the `instructor` portal config. So the meta tag gets reset to white on the instructor routes (which is exactly where this dark header lives).
 
-1. **Header gradient** (`MobileBlueHeader.tsx`)
-   - Refresh `HEADER_GRADIENT` to vibrant logo blue: `linear-gradient(145deg, #0066E0 0%, #1F86FF 50%, #4DA6FF 100%)`
-   - Safe area + sticky background updated together
+Both must change together, otherwise `DynamicPWAMeta` will undo the static fix.
 
-2. **Dashboard activity tiles** (Job Offers, Messages, Tests, Fill Gaps)
-   - Job Offers → Red `#E63329` gradient (urgent / needs action)
-   - Tests → Charcoal `#1C1C1E` gradient (high-stakes premium)
-   - Messages → Blue `#1F86FF` gradient
-   - Fill Gaps → soft blue tint (neutral)
+## Plan
 
-3. **Global accent swap (instructor scope only)**
-   - Primary buttons, active tab indicator, focus rings, link color → logo Blue `#1F86FF`
-   - Destructive badges (notification dot, SOS) → logo Red `#E63329`
-   - Primary headings → Charcoal `#1C1C1E`
-   - Update CSS tokens in `src/index.css` where instructor portal consumes them
+**1. `index.html`** — change static fallback:
+```html
+<meta name="theme-color" content="#050818" />
+```
 
-**Out of scope:**
-- Pupil-facing Drive365 routes keep their own brand
-- No layout, spacing, or functional changes
-- Mobile homepage layout not restructured (per project rule)
+**2. `src/components/pwa/DynamicPWAMeta.tsx`** — update the `instructor` portal config so the runtime `theme-color` matches the dark header gradient start:
+```ts
+instructor: {
+  ...,
+  themeColor: "#050818",  // was "#FFFFFF"
+},
+```
 
-**Files to touch:**
-- `src/components/instructor/MobileBlueHeader.tsx`
-- `src/components/instructor/HomepageHero.tsx`
-- Activity tile components (Job Offers / Messages / Tests / Fill Gaps)
-- `src/index.css` (instructor-scoped tokens)
-- `mem://style/instructor-activity-tile-icons` updated to record new mapping
+Leave `learner`, `pupil`, `parent`, and `default` configs untouched — they have their own (correct) brand colors.
+
+**Important note:** The status-bar color from `theme-color` only takes visible effect in:
+- Installed PWA (Add to Home Screen) standalone mode on iOS/Android
+- Chrome on Android address bar
+
+It does **not** apply inside the Lovable preview iframe or in regular desktop browser tabs. To verify, the user needs to reinstall the PWA from the home screen (delete and re-add) after publishing, since iOS caches the manifest/theme aggressively.
