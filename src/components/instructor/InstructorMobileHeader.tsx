@@ -19,6 +19,7 @@ import { SOSEmergencySheet } from "@/components/instructor/SOSEmergencySheet";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { supabase } from "@/integrations/supabase/client";
 import OfflineSyncIndicator from "@/components/pwa/OfflineSyncIndicator";
+import { DSMThemeToggle } from "@/components/instructor/DSMThemeToggle";
 import dsmLogo from "@/assets/dsm-logo.png";
 
 interface InstructorMobileHeaderProps {
@@ -75,11 +76,15 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
   return (
     <div className="sticky top-0 z-50">
       {/* Safe area fill */}
-      <div className="bg-white pt-[env(safe-area-inset-top)]" />
+      <div className="pt-[env(safe-area-inset-top)]" style={{ background: 'hsl(var(--dsm-card))' }} />
       {/* Premium iOS tile header */}
       <div
-        className="w-full overflow-hidden bg-white border-b border-black/[0.06]"
-        style={{ boxShadow: '0 1px 0 rgba(0,0,0,0.04)' }}
+        className="w-full overflow-hidden border-b"
+        style={{
+          background: 'hsl(var(--dsm-card))',
+          borderColor: 'hsl(var(--dsm-border))',
+          boxShadow: '0 1px 0 hsl(var(--dsm-border) / 0.5)',
+        }}
       >
         <div className="relative flex items-center justify-between px-4 py-[10px]">
           {/* Left: Bell with badge (or back button) */}
@@ -87,16 +92,17 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
             {showBackButton ? (
               <button
                 onClick={handleBackClick}
-                className="h-8 w-8 rounded-full bg-[#f2f2f7] flex items-center justify-center"
+                className="h-8 w-8 rounded-full flex items-center justify-center"
+                style={{ background: 'hsl(var(--dsm-tile-icon-bg))' }}
               >
-                <ChevronLeft className="h-5 w-5 text-[#1F2B3D]" />
+                <ChevronLeft className="h-5 w-5" style={{ color: 'hsl(var(--dsm-text))' }} strokeWidth={1.6} />
               </button>
             ) : (
               <button
                 onClick={() => navigate("/instructor/notifications")}
                 className="relative h-8 w-8 flex items-center justify-center"
               >
-                <Bell className="h-[20px] w-[20px] text-[#1c1c1e]" />
+                <Bell className="h-[20px] w-[20px]" style={{ color: 'hsl(var(--dsm-text))' }} strokeWidth={1.6} />
                 {totalNotifCount > 0 && (
                   <span
                     className="absolute flex items-center justify-center px-1 rounded-full"
@@ -106,7 +112,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                       minWidth: '18px',
                       height: '18px',
                       borderRadius: '9px',
-                      background: '#ff3b30',
+                      background: 'hsl(var(--dsm-accent-red))',
                       color: 'white',
                       fontSize: '10px',
                       fontWeight: 700,
@@ -118,7 +124,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
               </button>
             )}
             {showBackButton && title && (
-              <p className="text-[15px] font-semibold text-[#1c1c1e]">{title}</p>
+              <p className="text-[15px] font-semibold" style={{ color: 'hsl(var(--dsm-text))' }}>{title}</p>
             )}
           </div>
 
@@ -134,6 +140,8 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
           {/* Right: Action buttons */}
           <div className="flex items-center gap-[10px]">
             <OfflineSyncIndicator instructorId={instructor?.id} showDetails />
+            {/* Theme toggle (sun/moon) */}
+            <DSMThemeToggle />
             {/* SOS */}
             <button
               onClick={() => setSosOpen(true)}
@@ -142,8 +150,8 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                 width: 32,
                 height: 32,
                 borderRadius: '50%',
-                background: '#ff3b30',
-                boxShadow: '0 2px 8px rgba(255,59,48,0.4)',
+                background: 'hsl(var(--dsm-accent-red))',
+                boxShadow: '0 2px 8px hsl(var(--dsm-accent-red) / 0.4)',
               }}
             >
               <span className="text-[11px] font-extrabold text-white leading-none">SOS</span>
@@ -157,12 +165,12 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                   width: 32,
                   height: 32,
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #0f9e75, #1dcaa5)',
-                  boxShadow: '0 2px 8px rgba(15,158,117,0.3)',
+                  background: 'hsl(var(--dsm-accent-blue))',
+                  boxShadow: '0 2px 8px hsl(var(--dsm-accent-blue) / 0.3)',
                   fontSize: 18,
                 }}
               >
-                <Plus className="h-[18px] w-[18px]" />
+                <Plus className="h-[18px] w-[18px]" strokeWidth={1.6} />
               </button>
             )}
             {/* Settings / hamburger menu */}
@@ -170,7 +178,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center justify-center h-8 w-8">
-                    <Menu className="h-5 w-5 text-[#8e8e93]" />
+                    <Menu className="h-5 w-5" style={{ color: 'hsl(var(--dsm-text-secondary))' }} strokeWidth={1.6} />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

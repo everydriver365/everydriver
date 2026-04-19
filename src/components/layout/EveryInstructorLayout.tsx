@@ -1,7 +1,8 @@
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Bell, Settings } from "lucide-react";
+import { Bell, Settings } from "lucide-react";
 import { EveryInstructorBottomNav } from "@/components/instructor/EveryInstructorBottomNav";
+import { DSMThemeToggle } from "@/components/instructor/DSMThemeToggle";
 
 interface Props {
   children: ReactNode;
@@ -13,24 +14,36 @@ export function EveryInstructorLayout({ children, title = "Every Instructor", sh
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen ios-instructor ios-scroll" style={{ backgroundColor: "#F2F2F7" }}>
-      {/* Header — frosted glass iOS nav bar */}
+    <div
+      className="min-h-screen ios-instructor instructor-portal ios-scroll"
+      style={{ backgroundColor: "hsl(var(--dsm-bg))" }}
+    >
+      {/* Header — frosted glass nav bar */}
       {showHeader && (
-        <header className="sticky top-0 z-40 border-b border-[hsl(240_5%_78%/0.5)]" style={{ backgroundColor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px) saturate(180%)', WebkitBackdropFilter: 'blur(20px) saturate(180%)' }}>
+        <header
+          className="sticky top-0 z-40 border-b"
+          style={{
+            backgroundColor: 'hsl(var(--dsm-card) / 0.85)',
+            borderColor: 'hsl(var(--dsm-border))',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          }}
+        >
           <div className="flex items-center justify-between px-5 h-14">
-            <h1 className="text-xl font-bold text-[hsl(240_6%_11%)] tracking-tight">{title}</h1>
-            <div className="flex items-center gap-3">
+            <h1 className="text-xl font-bold tracking-tight" style={{ color: 'hsl(var(--dsm-text))' }}>{title}</h1>
+            <div className="flex items-center gap-1">
               <button
                 onClick={() => navigate("/every-instructor/notifications")}
-                className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors"
               >
-                <Bell className="h-5 w-5 text-gray-600" strokeWidth={1.8} />
+                <Bell className="h-5 w-5" style={{ color: 'hsl(var(--dsm-text-secondary))' }} strokeWidth={1.6} />
               </button>
+              <DSMThemeToggle />
               <button
                 onClick={() => navigate("/every-instructor/settings")}
-                className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors"
               >
-                <Settings className="h-5 w-5 text-gray-600" strokeWidth={1.8} />
+                <Settings className="h-5 w-5" style={{ color: 'hsl(var(--dsm-text-secondary))' }} strokeWidth={1.6} />
               </button>
             </div>
           </div>
