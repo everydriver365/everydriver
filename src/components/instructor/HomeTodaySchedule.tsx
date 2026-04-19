@@ -468,9 +468,15 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
         )}
       </div>
 
-      {/* ── Footer actions ── */}
-          {/* ── Footer actions (inside tray) ── */}
-          <div className="flex items-center justify-between" style={{ marginTop: 0 }}>
+          {/* ── Footer actions ── */}
+          <div
+            className="flex items-center justify-between"
+            style={{
+              marginTop: 10,
+              paddingTop: 10,
+              borderTop: `0.5px solid ${PAL.trayBorder}`,
+            }}
+          >
             <Link
               to="/instructor/schedule"
               className="flex items-center"
@@ -496,8 +502,10 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               Add lesson
             </button>
           </div>
+          </div>
+          {/* end inner content area */}
         </div>
-        {/* end cream tray */}
+        {/* end white tray */}
 
       {instructorId && (
         <AddLessonSheet
