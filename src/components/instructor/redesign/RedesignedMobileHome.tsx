@@ -185,6 +185,39 @@ export function RedesignedMobileHome({
           isOnline={vehicleOnline}
           onClick={() => navigate("/instructor/telematics")}
         />
+
+        {/* ── Restored sections from previous home ─────────────────── */}
+
+        <div className="pt-4 pb-1">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Today
+          </h2>
+        </div>
+
+        {todayLessons && todayLessons.length > 0 && (
+          <TodayLessonsList lessons={todayLessons} />
+        )}
+
+        {instructorId && <SmartRemindersCard instructorId={instructorId} />}
+
+        {tomorrowLessons && tomorrowLessons.length > 0 && (
+          <TomorrowPreviewCard lessons={tomorrowLessons} />
+        )}
+
+        <div className="pt-4 pb-1">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Quick actions
+          </h2>
+        </div>
+        <HomeQuickActions onTakePayment={onPaymentClick} />
+
+        {instructorId && <VehicleHealthCard instructorId={instructorId} />}
+
+        <UpcomingEventsCard />
+
+        <WaitingRoomPromoTile />
+
+        <BottomPromoGroup />
       </div>
     </div>
   );
