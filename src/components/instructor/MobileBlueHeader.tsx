@@ -165,9 +165,21 @@ export function MobileBlueHeader({
             )}
           </div>
 
-          {/* Centre: DSM logo (transparent) */}
-          <div className="absolute left-1/2 -translate-x-1/2">
-            <img src={dsmLogo} alt="DSM" className="h-7 w-auto object-contain" />
+          {/* Centre: Logo + wordmark stack */}
+          <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
+            <img src={dsmLogo} alt="DSM" className="h-6 w-auto object-contain" />
+            <span
+              className="text-white/70 mt-[2px]"
+              style={{
+                fontSize: 7,
+                fontWeight: 600,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                lineHeight: 1,
+              }}
+            >
+              Driving School Manager
+            </span>
           </div>
 
           {/* Right: SOS, +, menu */}
