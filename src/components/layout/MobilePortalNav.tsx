@@ -1,3 +1,4 @@
+import { CSSProperties } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { haptics } from "@/lib/haptics";
@@ -17,7 +18,10 @@ interface MobilePortalNavProps {
   activeColor?: string;
   inactiveColor?: string;
   bgClassName?: string;
+  bgStyle?: CSSProperties;
   pillClassName?: string;
+  /** Background colour for the rounded pill behind the active icon. */
+  activePillBg?: string;
   /** Use buttons with onClick instead of Links (for section-based portals) */
   onNavigate?: (path: string) => void;
   /** If using section-based navigation, pass the active section id */
@@ -30,7 +34,9 @@ export function MobilePortalNav({
   activeColor = "text-primary",
   inactiveColor = "text-muted-foreground",
   bgClassName = "bg-white/80 backdrop-blur-xl border-t border-[hsl(240_5%_78%/0.5)]",
+  bgStyle,
   pillClassName = "bg-primary",
+  activePillBg,
   onNavigate,
   activeSection,
 }: MobilePortalNavProps) {
@@ -39,6 +45,7 @@ export function MobilePortalNav({
   return (
     <nav
       className={cn("fixed bottom-0 left-0 right-0 z-50 md:hidden", bgClassName)}
+      style={bgStyle}
       role="navigation"
     >
       <div className="flex items-center justify-around h-16 w-full px-1">
@@ -51,14 +58,24 @@ export function MobilePortalNav({
 
           const content = (
             <>
-              <div className="relative">
+              <div
+                className="relative flex items-center justify-center"
+                style={{
+                  width: 44,
+                  height: 28,
+                  borderRadius: 14,
+                  background: isActive && activePillBg ? activePillBg : "transparent",
+                  transition: "background-color 200ms ease",
+                }}
+              >
                 <motion.div
-                  animate={{ scale: isActive ? 1.15 : 1 }}
+                  animate={{ scale: isActive ? 1.1 : 1 }}
                   transition={{ type: "spring", stiffness: 400, damping: 20 }}
                 >
                   <item.icon
                     className={cn("h-5 w-5", isActive ? activeColor : inactiveColor)}
-                    strokeWidth={isActive ? 2.2 : 1.8}
+                    strokeWidth={1.6}
+                    style={{ strokeLinecap: "round", strokeLinejoin: "round" }}
                   />
                 </motion.div>
                 {(item.badge ?? 0) > 0 && (
@@ -75,7 +92,7 @@ export function MobilePortalNav({
               >
                 {item.label}
               </span>
-              {isActive && (
+              {isActive && !activePillBg && (
                 <motion.div
                   layoutId={layoutId}
                   className={cn("absolute bottom-1 w-5 h-[3px] rounded-full", pillClassName)}

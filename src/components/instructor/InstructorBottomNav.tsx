@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Home, CalendarDays, Radio, PoundSterling, Users, LayoutGrid } from "lucide-react";
+import { Home, CalendarDays, Crosshair, User, MoreHorizontal } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { haptics } from "@/lib/haptics";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -24,9 +24,9 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Home", icon: Home, path: "/instructor" },
   { label: "Schedule", icon: CalendarDays, path: "/instructor/schedule", isSchedule: true },
-  { label: "Track", icon: Radio, path: "/instructor/tracking", isTrack: true },
-  { label: "Pupils", icon: Users, path: "/instructor/pupils", showBadge: true },
-  { label: "More", icon: LayoutGrid, path: "/instructor/menu", isMore: true },
+  { label: "Track", icon: Crosshair, path: "/instructor/tracking", isTrack: true },
+  { label: "Pupils", icon: User, path: "/instructor/pupils", showBadge: true },
+  { label: "More", icon: MoreHorizontal, path: "/instructor/menu", isMore: true },
 ];
 
 interface InstructorBottomNavProps {
@@ -69,14 +69,14 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden overflow-hidden bg-white border-t-[0.5px] border-black/[0.06]"
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden overflow-hidden border-t-[0.5px]"
       style={{
+        background: 'hsl(var(--dsm-card))',
+        borderColor: 'hsl(var(--dsm-border))',
         borderRadius: '20px 20px 0 0',
         boxShadow: '0 -4px 16px rgba(0,0,0,0.08), 0 -1px 4px rgba(0,0,0,0.05)',
       }}
     >
-      {/* Top edge */}
-      <div className="h-px w-full bg-black/[0.06]" />
       <div className="flex items-start justify-around" style={{ padding: '10px 8px 16px' }}>
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -84,7 +84,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
           const isTrack = item.isTrack;
           const isSchedule = item.isSchedule;
           const isMore = item.isMore;
-          
+
           const getBadgeCount = () => {
             if (isSchedule && todayLessonCount > 0) return todayLessonCount;
             return 0;
@@ -92,41 +92,51 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
           const badgeCount = getBadgeCount();
           const showMoreDot = isMore && (pendingJobsCount > 0 || unreadCount > 0);
 
-          const trackIconColor = isTrack && isTrackingActive && !isActive
+          const Icon = item.icon;
+          const activeColor = 'hsl(var(--dsm-accent-blue))';
+          const inactiveColor = 'hsl(var(--dsm-text-secondary))';
+          const trackActiveColor = isTrack && isTrackingActive && !isActive
             ? "#10b981"
             : undefined;
-          
-          const Icon = item.icon;
-          
+
           return (
             <button
               key={item.path}
               onClick={() => handleNavClick(item.path)}
               className="relative flex flex-col items-center cursor-pointer"
-              style={{ gap: 3, minWidth: 60 }}
+              style={{ gap: 4, minWidth: 60 }}
             >
-              <div className="relative">
-                <Icon 
-                  size={22} 
-                  strokeWidth={2} 
-                  color={isActive ? '#2A394F' : trackIconColor || '#A1A1AA'} 
+              {/* Icon with optional rounded-pill accent background when active */}
+              <div
+                className="relative flex items-center justify-center"
+                style={{
+                  width: 44,
+                  height: 28,
+                  borderRadius: 14,
+                  background: isActive ? 'hsl(var(--dsm-accent-blue) / 0.12)' : 'transparent',
+                }}
+              >
+                <Icon
+                  size={22}
+                  strokeWidth={1.6}
+                  color={isActive ? activeColor : trackActiveColor || inactiveColor}
+                  style={{ strokeLinecap: 'round', strokeLinejoin: 'round' }}
                 />
                 {/* Pupils badge */}
                 {showNotification && (
                   <span
                     className="absolute flex items-center justify-center"
                     style={{
-                      top: -2,
-                      right: -4,
+                      top: 0,
+                      right: 4,
                       minWidth: 16,
                       height: 16,
                       borderRadius: 8,
                       padding: '0 4px',
-                      background: '#ff3b30',
+                      background: 'hsl(var(--dsm-accent-red))',
                       color: 'white',
                       fontSize: 10,
                       fontWeight: 700,
-                      boxShadow: '0 1px 4px rgba(255,59,48,0.4)',
                     }}
                   >
                     {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
@@ -137,17 +147,16 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                   <span
                     className="absolute flex items-center justify-center"
                     style={{
-                      top: -2,
-                      right: -4,
+                      top: 0,
+                      right: 4,
                       minWidth: 16,
                       height: 16,
                       borderRadius: 8,
                       padding: '0 4px',
-                      background: '#ff3b30',
+                      background: 'hsl(var(--dsm-accent-red))',
                       color: 'white',
                       fontSize: 10,
                       fontWeight: 700,
-                      boxShadow: '0 1px 4px rgba(255,59,48,0.4)',
                     }}
                   >
                     {badgeCount > 9 ? "9+" : badgeCount}
@@ -155,20 +164,19 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                 )}
                 {/* Track active dot */}
                 {isTrack && isTrackingActive && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="absolute top-1 right-3 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 )}
                 {/* More dot */}
                 {showMoreDot && (
                   <span
                     className="absolute"
                     style={{
-                      top: 0,
-                      right: 4,
+                      top: 4,
+                      right: 8,
                       width: 8,
                       height: 8,
-                      background: '#ff3b30',
+                      background: 'hsl(var(--dsm-accent-red))',
                       borderRadius: '50%',
-                      boxShadow: '0 1px 3px rgba(255,59,48,0.4)',
                     }}
                   />
                 )}
@@ -177,7 +185,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                 style={{
                   fontSize: 11,
                   fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#2A394F' : '#A1A1AA',
+                  color: isActive ? activeColor : inactiveColor,
                 }}
               >
                 {item.label}
@@ -187,7 +195,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
         })}
       </div>
       {/* Safe area for iOS */}
-      <div className="h-safe-area-inset-bottom bg-white" />
+      <div className="h-safe-area-inset-bottom" style={{ background: 'hsl(var(--dsm-card))' }} />
     </nav>
   );
 }
