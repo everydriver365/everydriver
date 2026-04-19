@@ -353,22 +353,22 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                   {/* Time column */}
                   <div
                     style={{
-                      minWidth: 44,
+                      minWidth: 40,
                       textAlign: "right",
                       flexShrink: 0,
                       paddingTop: 2,
                     }}
                   >
-                    <div style={{ fontSize: 14, fontWeight: 500, color: PAL.text, lineHeight: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: PAL.textNavyDeep, lineHeight: 1 }}>
                       {time.hour}
                     </div>
                     {time.period && (
                       <div
                         style={{
-                          fontSize: 10,
+                          fontSize: 9,
                           color: PAL.textSubtle,
                           letterSpacing: 0.5,
-                          marginTop: 3,
+                          marginTop: 2,
                           fontWeight: 500,
                         }}
                       >
