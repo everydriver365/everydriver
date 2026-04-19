@@ -166,39 +166,46 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
         fontVariantNumeric: "tabular-nums",
       }}
     >
-      {/* ── Section header (sits on warm paper, above the tray) ── */}
-      <SectionHeader
-        title={isTomorrow ? "Tomorrow's schedule" : "Today's schedule"}
-        category="schedule"
-        titleColor={PAL.textNavyDeep}
-        meta={
-          isLoading
-            ? undefined
-            : `${dateLabel} · ${lessonCount} lesson${lessonCount === 1 ? "" : "s"}`
-        }
-        metaLoading={isLoading}
-      />
-
       <div style={{ padding: "0 16px" }}>
-        {/* ── Cream tray ── */}
+        {/* ── White tray with navy header strip ── */}
         <div
           style={{
-            background: PAL.trayBg,
-            border: `0.5px solid ${PAL.trayBorder}`,
+            background: PAL.card,
+            border: `0.5px solid ${PAL.hairline}`,
             borderRadius: 16,
-            padding: 12,
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
+            overflow: "hidden",
           }}
         >
+          {/* ── Navy header strip ── */}
+          <div
+            className="flex items-center"
+            style={{
+              background: PAL.textNavyDeep,
+              padding: "10px 14px",
+              gap: 10,
+            }}
+          >
+            <Calendar size={14} strokeWidth={2} color="#B5D4F4" />
+            <span style={{ fontSize: 13, fontWeight: 500, color: "#FFFFFF" }}>
+              {isTomorrow ? "Tomorrow's schedule" : "Today's schedule"}
+            </span>
+            <span style={{ marginLeft: "auto", fontSize: 11, color: "#85B7EB" }}>
+              {isLoading ? (
+                <SkeletonBlock width={120} height={11} />
+              ) : (
+                `${dateLabel} · ${lessonCount} lesson${lessonCount === 1 ? "" : "s"}`
+              )}
+            </span>
+          </div>
+
+          {/* ── Inner content area ── */}
+          <div style={{ padding: 12 }}>
           {/* ── Day toggle + duration chip ── */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between" style={{ marginBottom: 10 }}>
             <div
               className="flex shrink-0"
               style={{
-                background: PAL.card,
-                border: `0.5px solid ${PAL.hairline}`,
+                background: PAL.chipNeutralBg,
                 borderRadius: 999,
                 padding: 3,
               }}
@@ -246,6 +253,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             style={{
               gap: 14,
               paddingBottom: 10,
+              marginBottom: 10,
               borderBottom: `0.5px solid ${PAL.trayBorder}`,
             }}
           >
@@ -286,15 +294,9 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             )}
           </div>
 
-          {/* ── Lesson timeline card ── */}
-          <div
-            style={{
-              background: PAL.card,
-              border: `0.5px solid ${PAL.hairline}`,
-              borderRadius: 10,
-              padding: "12px 14px",
-            }}
-          >
+          {/* ── Lesson timeline (no inner card — tray is the card) ── */}
+          <div>
+
         {isLoading ? (
           <div className="flex flex-col" style={{ gap: 14 }}>
             {[0, 1, 2].map((i) => (
@@ -466,9 +468,15 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
         )}
       </div>
 
-      {/* ── Footer actions ── */}
-          {/* ── Footer actions (inside tray) ── */}
-          <div className="flex items-center justify-between" style={{ marginTop: 0 }}>
+          {/* ── Footer actions ── */}
+          <div
+            className="flex items-center justify-between"
+            style={{
+              marginTop: 10,
+              paddingTop: 10,
+              borderTop: `0.5px solid ${PAL.trayBorder}`,
+            }}
+          >
             <Link
               to="/instructor/schedule"
               className="flex items-center"
@@ -494,8 +502,10 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               Add lesson
             </button>
           </div>
+          </div>
+          {/* end inner content area */}
         </div>
-        {/* end cream tray */}
+        {/* end white tray */}
 
       {instructorId && (
         <AddLessonSheet
