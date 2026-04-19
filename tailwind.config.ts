@@ -119,7 +119,16 @@ export default {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
   			},
-  			hero: 'hsl(var(--hero-background))'
+  			hero: 'hsl(var(--hero-background))',
+  			'dsm-red': '#D12E2E',
+  			'dsm-blue': '#1a6fd4',
+  			'dsm-navy': '#0a0e27',
+  			'alert-red': '#E24B4A',
+  			'dsm-bg': '#f5f6fa',
+  			'text-secondary': '#5F5E5A',
+  			'text-tertiary': '#888888',
+  			'dsm-success': '#2e7d32',
+  			'dsm-success-soft': '#5DCAA5'
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
