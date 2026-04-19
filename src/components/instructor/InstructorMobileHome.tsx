@@ -619,8 +619,9 @@ export function InstructorMobileHome({
         {/* End of Day Summary */}
         <EndOfDaySummary instructorId={instructorId} />
 
-        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Upcoming Events</p>
-        <UpcomingEventsCard className="mb-6" />
+        <div className="mt-5">
+          <UpcomingEventsCard className="mb-6" />
+        </div>
 
 
         {/* 10. Floating Session Bar */}
