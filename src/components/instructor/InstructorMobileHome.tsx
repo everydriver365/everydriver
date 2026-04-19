@@ -576,7 +576,23 @@ export function InstructorMobileHome({
                   />
                 </div>
                 <NextUpTile
-...
+                  lessonId={nextLesson.lessonId}
+                  pupilId={nextLesson.pupilId}
+                  pupilName={nextLesson.pupilName}
+                  pupilProfileImage={nextLesson.pupilProfileImage}
+                  pupilPhone={nextLesson.pupilPhone}
+                  lessonDate={nextLesson.lessonDate}
+                  pickupPostcode={nextLesson.pickupPostcode}
+                  pickupLocation={nextLesson.pickupLocation}
+                  startTime={nextLesson.startTime}
+                  minutesUntil={nextLesson.minutesUntil}
+                  accountBalance={nextLesson.accountBalance}
+                  prepaidHours={nextLesson.prepaidHours}
+                  durationMinutes={nextLesson.durationMinutes}
+                  instructorId={instructorId}
+                  checkInStatus={nextLesson.checkInStatus}
+                  lastLessonPlan={nextLesson.lastLessonPlan}
+                />
               </div>
             )}
 
