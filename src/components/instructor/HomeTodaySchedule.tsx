@@ -15,22 +15,38 @@ interface HomeTodayScheduleProps {
 // Warm palette (matches global app theme)
 const PAL = {
   paper: "#F7F5F0",
+  trayBg: "#FAF8F3",
+  trayBorder: "#E8E5DC",
   card: "#FFFFFF",
   hairline: "#D3D1C7",
   text: "#2C2C2A",
   textMuted: "#5F5E5A",
   textSubtle: "#888780",
+  textNavyDeep: "#042C53",
   accentBlue: "#185FA5",
   accentBlueSoft: "#E6F1FB",
   accentBlueRing: "#B5D4F4",
   accentRed: "#A32D2D",
   accentGreen: "#0F6E56",
   accentGreenSoft: "#E1F5EE",
-  avatarBg: "#FAEEDA",
-  avatarText: "#854F0B",
+  avatarBg: "#F1EFE8",
+  avatarText: "#5F5E5A",
   chipNeutralBg: "#F1EFE8",
-  toggleActive: "#2C2C2A",
+  toggleActive: "#042C53",
 };
+
+function totalDurationLabel(mins: number): string {
+  if (mins <= 0) return "0h";
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h === 0) return `${m}m total`;
+  if (m === 0) return `${h}h total`;
+  return `${h}h ${m}m total`;
+}
+
+function formatCurrency(amount: number): string {
+  return amount.toLocaleString("en-GB");
+}
 
 function fmtTime(time: string) {
   try {
@@ -139,6 +155,8 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
     return `${Math.round(hours / 24)}d`;
   })();
 
+  const totalMinutes = lessons.reduce((sum, l) => sum + (l.durationMinutes || 0), 0);
+
   return (
     <div
       style={{
@@ -148,136 +166,135 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
         fontVariantNumeric: "tabular-nums",
       }}
     >
-      {/* ── Section header (sits on warm paper, with day toggle as right slot) ── */}
+      {/* ── Section header (sits on warm paper, above the tray) ── */}
       <SectionHeader
         title={isTomorrow ? "Tomorrow's schedule" : "Today's schedule"}
         category="schedule"
-        rightSlot={
-          <div
-            className="flex shrink-0"
-            style={{
-              background: PAL.card,
-              border: `0.5px solid ${PAL.hairline}`,
-              borderRadius: 999,
-              padding: 3,
-            }}
-          >
-            {(["today", "tomorrow"] as const).map((t) => {
-              const active = tab === t;
-              return (
-                <button
-                  key={t}
-                  onClick={() => setTab(t)}
-                  style={{
-                    background: active ? PAL.toggleActive : "transparent",
-                    color: active ? "#FFFFFF" : PAL.textMuted,
-                    fontSize: 11,
-                    fontWeight: 500,
-                    padding: "4px 10px",
-                    borderRadius: 999,
-                    transition: "all 0.15s",
-                  }}
-                >
-                  {t === "today" ? "Today" : "Tomorrow"}
-                </button>
-              );
-            })}
-          </div>
+        titleColor={PAL.textNavyDeep}
+        meta={
+          isLoading
+            ? undefined
+            : `${dateLabel} · ${lessonCount} lesson${lessonCount === 1 ? "" : "s"}`
         }
+        metaLoading={isLoading}
       />
 
       <div style={{ padding: "0 16px" }}>
+        {/* ── Cream tray ── */}
+        <div
+          style={{
+            background: PAL.trayBg,
+            border: `0.5px solid ${PAL.trayBorder}`,
+            borderRadius: 16,
+            padding: 12,
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+          }}
+        >
+          {/* ── Day toggle + duration chip ── */}
+          <div className="flex items-center justify-between">
+            <div
+              className="flex shrink-0"
+              style={{
+                background: PAL.card,
+                border: `0.5px solid ${PAL.hairline}`,
+                borderRadius: 999,
+                padding: 3,
+              }}
+            >
+              {(["today", "tomorrow"] as const).map((t) => {
+                const active = tab === t;
+                return (
+                  <button
+                    key={t}
+                    onClick={() => setTab(t)}
+                    style={{
+                      background: active ? PAL.toggleActive : "transparent",
+                      color: active ? "#FFFFFF" : PAL.textMuted,
+                      fontSize: 11,
+                      fontWeight: 500,
+                      padding: "4px 10px",
+                      borderRadius: 999,
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    {t === "today" ? "Today" : "Tomorrow"}
+                  </button>
+                );
+              })}
+            </div>
+            {!isLoading && totalMinutes > 0 && (
+              <span
+                style={{
+                  background: PAL.accentBlueSoft,
+                  color: PAL.accentBlue,
+                  fontSize: 10,
+                  fontWeight: 500,
+                  padding: "3px 8px",
+                  borderRadius: 999,
+                }}
+              >
+                {totalDurationLabel(totalMinutes)}
+              </span>
+            )}
+          </div>
 
-      {/* ── Date / summary line ── */}
-      <div
-        className="flex items-center"
-        style={{ marginBottom: 14, gap: 8, flexWrap: "wrap" }}
-      >
-        {isLoading ? (
-          <SkeletonBlock width={140} />
-        ) : (
-          <span style={{ fontSize: 12, color: PAL.textMuted }}>
-            {dateLabel} · {lessonCount} lesson{lessonCount === 1 ? "" : "s"}
-          </span>
-        )}
-        {!isLoading && totalHours > 0 && (
-          <span
+          {/* ── Inline summary strip ── */}
+          <div
+            className="flex items-center"
             style={{
-              background: PAL.accentGreenSoft,
-              color: PAL.accentGreen,
-              fontSize: 10,
-              fontWeight: 500,
-              padding: "2px 7px",
-              borderRadius: 999,
+              gap: 14,
+              paddingBottom: 10,
+              borderBottom: `0.5px solid ${PAL.trayBorder}`,
             }}
           >
-            {totalHoursLabel(totalHours)} total
-          </span>
-        )}
-      </div>
+            {isLoading ? (
+              <SkeletonBlock width={180} height={16} />
+            ) : (
+              <>
+                <span style={{ display: "inline-flex", alignItems: "baseline", gap: 4 }}>
+                  <span style={{ fontSize: 16, fontWeight: 500, color: PAL.textNavyDeep, lineHeight: 1 }}>
+                    {lessonCount}
+                  </span>
+                  <span style={{ fontSize: 11, color: PAL.textSubtle }}>
+                    {lessonCount === 1 ? "lesson" : "lessons"}
+                  </span>
+                </span>
+                <span style={{ display: "inline-flex", alignItems: "baseline", gap: 4 }}>
+                  <span style={{ fontSize: 16, fontWeight: 500, color: PAL.textNavyDeep, lineHeight: 1 }}>
+                    £{formatCurrency(earnings)}
+                  </span>
+                  <span style={{ fontSize: 11, color: PAL.textSubtle }}>earned</span>
+                </span>
+                {nextInLabel && (
+                  <span
+                    style={{
+                      marginLeft: "auto",
+                      display: "inline-flex",
+                      alignItems: "baseline",
+                      gap: 4,
+                    }}
+                  >
+                    <span style={{ fontSize: 11, color: PAL.textSubtle }}>Next in</span>
+                    <span style={{ fontSize: 16, fontWeight: 500, color: PAL.textNavyDeep, lineHeight: 1 }}>
+                      {nextInLabel}
+                    </span>
+                  </span>
+                )}
+              </>
+            )}
+          </div>
 
-      {/* ── Stats row (3 tiles) ── */}
-      <div className="grid grid-cols-3" style={{ gap: 8, marginBottom: 14 }}>
-        {[
-          {
-            label: "LESSONS",
-            value: isLoading ? null : String(lessonCount),
-            color: PAL.text,
-          },
-          {
-            label: "EARNINGS",
-            value: isLoading ? null : `£${earnings}`,
-            color: PAL.accentGreen,
-          },
-          {
-            label: "NEXT IN",
-            value: isLoading ? null : nextInLabel ?? "—",
-            color: nextInLabel ? PAL.text : PAL.textSubtle,
-          },
-        ].map((s) => (
+          {/* ── Lesson timeline card ── */}
           <div
-            key={s.label}
             style={{
               background: PAL.card,
               border: `0.5px solid ${PAL.hairline}`,
-              borderRadius: 12,
-              padding: 12,
+              borderRadius: 10,
+              padding: "12px 14px",
             }}
           >
-            <div
-              style={{
-                fontSize: 10,
-                color: PAL.textSubtle,
-                letterSpacing: 0.5,
-                marginBottom: 6,
-                fontWeight: 500,
-              }}
-            >
-              {s.label}
-            </div>
-            {s.value == null ? (
-              <SkeletonBlock width={48} height={20} />
-            ) : (
-              <div
-                style={{ fontSize: 20, fontWeight: 500, color: s.color, lineHeight: 1 }}
-              >
-                {s.value}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* ── Lesson timeline card ── */}
-      <div
-        style={{
-          background: PAL.card,
-          border: `0.5px solid ${PAL.hairline}`,
-          borderRadius: 12,
-          padding: "14px 16px",
-          marginBottom: 14,
-        }}
-      >
         {isLoading ? (
           <div className="flex flex-col" style={{ gap: 14 }}>
             {[0, 1, 2].map((i) => (
@@ -319,9 +336,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               const isLast = idx === lessons.length - 1;
               const initials = (lesson.pupilInitials || lesson.pupilName.slice(0, 2)).slice(0, 2).toUpperCase();
               const meta: string[] = [];
-              if (lesson.pickupPostcode || lesson.pickupLocation) {
-                meta.push(lesson.pickupPostcode || lesson.pickupLocation || "");
-              }
+              if (lesson.pickupPostcode) meta.push(lesson.pickupPostcode);
               meta.push(`£${lesson.amountDue ?? 0} outstanding`);
 
               return (
@@ -338,22 +353,22 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                   {/* Time column */}
                   <div
                     style={{
-                      minWidth: 44,
+                      minWidth: 40,
                       textAlign: "right",
                       flexShrink: 0,
                       paddingTop: 2,
                     }}
                   >
-                    <div style={{ fontSize: 14, fontWeight: 500, color: PAL.text, lineHeight: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: PAL.textNavyDeep, lineHeight: 1 }}>
                       {time.hour}
                     </div>
                     {time.period && (
                       <div
                         style={{
-                          fontSize: 10,
+                          fontSize: 9,
                           color: PAL.textSubtle,
                           letterSpacing: 0.5,
-                          marginTop: 3,
+                          marginTop: 2,
                           fontWeight: 500,
                         }}
                       >
@@ -400,12 +415,12 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                     <div
                       className="shrink-0 flex items-center justify-center"
                       style={{
-                        width: 28,
-                        height: 28,
+                        width: 26,
+                        height: 26,
                         borderRadius: "50%",
                         background: PAL.avatarBg,
                         color: PAL.avatarText,
-                        fontSize: 11,
+                        fontSize: 10,
                         fontWeight: 500,
                       }}
                     >
@@ -416,13 +431,13 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                     <div className="flex-1 min-w-0">
                       <div
                         className="truncate"
-                        style={{ fontSize: 14, fontWeight: 500, color: PAL.text, lineHeight: 1.2 }}
+                        style={{ fontSize: 13, fontWeight: 500, color: PAL.textNavyDeep, lineHeight: 1.2 }}
                       >
                         {sentenceName(lesson.pupilName)}
                       </div>
                       <div
                         className="truncate"
-                        style={{ fontSize: 12, color: PAL.textMuted, marginTop: 2 }}
+                        style={{ fontSize: 11, color: PAL.textMuted, marginTop: 1 }}
                       >
                         {meta.join(" · ")}
                       </div>
@@ -432,10 +447,10 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                     <span
                       className="shrink-0"
                       style={{
-                        fontSize: 11,
+                        fontSize: 10,
                         color: PAL.textMuted,
                         background: PAL.chipNeutralBg,
-                        padding: "3px 8px",
+                        padding: "2px 7px",
                         borderRadius: 999,
                         fontWeight: 500,
                       }}
@@ -448,52 +463,55 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             })}
 
             {/* End of day row */}
-            <div className="flex items-center" style={{ gap: 14, paddingTop: 4 }}>
-              <div style={{ minWidth: 44 }} />
+            <div className="flex items-center" style={{ gap: 14, paddingTop: 10 }}>
+              <div style={{ minWidth: 40 }} />
               <div className="shrink-0 flex justify-center" style={{ width: 10 }}>
                 <span
                   style={{
-                    width: 6,
-                    height: 6,
+                    width: 5,
+                    height: 5,
                     borderRadius: "50%",
                     background: PAL.hairline,
                     display: "inline-block",
                   }}
                 />
               </div>
-              <div style={{ fontSize: 11, color: PAL.textSubtle }}>End of day</div>
+              <div style={{ fontSize: 10, color: PAL.textSubtle }}>End of day</div>
             </div>
           </div>
         )}
       </div>
 
       {/* ── Footer actions ── */}
-      <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
-        <Link
-          to="/instructor/schedule"
-          className="flex items-center"
-          style={{ color: PAL.accentBlue, fontSize: 13, fontWeight: 500, gap: 4 }}
-        >
-          View full calendar
-          <ChevronRight size={12} strokeWidth={2} />
-        </Link>
-        <button
-          onClick={() => setAddOpen(true)}
-          className="flex items-center"
-          style={{
-            background: PAL.accentRed,
-            color: "#FFFFFF",
-            fontSize: 13,
-            fontWeight: 500,
-            padding: "8px 14px",
-            borderRadius: 999,
-            gap: 6,
-          }}
-        >
-          <Plus size={12} strokeWidth={2} color="#FFFFFF" />
-          Add lesson
-        </button>
-      </div>
+          {/* ── Footer actions (inside tray) ── */}
+          <div className="flex items-center justify-between" style={{ marginTop: 0 }}>
+            <Link
+              to="/instructor/schedule"
+              className="flex items-center"
+              style={{ color: PAL.accentBlue, fontSize: 12, fontWeight: 500, gap: 2 }}
+            >
+              View full calendar
+              <ChevronRight size={12} strokeWidth={2} />
+            </Link>
+            <button
+              onClick={() => setAddOpen(true)}
+              className="flex items-center"
+              style={{
+                background: PAL.textNavyDeep,
+                color: "#FFFFFF",
+                fontSize: 12,
+                fontWeight: 500,
+                padding: "7px 12px",
+                borderRadius: 999,
+                gap: 6,
+              }}
+            >
+              <Plus size={12} strokeWidth={2} color="#FFFFFF" />
+              Add lesson
+            </button>
+          </div>
+        </div>
+        {/* end cream tray */}
 
       {instructorId && (
         <AddLessonSheet
