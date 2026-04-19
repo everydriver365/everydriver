@@ -142,66 +142,55 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
     <div
       style={{
         background: PAL.paper,
-        padding: "0 16px",
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
         fontVariantNumeric: "tabular-nums",
       }}
     >
-      {/* ── Header row: title + day toggle ── */}
-      <div className="flex items-center justify-between" style={{ gap: 12 }}>
-        <div className="flex items-center min-w-0" style={{ gap: 10 }}>
+      {/* ── Section header (sits on warm paper, with day toggle as right slot) ── */}
+      <SectionHeader
+        title={isTomorrow ? "Tomorrow's schedule" : "Today's schedule"}
+        category="schedule"
+        rightSlot={
           <div
-            className="flex items-center justify-center shrink-0"
-            style={{ width: 32, height: 32, borderRadius: 8, background: PAL.accentBlueSoft }}
+            className="flex shrink-0"
+            style={{
+              background: PAL.card,
+              border: `0.5px solid ${PAL.hairline}`,
+              borderRadius: 999,
+              padding: 3,
+            }}
           >
-            <Calendar size={14} color={PAL.accentBlue} strokeWidth={2} />
+            {(["today", "tomorrow"] as const).map((t) => {
+              const active = tab === t;
+              return (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  style={{
+                    background: active ? PAL.toggleActive : "transparent",
+                    color: active ? "#FFFFFF" : PAL.textMuted,
+                    fontSize: 11,
+                    fontWeight: 500,
+                    padding: "4px 10px",
+                    borderRadius: 999,
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {t === "today" ? "Today" : "Tomorrow"}
+                </button>
+              );
+            })}
           </div>
-          <h3
-            style={{ fontSize: 16, fontWeight: 500, color: PAL.text, lineHeight: 1.2 }}
-            className="truncate"
-          >
-            {isTomorrow ? "Tomorrow's schedule" : "Today's schedule"}
-          </h3>
-        </div>
+        }
+      />
 
-        {/* Today / Tomorrow toggle */}
-        <div
-          className="flex shrink-0"
-          style={{
-            background: PAL.card,
-            border: `0.5px solid ${PAL.hairline}`,
-            borderRadius: 999,
-            padding: 3,
-          }}
-        >
-          {(["today", "tomorrow"] as const).map((t) => {
-            const active = tab === t;
-            return (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                style={{
-                  background: active ? PAL.toggleActive : "transparent",
-                  color: active ? "#FFFFFF" : PAL.textMuted,
-                  fontSize: 11,
-                  fontWeight: 500,
-                  padding: "4px 10px",
-                  borderRadius: 999,
-                  transition: "all 0.15s",
-                }}
-              >
-                {t === "today" ? "Today" : "Tomorrow"}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <div style={{ padding: "0 16px" }}>
 
-      {/* ── Date / summary line (indented to align with heading text) ── */}
+      {/* ── Date / summary line ── */}
       <div
         className="flex items-center"
-        style={{ paddingLeft: 42, marginTop: 6, marginBottom: 14, gap: 8, flexWrap: "wrap" }}
+        style={{ marginBottom: 14, gap: 8, flexWrap: "wrap" }}
       >
         {isLoading ? (
           <SkeletonBlock width={140} />
