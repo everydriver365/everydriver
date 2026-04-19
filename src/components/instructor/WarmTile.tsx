@@ -70,6 +70,12 @@ export interface WarmTileProps {
   className?: string;
   /** Optional override: use a custom node inside the icon square (e.g. img). */
   iconSlot?: ReactNode;
+  /** Optional override: tinted background colour for the icon square. */
+  iconBg?: string;
+  /** Optional override: explicit icon colour (used as fill + stroke for SF-style filled icons). */
+  iconColor?: string;
+  /** Render the icon filled SF-style (fill = iconColor). Defaults to true when iconColor is supplied. */
+  iconFilled?: boolean;
 }
 
 export function WarmTile({
@@ -85,8 +91,12 @@ export function WarmTile({
   onClick,
   className,
   iconSlot,
+  iconBg,
+  iconColor,
+  iconFilled,
 }: WarmTileProps) {
   const showBadge = typeof badgeCount === "number" && badgeCount > 0;
+  const useFilled = iconFilled ?? !!iconColor;
 
   const inner = (
     <div
@@ -115,10 +125,10 @@ export function WarmTile({
       >
         <div
           style={{
-            width: 32,
-            height: 32,
-            borderRadius: 8,
-            background: "hsl(var(--dsm-tile-icon-bg))",
+            width: 36,
+            height: 36,
+            borderRadius: 12,
+            background: iconBg ?? "hsl(var(--dsm-tile-icon-bg))",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -128,9 +138,11 @@ export function WarmTile({
         >
           {iconSlot ?? (
             <Icon
-              size={16}
-              strokeWidth={1.6}
-              className={`dsm-tile-icon dsm-tile-icon-${category}`}
+              size={18}
+              strokeWidth={useFilled ? 1.4 : 1.6}
+              className={iconColor ? undefined : `dsm-tile-icon dsm-tile-icon-${category}`}
+              color={iconColor}
+              fill={useFilled ? iconColor ?? "currentColor" : "none"}
               style={{ strokeLinecap: "round", strokeLinejoin: "round" }}
             />
           )}

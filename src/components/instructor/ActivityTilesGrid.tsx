@@ -19,6 +19,8 @@ const tileConfig: {
   key: "pendingJobsCount" | "unreadMessagesCount" | "testRequestsCount" | "gapSlotsCount";
   emptySubtitle: string;
   filledSubtitle: (n: number) => string;
+  iconBg: string;
+  iconColor: string;
 }[] = [
   {
     title: "Job offers",
@@ -28,6 +30,8 @@ const tileConfig: {
     key: "pendingJobsCount",
     emptySubtitle: "No pending jobs",
     filledSubtitle: (n) => `${n} pending ${n === 1 ? "job" : "jobs"}`,
+    iconBg: "hsl(var(--dsm-tint-red-bg))",
+    iconColor: "hsl(var(--dsm-tint-red-fg))",
   },
   {
     title: "Messages",
@@ -37,6 +41,8 @@ const tileConfig: {
     key: "unreadMessagesCount",
     emptySubtitle: "All caught up",
     filledSubtitle: (n) => `${n} unread ${n === 1 ? "chat" : "chats"}`,
+    iconBg: "hsl(var(--dsm-tint-blue-bg))",
+    iconColor: "hsl(var(--dsm-tint-blue-fg))",
   },
   {
     title: "Tests",
@@ -46,6 +52,8 @@ const tileConfig: {
     key: "testRequestsCount",
     emptySubtitle: "No swap requests",
     filledSubtitle: (n) => `${n} swap ${n === 1 ? "request" : "requests"}`,
+    iconBg: "hsl(var(--dsm-tint-green-bg))",
+    iconColor: "hsl(var(--dsm-tint-green-fg))",
   },
   {
     title: "Fill gaps",
@@ -55,6 +63,8 @@ const tileConfig: {
     key: "gapSlotsCount",
     emptySubtitle: "No open slots",
     filledSubtitle: (n) => `${n} open ${n === 1 ? "slot" : "slots"}`,
+    iconBg: "hsl(var(--dsm-tint-orange-bg))",
+    iconColor: "hsl(var(--dsm-tint-orange-fg))",
   },
 ];
 
@@ -114,6 +124,9 @@ export function ActivityTilesGrid({
               subtitle={count > 0 ? tile.filledSubtitle(count) : tile.emptySubtitle}
               category={tile.category}
               badgeCount={count}
+              iconBg={tile.iconBg}
+              iconColor={tile.iconColor}
+              iconFilled
               onClick={() => navigate(tile.route)}
             />
           );
