@@ -156,6 +156,24 @@
     transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
   }
 
+  /* WarmTile icon strokes per category — light mode (default) */
+  .instructor-portal .dsm-tile-icon { color: #7A8FAA; }
+  .instructor-portal .dsm-tile-icon-schedule,
+  .instructor-portal .dsm-tile-icon-money    { color: #2255FF; }
+  .instructor-portal .dsm-tile-icon-planning,
+  .instructor-portal .dsm-tile-icon-people,
+  .instructor-portal .dsm-tile-icon-messages { color: #0F1B2D; }
+  .instructor-portal .dsm-tile-icon-urgent   { color: #E02020; }
+  .instructor-portal .dsm-tile-icon-neutral  { color: #7A8FAA; }
+  /* Dark mode overrides */
+  .instructor-portal.dsm-dark .dsm-tile-icon-schedule,
+  .instructor-portal.dsm-dark .dsm-tile-icon-money    { color: #4D7DFF; }
+  .instructor-portal.dsm-dark .dsm-tile-icon-planning,
+  .instructor-portal.dsm-dark .dsm-tile-icon-people,
+  .instructor-portal.dsm-dark .dsm-tile-icon-messages { color: #E8F0FF; }
+  .instructor-portal.dsm-dark .dsm-tile-icon-urgent   { color: #FF4D4D; }
+  .instructor-portal.dsm-dark .dsm-tile-icon-neutral  { color: #7A8FAA; }
+
   .instructor-shell-bg {
     background-color: hsl(var(--dsm-bg, 35 17% 96%));
     min-height: 100dvh;
