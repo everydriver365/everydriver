@@ -93,14 +93,12 @@ export function MobileBlueHeader({
   const dateBadge = `TODAY · ${format(new Date(), "d MMMM yyyy")}`;
 
   return (
-    <header className="sticky top-0 z-40">
-      {/* Safe area fill (matches gradient) */}
-      <div
-        style={{
-          paddingTop: "env(safe-area-inset-top)",
-          background: HEADER_GRADIENT,
-        }}
-      />
+    <header
+      className="sticky top-0 z-40"
+      style={{ background: HEADER_GRADIENT }}
+    >
+      {/* Safe area inset filled by parent gradient */}
+      <div style={{ height: "env(safe-area-inset-top)" }} />
       <div
         className="relative overflow-hidden"
         style={{
