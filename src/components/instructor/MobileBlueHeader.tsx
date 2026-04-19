@@ -90,6 +90,7 @@ export function MobileBlueHeader({
           >
             <Plus size={18} strokeWidth={1.8} color={ICON_COLOR} />
           </button>
+          <DSMThemeToggle size={18} className="!h-8 !w-8" />
           <button
             onClick={onMenu}
             className="flex items-center justify-center"
