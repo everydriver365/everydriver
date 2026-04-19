@@ -338,13 +338,33 @@ export function QuickActionTiles({
     return null;
   };
 
+  // Category mapping for warm DSM tiles (icon stroke colour)
+  const getCategory = (action: QuickAction): "schedule" | "planning" | "people" | "money" | "messages" | "urgent" | "neutral" => {
+    const id = action.id;
+    if (id === "track-lesson") return "urgent";
+    if (id === "schedule" || id === "satnav" || id === "fill-gaps" || id === "find-my-car" || id === "find-nearby" || id === "availability" || id === "test-requests" || id === "test-results") return "schedule";
+    if (id === "cpd-log") return "planning";
+    if (id === "pupils" || id === "referrals") return "people";
+    if (id === "take-payment" || id === "payments" || id === "expenses") return "money";
+    if (id === "messages") return "messages";
+    if (isJobOffersAction(action)) return "urgent";
+    return "neutral";
+  };
+
+  const STROKE: Record<string, string> = {
+    schedule: "#185FA5", planning: "#042C53", people: "#2C2C2A",
+    money: "#185FA5", messages: "#2C2C2A", urgent: "#A32D2D", neutral: "#5F5E5A",
+  };
+
   // Loading skeleton
   if (loading) {
     return (
-      <div className="grid grid-cols-2 gap-3">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-card rounded-2xl shadow-lift p-4 h-[68px] animate-pulse shadow-[0_1px_3px_rgba(0,0,0,0.06)]" />
-        ))}
+      <div style={{ padding: "0 16px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} style={{ background: "#FFFFFF", border: "0.5px solid #D3D1C7", borderRadius: 12, height: 88, opacity: 0.6 }} className="animate-pulse" />
+          ))}
+        </div>
       </div>
     );
   }
