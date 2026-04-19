@@ -20,7 +20,7 @@ interface Props {
 }
 
 const HEADER_GRADIENT =
-  "linear-gradient(145deg, #1d2839 0%, #2a394f 50%, #3a4d6b 100%)";
+  "linear-gradient(145deg, #0f56ad 0%, #1a6fd4 50%, #4a93e3 100%)";
 
 const getGreeting = () => {
   const h = new Date().getHours();
