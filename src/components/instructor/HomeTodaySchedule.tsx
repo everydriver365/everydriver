@@ -483,32 +483,35 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
       </div>
 
       {/* ── Footer actions ── */}
-      <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
-        <Link
-          to="/instructor/schedule"
-          className="flex items-center"
-          style={{ color: PAL.accentBlue, fontSize: 13, fontWeight: 500, gap: 4 }}
-        >
-          View full calendar
-          <ChevronRight size={12} strokeWidth={2} />
-        </Link>
-        <button
-          onClick={() => setAddOpen(true)}
-          className="flex items-center"
-          style={{
-            background: PAL.accentRed,
-            color: "#FFFFFF",
-            fontSize: 13,
-            fontWeight: 500,
-            padding: "8px 14px",
-            borderRadius: 999,
-            gap: 6,
-          }}
-        >
-          <Plus size={12} strokeWidth={2} color="#FFFFFF" />
-          Add lesson
-        </button>
-      </div>
+          {/* ── Footer actions (inside tray) ── */}
+          <div className="flex items-center justify-between" style={{ marginTop: 0 }}>
+            <Link
+              to="/instructor/schedule"
+              className="flex items-center"
+              style={{ color: PAL.accentBlue, fontSize: 12, fontWeight: 500, gap: 2 }}
+            >
+              View full calendar
+              <ChevronRight size={12} strokeWidth={2} />
+            </Link>
+            <button
+              onClick={() => setAddOpen(true)}
+              className="flex items-center"
+              style={{
+                background: PAL.textNavyDeep,
+                color: "#FFFFFF",
+                fontSize: 12,
+                fontWeight: 500,
+                padding: "7px 12px",
+                borderRadius: 999,
+                gap: 6,
+              }}
+            >
+              <Plus size={12} strokeWidth={2} color="#FFFFFF" />
+              Add lesson
+            </button>
+          </div>
+        </div>
+        {/* end cream tray */}
 
       {instructorId && (
         <AddLessonSheet
