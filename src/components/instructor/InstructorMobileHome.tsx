@@ -620,8 +620,8 @@ export function InstructorMobileHome({
         <VehicleHealthCard instructorId={instructorId} className="mt-3" />
         <IdleTimeCostCard instructorId={instructorId} className="mt-3" />
 
-        {/* End of Day Summary */}
-        <EndOfDaySummary instructorId={instructorId} />
+
+
 
         <div className="mt-5">
           <UpcomingEventsCard className="mb-6" />
