@@ -555,40 +555,28 @@ export function InstructorMobileHome({
       </div>
 
       {/* 4. Your Day */}
-      <div className="px-4">
+      <div>
 
         {/* Empty state or lessons */}
         {!nextLesson && (!todayLessons || todayLessons.length === 0) && (todayOverview?.lessonCount || 0) === 0 ? (
-          <QuietDayEmpty className="mt-4" />
+          <div className="px-4">
+            <QuietDayEmpty className="mt-4" />
+          </div>
         ) : (
           <>
             {nextLesson && (
               <div className="mt-2 mb-6">
-                <SectionHeader
-                  title="Next lesson"
-                  category="navigation"
-                  titleColor="#042C53"
-                  meta={nextLesson.pupilName}
-                  metaColor="#185FA5"
-                />
+                <div className="px-4">
+                  <SectionHeader
+                    title="Next lesson"
+                    category="navigation"
+                    titleColor="#042C53"
+                    meta={nextLesson.pupilName}
+                    metaColor="#185FA5"
+                  />
+                </div>
                 <NextUpTile
-                  lessonId={nextLesson.lessonId}
-                  pupilId={nextLesson.pupilId}
-                  pupilName={nextLesson.pupilName}
-                  pupilProfileImage={nextLesson.pupilProfileImage}
-                  pupilPhone={nextLesson.pupilPhone}
-                  lessonDate={nextLesson.lessonDate}
-                  pickupPostcode={nextLesson.pickupPostcode}
-                  pickupLocation={nextLesson.pickupLocation}
-                  startTime={nextLesson.startTime}
-                  minutesUntil={nextLesson.minutesUntil}
-                  accountBalance={nextLesson.accountBalance}
-                  prepaidHours={nextLesson.prepaidHours}
-                  durationMinutes={nextLesson.durationMinutes}
-                  instructorId={instructorId}
-                  checkInStatus={nextLesson.checkInStatus}
-                  lastLessonPlan={nextLesson.lastLessonPlan}
-                />
+...
               </div>
             )}
 
@@ -601,7 +589,9 @@ export function InstructorMobileHome({
 
         {/* Quick Access — Swipeable Grid */}
         <div className="mt-5">
-          <SectionHeader title="Quick actions" category="navigation" />
+          <div className="px-4">
+            <SectionHeader title="Quick actions" category="navigation" />
+          </div>
           <SwipeableQuickAccess />
         </div>
 
