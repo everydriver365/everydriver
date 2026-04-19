@@ -71,6 +71,7 @@ import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 import { PupilMilestoneFeed } from "@/components/instructor/PupilMilestoneFeed";
 
 import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
+import { WarmHomeTiles } from "@/components/instructor/WarmHomeTiles";
 import { ReadyToTeachTile } from "@/components/instructor/ReadyToTeachTile";
 import instructorHeroImg from "@/assets/hero-learner.jpg";
 import jobOffersIcon from "@/assets/job-offers-icon.png";
@@ -471,6 +472,9 @@ export function InstructorMobileHome({
           Here's what needs you today
         </p>
       </div>
+
+      {/* Warm priority tiles: action needed, up next, week at a glance */}
+      <WarmHomeTiles instructorId={instructorId} />
 
       {/* Sticky next-up bar */}
       <AnimatePresence>
