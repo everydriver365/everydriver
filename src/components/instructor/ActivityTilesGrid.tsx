@@ -124,6 +124,9 @@ export function ActivityTilesGrid({
               subtitle={count > 0 ? tile.filledSubtitle(count) : tile.emptySubtitle}
               category={tile.category}
               badgeCount={count}
+              iconBg={tile.iconBg}
+              iconColor={tile.iconColor}
+              iconFilled
               onClick={() => navigate(tile.route)}
             />
           );
