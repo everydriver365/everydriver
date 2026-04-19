@@ -563,7 +563,7 @@ export function InstructorMobileHome({
         ) : (
           <>
             {nextLesson && (
-              <div className="mt-2">
+              <div className="mt-2 mb-6">
                 <SectionHeader
                   title="Next lesson"
                   category="navigation"
