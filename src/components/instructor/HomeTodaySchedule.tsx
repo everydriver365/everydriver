@@ -462,22 +462,6 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               );
             })}
 
-            {/* End of day row */}
-            <div className="flex items-center" style={{ gap: 14, paddingTop: 10 }}>
-              <div style={{ minWidth: 40 }} />
-              <div className="shrink-0 flex justify-center" style={{ width: 10 }}>
-                <span
-                  style={{
-                    width: 5,
-                    height: 5,
-                    borderRadius: "50%",
-                    background: PAL.hairline,
-                    display: "inline-block",
-                  }}
-                />
-              </div>
-              <div style={{ fontSize: 10, color: PAL.textSubtle }}>End of day</div>
-            </div>
           </div>
         )}
       </div>
