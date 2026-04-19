@@ -17,7 +17,6 @@ import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 
 import { HomeQuickActions } from "@/components/instructor/HomeQuickActions";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
-import { TomorrowPreviewCard } from "@/components/instructor/TomorrowPreviewCard";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
 import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
 import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
