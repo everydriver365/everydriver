@@ -611,26 +611,28 @@ export function InstructorMobileHome({
           <SwipeableQuickAccess />
         </div>
 
-        {/* Impact Alerts */}
-        <div className="mt-5">
-          <ImpactAlertCard instructorId={instructorId} />
-        </div>
+        <div className="px-4">
+          {/* Impact Alerts */}
+          <div className="mt-5">
+            <ImpactAlertCard instructorId={instructorId} />
+          </div>
 
-        {/* Insights Tiles */}
-        <div className="mt-5">
-          <SectionHeader title="Insights" category="navigation" />
-          <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
-        </div>
+          {/* Insights Tiles */}
+          <div className="mt-5">
+            <SectionHeader title="Insights" category="navigation" />
+            <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
+          </div>
 
-        {/* Vehicle Health & Idle Time */}
-        <VehicleHealthCard instructorId={instructorId} className="mt-3" />
-        <IdleTimeCostCard instructorId={instructorId} className="mt-3" />
-
-
+          {/* Vehicle Health & Idle Time */}
+          <VehicleHealthCard instructorId={instructorId} className="mt-3" />
+          <IdleTimeCostCard instructorId={instructorId} className="mt-3" />
 
 
-        <div className="mt-5">
-          <UpcomingEventsCard className="mb-6" />
+
+
+          <div className="mt-5">
+            <UpcomingEventsCard className="mb-6" />
+          </div>
         </div>
 
 
