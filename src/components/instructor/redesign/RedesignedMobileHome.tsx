@@ -85,7 +85,8 @@ export function RedesignedMobileHome({ instructorId, firstName }: Props) {
       <div style={{ padding: "8px 16px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
         <MapHero
           countdown={countdown}
-          pickupLocation={nextLesson?.pickupLocation || nextLesson?.pickupPostcode || null}
+          pickupLocation={nextLesson?.pickupLocation || null}
+          pickupPostcode={nextLesson?.pickupPostcode || null}
           startTime={nextLesson?.startTime || null}
           etaMinutes={etaMinutes ?? null}
           lessonId={nextLesson?.lessonId}
