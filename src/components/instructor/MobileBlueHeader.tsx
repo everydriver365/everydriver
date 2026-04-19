@@ -112,7 +112,7 @@ export function MobileBlueHeader({
       >
 
         {/* Top nav row */}
-        <div className="relative flex items-center justify-between px-4 py-[10px]">
+        <div className="relative flex items-center justify-between px-3 py-3 min-h-[64px] gap-2">
           {/* Left: bell or back */}
           <div className="flex items-center">
             {showBackButton ? (
