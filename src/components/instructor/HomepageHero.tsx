@@ -235,10 +235,10 @@ export function HomepageHero({
                       style={{
                         fontSize: 11,
                         fontWeight: 600,
-                        color: "#34C759",
+                        color: "#1F86FF",
                         letterSpacing: 0.8,
                         textTransform: "uppercase" as const,
-                        backgroundColor: "rgba(52,199,89,0.12)",
+                        backgroundColor: "rgba(31,134,255,0.12)",
                         padding: "4px 10px",
                         borderRadius: 20,
                       }}
@@ -265,11 +265,11 @@ export function HomepageHero({
                     />
                     <ConcentricRings
                       rings={[
-                        { completed: weeklyLessonsCompleted, total: weeklyLessonsTotal, gradId: "ringWeek", start: "#A8E063", end: "#34C759", trackColor: "rgba(52,199,89,0.15)" },
+                        { completed: weeklyLessonsCompleted, total: weeklyLessonsTotal, gradId: "ringWeek", start: "#4DA6FF", end: "#1F86FF", trackColor: "rgba(31,134,255,0.15)" },
                       ]}
                       centerCompleted={slide.completed}
                       centerTotal={slide.total}
-                      centerColor={i === 0 ? "#007AFF" : "#34C759"}
+                      centerColor={"#1F86FF"}
                     />
                     <div className="flex-1 min-w-0 relative z-10">
                       <p style={{ fontSize: 15, fontWeight: 700, color: "#1C1C1E", marginBottom: 1 }}>
@@ -277,9 +277,9 @@ export function HomepageHero({
                       </p>
                       <p style={{ fontSize: 12, color: "#8E8E93" }}>{slide.subtitle}</p>
                       {/* Progress bar */}
-                      <div style={{ height: 4, borderRadius: 2, backgroundColor: slide.total === 0 ? "rgba(0,122,255,0.15)" : "#E5E5EA", marginTop: 10, overflow: "hidden" }}>
+                      <div style={{ height: 4, borderRadius: 2, backgroundColor: slide.total === 0 ? "rgba(31,134,255,0.15)" : "#E5E5EA", marginTop: 10, overflow: "hidden" }}>
                         <motion.div
-                          style={{ height: "100%", borderRadius: 2, background: "linear-gradient(90deg, #34C759, #30B0C7)" }}
+                          style={{ height: "100%", borderRadius: 2, background: "linear-gradient(90deg, #1F86FF, #0066E0)" }}
                           initial={{ width: 0 }}
                           animate={{ width: `${slide.total > 0 ? Math.min((slide.completed / slide.total) * 100, 100) : 0}%` }}
                           transition={{ duration: 1, delay: 0.5 }}
