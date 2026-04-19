@@ -47,6 +47,10 @@ export interface SectionHeaderProps {
   className?: string;
   /** Extra horizontal padding for the row (defaults to 16px to match grids). */
   paddingX?: number;
+  /** Optional override for the title text colour (default #2C2C2A). */
+  titleColor?: string;
+  /** Optional override for the meta text colour (default #888780). */
+  metaColor?: string;
 }
 
 export function SectionHeader({
@@ -57,6 +61,8 @@ export function SectionHeader({
   metaLoading = false,
   className,
   paddingX = 16,
+  titleColor = "#2C2C2A",
+  metaColor = "#888780",
 }: SectionHeaderProps) {
   const accent = ACCENT_BY_CATEGORY[category];
 
@@ -86,7 +92,7 @@ export function SectionHeader({
         style={{
           fontSize: 14,
           fontWeight: 500,
-          color: "#2C2C2A",
+          color: titleColor,
           lineHeight: 1.2,
           margin: 0,
           fontFamily: "Inter, sans-serif",
@@ -103,7 +109,7 @@ export function SectionHeader({
           style={{
             marginLeft: "auto",
             fontSize: 11,
-            color: "#888780",
+            color: metaColor,
             opacity: 0.5,
             fontFamily: "Inter, sans-serif",
           }}
@@ -115,7 +121,7 @@ export function SectionHeader({
           style={{
             marginLeft: "auto",
             fontSize: 11,
-            color: "#888780",
+            color: metaColor,
             fontFamily: "Inter, sans-serif",
             whiteSpace: "nowrap",
             overflow: "hidden",
