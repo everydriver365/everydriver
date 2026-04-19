@@ -524,7 +524,9 @@ export function InstructorMobileHome({
       />
 
       {/* Telematics Tile */}
-      <TelematicsTile />
+      <div className="mb-6">
+        <TelematicsTile />
+      </div>
 
       <div className="px-4">
         <CelebrationConfetti
