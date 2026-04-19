@@ -594,7 +594,7 @@ export function InstructorMobileHome({
         )}
 
         {/* 7. Quick Access — Swipeable Grid */}
-        <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Quick Access</p>
+        <p style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: 0.8, textTransform: "uppercase", margin: "24px 16px 12px", fontFamily: "Inter, sans-serif" }}>Quick access</p>
         <SwipeableQuickAccess />
 
         {/* Impact Alerts */}
