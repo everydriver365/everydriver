@@ -152,7 +152,7 @@ export function RedesignedMobileHome({ instructorId, firstName }: Props) {
         <TelematicsPanel
           reg={vehicleReg}
           vehicle={vehicleName}
-          isOnline={true}
+          isOnline={vehicleOnline}
           onClick={() => navigate("/instructor/telematics")}
         />
       </div>
