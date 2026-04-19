@@ -617,11 +617,17 @@ export function InstructorMobileHome({
             <ImpactAlertCard instructorId={instructorId} />
           </div>
 
-          {/* Insights Tiles */}
-          <div className="mt-5">
+        </div>
+
+        {/* Insights Tiles */}
+        <div className="mt-5">
+          <div className="px-4">
             <SectionHeader title="Insights" category="navigation" />
-            <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
           </div>
+          <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
+        </div>
+
+        <div className="px-4">
 
           {/* Vehicle Health & Idle Time */}
           <VehicleHealthCard instructorId={instructorId} className="mt-3" />
