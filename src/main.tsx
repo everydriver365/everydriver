@@ -5,12 +5,15 @@ import "./index.css";
 import "leaflet/dist/leaflet.css";
 import "./i18n";
 import { ThemeProvider } from "./context/ThemeContext";
+import { InstructorThemeProvider } from "./context/InstructorThemeContext";
 import { AppErrorBoundary } from "@/components/common/AppErrorBoundary";
 
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider>
-    <AppErrorBoundary>
-      <App />
-    </AppErrorBoundary>
+    <InstructorThemeProvider>
+      <AppErrorBoundary>
+        <App />
+      </AppErrorBoundary>
+    </InstructorThemeProvider>
   </ThemeProvider>
 );
