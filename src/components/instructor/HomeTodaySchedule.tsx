@@ -6,6 +6,7 @@ import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useDayLessons } from "@/hooks/useDayLessons";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { useQueryClient } from "@tanstack/react-query";
+import { SectionHeader } from "@/components/instructor/SectionHeader";
 
 interface HomeTodayScheduleProps {
   instructorId: string | undefined;
@@ -507,6 +508,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           }}
         />
       )}
+      </div>
     </div>
   );
 }
