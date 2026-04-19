@@ -16,12 +16,22 @@ import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 
 import { HomeQuickActions } from "@/components/instructor/HomeQuickActions";
+import { ActivityTilesGrid } from "@/components/instructor/ActivityTilesGrid";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
-import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
-import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
+import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
+import { NextUpTile } from "@/components/instructor/NextUpTile";
+import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
+import { PupilMilestoneFeed } from "@/components/instructor/PupilMilestoneFeed";
+import { ImpactAlertCard } from "@/components/instructor/ImpactAlertCard";
+import { IdleTimeCostCard } from "@/components/instructor/IdleTimeCostCard";
 import { VehicleHealthCard } from "@/components/instructor/VehicleHealthCard";
 import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
+import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
+import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
+import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
+import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
+import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
 
 interface Props {
   instructorId: string | undefined;
@@ -185,33 +195,72 @@ export function RedesignedMobileHome({
           onClick={() => navigate("/instructor/telematics")}
         />
 
-        {/* ── Restored sections from previous home ─────────────────── */}
+        {/* ── Restored standard-layout sections (below redesign) ──── */}
 
-        <div className="pt-4 pb-1">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Today
-          </h2>
-        </div>
+        {/* Morning briefing */}
+        {instructorId && <MorningBriefingCard instructorId={instructorId} />}
 
+        {/* Next up tile (full pupil card) */}
+        {nextLesson && (
+          <NextUpTile
+            lessonId={nextLesson.lessonId}
+            pupilId={nextLesson.pupilId}
+            pupilName={nextLesson.pupilName}
+            pupilProfileImage={nextLesson.pupilProfileImage}
+            pupilPhone={nextLesson.pupilPhone}
+            lessonDate={nextLesson.lessonDate}
+            pickupPostcode={nextLesson.pickupPostcode}
+            pickupLocation={nextLesson.pickupLocation}
+            startTime={nextLesson.startTime}
+            minutesUntil={nextLesson.minutesUntil}
+            durationMinutes={nextLesson.durationMinutes}
+            accountBalance={nextLesson.accountBalance}
+            prepaidHours={nextLesson.prepaidHours}
+            checkInStatus={nextLesson.checkInStatus}
+            lastLessonPlan={nextLesson.lastLessonPlan}
+          />
+        )}
+
+        {/* Activity tiles grid (Job Offers / Messages / Tests / Fill Gaps) */}
+        <ActivityTilesGrid
+          pendingJobsCount={pendingJobsCount}
+          unreadMessagesCount={unreadCount}
+          testRequestsCount={testSwapCount}
+          gapSlotsCount={gapSlotsCount}
+        />
+
+        {/* Today's lessons list */}
         {todayLessons && todayLessons.length > 0 && instructorId && (
           <TodayLessonsList lessons={todayLessons} instructorId={instructorId} />
         )}
 
+        {/* Smart reminders */}
         <SmartRemindersCard />
 
-        <div className="pt-4 pb-1">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Quick actions
-          </h2>
-        </div>
+        {/* Insights */}
+        <InsightTilesGrid gapCount={gapSlotsCount} />
+
+        {/* Quick actions grid */}
         <HomeQuickActions onTakePayment={onPaymentClick} />
 
+        {/* Agenda + plan widgets */}
+        {instructorId && <UnifiedAgendaTile instructorId={instructorId} />}
+        <PlanWidget />
+
+        {/* Vehicle + safety alerts */}
+        {instructorId && <ImpactAlertCard instructorId={instructorId} />}
+        {instructorId && <IdleTimeCostCard instructorId={instructorId} />}
         {instructorId && <VehicleHealthCard instructorId={instructorId} />}
 
+        {/* Pupil milestones */}
+        {instructorId && <PupilMilestoneFeed instructorId={instructorId} />}
+
+        {/* Referral stats */}
+        <ReferralStatsWidget />
+
+        {/* Events + promos */}
         <UpcomingEventsCard />
-
         <WaitingRoomPromoTile />
-
         <BottomPromoGroup />
       </div>
     </div>
