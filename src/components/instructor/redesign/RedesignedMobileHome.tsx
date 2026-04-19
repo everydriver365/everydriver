@@ -46,7 +46,18 @@ const getGreeting = () => {
   return "Good night";
 };
 
-export function RedesignedMobileHome({ instructorId, firstName }: Props) {
+export function RedesignedMobileHome({
+  instructorId,
+  firstName,
+  instructor,
+  onPaymentClick,
+  pendingJobsCount = 0,
+  unreadCount = 0,
+  testSwapCount = 0,
+  gapSlotsCount = 0,
+  todayLessons,
+  tomorrowLessons,
+}: Props) {
   const navigate = useNavigate();
   const { data: nextLesson } = useNextLessonDetails(instructorId);
   const { data: weeklyGoals } = useWeeklyGoals(instructorId);
