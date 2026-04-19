@@ -138,6 +138,17 @@
     --dsm-accent-blue: 226 100% 57%; /* #2255FF */
     --dsm-border: 218 18% 88%;
     --dsm-tile-icon-bg: 218 27% 95%;
+    /* SF-style tinted icon containers (light) */
+    --dsm-tint-red-bg: 0 100% 95%;       /* #FFE8E8 */
+    --dsm-tint-red-fg: 0 75% 50%;        /* #E02020 */
+    --dsm-tint-blue-bg: 226 100% 95%;    /* #E8EEFF */
+    --dsm-tint-blue-fg: 226 100% 57%;    /* #2255FF */
+    --dsm-tint-green-bg: 138 41% 93%;    /* #E8F5EC */
+    --dsm-tint-green-fg: 145 63% 32%;    /* #1F8A4D */
+    --dsm-tint-orange-bg: 32 100% 94%;   /* #FFF0E0 */
+    --dsm-tint-orange-fg: 28 100% 50%;   /* #FF8A00 */
+    --dsm-tint-purple-bg: 256 100% 95%;  /* #EFE8FF */
+    --dsm-tint-purple-fg: 258 60% 48%;   /* #6E3DCC */
   }
   /* Dark mode for instructor app — toggled via .dsm-dark on .instructor-portal */
   .instructor-portal.dsm-dark {
@@ -149,6 +160,17 @@
     --dsm-accent-blue: 222 100% 65%; /* #4D7DFF */
     --dsm-border: 217 30% 20%;
     --dsm-tile-icon-bg: 217 38% 18%;
+    /* SF-style tinted icon containers (dark) */
+    --dsm-tint-red-bg: 0 50% 16%;        /* #3D1515 */
+    --dsm-tint-red-fg: 0 100% 70%;       /* #FF6666 */
+    --dsm-tint-blue-bg: 226 60% 15%;     /* #0F1A3D */
+    --dsm-tint-blue-fg: 222 100% 75%;    /* #80A0FF */
+    --dsm-tint-green-bg: 138 50% 12%;    /* #0F2D1A */
+    --dsm-tint-green-fg: 145 60% 60%;    /* #5BD089 */
+    --dsm-tint-orange-bg: 33 100% 12%;   /* #3D2200 */
+    --dsm-tint-orange-fg: 32 100% 65%;   /* #FFB04D */
+    --dsm-tint-purple-bg: 263 60% 15%;   /* #1E0F3D */
+    --dsm-tint-purple-fg: 263 100% 80%;  /* #B499FF */
   }
   /* Smooth 200ms theme transitions on instructor surfaces */
   .instructor-portal,
