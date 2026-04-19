@@ -94,6 +94,28 @@ function getInitials(name: string): string {
   return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 }
 
+function toSentenceName(name: string): string {
+  return name
+    .toLowerCase()
+    .split(/\s+/)
+    .map(w => (w.length > 0 ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(" ");
+}
+
+function formatMetaDate(dateStr: string): string {
+  try {
+    const d = parseISO(dateStr);
+    if (isToday(d)) return "Today";
+    if (isTomorrow(d)) return "Tomorrow";
+    return format(d, "EEE d MMM");
+  } catch { return dateStr; }
+}
+
+function formatHoursLong(minutes: number): string {
+  const h = minutes / 60;
+  return Number.isInteger(h) ? `${h}h` : `${h.toFixed(1)}h`;
+}
+
 export function NextUpTile({
   lessonId, pupilId, pupilName, pupilProfileImage, pupilPhone,
   lessonDate, pickupPostcode, pickupLocation, startTime,
@@ -237,209 +259,246 @@ export function NextUpTile({
 
   return (
     <>
-      <div className="w-full overflow-hidden"
+      <div
+        className="w-full"
         style={{
-          background: "#FFFFFF",
-          borderRadius: 20,
-          boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+          background: "#F7F5F0",
+          padding: "0 16px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
           fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
         }}
       >
-        {/* ── MINI MAP with overlaid header (inset like expanded section) ── */}
+        {/* ── MINI MAP CARD (live Google Map preserved) ── */}
         {pickupPostcode && (
-          <div className="px-3 pt-3">
-            <div
-              className="w-full relative rounded-2xl overflow-hidden border"
-              style={{
-                borderColor: "rgba(0,0,0,0.12)",
-                boxShadow: "0 6px 16px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.06)",
-              }}
-            >
-              <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={160} />
-              {/* Gradient scrim for legibility */}
-              <div
-                className="absolute inset-x-0 top-0 pointer-events-none"
-                style={{
-                  height: 56,
-                  background: "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 60%, rgba(0,0,0,0) 100%)",
-                }}
-              />
-              {/* Overlaid header content */}
-              <div className="absolute inset-x-0 top-0 flex items-start justify-between px-2.5 py-2 z-10 gap-2">
-                {/* LEFT column: Next Lesson label + Start Track underneath */}
-                <div className="flex flex-col gap-1.5 min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span
-                      className="inline-flex items-center gap-1 px-2 py-1"
-                      style={{ borderRadius: 100, backgroundColor: "#2A394F", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }}
-                    >
-                      <Calendar className="h-3 w-3 text-white shrink-0" />
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", letterSpacing: 0.2 }}>
-                        Next Lesson
-                      </span>
-                    </span>
-                    {effectiveBalance < 0 && (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full animate-pulse"
-                        style={{ backgroundColor: "#FF3B30", color: "#FFFFFF", fontSize: 9, fontWeight: 700, letterSpacing: 0.3 }}>
-                        <AlertTriangle className="h-2.5 w-2.5" />
-                        £{Math.abs(effectiveBalance).toFixed(0)} OWED
-                      </span>
-                    )}
-                    {checkInStatus && (
-                      <LessonCheckInBadge status={checkInStatus} className="text-[9px] py-0 px-1.5 h-4" />
-                    )}
-                  </div>
-                  {!trackerDismissed && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
-                      }}
-                      className="self-start flex items-center gap-1 px-2 py-1 active:scale-95 transition-transform"
-                      style={{ borderRadius: 100, backgroundColor: "#FBBF24", color: "#1C1C1E", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }}
-                      title="Start tracking session for this lesson"
-                    >
-                      <Smartphone className="h-3 w-3" />
-                      <span style={{ fontSize: 11, fontWeight: 700 }}>Start Track</span>
-                      <X
-                        className="h-3 w-3 ml-0.5 opacity-70 hover:opacity-100"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          dismissTracker(lessonId);
-                          setTrackerDismissed(true);
-                        }}
-                      />
-                    </button>
-                  )}
-                </div>
+          <div
+            className="w-full relative overflow-hidden"
+            style={{
+              background: "#FFFFFF",
+              borderRadius: 12,
+              border: "0.5px solid #D3D1C7",
+            }}
+          >
+            <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={160} />
+            {/* Top overlay pills (light) */}
+            <div className="absolute inset-x-0 top-0 flex items-start justify-between px-2 py-2 z-10 gap-2 pointer-events-none">
+              {/* LEFT: Next lesson pill + status badges */}
+              <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
+                <span
+                  className="inline-flex items-center gap-1"
+                  style={{
+                    background: "rgba(255,255,255,0.95)",
+                    backdropFilter: "blur(6px)",
+                    WebkitBackdropFilter: "blur(6px)",
+                    border: "0.5px solid #D3D1C7",
+                    borderRadius: 999,
+                    padding: "5px 10px",
+                  }}
+                >
+                  <Calendar style={{ width: 11, height: 11, color: "#5F5E5A" }} strokeWidth={2} />
+                  <span style={{ fontSize: 11, fontWeight: 500, color: "#2C2C2A" }}>Next lesson</span>
+                </span>
+                {effectiveBalance < 0 && (
+                  <span className="inline-flex items-center gap-1 animate-pulse"
+                    style={{ background: "#A32D2D", color: "#FFFFFF", fontSize: 10, fontWeight: 500, borderRadius: 999, padding: "4px 8px" }}>
+                    <AlertTriangle style={{ width: 10, height: 10 }} />
+                    £{Math.abs(effectiveBalance).toFixed(0)} owed
+                  </span>
+                )}
+                {checkInStatus && (
+                  <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5" />
+                )}
+              </div>
 
-                {/* RIGHT column: Start time + ETA side by side */}
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <div
-                    className="flex items-center gap-1 px-2.5 py-1"
-                    style={{ borderRadius: 100, backgroundColor: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
+              {/* RIGHT: Time pill + ETA pill */}
+              <div className="flex items-center gap-1.5 shrink-0 pointer-events-auto">
+                <span
+                  className="inline-flex items-center gap-1"
+                  style={{
+                    background: "rgba(255,255,255,0.95)",
+                    backdropFilter: "blur(6px)",
+                    WebkitBackdropFilter: "blur(6px)",
+                    border: "0.5px solid #D3D1C7",
+                    borderRadius: 999,
+                    padding: "5px 10px",
+                  }}
+                >
+                  <Clock style={{ width: 11, height: 11, color: "#5F5E5A" }} strokeWidth={2} />
+                  <span style={{ fontSize: 11, fontWeight: 500, color: "#2C2C2A" }}>{formatTime24(startTime)}</span>
+                </span>
+                {etaText && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (isRunningLate) setLateSheetOpen(true);
+                      else handleNavigate();
+                    }}
+                    className={`inline-flex items-center gap-1 transition-transform active:scale-95 ${isRunningLate ? "animate-pulse" : ""}`}
+                    style={{
+                      background: "rgba(255,255,255,0.95)",
+                      backdropFilter: "blur(6px)",
+                      WebkitBackdropFilter: "blur(6px)",
+                      border: "0.5px solid #B5D4F4",
+                      borderRadius: 999,
+                      padding: "5px 10px",
+                    }}
+                    title={isRunningLate ? "Running late — tap to notify pupil" : "Tap to open in Google Maps"}
                   >
-                    <Clock className="h-3 w-3 text-white" />
-                    <span style={{ fontSize: 12, fontWeight: 600, color: "#FFFFFF" }}>{formatTime24(startTime)}</span>
-                  </div>
-                  {etaText && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (isRunningLate) {
-                          setLateSheetOpen(true);
-                        } else {
-                          handleNavigate();
-                        }
-                      }}
-                      className={`flex items-center gap-1 px-2 py-1 transition-transform active:scale-95 ${isRunningLate ? "animate-pulse" : ""}`}
-                      style={{
-                        borderRadius: 100,
-                        backgroundColor: isRunningLate ? "#FF3B30" : "rgba(0,0,0,0.45)",
-                        backdropFilter: "blur(6px)",
-                        WebkitBackdropFilter: "blur(6px)",
-                        boxShadow: isRunningLate ? "0 1px 4px rgba(255,59,48,0.5)" : "none",
-                        cursor: "pointer",
-                      }}
-                      title={isRunningLate ? "Running late — tap to notify pupil" : "Tap to open in Google Maps"}
-                    >
-                      <Navigation className="h-3 w-3 text-white" />
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", letterSpacing: 0.2 }}>
-                        ETA {etaText}
-                        {isRunningLate && lateByMinutes > 0 ? ` · +${lateByMinutes}m` : ""}
-                      </span>
-                    </button>
-                  )}
-                </div>
+                    <Navigation style={{ width: 11, height: 11, color: "#185FA5" }} strokeWidth={2} />
+                    <span style={{ fontSize: 11, fontWeight: 500, color: "#185FA5" }}>
+                      {etaText}{isRunningLate && lateByMinutes > 0 ? ` · +${lateByMinutes}m` : ""}
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
+
+            {/* Start Track pill — bottom-left, nudged up to keep Google attribution visible */}
+            {!trackerDismissed && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
+                }}
+                className="absolute z-10 inline-flex items-center gap-1.5 active:scale-95 transition-transform"
+                style={{
+                  bottom: 22,
+                  left: 8,
+                  background: "#A32D2D",
+                  color: "#FFFFFF",
+                  borderRadius: 999,
+                  padding: "6px 12px 6px 10px",
+                }}
+                title="Start tracking session for this lesson"
+              >
+                <span
+                  aria-hidden
+                  style={{ width: 11, height: 11, borderRadius: "50%", background: "#FFFFFF", display: "inline-block" }}
+                />
+                <span style={{ fontSize: 12, fontWeight: 500 }}>Start track</span>
+                <X
+                  style={{ width: 12, height: 12, marginLeft: 2, opacity: 0.8 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    dismissTracker(lessonId);
+                    setTrackerDismissed(true);
+                  }}
+                />
+              </button>
+            )}
           </div>
         )}
 
-        {/* ── MAIN CONTENT ── */}
-        <button onClick={() => setExpanded(!expanded)} className="w-full text-left">
-          <div className="px-4 py-3">
-            <div className="flex items-center gap-3.5">
-              {/* Avatar */}
-              <div className="relative shrink-0">
-                <div className="flex items-center justify-center font-bold text-base overflow-hidden"
-                  style={{ width: 48, height: 48, borderRadius: 16, background: "linear-gradient(135deg, #FF6B6B, #FF8E53)", color: "white" }}>
-                  {pupilProfileImage ? (
-                    <img src={pupilProfileImage} alt={pupilName} className="w-full h-full object-cover" style={{ borderRadius: 16 }} />
-                  ) : getInitials(pupilName)}
-                </div>
-                {/* Online dot */}
-                <span style={{
-                  position: "absolute", bottom: -1, right: -1,
-                  width: 12, height: 12, borderRadius: "50%",
-                  backgroundColor: "#34C759", border: "2px solid #FFFFFF",
-                }} />
-                {totalUnreadBadge > 0 && (
-                  <span className="absolute -top-1 -right-1 flex items-center justify-center"
-                    style={{ minWidth: 18, height: 18, padding: "0 4px", borderRadius: 9, backgroundColor: "#FF3B30", color: "#fff", fontSize: 9, fontWeight: 700, border: "2px solid #FFFFFF" }}>
-                    {totalUnreadBadge}
+        {/* ── STUDENT ROW (white card) ── */}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full text-left flex items-center"
+          style={{
+            background: "#FFFFFF",
+            border: "0.5px solid #D3D1C7",
+            borderRadius: 12,
+            padding: "14px 16px",
+            gap: 12,
+          }}
+        >
+          {/* Avatar */}
+          <div className="relative shrink-0">
+            <div
+              className="flex items-center justify-center overflow-hidden"
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: "50%",
+                background: "#E6F1FB",
+                color: "#185FA5",
+                fontSize: 13,
+                fontWeight: 500,
+              }}
+            >
+              {pupilProfileImage ? (
+                <img src={pupilProfileImage} alt={pupilName} className="w-full h-full object-cover" />
+              ) : getInitials(pupilName)}
+            </div>
+            {/* Online dot */}
+            <span style={{
+              position: "absolute", bottom: -1, right: -1,
+              width: 10, height: 10, borderRadius: "50%",
+              backgroundColor: "#639922", border: "2px solid #FFFFFF",
+            }} />
+            {totalUnreadBadge > 0 && (
+              <span className="absolute -top-1 -right-1 flex items-center justify-center"
+                style={{ minWidth: 18, height: 18, padding: "0 4px", borderRadius: 9, backgroundColor: "#A32D2D", color: "#fff", fontSize: 9, fontWeight: 500, border: "2px solid #FFFFFF" }}>
+                {totalUnreadBadge}
+              </span>
+            )}
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <p style={{ fontSize: 14, fontWeight: 500, color: "#2C2C2A" }} className="truncate">{toSentenceName(pupilName)}</p>
+            <p style={{ fontSize: 12, color: "#5F5E5A", marginTop: 2 }}>
+              {formatMetaDate(lessonDate)} · {formatHoursLong(durationMinutes)} · {getCountdownText()}
+            </p>
+            {(pupilUnreadCount > 0 || adminUnreadCount > 0) && (
+              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                {pupilUnreadCount > 0 && (
+                  <span className="inline-flex items-center gap-1"
+                    style={{ background: "#E6F1FB", color: "#185FA5", fontSize: 10, fontWeight: 500, padding: "2px 8px", borderRadius: 999 }}>
+                    <MessageCircle className="h-2.5 w-2.5" />
+                    {pupilUnreadCount} from {firstName}
+                  </span>
+                )}
+                {adminUnreadCount > 0 && (
+                  <span className="inline-flex items-center gap-1"
+                    style={{ background: "#FCEBEB", color: "#A32D2D", fontSize: 10, fontWeight: 500, padding: "2px 8px", borderRadius: 999 }}>
+                    <Mail className="h-2.5 w-2.5" />
+                    {adminUnreadCount} admin
                   </span>
                 )}
               </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p style={{ fontSize: 16, fontWeight: 700, color: "#1C1C1E" }} className="truncate">{pupilName}</p>
-                <p style={{ fontSize: 12, color: "#8E8E93", marginTop: 2 }}>
-                  {getDateLabel()} · {formatDuration()} · {getCountdownText()}
-                </p>
-                {(pupilUnreadCount > 0 || adminUnreadCount > 0) && (
-                  <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                    {pupilUnreadCount > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full"
-                        style={{ backgroundColor: "rgba(0,122,255,0.12)", color: "#007AFF", fontSize: 10, fontWeight: 600 }}>
-                        <MessageCircle className="h-2.5 w-2.5" />
-                        {pupilUnreadCount} from {firstName}
-                      </span>
-                    )}
-                    {adminUnreadCount > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full"
-                        style={{ backgroundColor: "rgba(255,149,0,0.12)", color: "#FF9500", fontSize: 10, fontWeight: 600 }}>
-                        <Mail className="h-2.5 w-2.5" />
-                        {adminUnreadCount} admin
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Expand */}
-              <div className="shrink-0">
-                <ExpandChevron isExpanded={expanded} />
-              </div>
-            </div>
+            )}
           </div>
 
-
-          {/* ── PICK-UP ROW ── */}
-          {(pickupLocation || pickupPostcode) && (
-            <div className="px-4 pb-3">
-              <div className="flex items-center gap-3" style={{ backgroundColor: "#F8F9FA", borderRadius: 14, padding: "10px 12px" }}>
-                <div className="flex items-center justify-center shrink-0" style={{ width: 30, height: 30, borderRadius: 10, backgroundColor: "rgba(0,122,255,0.1)" }}>
-                  <MapPin className="h-3.5 w-3.5" style={{ color: "#007AFF" }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span style={{ fontSize: 9, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Pick-up</span>
-                  <p style={{ fontSize: 12, fontWeight: 500, color: "#1C1C1E", marginTop: 1 }} className="truncate">
-                    {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
-                  </p>
-                </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
-                  className="flex items-center justify-center shrink-0"
-                  style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: "#007AFF" }}
-                >
-                  <Navigation className="h-3.5 w-3.5 text-white" />
-                </button>
-              </div>
-            </div>
-          )}
+          {/* Chevron */}
+          <ChevronRight style={{ width: 14, height: 14, color: "#888780" }} strokeWidth={2} />
         </button>
+
+        {/* ── PICK-UP ROW (white card) ── */}
+        {(pickupLocation || pickupPostcode) && (
+          <div
+            className="flex items-center"
+            style={{
+              background: "#FFFFFF",
+              border: "0.5px solid #D3D1C7",
+              borderRadius: 12,
+              padding: "14px 16px",
+              gap: 12,
+            }}
+          >
+            <div
+              className="flex items-center justify-center shrink-0"
+              style={{ width: 32, height: 32, borderRadius: 8, background: "#E6F1FB" }}
+            >
+              <MapPin style={{ width: 14, height: 14, color: "#185FA5" }} strokeWidth={2} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <span style={{ fontSize: 10, fontWeight: 500, color: "#888780", letterSpacing: 0.8 }}>PICK-UP</span>
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "#2C2C2A",
+                  marginTop: 1,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* ── RUNNING LATE ALERT ── */}
         <AnimatePresence>
@@ -471,23 +530,30 @@ export function NextUpTile({
           )}
         </AnimatePresence>
 
-        {/* ── QUICK ACTION BAR (always visible) ── */}
-        <div className="px-4 pb-4">
-          <div className="flex items-center gap-2">
-            {[
-              { icon: Navigation, label: "Navigate", color: "#007AFF", bg: "rgba(0,122,255,0.08)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
-              { icon: Phone, label: "Call", color: "#34C759", bg: "rgba(52,199,89,0.08)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
-              { icon: MessageSquare, label: "SMS", color: "#FF9500", bg: "rgba(255,149,0,0.08)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleMessage(); } },
-              { icon: MapPin, label: "I'm Here", color: "#34C759", bg: "rgba(52,199,89,0.08)", action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
-            ].map((btn) => (
-              <button key={btn.label} onClick={btn.action}
-                className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-transform active:scale-95"
-                style={{ background: btn.bg }}>
-                <btn.icon className="h-4 w-4" style={{ color: btn.color }} />
-                <span className="text-[9px] font-semibold" style={{ color: btn.color }}>{btn.label}</span>
-              </button>
-            ))}
-          </div>
+        {/* ── QUICK ACTION GRID (4 columns) ── */}
+        <div className="grid grid-cols-4" style={{ gap: 8 }}>
+          {[
+            { icon: Navigation, label: "Navigate", color: "#185FA5", action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
+            { icon: Phone, label: "Call", color: "#0F6E56", action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
+            { icon: MessageSquare, label: "SMS", color: "#BA7517", action: (e: React.MouseEvent) => { e.stopPropagation(); handleMessage(); } },
+            { icon: MapPin, label: "I\u2019m here", color: "#A32D2D", action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
+          ].map((btn) => (
+            <button
+              key={btn.label}
+              onClick={btn.action}
+              className="flex flex-col items-center justify-center transition-transform active:scale-95"
+              style={{
+                background: "#FFFFFF",
+                border: "0.5px solid #D3D1C7",
+                borderRadius: 8,
+                padding: "12px 6px",
+                gap: 6,
+              }}
+            >
+              <btn.icon style={{ width: 16, height: 16, color: btn.color }} strokeWidth={2} />
+              <span style={{ fontSize: 11, fontWeight: 500, color: "#2C2C2A" }}>{btn.label}</span>
+            </button>
+          ))}
         </div>
 
         {/* ── EXPANDED CONTENT ── */}
