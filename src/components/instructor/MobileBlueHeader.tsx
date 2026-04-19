@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Bell, Plus, Menu, ChevronLeft } from "lucide-react";
 import dsmLogo from "@/assets/dsm-logo.png";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { DSMThemeToggle } from "@/components/instructor/DSMThemeToggle";
 
 interface Props {
   instructorId: string | undefined;
@@ -16,8 +17,7 @@ interface Props {
   onMenu: () => void;
 }
 
-const ICON_COLOR = "#5F5E5A";
-const BG = "#F7F5F0";
+const ICON_COLOR = "hsl(var(--dsm-text-secondary))";
 
 export function MobileBlueHeader({
   instructorId,
@@ -29,12 +29,14 @@ export function MobileBlueHeader({
   const navigate = useNavigate();
   const { total: notifCount } = useCombinedNotificationCount(instructorId);
 
+  const bgStyle = { background: "hsl(var(--dsm-bg))" };
+
   return (
-    <header className="sticky top-0 z-40" style={{ background: BG }}>
-      <div style={{ height: "env(safe-area-inset-top)", background: BG }} />
+    <header className="sticky top-0 z-40" style={bgStyle}>
+      <div style={{ height: "env(safe-area-inset-top)", ...bgStyle }} />
       <div
         className="flex items-center justify-between"
-        style={{ padding: "14px 18px", background: BG }}
+        style={{ padding: "14px 18px", ...bgStyle }}
       >
         {/* Left: DSM logo (or back) */}
         <div className="flex items-center gap-2">
@@ -88,6 +90,7 @@ export function MobileBlueHeader({
           >
             <Plus size={18} strokeWidth={1.8} color={ICON_COLOR} />
           </button>
+          <DSMThemeToggle size={18} className="!h-8 !w-8" />
           <button
             onClick={onMenu}
             className="flex items-center justify-center"
