@@ -415,12 +415,12 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                     <div
                       className="shrink-0 flex items-center justify-center"
                       style={{
-                        width: 28,
-                        height: 28,
+                        width: 26,
+                        height: 26,
                         borderRadius: "50%",
                         background: PAL.avatarBg,
                         color: PAL.avatarText,
-                        fontSize: 11,
+                        fontSize: 10,
                         fontWeight: 500,
                       }}
                     >
@@ -431,13 +431,13 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                     <div className="flex-1 min-w-0">
                       <div
                         className="truncate"
-                        style={{ fontSize: 14, fontWeight: 500, color: PAL.text, lineHeight: 1.2 }}
+                        style={{ fontSize: 13, fontWeight: 500, color: PAL.textNavyDeep, lineHeight: 1.2 }}
                       >
                         {sentenceName(lesson.pupilName)}
                       </div>
                       <div
                         className="truncate"
-                        style={{ fontSize: 12, color: PAL.textMuted, marginTop: 2 }}
+                        style={{ fontSize: 11, color: PAL.textMuted, marginTop: 1 }}
                       >
                         {meta.join(" · ")}
                       </div>
@@ -447,10 +447,10 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                     <span
                       className="shrink-0"
                       style={{
-                        fontSize: 11,
+                        fontSize: 10,
                         color: PAL.textMuted,
                         background: PAL.chipNeutralBg,
-                        padding: "3px 8px",
+                        padding: "2px 7px",
                         borderRadius: 999,
                         fontWeight: 500,
                       }}
