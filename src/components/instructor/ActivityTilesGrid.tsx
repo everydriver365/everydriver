@@ -97,13 +97,13 @@ export function ActivityTilesGrid({
             justifyContent: "center",
             gap: 8,
             padding: "10px 14px",
-            background: "#FFFFFF",
-            border: "0.5px solid #D3D1C7",
+            background: "hsl(var(--dsm-card))",
+            border: "0.5px solid hsl(var(--dsm-border))",
             borderRadius: 12,
           }}
         >
-          <CheckCircle2 size={16} strokeWidth={2} color="#0F6E56" />
-          <span style={{ fontSize: 13, fontWeight: 500, color: "#2C2C2A", fontFamily: "Inter, sans-serif" }}>
+          <CheckCircle2 size={16} strokeWidth={2} color="hsl(var(--dsm-tint-green-fg))" />
+          <span style={{ fontSize: 13, fontWeight: 500, color: "hsl(var(--dsm-text))", fontFamily: "Inter, sans-serif" }}>
             All clear — no actions needed
           </span>
         </motion.div>
