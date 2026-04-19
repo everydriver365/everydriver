@@ -118,8 +118,9 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
               >
                 <Icon
                   size={22}
-                  strokeWidth={1.6}
+                  strokeWidth={1.2}
                   color={isActive ? activeColor : trackActiveColor || inactiveColor}
+                  fill={isActive ? activeColor : trackActiveColor || inactiveColor}
                   style={{ strokeLinecap: 'round', strokeLinejoin: 'round' }}
                 />
                 {/* Pupils badge */}
