@@ -247,8 +247,8 @@
   .ios-instructor {
     --ios-bg: 240 5% 96%;
     --ios-card: 0 0% 100%;
-    /* DSM logo blue #1F86FF */
-    --ios-blue: 211 100% 56%;
+    /* iOS system blue #0A84FF */
+    --ios-blue: 211 100% 52%;
     --ios-gray: 240 2% 56%;
     --ios-gray2: 240 3% 23%;
     --ios-gray3: 240 6% 11%;
@@ -256,9 +256,9 @@
     --ios-nav-bg: 0 0% 100% / 0.8;
 
     /* Instructor-scoped DSM brand overrides */
-    --primary: 211 100% 56%;          /* #1F86FF */
+    --primary: 211 100% 52%;          /* #0A84FF */
     --primary-foreground: 0 0% 100%;
-    --ring: 211 100% 56%;
+    --ring: 211 100% 52%;
     --destructive: 3 78% 53%;         /* #E63329 */
     --destructive-foreground: 0 0% 100%;
     --foreground: 240 6% 11%;         /* #1C1C1E */
