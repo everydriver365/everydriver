@@ -1,79 +1,77 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import {
-  Calendar,
-  CalendarX,
-  Check,
-  ChevronRight,
-  MapPin,
-  Plus,
-} from "lucide-react";
+import { Calendar, ChevronRight, Plus } from "lucide-react";
 import { format, parse, addDays } from "date-fns";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
-import { type TodayLesson } from "@/hooks/useTodayRemainingLessons";
 import { useDayLessons } from "@/hooks/useDayLessons";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
-import { PremiumStatTile } from "@/components/instructor/PremiumStatTile";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface HomeTodayScheduleProps {
   instructorId: string | undefined;
 }
 
-// Token-based avatar gradients (still distinctive but using HSL channels for theming)
-const AVATAR_GRADIENTS = [
-  "linear-gradient(135deg, hsl(25 95% 60%), hsl(20 91% 48%))",
-  "linear-gradient(135deg, hsl(258 90% 70%), hsl(262 83% 58%))",
-  "linear-gradient(135deg, hsl(330 81% 70%), hsl(336 78% 50%))",
-  "linear-gradient(135deg, hsl(172 76% 55%), hsl(174 84% 32%))",
-  "linear-gradient(135deg, hsl(43 96% 56%), hsl(35 92% 44%))",
-];
-
-function gradientFor(name: string) {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  return AVATAR_GRADIENTS[h % AVATAR_GRADIENTS.length];
-}
+// Warm palette (matches global app theme)
+const PAL = {
+  paper: "#F7F5F0",
+  card: "#FFFFFF",
+  hairline: "#D3D1C7",
+  text: "#2C2C2A",
+  textMuted: "#5F5E5A",
+  textSubtle: "#888780",
+  accentBlue: "#185FA5",
+  accentBlueSoft: "#E6F1FB",
+  accentBlueRing: "#B5D4F4",
+  accentRed: "#A32D2D",
+  accentGreen: "#0F6E56",
+  accentGreenSoft: "#E1F5EE",
+  avatarBg: "#FAEEDA",
+  avatarText: "#854F0B",
+  chipNeutralBg: "#F1EFE8",
+  toggleActive: "#2C2C2A",
+};
 
 function fmtTime(time: string) {
   try {
     const d = parse(time, "HH:mm:ss", new Date());
-    return { hour: format(d, "h:mm"), period: format(d, "a") };
+    return { hour: format(d, "h:mm"), period: format(d, "a").toUpperCase() };
   } catch {
     return { hour: time.slice(0, 5), period: "" };
   }
 }
 
-function durationLabel(mins: number) {
+function durationLabel(mins: number): string {
+  if (mins < 60) return `${mins}m`;
   const h = mins / 60;
-  return h % 1 === 0 ? `${h}h` : `${h}h`;
+  return Number.isInteger(h) ? `${h}h` : `${h.toFixed(1)}h`;
 }
 
-type LessonState = "done" | "current" | "upcoming";
-
-function deriveState(lesson: TodayLesson, nowSec: number, nextUpcomingId: string | null): LessonState {
-  if (lesson.status === "completed") return "done";
-  if (lesson.id === nextUpcomingId) return "current";
-  return "upcoming";
+function totalHoursLabel(hours: number): string {
+  return Number.isInteger(hours) ? `${hours}h` : `${hours.toFixed(1)}h`;
 }
 
-// Semantic token shortcuts
-const C = {
-  surface: "hsl(var(--schedule-surface))",
-  surfaceSoft: "hsl(var(--schedule-surface-soft))",
-  border: "hsl(var(--schedule-border))",
-  borderSoft: "hsl(var(--schedule-border-soft))",
-  text: "hsl(var(--schedule-text))",
-  textMuted: "hsl(var(--schedule-text-muted))",
-  textSubtle: "hsl(var(--schedule-text-subtle))",
-  accent: "hsl(var(--schedule-accent))",
-  accentSoft: "hsl(var(--schedule-accent-soft))",
-  accentDeep: "hsl(var(--schedule-accent-deep))",
-  success: "hsl(var(--schedule-success))",
-  successSoft: "hsl(var(--schedule-success-soft))",
-  rail: "hsl(var(--schedule-rail))",
-};
+function sentenceName(name: string): string {
+  return name
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(" ");
+}
+
+function SkeletonBlock({ width, height = 12 }: { width: number | string; height?: number }) {
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        width,
+        height,
+        borderRadius: 4,
+        background: PAL.textSubtle,
+        opacity: 0.18,
+      }}
+    />
+  );
+}
 
 export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
   const [tab, setTab] = useState<"today" | "tomorrow">("today");
@@ -107,111 +105,74 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
     const next = lessons.find((l) => l.id === nextUpcomingId);
     if (!next) return null;
     const [h, m] = next.startTime.split(":").map(Number);
-    return Math.max(0, Math.round((h * 60 + m) - (now.getHours() * 60 + now.getMinutes())));
+    return Math.max(0, Math.round(h * 60 + m - (now.getHours() * 60 + now.getMinutes())));
   }, [lessons, nextUpcomingId, isTomorrow]);
 
   const dateLabel = format(targetDate, "EEE d MMM");
   const isLoading = (tab === "today" && overviewLoading) || lessonsLoading;
   const hasLessons = lessons.length > 0;
 
-  const dayCompletedCount = lessons.filter((l) => l.status === "completed").length;
   const dayLessonCount = lessons.length;
   const dayTotalHours = lessons.reduce((sum, l) => sum + (l.durationMinutes || 0), 0) / 60;
   const dayAmountDueSum = lessons.reduce((sum, l) => sum + (l.amountDue ?? 0), 0);
   const dayHasAnyAmount = lessons.some((l) => l.amountDue != null && l.amountDue > 0);
 
-  const completedCount = isTomorrow ? dayCompletedCount : (overview?.completedCount ?? 0);
   const lessonCount = isTomorrow ? dayLessonCount : (overview?.lessonCount ?? 0);
   const totalHours = isTomorrow ? dayTotalHours : (overview?.totalHours ?? 0);
-  // Earnings: prefer per-lesson amount_due sum (matches the lessons shown);
-  // fall back to hourly-rate × hours for the selected day when no amount_due is set.
-  // Derive hourly rate from today's overview (expectedEarnings / totalHours) so Tomorrow uses the same rate.
+
   const derivedHourlyRate =
-    overview && overview.totalHours > 0
-      ? overview.expectedEarnings / overview.totalHours
-      : 35;
+    overview && overview.totalHours > 0 ? overview.expectedEarnings / overview.totalHours : 35;
   const earnings = dayHasAnyAmount
     ? Math.round(dayAmountDueSum)
     : isTomorrow
     ? Math.round(dayTotalHours * derivedHourlyRate)
-    : (overview?.expectedEarnings ?? 0);
+    : Math.round(overview?.expectedEarnings ?? 0);
+
+  // Compact "next in" formatter: Nm / Nh / Nd
+  const nextInLabel = (() => {
+    if (isTomorrow) return null;
+    if (minutesUntilNext == null) return null;
+    if (minutesUntilNext < 60) return `${minutesUntilNext}m`;
+    const hours = Math.round(minutesUntilNext / 60);
+    if (hours < 24) return `${hours}h`;
+    return `${Math.round(hours / 24)}d`;
+  })();
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
-      className="font-sans shadow-premium-lg"
+    <div
       style={{
+        background: PAL.paper,
+        padding: "0 16px",
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-        background: C.surface,
-        borderRadius: 20,
-        border: "0.5px solid rgba(15,23,42,0.06)",
-        maxWidth: 420,
-        width: "100%",
-        overflow: "hidden",
         fontVariantNumeric: "tabular-nums",
       }}
     >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3" style={{ padding: "16px 18px" }}>
-        <div className="flex items-start gap-2.5 min-w-0">
+      {/* ── Header row: title + day toggle ── */}
+      <div className="flex items-center justify-between" style={{ gap: 12 }}>
+        <div className="flex items-center min-w-0" style={{ gap: 10 }}>
           <div
             className="flex items-center justify-center shrink-0"
-            style={{
-              width: 26,
-              height: 26,
-              borderRadius: 8,
-              background: `linear-gradient(135deg, ${C.accent}, hsl(var(--schedule-accent) / 0.85))`,
-              boxShadow: "0 2px 6px hsl(var(--schedule-accent) / 0.35)",
-            }}
+            style={{ width: 32, height: 32, borderRadius: 8, background: PAL.accentBlueSoft }}
           >
-            <Calendar size={14} color="#fff" strokeWidth={2.5} />
+            <Calendar size={14} color={PAL.accentBlue} strokeWidth={2} />
           </div>
-          <div className="min-w-0">
-            <h3
-              className="whitespace-nowrap"
-              style={{
-                fontSize: 17,
-                fontWeight: 600,
-                letterSpacing: "-0.4px",
-                color: C.text,
-                lineHeight: 1.2,
-              }}
-            >
-              {isTomorrow ? "Tomorrow" : "Today's Schedule"}
-            </h3>
-            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-              <span style={{ fontSize: 13, color: C.textMuted }}>
-                {dateLabel} · {lessons.length} lesson{lessons.length === 1 ? "" : "s"}
-              </span>
-              {totalHours > 0 && (
-                <span
-                  style={{
-                    background: C.successSoft,
-                    color: C.success,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    padding: "2px 7px",
-                    borderRadius: 6,
-                  }}
-                >
-                  {totalHours}h
-                </span>
-              )}
-            </div>
-          </div>
+          <h3
+            style={{ fontSize: 16, fontWeight: 500, color: PAL.text, lineHeight: 1.2 }}
+            className="truncate"
+          >
+            {isTomorrow ? "Tomorrow's schedule" : "Today's schedule"}
+          </h3>
         </div>
 
-        {/* Today/Tomorrow toggle */}
+        {/* Today / Tomorrow toggle */}
         <div
           className="flex shrink-0"
           style={{
-            background: C.surfaceSoft,
+            background: PAL.card,
+            border: `0.5px solid ${PAL.hairline}`,
+            borderRadius: 999,
             padding: 3,
-            borderRadius: 18,
-            border: `1px solid ${C.borderSoft}`,
           }}
         >
           {(["today", "tomorrow"] as const).map((t) => {
@@ -221,302 +182,326 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                 key={t}
                 onClick={() => setTab(t)}
                 style={{
-                  background: active ? C.accentDeep : "transparent",
-                  color: active ? "#fff" : C.textMuted,
+                  background: active ? PAL.toggleActive : "transparent",
+                  color: active ? "#FFFFFF" : PAL.textMuted,
                   fontSize: 11,
-                  fontWeight: 600,
-                  padding: "5px 10px",
-                  borderRadius: 15,
-                  boxShadow: active ? "0 1px 3px hsl(var(--schedule-accent-deep) / 0.25)" : "none",
-                  textTransform: "capitalize",
+                  fontWeight: 500,
+                  padding: "4px 10px",
+                  borderRadius: 999,
                   transition: "all 0.15s",
                 }}
               >
-                {t}
+                {t === "today" ? "Today" : "Tomorrow"}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Summary strip — premium animated stat tiles */}
-      {hasLessons && (
-        <div className="grid grid-cols-3" style={{ gap: 8, margin: "0 16px 14px" }}>
-          <PremiumStatTile
-            label={completedCount > 0 ? "Done" : "Lessons"}
-            value={completedCount > 0 ? `${completedCount}/${lessonCount}` : `${lessonCount}`}
-            animateKey={`${tab}-l-${completedCount}-${lessonCount}`}
-          />
-          <PremiumStatTile
-            label="Earnings"
-            value={`£${earnings}`}
-            color={C.success}
-            animateKey={`${tab}-e-${earnings}`}
-          />
-          <PremiumStatTile
-            label={isTomorrow ? "Hours" : "Next in"}
-            value={
-              isTomorrow
-                ? `${totalHours}h`
-                : minutesUntilNext != null
-                ? minutesUntilNext >= 60
-                  ? `${Math.floor(minutesUntilNext / 60)}h ${minutesUntilNext % 60}m`
-                  : `${minutesUntilNext}m`
-                : "—"
-            }
-            color={C.accent}
-            animateKey={`${tab}-n-${minutesUntilNext}-${totalHours}`}
-          />
-        </div>
-      )}
-
-      {/* Timeline */}
-      <div style={{ padding: "0 16px 8px" }}>
+      {/* ── Date / summary line (indented to align with heading text) ── */}
+      <div
+        className="flex items-center"
+        style={{ paddingLeft: 42, marginTop: 6, marginBottom: 14, gap: 8, flexWrap: "wrap" }}
+      >
         {isLoading ? (
-          <div className="space-y-3 animate-pulse py-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex gap-3">
-                <div className="h-4 w-10 bg-muted rounded" />
-                <div className="h-4 w-4 bg-muted rounded-full" />
-                <div className="h-12 flex-1 bg-muted rounded-xl" />
+          <SkeletonBlock width={140} />
+        ) : (
+          <span style={{ fontSize: 12, color: PAL.textMuted }}>
+            {dateLabel} · {lessonCount} lesson{lessonCount === 1 ? "" : "s"}
+          </span>
+        )}
+        {!isLoading && totalHours > 0 && (
+          <span
+            style={{
+              background: PAL.accentGreenSoft,
+              color: PAL.accentGreen,
+              fontSize: 10,
+              fontWeight: 500,
+              padding: "2px 7px",
+              borderRadius: 999,
+            }}
+          >
+            {totalHoursLabel(totalHours)} total
+          </span>
+        )}
+      </div>
+
+      {/* ── Stats row (3 tiles) ── */}
+      <div className="grid grid-cols-3" style={{ gap: 8, marginBottom: 14 }}>
+        {[
+          {
+            label: "LESSONS",
+            value: isLoading ? null : String(lessonCount),
+            color: PAL.text,
+          },
+          {
+            label: "EARNINGS",
+            value: isLoading ? null : `£${earnings}`,
+            color: PAL.accentGreen,
+          },
+          {
+            label: "NEXT IN",
+            value: isLoading ? null : nextInLabel ?? "—",
+            color: nextInLabel ? PAL.text : PAL.textSubtle,
+          },
+        ].map((s) => (
+          <div
+            key={s.label}
+            style={{
+              background: PAL.card,
+              border: `0.5px solid ${PAL.hairline}`,
+              borderRadius: 12,
+              padding: 12,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 10,
+                color: PAL.textSubtle,
+                letterSpacing: 0.5,
+                marginBottom: 6,
+                fontWeight: 500,
+              }}
+            >
+              {s.label}
+            </div>
+            {s.value == null ? (
+              <SkeletonBlock width={48} height={20} />
+            ) : (
+              <div
+                style={{ fontSize: 20, fontWeight: 500, color: s.color, lineHeight: 1 }}
+              >
+                {s.value}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* ── Lesson timeline card ── */}
+      <div
+        style={{
+          background: PAL.card,
+          border: `0.5px solid ${PAL.hairline}`,
+          borderRadius: 12,
+          padding: "14px 16px",
+          marginBottom: 14,
+        }}
+      >
+        {isLoading ? (
+          <div className="flex flex-col" style={{ gap: 14 }}>
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="flex items-center" style={{ gap: 14 }}>
+                <div style={{ width: 44, textAlign: "right" }}>
+                  <SkeletonBlock width={36} height={14} />
+                </div>
+                <div style={{ width: 10, display: "flex", justifyContent: "center" }}>
+                  <span
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: "50%",
+                      background: PAL.hairline,
+                      display: "inline-block",
+                    }}
+                  />
+                </div>
+                <div className="flex-1">
+                  <SkeletonBlock width="60%" height={14} />
+                  <div style={{ marginTop: 4 }}>
+                    <SkeletonBlock width="40%" height={12} />
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         ) : !hasLessons ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div
-              className="flex items-center justify-center mb-3"
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: 16,
-                background: C.surfaceSoft,
-                border: `1px solid ${C.borderSoft}`,
-              }}
-            >
-              <CalendarX size={28} color={C.textSubtle} strokeWidth={1.8} />
-            </div>
-            <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 12 }}>
-              No lessons scheduled
-            </div>
-            <button
-              onClick={() => setAddOpen(true)}
-              style={{
-                background: C.accentDeep,
-                color: "#fff",
-                fontSize: 12,
-                fontWeight: 600,
-                padding: "8px 14px",
-                borderRadius: 10,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-              }}
-            >
-              <Plus size={14} strokeWidth={2.5} /> Schedule a lesson
-            </button>
+          <div
+            className="text-center"
+            style={{ padding: "20px 0", fontSize: 13, color: PAL.textMuted }}
+          >
+            No lessons scheduled
           </div>
         ) : (
           <div className="relative">
-            {/* Vertical connecting line — aligned to status node column */}
-            <div
-              style={{
-                position: "absolute",
-                left: 48 + 8 + 8 - 1,
-                top: 14,
-                bottom: 14,
-                width: 2,
-                background: C.rail,
-                zIndex: 0,
-              }}
-            />
-            <div className="flex flex-col gap-2.5 py-1">
-              {lessons.map((lesson) => {
-                const state = deriveState(lesson, nowSec, nextUpcomingId);
-                const time = fmtTime(lesson.startTime);
-                const isCurrent = state === "current";
-                const isDone = state === "done";
-                const grad = gradientFor(lesson.pupilName);
+            {lessons.map((lesson, idx) => {
+              const time = fmtTime(lesson.startTime);
+              const isLast = idx === lessons.length - 1;
+              const initials = (lesson.pupilInitials || lesson.pupilName.slice(0, 2)).slice(0, 2).toUpperCase();
+              const meta: string[] = [];
+              if (lesson.pickupPostcode || lesson.pickupLocation) {
+                meta.push(lesson.pickupPostcode || lesson.pickupLocation || "");
+              }
+              meta.push(`£${lesson.amountDue ?? 0} outstanding`);
 
-                return (
-                  <Link
-                    key={lesson.id}
-                    to={`/instructor/pupils/${lesson.pupilId}`}
-                    className="flex items-stretch gap-2 relative"
-                    style={{ zIndex: 1, opacity: isDone ? 0.6 : 1 }}
+              return (
+                <Link
+                  key={lesson.id}
+                  to={`/instructor/pupils/${lesson.pupilId}`}
+                  className="flex"
+                  style={{
+                    gap: 14,
+                    paddingTop: idx === 0 ? 0 : 12,
+                    paddingBottom: 12,
+                  }}
+                >
+                  {/* Time column */}
+                  <div
+                    style={{
+                      minWidth: 44,
+                      textAlign: "right",
+                      flexShrink: 0,
+                      paddingTop: 2,
+                    }}
                   >
-                    {/* Time column */}
-                    <div
-                      style={{
-                        width: 48,
-                        textAlign: "right",
-                        flexShrink: 0,
-                        paddingTop: 6,
-                      }}
-                    >
-                      <div style={{ fontSize: 13, fontWeight: 700, color: C.text, lineHeight: 1 }}>
-                        {time.hour}
-                      </div>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: PAL.text, lineHeight: 1 }}>
+                      {time.hour}
+                    </div>
+                    {time.period && (
                       <div
                         style={{
                           fontSize: 10,
-                          color: C.textSubtle,
-                          letterSpacing: "0.4px",
-                          marginTop: 2,
+                          color: PAL.textSubtle,
+                          letterSpacing: 0.5,
+                          marginTop: 3,
+                          fontWeight: 500,
                         }}
                       >
                         {time.period}
                       </div>
-                    </div>
+                    )}
+                  </div>
 
-                    {/* Status node */}
-                    <div className="flex items-start justify-center shrink-0" style={{ width: 16, paddingTop: 8 }}>
-                      <div
-                        style={{
-                          width: 16,
-                          height: 16,
-                          borderRadius: "50%",
-                          background: isDone ? C.success : C.surface,
-                          border: isDone
-                            ? `3px solid ${C.success}`
-                            : isCurrent
-                            ? `3px solid ${C.accent}`
-                            : `3px solid ${C.rail}`,
-                          boxShadow: isCurrent ? `0 0 0 4px hsl(var(--schedule-accent) / 0.15)` : "none",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        {isDone && <Check size={9} color="#fff" strokeWidth={4} />}
-                      </div>
-                    </div>
-
-                    {/* Lesson card */}
-                    <div
-                      className="flex-1 min-w-0"
+                  {/* Spine column */}
+                  <div
+                    className="relative shrink-0 flex justify-center"
+                    style={{ width: 10 }}
+                  >
+                    {/* Vertical line — stops at last marker */}
+                    <span
                       style={{
-                        borderRadius: 12,
-                        padding: "10px 12px",
-                        background: isCurrent
-                          ? `linear-gradient(135deg, hsl(var(--schedule-accent-soft) / 0.6), hsl(var(--schedule-accent-soft)))`
-                          : C.surfaceSoft,
-                        border: `1px solid ${isCurrent ? C.accentSoft : C.borderSoft}`,
-                        boxShadow: isCurrent ? `0 2px 8px hsl(var(--schedule-accent) / 0.10)` : "none",
+                        position: "absolute",
+                        top: 0,
+                        bottom: isLast ? "calc(100% - 16px)" : 0,
+                        width: 1,
+                        background: PAL.hairline,
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                      }}
+                    />
+                    {/* Marker */}
+                    <span
+                      style={{
+                        position: "relative",
+                        marginTop: 6,
+                        width: 10,
+                        height: 10,
+                        borderRadius: "50%",
+                        background: PAL.accentBlue,
+                        border: "2px solid #FFFFFF",
+                        boxShadow: `0 0 0 1px ${PAL.accentBlueRing}`,
+                      }}
+                    />
+                  </div>
+
+                  {/* Content column */}
+                  <div className="flex-1 min-w-0 flex items-start" style={{ gap: 10 }}>
+                    {/* Avatar */}
+                    <div
+                      className="shrink-0 flex items-center justify-center"
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: "50%",
+                        background: PAL.avatarBg,
+                        color: PAL.avatarText,
+                        fontSize: 11,
+                        fontWeight: 500,
                       }}
                     >
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="shrink-0 flex items-center justify-center text-white"
-                          style={{
-                            width: 22,
-                            height: 22,
-                            borderRadius: "50%",
-                            background: grad,
-                            fontSize: 10,
-                            fontWeight: 700,
-                          }}
-                        >
-                          {lesson.pupilInitials.slice(0, 2)}
-                        </div>
-                        <div
-                          className="flex-1 min-w-0 truncate"
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 700,
-                            color: C.text,
-                            textDecoration: isDone ? "line-through" : "none",
-                            textDecorationColor: C.textSubtle,
-                          }}
-                        >
-                          {lesson.pupilName}
-                        </div>
-                        {isCurrent && (
-                          <span
-                            style={{
-                              background: "hsl(45 93% 89%)",
-                              color: "hsl(28 80% 28%)",
-                              fontSize: 9,
-                              fontWeight: 700,
-                              letterSpacing: "0.4px",
-                              padding: "2px 6px",
-                              borderRadius: 5,
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            Up Next
-                          </span>
-                        )}
-                        <span
-                          style={{
-                            fontSize: 11,
-                            fontWeight: 700,
-                            padding: "2px 7px",
-                            borderRadius: 8,
-                            background: isCurrent ? C.accent : C.surface,
-                            color: isCurrent ? "#fff" : C.text,
-                            border: isCurrent ? "none" : `1px solid ${C.borderSoft}`,
-                          }}
-                        >
-                          {durationLabel(lesson.durationMinutes)}
-                        </span>
-                      </div>
+                      {initials}
+                    </div>
 
+                    {/* Name + meta */}
+                    <div className="flex-1 min-w-0">
                       <div
-                        className="flex items-center gap-1.5 mt-1.5 truncate"
-                        style={{ fontSize: 11, color: C.textMuted }}
+                        className="truncate"
+                        style={{ fontSize: 14, fontWeight: 500, color: PAL.text, lineHeight: 1.2 }}
                       >
-                        <MapPin size={11} strokeWidth={2} />
-                        <span className="truncate">
-                          {lesson.pickupPostcode || lesson.pickupLocation || "—"}
-                        </span>
-                        {lesson.amountDue != null && (
-                          <>
-                            <span style={{ color: C.textSubtle }}>·</span>
-                            <span style={{ fontWeight: 600, color: C.text }}>
-                              £{lesson.amountDue}
-                            </span>
-                          </>
-                        )}
+                        {sentenceName(lesson.pupilName)}
+                      </div>
+                      <div
+                        className="truncate"
+                        style={{ fontSize: 12, color: PAL.textMuted, marginTop: 2 }}
+                      >
+                        {meta.join(" · ")}
                       </div>
                     </div>
-                  </Link>
-                );
-              })}
+
+                    {/* Duration chip */}
+                    <span
+                      className="shrink-0"
+                      style={{
+                        fontSize: 11,
+                        color: PAL.textMuted,
+                        background: PAL.chipNeutralBg,
+                        padding: "3px 8px",
+                        borderRadius: 999,
+                        fontWeight: 500,
+                      }}
+                    >
+                      {durationLabel(lesson.durationMinutes)}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+
+            {/* End of day row */}
+            <div className="flex items-center" style={{ gap: 14, paddingTop: 4 }}>
+              <div style={{ minWidth: 44 }} />
+              <div className="shrink-0 flex justify-center" style={{ width: 10 }}>
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: PAL.hairline,
+                    display: "inline-block",
+                  }}
+                />
+              </div>
+              <div style={{ fontSize: 11, color: PAL.textSubtle }}>End of day</div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Footer */}
-      <div
-        className="flex items-center justify-between"
-        style={{
-          borderTop: `1px solid ${C.borderSoft}`,
-          padding: "10px 16px",
-        }}
-      >
+      {/* ── Footer actions ── */}
+      <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
         <Link
           to="/instructor/schedule"
-          className="flex items-center gap-1"
-          style={{ color: C.accent, fontSize: 12, fontWeight: 600 }}
+          className="flex items-center"
+          style={{ color: PAL.accentBlue, fontSize: 13, fontWeight: 500, gap: 4 }}
         >
           View full calendar
-          <ChevronRight size={14} strokeWidth={2.5} />
+          <ChevronRight size={12} strokeWidth={2} />
         </Link>
         <button
           onClick={() => setAddOpen(true)}
-          className="flex items-center gap-1"
+          className="flex items-center"
           style={{
-            background: C.accentDeep,
-            color: "#fff",
-            fontSize: 12,
-            fontWeight: 600,
-            padding: "6px 12px",
-            borderRadius: 10,
+            background: PAL.accentRed,
+            color: "#FFFFFF",
+            fontSize: 13,
+            fontWeight: 500,
+            padding: "8px 14px",
+            borderRadius: 999,
+            gap: 6,
           }}
         >
-          <Plus size={13} strokeWidth={2.5} /> Add lesson
+          <Plus size={12} strokeWidth={2} color="#FFFFFF" />
+          Add lesson
         </button>
       </div>
 
@@ -533,6 +518,6 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           }}
         />
       )}
-    </motion.div>
+    </div>
   );
 }
