@@ -443,7 +443,19 @@ export function InstructorMobileHome({
           instructor={instructor}
         />
       ) : (
-      <RedesignedMobileHome instructorId={instructorId} firstName={firstName} />
+      <RedesignedMobileHome
+        instructorId={instructorId}
+        firstName={firstName}
+        instructor={instructor}
+        onPaymentClick={onPaymentClick}
+        pendingJobsCount={pendingJobsCount}
+        unreadCount={unreadCount ?? 0}
+        testSwapCount={testSwapCount ?? 0}
+        gapSlotsCount={gapSuggestions?.length ?? 0}
+        todayLessons={todayLessons}
+        tomorrowLessons={tomorrowLessons}
+        nextLesson={nextLesson}
+      />
       )}
       </div>
     </PullToRefresh>

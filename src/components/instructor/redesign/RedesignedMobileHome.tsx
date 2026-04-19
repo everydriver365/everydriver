@@ -15,9 +15,26 @@ import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 
+import { HomeQuickActions } from "@/components/instructor/HomeQuickActions";
+import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
+import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
+import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
+import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
+import { VehicleHealthCard } from "@/components/instructor/VehicleHealthCard";
+import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
+
 interface Props {
   instructorId: string | undefined;
   firstName: string;
+  instructor?: any;
+  onPaymentClick?: () => void;
+  pendingJobsCount?: number;
+  unreadCount?: number;
+  testSwapCount?: number;
+  gapSlotsCount?: number;
+  todayLessons?: any;
+  tomorrowLessons?: any;
+  nextLesson?: any;
 }
 
 const getGreeting = () => {
@@ -28,7 +45,18 @@ const getGreeting = () => {
   return "Good night";
 };
 
-export function RedesignedMobileHome({ instructorId, firstName }: Props) {
+export function RedesignedMobileHome({
+  instructorId,
+  firstName,
+  instructor,
+  onPaymentClick,
+  pendingJobsCount = 0,
+  unreadCount = 0,
+  testSwapCount = 0,
+  gapSlotsCount = 0,
+  todayLessons,
+  tomorrowLessons,
+}: Props) {
   const navigate = useNavigate();
   const { data: nextLesson } = useNextLessonDetails(instructorId);
   const { data: weeklyGoals } = useWeeklyGoals(instructorId);
@@ -156,6 +184,35 @@ export function RedesignedMobileHome({ instructorId, firstName }: Props) {
           isOnline={vehicleOnline}
           onClick={() => navigate("/instructor/telematics")}
         />
+
+        {/* ── Restored sections from previous home ─────────────────── */}
+
+        <div className="pt-4 pb-1">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Today
+          </h2>
+        </div>
+
+        {todayLessons && todayLessons.length > 0 && instructorId && (
+          <TodayLessonsList lessons={todayLessons} instructorId={instructorId} />
+        )}
+
+        <SmartRemindersCard />
+
+        <div className="pt-4 pb-1">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Quick actions
+          </h2>
+        </div>
+        <HomeQuickActions onTakePayment={onPaymentClick} />
+
+        {instructorId && <VehicleHealthCard instructorId={instructorId} />}
+
+        <UpcomingEventsCard />
+
+        <WaitingRoomPromoTile />
+
+        <BottomPromoGroup />
       </div>
     </div>
   );
