@@ -5,13 +5,14 @@ import { cn } from "@/lib/utils";
 
 type TileColor = "purple" | "red" | "blue" | "emerald" | "amber" | "indigo";
 
+// DSM brand palette: Red #E63329, Blue #1F86FF, Charcoal #1C1C1E
 const colorMap: Record<TileColor, { iconBg: string; iconFg: string; ctaBg: string; ctaFg: string }> = {
-  purple:  { iconBg: "#EDE9FE", iconFg: "#5B21B6", ctaBg: "#EDE9FE", ctaFg: "#5B21B6" },
-  red:     { iconBg: "#FEE2E2", iconFg: "#B91C1C", ctaBg: "#FEE2E2", ctaFg: "#B91C1C" },
-  blue:    { iconBg: "#DBEAFE", iconFg: "#1D4ED8", ctaBg: "#DBEAFE", ctaFg: "#1D4ED8" },
-  emerald: { iconBg: "#D1FAE5", iconFg: "#047857", ctaBg: "#D1FAE5", ctaFg: "#047857" },
-  amber:   { iconBg: "#FEF3C7", iconFg: "#92400E", ctaBg: "#FEF3C7", ctaFg: "#92400E" },
-  indigo:  { iconBg: "#E0E7FF", iconFg: "#3730A3", ctaBg: "#E0E7FF", ctaFg: "#3730A3" },
+  purple:  { iconBg: "#E5F1FF", iconFg: "#1F86FF", ctaBg: "#E5F1FF", ctaFg: "#1F86FF" },
+  red:     { iconBg: "#FDE3E1", iconFg: "#E63329", ctaBg: "#FDE3E1", ctaFg: "#E63329" },
+  blue:    { iconBg: "#E5F1FF", iconFg: "#1F86FF", ctaBg: "#E5F1FF", ctaFg: "#1F86FF" },
+  emerald: { iconBg: "#EAF3FF", iconFg: "#0066E0", ctaBg: "#EAF3FF", ctaFg: "#0066E0" },
+  amber:   { iconBg: "#E4E4E6", iconFg: "#1C1C1E", ctaBg: "#E4E4E6", ctaFg: "#1C1C1E" },
+  indigo:  { iconBg: "#E5F1FF", iconFg: "#1F86FF", ctaBg: "#E5F1FF", ctaFg: "#1F86FF" },
 };
 
 interface BestMateTileProps {
