@@ -205,7 +205,20 @@ export function GoogleMapPreview({
           <MarkerF position={coords} />
         </GoogleMap>
         <div className="absolute inset-0 pointer-events-none" />
-        <div className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-white/90 backdrop-blur text-[11px] font-semibold text-foreground shadow-sm">
+        <div
+          className="absolute bottom-2 right-2 inline-flex items-center"
+          style={{
+            background: "rgba(255,255,255,0.95)",
+            backdropFilter: "blur(6px)",
+            WebkitBackdropFilter: "blur(6px)",
+            border: "0.5px solid #D3D1C7",
+            borderRadius: 999,
+            padding: "5px 10px",
+            fontSize: 11,
+            fontWeight: 500,
+            color: "#5F5E5A",
+          }}
+        >
           Tap to expand
         </div>
       </button>
