@@ -281,8 +281,8 @@ export function NextUpTile({
             className="w-full relative overflow-hidden"
             style={{
               background: "#FFFFFF",
-              borderRadius: 12,
-              border: "0.5px solid #D3D1C7",
+              borderRadius: 10,
+              border: "0.5px solid #B5D4F4",
             }}
           >
             <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={160} />
@@ -401,10 +401,10 @@ export function NextUpTile({
           className="w-full text-left flex items-center"
           style={{
             background: "#FFFFFF",
-            border: "0.5px solid #D3D1C7",
-            borderRadius: 12,
-            padding: "14px 16px",
-            gap: 12,
+            border: "0.5px solid #B5D4F4",
+            borderRadius: 10,
+            padding: "10px 12px",
+            gap: 10,
           }}
         >
           {/* Avatar */}
@@ -412,12 +412,12 @@ export function NextUpTile({
             <div
               className="flex items-center justify-center overflow-hidden"
               style={{
-                width: 42,
-                height: 42,
+                width: 32,
+                height: 32,
                 borderRadius: "50%",
-                background: "#E6F1FB",
-                color: "#185FA5",
-                fontSize: 13,
+                background: "#185FA5",
+                color: "#FFFFFF",
+                fontSize: 11,
                 fontWeight: 500,
               }}
             >
@@ -441,15 +441,15 @@ export function NextUpTile({
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <p style={{ fontSize: 14, fontWeight: 500, color: "#2C2C2A" }} className="truncate">{toSentenceName(pupilName)}</p>
-            <p style={{ fontSize: 12, color: "#5F5E5A", marginTop: 2 }}>
-              {formatMetaDate(lessonDate)} · {formatHoursLong(durationMinutes)} · {getCountdownText()}
+            <p style={{ fontSize: 13, fontWeight: 500, color: "#042C53" }} className="truncate">{toSentenceName(pupilName)}</p>
+            <p style={{ fontSize: 11, color: "#185FA5", marginTop: 1 }}>
+              {formatMetaDate(lessonDate)} · {formatHoursLong(durationMinutes)} · {getCountdownText()} done
             </p>
             {(pupilUnreadCount > 0 || adminUnreadCount > 0) && (
               <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                 {pupilUnreadCount > 0 && (
                   <span className="inline-flex items-center gap-1"
-                    style={{ background: "#E6F1FB", color: "#185FA5", fontSize: 10, fontWeight: 500, padding: "2px 8px", borderRadius: 999 }}>
+                    style={{ background: "#FFFFFF", color: "#185FA5", fontSize: 10, fontWeight: 500, padding: "2px 8px", borderRadius: 999, border: "0.5px solid #B5D4F4" }}>
                     <MessageCircle className="h-2.5 w-2.5" />
                     {pupilUnreadCount} from {firstName}
                   </span>
@@ -466,7 +466,7 @@ export function NextUpTile({
           </div>
 
           {/* Chevron */}
-          <ChevronRight style={{ width: 14, height: 14, color: "#888780" }} strokeWidth={2} />
+          <ChevronRight style={{ width: 12, height: 12, color: "#185FA5" }} strokeWidth={2} />
         </button>
 
         {/* ── PICK-UP ROW (white card) ── */}
@@ -475,24 +475,19 @@ export function NextUpTile({
             className="flex items-center"
             style={{
               background: "#FFFFFF",
-              border: "0.5px solid #D3D1C7",
-              borderRadius: 12,
-              padding: "14px 16px",
-              gap: 12,
+              border: "0.5px solid #B5D4F4",
+              borderRadius: 10,
+              padding: "10px 12px",
+              gap: 10,
             }}
           >
-            <div
-              className="flex items-center justify-center shrink-0"
-              style={{ width: 32, height: 32, borderRadius: 8, background: "#E6F1FB" }}
-            >
-              <MapPin style={{ width: 14, height: 14, color: "#185FA5" }} strokeWidth={2} />
-            </div>
+            <MapPin style={{ width: 14, height: 14, color: "#185FA5", flexShrink: 0 }} strokeWidth={2} />
             <div className="flex-1 min-w-0">
-              <span style={{ fontSize: 10, fontWeight: 500, color: "#888780", letterSpacing: 0.8 }}>PICK-UP</span>
+              <span style={{ fontSize: 9, fontWeight: 500, color: "#185FA5", letterSpacing: 0.8 }}>PICK-UP</span>
               <p
                 style={{
-                  fontSize: 13,
-                  color: "#2C2C2A",
+                  fontSize: 12,
+                  color: "#042C53",
                   marginTop: 1,
                   whiteSpace: "nowrap",
                   overflow: "hidden",
@@ -536,7 +531,7 @@ export function NextUpTile({
         </AnimatePresence>
 
         {/* ── QUICK ACTION GRID (4 columns) ── */}
-        <div className="grid grid-cols-4" style={{ gap: 8 }}>
+        <div className="grid grid-cols-4" style={{ gap: 6 }}>
           {[
             { icon: Navigation, label: "Navigate", color: "#185FA5", action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
             { icon: Phone, label: "Call", color: "#0F6E56", action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
@@ -549,14 +544,14 @@ export function NextUpTile({
               className="flex flex-col items-center justify-center transition-transform active:scale-95"
               style={{
                 background: "#FFFFFF",
-                border: "0.5px solid #D3D1C7",
+                border: "0.5px solid #B5D4F4",
                 borderRadius: 8,
-                padding: "12px 6px",
-                gap: 6,
+                padding: "8px 4px",
+                gap: 4,
               }}
             >
-              <btn.icon style={{ width: 16, height: 16, color: btn.color }} strokeWidth={2} />
-              <span style={{ fontSize: 11, fontWeight: 500, color: "#2C2C2A" }}>{btn.label}</span>
+              <btn.icon style={{ width: 14, height: 14, color: btn.color }} strokeWidth={2} />
+              <span style={{ fontSize: 10, fontWeight: 500, color: "#042C53" }}>{btn.label}</span>
             </button>
           ))}
         </div>
