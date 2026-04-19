@@ -15,36 +15,9 @@ import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 
-import { HomeQuickActions } from "@/components/instructor/HomeQuickActions";
-import { ActivityTilesGrid } from "@/components/instructor/ActivityTilesGrid";
-import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
-import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
-import { MorningBriefingCard } from "@/components/instructor/MorningBriefingCard";
-import { NextUpTile } from "@/components/instructor/NextUpTile";
-import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
-import { PupilMilestoneFeed } from "@/components/instructor/PupilMilestoneFeed";
-import { ImpactAlertCard } from "@/components/instructor/ImpactAlertCard";
-import { IdleTimeCostCard } from "@/components/instructor/IdleTimeCostCard";
-import { VehicleHealthCard } from "@/components/instructor/VehicleHealthCard";
-import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
-import { WaitingRoomPromoTile } from "@/components/instructor/WaitingRoomPromoTile";
-import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
-import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
-import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
-import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
-
 interface Props {
   instructorId: string | undefined;
   firstName: string;
-  instructor?: any;
-  onPaymentClick?: () => void;
-  pendingJobsCount?: number;
-  unreadCount?: number;
-  testSwapCount?: number;
-  gapSlotsCount?: number;
-  todayLessons?: any;
-  tomorrowLessons?: any;
-  nextLesson?: any;
 }
 
 const getGreeting = () => {
@@ -55,18 +28,7 @@ const getGreeting = () => {
   return "Good night";
 };
 
-export function RedesignedMobileHome({
-  instructorId,
-  firstName,
-  instructor,
-  onPaymentClick,
-  pendingJobsCount = 0,
-  unreadCount = 0,
-  testSwapCount = 0,
-  gapSlotsCount = 0,
-  todayLessons,
-  tomorrowLessons,
-}: Props) {
+export function RedesignedMobileHome({ instructorId, firstName }: Props) {
   const navigate = useNavigate();
   const { data: nextLesson } = useNextLessonDetails(instructorId);
   const { data: weeklyGoals } = useWeeklyGoals(instructorId);
@@ -123,8 +85,7 @@ export function RedesignedMobileHome({
       <div style={{ padding: "8px 16px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
         <MapHero
           countdown={countdown}
-          pickupLocation={nextLesson?.pickupLocation || null}
-          pickupPostcode={nextLesson?.pickupPostcode || null}
+          pickupLocation={nextLesson?.pickupLocation || nextLesson?.pickupPostcode || null}
           startTime={nextLesson?.startTime || null}
           etaMinutes={etaMinutes ?? null}
           lessonId={nextLesson?.lessonId}
@@ -194,74 +155,6 @@ export function RedesignedMobileHome({
           isOnline={vehicleOnline}
           onClick={() => navigate("/instructor/telematics")}
         />
-
-        {/* ── Restored standard-layout sections (below redesign) ──── */}
-
-        {/* Morning briefing */}
-        {instructorId && <MorningBriefingCard instructorId={instructorId} />}
-
-        {/* Next up tile (full pupil card) */}
-        {nextLesson && (
-          <NextUpTile
-            lessonId={nextLesson.lessonId}
-            pupilId={nextLesson.pupilId}
-            pupilName={nextLesson.pupilName}
-            pupilProfileImage={nextLesson.pupilProfileImage}
-            pupilPhone={nextLesson.pupilPhone}
-            lessonDate={nextLesson.lessonDate}
-            pickupPostcode={nextLesson.pickupPostcode}
-            pickupLocation={nextLesson.pickupLocation}
-            startTime={nextLesson.startTime}
-            minutesUntil={nextLesson.minutesUntil}
-            durationMinutes={nextLesson.durationMinutes}
-            accountBalance={nextLesson.accountBalance}
-            prepaidHours={nextLesson.prepaidHours}
-            checkInStatus={nextLesson.checkInStatus}
-            lastLessonPlan={nextLesson.lastLessonPlan}
-          />
-        )}
-
-        {/* Activity tiles grid (Job Offers / Messages / Tests / Fill Gaps) */}
-        <ActivityTilesGrid
-          pendingJobsCount={pendingJobsCount}
-          unreadMessagesCount={unreadCount}
-          testRequestsCount={testSwapCount}
-          gapSlotsCount={gapSlotsCount}
-        />
-
-        {/* Today's lessons list */}
-        {todayLessons && todayLessons.length > 0 && instructorId && (
-          <TodayLessonsList lessons={todayLessons} instructorId={instructorId} />
-        )}
-
-        {/* Smart reminders */}
-        <SmartRemindersCard />
-
-        {/* Insights */}
-        <InsightTilesGrid gapCount={gapSlotsCount} />
-
-        {/* Quick actions grid */}
-        <HomeQuickActions onTakePayment={onPaymentClick} />
-
-        {/* Agenda + plan widgets */}
-        {instructorId && <UnifiedAgendaTile instructorId={instructorId} />}
-        <PlanWidget />
-
-        {/* Vehicle + safety alerts */}
-        {instructorId && <ImpactAlertCard instructorId={instructorId} />}
-        {instructorId && <IdleTimeCostCard instructorId={instructorId} />}
-        {instructorId && <VehicleHealthCard instructorId={instructorId} />}
-
-        {/* Pupil milestones */}
-        {instructorId && <PupilMilestoneFeed instructorId={instructorId} />}
-
-        {/* Referral stats */}
-        <ReferralStatsWidget />
-
-        {/* Events + promos */}
-        <UpcomingEventsCard />
-        <WaitingRoomPromoTile />
-        <BottomPromoGroup />
       </div>
     </div>
   );

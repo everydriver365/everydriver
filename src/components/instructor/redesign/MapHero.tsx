@@ -1,10 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { GoogleMapPreview } from "@/components/instructor/GoogleMapPreview";
+import { Plus, Minus, Compass } from "lucide-react";
 
 interface MapHeroProps {
   countdown: string;
   pickupLocation: string | null;
-  pickupPostcode: string | null;
   startTime: string | null;
   etaMinutes: number | null;
   lessonId?: string | null;
@@ -13,7 +12,6 @@ interface MapHeroProps {
 export function MapHero({
   countdown,
   pickupLocation,
-  pickupPostcode,
   startTime,
   etaMinutes,
   lessonId,
@@ -49,7 +47,7 @@ export function MapHero({
             Next lesson
           </div>
           <div style={{ fontSize: 11, color: "#5F5E5A", marginTop: 2 }} className="truncate">
-            {pickupLocation || pickupPostcode || "Pickup pending"}
+            {pickupLocation || "Pickup pending"}
           </div>
         </div>
         <div className="text-right shrink-0 ml-2">
@@ -62,23 +60,90 @@ export function MapHero({
         </div>
       </div>
 
-      {/* Real Google Map */}
-      <div className="relative" style={{ height: 180, background: "#eef1f4" }}>
-        {pickupPostcode ? (
-          <GoogleMapPreview
-            postcode={pickupPostcode}
-            address={pickupLocation || undefined}
-            height={180}
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full" style={{ fontSize: 12, color: "#888" }}>
-            No pickup location yet
-          </div>
-        )}
+      {/* Map */}
+      <div className="relative" style={{ height: 180 }}>
+        <svg viewBox="0 0 360 180" width="100%" height="180" preserveAspectRatio="xMidYMid slice">
+          {/* base */}
+          <rect width="360" height="180" fill="#eef1f4" />
 
-        {/* ETA pill overlay */}
+          {/* parks */}
+          <ellipse cx="320" cy="20" rx="60" ry="38" fill="#c8dcc8" opacity="0.6" />
+          <ellipse cx="30" cy="170" rx="55" ry="34" fill="#c8dcc8" opacity="0.6" />
+
+          {/* road casings (grey wider) */}
+          <path d="M -10 130 Q 100 110 200 120 T 380 100" stroke="#dce3e8" strokeWidth="16" fill="none" strokeLinecap="round" />
+          <path d="M -10 60 Q 120 70 220 55 T 380 40" stroke="#dce3e8" strokeWidth="14" fill="none" strokeLinecap="round" />
+          <path d="M 80 -10 L 100 200" stroke="#dce3e8" strokeWidth="18" fill="none" />
+          <path d="M 260 -10 L 250 200" stroke="#dce3e8" strokeWidth="16" fill="none" />
+          <path d="M 160 0 L 175 180" stroke="#dce3e8" strokeWidth="10" fill="none" />
+
+          {/* road fills (white) */}
+          <path d="M -10 130 Q 100 110 200 120 T 380 100" stroke="#ffffff" strokeWidth="10" fill="none" strokeLinecap="round" />
+          <path d="M -10 60 Q 120 70 220 55 T 380 40" stroke="#ffffff" strokeWidth="8" fill="none" strokeLinecap="round" />
+          <path d="M 80 -10 L 100 200" stroke="#ffffff" strokeWidth="12" fill="none" />
+          <path d="M 260 -10 L 250 200" stroke="#ffffff" strokeWidth="10" fill="none" />
+          <path d="M 160 0 L 175 180" stroke="#fafbfc" strokeWidth="6" fill="none" />
+
+          {/* buildings */}
+          <g fill="#d9e1d6" opacity="0.7">
+            <rect x="120" y="80" width="22" height="14" rx="1" />
+            <rect x="146" y="76" width="16" height="18" rx="1" />
+            <rect x="190" y="135" width="20" height="14" rx="1" />
+            <rect x="214" y="138" width="14" height="12" rx="1" />
+            <rect x="280" y="80" width="18" height="14" rx="1" />
+            <rect x="302" y="78" width="16" height="18" rx="1" />
+            <rect x="40" y="100" width="16" height="14" rx="1" />
+            <rect x="58" y="103" width="14" height="11" rx="1" />
+          </g>
+
+          {/* route line */}
+          <path
+            d="M 50 150 Q 100 130 130 110 T 200 80 Q 240 65 280 50"
+            stroke="#1a6fd4"
+            strokeWidth="5"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {/* street labels */}
+          <g fontFamily="-apple-system, sans-serif" fontSize="9" fontWeight="500" fill="#5F5E5A" opacity="0.7">
+            <text x="40" y="54" transform="rotate(-6 40 54)">Moorgreen</text>
+            <text x="170" y="46" transform="rotate(-4 170 46)">Maunsell Way</text>
+            <text x="190" y="148" transform="rotate(-2 190 148)">Bubb Ln</text>
+          </g>
+
+          {/* destination pill */}
+          <g>
+            <rect x="248" y="22" width="78" height="18" rx="9" fill="#ffffff" stroke="rgba(10,14,39,0.1)" strokeWidth="0.5" />
+            <text x="287" y="34" textAnchor="middle" fontFamily="-apple-system, sans-serif" fontSize="10" fontWeight="600" fill="#0a0e27">
+              Boorley Green
+            </text>
+          </g>
+
+          {/* current location marker */}
+          <g>
+            <circle cx="50" cy="150" r="10" fill="#1a6fd4" opacity="0.25">
+              <animate attributeName="r" values="8;14;8" dur="2s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.4;0.05;0.4" dur="2s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="50" cy="150" r="6" fill="#ffffff" />
+            <circle cx="50" cy="150" r="4" fill="#1a6fd4" />
+          </g>
+
+          {/* destination teardrop */}
+          <g transform="translate(280 50)">
+            <path
+              d="M 0 -14 C -8 -14 -12 -8 -12 -2 C -12 6 0 14 0 14 C 0 14 12 6 12 -2 C 12 -8 8 -14 0 -14 Z"
+              fill="#D12E2E"
+            />
+            <circle cx="0" cy="-2" r="3.5" fill="#ffffff" />
+          </g>
+        </svg>
+
+        {/* Overlay: ETA pill top-left */}
         <div
-          className="absolute pointer-events-none"
+          className="absolute"
           style={{
             top: 10,
             left: 10,
@@ -97,6 +162,41 @@ export function MapHero({
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2e7d32" }} />
           ETA {etaText}
         </div>
+
+        {/* Zoom controls */}
+        <div className="absolute" style={{ top: 10, right: 10, display: "flex", flexDirection: "column", gap: 4 }}>
+          <button
+            className="flex items-center justify-center"
+            style={{ width: 30, height: 30, borderRadius: 6, background: "#fff", boxShadow: "0 2px 6px rgba(10,14,39,0.12)" }}
+            aria-label="Zoom in"
+          >
+            <Plus className="h-3.5 w-3.5" color="#0a0e27" strokeWidth={2.4} />
+          </button>
+          <button
+            className="flex items-center justify-center"
+            style={{ width: 30, height: 30, borderRadius: 6, background: "#fff", boxShadow: "0 2px 6px rgba(10,14,39,0.12)" }}
+            aria-label="Zoom out"
+          >
+            <Minus className="h-3.5 w-3.5" color="#0a0e27" strokeWidth={2.4} />
+          </button>
+        </div>
+
+        {/* Compass */}
+        <button
+          className="absolute flex items-center justify-center"
+          style={{
+            bottom: 10,
+            right: 10,
+            width: 34,
+            height: 34,
+            borderRadius: "50%",
+            background: "#fff",
+            boxShadow: "0 2px 8px rgba(10,14,39,0.15)",
+          }}
+          aria-label="Recenter"
+        >
+          <Compass className="h-4 w-4" color="#1a6fd4" strokeWidth={2.2} />
+        </button>
       </div>
 
       {/* Action buttons */}
