@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Search, X, Loader2, ChevronRight, Lock, LogOut, Eye, Mic, ExternalLink } from "lucide-react";
+import { Search, X, Loader2, ChevronRight, Lock, LogOut, Eye, Mic, ExternalLink, type LucideIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
