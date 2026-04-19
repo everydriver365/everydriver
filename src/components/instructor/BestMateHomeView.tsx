@@ -289,7 +289,7 @@ export function BestMateHomeView({ instructorId, instructor }: BestMateHomeViewP
             )}
 
             <div>
-              <p className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">Quick Access</p>
+              <p style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: 0.8, textTransform: "uppercase", margin: "0 16px 12px", fontFamily: "Inter, sans-serif" }}>Quick access</p>
               <SwipeableQuickAccess />
             </div>
 
