@@ -500,70 +500,116 @@ export function QuickActionTiles({
           )}
         </>
       ) : (
-        // Normal view mode — 2-column grid
-        <div className="grid grid-cols-2 gap-3">
-          {localTiles.map((action, index) => {
-            const Icon = getIcon(action.icon);
-            const badgeCount = getBadgeCount(action);
-            const showBadge = shouldShowBadge(action) && badgeCount > 0;
-            const style = tileStyles[index % tileStyles.length];
-            const subtitle = getSubtitle(action);
+        // Normal view mode — warm DSM 2-column grid on warm paper
+        <div style={{ padding: "0 16px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
+            {localTiles.map((action, index) => {
+              const Icon = getIcon(action.icon);
+              const badgeCount = getBadgeCount(action);
+              const showBadge = shouldShowBadge(action) && badgeCount > 0;
+              const subtitle = getSubtitle(action);
+              const category = getCategory(action);
+              const stroke = STROKE[category];
+              const isPrimary = action.id === "take-payment";
+              const quickActionRoute = getQuickActionRoute(action);
 
-            return (
-              <Link key={action.id} to={action.route} className={cn("block", isScheduleAction(action) && "col-span-2")}>
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.03 + index * 0.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="ios-tile relative rounded-2xl px-3.5 py-3.5 shadow-lift hover:shadow-lift-hover active:shadow-lift-pressed transition-shadow duration-200 bg-card flex items-center gap-3"
-                >
-                  {/* Icon */}
-                  <div className="relative shrink-0">
-                    <div
-                      className={`w-11 h-11 rounded-2xl ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center overflow-hidden`}
-                      style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}
-                    >
-                      {customIconImages[action.id] ? (
-                        <img
-                          src={customIconImages[action.id]}
-                          alt={action.title}
-                          className="w-full h-full object-cover"
-                          style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : { borderRadius: '10px' }}
-                        />
+              // Sentence-case title (preserve proper nouns by only lowering chars after first)
+              const sentenceTitle = action.title.charAt(0).toUpperCase() + action.title.slice(1).toLowerCase()
+                .replace(/\bsatnav\b/i, "Sat nav");
+
+              return (
+                <Link key={action.id} to={action.route} style={{ display: "block", height: "100%" }}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.02 + index * 0.015 }}
+                    whileTap={{ scale: 0.98 }}
+                    style={{
+                      position: "relative",
+                      background: "#FFFFFF",
+                      border: `0.5px solid ${isPrimary ? "#F7C1C1" : "#D3D1C7"}`,
+                      borderRadius: 12,
+                      padding: 14,
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    {/* Top row: icon + chevron/badge/plus */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+                      <div
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 8,
+                          background: "#F1EFE8",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Icon size={15} strokeWidth={2} color={stroke} style={{ strokeLinecap: "round", strokeLinejoin: "round" }} />
+                      </div>
+                      {quickActionRoute ? (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setQuickActionsMenuOpen(true);
+                          }}
+                          style={{
+                            width: 22,
+                            height: 22,
+                            borderRadius: 999,
+                            background: "#F1EFE8",
+                            border: "0.5px solid #D3D1C7",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: 0,
+                            cursor: "pointer",
+                          }}
+                          aria-label={`Quick action for ${action.title}`}
+                        >
+                          <Plus size={12} strokeWidth={2} color="#5F5E5A" />
+                        </button>
+                      ) : showBadge ? (
+                        <span
+                          style={{
+                            background: "#A32D2D",
+                            color: "#FFFFFF",
+                            fontSize: 10,
+                            fontWeight: 500,
+                            padding: "1px 6px",
+                            borderRadius: 999,
+                            lineHeight: 1.4,
+                            fontFamily: "Inter, sans-serif",
+                          }}
+                        >
+                          {badgeCount > 9 ? "9+" : badgeCount}
+                        </span>
                       ) : (
-                        <Icon className={`h-5 w-5 ${style.iconColor}`} strokeWidth={1.8} />
+                        <ChevronRight size={12} strokeWidth={2} color="#888780" />
                       )}
                     </div>
-                    {showBadge && (
-                      <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-0.5 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-sm z-10">
-                        {badgeCount > 9 ? "9+" : badgeCount}
-                      </span>
-                    )}
-                  </div>
 
-                  {/* Title */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-semibold text-foreground leading-tight line-clamp-2">{action.title}</p>
-                  </div>
-
-                  {/* Green plus button */}
-                  {getQuickActionRoute(action) && (
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setQuickActionsMenuOpen(true);
-                      }}
-                      className="shrink-0 w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center shadow-sm active:scale-90 transition-transform"
-                    >
-                      <Plus className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
-                    </button>
-                  )}
-                </motion.div>
-              </Link>
-            );
-          })}
+                    {/* Bottom row: title + subtitle */}
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 500, color: "#2C2C2A", lineHeight: 1.25, margin: 0, fontFamily: "Inter, sans-serif" }}>
+                        {sentenceTitle}
+                      </p>
+                      {subtitle && (
+                        <p style={{ fontSize: 11, fontWeight: 400, color: "#888780", margin: "2px 0 0 0", fontFamily: "Inter, sans-serif" }}>
+                          {subtitle}
+                        </p>
+                      )}
+                    </div>
+                  </motion.div>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       )}
 
