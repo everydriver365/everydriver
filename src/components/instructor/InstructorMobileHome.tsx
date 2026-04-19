@@ -451,21 +451,21 @@ export function InstructorMobileHome({
           style={{
             fontSize: 22,
             fontWeight: 500,
-            color: "#2C2C2A",
+            color: "hsl(var(--dsm-text))",
             lineHeight: 1.2,
             margin: 0,
           }}
         >
           Hi {firstName}
-          <span style={{ color: "#888780", margin: "0 8px", fontWeight: 400 }}>·</span>
-          <span style={{ color: "#5F5E5A", fontWeight: 400 }}>
+          <span style={{ color: "hsl(var(--dsm-text-secondary))", margin: "0 8px", fontWeight: 400 }}>·</span>
+          <span style={{ color: "hsl(var(--dsm-text-secondary))", fontWeight: 400 }}>
             {format(new Date(), "EEEE")}
           </span>
         </h1>
         <p
           style={{
             fontSize: 13,
-            color: "#888780",
+            color: "hsl(var(--dsm-text-secondary))",
             marginTop: 4,
             fontWeight: 400,
           }}

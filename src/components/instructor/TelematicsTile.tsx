@@ -36,7 +36,8 @@ export function TelematicsTile() {
     <div className="px-4 mt-3">
       <div
         style={{
-          backgroundColor: "#FFFFFF",
+          backgroundColor: "hsl(var(--dsm-card))",
+          border: "0.5px solid hsl(var(--dsm-border))",
           borderRadius: 14,
           boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)",
           overflow: "hidden",
@@ -68,8 +69,8 @@ export function TelematicsTile() {
               />
             </div>
             <div className="min-w-0">
-              <p style={{ fontSize: 15, fontWeight: 500, color: "#18181B", fontFamily: "Inter, sans-serif" }}>Telematics</p>
-              <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }} className="truncate">{vehicleLabel}</p>
+              <p style={{ fontSize: 15, fontWeight: 500, color: "hsl(var(--dsm-text))", fontFamily: "Inter, sans-serif" }}>Telematics</p>
+              <p style={{ fontSize: 12, fontWeight: 400, color: "hsl(var(--dsm-text-secondary))", fontFamily: "Inter, sans-serif" }} className="truncate">{vehicleLabel}</p>
             </div>
           </div>
 
@@ -79,10 +80,10 @@ export function TelematicsTile() {
             ) : (
               <WifiOff className="h-3.5 w-3.5" style={{ color: "#A1A1AA" }} />
             )}
-            <span style={{ fontSize: 12, color: "#71717A", fontWeight: 500, fontFamily: "Inter, sans-serif" }}>
+            <span style={{ fontSize: 12, color: "hsl(var(--dsm-text-secondary))", fontWeight: 500, fontFamily: "Inter, sans-serif" }}>
               {isConnected ? "Online" : "Offline"}
             </span>
-            <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" />
+            <ChevronRight size={16} strokeWidth={2} color="hsl(var(--dsm-text-secondary))" />
           </div>
         </button>
 
@@ -96,7 +97,7 @@ export function TelematicsTile() {
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div style={{ borderTop: "0.5px solid #E4E4E7" }} className="px-[14px] pb-3 pt-3 space-y-2">
+              <div style={{ borderTop: "0.5px solid hsl(var(--dsm-border))" }} className="px-[14px] pb-3 pt-3 space-y-2">
                 {hasData ? (
                   <>
                     <div className="grid grid-cols-3 gap-2">

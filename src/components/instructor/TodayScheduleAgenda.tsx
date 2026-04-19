@@ -351,7 +351,8 @@ export function TodayScheduleAgenda({ todayLessons, tomorrowLessons, className =
       style={{
         borderRadius: 14,
         boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)",
-        background: "#FFFFFF",
+        background: "hsl(var(--dsm-card))",
+        border: "0.5px solid hsl(var(--dsm-border))",
         overflow: "hidden",
         fontFamily: "Inter, -apple-system, 'SF Pro Text', sans-serif",
       }}
