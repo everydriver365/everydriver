@@ -25,15 +25,32 @@ export type WarmTileCategory =
   | "urgent" //   red #A32D2D        — track/SOS/irreversible
   | "neutral"; //  grey #5F5E5A      — settings/utility/admin
 
-export const WARM_TILE_STROKE: Record<WarmTileCategory, string> = {
-  schedule: "#185FA5",
-  planning: "#042C53",
-  people: "#2C2C2A",
-  money: "#185FA5",
-  messages: "#2C2C2A",
-  urgent: "#A32D2D",
-  neutral: "#5F5E5A",
+/**
+ * Stroke colours per category. Light/dark variants are resolved at render
+ * time so tiles match the active DSM instructor theme.
+ * Light: navy/red/grey. Dark: brighter blue/red/grey for contrast on #162035.
+ */
+const STROKE_LIGHT: Record<WarmTileCategory, string> = {
+  schedule: "#2255FF",
+  planning: "#0F1B2D",
+  people: "#0F1B2D",
+  money: "#2255FF",
+  messages: "#0F1B2D",
+  urgent: "#E02020",
+  neutral: "#7A8FAA",
 };
+const STROKE_DARK: Record<WarmTileCategory, string> = {
+  schedule: "#4D7DFF",
+  planning: "#E8F0FF",
+  people: "#E8F0FF",
+  money: "#4D7DFF",
+  messages: "#E8F0FF",
+  urgent: "#FF4D4D",
+  neutral: "#7A8FAA",
+};
+
+// Legacy export kept for any consumers reading raw colour values.
+export const WARM_TILE_STROKE: Record<WarmTileCategory, string> = STROKE_LIGHT;
 
 export interface WarmTileProps {
   icon: LucideIcon;
@@ -69,7 +86,6 @@ export function WarmTile({
   className,
   iconSlot,
 }: WarmTileProps) {
-  const stroke = WARM_TILE_STROKE[category];
   const showBadge = typeof badgeCount === "number" && badgeCount > 0;
 
   const inner = (
@@ -77,8 +93,8 @@ export function WarmTile({
       className={className}
       style={{
         position: "relative",
-        background: "#FFFFFF",
-        border: `0.5px solid ${primary ? "#F7C1C1" : "#D3D1C7"}`,
+        background: "hsl(var(--dsm-card))",
+        border: `0.5px solid ${primary ? "hsl(var(--dsm-accent-red) / 0.4)" : "hsl(var(--dsm-border))"}`,
         borderRadius: 12,
         padding: 14,
         cursor: to || onClick ? "pointer" : undefined,
@@ -86,6 +102,7 @@ export function WarmTile({
         display: "flex",
         flexDirection: "column",
       }}
+      data-category={category}
     >
       {/* Top row: icon + chevron/badge */}
       <div
@@ -101,7 +118,7 @@ export function WarmTile({
             width: 32,
             height: 32,
             borderRadius: 8,
-            background: "#F1EFE8",
+            background: "hsl(var(--dsm-tile-icon-bg))",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -111,9 +128,9 @@ export function WarmTile({
         >
           {iconSlot ?? (
             <Icon
-              size={15}
-              strokeWidth={2}
-              color={stroke}
+              size={16}
+              strokeWidth={1.6}
+              className={`dsm-tile-icon dsm-tile-icon-${category}`}
               style={{ strokeLinecap: "round", strokeLinejoin: "round" }}
             />
           )}
@@ -124,7 +141,7 @@ export function WarmTile({
           ? (
             <span
               style={{
-                background: "#A32D2D",
+                background: "hsl(var(--dsm-accent-red))",
                 color: "#FFFFFF",
                 fontSize: 10,
                 fontWeight: 500,
@@ -138,7 +155,7 @@ export function WarmTile({
             </span>
           )
           : !hideChevron
-          ? <ChevronRight size={12} strokeWidth={2} color="#888780" />
+          ? <ChevronRight size={12} strokeWidth={1.6} color="hsl(var(--dsm-text-secondary))" />
           : null}
       </div>
 
@@ -148,7 +165,7 @@ export function WarmTile({
           style={{
             fontSize: 13,
             fontWeight: 500,
-            color: "#2C2C2A",
+            color: "hsl(var(--dsm-text))",
             lineHeight: 1.25,
             fontFamily: "Inter, sans-serif",
             margin: 0,
@@ -161,7 +178,7 @@ export function WarmTile({
             style={{
               fontSize: 11,
               fontWeight: 400,
-              color: "#888780",
+              color: "hsl(var(--dsm-text-secondary))",
               marginTop: 2,
               fontFamily: "Inter, sans-serif",
               margin: "2px 0 0 0",
@@ -223,7 +240,7 @@ export function WarmTileGrid({
           style={{
             fontSize: 11,
             fontWeight: 500,
-            color: "#888780",
+            color: "hsl(var(--dsm-text-secondary))",
             letterSpacing: 0.8,
             textTransform: "uppercase",
             margin: "0 0 12px 0",
