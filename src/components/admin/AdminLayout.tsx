@@ -155,8 +155,8 @@ export function AdminLayout({
       onLogout={onLogout}
       tabCounts={tabCounts}
       portalLabel="Admin"
-      logoSrc="/everydriver-logo-v2.png"
-      logoAlt="EveryDriver"
+      logoSrc={dsmLogo}
+      logoAlt="DSM"
       quickActions={quickActions}
       headerExtra={
         <>
