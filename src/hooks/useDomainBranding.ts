@@ -13,15 +13,21 @@ export interface DomainBranding {
 const DRIVE365_DOMAINS = ["drive365.co.uk", "www.drive365.co.uk"];
 const EVERYDRIVER_BASE_DOMAIN = "everydriver.co.uk";
 const ACCESSIBLE_BASE_DOMAIN = "driveforall.co.uk";
+const ACCESSIBLE_BASE_DOMAIN_ALT = "drivingforall.co.uk";
 
 function isAccessibleHost(): boolean {
   const hostname = window.location.hostname.toLowerCase();
-  return hostname === ACCESSIBLE_BASE_DOMAIN || hostname === `www.${ACCESSIBLE_BASE_DOMAIN}`;
+  return (
+    hostname === ACCESSIBLE_BASE_DOMAIN ||
+    hostname === `www.${ACCESSIBLE_BASE_DOMAIN}` ||
+    hostname === ACCESSIBLE_BASE_DOMAIN_ALT ||
+    hostname === `www.${ACCESSIBLE_BASE_DOMAIN_ALT}`
+  );
 }
 
 function isDrive365Domain(): boolean {
   const hostname = window.location.hostname.toLowerCase();
-  if (hostname.includes(ACCESSIBLE_BASE_DOMAIN)) return false;
+  if (hostname.includes(ACCESSIBLE_BASE_DOMAIN) || hostname.includes(ACCESSIBLE_BASE_DOMAIN_ALT)) return false;
   return DRIVE365_DOMAINS.some(domain => hostname.includes(domain.replace("www.", "")));
 }
 
