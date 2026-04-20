@@ -108,6 +108,8 @@ export function getInstructorSubdomain(): string | null {
  */
 export function isDrive365Domain(): boolean {
   const hostname = window.location.hostname.toLowerCase();
+  // Exclude accessible domain (which contains "drive365" as a substring)
+  if (hostname.includes(ACCESSIBLE_BASE_DOMAIN)) return false;
   return DRIVE365_DOMAINS.some(domain => hostname.includes(domain.replace("www.", "")));
 }
 
@@ -119,6 +121,14 @@ export function isEveryDriverDomain(): boolean {
   return EVERYDRIVER_DOMAINS.some(domain => hostname.includes(domain.replace("www.", ""))) || 
          hostname.endsWith(`.${EVERYDRIVER_BASE_DOMAIN}`) ||
          hostname.includes("lovable.app");
+}
+
+/**
+ * Checks if the current hostname is the Drive365 Accessible domain
+ */
+export function isAccessibleDomain(): boolean {
+  const hostname = window.location.hostname.toLowerCase();
+  return ACCESSIBLE_DOMAINS.some(domain => hostname === domain || hostname === domain.replace("www.", ""));
 }
 
 /**
