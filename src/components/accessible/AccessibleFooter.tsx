@@ -8,8 +8,7 @@ export function AccessibleFooter() {
         <div className="grid gap-8 md:grid-cols-4">
           <div>
             <div className="acc-brand mb-3 flex items-center gap-3">
-              <img src={dfaLogo} alt="Drive for all" className="h-10 w-auto" />
-              <span className="text-sm font-semibold tracking-wide">Driving For All</span>
+              <img src={dfaLogo} alt="Driving For All" className="h-10 w-auto" />
             </div>
             <p className="text-sm opacity-80">
               Driving designed around you — accessible instructors, adapted-vehicle garages and a community for disabled drivers.
