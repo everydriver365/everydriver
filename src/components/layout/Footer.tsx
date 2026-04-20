@@ -88,6 +88,7 @@ export function Footer() {
               <li><Link to="/pupil/login" className="hover:text-accent">Pupil Portal</Link></li>
               <li><Link to="/instructor-app/login" className="hover:text-accent">Instructor Portal</Link></li>
               <li><Link to="/admin/login" className="hover:text-accent">Admin Portal</Link></li>
+              <li><Link to="/accessible" className="hover:text-accent text-accent font-medium">Open Road — Accessible Driving</Link></li>
             </ul>
           </div>
 
