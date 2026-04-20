@@ -1,6 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
 import { useState } from "react";
-import { Menu, X, Accessibility } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import dfaLogo from "@/assets/dfa-logo.png";
 
 const NAV = [
   { to: "/accessible/instructors", label: "Instructors" },
