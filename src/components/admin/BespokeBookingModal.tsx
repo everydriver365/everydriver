@@ -52,18 +52,34 @@ type FormValues = z.infer<typeof formSchema>;
 type AssignmentType = "instructor" | "job_offer";
 type PaymentMethod = "cash" | "bank_transfer" | "not_paid";
 
+interface BespokePrefill {
+  instructorId?: string;
+  date?: string;
+  time?: string;
+  duration?: string;
+}
+
 interface BespokeBookingModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  prefill?: BespokePrefill;
 }
 
-export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalProps) {
+export function BespokeBookingModal({ open, onOpenChange, prefill }: BespokeBookingModalProps) {
   const [step, setStep] = useState(1);
   const [assignmentType, setAssignmentType] = useState<AssignmentType>("job_offer");
   const [selectedInstructorId, setSelectedInstructorId] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("not_paid");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+
+  // Apply prefill on open
+  useState(() => {
+    if (prefill?.instructorId) {
+      setSelectedInstructorId(prefill.instructorId);
+      setAssignmentType("instructor");
+    }
+  });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
