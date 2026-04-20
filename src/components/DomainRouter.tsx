@@ -216,16 +216,36 @@ export function DomainRouter() {
 
     const onDrive365 = isDrive365Domain();
     const onEveryDriver = isEveryDriverDomain();
+    const onAccessible = isAccessibleDomain();
     
     console.log('[DomainRouter] Domain check:', { 
       hostname: window.location.hostname,
       pathname,
       onDrive365, 
-      onEveryDriver 
+      onEveryDriver,
+      onAccessible,
     });
 
-    // Drive365 = Learner site - use WHITELIST approach
+    // Accessible domain - only allow root + /accessible/* + auth + shared routes
+    if (onAccessible) {
+      const isAccessibleRoute = pathname === "/" || pathname.startsWith("/accessible");
+      const isShared = SHARED_ROUTES.some(route => pathname === route || pathname.startsWith(route + "/"));
+      const isAuthRoute = pathname.startsWith("/pupil/login") || pathname.startsWith("/admin/login");
+      if (!isAccessibleRoute && !isShared && !isAuthRoute) {
+        console.log('[DomainRouter] Non-accessible route on Accessible domain, redirecting to Drive365:', fullPath);
+        window.location.href = `https://drive365.co.uk${fullPath}`;
+        return;
+      }
+      return;
+    }
+
+    // Drive365 = Learner site - redirect /accessible/* to Accessible domain
     if (onDrive365) {
+      if (pathname.startsWith("/accessible")) {
+        console.log('[DomainRouter] Redirecting /accessible from Drive365 to Accessible domain:', fullPath);
+        window.location.href = `https://drive365accessible.co.uk${fullPath}`;
+        return;
+      }
       const isShared = SHARED_ROUTES.some(route => pathname === route || pathname.startsWith(route + "/"));
       const isAllowedOnDrive365 = isLearnerAllowedRoute(pathname) || isShared;
       
@@ -235,8 +255,13 @@ export function DomainRouter() {
         return;
       }
     } 
-    // EveryDriver = Instructor site - redirect learner routes to Drive365
+    // EveryDriver = Instructor site - redirect learner + accessible routes
     else if (onEveryDriver) {
+      if (pathname.startsWith("/accessible")) {
+        console.log('[DomainRouter] Redirecting /accessible from EveryDriver to Accessible domain:', fullPath);
+        window.location.href = `https://drive365accessible.co.uk${fullPath}`;
+        return;
+      }
       if (isLearnerAllowedRoute(pathname)) {
         console.log('[DomainRouter] Redirecting learner route from EveryDriver to Drive365:', fullPath);
         window.location.href = `https://drive365.co.uk${fullPath}`;
