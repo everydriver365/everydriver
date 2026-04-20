@@ -241,8 +241,8 @@ export default function AccessibleTrackers() {
 
             <article className="or-card or-card-recommended">
               <header className="or-card-head">
-                <span className="or-card-label" style={{ color: "var(--or-teal)" }}>Open Road tracker</span>
-                <span className="or-pill" style={{ background: "var(--or-teal-tint)", color: "var(--or-teal)" }}>Recommended</span>
+                <span className="or-card-label" style={{ color: "var(--or-teal)" }}>DFA Tracker</span>
+                <span className="or-pill" style={{ background: "var(--or-teal-tint)", color: "var(--or-teal)" }}>£9.99 / month</span>
               </header>
               <div>
                 <div className="or-stat" style={{ color: "var(--or-teal-dark)" }}>&lt;1m</div>
@@ -250,7 +250,8 @@ export default function AccessibleTrackers() {
               </div>
               <ul className="or-list">
                 {[
-                  "Hard-wired, always on, never drops out",
+                  "Plug and play — not hardwired",
+                  "Always on, never drops out",
                   "Accelerometer & gyroscope for true driving data",
                   "Tied to your vehicle, not your phone",
                   "Timestamped reports you can share or download",
