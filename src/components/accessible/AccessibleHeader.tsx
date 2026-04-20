@@ -15,13 +15,13 @@ export function AccessibleHeader() {
   return (
     <header className="acc-header">
       <div className="acc-container flex items-center justify-between gap-4 py-4">
-        <Link to="/accessible" className="acc-brand" aria-label="Drive365 Accessible home">
+        <Link to="/accessible" className="acc-brand" aria-label="Drive for all home">
           <span className="acc-brand-mark" aria-hidden="true">
             <Accessibility className="h-6 w-6" />
           </span>
           <span className="acc-brand-text">
-            <span className="acc-brand-1">Drive365</span>
-            <span className="acc-brand-2">Accessible</span>
+            <span className="acc-brand-1">Drive</span>
+            <span className="acc-brand-2">for all</span>
           </span>
         </Link>
 
