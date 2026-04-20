@@ -12,8 +12,8 @@ export function AccessibleFooter() {
                 <Accessibility className="h-5 w-5" />
               </span>
               <span className="acc-brand-text">
-                <span className="acc-brand-1">Drive365</span>
-                <span className="acc-brand-2">Accessible</span>
+                <span className="acc-brand-1">Drive</span>
+                <span className="acc-brand-2">for all</span>
               </span>
             </div>
             <p className="text-sm opacity-80">
