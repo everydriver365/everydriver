@@ -44,9 +44,22 @@ import SchoolPassRatesSection from "@/components/school/SchoolPassRatesSection";
 
 export default function SchoolPortal() {
   const [activeSection, setActiveSection] = useState("dashboard");
+  const [findOpen, setFindOpen] = useState(false);
+  const [bookingPrefill, setBookingPrefill] = useState<{ instructorId?: string; date?: string; time?: string; duration?: string } | undefined>();
+  const [prefillBookingOpen, setPrefillBookingOpen] = useState(false);
   const { signOut } = useSchoolAuth();
   const navigate = useNavigate();
   const { school, instructorIds, loading, refetch } = useSchoolData();
+
+  const handleSlotSelected = (slot: AvailableSlot) => {
+    setBookingPrefill({
+      instructorId: slot.instructorId,
+      date: slot.date,
+      time: slot.startTime,
+      duration: String(slot.durationMinutes),
+    });
+    setPrefillBookingOpen(true);
+  };
 
   const handleLogout = async () => {
     await signOut();
