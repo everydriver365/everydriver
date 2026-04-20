@@ -122,6 +122,7 @@ interface AdminLayoutProps {
   groupTitle: string;
   onSectionChange: (section: string) => void;
   onLogout: () => void;
+  onFindSlot?: () => void;
   tabCounts?: Record<string, number>;
 }
 
