@@ -1116,6 +1116,7 @@ export default function AdminPortal() {
         groupTitle={currentMeta.group}
         onSectionChange={setActiveSection}
         onLogout={handleLogout}
+        onFindSlot={() => setFindOpen(true)}
         tabCounts={tabCounts}
       >
         {renderContent()}
