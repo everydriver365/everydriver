@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Accessibility } from "lucide-react";
+import dfaLogo from "@/assets/dfa-logo.png";
 
 export function AccessibleFooter() {
   return (
@@ -8,13 +8,7 @@ export function AccessibleFooter() {
         <div className="grid gap-8 md:grid-cols-4">
           <div>
             <div className="acc-brand mb-3">
-              <span className="acc-brand-mark" aria-hidden="true">
-                <Accessibility className="h-5 w-5" />
-              </span>
-              <span className="acc-brand-text">
-                <span className="acc-brand-1">Drive</span>
-                <span className="acc-brand-2">for all</span>
-              </span>
+              <img src={dfaLogo} alt="Drive for all" className="h-10 w-auto" />
             </div>
             <p className="text-sm opacity-80">
               Driving designed around you — accessible instructors, adapted-vehicle garages and a community for disabled drivers.
