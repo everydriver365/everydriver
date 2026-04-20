@@ -65,6 +65,7 @@ const AccessibleForum = lazy(() => import("@/pages/accessible/AccessibleForum"))
 const AccessibleForumTopic = lazy(() => import("@/pages/accessible/AccessibleForumTopic"));
 const AccessibleForumNew = lazy(() => import("@/pages/accessible/AccessibleForumNew"));
 const AccessibleGarages = lazy(() => import("@/pages/accessible/AccessibleGarages"));
+const AccessibleGarageProfile = lazy(() => import("@/pages/accessible/AccessibleGarageProfile"));
 const AccessibleTrackers = lazy(() => import("@/pages/accessible/AccessibleTrackers"));
 
 // Conditional routes (domain-aware)
@@ -86,6 +87,7 @@ export const publicRoutes = (
     <Route path="/accessible/forum/new" element={<AccessibleForumNew />} />
     <Route path="/accessible/forum/:id" element={<AccessibleForumTopic />} />
     <Route path="/accessible/garages" element={<AccessibleGarages />} />
+    <Route path="/accessible/garages/:id" element={<AccessibleGarageProfile />} />
     <Route path="/accessible/trackers" element={<AccessibleTrackers />} />
 
     {/* Learner-facing routes */}
