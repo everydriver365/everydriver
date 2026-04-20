@@ -185,10 +185,16 @@ export function SchoolLayout({
 
   const quickActions: PortalQuickAction[] = [
     {
+      label: "Find Slot",
+      icon: Search,
+      onClick: () => onSectionChange("find-appointment"),
+      variant: "default",
+    },
+    {
       label: "Take a Booking",
       icon: CalendarPlus,
       onClick: () => setBookingOpen(true),
-      variant: "default",
+      variant: "outline",
     },
     {
       label: "Take a Payment",
