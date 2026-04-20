@@ -153,6 +153,7 @@ interface SchoolLayoutProps {
   enabledFeatures?: Record<string, boolean> | null;
   schoolId?: string;
   notificationPreferences?: Record<string, boolean> | null;
+  onFindSlot?: () => void;
 }
 
 export function SchoolLayout({
@@ -164,6 +165,7 @@ export function SchoolLayout({
   enabledFeatures,
   schoolId,
   notificationPreferences,
+  onFindSlot,
 }: SchoolLayoutProps) {
   const meta = sectionMeta[activeSection] ?? { title: activeSection, group: "Overview" };
 
@@ -187,7 +189,7 @@ export function SchoolLayout({
     {
       label: "Find Slot",
       icon: Search,
-      onClick: () => onSectionChange("find-appointment"),
+      onClick: () => onFindSlot ? onFindSlot() : onSectionChange("find-appointment"),
       variant: "default",
     },
     {

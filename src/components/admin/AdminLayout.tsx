@@ -122,6 +122,7 @@ interface AdminLayoutProps {
   groupTitle: string;
   onSectionChange: (section: string) => void;
   onLogout: () => void;
+  onFindSlot?: () => void;
   tabCounts?: Record<string, number>;
 }
 
@@ -132,6 +133,7 @@ export function AdminLayout({
   groupTitle,
   onSectionChange,
   onLogout,
+  onFindSlot,
   tabCounts = {},
 }: AdminLayoutProps) {
   const isMobile = useIsMobile();
@@ -140,7 +142,7 @@ export function AdminLayout({
     {
       label: "Find Slot",
       icon: Search,
-      onClick: () => onSectionChange("find-appointment"),
+      onClick: () => onFindSlot ? onFindSlot() : onSectionChange("find-appointment"),
       variant: "default",
     },
   ];
