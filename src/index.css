@@ -631,3 +631,302 @@
 html {
   background-color: hsl(var(--background));
 }
+
+/* ============================================================
+   Drive365 Accessible — scoped design system (.accessible-portal)
+   High-contrast, calm, accessibility-first. Single light theme.
+   ============================================================ */
+.accessible-portal {
+  /* Calm cream + deep teal palette */
+  --acc-bg: 36 50% 97%;            /* #FBF7F0 cream */
+  --acc-surface: 0 0% 100%;        /* white cards */
+  --acc-surface-soft: 36 40% 94%;  /* warm wash */
+  --acc-ink: 180 35% 8%;           /* near-ink */
+  --acc-ink-soft: 180 15% 30%;
+  --acc-muted: 180 10% 45%;
+  --acc-primary: 180 74% 21%;      /* deep teal #0E5C5C */
+  --acc-primary-foreground: 36 50% 98%;
+  --acc-accent: 38 100% 48%;       /* warm amber #F4A300 */
+  --acc-accent-foreground: 180 35% 8%;
+  --acc-border: 180 15% 86%;
+  --acc-ring: 38 100% 48%;
+  --acc-radius: 1.25rem;
+  --acc-shadow-sm: 0 1px 2px hsl(180 35% 8% / 0.06);
+  --acc-shadow-md: 0 6px 18px -8px hsl(180 35% 8% / 0.18), 0 2px 4px hsl(180 35% 8% / 0.06);
+  --acc-shadow-lg: 0 20px 40px -16px hsl(180 35% 8% / 0.22);
+
+  background-color: hsl(var(--acc-bg));
+  color: hsl(var(--acc-ink));
+  font-family: 'Atkinson Hyperlegible', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+  letter-spacing: 0;
+}
+
+/* High-contrast mode */
+.accessible-portal.high-contrast {
+  --acc-bg: 0 0% 100%;
+  --acc-surface: 0 0% 100%;
+  --acc-surface-soft: 0 0% 96%;
+  --acc-ink: 0 0% 0%;
+  --acc-ink-soft: 0 0% 8%;
+  --acc-muted: 0 0% 15%;
+  --acc-primary: 180 100% 14%;
+  --acc-primary-foreground: 0 0% 100%;
+  --acc-accent: 38 100% 38%;
+  --acc-border: 0 0% 0%;
+  --acc-ring: 38 100% 38%;
+}
+
+/* Larger text modifiers */
+.accessible-portal.text-large { font-size: 20px; }
+.accessible-portal.text-xlarge { font-size: 22px; }
+
+/* Always-visible focus rings */
+.accessible-portal :focus-visible {
+  outline: 3px solid hsl(var(--acc-ring));
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Headings */
+.accessible-portal h1,
+.accessible-portal h2,
+.accessible-portal h3,
+.accessible-portal h4 {
+  color: hsl(var(--acc-ink));
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .accessible-portal *,
+  .accessible-portal *::before,
+  .accessible-portal *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Skip link */
+.acc-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: hsl(var(--acc-ink));
+  color: hsl(var(--acc-primary-foreground));
+  padding: 12px 20px;
+  border-radius: 0 0 12px 0;
+  z-index: 100;
+  font-weight: 600;
+}
+.acc-skip-link:focus { left: 0; }
+
+/* Container */
+.accessible-portal .acc-container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+/* Toolbar bar (top strip) */
+.accessible-portal .acc-toolbar-bar {
+  background: hsl(var(--acc-ink));
+  color: hsl(var(--acc-primary-foreground));
+  padding: 6px 0;
+  font-size: 14px;
+}
+.accessible-portal .acc-toolbar { display: flex; gap: 8px; align-items: center; }
+.accessible-portal .acc-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  border: 1px solid hsl(var(--acc-primary-foreground) / 0.3);
+  font-size: 14px;
+  cursor: pointer;
+}
+.accessible-portal .acc-toolbar-btn:hover {
+  background: hsl(var(--acc-primary-foreground) / 0.12);
+}
+
+/* Header */
+.accessible-portal .acc-header {
+  background: hsl(var(--acc-surface));
+  border-bottom: 1px solid hsl(var(--acc-border));
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  box-shadow: var(--acc-shadow-sm);
+}
+.accessible-portal .acc-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: hsl(var(--acc-ink));
+}
+.accessible-portal .acc-brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: hsl(var(--acc-primary));
+  color: hsl(var(--acc-primary-foreground));
+}
+.accessible-portal .acc-brand-text { display: flex; flex-direction: column; line-height: 1; }
+.accessible-portal .acc-brand-1 { font-weight: 700; font-size: 0.85em; color: hsl(var(--acc-muted)); }
+.accessible-portal .acc-brand-2 { font-weight: 800; font-size: 1.05em; color: hsl(var(--acc-primary)); }
+
+.accessible-portal .acc-nav-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 999px;
+  color: hsl(var(--acc-ink));
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
+}
+.accessible-portal .acc-nav-link:hover { background: hsl(var(--acc-surface-soft)); }
+.accessible-portal .acc-nav-link--active {
+  background: hsl(var(--acc-primary));
+  color: hsl(var(--acc-primary-foreground));
+}
+
+.accessible-portal .acc-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 12px;
+  background: transparent;
+  color: hsl(var(--acc-ink));
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.accessible-portal .acc-icon-btn:hover { background: hsl(var(--acc-surface-soft)); }
+
+.accessible-portal .acc-mobile-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 16px 16px;
+  background: hsl(var(--acc-surface));
+  border-top: 1px solid hsl(var(--acc-border));
+}
+.accessible-portal .acc-mobile-link {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 0 16px;
+  border-radius: 14px;
+  color: hsl(var(--acc-ink));
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 17px;
+}
+.accessible-portal .acc-mobile-link:hover { background: hsl(var(--acc-surface-soft)); }
+.accessible-portal .acc-mobile-link--active {
+  background: hsl(var(--acc-primary));
+  color: hsl(var(--acc-primary-foreground));
+}
+
+/* Buttons */
+.accessible-portal .acc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 22px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  text-decoration: none;
+  transition: transform 120ms ease, background-color 120ms ease;
+}
+.accessible-portal .acc-btn:hover { transform: translateY(-1px); }
+.accessible-portal .acc-btn--primary {
+  background: hsl(var(--acc-primary));
+  color: hsl(var(--acc-primary-foreground));
+}
+.accessible-portal .acc-btn--accent {
+  background: hsl(var(--acc-accent));
+  color: hsl(var(--acc-accent-foreground));
+}
+.accessible-portal .acc-btn--ghost {
+  background: transparent;
+  color: hsl(var(--acc-ink));
+  border-color: hsl(var(--acc-border));
+}
+.accessible-portal .acc-btn--ghost:hover { background: hsl(var(--acc-surface-soft)); }
+
+/* Cards */
+.accessible-portal .acc-card {
+  background: hsl(var(--acc-surface));
+  border: 1px solid hsl(var(--acc-border));
+  border-radius: var(--acc-radius);
+  padding: 1.5rem;
+  box-shadow: var(--acc-shadow-sm);
+}
+.accessible-portal .acc-card--lift { transition: box-shadow 200ms ease, transform 200ms ease; }
+.accessible-portal .acc-card--lift:hover {
+  box-shadow: var(--acc-shadow-md);
+  transform: translateY(-2px);
+}
+
+/* Hero */
+.accessible-portal .acc-hero {
+  background:
+    radial-gradient(circle at 0% 0%, hsl(var(--acc-accent) / 0.12), transparent 50%),
+    radial-gradient(circle at 100% 100%, hsl(var(--acc-primary) / 0.10), transparent 55%),
+    hsl(var(--acc-bg));
+  padding: 4rem 0 3rem;
+}
+
+/* Pill */
+.accessible-portal .acc-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: hsl(var(--acc-primary) / 0.1);
+  color: hsl(var(--acc-primary));
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Footer */
+.accessible-portal .acc-footer {
+  background: hsl(var(--acc-surface));
+  border-top: 1px solid hsl(var(--acc-border));
+  color: hsl(var(--acc-ink));
+}
+.acc-footer-title {
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: hsl(var(--acc-primary));
+}
+.acc-footer-link {
+  color: hsl(var(--acc-ink));
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.acc-footer-link:hover { border-bottom-color: hsl(var(--acc-primary)); }
