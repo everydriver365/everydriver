@@ -6,10 +6,11 @@ import { useLocation } from "react-router-dom";
 // everydriver.co.uk = Instructor site
 const DRIVE365_DOMAINS = ["drive365.co.uk", "www.drive365.co.uk"];
 const EVERYDRIVER_DOMAINS = ["everydriver.co.uk", "www.everydriver.co.uk", "everydriver.lovable.app"];
-const ACCESSIBLE_DOMAINS = ["driveforall.co.uk", "www.driveforall.co.uk"];
+const ACCESSIBLE_DOMAINS = ["driveforall.co.uk", "www.driveforall.co.uk", "drivingforall.co.uk", "www.drivingforall.co.uk"];
 const EVERYDRIVER_BASE_DOMAIN = "everydriver.co.uk";
 const DRIVE365_BASE_DOMAIN = "drive365.co.uk";
 const ACCESSIBLE_BASE_DOMAIN = "driveforall.co.uk";
+const ACCESSIBLE_BASE_DOMAIN_ALT = "drivingforall.co.uk";
 const BOOKING_SUBDOMAIN = "bookings.drive365.co.uk";
 
 // Routes that belong to instructors (hosted on everydriver.co.uk)
