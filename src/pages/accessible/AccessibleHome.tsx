@@ -14,7 +14,7 @@ interface FeaturedInstructor {
   name: string;
   location_name: string | null;
   home_postcode: string | null;
-  special_skills: string[] | null;
+  special_skills: string | string[] | null;
 }
 interface ForumTopic {
   id: string;
@@ -353,7 +353,11 @@ export default function AccessibleHome() {
               )}
               {instructors.map((ins) => {
                 const c = hashColor(ins.id);
-                const skills = (ins.special_skills ?? []).slice(0, 3);
+                const skillsRaw = ins.special_skills;
+                const skills = (Array.isArray(skillsRaw)
+                  ? skillsRaw
+                  : typeof skillsRaw === "string" ? skillsRaw.split(",").map(s => s.trim()).filter(Boolean) : []
+                ).slice(0, 3);
                 return (
                   <Link key={ins.id} to={`/accessible/instructors/${ins.id}`} className="or-ins-card">
                     <div className="or-ins-top">
