@@ -1,6 +1,7 @@
 import { AccessibleLayout } from "@/components/accessible/AccessibleLayout";
 import { SEOHead } from "@/components/SEOHead";
-import { Clock, ArrowRight, ArrowLeft, RotateCw, MapPin, Shield, FileText, Users, Info, Check, X } from "lucide-react";
+import { Clock, ArrowRight, ArrowLeft, RotateCw, MapPin, Shield, FileText, Users, Info, Check, X, Plug } from "lucide-react";
+import trackerImage from "@/assets/atom-e-tracker.webp";
 
 const styles = `
 .open-road-tracker {
@@ -76,6 +77,16 @@ const styles = `
 .open-road-tracker .or-hero h1 { color: var(--or-teal-dark); max-width: 520px; }
 .open-road-tracker .or-hero-sub { color: var(--or-teal); max-width: 520px; }
 .open-road-tracker .or-hero-ctas { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+.open-road-tracker .or-hero-grid { display: grid; grid-template-columns: 1fr 240px; gap: 24px; align-items: center; }
+.open-road-tracker .or-hero-text { display: flex; flex-direction: column; gap: 14px; }
+.open-road-tracker .or-hero-image { display: flex; justify-content: center; }
+.open-road-tracker .or-hero-image img { width: 100%; max-width: 240px; height: auto; border-radius: 12px; background: #fff; padding: 8px; border: 0.5px solid var(--or-border); }
+.open-road-tracker .or-motability { display: flex; align-items: flex-start; gap: 10px; background: #fff; border: 0.5px solid var(--or-teal-light); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--or-teal); line-height: 1.5; }
+@media (max-width: 620px) {
+  .open-road-tracker .or-hero-grid { grid-template-columns: 1fr; }
+  .open-road-tracker .or-hero-image { order: -1; }
+  .open-road-tracker .or-hero-image img { max-width: 180px; }
+}
 
 /* Comparison */
 .open-road-tracker .or-compare {
@@ -180,14 +191,28 @@ export default function AccessibleTrackers() {
         <div className="or-wrap">
           {/* Section 1 — Hero */}
           <section className="or-hero" aria-labelledby="or-hero-h">
-            <span className="or-hero-badge">New · Exclusive to members</span>
-            <h1 id="or-hero-h">Prove you're a great driver. With data, not words.</h1>
-            <p className="or-hero-sub">
-              Our in-car tracker measures your location and driving behaviour with far greater accuracy than any phone app — built to give you evidence when you need it most.
-            </p>
-            <div className="or-hero-ctas">
-              <a href="#request" className="or-btn or-btn-primary">Request a tracker</a>
-              <a href="#how" className="or-btn or-btn-secondary">How it works</a>
+            <div className="or-hero-grid">
+              <div className="or-hero-text">
+                <span className="or-hero-badge">New · Exclusive to members</span>
+                <h1 id="or-hero-h">Prove you're a great driver. With data, not words.</h1>
+                <p className="or-hero-sub">
+                  Our in-car tracker measures your location and driving behaviour with far greater accuracy than any phone app — built to give you evidence when you need it most.
+                </p>
+                <div className="or-motability">
+                  <Plug size={16} color="var(--or-teal)" aria-hidden style={{ flexShrink: 0, marginTop: 2 }} />
+                  <p>
+                    <strong style={{ fontWeight: 500, color: "var(--or-teal-dark)" }}>Motability friendly.</strong>{" "}
+                    Plugs straight into your 12V socket — no wiring, no installation, no impact on your Motability lease.
+                  </p>
+                </div>
+                <div className="or-hero-ctas">
+                  <a href="#request" className="or-btn or-btn-primary">Request a tracker</a>
+                  <a href="#how" className="or-btn or-btn-secondary">How it works</a>
+                </div>
+              </div>
+              <div className="or-hero-image">
+                <img src={trackerImage} alt="Open Road in-car tracker device" loading="lazy" />
+              </div>
             </div>
           </section>
 
