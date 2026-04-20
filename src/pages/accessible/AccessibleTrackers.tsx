@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { AccessibleLayout } from "@/components/accessible/AccessibleLayout";
 import { SEOHead } from "@/components/SEOHead";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ export default function AccessibleTrackers() {
   }, []);
 
   return (
-    <MainLayout>
+    <AccessibleLayout>
       <SEOHead title="Trackers for adapted cars — Drive365 Accessible" description="Compare vehicle trackers suitable for adapted, Motability and disabled drivers." />
 
       <section className="border-b bg-secondary/30 py-8">
@@ -104,6 +104,6 @@ export default function AccessibleTrackers() {
           </div>
         )}
       </section>
-    </MainLayout>
+    </AccessibleLayout>
   );
 }

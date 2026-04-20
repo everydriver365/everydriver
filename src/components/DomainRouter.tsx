@@ -6,8 +6,10 @@ import { useLocation } from "react-router-dom";
 // everydriver.co.uk = Instructor site
 const DRIVE365_DOMAINS = ["drive365.co.uk", "www.drive365.co.uk"];
 const EVERYDRIVER_DOMAINS = ["everydriver.co.uk", "www.everydriver.co.uk", "everydriver.lovable.app"];
+const ACCESSIBLE_DOMAINS = ["drive365accessible.co.uk", "www.drive365accessible.co.uk"];
 const EVERYDRIVER_BASE_DOMAIN = "everydriver.co.uk";
 const DRIVE365_BASE_DOMAIN = "drive365.co.uk";
+const ACCESSIBLE_BASE_DOMAIN = "drive365accessible.co.uk";
 const BOOKING_SUBDOMAIN = "bookings.drive365.co.uk";
 
 // Routes that belong to instructors (hosted on everydriver.co.uk)
@@ -106,6 +108,8 @@ export function getInstructorSubdomain(): string | null {
  */
 export function isDrive365Domain(): boolean {
   const hostname = window.location.hostname.toLowerCase();
+  // Exclude accessible domain (which contains "drive365" as a substring)
+  if (hostname.includes(ACCESSIBLE_BASE_DOMAIN)) return false;
   return DRIVE365_DOMAINS.some(domain => hostname.includes(domain.replace("www.", "")));
 }
 
@@ -117,6 +121,14 @@ export function isEveryDriverDomain(): boolean {
   return EVERYDRIVER_DOMAINS.some(domain => hostname.includes(domain.replace("www.", ""))) || 
          hostname.endsWith(`.${EVERYDRIVER_BASE_DOMAIN}`) ||
          hostname.includes("lovable.app");
+}
+
+/**
+ * Checks if the current hostname is the Drive365 Accessible domain
+ */
+export function isAccessibleDomain(): boolean {
+  const hostname = window.location.hostname.toLowerCase();
+  return ACCESSIBLE_DOMAINS.some(domain => hostname === domain || hostname === domain.replace("www.", ""));
 }
 
 /**
@@ -204,16 +216,36 @@ export function DomainRouter() {
 
     const onDrive365 = isDrive365Domain();
     const onEveryDriver = isEveryDriverDomain();
+    const onAccessible = isAccessibleDomain();
     
     console.log('[DomainRouter] Domain check:', { 
       hostname: window.location.hostname,
       pathname,
       onDrive365, 
-      onEveryDriver 
+      onEveryDriver,
+      onAccessible,
     });
 
-    // Drive365 = Learner site - use WHITELIST approach
+    // Accessible domain - only allow root + /accessible/* + auth + shared routes
+    if (onAccessible) {
+      const isAccessibleRoute = pathname === "/" || pathname.startsWith("/accessible");
+      const isShared = SHARED_ROUTES.some(route => pathname === route || pathname.startsWith(route + "/"));
+      const isAuthRoute = pathname.startsWith("/pupil/login") || pathname.startsWith("/admin/login");
+      if (!isAccessibleRoute && !isShared && !isAuthRoute) {
+        console.log('[DomainRouter] Non-accessible route on Accessible domain, redirecting to Drive365:', fullPath);
+        window.location.href = `https://drive365.co.uk${fullPath}`;
+        return;
+      }
+      return;
+    }
+
+    // Drive365 = Learner site - redirect /accessible/* to Accessible domain
     if (onDrive365) {
+      if (pathname.startsWith("/accessible")) {
+        console.log('[DomainRouter] Redirecting /accessible from Drive365 to Accessible domain:', fullPath);
+        window.location.href = `https://drive365accessible.co.uk${fullPath}`;
+        return;
+      }
       const isShared = SHARED_ROUTES.some(route => pathname === route || pathname.startsWith(route + "/"));
       const isAllowedOnDrive365 = isLearnerAllowedRoute(pathname) || isShared;
       
@@ -223,8 +255,13 @@ export function DomainRouter() {
         return;
       }
     } 
-    // EveryDriver = Instructor site - redirect learner routes to Drive365
+    // EveryDriver = Instructor site - redirect learner + accessible routes
     else if (onEveryDriver) {
+      if (pathname.startsWith("/accessible")) {
+        console.log('[DomainRouter] Redirecting /accessible from EveryDriver to Accessible domain:', fullPath);
+        window.location.href = `https://drive365accessible.co.uk${fullPath}`;
+        return;
+      }
       if (isLearnerAllowedRoute(pathname)) {
         console.log('[DomainRouter] Redirecting learner route from EveryDriver to Drive365:', fullPath);
         window.location.href = `https://drive365.co.uk${fullPath}`;
