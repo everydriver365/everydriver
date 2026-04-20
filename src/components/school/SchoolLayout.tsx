@@ -27,6 +27,7 @@ import {
   Map,
   PhoneCall,
   BarChart3,
+  Search,
 } from "lucide-react";
 import { PortalShell, PortalNavGroup, PortalQuickAction } from "@/components/layout/PortalShell";
 import driveHiveLogo from "@/assets/drive-hive-logo.png";
