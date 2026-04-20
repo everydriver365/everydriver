@@ -86,7 +86,7 @@ export default function InstructorAccessibilitySettings() {
           </div>
           <div>
             <h1 className="text-2xl font-bold">Accessibility profile</h1>
-            <p className="text-sm text-muted-foreground">Show up in the Drive365 Accessible directory.</p>
+            <p className="text-sm text-muted-foreground">Show up in the Drive for all directory.</p>
           </div>
         </div>
 
