@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -74,12 +74,12 @@ export function BespokeBookingModal({ open, onOpenChange, prefill }: BespokeBook
   const [isComplete, setIsComplete] = useState(false);
 
   // Apply prefill on open
-  useState(() => {
-    if (prefill?.instructorId) {
+  useEffect(() => {
+    if (open && prefill?.instructorId) {
       setSelectedInstructorId(prefill.instructorId);
       setAssignmentType("instructor");
     }
-  });
+  }, [open, prefill?.instructorId]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
