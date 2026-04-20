@@ -102,6 +102,26 @@ export default function SchoolPortal() {
         return <SchoolPupilsSection instructorIds={instructorIds} />;
       case "bookings":
         return <SchoolBookingsSection instructorIds={instructorIds} />;
+      case "find-appointment":
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarSearch className="h-5 w-5 text-primary" />
+                Find appointment
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Search across your school's instructors for the next available bookable slot. Filter by duration, instructor, postcode area and time of day.
+              </p>
+              <Button onClick={() => setFindOpen(true)}>
+                <CalendarSearch className="h-4 w-4 mr-2" />
+                Open appointment finder
+              </Button>
+            </CardContent>
+          </Card>
+        );
       case "calendar":
         return <SchoolCalendarSection instructorIds={instructorIds} />;
       case "courses":
@@ -158,6 +178,21 @@ export default function SchoolPortal() {
       <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout} instructorIds={instructorIds} enabledFeatures={school.enabled_features} schoolId={school.id} notificationPreferences={school.notification_preferences as Record<string, boolean> | null}>
         {renderSection()}
       </SchoolLayout>
+
+      <FindAppointmentModal
+        open={findOpen}
+        onClose={() => setFindOpen(false)}
+        instructorIds={instructorIds}
+        mode="school"
+        onSelectSlot={handleSlotSelected}
+      />
+
+      <SchoolTakeBookingModal
+        open={prefillBookingOpen}
+        onClose={() => { setPrefillBookingOpen(false); setBookingPrefill(undefined); }}
+        instructorIds={instructorIds}
+        prefill={bookingPrefill}
+      />
     </SchoolDemoProvider>
   );
 }
