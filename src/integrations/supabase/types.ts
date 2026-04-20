@@ -68,6 +68,200 @@ export type Database = {
           },
         ]
       }
+      accessible_forum_replies: {
+        Row: {
+          author_name: string
+          author_user_id: string | null
+          body: string
+          created_at: string
+          id: string
+          topic_id: string
+        }
+        Insert: {
+          author_name: string
+          author_user_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          topic_id: string
+        }
+        Update: {
+          author_name?: string
+          author_user_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          topic_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accessible_forum_replies_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "accessible_forum_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      accessible_forum_topics: {
+        Row: {
+          author_name: string
+          author_user_id: string | null
+          body: string
+          category: string
+          created_at: string
+          id: string
+          is_locked: boolean
+          is_pinned: boolean
+          last_reply_at: string | null
+          reply_count: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_name: string
+          author_user_id?: string | null
+          body: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_locked?: boolean
+          is_pinned?: boolean
+          last_reply_at?: string | null
+          reply_count?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_name?: string
+          author_user_id?: string | null
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_locked?: boolean
+          is_pinned?: boolean
+          last_reply_at?: string | null
+          reply_count?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      accessible_garages: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          id: string
+          image_url: string | null
+          latitude: number | null
+          longitude: number | null
+          motability_approved: boolean
+          name: string
+          phone: string | null
+          postcode: string | null
+          services: string[]
+          updated_at: string
+          verified: boolean
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          image_url?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          motability_approved?: boolean
+          name: string
+          phone?: string | null
+          postcode?: string | null
+          services?: string[]
+          updated_at?: string
+          verified?: boolean
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          image_url?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          motability_approved?: boolean
+          name?: string
+          phone?: string | null
+          postcode?: string | null
+          services?: string[]
+          updated_at?: string
+          verified?: boolean
+          website?: string | null
+        }
+        Relationships: []
+      }
+      accessible_trackers: {
+        Row: {
+          affiliate_url: string | null
+          brand: string
+          created_at: string
+          description: string | null
+          display_order: number
+          features: string[]
+          fitting_required: boolean
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          price_monthly: number | null
+          price_one_off: number | null
+          supports_adaptations: boolean
+          updated_at: string
+        }
+        Insert: {
+          affiliate_url?: string | null
+          brand: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          features?: string[]
+          fitting_required?: boolean
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          price_monthly?: number | null
+          price_one_off?: number | null
+          supports_adaptations?: boolean
+          updated_at?: string
+        }
+        Update: {
+          affiliate_url?: string | null
+          brand?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          features?: string[]
+          fitting_required?: boolean
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          price_monthly?: number | null
+          price_one_off?: number | null
+          supports_adaptations?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       accounting_sync_log: {
         Row: {
           error_message: string | null
@@ -7481,6 +7675,9 @@ export type Database = {
       }
       instructors: {
         Row: {
+          accessibility_bio: string | null
+          accessibility_enabled: boolean
+          adaptations: string[]
           adi_badge_expiry: string | null
           adi_badge_number: string | null
           adi_certificate_url: string | null
@@ -7509,6 +7706,7 @@ export type Database = {
           booking_mode: string | null
           brand_colour: string | null
           broadcast_messaging_enabled: boolean | null
+          bsl_signing: boolean
           buffer_minutes: number
           business_name: string | null
           calendar_colors: Json | null
@@ -7543,6 +7741,7 @@ export type Database = {
           deposit_deadline_days: number | null
           deposit_enabled: boolean | null
           direct_debit_enabled: boolean
+          disability_experience: string[]
           drive_time_alerts_enabled: boolean | null
           email: string | null
           extra_info: string | null
@@ -7584,6 +7783,7 @@ export type Database = {
           logo_url: string | null
           mini_website_domain_id: string | null
           morning_briefing_enabled: boolean | null
+          motability_friendly: boolean
           name: string
           payment_link_base_url: string | null
           payment_qr_url: string | null
@@ -7634,6 +7834,9 @@ export type Database = {
           xero_tenant_id: string | null
         }
         Insert: {
+          accessibility_bio?: string | null
+          accessibility_enabled?: boolean
+          adaptations?: string[]
           adi_badge_expiry?: string | null
           adi_badge_number?: string | null
           adi_certificate_url?: string | null
@@ -7662,6 +7865,7 @@ export type Database = {
           booking_mode?: string | null
           brand_colour?: string | null
           broadcast_messaging_enabled?: boolean | null
+          bsl_signing?: boolean
           buffer_minutes?: number
           business_name?: string | null
           calendar_colors?: Json | null
@@ -7696,6 +7900,7 @@ export type Database = {
           deposit_deadline_days?: number | null
           deposit_enabled?: boolean | null
           direct_debit_enabled?: boolean
+          disability_experience?: string[]
           drive_time_alerts_enabled?: boolean | null
           email?: string | null
           extra_info?: string | null
@@ -7737,6 +7942,7 @@ export type Database = {
           logo_url?: string | null
           mini_website_domain_id?: string | null
           morning_briefing_enabled?: boolean | null
+          motability_friendly?: boolean
           name: string
           payment_link_base_url?: string | null
           payment_qr_url?: string | null
@@ -7787,6 +7993,9 @@ export type Database = {
           xero_tenant_id?: string | null
         }
         Update: {
+          accessibility_bio?: string | null
+          accessibility_enabled?: boolean
+          adaptations?: string[]
           adi_badge_expiry?: string | null
           adi_badge_number?: string | null
           adi_certificate_url?: string | null
@@ -7815,6 +8024,7 @@ export type Database = {
           booking_mode?: string | null
           brand_colour?: string | null
           broadcast_messaging_enabled?: boolean | null
+          bsl_signing?: boolean
           buffer_minutes?: number
           business_name?: string | null
           calendar_colors?: Json | null
@@ -7849,6 +8059,7 @@ export type Database = {
           deposit_deadline_days?: number | null
           deposit_enabled?: boolean | null
           direct_debit_enabled?: boolean
+          disability_experience?: string[]
           drive_time_alerts_enabled?: boolean | null
           email?: string | null
           extra_info?: string | null
@@ -7890,6 +8101,7 @@ export type Database = {
           logo_url?: string | null
           mini_website_domain_id?: string | null
           morning_briefing_enabled?: boolean | null
+          motability_friendly?: boolean
           name?: string
           payment_link_base_url?: string | null
           payment_qr_url?: string | null

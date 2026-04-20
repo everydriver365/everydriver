@@ -16,6 +16,7 @@ const InstructorSettingsCategory = lazy(() => import("@/pages/InstructorSettings
 const InstructorNotifications = lazy(() => import("@/pages/InstructorNotifications"));
 const InstallInstructor = lazy(() => import("@/pages/InstallInstructor"));
 const IconPreviewPage = lazy(() => import("@/pages/instructor/IconPreviewPage"));
+const InstructorAccessibilitySettings = lazy(() => import("@/pages/instructor/InstructorAccessibilitySettings"));
 
 // Jobs & scheduling
 const InstructorJobs = lazy(() => import("@/pages/InstructorJobs"));
@@ -142,6 +143,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/settings" element={<InstructorSettings />} />
     <Route path="/instructor/settings/whatsapp" element={<InstructorWhatsAppSettings />} />
     <Route path="/instructor/settings/whatsapp/templates" element={<InstructorWhatsAppTemplates />} />
+    <Route path="/instructor/settings/accessibility" element={<InstructorAccessibilitySettings />} />
     <Route path="/instructor/settings/:categoryId" element={<InstructorSettingsCategory />} />
     <Route path="/instructor/notifications" element={<InstructorNotifications />} />
     <Route path="/instructor/install" element={<InstallInstructor />} />

@@ -57,6 +57,15 @@ const SchoolWebsiteAbout = lazy(() => import("@/pages/school-website/SchoolWebsi
 const SchoolWebsiteInstructors = lazy(() => import("@/pages/school-website/SchoolWebsiteInstructors"));
 const SchoolWebsiteContact = lazy(() => import("@/pages/school-website/SchoolWebsiteContact"));
 
+// Drive365 Accessible
+const AccessibleHome = lazy(() => import("@/pages/accessible/AccessibleHome"));
+const AccessibleInstructors = lazy(() => import("@/pages/accessible/AccessibleInstructors"));
+const AccessibleForum = lazy(() => import("@/pages/accessible/AccessibleForum"));
+const AccessibleForumTopic = lazy(() => import("@/pages/accessible/AccessibleForumTopic"));
+const AccessibleForumNew = lazy(() => import("@/pages/accessible/AccessibleForumNew"));
+const AccessibleGarages = lazy(() => import("@/pages/accessible/AccessibleGarages"));
+const AccessibleTrackers = lazy(() => import("@/pages/accessible/AccessibleTrackers"));
+
 // Conditional routes (domain-aware)
 const ConditionalContact = lazy(() => import("@/components/ConditionalRoutes").then(m => ({ default: m.ConditionalContact })));
 const ConditionalAbout = lazy(() => import("@/components/ConditionalRoutes").then(m => ({ default: m.ConditionalAbout })));
@@ -67,6 +76,15 @@ export const publicRoutes = (
   <>
     {/* Drive365 learner homepage preview */}
     <Route path="/drive365" element={<Index />} />
+
+    {/* Drive365 Accessible hub */}
+    <Route path="/accessible" element={<AccessibleHome />} />
+    <Route path="/accessible/instructors" element={<AccessibleInstructors />} />
+    <Route path="/accessible/forum" element={<AccessibleForum />} />
+    <Route path="/accessible/forum/new" element={<AccessibleForumNew />} />
+    <Route path="/accessible/forum/:id" element={<AccessibleForumTopic />} />
+    <Route path="/accessible/garages" element={<AccessibleGarages />} />
+    <Route path="/accessible/trackers" element={<AccessibleTrackers />} />
 
     {/* Learner-facing routes */}
     <Route path="/courses" element={<Courses />} />
