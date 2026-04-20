@@ -259,7 +259,7 @@ export function DomainRouter() {
     else if (onEveryDriver) {
       if (pathname.startsWith("/accessible")) {
         console.log('[DomainRouter] Redirecting /accessible from EveryDriver to Accessible domain:', fullPath);
-        window.location.href = `https://drive365accessible.co.uk${fullPath}`;
+        window.location.href = `https://driveforall.co.uk${fullPath}`;
         return;
       }
       if (isLearnerAllowedRoute(pathname)) {
