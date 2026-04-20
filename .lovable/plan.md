@@ -1,85 +1,71 @@
 
-The user wants a focused disabled-driver hub with: landing page, forum, adapted-vehicle garages directory, accessible instructor search, and trackers for disabled cars. I'll plan it as a Drive365 sub-section under `/accessible` so it reuses auth, payments, and instructor data.
+The user wants Drive365 Accessible to feel like its own product: custom domain + distinct design system, separate from Drive365 (learners) and EveryDriver (instructors).
 
-## Plan: Drive365 Accessible Hub
+Looking at `DomainRouter.tsx`, the project already supports multiple domains via hostname routing. I'll mirror that pattern for a third brand without splitting the codebase.
 
-### 1. Database (migration)
+## Plan: Drive365 Accessible — own domain + own design
 
-**Instructor accessibility fields** (extend `instructors`):
-- `accessibility_enabled` boolean
-- `adaptations` text[] — hand controls, left-foot accelerator, steering ball, pedal extensions, automatic only, wheelchair stowage
-- `disability_experience` text[] — physical, visual, deaf/BSL, autism/ADHD, anxiety, learning difficulties, brain injury, stroke recovery
-- `bsl_signing` boolean
-- `motability_friendly` boolean
-- `accessibility_bio` text
+### 1. Custom domain
+- User connects a domain (suggested: `drive365accessible.co.uk`, `accessibledriving.co.uk`, or any they own) via **Project Settings → Domains** (Lovable handles SSL + DNS).
+- Add the domain to `DomainRouter.tsx`:
+  - New constant `ACCESSIBLE_DOMAINS`
+  - On that domain, root `/` renders `AccessibleHome` (via `ConditionalHome`)
+  - Only `/accessible/*` routes are allowed; everything else redirects to `drive365.co.uk`
+  - From `drive365.co.uk` and `everydriver.co.uk`, any `/accessible/*` hit redirects to the new domain
+- `useDomainBranding.ts` extended with an `isAccessibleDomain()` branch returning Accessible brand + logo.
 
-**New tables:**
-- `accessible_garages` — name, address, postcode, lat/lng, phone, website, services text[] (hand controls fitting, wheelchair conversion, Motability servicing, MOT for adapted), motability_approved bool, verified bool
-- `accessible_forum_topics` — title, body, author_user_id, category (adaptations, motability, learning, tests, vehicles), reply_count, last_reply_at
-- `accessible_forum_replies` — topic_id, author_user_id, body
-- `accessible_trackers` — name, brand (Quartix/Geotab/Radius/etc), supports_adaptations bool, features text[], price_monthly, fitting_required bool, image_url, affiliate_url
+### 2. Separate design system (scoped, no leakage)
+Create a dedicated visual language under a `.accessible-portal` scope class wrapping every `/accessible/*` page (same pattern as `.instructor-portal` per memory).
 
-RLS: forum readable by anyone; write requires auth. Garages/trackers read-public, write admin-only.
+**Design direction — high-contrast, calm, accessibility-first:**
+- Palette: deep teal `#0E5C5C` primary, warm amber `#F4A300` accent, soft cream `#FBF7F0` background, ink `#0F1A1A` text
+- WCAG AAA contrast targets, large hit areas (min 48px), focus rings always visible
+- Type: larger base (18px), generous line-height (1.6), system-ui + Atkinson Hyperlegible fallback (dyslexia-friendly)
+- Components: rounded-3xl cards, soft shadows, no dark-mode flip (single calm theme), supports user-toggleable high-contrast and larger-text modes
+- Iconography: outlined, 2px stroke, never decorative-only — every icon has a label
+- Motion: respects `prefers-reduced-motion`, no autoplay, no parallax
 
-### 2. Routes (new, under `/accessible`)
+**Tokens** added to `index.css` under `.accessible-portal { --acc-bg, --acc-surface, --acc-primary, --acc-accent, --acc-ink, --acc-muted, --acc-ring }` plus `.accessible-portal.high-contrast` and `.accessible-portal.large-text` modifiers.
 
-| Route | Purpose |
-|---|---|
-| `/accessible` | Landing page — hero, who we help, 4 hub tiles (Instructors, Forum, Garages, Trackers), Motability info, FAQ |
-| `/accessible/instructors` | Filtered instructor directory (adaptations, BSL, experience tags) + postcode search |
-| `/accessible/forum` | Topic list + filter by category |
-| `/accessible/forum/:id` | Topic + replies + post reply |
-| `/accessible/forum/new` | Start topic (auth-gated) |
-| `/accessible/garages` | Searchable directory of adapted-vehicle garages by postcode + radius |
-| `/accessible/trackers` | Tracker comparison grid for disabled/adapted cars |
+### 3. Shared `AccessibleLayout`
+- New `src/components/accessible/AccessibleLayout.tsx` wraps every Accessible page
+- Own header (logo, nav: Instructors / Forum / Garages / Trackers, Sign in)
+- Own footer (Drive365 Accessible, accessibility statement, contact)
+- Top toolbar: text-size toggle (A / A+ / A++), high-contrast toggle, persists to localStorage
+- Replaces `MainLayout` usage on the 7 Accessible pages
 
-All whitelisted in `DomainRouter.tsx` so they live on `drive365.co.uk`.
-
-### 3. Components (new)
-
-- `AccessibleHero`, `AccessibleHubTiles`, `AccessibilityBadges`
-- `AccessibilityFilter` (shared with `/courses`)
-- `GarageCard`, `GarageSearchBar`
-- `ForumTopicList`, `ForumTopicCard`, `ForumReplyThread`, `NewTopicForm`
-- `TrackerCard`, `TrackerCompareGrid`
-
-### 4. Instructor portal (light touch)
-
-- New settings page `/instructor/accessibility` — toggle profile, pick adaptations, experience, BSL, Motability, write bio.
-
-### 5. Seed data
-
-- Seed ~10 well-known UK adapted-vehicle garages (Brotherwood, Allied Mobility, Lewis Reed, GM Coachwork, etc.) — verified=false until admin confirms.
-- Seed 4–6 trackers with adaptation-friendly notes.
-- Seed 3 starter forum topics so the forum doesn't look empty.
-
-### Files
-
-**New**
-- `src/pages/accessible/AccessibleHome.tsx`
-- `src/pages/accessible/AccessibleInstructors.tsx`
-- `src/pages/accessible/AccessibleForum.tsx`
-- `src/pages/accessible/AccessibleForumTopic.tsx`
-- `src/pages/accessible/AccessibleForumNew.tsx`
-- `src/pages/accessible/AccessibleGarages.tsx`
-- `src/pages/accessible/AccessibleTrackers.tsx`
-- `src/pages/instructor/InstructorAccessibilitySettings.tsx`
-- `src/components/accessible/*` (cards, filters, badges)
+### 4. Files
 
 **Edited**
-- `src/routes/publicRoutes.tsx` — register `/accessible/*`
-- `src/routes/instructorPortalRoutes.tsx` — accessibility settings
-- `src/components/DomainRouter.tsx` — whitelist `/accessible`
+- `src/components/DomainRouter.tsx` — add `ACCESSIBLE_DOMAINS`, route logic
+- `src/components/ConditionalHome.tsx` — render `AccessibleHome` on accessible domain
+- `src/hooks/useDomainBranding.ts` — accessible branding branch
+- `src/index.css` — `.accessible-portal` token block + a11y modifiers
+- The 7 `src/pages/accessible/*.tsx` pages — swap `MainLayout` for `AccessibleLayout`
+
+**New**
+- `src/components/accessible/AccessibleLayout.tsx`
+- `src/components/accessible/AccessibleHeader.tsx`
+- `src/components/accessible/AccessibleFooter.tsx`
+- `src/components/accessible/AccessibilityToolbar.tsx` (text size + contrast toggles)
+- `public/accessible-logo.png` placeholder reference (user can supply)
 
 ### Out of scope
-- Standalone domain
-- Real-time tracker telemetry (links/affiliate only for now)
-- Forum moderation queue (basic report flag only)
-- Motability scheme application flow
+- Buying the domain itself (user does this in Project Settings → Domains)
+- Logo asset creation
+- Native mobile app
 
 ### Verification
-- `/accessible` loads on drive365.co.uk with 4 hub tiles
-- Instructor toggles accessibility → appears in `/accessible/instructors` with badges
-- Posting a forum topic + reply works (auth required)
-- Garage search by postcode returns seeded garages within radius
-- Tracker grid renders with seeded items
+- Visit new domain root → Accessible landing renders with new design
+- Toggle high-contrast + large-text → persists across reloads
+- Visit `/courses` on accessible domain → redirects to drive365.co.uk
+- Visit `/accessible` on drive365.co.uk → redirects to accessible domain
+- All 7 Accessible pages share header/footer/toolbar with no Drive365 chrome bleeding in
+
+### Question
+Which domain do you want to use? I can wire up routing for any of these:
+- `drive365accessible.co.uk` (closest to current brand)
+- `accessibledriving.co.uk`
+- a different one you already own
+
+Tell me the domain and I'll proceed.
