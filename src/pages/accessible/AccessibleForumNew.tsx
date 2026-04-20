@@ -45,7 +45,7 @@ export default function AccessibleForumNew() {
 
   return (
     <AccessibleLayout>
-      <SEOHead title="Start a topic — Accessible forum" description="Start a new topic in the Drive365 Accessible community." />
+      <SEOHead title="Start a topic — Accessible forum" description="Start a new topic in the Drive for all community." />
       <section className="container max-w-2xl py-8">
         <Button asChild variant="ghost" size="sm" className="mb-4">
           <Link to="/accessible/forum"><ArrowLeft className="mr-2 h-4 w-4" /> Back</Link>
