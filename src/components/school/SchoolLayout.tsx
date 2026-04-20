@@ -189,7 +189,7 @@ export function SchoolLayout({
     {
       label: "Find Slot",
       icon: Search,
-      onClick: () => onSectionChange("find-appointment"),
+      onClick: () => onFindSlot ? onFindSlot() : onSectionChange("find-appointment"),
       variant: "default",
     },
     {
