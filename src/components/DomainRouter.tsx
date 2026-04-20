@@ -243,7 +243,7 @@ export function DomainRouter() {
     if (onDrive365) {
       if (pathname.startsWith("/accessible")) {
         console.log('[DomainRouter] Redirecting /accessible from Drive365 to Accessible domain:', fullPath);
-        window.location.href = `https://drive365accessible.co.uk${fullPath}`;
+        window.location.href = `https://driveforall.co.uk${fullPath}`;
         return;
       }
       const isShared = SHARED_ROUTES.some(route => pathname === route || pathname.startsWith(route + "/"));
