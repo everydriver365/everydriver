@@ -27,6 +27,7 @@ import {
   Map,
   PhoneCall,
   BarChart3,
+  Search,
 } from "lucide-react";
 import { PortalShell, PortalNavGroup, PortalQuickAction } from "@/components/layout/PortalShell";
 import driveHiveLogo from "@/assets/drive-hive-logo.png";
@@ -184,10 +185,16 @@ export function SchoolLayout({
 
   const quickActions: PortalQuickAction[] = [
     {
+      label: "Find Slot",
+      icon: Search,
+      onClick: () => onSectionChange("find-appointment"),
+      variant: "default",
+    },
+    {
       label: "Take a Booking",
       icon: CalendarPlus,
       onClick: () => setBookingOpen(true),
-      variant: "default",
+      variant: "outline",
     },
     {
       label: "Take a Payment",

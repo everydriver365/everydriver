@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { PortalShell, PortalNavGroup } from "@/components/layout/PortalShell";
+import { PortalShell, PortalNavGroup, PortalQuickAction } from "@/components/layout/PortalShell";
 import { HeaderSearchBox } from "@/components/HeaderSearchBox";
 import { AdminNotificationBell } from "@/components/admin/AdminNotificationBell";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -7,6 +7,7 @@ import {
   BarChart3, BookOpen, Building2, CreditCard, Globe, Headphones, LayoutDashboard,
   MapPin, PoundSterling, Settings, Smartphone, Users,
   Mail, MessageCircle, Megaphone, Shield, Tag, Trophy, Satellite, AlertTriangle, CalendarSearch,
+  Search,
 } from "lucide-react";
 
 const sidebarGroups: PortalNavGroup[] = [
@@ -134,6 +135,15 @@ export function AdminLayout({
 }: AdminLayoutProps) {
   const isMobile = useIsMobile();
 
+  const quickActions: PortalQuickAction[] = [
+    {
+      label: "Find Slot",
+      icon: Search,
+      onClick: () => onSectionChange("find-appointment"),
+      variant: "default",
+    },
+  ];
+
   return (
     <PortalShell
       sidebarGroups={sidebarGroups}
@@ -146,6 +156,7 @@ export function AdminLayout({
       portalLabel="Admin"
       logoSrc="/everydriver-logo-v2.png"
       logoAlt="EveryDriver"
+      quickActions={quickActions}
       headerExtra={
         <>
           {!isMobile && <HeaderSearchBox variant="admin" />}
