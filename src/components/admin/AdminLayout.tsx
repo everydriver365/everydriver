@@ -6,7 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import {
   BarChart3, BookOpen, Building2, CreditCard, Globe, Headphones, LayoutDashboard,
   MapPin, PoundSterling, Settings, Smartphone, Users,
-  Mail, MessageCircle, Megaphone, Shield, Tag, Trophy, Satellite, AlertTriangle,
+  Mail, MessageCircle, Megaphone, Shield, Tag, Trophy, Satellite, AlertTriangle, CalendarSearch,
 } from "lucide-react";
 
 const sidebarGroups: PortalNavGroup[] = [
@@ -39,6 +39,7 @@ const sidebarGroups: PortalNavGroup[] = [
     icon: Users,
     items: [
       { key: "instructors", label: "Instructors", icon: Users },
+      { key: "find-appointment", label: "Find appointment", icon: CalendarSearch },
       { key: "pupil-records", label: "Pupil Records", icon: Users },
       { key: "compliance", label: "Compliance", icon: Shield },
     ],
