@@ -165,6 +165,7 @@ export function SchoolLayout({
   enabledFeatures,
   schoolId,
   notificationPreferences,
+  onFindSlot,
 }: SchoolLayoutProps) {
   const meta = sectionMeta[activeSection] ?? { title: activeSection, group: "Overview" };
 
