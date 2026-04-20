@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -52,18 +52,34 @@ type FormValues = z.infer<typeof formSchema>;
 type AssignmentType = "instructor" | "job_offer";
 type PaymentMethod = "cash" | "bank_transfer" | "not_paid";
 
+interface BespokePrefill {
+  instructorId?: string;
+  date?: string;
+  time?: string;
+  duration?: string;
+}
+
 interface BespokeBookingModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  prefill?: BespokePrefill;
 }
 
-export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalProps) {
+export function BespokeBookingModal({ open, onOpenChange, prefill }: BespokeBookingModalProps) {
   const [step, setStep] = useState(1);
   const [assignmentType, setAssignmentType] = useState<AssignmentType>("job_offer");
   const [selectedInstructorId, setSelectedInstructorId] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("not_paid");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+
+  // Apply prefill on open
+  useEffect(() => {
+    if (open && prefill?.instructorId) {
+      setSelectedInstructorId(prefill.instructorId);
+      setAssignmentType("instructor");
+    }
+  }, [open, prefill?.instructorId]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

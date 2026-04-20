@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CalendarPlus, X, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -10,13 +10,21 @@ import { useSchoolDemo } from "@/context/SchoolDemoContext";
 import { useToast } from "@/hooks/use-toast";
 import { demoSchoolInstructors, demoSchoolPupils } from "@/data/demoSchoolData";
 
+interface BookingPrefill {
+  instructorId?: string;
+  date?: string;
+  time?: string;
+  duration?: string;
+}
+
 interface Props {
   open: boolean;
   onClose: () => void;
   instructorIds: string[];
+  prefill?: BookingPrefill;
 }
 
-export default function SchoolTakeBookingModal({ open, onClose, instructorIds }: Props) {
+export default function SchoolTakeBookingModal({ open, onClose, instructorIds, prefill }: Props) {
   const { isDemo } = useSchoolDemo();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
@@ -30,6 +38,19 @@ export default function SchoolTakeBookingModal({ open, onClose, instructorIds }:
     duration: "60",
     notes: "",
   });
+
+  // Apply prefill whenever modal opens with prefill values
+  useEffect(() => {
+    if (open && prefill) {
+      setForm(f => ({
+        ...f,
+        instructorId: prefill.instructorId ?? f.instructorId,
+        date: prefill.date ?? f.date,
+        time: prefill.time ?? f.time,
+        duration: prefill.duration ?? f.duration,
+      }));
+    }
+  }, [open, prefill]);
 
   const instructors = isDemo
     ? demoSchoolInstructors.map(i => ({ id: i.instructor_id, name: i.instructors.name }))

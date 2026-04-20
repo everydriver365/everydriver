@@ -4,7 +4,12 @@ import { useSchoolAuth } from "@/context/SchoolAuthContext";
 import { useNavigate } from "react-router-dom";
 import { useSchoolData } from "@/hooks/useSchoolData";
 import { SchoolDemoProvider } from "@/context/SchoolDemoContext";
-import { Loader2 } from "lucide-react";
+import { Loader2, CalendarSearch } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FindAppointmentModal } from "@/components/shared/FindAppointmentModal";
+import SchoolTakeBookingModal from "@/components/school/SchoolTakeBookingModal";
+import type { AvailableSlot } from "@/hooks/useInstructorAvailabilitySearch";
 import SchoolDashboardSection from "@/components/school/SchoolDashboardSection";
 import SchoolInstructorsSection from "@/components/school/SchoolInstructorsSection";
 import SchoolPupilsSection from "@/components/school/SchoolPupilsSection";
@@ -39,9 +44,22 @@ import SchoolPassRatesSection from "@/components/school/SchoolPassRatesSection";
 
 export default function SchoolPortal() {
   const [activeSection, setActiveSection] = useState("dashboard");
+  const [findOpen, setFindOpen] = useState(false);
+  const [bookingPrefill, setBookingPrefill] = useState<{ instructorId?: string; date?: string; time?: string; duration?: string } | undefined>();
+  const [prefillBookingOpen, setPrefillBookingOpen] = useState(false);
   const { signOut } = useSchoolAuth();
   const navigate = useNavigate();
   const { school, instructorIds, loading, refetch } = useSchoolData();
+
+  const handleSlotSelected = (slot: AvailableSlot) => {
+    setBookingPrefill({
+      instructorId: slot.instructorId,
+      date: slot.date,
+      time: slot.startTime,
+      duration: String(slot.durationMinutes),
+    });
+    setPrefillBookingOpen(true);
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -84,6 +102,26 @@ export default function SchoolPortal() {
         return <SchoolPupilsSection instructorIds={instructorIds} />;
       case "bookings":
         return <SchoolBookingsSection instructorIds={instructorIds} />;
+      case "find-appointment":
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarSearch className="h-5 w-5 text-primary" />
+                Find appointment
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Search across your school's instructors for the next available bookable slot. Filter by duration, instructor, postcode area and time of day.
+              </p>
+              <Button onClick={() => setFindOpen(true)}>
+                <CalendarSearch className="h-4 w-4 mr-2" />
+                Open appointment finder
+              </Button>
+            </CardContent>
+          </Card>
+        );
       case "calendar":
         return <SchoolCalendarSection instructorIds={instructorIds} />;
       case "courses":
@@ -140,6 +178,21 @@ export default function SchoolPortal() {
       <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={handleLogout} instructorIds={instructorIds} enabledFeatures={school.enabled_features} schoolId={school.id} notificationPreferences={school.notification_preferences as Record<string, boolean> | null}>
         {renderSection()}
       </SchoolLayout>
+
+      <FindAppointmentModal
+        open={findOpen}
+        onClose={() => setFindOpen(false)}
+        instructorIds={instructorIds}
+        mode="school"
+        onSelectSlot={handleSlotSelected}
+      />
+
+      <SchoolTakeBookingModal
+        open={prefillBookingOpen}
+        onClose={() => { setPrefillBookingOpen(false); setBookingPrefill(undefined); }}
+        instructorIds={instructorIds}
+        prefill={bookingPrefill}
+      />
     </SchoolDemoProvider>
   );
 }
