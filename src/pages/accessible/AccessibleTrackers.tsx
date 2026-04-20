@@ -1,6 +1,7 @@
 import { AccessibleLayout } from "@/components/accessible/AccessibleLayout";
 import { SEOHead } from "@/components/SEOHead";
-import { Clock, ArrowRight, ArrowLeft, RotateCw, MapPin, Shield, FileText, Users, Info, Check, X } from "lucide-react";
+import { Clock, ArrowRight, ArrowLeft, RotateCw, MapPin, Shield, FileText, Users, Info, Check, X, Plug } from "lucide-react";
+import trackerImage from "@/assets/atom-e-tracker.webp";
 
 const styles = `
 .open-road-tracker {
