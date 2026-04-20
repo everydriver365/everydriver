@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { AccessibleLayout } from "@/components/accessible/AccessibleLayout";
 import { SEOHead } from "@/components/SEOHead";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,7 @@ export default function AccessibleForum() {
   const filtered = category === "all" ? topics : topics.filter((t) => t.category === category);
 
   return (
-    <MainLayout>
+    <AccessibleLayout>
       <SEOHead title="Accessible drivers forum — Drive365" description="Community forum for disabled drivers, learners and families." />
 
       <section className="border-b bg-secondary/30 py-8">
@@ -111,6 +111,6 @@ export default function AccessibleForum() {
           </div>
         )}
       </section>
-    </MainLayout>
+    </AccessibleLayout>
   );
 }

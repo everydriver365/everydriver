@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { AccessibleLayout } from "@/components/accessible/AccessibleLayout";
 import { SEOHead } from "@/components/SEOHead";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,7 @@ export default function AccessibleForumNew() {
   };
 
   return (
-    <MainLayout>
+    <AccessibleLayout>
       <SEOHead title="Start a topic — Accessible forum" description="Start a new topic in the Drive365 Accessible community." />
       <section className="container max-w-2xl py-8">
         <Button asChild variant="ghost" size="sm" className="mb-4">
@@ -80,6 +80,6 @@ export default function AccessibleForumNew() {
           )}
         </Card>
       </section>
-    </MainLayout>
+    </AccessibleLayout>
   );
 }

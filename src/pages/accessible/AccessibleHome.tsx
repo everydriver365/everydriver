@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { AccessibleLayout } from "@/components/accessible/AccessibleLayout";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,7 +24,7 @@ const audiences = [
 
 export default function AccessibleHome() {
   return (
-    <MainLayout>
+    <AccessibleLayout>
       <SEOHead
         title="Drive365 Accessible — Driving for disabled drivers"
         description="Find accessible driving instructors, adapted vehicle garages, trackers and a supportive community for disabled drivers across the UK."
@@ -111,6 +111,6 @@ export default function AccessibleHome() {
           </AccordionItem>
         </Accordion>
       </section>
-    </MainLayout>
+    </AccessibleLayout>
   );
 }

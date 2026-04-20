@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { AccessibleLayout } from "@/components/accessible/AccessibleLayout";
 import { SEOHead } from "@/components/SEOHead";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -55,7 +55,7 @@ export default function AccessibleInstructors() {
   });
 
   return (
-    <MainLayout>
+    <AccessibleLayout>
       <SEOHead title="Accessible driving instructors — Drive365" description="Find driving instructors with adapted vehicles, BSL signing and disability experience." />
 
       <section className="border-b bg-secondary/30 py-8">
@@ -151,6 +151,6 @@ export default function AccessibleInstructors() {
           </div>
         )}
       </section>
-    </MainLayout>
+    </AccessibleLayout>
   );
 }

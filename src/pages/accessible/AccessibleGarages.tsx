@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { AccessibleLayout } from "@/components/accessible/AccessibleLayout";
 import { SEOHead } from "@/components/SEOHead";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,7 @@ export default function AccessibleGarages() {
   });
 
   return (
-    <MainLayout>
+    <AccessibleLayout>
       <SEOHead title="Adapted vehicle garages — Drive365 Accessible" description="UK directory of WAV converters, hand-control fitters and Motability garages." />
 
       <section className="border-b bg-secondary/30 py-8">
@@ -116,6 +116,6 @@ export default function AccessibleGarages() {
           </div>
         )}
       </section>
-    </MainLayout>
+    </AccessibleLayout>
   );
 }

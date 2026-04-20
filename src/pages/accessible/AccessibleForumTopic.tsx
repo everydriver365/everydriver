@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { AccessibleLayout } from "@/components/accessible/AccessibleLayout";
 import { SEOHead } from "@/components/SEOHead";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,7 +57,7 @@ export default function AccessibleForumTopic() {
   };
 
   return (
-    <MainLayout>
+    <AccessibleLayout>
       <SEOHead title={topic?.title ? `${topic.title} — Forum` : "Forum topic"} description={topic?.body?.slice(0, 150)} />
 
       <section className="container max-w-3xl py-8">
@@ -113,6 +113,6 @@ export default function AccessibleForumTopic() {
           </>
         )}
       </section>
-    </MainLayout>
+    </AccessibleLayout>
   );
 }
