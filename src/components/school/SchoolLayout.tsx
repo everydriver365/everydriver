@@ -30,7 +30,7 @@ import {
   Search,
 } from "lucide-react";
 import { PortalShell, PortalNavGroup, PortalQuickAction } from "@/components/layout/PortalShell";
-import driveHiveLogo from "@/assets/drive-hive-logo.png";
+import dsmLogo from "@/assets/dsm-logo.png";
 import SchoolTakeBookingModal from "./SchoolTakeBookingModal";
 import SchoolTakePaymentModal from "./SchoolTakePaymentModal";
 import SchoolNotificationBell from "./SchoolNotificationBell";
