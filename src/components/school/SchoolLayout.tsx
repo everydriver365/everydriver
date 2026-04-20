@@ -153,6 +153,7 @@ interface SchoolLayoutProps {
   enabledFeatures?: Record<string, boolean> | null;
   schoolId?: string;
   notificationPreferences?: Record<string, boolean> | null;
+  onFindSlot?: () => void;
 }
 
 export function SchoolLayout({
