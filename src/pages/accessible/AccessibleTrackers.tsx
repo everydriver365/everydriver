@@ -77,6 +77,16 @@ const styles = `
 .open-road-tracker .or-hero h1 { color: var(--or-teal-dark); max-width: 520px; }
 .open-road-tracker .or-hero-sub { color: var(--or-teal); max-width: 520px; }
 .open-road-tracker .or-hero-ctas { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+.open-road-tracker .or-hero-grid { display: grid; grid-template-columns: 1fr 240px; gap: 24px; align-items: center; }
+.open-road-tracker .or-hero-text { display: flex; flex-direction: column; gap: 14px; }
+.open-road-tracker .or-hero-image { display: flex; justify-content: center; }
+.open-road-tracker .or-hero-image img { width: 100%; max-width: 240px; height: auto; border-radius: 12px; background: #fff; padding: 8px; border: 0.5px solid var(--or-border); }
+.open-road-tracker .or-motability { display: flex; align-items: flex-start; gap: 10px; background: #fff; border: 0.5px solid var(--or-teal-light); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--or-teal); line-height: 1.5; }
+@media (max-width: 620px) {
+  .open-road-tracker .or-hero-grid { grid-template-columns: 1fr; }
+  .open-road-tracker .or-hero-image { order: -1; }
+  .open-road-tracker .or-hero-image img { max-width: 180px; }
+}
 
 /* Comparison */
 .open-road-tracker .or-compare {
