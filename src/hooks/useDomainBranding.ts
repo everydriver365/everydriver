@@ -12,7 +12,7 @@ export interface DomainBranding {
 
 const DRIVE365_DOMAINS = ["drive365.co.uk", "www.drive365.co.uk"];
 const EVERYDRIVER_BASE_DOMAIN = "everydriver.co.uk";
-const ACCESSIBLE_BASE_DOMAIN = "drive365accessible.co.uk";
+const ACCESSIBLE_BASE_DOMAIN = "driveforall.co.uk";
 
 function isAccessibleHost(): boolean {
   const hostname = window.location.hostname.toLowerCase();
