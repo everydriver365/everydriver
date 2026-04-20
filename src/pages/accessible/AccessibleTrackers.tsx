@@ -181,14 +181,28 @@ export default function AccessibleTrackers() {
         <div className="or-wrap">
           {/* Section 1 — Hero */}
           <section className="or-hero" aria-labelledby="or-hero-h">
-            <span className="or-hero-badge">New · Exclusive to members</span>
-            <h1 id="or-hero-h">Prove you're a great driver. With data, not words.</h1>
-            <p className="or-hero-sub">
-              Our in-car tracker measures your location and driving behaviour with far greater accuracy than any phone app — built to give you evidence when you need it most.
-            </p>
-            <div className="or-hero-ctas">
-              <a href="#request" className="or-btn or-btn-primary">Request a tracker</a>
-              <a href="#how" className="or-btn or-btn-secondary">How it works</a>
+            <div className="or-hero-grid">
+              <div className="or-hero-text">
+                <span className="or-hero-badge">New · Exclusive to members</span>
+                <h1 id="or-hero-h">Prove you're a great driver. With data, not words.</h1>
+                <p className="or-hero-sub">
+                  Our in-car tracker measures your location and driving behaviour with far greater accuracy than any phone app — built to give you evidence when you need it most.
+                </p>
+                <div className="or-motability">
+                  <Plug size={16} color="var(--or-teal)" aria-hidden style={{ flexShrink: 0, marginTop: 2 }} />
+                  <p>
+                    <strong style={{ fontWeight: 500, color: "var(--or-teal-dark)" }}>Motability friendly.</strong>{" "}
+                    Plugs straight into your 12V socket — no wiring, no installation, no impact on your Motability lease.
+                  </p>
+                </div>
+                <div className="or-hero-ctas">
+                  <a href="#request" className="or-btn or-btn-primary">Request a tracker</a>
+                  <a href="#how" className="or-btn or-btn-secondary">How it works</a>
+                </div>
+              </div>
+              <div className="or-hero-image">
+                <img src={trackerImage} alt="Open Road in-car tracker device" loading="lazy" />
+              </div>
             </div>
           </section>
 
