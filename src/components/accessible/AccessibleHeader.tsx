@@ -17,8 +17,7 @@ export function AccessibleHeader() {
     <header className="acc-header">
       <div className="acc-container flex items-center justify-between gap-4 py-4">
         <Link to="/accessible" className="acc-brand flex items-center gap-3" aria-label="Drive for all home">
-          <img src={dfaLogo} alt="Drive for all" className="h-10 w-auto" />
-          <span className="hidden text-sm font-semibold tracking-wide text-foreground sm:inline">Driving For All</span>
+          <img src={dfaLogo} alt="Driving For All" className="h-10 w-auto" />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
