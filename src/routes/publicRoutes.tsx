@@ -60,6 +60,7 @@ const SchoolWebsiteContact = lazy(() => import("@/pages/school-website/SchoolWeb
 // Drive365 Accessible
 const AccessibleHome = lazy(() => import("@/pages/accessible/AccessibleHome"));
 const AccessibleInstructors = lazy(() => import("@/pages/accessible/AccessibleInstructors"));
+const AccessibleInstructorProfile = lazy(() => import("@/pages/accessible/AccessibleInstructorProfile"));
 const AccessibleForum = lazy(() => import("@/pages/accessible/AccessibleForum"));
 const AccessibleForumTopic = lazy(() => import("@/pages/accessible/AccessibleForumTopic"));
 const AccessibleForumNew = lazy(() => import("@/pages/accessible/AccessibleForumNew"));
@@ -80,6 +81,7 @@ export const publicRoutes = (
     {/* Drive365 Accessible hub */}
     <Route path="/accessible" element={<AccessibleHome />} />
     <Route path="/accessible/instructors" element={<AccessibleInstructors />} />
+    <Route path="/accessible/instructors/:id" element={<AccessibleInstructorProfile />} />
     <Route path="/accessible/forum" element={<AccessibleForum />} />
     <Route path="/accessible/forum/new" element={<AccessibleForumNew />} />
     <Route path="/accessible/forum/:id" element={<AccessibleForumTopic />} />
