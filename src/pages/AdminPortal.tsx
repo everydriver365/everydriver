@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin, Search, StickyNote, PoundSterling, CheckSquare, Satellite, ArrowUpDown, CalendarDays
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin, Search, StickyNote, PoundSterling, CheckSquare, Satellite, ArrowUpDown, CalendarDays, CalendarSearch
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -91,6 +91,8 @@ import { AdminSchoolManager } from "@/components/admin/AdminSchoolManager";
 import { AdminCommandCenter } from "@/components/admin/AdminCommandCenter";
 import { AdminSchoolFranchiseFees } from "@/components/admin/AdminSchoolFranchiseFees";
 import { AdminEventsManager } from "@/components/admin/AdminEventsManager";
+import { FindAppointmentModal } from "@/components/shared/FindAppointmentModal";
+import type { AvailableSlot } from "@/hooks/useInstructorAvailabilitySearch";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -124,6 +126,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "live-map": { title: "Live Instructor Map", group: "Dashboard", icon: MapPin },
   // People
   instructors: { title: "Instructors", group: "People", icon: Users },
+  "find-appointment": { title: "Find appointment", group: "People", icon: CalendarSearch },
   "instructor-profile": { title: "Instructor Profile", group: "People", icon: Users },
   "pupil-records": { title: "Pupil Records", group: "People", icon: Users },
   subscribers: { title: "Subscribers", group: "Pricing & Plans", icon: CreditCard },
@@ -205,6 +208,9 @@ export default function AdminPortal() {
   const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(null);
   const [isBespokeOpen, setIsBespokeOpen] = useState(false);
   const [isUrgentAlertOpen, setIsUrgentAlertOpen] = useState(false);
+  const [findOpen, setFindOpen] = useState(false);
+  const [prefilledBespokeOpen, setPrefilledBespokeOpen] = useState(false);
+  const [bespokePrefill, setBespokePrefill] = useState<{ instructorId?: string; date?: string; time?: string; duration?: string } | undefined>();
   const [pendingEnquiries, setPendingEnquiries] = useState<{ id: string; name: string; course_type: string; created_at: string }[]>([]);
   const { signOut } = useAdminAuth();
   const navigate = useNavigate();
