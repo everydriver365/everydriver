@@ -9,6 +9,7 @@ import {
   Mail, MessageCircle, Megaphone, Shield, Tag, Trophy, Satellite, AlertTriangle, CalendarSearch,
   Search,
 } from "lucide-react";
+import dsmLogo from "@/assets/dsm-logo.png";
 
 const sidebarGroups: PortalNavGroup[] = [
   {
