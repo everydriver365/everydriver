@@ -9,6 +9,7 @@ import {
   Mail, MessageCircle, Megaphone, Shield, Tag, Trophy, Satellite, AlertTriangle, CalendarSearch,
   Search,
 } from "lucide-react";
+import dsmLogo from "@/assets/dsm-logo.png";
 
 const sidebarGroups: PortalNavGroup[] = [
   {
@@ -154,8 +155,8 @@ export function AdminLayout({
       onLogout={onLogout}
       tabCounts={tabCounts}
       portalLabel="Admin"
-      logoSrc="/everydriver-logo-v2.png"
-      logoAlt="EveryDriver"
+      logoSrc={dsmLogo}
+      logoAlt="DSM"
       quickActions={quickActions}
       headerExtra={
         <>
