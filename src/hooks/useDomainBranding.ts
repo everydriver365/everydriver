@@ -40,7 +40,7 @@ export function useDomainBranding(): DomainBranding {
 
     if (onAccessible) {
       return {
-        brandName: "Drive365 Accessible",
+        brandName: "Drive for all",
         logoPath: "/drive365-logo.png",
         isInstructorDomain: false,
         isLearnerDomain: false,
