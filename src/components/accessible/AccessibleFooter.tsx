@@ -49,7 +49,7 @@ export function AccessibleFooter() {
         </div>
 
         <div className="mt-8 border-t pt-6 text-xs opacity-70">
-          © {new Date().getFullYear()} Drive365 Accessible. Part of the Drive365 family.
+          © {new Date().getFullYear()} Drive for all. Part of the Drive365 family.
         </div>
       </div>
     </footer>
