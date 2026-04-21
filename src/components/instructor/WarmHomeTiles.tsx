@@ -210,6 +210,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
         <TileShell
           borderColor={TXT.redBorder}
           onClick={() => navigate(alert!.route)}
+          showHealthDot={tile1Outage}
         >
           <Spine color={TXT.red} />
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -242,7 +243,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
           </div>
         </TileShell>
       ) : (
-        <TileShell borderColor={TXT.hairline}>
+        <TileShell borderColor={TXT.hairline} showHealthDot={tile1Outage}>
           <Spine color={TXT.hairline} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
@@ -296,6 +297,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
               onClick={() =>
                 navigate(`/instructor/lessons/${nextLesson.lessonId}`)
               }
+              showHealthDot={tile2Outage}
             >
               <Spine color={TXT.blue} />
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -344,6 +346,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
         <TileShell
           borderColor={TXT.hairline}
           onClick={() => navigate("/instructor/schedule")}
+          showHealthDot={tile2Outage}
         >
           <Spine color={TXT.hairline} />
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -381,13 +384,14 @@ export function WarmHomeTiles({ instructorId }: Props) {
 
       {/* Tile 3 — This week at a glance */}
       <div
-        className="shadow-premium"
+        className="shadow-premium relative"
         style={{
           background: "#FFFFFF",
           borderRadius: 12,
           padding: "14px 16px",
         }}
       >
+        {tile3Outage && <HealthDot />}
         <div
           style={{
             fontSize: 11,
