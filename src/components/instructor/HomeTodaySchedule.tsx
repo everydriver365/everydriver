@@ -419,7 +419,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                         width: 10,
                         height: 10,
                         borderRadius: "50%",
-                        background: PAL.accentBlue,
+                        background: markerBg,
                         border: "2px solid #FFFFFF",
                         boxShadow: `0 0 0 1px ${PAL.accentBlueRing}`,
                       }}
