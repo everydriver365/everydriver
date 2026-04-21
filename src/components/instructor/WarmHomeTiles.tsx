@@ -6,6 +6,7 @@ import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { useTileHealth } from "@/hooks/useTileHealth";
 
 interface Props {
   instructorId: string | undefined;
@@ -53,19 +54,38 @@ function Spine({ color }: { color: string }) {
   );
 }
 
+function HealthDot() {
+  return (
+    <span
+      style={{
+        position: "absolute",
+        top: 8,
+        right: 8,
+        width: 6,
+        height: 6,
+        borderRadius: 999,
+        background: "#C68B16",
+      }}
+      aria-label="Live data delayed"
+    />
+  );
+}
+
 function TileShell({
   borderColor,
   onClick,
   children,
+  showHealthDot = false,
 }: {
   borderColor: string;
   onClick?: () => void;
   children: React.ReactNode;
+  showHealthDot?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
-      className="shadow-premium w-full text-left flex items-stretch"
+      className="shadow-premium w-full text-left flex items-stretch relative"
       style={{
         background: "#FFFFFF",
         borderRadius: 12,
@@ -73,6 +93,7 @@ function TileShell({
         gap: 12,
       }}
     >
+      {showHealthDot && <HealthDot />}
       {children}
     </button>
   );
