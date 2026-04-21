@@ -553,36 +553,36 @@
   font-feature-settings: "tnum" 1, "ss01" 1;
 }
 
-/* Medium-lift shadow — calibrated for white tiles on grey/off-white bg.
+/* Deep-lift shadow — tactile card feel on grey/off-white bg.
    Replaces any 1px hairline border as the separator from the page. */
 .shadow-premium {
   box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.06),
-    0 12px 28px rgba(0, 0, 0, 0.14);
+    0 4px 10px rgba(0, 0, 0, 0.08),
+    0 12px 28px rgba(0, 0, 0, 0.12);
   transition: box-shadow 150ms ease, transform 150ms ease;
 }
 .shadow-premium-lg {
   box-shadow:
-    0 6px 12px rgba(0, 0, 0, 0.08),
-    0 18px 40px rgba(0, 0, 0, 0.18);
+    0 6px 14px rgba(0, 0, 0, 0.10),
+    0 18px 40px rgba(0, 0, 0, 0.16);
   transition: box-shadow 150ms ease, transform 150ms ease;
 }
 
 /* Alias legacy shadow utilities so every existing tile inherits the new
-   medium-lift treatment without per-component rewrites. */
+   deep-lift treatment without per-component rewrites. */
 .shadow-lift,
 .shadow-lift\/10,
 .shadow-lift\/\[0\.08\] {
   box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.06),
-    0 12px 28px rgba(0, 0, 0, 0.14) !important;
+    0 4px 10px rgba(0, 0, 0, 0.08),
+    0 12px 28px rgba(0, 0, 0, 0.12) !important;
   transition: box-shadow 150ms ease, transform 150ms ease;
 }
 .shadow-lift-hover,
 .hover\:shadow-lift-hover:hover {
   box-shadow:
-    0 6px 12px rgba(0, 0, 0, 0.08),
-    0 18px 40px rgba(0, 0, 0, 0.18) !important;
+    0 6px 14px rgba(0, 0, 0, 0.10),
+    0 18px 40px rgba(0, 0, 0, 0.16) !important;
 }
 .shadow-lift-pressed,
 .active\:shadow-lift-pressed:active,
@@ -590,25 +590,25 @@
 .shadow-premium-lg:active {
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.06),
-    0 6px 14px rgba(0, 0, 0, 0.10) !important;
-  transform: translateY(1px);
+    0 4px 10px rgba(0, 0, 0, 0.08) !important;
+  transform: translateY(2px);
 }
 
-/* Dark-mode softening — applied within instructor portal scope */
+/* Dark-mode — heavier opacity since shadows behave differently on dark bg */
 .instructor-portal.dark .shadow-premium,
 .instructor-portal.dark .shadow-lift,
 .instructor-portal.dark .shadow-lift\/10,
 .instructor-portal.dark .shadow-lift\/\[0\.08\] {
   box-shadow:
-    0 3px 6px rgba(0, 0, 0, 0.32),
-    0 10px 24px rgba(0, 0, 0, 0.30) !important;
+    0 4px 8px rgba(0, 0, 0, 0.40),
+    0 12px 24px rgba(0, 0, 0, 0.30) !important;
 }
 .instructor-portal.dark .shadow-premium-lg,
 .instructor-portal.dark .shadow-lift-hover,
 .instructor-portal.dark .hover\:shadow-lift-hover:hover {
   box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.36),
-    0 16px 36px rgba(0, 0, 0, 0.36) !important;
+    0 6px 12px rgba(0, 0, 0, 0.45),
+    0 18px 32px rgba(0, 0, 0, 0.36) !important;
 }
 
 /* True hairline divider (renders as 0.5px on retina) */
