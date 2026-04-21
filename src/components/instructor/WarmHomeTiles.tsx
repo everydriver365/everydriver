@@ -348,53 +348,60 @@ export function WarmHomeTiles({ instructorId }: Props) {
               value: weekly?.lessonsThisWeek ?? 0,
               label: "Lessons",
               format: (v: number) => String(v),
+              activeColor: TXT.blue,
             },
             {
               loading: weeklyLoading,
               value: weekly?.earningsThisWeek ?? 0,
               label: "Earned",
               format: (v: number) => `£${v.toLocaleString("en-GB")}`,
+              activeColor: "#1F7A3A",
             },
             {
               loading: unreadLoading,
               value: unreadCount ?? 0,
               label: "Messages",
               format: (v: number) => String(v),
+              activeColor: TXT.red,
             },
-          ].map((col, idx) => (
-            <div
-              key={col.label}
-              style={{
-                paddingLeft: idx === 0 ? 0 : 10,
-                borderLeft:
-                  idx === 0 ? "none" : `0.5px solid ${TXT.hairline}`,
-              }}
-            >
-              {col.loading ? (
-                <Skeleton width={32} height={18} />
-              ) : (
-                <div
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 500,
-                    color: TXT.primary,
-                    lineHeight: 1.1,
-                  }}
-                >
-                  {col.format(col.value)}
-                </div>
-              )}
+          ].map((col, idx) => {
+            const hasData = col.value > 0;
+            return (
               <div
+                key={col.label}
                 style={{
-                  fontSize: 11,
-                  color: TXT.muted,
-                  marginTop: 2,
+                  paddingLeft: idx === 0 ? 0 : 10,
+                  borderLeft:
+                    idx === 0 ? "none" : `0.5px solid ${TXT.hairline}`,
                 }}
               >
-                {col.label}
+                {col.loading ? (
+                  <Skeleton width={32} height={18} />
+                ) : (
+                  <div
+                    style={{
+                      fontSize: 18,
+                      fontWeight: hasData ? 600 : 500,
+                      color: hasData ? col.activeColor : TXT.muted,
+                      lineHeight: 1.1,
+                      transition: "color 200ms ease",
+                    }}
+                  >
+                    {col.format(col.value)}
+                  </div>
+                )}
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: TXT.muted,
+                    marginTop: 2,
+                  }}
+                >
+                  {col.label}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
