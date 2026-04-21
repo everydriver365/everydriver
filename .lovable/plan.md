@@ -1,62 +1,45 @@
 
 
-## Plan: Restore visible lift on instructor mobile tiles
+## Plan: Make "Action needed" tile reflect all alert types
 
 ### Problem
 
-The "deep-lift" shadow we set on `.shadow-premium` (`0 4px 10px rgba(0,0,0,0.08), 0 12px 28px rgba(0,0,0,0.12)`) isn't visually landing on the home screen. Three likely causes — all need fixing together:
-
-1. **Background contrast is too low.** The instructor portal background is `#EEF1F5` (very close to white). A soft black shadow on near-white reads as almost nothing. Either the bg or the shadow needs more contrast.
-2. **Tiles still render with a hairline border.** `IOSTile`, `IOSTileGroup`, and `InstructorCard` set `border: 0.5px solid rgba(15,23,42,0.06)`. The border visually "absorbs" the shadow edge so the lift disappears.
-3. **Shadow is too soft for a near-white surface.** On `#EEF1F5`, alpha 0.08/0.12 black barely registers. Needs stronger, slightly cooler shadow tuned for light grey surfaces.
+The top "Action needed" tile only counts **pending job offers**. Unread pupil messages, visitor chats, and test swap alerts are ignored, so the tile can read "You're all caught up" while the Messages widget below shows multiple unread items.
 
 ### Fix
 
-**1. Strengthen `.shadow-premium` in `src/index.css`** to a tuned 3-layer shadow that reads on light grey:
+Wire `WarmHomeTiles.tsx` into the same `useCombinedNotificationCount(instructorId)` hook used by `MessagesWidget`, then drive the tile from the highest-priority outstanding item.
 
-```css
-.shadow-premium {
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.06),
-    0 6px 14px rgba(15, 23, 42, 0.10),
-    0 18px 36px rgba(15, 23, 42, 0.14);
-}
-.shadow-premium-lg {
-  box-shadow:
-    0 2px 4px rgba(15, 23, 42, 0.08),
-    0 10px 22px rgba(15, 23, 42, 0.14),
-    0 24px 48px rgba(15, 23, 42, 0.18);
-}
-```
+### Priority order (highest first)
 
-Pressed state stays as the existing reduced shadow + `translateY(2px)`.
+1. **Job offers** (time-sensitive SLA) → red, route `/instructor/jobs`
+2. **Test alerts / swap requests** → red, route `/instructor/test-requests`
+3. **Pupil messages** → red, route `/instructor/messages`
+4. **Visitor chats** → red, route `/instructor/messages`
+5. None of the above → existing "You're all caught up" empty state
 
-**2. Remove the hairline borders on tile primitives** so the shadow is the only separator:
+### Tile copy per state
 
-- `src/components/instructor/IOSTile.tsx` — drop `border: 0.5px solid rgba(15,23,42,0.06)` from both `IOSTileRoot` and `IOSTileGroup`.
-- `src/components/instructor/InstructorCard.tsx` — already borderless, just confirm.
-- `src/components/instructor/WarmTile.tsx` — drop any border on the tile root if present.
+- Jobs: `{n} new job offer(s)` · `Respond within X hours` (existing logic preserved)
+- Tests: `{n} test alert(s)` · `Tap to review`
+- Pupil messages: `{n} unread message(s)` · `Tap to reply`
+- Visitor chats: `{n} visitor chat(s)` · `Tap to reply`
+- Empty: `NO PENDING ACTIONS` · `You're all caught up` (relabel from "NO PENDING OFFERS" so it's accurate)
 
-**3. Ensure the shadow class is actually applied to home-screen tiles.** Audit the four files rendering on `/instructor` mobile home and add `shadow-premium` where it's missing:
+If multiple categories have items, only the top-priority one is shown on the tile (the Messages widget below already itemises everything). The tile's label switches to `ACTION NEEDED` whenever any category > 0.
 
-- `ActivityTilesGrid` "All clear" pill (currently uses an inline `boxShadow` that's too soft — replace with class).
-- `WarmTile` root wrapper.
-- `TodayOverviewStrip` gradient card.
-- `GapFillCard`, `TodayAtAGlance` Card, and any `Card`-based tiles on the home screen.
+### Loading
 
-**4. Dark-mode override** stays as-is (already strong enough on dark bg), scoped under `.instructor-portal.dark`.
+Show the existing skeleton while either `useSoonestPendingOffer` or `useCombinedNotificationCount`'s underlying queries are still loading their first values.
 
 ### Files to edit
 
-- `src/index.css` — strengthen `.shadow-premium` / `.shadow-premium-lg`
-- `src/components/instructor/IOSTile.tsx` — remove hairline borders
-- `src/components/instructor/WarmTile.tsx` — ensure `shadow-premium` applied, remove any border
-- `src/components/instructor/ActivityTilesGrid.tsx` — replace inline shadow with class
-- `src/components/instructor/TodayOverviewStrip.tsx` — add `shadow-premium`, drop `border-primary/20` if it competes
-- `src/components/instructor/TodayAtAGlance.tsx` — add `shadow-premium` to the `Card`
-- `src/components/instructor/GapFillCard.tsx` — add `shadow-premium`, drop dashed border if needed
+- `src/components/instructor/WarmHomeTiles.tsx` — replace the `hasOffers`-only branch with a priority resolver that consumes `useCombinedNotificationCount`. Tiles 2 (Up next) and 3 (Week at a glance) unchanged.
 
-### QA
+### QA at 390px on `/instructor`
 
-After changes, view `/instructor` at 390px and confirm every white tile (Job offers, Messages, Tests, Fill gaps, Today strip, Next lesson, Telematics) clearly lifts off the `#EEF1F5` background with a visible soft shadow halo. Press a tile to confirm the pressed state still drops it down.
+- With only unread pupil messages → tile shows "X unread messages" and routes to `/instructor/messages`.
+- With both job offers and messages → tile shows the job offer (higher priority).
+- With nothing outstanding → "You're all caught up".
+- Counts update live as new messages/jobs arrive (already handled by the hook's realtime subscriptions).
 
