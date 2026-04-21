@@ -182,7 +182,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
   const [isExpanded, setIsExpanded] = useState(true);
 
   return (
-    <div className={cn("rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden", className)}>
+    <div className={cn("rounded-2xl shadow-premium bg-card overflow-hidden", className)}>
       {/* Header — matching Quick Access tile style */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}

@@ -263,10 +263,9 @@ export function NextUpTile({
       <div style={{ padding: "0 16px" }}>
         {/* ── LIGHT-NAVY TRAY ── */}
         <div
-          className="w-full"
+          className="shadow-premium w-full"
           style={{
             background: "#E6F1FB",
-            border: "0.5px solid #B5D4F4",
             borderRadius: 16,
             padding: 12,
             display: "flex",
