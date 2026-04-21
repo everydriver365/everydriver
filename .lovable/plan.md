@@ -1,71 +1,62 @@
 
 
-## Plan: Replace Lucide icons with native emojis across the instructor app
+## Plan: Restore visible lift on instructor mobile tiles
 
-### Approach
+### Problem
 
-Build a single `<Emoji>` component plus a curated **Lucide → emoji map**, then swap Lucide imports inside instructor-scoped files to use it. Where no sensible emoji exists (chevrons, dots, generic UI glyphs), the component falls back to the original Lucide icon so we don't end up with random squares or weird substitutions.
+The "deep-lift" shadow we set on `.shadow-premium` (`0 4px 10px rgba(0,0,0,0.08), 0 12px 28px rgba(0,0,0,0.12)`) isn't visually landing on the home screen. Three likely causes — all need fixing together:
 
-### 1. New component: `src/components/instructor/Emoji.tsx`
+1. **Background contrast is too low.** The instructor portal background is `#EEF1F5` (very close to white). A soft black shadow on near-white reads as almost nothing. Either the bg or the shadow needs more contrast.
+2. **Tiles still render with a hairline border.** `IOSTile`, `IOSTileGroup`, and `InstructorCard` set `border: 0.5px solid rgba(15,23,42,0.06)`. The border visually "absorbs" the shadow edge so the lift disappears.
+3. **Shadow is too soft for a near-white surface.** On `#EEF1F5`, alpha 0.08/0.12 black barely registers. Needs stronger, slightly cooler shadow tuned for light grey surfaces.
 
-A tiny presentational component that:
-- Renders a `<span role="img" aria-label="...">` with the emoji glyph
-- Accepts `size` (matches Lucide's `h-4 w-4`, `h-5 w-5` etc. via `fontSize`)
-- Uses the system emoji stack: `"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`
-- Disables colour inheritance (emojis are already coloured) — strips `text-*` colour classes from `className`
+### Fix
 
-### 2. Mapping layer: `src/components/instructor/iconEmojiMap.ts`
+**1. Strengthen `.shadow-premium` in `src/index.css`** to a tuned 3-layer shadow that reads on light grey:
 
-A curated map covering the ~80 Lucide icons actually used in instructor screens. Examples:
-
-```text
-Briefcase   → 💼     MessageSquare → 💬     CheckCircle → ✅
-Clock       → ⏰     Calendar      → 📅     Car         → 🚗
-PoundSterling → 💷   MapPin        → 📍     Bell        → 🔔
-Users       → 👥     GraduationCap → 🎓     Heart       → ❤️
-Camera      → 📷     Sparkles      → ✨     AlertTriangle → ⚠️
-Phone       → 📞     Mail          → 📧     Star        → ⭐
-Home        → 🏠     Search        → 🔍     Settings    → ⚙️
-Plus        → ➕     Trash         → 🗑️     Edit        → ✏️
-Sun ☀️ / Moon 🌙 / CreditCard 💳 / Gift 🎁 / Target 🎯 / Zap ⚡ ...
+```css
+.shadow-premium {
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 6px 14px rgba(15, 23, 42, 0.10),
+    0 18px 36px rgba(15, 23, 42, 0.14);
+}
+.shadow-premium-lg {
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.08),
+    0 10px 22px rgba(15, 23, 42, 0.14),
+    0 24px 48px rgba(15, 23, 42, 0.18);
+}
 ```
 
-Icons with **no good emoji** (kept as Lucide): `ChevronRight/Left/Up/Down`, `MoreHorizontal`, `MoreVertical`, `X`, `Menu`, `ArrowRight`, `ArrowLeft`, `Loader2`, `EllipsisVertical`, `GripVertical`, plus any icon not in the map.
+Pressed state stays as the existing reduced shadow + `translateY(2px)`.
 
-### 3. Codemod: swap Lucide usage inside the instructor portal
+**2. Remove the hairline borders on tile primitives** so the shadow is the only separator:
 
-A one-shot Node script that, for every file under:
-- `src/components/instructor/**`
-- `src/components/layout/Instructor*.tsx`, `MobileBlueHeader`, `InstructorBottomNav`, etc.
-- `src/pages/Instructor*.tsx` and `src/pages/instructor/**`
+- `src/components/instructor/IOSTile.tsx` — drop `border: 0.5px solid rgba(15,23,42,0.06)` from both `IOSTileRoot` and `IOSTileGroup`.
+- `src/components/instructor/InstructorCard.tsx` — already borderless, just confirm.
+- `src/components/instructor/WarmTile.tsx` — drop any border on the tile root if present.
 
-…rewrites `<IconName className="..." />` JSX usages to `<Emoji name="IconName" className="..." />`. The `<Emoji>` component looks the name up in the map and renders either the emoji or the original Lucide icon. Lucide imports stay in place (still used as fallback inside `<Emoji>`), so nothing breaks if a name isn't in the map yet.
+**3. Ensure the shadow class is actually applied to home-screen tiles.** Audit the four files rendering on `/instructor` mobile home and add `shadow-premium` where it's missing:
 
-### 4. Excluded from the swap
+- `ActivityTilesGrid` "All clear" pill (currently uses an inline `boxShadow` that's too soft — replace with class).
+- `WarmTile` root wrapper.
+- `TodayOverviewStrip` gradient card.
+- `GapFillCard`, `TodayAtAGlance` Card, and any `Card`-based tiles on the home screen.
 
-Per existing memory rules and to avoid regressions:
-- Public/learner site (`Drive365`, mini-websites, marketing pages) — untouched
-- Admin / school portals — untouched
-- Charts, map markers, and any icon used as an SVG `fill`/`stroke` target (e.g. inside `<svg>` or chart libraries)
-- Pure decorative icons inside Lucide-only primitives like `ChevronRight` in dropdowns
+**4. Dark-mode override** stays as-is (already strong enough on dark bg), scoped under `.instructor-portal.dark`.
 
-### 5. QA pass
+### Files to edit
 
-Walk the instructor mobile home screen at 390px and verify:
-- Activity tiles show 💼 💬 ✅ ⏰ etc. at the right size
-- Status card, week glance, telematics, next lesson — all icons swapped
-- Header, bottom nav, FAB — swapped where a sensible emoji exists, Lucide otherwise (so layout stays clean)
-- Dark mode unaffected (emojis ignore `text-*` colours by design)
+- `src/index.css` — strengthen `.shadow-premium` / `.shadow-premium-lg`
+- `src/components/instructor/IOSTile.tsx` — remove hairline borders
+- `src/components/instructor/WarmTile.tsx` — ensure `shadow-premium` applied, remove any border
+- `src/components/instructor/ActivityTilesGrid.tsx` — replace inline shadow with class
+- `src/components/instructor/TodayOverviewStrip.tsx` — add `shadow-premium`, drop `border-primary/20` if it competes
+- `src/components/instructor/TodayAtAGlance.tsx` — add `shadow-premium` to the `Card`
+- `src/components/instructor/GapFillCard.tsx` — add `shadow-premium`, drop dashed border if needed
 
-### Files created
-- `src/components/instructor/Emoji.tsx`
-- `src/components/instructor/iconEmojiMap.ts`
+### QA
 
-### Files modified
-- All instructor-scoped components and pages (~250 files) — mechanical JSX rewrite via codemod, no logic changes
-
-### Notes / trade-offs
-- **Visual consistency** drops slightly — emoji rendering varies across iOS/Android/Windows. This is inherent to "native system emojis".
-- **Colour theming** for icons (e.g. red briefcase, blue message) is lost since emojis carry their own colour. The notification badges, backgrounds, and tile categories stay as-is.
-- If the result looks too playful in some surfaces (e.g. settings, finance pages), we can shrink the map to only the home/dashboard surfaces in a follow-up.
+After changes, view `/instructor` at 390px and confirm every white tile (Job offers, Messages, Tests, Fill gaps, Today strip, Next lesson, Telematics) clearly lifts off the `#EEF1F5` background with a visible soft shadow halo. Press a tile to confirm the pressed state still drops it down.
 
