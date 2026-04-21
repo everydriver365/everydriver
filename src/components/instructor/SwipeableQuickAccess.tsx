@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { QuickActionsPopoverMenu } from "@/components/instructor/QuickActionsPopoverMenu";
 import { useNavigate } from "react-router-dom";
 import useEmblaCarousel from "embla-carousel-react";
