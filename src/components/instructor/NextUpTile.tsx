@@ -261,19 +261,23 @@ export function NextUpTile({
     <>
       {/* Outer cream-paper margin (so the tray hugs the same 16px gutter as other sections) */}
       <div style={{ padding: "0 16px" }}>
-        {/* ── LIGHT-NAVY TRAY ── */}
-        <div
-          className="shadow-premium w-full"
-          style={{
-            background: "#E6F1FB",
-            borderRadius: 16,
-            padding: 12,
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-            fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
-          }}
-        >
+        {/* ── LIGHT-NAVY TRAY (with left accent bar) ── */}
+        <div className="shadow-premium w-full flex" style={{ borderRadius: 16, overflow: "hidden" }}>
+          <div
+            aria-hidden
+            style={{ width: 3, background: "#185FA5", flexShrink: 0, alignSelf: "stretch" }}
+          />
+          <div
+            className="flex-1"
+            style={{
+              background: "#E6F1FB",
+              padding: 12,
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+              fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
+            }}
+          >
         {/* ── MINI MAP CARD (live Google Map preserved) ── */}
         {pickupPostcode && (
           <div
@@ -825,6 +829,7 @@ export function NextUpTile({
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
       </div>
       </div>
 
