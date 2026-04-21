@@ -105,9 +105,9 @@ export function UpcomingEventsCard({ className = "", showHeader = true }: Upcomi
           <SkeletonRow />
         ) : !hasEvents ? (
           <div
+            className="shadow-premium"
             style={{
               background: PAL.card,
-              border: `0.5px solid ${PAL.hairline}`,
               borderRadius: 12,
               padding: "16px 14px",
               textAlign: "center",
@@ -139,9 +139,9 @@ function EventRow({ event }: { event: AdminEvent }) {
 
   const inner = (
     <div
+      className="shadow-premium"
       style={{
         background: PAL.card,
-        border: `0.5px solid ${PAL.hairline}`,
         borderRadius: 12,
         padding: "12px 14px",
         display: "flex",
@@ -247,9 +247,9 @@ function EventRow({ event }: { event: AdminEvent }) {
 function SkeletonRow() {
   return (
     <div
+      className="shadow-premium"
       style={{
         background: PAL.card,
-        border: `0.5px solid ${PAL.hairline}`,
         borderRadius: 12,
         padding: "12px 14px",
         display: "flex",
