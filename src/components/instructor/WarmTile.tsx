@@ -101,11 +101,11 @@ export function WarmTile({
 
   const inner = (
     <div
-      className={className}
+      className={`shadow-premium ${className ?? ""}`}
       style={{
         position: "relative",
         background: "hsl(var(--dsm-card))",
-        border: `0.5px solid ${primary ? "hsl(var(--dsm-accent-red) / 0.4)" : "hsl(var(--dsm-border))"}`,
+        border: primary ? `0.5px solid hsl(var(--dsm-accent-red) / 0.4)` : "none",
         borderRadius: 12,
         padding: 14,
         cursor: to || onClick ? "pointer" : undefined,

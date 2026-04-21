@@ -142,7 +142,7 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
   ];
 
   return (
-    <Card className="bg-gradient-to-r from-primary/5 to-primary/[0.02] border-primary/20">
+    <Card className="shadow-premium bg-gradient-to-r from-primary/5 to-primary/[0.02] border-0">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-xs font-bold uppercase tracking-widest text-primary/70">Today at a Glance</span>
