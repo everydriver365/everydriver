@@ -23,7 +23,7 @@ const SEVERITY_COLOR: Record<string, string> = {
 };
 
 export default function TileHealthDashboard() {
-  const { isAuthenticated, loading: authLoading } = useAdminAuth();
+  const { isAdmin, loading: authLoading } = useAdminAuth();
   const [rows, setRows] = useState<CheckRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
@@ -52,7 +52,7 @@ export default function TileHealthDashboard() {
   };
 
   if (authLoading) return <div className="p-6">Loading…</div>;
-  if (!isAuthenticated) return <Navigate to="/admin/login" replace />;
+  if (!isAdmin) return <Navigate to="/admin/login" replace />;
 
   // Group by (instructor_id, source) — keep latest
   const latest = new Map<string, CheckRow>();
