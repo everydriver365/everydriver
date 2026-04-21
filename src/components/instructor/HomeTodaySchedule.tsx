@@ -341,6 +341,20 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               if (lesson.pickupPostcode) meta.push(lesson.pickupPostcode);
               meta.push(`£${lesson.amountDue ?? 0} outstanding`);
 
+              // Determine lesson state: done | overdue | next | upcoming
+              const isDone = lesson.status === "completed";
+              const [lh, lm] = lesson.startTime.split(":").map(Number);
+              const startSec = lh * 3600 + lm * 60;
+              const endSec = startSec + (lesson.durationMinutes || 0) * 60;
+              const isOverdue = !isTomorrow && !isDone && nowSec > endSec;
+              const isNext = !isTomorrow && lesson.id === nextUpcomingId;
+
+              const markerBg = isDone
+                ? PAL.accentGreen
+                : isOverdue
+                ? "#A86A1F"
+                : PAL.accentBlue;
+
               return (
                 <Link
                   key={lesson.id}
@@ -350,6 +364,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                     gap: 14,
                     paddingTop: idx === 0 ? 0 : 12,
                     paddingBottom: 12,
+                    opacity: isDone ? 0.55 : 1,
                   }}
                 >
                   {/* Time column */}
@@ -404,7 +419,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                         width: 10,
                         height: 10,
                         borderRadius: "50%",
-                        background: PAL.accentBlue,
+                        background: markerBg,
                         border: "2px solid #FFFFFF",
                         boxShadow: `0 0 0 1px ${PAL.accentBlueRing}`,
                       }}
@@ -433,7 +448,13 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                     <div className="flex-1 min-w-0">
                       <div
                         className="truncate"
-                        style={{ fontSize: 13, fontWeight: 500, color: PAL.textNavyDeep, lineHeight: 1.2 }}
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 500,
+                          color: PAL.textNavyDeep,
+                          lineHeight: 1.2,
+                          textDecoration: isDone ? "line-through" : "none",
+                        }}
                       >
                         {sentenceName(lesson.pupilName)}
                       </div>
@@ -445,20 +466,66 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                       </div>
                     </div>
 
-                    {/* Duration chip */}
-                    <span
-                      className="shrink-0"
-                      style={{
-                        fontSize: 10,
-                        color: PAL.textMuted,
-                        background: PAL.chipNeutralBg,
-                        padding: "2px 7px",
-                        borderRadius: 999,
-                        fontWeight: 500,
-                      }}
-                    >
-                      {durationLabel(lesson.durationMinutes)}
-                    </span>
+                    {/* Status / Duration chip */}
+                    {isNext ? (
+                      <span
+                        className="shrink-0"
+                        style={{
+                          fontSize: 10,
+                          color: "#FFFFFF",
+                          background: PAL.accentBlue,
+                          padding: "2px 7px",
+                          borderRadius: 999,
+                          fontWeight: 600,
+                          letterSpacing: 0.3,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Next
+                      </span>
+                    ) : isOverdue ? (
+                      <span
+                        className="shrink-0"
+                        style={{
+                          fontSize: 10,
+                          color: "#A86A1F",
+                          background: "#FBEFD9",
+                          padding: "2px 7px",
+                          borderRadius: 999,
+                          fontWeight: 600,
+                        }}
+                      >
+                        End lesson
+                      </span>
+                    ) : isDone ? (
+                      <span
+                        className="shrink-0"
+                        style={{
+                          fontSize: 10,
+                          color: PAL.accentGreen,
+                          background: PAL.accentGreenSoft,
+                          padding: "2px 7px",
+                          borderRadius: 999,
+                          fontWeight: 600,
+                        }}
+                      >
+                        ✓ Done
+                      </span>
+                    ) : (
+                      <span
+                        className="shrink-0"
+                        style={{
+                          fontSize: 10,
+                          color: PAL.textMuted,
+                          background: PAL.chipNeutralBg,
+                          padding: "2px 7px",
+                          borderRadius: 999,
+                          fontWeight: 500,
+                        }}
+                      >
+                        {durationLabel(lesson.durationMinutes)}
+                      </span>
+                    )}
                   </div>
                 </Link>
               );
