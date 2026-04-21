@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { format, addHours, differenceInMinutes, isToday, isTomorrow } from "date-fns";
-import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useSoonestPendingOffer } from "@/hooks/useSoonestPendingOffer";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
+import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 
 interface Props {
   instructorId: string | undefined;
