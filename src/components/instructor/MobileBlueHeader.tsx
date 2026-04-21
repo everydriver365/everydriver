@@ -49,12 +49,7 @@ export function MobileBlueHeader({
               <ChevronLeft size={20} strokeWidth={1.8} color={ICON_COLOR} />
             </button>
           ) : null}
-          <div
-            className="shadow-premium flex items-center justify-center"
-            style={{ background: "#FFFFFF", borderRadius: 10, padding: "4px 8px" }}
-          >
-            <img src={dsmLogo} alt="DSM" className="h-7 w-auto object-contain" />
-          </div>
+          <img src={dsmLogo} alt="DSM" className="h-7 w-auto object-contain" />
         </div>
 
         {/* Right: line icons */}
