@@ -613,9 +613,30 @@ export function InstructorMobileHome({
         {/* Quick Access — Swipeable Grid */}
         <div className="mt-5">
           <div className="px-4">
-            <SectionHeader title="Quick actions" category="navigation" />
+            <SectionHeader
+              title="Quick actions"
+              category="navigation"
+              rightSlot={
+                <button
+                  type="button"
+                  onClick={() => setQuickActionsSearchOpen((v) => !v)}
+                  aria-label="Search quick actions"
+                  className="h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground active:bg-muted"
+                >
+                  <Search className="h-4 w-4" />
+                </button>
+              }
+            />
           </div>
-          <SwipeableQuickAccess />
+          <SwipeableQuickAccess
+            searchOpen={quickActionsSearchOpen}
+            query={quickActionsQuery}
+            onSearchOpenChange={(open) => {
+              setQuickActionsSearchOpen(open);
+              if (!open) setQuickActionsQuery("");
+            }}
+            onQueryChange={setQuickActionsQuery}
+          />
         </div>
 
         <div className="px-4">
