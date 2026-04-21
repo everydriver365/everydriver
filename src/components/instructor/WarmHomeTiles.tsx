@@ -123,6 +123,17 @@ export function WarmHomeTiles({ instructorId }: Props) {
     useUnreadMessagesCount(instructorId);
   const { messageCount, visitorChatCount, pendingJobsCount, swapCount } =
     useCombinedNotificationCount(instructorId);
+  const { hasOutageFor } = useTileHealth(instructorId);
+
+  // Map tile -> related health sources
+  const tile1Outage =
+    hasOutageFor("messages") ||
+    hasOutageFor("course_enquiries");
+  const tile2Outage = hasOutageFor("scheduled_lessons") || hasOutageFor("calendar_sync_queue");
+  const tile3Outage =
+    hasOutageFor("scheduled_lessons") ||
+    hasOutageFor("payment_history") ||
+    hasOutageFor("messages");
 
   // ---------- Tile 1: Action needed (priority resolver) ----------
   let respondText = "Tap to review";
