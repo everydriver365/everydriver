@@ -608,7 +608,7 @@ export function InstructorMobileHome({
         )}
 
         {/* Quick Access — Swipeable Grid */}
-        <div className="mt-5">
+        <div className="mt-5 mb-8">
           <div className="px-4">
             <SectionHeader title="Quick actions" category="navigation" />
           </div>
