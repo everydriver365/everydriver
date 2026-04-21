@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { haptics } from "@/lib/haptics";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getEmojiFor } from "@/components/instructor/iconEmojiMap";
 
 export interface MobileNavItem {
   label: string;
@@ -72,11 +73,35 @@ export function MobilePortalNav({
                   animate={{ scale: isActive ? 1.1 : 1 }}
                   transition={{ type: "spring", stiffness: 400, damping: 20 }}
                 >
-                  <item.icon
-                    className={cn("h-5 w-5", isActive ? activeColor : inactiveColor)}
-                    strokeWidth={1.6}
-                    style={{ strokeLinecap: "round", strokeLinejoin: "round" }}
-                  />
+                  {(() => {
+                    const iconName = (item.icon as { displayName?: string; name?: string }).displayName
+                      ?? (item.icon as { name?: string }).name
+                      ?? "";
+                    const emoji = getEmojiFor(iconName);
+                    if (emoji) {
+                      return (
+                        <span
+                          role="img"
+                          aria-label={item.label}
+                          style={{
+                            fontFamily: `"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`,
+                            fontSize: 22,
+                            lineHeight: 1,
+                            filter: isActive ? "none" : "grayscale(0.4) opacity(0.85)",
+                          }}
+                        >
+                          {emoji}
+                        </span>
+                      );
+                    }
+                    return (
+                      <item.icon
+                        className={cn("h-5 w-5", isActive ? activeColor : inactiveColor)}
+                        strokeWidth={1.6}
+                        style={{ strokeLinecap: "round", strokeLinejoin: "round" }}
+                      />
+                    );
+                  })()}
                 </motion.div>
                 {(item.badge ?? 0) > 0 && (
                   <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">

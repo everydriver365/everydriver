@@ -1,6 +1,7 @@
 import { ReactNode, MouseEvent } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, LucideIcon } from "lucide-react";
+import { getEmojiFor } from "./iconEmojiMap";
 
 /**
  * WarmTile — DSM warm-paper feature tile.
@@ -136,16 +137,37 @@ export function WarmTile({
             overflow: "hidden",
           }}
         >
-          {iconSlot ?? (
-            <Icon
-              size={18}
-              strokeWidth={useFilled ? 1.4 : 1.6}
-              className={iconColor ? undefined : `dsm-tile-icon dsm-tile-icon-${category}`}
-              color={iconColor}
-              fill={useFilled ? iconColor ?? "currentColor" : "none"}
-              style={{ strokeLinecap: "round", strokeLinejoin: "round" }}
-            />
-          )}
+          {iconSlot ?? (() => {
+            const iconName = (Icon as { displayName?: string; name?: string }).displayName
+              ?? (Icon as { name?: string }).name
+              ?? "";
+            const emoji = getEmojiFor(iconName);
+            if (emoji) {
+              return (
+                <span
+                  role="img"
+                  aria-label={iconName}
+                  style={{
+                    fontFamily: `"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`,
+                    fontSize: 20,
+                    lineHeight: 1,
+                  }}
+                >
+                  {emoji}
+                </span>
+              );
+            }
+            return (
+              <Icon
+                size={18}
+                strokeWidth={useFilled ? 1.4 : 1.6}
+                className={iconColor ? undefined : `dsm-tile-icon dsm-tile-icon-${category}`}
+                color={iconColor}
+                fill={useFilled ? iconColor ?? "currentColor" : "none"}
+                style={{ strokeLinecap: "round", strokeLinejoin: "round" }}
+              />
+            );
+          })()}
         </div>
         {rightSlot
           ? rightSlot
