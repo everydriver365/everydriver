@@ -167,39 +167,22 @@ export function SwipeableQuickAccess({
 
   return (
     <div>
-      <div className="px-4 pb-3 flex justify-end items-center min-h-[36px]">
-        <AnimatePresence initial={false} mode="wait">
-          {!searchOpen ? (
-            <motion.button
-              key="search-icon"
-              type="button"
-              onClick={() => setSearchOpen(true)}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.15 }}
-              aria-label="Search actions"
-              className="h-9 w-9 rounded-full bg-muted/80 flex items-center justify-center active:bg-muted"
-            >
-              <Search className="h-4 w-4 text-muted-foreground" />
-            </motion.button>
-          ) : (
-            <motion.div
-              key="search-bar"
-              initial={{ opacity: 0, width: 36 }}
-              animate={{ opacity: 1, width: "100%" }}
-              exit={{ opacity: 0, width: 36 }}
-              transition={{ type: "spring", stiffness: 380, damping: 32 }}
-              className="overflow-hidden"
-              onAnimationComplete={() => searchInputRef.current?.focus()}
-            >
+      <AnimatePresence initial={false}>
+        {searchOpen && (
+          <motion.div
+            key="search-bar"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ type: "spring", stiffness: 380, damping: 32 }}
+            className="overflow-hidden"
+            onAnimationComplete={() => searchInputRef.current?.focus()}
+          >
+            <div className="px-4 pb-3">
               <IOSSearchBar
                 ref={searchInputRef}
                 value={query}
-                onChange={(v) => {
-                  setQuery(v);
-                  if (v === "") setSearchOpen(false);
-                }}
+                onChange={setQuery}
                 placeholder="Search actions"
                 autoFocus
                 onCancel={() => {
@@ -207,10 +190,10 @@ export function SwipeableQuickAccess({
                   setSearchOpen(false);
                 }}
               />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {isSearching ? (
         <div>
