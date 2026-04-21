@@ -74,15 +74,38 @@ const ALL_TILES: QuickTile[] = [
 
 const TILES_PER_PAGE = 4;
 
-export function SwipeableQuickAccess() {
+interface SwipeableQuickAccessProps {
+  searchOpen?: boolean;
+  query?: string;
+  onSearchOpenChange?: (open: boolean) => void;
+  onQueryChange?: (q: string) => void;
+}
+
+export function SwipeableQuickAccess({
+  searchOpen: searchOpenProp,
+  query: queryProp,
+  onSearchOpenChange,
+  onQueryChange,
+}: SwipeableQuickAccessProps = {}) {
   const navigate = useNavigate();
   const { subscription } = useInstructorAuth();
   const features = subscription?.features || [];
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [quickActionsMenuOpen, setQuickActionsMenuOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [internalQuery, setInternalQuery] = useState("");
+  const [internalSearchOpen, setInternalSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const query = queryProp ?? internalQuery;
+  const searchOpen = searchOpenProp ?? internalSearchOpen;
+  const setQuery = (v: string) => {
+    if (queryProp === undefined) setInternalQuery(v);
+    onQueryChange?.(v);
+  };
+  const setSearchOpen = (v: boolean) => {
+    if (searchOpenProp === undefined) setInternalSearchOpen(v);
+    onSearchOpenChange?.(v);
+  };
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
 
