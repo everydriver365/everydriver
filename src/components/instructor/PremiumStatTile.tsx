@@ -29,7 +29,6 @@ export function PremiumStatTile({
       className={`shadow-premium ${className ?? ""}`}
       style={{
         background: "#FFFFFF",
-        border: "0.5px solid rgba(15,23,42,0.06)",
         borderRadius: 12,
         padding: "10px 12px",
       }}
