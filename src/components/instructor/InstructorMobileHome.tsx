@@ -213,6 +213,8 @@ export function InstructorMobileHome({
   const [isTileEditMode, setIsTileEditMode] = useState(false);
   const [showFAB, setShowFAB] = useState(false);
   const [showRefreshFeedback, setShowRefreshFeedback] = useState(false);
+  const [quickActionsSearchOpen, setQuickActionsSearchOpen] = useState(false);
+  const [quickActionsQuery, setQuickActionsQuery] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
   const { content, loading: contentLoading } = useInstructorHomepageContent();
   const [searchParams, setSearchParams] = useSearchParams();
