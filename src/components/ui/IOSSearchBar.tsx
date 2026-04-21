@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -8,20 +8,31 @@ interface IOSSearchBarProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  autoFocus?: boolean;
+  onCancel?: () => void;
 }
 
 /**
  * iOS-style search bar with expand/collapse animation and cancel button.
  */
-export function IOSSearchBar({
-  value,
-  onChange,
-  placeholder = "Search",
-  className,
-}: IOSSearchBarProps) {
+export const IOSSearchBar = forwardRef<HTMLInputElement, IOSSearchBarProps>(function IOSSearchBar(
+  { value, onChange, placeholder = "Search", className, autoFocus, onCancel },
+  ref,
+) {
   const [focused, setFocused] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const isActive = focused || value.length > 0;
+  const innerRef = useRef<HTMLInputElement>(null);
+  const setRefs = (el: HTMLInputElement | null) => {
+    (innerRef as any).current = el;
+    if (typeof ref === "function") ref(el);
+    else if (ref) (ref as any).current = el;
+  };
+  const isActive = focused || value.length > 0 || !!autoFocus;
+
+  useEffect(() => {
+    if (autoFocus) {
+      innerRef.current?.focus();
+    }
+  }, [autoFocus]);
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
@@ -32,7 +43,7 @@ export function IOSSearchBar({
       >
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <input
-          ref={inputRef}
+          ref={setRefs}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setFocused(true)}
@@ -54,7 +65,7 @@ export function IOSSearchBar({
               transition={{ type: "spring", stiffness: 500, damping: 30 }}
               onClick={() => {
                 onChange("");
-                inputRef.current?.focus();
+                innerRef.current?.focus();
               }}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-muted-foreground/30 flex items-center justify-center"
             >
@@ -75,7 +86,8 @@ export function IOSSearchBar({
             onClick={() => {
               onChange("");
               setFocused(false);
-              inputRef.current?.blur();
+              innerRef.current?.blur();
+              onCancel?.();
             }}
             className="text-primary text-[15px] font-normal whitespace-nowrap overflow-hidden"
           >
@@ -85,4 +97,4 @@ export function IOSSearchBar({
       </AnimatePresence>
     </div>
   );
-}
+});
