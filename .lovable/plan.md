@@ -1,56 +1,71 @@
 
-## Plan: "Find appointment" search for Admin & School portals
 
-Add an EMIS-style appointment finder modal that searches all instructors (Admin) or school instructors (School portal) and lists the next available bookable slots in a table — sortable by date, with filters for date range, instructor(s), duration, and location/postcode.
+## Plan: Replace Lucide icons with native emojis across the instructor app
 
-### What it does
-A user opens "Find appointment" from a button. They pick:
-- **Search from** (date picker, defaults today)
-- **Duration** (45 / 60 / 90 / 120 min)
-- **Instructors** — "All" or pick specific ones
-- **Postcode + radius** (optional, filters to instructors covering that area)
-- **Time of day** (Any / Morning / Afternoon / Evening)
+### Approach
 
-Results appear in a scrollable table matching the screenshot's columns:
-`Date | At | Duration | Instructor | Car type | Postcode area | Book`
+Build a single `<Emoji>` component plus a curated **Lucide → emoji map**, then swap Lucide imports inside instructor-scoped files to use it. Where no sensible emoji exists (chevrons, dots, generic UI glyphs), the component falls back to the original Lucide icon so we don't end up with random squares or weird substitutions.
 
-Clicking a row opens the existing `BespokeBookingModal` (Admin) or `SchoolTakeBookingModal` (School) pre-filled with the chosen instructor + date + time.
+### 1. New component: `src/components/instructor/Emoji.tsx`
 
-### Files to create
-1. **`src/hooks/useInstructorAvailabilitySearch.ts`** — accepts `{ instructorIds, fromDate, days, durationMinutes, timeOfDay, postcode?, radius? }` and returns flat `AvailableSlot[]` rows by reusing the same data sources as `useRealGapSlots`:
-   - `instructor_working_hours`, `instructor_date_overrides`
-   - `scheduled_lessons`, `instructor_manual_blocks`, `instructor_calendar_events`
-   - For each instructor × day, walk working hours in 15-min steps, emit slots of requested duration that don't collide with any conflict, respect first-lesson buffers (existing memory rule).
-   - Postcode filter: join `instructors.home_postcode` + `radius_miles`; do simple postcode-prefix match if no geocoder available, otherwise haversine if lat/lng exists.
-   - Sorted ascending by datetime; capped at ~200 results.
+A tiny presentational component that:
+- Renders a `<span role="img" aria-label="...">` with the emoji glyph
+- Accepts `size` (matches Lucide's `h-4 w-4`, `h-5 w-5` etc. via `fontSize`)
+- Uses the system emoji stack: `"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`
+- Disables colour inheritance (emojis are already coloured) — strips `text-*` colour classes from `className`
 
-2. **`src/components/shared/FindAppointmentModal.tsx`** — shared dialog, props: `{ open, onClose, instructorIds, mode: "admin" | "school", onSelectSlot(slot) }`. Layout mirrors the screenshot:
-   - Top: criteria panel (grid of inputs)
-   - Bottom: results table with sticky header, "Earlier / Later appointments" pagination links
-   - Bottom-right: `Clear criteria` · `Book appointment` (enabled when row selected) · `Cancel`
+### 2. Mapping layer: `src/components/instructor/iconEmojiMap.ts`
 
-### Files to edit
-3. **`src/pages/AdminPortal.tsx`** — add a `find-appointment` section + sidebar nav entry under "People", and a quick-launch button on the Overview tile row. Selecting a slot opens the existing `BespokeBookingModal` with prefilled values.
+A curated map covering the ~80 Lucide icons actually used in instructor screens. Examples:
 
-4. **`src/pages/SchoolPortal.tsx`** — same pattern: add `find-appointment` case routed to a new `SchoolFindAppointmentSection` wrapper that scopes to `instructorIds` and opens `SchoolTakeBookingModal` on slot select.
+```text
+Briefcase   → 💼     MessageSquare → 💬     CheckCircle → ✅
+Clock       → ⏰     Calendar      → 📅     Car         → 🚗
+PoundSterling → 💷   MapPin        → 📍     Bell        → 🔔
+Users       → 👥     GraduationCap → 🎓     Heart       → ❤️
+Camera      → 📷     Sparkles      → ✨     AlertTriangle → ⚠️
+Phone       → 📞     Mail          → 📧     Star        → ⭐
+Home        → 🏠     Search        → 🔍     Settings    → ⚙️
+Plus        → ➕     Trash         → 🗑️     Edit        → ✏️
+Sun ☀️ / Moon 🌙 / CreditCard 💳 / Gift 🎁 / Target 🎯 / Zap ⚡ ...
+```
 
-5. **`src/components/admin/AdminLayout.tsx`** + **`src/components/school/SchoolLayout.tsx`** — add nav item "Find appointment" (Search icon) under People / Bookings group respectively.
+Icons with **no good emoji** (kept as Lucide): `ChevronRight/Left/Up/Down`, `MoreHorizontal`, `MoreVertical`, `X`, `Menu`, `ArrowRight`, `ArrowLeft`, `Loader2`, `EllipsisVertical`, `GripVertical`, plus any icon not in the map.
 
-6. **`src/components/admin/BespokeBookingModal.tsx`** + **`src/components/school/SchoolTakeBookingModal.tsx`** — accept optional `prefill={ instructorId, date, time, duration }` props.
+### 3. Codemod: swap Lucide usage inside the instructor portal
 
-### Visual style
-- Admin: existing DSM card styles (white cards, rounded-2xl, slate text)
-- School: same DSM theme already used in school portal
-- Table rows: 40px tap target, hover highlight, alternating subtle row background, selected row in primary tint
-- No emoji, sentence case, follows existing portal design system
+A one-shot Node script that, for every file under:
+- `src/components/instructor/**`
+- `src/components/layout/Instructor*.tsx`, `MobileBlueHeader`, `InstructorBottomNav`, etc.
+- `src/pages/Instructor*.tsx` and `src/pages/instructor/**`
 
-### Out of scope
-- Map view of slots
-- Auto-assigning to nearest instructor
-- Booking from the modal directly without confirmation step
+…rewrites `<IconName className="..." />` JSX usages to `<Emoji name="IconName" className="..." />`. The `<Emoji>` component looks the name up in the map and renders either the emoji or the original Lucide icon. Lucide imports stay in place (still used as fallback inside `<Emoji>`), so nothing breaks if a name isn't in the map yet.
 
-### Verification
-- Open Admin portal → People → Find appointment → criteria default to today + 60 min + all instructors → table populates
-- Filter by single instructor → only their free slots show
-- Click a row → BespokeBookingModal opens prefilled
-- Same flow on School portal scopes to school's instructors only
+### 4. Excluded from the swap
+
+Per existing memory rules and to avoid regressions:
+- Public/learner site (`Drive365`, mini-websites, marketing pages) — untouched
+- Admin / school portals — untouched
+- Charts, map markers, and any icon used as an SVG `fill`/`stroke` target (e.g. inside `<svg>` or chart libraries)
+- Pure decorative icons inside Lucide-only primitives like `ChevronRight` in dropdowns
+
+### 5. QA pass
+
+Walk the instructor mobile home screen at 390px and verify:
+- Activity tiles show 💼 💬 ✅ ⏰ etc. at the right size
+- Status card, week glance, telematics, next lesson — all icons swapped
+- Header, bottom nav, FAB — swapped where a sensible emoji exists, Lucide otherwise (so layout stays clean)
+- Dark mode unaffected (emojis ignore `text-*` colours by design)
+
+### Files created
+- `src/components/instructor/Emoji.tsx`
+- `src/components/instructor/iconEmojiMap.ts`
+
+### Files modified
+- All instructor-scoped components and pages (~250 files) — mechanical JSX rewrite via codemod, no logic changes
+
+### Notes / trade-offs
+- **Visual consistency** drops slightly — emoji rendering varies across iOS/Android/Windows. This is inherent to "native system emojis".
+- **Colour theming** for icons (e.g. red briefcase, blue message) is lost since emojis carry their own colour. The notification badges, backgrounds, and tile categories stay as-is.
+- If the result looks too playful in some surfaces (e.g. settings, finance pages), we can shrink the map to only the home/dashboard surfaces in a follow-up.
+
