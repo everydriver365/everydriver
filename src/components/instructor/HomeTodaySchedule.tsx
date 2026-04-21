@@ -341,6 +341,20 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               if (lesson.pickupPostcode) meta.push(lesson.pickupPostcode);
               meta.push(`£${lesson.amountDue ?? 0} outstanding`);
 
+              // Determine lesson state: done | overdue | next | upcoming
+              const isDone = lesson.status === "completed";
+              const [lh, lm] = lesson.startTime.split(":").map(Number);
+              const startSec = lh * 3600 + lm * 60;
+              const endSec = startSec + (lesson.durationMinutes || 0) * 60;
+              const isOverdue = !isTomorrow && !isDone && nowSec > endSec;
+              const isNext = !isTomorrow && lesson.id === nextUpcomingId;
+
+              const markerBg = isDone
+                ? PAL.accentGreen
+                : isOverdue
+                ? "#A86A1F"
+                : PAL.accentBlue;
+
               return (
                 <Link
                   key={lesson.id}
@@ -350,6 +364,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                     gap: 14,
                     paddingTop: idx === 0 ? 0 : 12,
                     paddingBottom: 12,
+                    opacity: isDone ? 0.55 : 1,
                   }}
                 >
                   {/* Time column */}
