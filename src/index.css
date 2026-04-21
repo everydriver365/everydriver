@@ -557,14 +557,14 @@
    Replaces any 1px hairline border as the separator from the page. */
 .shadow-premium {
   box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.04),
-    0 6px 16px rgba(0, 0, 0, 0.08);
+    0 4px 8px rgba(0, 0, 0, 0.06),
+    0 12px 28px rgba(0, 0, 0, 0.14);
   transition: box-shadow 150ms ease, transform 150ms ease;
 }
 .shadow-premium-lg {
   box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.05),
-    0 10px 22px rgba(0, 0, 0, 0.10);
+    0 6px 12px rgba(0, 0, 0, 0.08),
+    0 18px 40px rgba(0, 0, 0, 0.18);
   transition: box-shadow 150ms ease, transform 150ms ease;
 }
 
@@ -574,23 +574,23 @@
 .shadow-lift\/10,
 .shadow-lift\/\[0\.08\] {
   box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.04),
-    0 6px 16px rgba(0, 0, 0, 0.08) !important;
+    0 4px 8px rgba(0, 0, 0, 0.06),
+    0 12px 28px rgba(0, 0, 0, 0.14) !important;
   transition: box-shadow 150ms ease, transform 150ms ease;
 }
 .shadow-lift-hover,
 .hover\:shadow-lift-hover:hover {
   box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.05),
-    0 10px 22px rgba(0, 0, 0, 0.10) !important;
+    0 6px 12px rgba(0, 0, 0, 0.08),
+    0 18px 40px rgba(0, 0, 0, 0.18) !important;
 }
 .shadow-lift-pressed,
 .active\:shadow-lift-pressed:active,
 .shadow-premium:active,
 .shadow-premium-lg:active {
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 3px 8px rgba(0, 0, 0, 0.06) !important;
+    0 2px 4px rgba(0, 0, 0, 0.06),
+    0 6px 14px rgba(0, 0, 0, 0.10) !important;
   transform: translateY(1px);
 }
 
@@ -600,15 +600,15 @@
 .instructor-portal.dark .shadow-lift\/10,
 .instructor-portal.dark .shadow-lift\/\[0\.08\] {
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.25),
-    0 4px 12px rgba(0, 0, 0, 0.20) !important;
+    0 3px 6px rgba(0, 0, 0, 0.32),
+    0 10px 24px rgba(0, 0, 0, 0.30) !important;
 }
 .instructor-portal.dark .shadow-premium-lg,
 .instructor-portal.dark .shadow-lift-hover,
 .instructor-portal.dark .hover\:shadow-lift-hover:hover {
   box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.30),
-    0 8px 18px rgba(0, 0, 0, 0.26) !important;
+    0 4px 8px rgba(0, 0, 0, 0.36),
+    0 16px 36px rgba(0, 0, 0, 0.36) !important;
 }
 
 /* True hairline divider (renders as 0.5px on retina) */
