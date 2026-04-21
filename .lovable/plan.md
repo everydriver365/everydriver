@@ -1,28 +1,24 @@
 
 
-## Plan: Show all of today's lessons on the "Today's Schedule" tile
+## Plan: Add more space under the Quick Actions tiles
 
-Currently the home tile uses `useTodayRemainingLessons`, which returns every non-cancelled lesson for today (already the whole day) — but the tile renders them through `TodayMiniTimeline`, and earlier lessons that are `completed` are dimmed/struck-through which is correct. The actual issue: the home view truncates the list (only the next few lessons render) so completed/earlier lessons aren't shown.
+The user perceives the bottom edge of the Quick Actions area as a "gradient border" — that's actually just the next section sitting too close. I'll add a clear gap below the bottom row of tiles (above the pagination dots) so the section feels properly contained.
 
 ### Change
 
-In `src/components/instructor/InstructorMobileHome.tsx`, where `<TodayMiniTimeline lessons={...} />` is rendered, pass the **full** `todayLessons` array instead of any sliced subset, and remove any "show next N" cap.
+In `src/components/instructor/SwipeableQuickAccess.tsx`:
 
-`TodayMiniTimeline` already:
-- Sorts by `start_time` ascending.
-- Marks completed lessons as `done` (dimmed + strikethrough + green tick).
-- Marks the next upcoming as `next`.
-- Marks past-but-not-completed as `overdue`.
-
-So passing the full array gives a complete chronological view of the day with correct visual states.
+- Add bottom padding inside each carousel page so there's clear space between the tile row and the pagination dots. Currently the pages render tiles with no bottom padding and the dots sit at `mt-8` from the carousel — but the carousel itself ends flush with the tiles, which makes the dots feel attached to the bottom row.
+- Specifically, wrap the tile grid with `paddingBottom: 16` (or use `pb-4`) so each page has internal breathing room below the second row of tiles.
+- Keep `mt-8` on the dots container (already set), so total gap from tile row → dots becomes ~48px.
 
 ### Files to edit
 
-- `src/components/instructor/InstructorMobileHome.tsx` — remove the slice/cap on `todayLessons` before passing to `TodayMiniTimeline`; ensure the section header reads `Today's Schedule` (unchanged) and add a small count suffix `({n})` next to the header for clarity.
+- `src/components/instructor/SwipeableQuickAccess.tsx` — add `paddingBottom: 16` to the inline `style` on the grid container inside each page (line ~113), so spacing applies on every swipe page consistently.
 
 ### QA at 390px on `/instructor`
 
-- Day with 6 lessons, 2 completed, 1 in-progress overdue, 3 upcoming → all 6 render in order; completed ones dimmed with green tick; "Next" badge on the soonest upcoming; overdue ones show the amber "End lesson" nudge.
-- Day with 0 lessons → tile hidden (existing behaviour from `TodayMiniTimeline` early-return).
-- Realtime: completing a lesson updates its row state without a refresh (already wired via `useGlobalLessonSync`).
+- Bottom row of tiles ("Pupils", "Track lesson") has clear breathing room below before the dots.
+- No visible "gradient border" effect — the gap reads as intentional space, not a divider.
+- Swiping between pages keeps the same spacing on every page.
 
