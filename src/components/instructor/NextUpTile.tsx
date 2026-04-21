@@ -831,6 +831,7 @@ export function NextUpTile({
         </AnimatePresence>
       </div>
       </div>
+      </div>
 
       {/* Dialogs */}
       {instructorId && (
