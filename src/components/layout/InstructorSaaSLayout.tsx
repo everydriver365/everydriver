@@ -36,7 +36,7 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
         <nav className="px-4 max-w-7xl mx-auto flex h-16 items-center justify-between relative">
           <Link to="/instructor-app" className="hidden md:flex items-center gap-2">
             <img src={logo} alt="DSM" className="h-10" />
-            <span className="text-sm font-semibold text-nav-foreground">Driving School Manager</span>
+            <span className="text-lg font-semibold text-nav-foreground">Driving School Manager</span>
           </Link>
 
           {/* Desktop Navigation - Centered */}
@@ -77,7 +77,7 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
             </Button>
             <Link to="/instructor-app" className="flex items-center gap-1.5">
               <img src={logo} alt="DSM" className="h-8" />
-              <span className="text-xs font-semibold text-nav-foreground">Driving School Manager</span>
+              <span className="text-sm font-semibold text-nav-foreground">Driving School Manager</span>
             </Link>
           </div>
         </nav>
