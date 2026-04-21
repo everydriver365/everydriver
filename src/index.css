@@ -553,42 +553,62 @@
   font-feature-settings: "tnum" 1, "ss01" 1;
 }
 
-/* Premium layered depth — replaces single-shadow tiles */
+/* Medium-lift shadow — calibrated for white tiles on grey/off-white bg.
+   Replaces any 1px hairline border as the separator from the page. */
 .shadow-premium {
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 4px 12px rgba(15, 23, 42, 0.04),
-    0 0 0 0.5px rgba(15, 23, 42, 0.04);
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    0 6px 16px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 150ms ease, transform 150ms ease;
 }
 .shadow-premium-lg {
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.05),
-    0 8px 24px rgba(15, 23, 42, 0.06),
-    0 0 0 0.5px rgba(15, 23, 42, 0.04);
+    0 2px 4px rgba(0, 0, 0, 0.05),
+    0 10px 22px rgba(0, 0, 0, 0.10);
+  transition: box-shadow 150ms ease, transform 150ms ease;
 }
 
-/* Alias legacy shadow utilities to premium so all instructor tiles inherit
-   the same layered depth without per-component rewrites. */
+/* Alias legacy shadow utilities so every existing tile inherits the new
+   medium-lift treatment without per-component rewrites. */
 .shadow-lift,
 .shadow-lift\/10,
 .shadow-lift\/\[0\.08\] {
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 4px 12px rgba(15, 23, 42, 0.04),
-    0 0 0 0.5px rgba(15, 23, 42, 0.04) !important;
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    0 6px 16px rgba(0, 0, 0, 0.08) !important;
+  transition: box-shadow 150ms ease, transform 150ms ease;
 }
 .shadow-lift-hover,
 .hover\:shadow-lift-hover:hover {
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.05),
-    0 8px 24px rgba(15, 23, 42, 0.06),
-    0 0 0 0.5px rgba(15, 23, 42, 0.04) !important;
+    0 2px 4px rgba(0, 0, 0, 0.05),
+    0 10px 22px rgba(0, 0, 0, 0.10) !important;
 }
 .shadow-lift-pressed,
-.active\:shadow-lift-pressed:active {
+.active\:shadow-lift-pressed:active,
+.shadow-premium:active,
+.shadow-premium-lg:active {
   box-shadow:
-    0 0 0 0.5px rgba(15, 23, 42, 0.06),
-    inset 0 1px 2px rgba(15, 23, 42, 0.06) !important;
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 3px 8px rgba(0, 0, 0, 0.06) !important;
+  transform: translateY(1px);
+}
+
+/* Dark-mode softening — applied within instructor portal scope */
+.instructor-portal.dark .shadow-premium,
+.instructor-portal.dark .shadow-lift,
+.instructor-portal.dark .shadow-lift\/10,
+.instructor-portal.dark .shadow-lift\/\[0\.08\] {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.25),
+    0 4px 12px rgba(0, 0, 0, 0.20) !important;
+}
+.instructor-portal.dark .shadow-premium-lg,
+.instructor-portal.dark .shadow-lift-hover,
+.instructor-portal.dark .hover\:shadow-lift-hover:hover {
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.30),
+    0 8px 18px rgba(0, 0, 0, 0.26) !important;
 }
 
 /* True hairline divider (renders as 0.5px on retina) */

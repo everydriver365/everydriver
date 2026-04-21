@@ -98,8 +98,8 @@ export function ActivityTilesGrid({
             gap: 8,
             padding: "10px 14px",
             background: "hsl(var(--dsm-card))",
-            border: "0.5px solid hsl(var(--dsm-border))",
             borderRadius: 12,
+            boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 6px 16px rgba(0,0,0,0.08)",
           }}
         >
           <CheckCircle2 size={16} strokeWidth={2} color="hsl(var(--dsm-tint-green-fg))" />
