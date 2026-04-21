@@ -6163,6 +6163,36 @@ export type Database = {
           },
         ]
       }
+      instructor_health_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string | null
+          message: string
+          resolved_at: string | null
+          severity: string
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id?: string | null
+          message: string
+          resolved_at?: string | null
+          severity: string
+          source: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string | null
+          message?: string
+          resolved_at?: string | null
+          severity?: string
+          source?: string
+        }
+        Relationships: []
+      }
       instructor_health_logs: {
         Row: {
           created_at: string
@@ -15661,6 +15691,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tile_health_checks: {
+        Row: {
+          checked_at: string
+          details: Json | null
+          id: string
+          instructor_id: string | null
+          latency_ms: number | null
+          source: string
+          status: string
+        }
+        Insert: {
+          checked_at?: string
+          details?: Json | null
+          id?: string
+          instructor_id?: string | null
+          latency_ms?: number | null
+          source: string
+          status: string
+        }
+        Update: {
+          checked_at?: string
+          details?: Json | null
+          id?: string
+          instructor_id?: string | null
+          latency_ms?: number | null
+          source?: string
+          status?: string
+        }
+        Relationships: []
       }
       urgent_alerts: {
         Row: {
