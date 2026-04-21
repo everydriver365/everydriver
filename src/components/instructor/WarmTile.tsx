@@ -101,7 +101,7 @@ export function WarmTile({
 
   const inner = (
     <div
-      className={`shadow-premium ${className ?? ""}`}
+      className={className ?? ""}
       style={{
         position: "relative",
         background: "hsl(var(--dsm-card))",
