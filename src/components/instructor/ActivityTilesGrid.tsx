@@ -91,6 +91,7 @@ export function ActivityTilesGrid({
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
+          className="shadow-premium"
           style={{
             display: "flex",
             alignItems: "center",
@@ -99,7 +100,6 @@ export function ActivityTilesGrid({
             padding: "10px 14px",
             background: "hsl(var(--dsm-card))",
             borderRadius: 12,
-            boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 6px 16px rgba(0,0,0,0.08)",
           }}
         >
           <CheckCircle2 size={16} strokeWidth={2} color="hsl(var(--dsm-tint-green-fg))" />

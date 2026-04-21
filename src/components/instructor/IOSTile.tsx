@@ -40,7 +40,6 @@ function IOSTileRoot({
       style={{
         background: "#FFFFFF",
         borderRadius: 16,
-        border: "0.5px solid rgba(15,23,42,0.06)",
         padding,
         display: "flex",
         alignItems: "center",
@@ -164,7 +163,6 @@ export function IOSTileGroup({ header, footer, children, className }: IOSTileGro
         style={{
           background: "#FFFFFF",
           borderRadius: 16,
-          border: "0.5px solid rgba(15,23,42,0.06)",
           overflow: "hidden",
         }}
       >
