@@ -81,6 +81,8 @@ export function SwipeableQuickAccess() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [quickActionsMenuOpen, setQuickActionsMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
 
