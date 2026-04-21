@@ -73,6 +73,7 @@ export const ICON_EMOJI_MAP: Record<string, string> = {
   Navigation: "🧭",
   Compass: "🧭",
   Map: "🗺️",
+  Crosshair: "🎯",
   MapPin: "📍",
   MapPinned: "📍",
   Radio: "📡",
