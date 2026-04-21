@@ -65,11 +65,10 @@ function TileShell({
   return (
     <button
       onClick={onClick}
-      className="w-full text-left flex items-stretch"
+      className="shadow-premium w-full text-left flex items-stretch"
       style={{
         background: "#FFFFFF",
         borderRadius: 12,
-        border: `0.5px solid ${borderColor}`,
         padding: "14px 16px",
         gap: 12,
       }}
@@ -318,10 +317,10 @@ export function WarmHomeTiles({ instructorId }: Props) {
 
       {/* Tile 3 — This week at a glance */}
       <div
+        className="shadow-premium"
         style={{
           background: "#FFFFFF",
           borderRadius: 12,
-          border: `0.5px solid ${TXT.hairline}`,
           padding: "14px 16px",
         }}
       >
