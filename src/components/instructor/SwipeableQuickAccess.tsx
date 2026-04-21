@@ -14,6 +14,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { WarmTile, WARM_TILE_STROKE, type WarmTileCategory } from "@/components/instructor/WarmTile";
+import { IOSSearchBar } from "@/components/ui/IOSSearchBar";
 
 interface QuickTile {
   title: string;
@@ -78,6 +79,7 @@ export function SwipeableQuickAccess() {
   const features = subscription?.features || [];
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [quickActionsMenuOpen, setQuickActionsMenuOpen] = useState(false);
+  const [query, setQuery] = useState("");
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
 
@@ -98,62 +100,98 @@ export function SwipeableQuickAccess() {
     return () => { emblaApi.off("select", onSelect); };
   }, [emblaApi, onSelect]);
 
+  const renderTile = (tile: QuickTile) => {
+    const requiredFeature = TILE_FEATURE_MAP[tile.title];
+    const locked = requiredFeature ? !features.includes(requiredFeature) : false;
+
+    const handleClick = () => {
+      if (locked) {
+        toast.info(`${tile.title} requires a plan upgrade`, {
+          action: { label: "View plans", onClick: () => navigate("/instructor/plans") },
+        });
+        return;
+      }
+      navigate(tile.route);
+    };
+
+    return (
+      <div key={tile.title} style={{ opacity: locked ? 0.55 : 1 }}>
+        <WarmTile
+          icon={tile.icon}
+          title={tile.title}
+          subtitle={tile.subtitle}
+          category={tile.category}
+          primary={tile.primary && !locked}
+          onClick={handleClick}
+          rightSlot={locked ? <Lock size={12} strokeWidth={2} color={WARM_TILE_STROKE.neutral} /> : undefined}
+        />
+      </div>
+    );
+  };
+
+  const trimmed = query.trim().toLowerCase();
+  const isSearching = trimmed.length > 0;
+  const filtered = isSearching
+    ? ALL_TILES.filter(
+        (t) =>
+          t.title.toLowerCase().includes(trimmed) ||
+          t.subtitle.toLowerCase().includes(trimmed)
+      )
+    : [];
+
   return (
     <div>
-      <div ref={emblaRef} className="overflow-hidden">
-        <div className="flex">
-          {pages.map((page, pageIdx) => (
-            <div key={pageIdx} className="flex-[0_0_100%] min-w-0">
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, padding: "0 16px 16px" }}>
-                {page.map((tile) => {
-                  const requiredFeature = TILE_FEATURE_MAP[tile.title];
-                  const locked = requiredFeature ? !features.includes(requiredFeature) : false;
+      <div className="px-4 pb-3">
+        <IOSSearchBar
+          value={query}
+          onChange={setQuery}
+          placeholder="Search actions"
+        />
+      </div>
 
-                  const handleClick = () => {
-                    if (locked) {
-                      toast.info(`${tile.title} requires a plan upgrade`, {
-                        action: { label: "View plans", onClick: () => navigate("/instructor/plans") },
-                      });
-                      return;
-                    }
-                    navigate(tile.route);
-                  };
-
-                  return (
-                    <div key={tile.title} style={{ opacity: locked ? 0.55 : 1 }}>
-                      <WarmTile
-                        icon={tile.icon}
-                        title={tile.title}
-                        subtitle={tile.subtitle}
-                        category={tile.category}
-                        primary={tile.primary && !locked}
-                        onClick={handleClick}
-                        rightSlot={locked ? <Lock size={12} strokeWidth={2} color={WARM_TILE_STROKE.neutral} /> : undefined}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
+      {isSearching ? (
+        <div>
+          {filtered.length > 0 ? (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, padding: "0 16px 16px" }}>
+              {filtered.map(renderTile)}
             </div>
-          ))}
+          ) : (
+            <div className="px-4 pb-4 text-sm text-muted-foreground">
+              No actions match “{query.trim()}”
+            </div>
+          )}
         </div>
-      </div>
+      ) : (
+        <>
+          <div ref={emblaRef} className="overflow-hidden">
+            <div className="flex">
+              {pages.map((page, pageIdx) => (
+                <div key={pageIdx} className="flex-[0_0_100%] min-w-0">
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, padding: "0 16px 16px" }}>
+                    {page.map(renderTile)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-      {/* Pagination dots */}
-      <div className="flex items-center justify-center gap-1.5 mt-3">
-        {pages.map((_, idx) => (
-          <div
-            key={idx}
-            style={{
-              width: idx === selectedIndex ? 20 : 6,
-              height: 6,
-              borderRadius: 3,
-              background: idx === selectedIndex ? "#2C2C2A" : "#D3D1C7",
-              transition: "all 240ms ease",
-            }}
-          />
-        ))}
-      </div>
+          {/* Pagination dots */}
+          <div className="flex items-center justify-center gap-1.5 mt-3">
+            {pages.map((_, idx) => (
+              <div
+                key={idx}
+                style={{
+                  width: idx === selectedIndex ? 20 : 6,
+                  height: 6,
+                  borderRadius: 3,
+                  background: idx === selectedIndex ? "#2C2C2A" : "#D3D1C7",
+                  transition: "all 240ms ease",
+                }}
+              />
+            ))}
+          </div>
+        </>
+      )}
 
       <QuickActionsPopoverMenu
         open={quickActionsMenuOpen}
