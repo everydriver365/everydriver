@@ -104,7 +104,7 @@ export function SwipeableQuickAccess() {
         <div className="flex">
           {pages.map((page, pageIdx) => (
             <div key={pageIdx} className="flex-[0_0_100%] min-w-0">
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, padding: "0 16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, padding: "0 16px 16px" }}>
                 {page.map((tile) => {
                   const requiredFeature = TILE_FEATURE_MAP[tile.title];
                   const locked = requiredFeature ? !features.includes(requiredFeature) : false;
