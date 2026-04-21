@@ -26,6 +26,7 @@ import {
   Target,
   Timer,
   Award,
+  Search,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
