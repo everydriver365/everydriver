@@ -2,6 +2,7 @@ import { useState } from "react";
 import { MessageSquare, ChevronRight, ChevronDown, Briefcase, Award, Headset } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { useTileHealth } from "@/hooks/useTileHealth";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import messagesIcon from "@/assets/messages-icon.png";
@@ -20,6 +21,8 @@ const alertRows = [
 export function MessagesWidget({ instructorId }: MessagesWidgetProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const { total, messageCount: pupilMsgCount, visitorChatCount, pendingJobsCount, swapCount } = useCombinedNotificationCount(instructorId);
+  const { hasOutageFor } = useTileHealth(instructorId);
+  const widgetOutage = hasOutageFor("messages") || hasOutageFor("course_enquiries");
 
   const counts: Record<string, number> = {
     pupil: pupilMsgCount,
@@ -29,7 +32,14 @@ export function MessagesWidget({ instructorId }: MessagesWidgetProps) {
   };
 
   return (
-    <div className="rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden">
+    <div className="relative rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-border/40 bg-card overflow-hidden">
+      {widgetOutage && (
+        <span
+          className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full"
+          style={{ background: "#C68B16" }}
+          aria-label="Live data delayed"
+        />
+      )}
       {/* Header — Quick Access tile style */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}

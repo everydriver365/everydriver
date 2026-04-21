@@ -6,6 +6,7 @@ import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { useTileHealth } from "@/hooks/useTileHealth";
 
 interface Props {
   instructorId: string | undefined;
@@ -53,19 +54,38 @@ function Spine({ color }: { color: string }) {
   );
 }
 
+function HealthDot() {
+  return (
+    <span
+      style={{
+        position: "absolute",
+        top: 8,
+        right: 8,
+        width: 6,
+        height: 6,
+        borderRadius: 999,
+        background: "#C68B16",
+      }}
+      aria-label="Live data delayed"
+    />
+  );
+}
+
 function TileShell({
   borderColor,
   onClick,
   children,
+  showHealthDot = false,
 }: {
   borderColor: string;
   onClick?: () => void;
   children: React.ReactNode;
+  showHealthDot?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
-      className="shadow-premium w-full text-left flex items-stretch"
+      className="shadow-premium w-full text-left flex items-stretch relative"
       style={{
         background: "#FFFFFF",
         borderRadius: 12,
@@ -73,6 +93,7 @@ function TileShell({
         gap: 12,
       }}
     >
+      {showHealthDot && <HealthDot />}
       {children}
     </button>
   );
@@ -102,6 +123,17 @@ export function WarmHomeTiles({ instructorId }: Props) {
     useUnreadMessagesCount(instructorId);
   const { messageCount, visitorChatCount, pendingJobsCount, swapCount } =
     useCombinedNotificationCount(instructorId);
+  const { hasOutageFor } = useTileHealth(instructorId);
+
+  // Map tile -> related health sources
+  const tile1Outage =
+    hasOutageFor("messages") ||
+    hasOutageFor("course_enquiries");
+  const tile2Outage = hasOutageFor("scheduled_lessons") || hasOutageFor("calendar_sync_queue");
+  const tile3Outage =
+    hasOutageFor("scheduled_lessons") ||
+    hasOutageFor("payment_history") ||
+    hasOutageFor("messages");
 
   // ---------- Tile 1: Action needed (priority resolver) ----------
   let respondText = "Tap to review";
@@ -178,6 +210,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
         <TileShell
           borderColor={TXT.redBorder}
           onClick={() => navigate(alert!.route)}
+          showHealthDot={tile1Outage}
         >
           <Spine color={TXT.red} />
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -210,7 +243,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
           </div>
         </TileShell>
       ) : (
-        <TileShell borderColor={TXT.hairline}>
+        <TileShell borderColor={TXT.hairline} showHealthDot={tile1Outage}>
           <Spine color={TXT.hairline} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
@@ -264,6 +297,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
               onClick={() =>
                 navigate(`/instructor/lessons/${nextLesson.lessonId}`)
               }
+              showHealthDot={tile2Outage}
             >
               <Spine color={TXT.blue} />
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -312,6 +346,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
         <TileShell
           borderColor={TXT.hairline}
           onClick={() => navigate("/instructor/schedule")}
+          showHealthDot={tile2Outage}
         >
           <Spine color={TXT.hairline} />
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -349,13 +384,14 @@ export function WarmHomeTiles({ instructorId }: Props) {
 
       {/* Tile 3 — This week at a glance */}
       <div
-        className="shadow-premium"
+        className="shadow-premium relative"
         style={{
           background: "#FFFFFF",
           borderRadius: 12,
           padding: "14px 16px",
         }}
       >
+        {tile3Outage && <HealthDot />}
         <div
           style={{
             fontSize: 11,

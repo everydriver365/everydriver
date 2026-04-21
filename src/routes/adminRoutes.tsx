@@ -4,6 +4,7 @@ import { ProtectedAdminRoute } from "@/components/auth/ProtectedAdminRoute";
 
 const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
 const AdminPortal = lazy(() => import("@/pages/AdminPortal"));
+const TileHealthDashboard = lazy(() => import("@/pages/admin/TileHealthDashboard"));
 
 export const adminRoutes = (
   <>
@@ -13,6 +14,14 @@ export const adminRoutes = (
       element={
         <ProtectedAdminRoute>
           <AdminPortal />
+        </ProtectedAdminRoute>
+      }
+    />
+    <Route
+      path="/admin/tile-health"
+      element={
+        <ProtectedAdminRoute>
+          <TileHealthDashboard />
         </ProtectedAdminRoute>
       }
     />
