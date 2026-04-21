@@ -1,24 +1,24 @@
 
 
-## Plan: Remove the shadow behind the Quick Actions tiles
+## Plan: Add more space under the Quick Actions tiles
 
-The "shadow" the user sees in the screenshot is the drop shadow rendered by `WarmTile` on each Quick Actions tile. I'll remove (or flatten) that shadow so the tiles sit cleanly on the page background.
+The user perceives the bottom edge of the Quick Actions area as a "gradient border" — that's actually just the next section sitting too close. I'll add a clear gap below the bottom row of tiles (above the pagination dots) so the section feels properly contained.
 
 ### Change
 
-In `src/components/instructor/WarmTile.tsx`:
+In `src/components/instructor/SwipeableQuickAccess.tsx`:
 
-- Remove the `boxShadow` from the tile's default style so the tiles render flat against the `/instructor` background.
-- Keep the existing border/stroke and rounded corners so the tiles still read as distinct cards — just without the lifted shadow.
-- Keep the `primary` variant's accent ring (the red outline on "Track lesson") intact — only the soft drop shadow is removed.
+- Add bottom padding inside each carousel page so there's clear space between the tile row and the pagination dots. Currently the pages render tiles with no bottom padding and the dots sit at `mt-8` from the carousel — but the carousel itself ends flush with the tiles, which makes the dots feel attached to the bottom row.
+- Specifically, wrap the tile grid with `paddingBottom: 16` (or use `pb-4`) so each page has internal breathing room below the second row of tiles.
+- Keep `mt-8` on the dots container (already set), so total gap from tile row → dots becomes ~48px.
 
 ### Files to edit
 
-- `src/components/instructor/WarmTile.tsx` — set `boxShadow: "none"` (or remove the shadow declaration) on the tile container.
+- `src/components/instructor/SwipeableQuickAccess.tsx` — add `paddingBottom: 16` to the inline `style` on the grid container inside each page (line ~113), so spacing applies on every swipe page consistently.
 
 ### QA at 390px on `/instructor`
 
-- Quick Actions tiles ("Course planner", "Agenda", "Pupils", "Track lesson") sit flat with no visible drop shadow underneath.
-- "Track lesson" still shows its red primary outline.
-- Other tile-using surfaces that import `WarmTile` are checked — if any rely on the shadow for separation, confirm they still read correctly; otherwise flat is preferred for consistency with the rest of the instructor portal.
+- Bottom row of tiles ("Pupils", "Track lesson") has clear breathing room below before the dots.
+- No visible "gradient border" effect — the gap reads as intentional space, not a divider.
+- Swiping between pages keeps the same spacing on every page.
 
