@@ -77,7 +77,7 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
             </Button>
             <Link to="/instructor-app" className="flex items-center gap-1.5">
               <img src={logo} alt="DSM" className="h-8" />
-              <span className="text-xs font-semibold text-nav-foreground">Driving School Manager</span>
+              <span className="text-sm font-semibold text-nav-foreground">Driving School Manager</span>
             </Link>
           </div>
         </nav>
