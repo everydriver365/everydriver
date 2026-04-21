@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { format, addHours, differenceInMinutes, isToday, isTomorrow } from "date-fns";
-import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useSoonestPendingOffer } from "@/hooks/useSoonestPendingOffer";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
+import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 
 interface Props {
   instructorId: string | undefined;
@@ -93,7 +93,6 @@ function formatNextLessonDay(dateStr: string): string {
 
 export function WarmHomeTiles({ instructorId }: Props) {
   const navigate = useNavigate();
-  const pendingJobsCount = usePendingJobsCount();
   const { data: soonestOffer, isLoading: offerLoading } =
     useSoonestPendingOffer(instructorId);
   const { data: nextLesson, isLoading: lessonLoading } =
@@ -101,9 +100,10 @@ export function WarmHomeTiles({ instructorId }: Props) {
   const { data: weekly, isLoading: weeklyLoading } = useWeeklyGoals(instructorId);
   const { data: unreadCount, isLoading: unreadLoading } =
     useUnreadMessagesCount(instructorId);
+  const { messageCount, visitorChatCount, pendingJobsCount, swapCount } =
+    useCombinedNotificationCount(instructorId);
 
-  // ---------- Tile 1: Action needed ----------
-  const hasOffers = pendingJobsCount > 0;
+  // ---------- Tile 1: Action needed (priority resolver) ----------
   let respondText = "Tap to review";
   if (soonestOffer) {
     const deadline = addHours(new Date(soonestOffer.created_at), RESPONSE_SLA_HOURS);
@@ -114,6 +114,38 @@ export function WarmHomeTiles({ instructorId }: Props) {
     } else {
       respondText = "Respond now";
     }
+  }
+
+  type AlertView = { count: number; title: string; subtitle: string; route: string };
+  let alert: AlertView | null = null;
+  if (pendingJobsCount > 0) {
+    alert = {
+      count: pendingJobsCount,
+      title: `${pendingJobsCount} new job offer${pendingJobsCount === 1 ? "" : "s"}`,
+      subtitle: respondText,
+      route: "/instructor/jobs",
+    };
+  } else if (swapCount > 0) {
+    alert = {
+      count: swapCount,
+      title: `${swapCount} test alert${swapCount === 1 ? "" : "s"}`,
+      subtitle: "Tap to review",
+      route: "/instructor/test-requests",
+    };
+  } else if (messageCount > 0) {
+    alert = {
+      count: messageCount,
+      title: `${messageCount} unread message${messageCount === 1 ? "" : "s"}`,
+      subtitle: "Tap to reply",
+      route: "/instructor/messages",
+    };
+  } else if (visitorChatCount > 0) {
+    alert = {
+      count: visitorChatCount,
+      title: `${visitorChatCount} visitor chat${visitorChatCount === 1 ? "" : "s"}`,
+      subtitle: "Tap to reply",
+      route: "/instructor/messages",
+    };
   }
 
   const tile1Loading = offerLoading;
@@ -142,10 +174,10 @@ export function WarmHomeTiles({ instructorId }: Props) {
             <Skeleton width="40%" height={12} />
           </div>
         </TileShell>
-      ) : hasOffers ? (
+      ) : alert ? (
         <TileShell
           borderColor={TXT.redBorder}
-          onClick={() => navigate("/instructor/jobs")}
+          onClick={() => navigate(alert!.route)}
         >
           <Spine color={TXT.red} />
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -167,10 +199,10 @@ export function WarmHomeTiles({ instructorId }: Props) {
                 marginTop: 4,
               }}
             >
-              {pendingJobsCount} new job offer{pendingJobsCount === 1 ? "" : "s"}
+              {alert.title}
             </div>
             <div style={{ fontSize: 12, color: TXT.secondary, marginTop: 2 }}>
-              {respondText}
+              {alert.subtitle}
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center" }}>
@@ -189,7 +221,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                 letterSpacing: 0.5,
               }}
             >
-              NO PENDING OFFERS
+              NO PENDING ACTIONS
             </div>
             <div
               style={{
