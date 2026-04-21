@@ -1,6 +1,7 @@
 import { LucideIcon, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { getEmojiFor } from "./iconEmojiMap";
 
 interface DesktopNavigationCardProps {
   title: string;
@@ -29,7 +30,28 @@ export function DesktopNavigationCard({
       style={{ borderRadius: 16 }}
     >
       <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", iconBgColor)}>
-        <Icon className={cn("w-5 h-5", iconColor)} />
+        {(() => {
+          const iconName = (Icon as { displayName?: string; name?: string }).displayName
+            ?? (Icon as { name?: string }).name
+            ?? "";
+          const emoji = getEmojiFor(iconName);
+          if (emoji) {
+            return (
+              <span
+                role="img"
+                aria-label={iconName}
+                style={{
+                  fontFamily: `"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`,
+                  fontSize: 20,
+                  lineHeight: 1,
+                }}
+              >
+                {emoji}
+              </span>
+            );
+          }
+          return <Icon className={cn("w-5 h-5", iconColor)} />;
+        })()}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground">{title}</p>
