@@ -140,7 +140,7 @@ export function SwipeableQuickAccess() {
       </div>
 
       {/* Pagination dots */}
-      <div className="flex items-center justify-center gap-1.5 mt-6">
+      <div className="flex items-center justify-center gap-1.5 mt-8">
         {pages.map((_, idx) => (
           <div
             key={idx}
