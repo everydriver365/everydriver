@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import useEmblaCarousel from "embla-carousel-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
-import { Lock } from "lucide-react";
+import { Lock, Search } from "lucide-react";
 import {
   CalendarDays, Users, MapPin, PoundSterling, Navigation,
   Car, Lightbulb, Crown, CalendarPlus, ListTodo,
