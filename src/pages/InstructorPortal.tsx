@@ -218,7 +218,7 @@ export default function InstructorPortal() {
   if (isMobile) {
     return (
       <InstructorPortalLayout>
-        <div className="space-y-3">
+        <div className="space-y-4">
         <DemoModeBanner />
         <InstructorMobileHome 
           instructor={instructorData}

@@ -28,7 +28,7 @@ export function InstructorCard({
   return (
     <motion.div
       className={cn(
-        "overflow-hidden shadow-premium hover:shadow-premium-lg transition-shadow duration-200 tabular-nums",
+        "shadow-premium hover:shadow-premium-lg transition-shadow duration-200 tabular-nums",
         !noPadding && "p-5",
         interactive && "cursor-pointer",
         className
