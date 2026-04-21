@@ -96,18 +96,13 @@ export function TodayMiniTimeline({ lessons, className = "" }: TodayMiniTimeline
           const isNext = state === "next";
           const isOverdue = state === "overdue";
 
-          const accentColor =
-            state === "next" ? "#185FA5" :
-            state === "overdue" ? "#A32D2D" :
-            "#5F5E5A";
-
           return (
             <Link key={lesson.id} to={lesson.pupilId ? `/instructor/pupils/${lesson.pupilId}` : "/instructor/pupils"}>
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.06 }}
-                className="overflow-hidden active:scale-[0.98] transition-transform flex dark:!bg-[rgba(28,28,30,0.75)] dark:!border-[rgba(255,255,255,0.1)]"
+                className="overflow-hidden active:scale-[0.98] transition-transform dark:!bg-[rgba(28,28,30,0.75)] dark:!border-[rgba(255,255,255,0.1)]"
                 style={{
                   background: isNext ? "rgba(10,122,255,0.06)" : "rgba(255,255,255,0.65)",
                   backdropFilter: "blur(20px)",
@@ -120,16 +115,7 @@ export function TodayMiniTimeline({ lessons, className = "" }: TodayMiniTimeline
                   opacity: isDone ? 0.55 : 1,
                 }}
               >
-                <div
-                  aria-hidden
-                  style={{
-                    width: 3,
-                    background: accentColor,
-                    flexShrink: 0,
-                    alignSelf: "stretch",
-                  }}
-                />
-                <div className="flex-1 p-4">
+                <div className="p-4">
                   {/* Top row: Avatar + Name + Status/Type Badge */}
                   <div className="flex items-center gap-3 mb-2.5">
                     <PupilAvatar
