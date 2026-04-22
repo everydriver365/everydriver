@@ -1,38 +1,71 @@
 
 
-## Plan: Quick Actions search
+## Redesign: Today's Schedule card (instructor mobile)
 
-Add a small search input above the Quick Actions carousel on the instructor home that filters the 32 tiles in place. When the user types, the carousel hides and a single filtered grid takes its place. Clearing the input restores the carousel and pagination dots.
+Replace the look of the existing `HomeTodaySchedule` component on `/instructor` with a premium SaaS-style card. All live data wiring is preserved — only the visual shell, tab structure, and footer change.
 
-### Behaviour
+### Live data — unchanged
 
-- Search input sits directly above the carousel, inside the same Quick Actions section.
-- iOS-style appearance, matching the existing `IOSSearchBar` component already in the codebase (rounded, muted background, clear button, Cancel affordance).
-- Filtering matches against tile `title` and `subtitle` (case-insensitive, substring).
-- While the query is empty: render the existing swipeable carousel + pagination dots unchanged.
-- While the query is non-empty:
-  - Hide the carousel and dots.
-  - Render matching tiles in the same 2-column grid the carousel uses, with the same `WarmTile` styling, locked-state handling (`TILE_FEATURE_MAP`), and navigation behaviour.
-  - If no matches: show a small muted "No actions match '…'" line.
-- Locked tiles still show the lock icon and the existing upgrade toast on tap.
-- `primary` styling on "Track lesson" is preserved.
+Component continues to use:
+- `useTodayOverview(instructorId)` — today's lesson count + expected earnings
+- `useDayLessons(instructorId, today)` — today's lessons
+- `useDayLessons(instructorId, tomorrow)` — tomorrow's lessons (new call, same hook)
+- `useDayLessons` called for each day Mon–Sun → "Week" tab (new, same hook, parallel queries)
+- `useWeeklyGoals(instructorId)` → `earningsThisWeek` for the header stat
+- `AddLessonSheet` for the "Add lesson" CTA (already wired)
+- Lesson row navigation: continues to link to `/instructor/pupils/:pupilId`
 
-### Files to edit
+No schema changes, no new hooks, no new edge functions.
 
-- `src/components/instructor/SwipeableQuickAccess.tsx`
-  - Add local `query` state.
-  - Import and render `IOSSearchBar` from `@/components/ui/IOSSearchBar` above the carousel, with the same horizontal padding (`px-4`) the grid uses.
-  - Extract the tile-render logic (the inner `WarmTile` + locked wrapper) into a small local helper so it can be reused by both the carousel pages and the filtered grid.
-  - When `query.trim().length > 0`: render the filtered grid instead of the carousel/dots.
+### Visual structure
 
-No other files change. No new dependencies. No backend changes.
+1. **Card shell** — white, rounded 20px, soft shadow, on the existing warm page background. Manrope loaded once via `<link>` injected in `index.html`; JetBrains Mono for times/dates/prices/counts.
 
-### QA at 390px on `/instructor`
+2. **Compact gradient header** — navy `#1e3a8a` → royal `#3b5fd4`, subtle white radial glow top-right, 14/12/20 padding.
+   - Top row: amber pulsing dot + "Today's schedule" (white 600/14) on the left; mono uppercase "WED 22 APR · WK 17" (built from `date-fns` `format(now,'EEE d MMM')` + `getISOWeek`) on the right.
+   - 3-column stats grid:
+     - **TODAY** — `overview.lessonCount` + " lessons"
+     - **EARNED** — `£` + `overview.expectedEarnings` (rounded)
+     - **THIS WEEK** — `£` + `weeklyGoals.earningsThisWeek`
 
-- Search input renders flush with the existing section padding, above the tile carousel.
-- Typing "track" shows only "Track lesson" (with red primary outline preserved).
-- Typing "gap" shows "Fill gaps".
-- Clearing the input restores the carousel at page 1 with dots visible.
-- Locked tile (e.g. "Take payment" on free tier) still shows lock + triggers upgrade toast when tapped from search results.
-- Cancel button on the search bar clears the query and blurs the input.
+3. **Tab bar** — Today / Tomorrow / Week with count badges (`todayLessons.length`, `tomorrowLessons.length`, `weekLessons.length`). Active = blue text, blue underline, light-blue badge `#dbeafe`.
+
+4. **Content area (24px padding)**
+   - **Today tab, no lessons** → empty-state hero ("Your day is clear" + calendar icon) followed by a "Tomorrow — Thu 23 Apr" preview strip and the tomorrow lesson rows.
+   - **Today tab, has lessons** → hides the empty-state, renders today's lessons as the primary list.
+   - **Tomorrow tab** → tomorrow's lessons as a primary list.
+   - **Week tab** → lessons grouped by day with a small day-header strip per group.
+   - **Lesson row** — fixed time column (mono), 3px colored category bar, pupil name + lesson type, secondary metadata line ("Postcode · Lesson type · Duration"), price on the right in mono. Category color derived deterministically from `lessonType` (`Test Prep` → amber, `Mock Test` → rose, others → emerald) — matches existing palette in `TodayMiniTimeline`.
+   - Row click → existing pupil navigation via `onLessonClick` callback.
+
+5. **Footer** — light bar `#fafbfd` with top hairline.
+   - Left: "View full calendar →" → `navigate('/instructor/schedule')`.
+   - Right: dark ink button with "+" → opens existing `AddLessonSheet`.
+
+### Mapping from driving-lesson data to the spec's tutoring fields
+
+The spec mentions `subject`, `yearGroup`, `format`, `topic` (tutoring concepts). For this driving-instructor app the row will display real lesson fields instead, with the same visual layout:
+- `studentName` → `pupilName`
+- `subject` → `lessonType` (e.g. "Standard", "Test Prep")
+- secondary metadata line → `pickupPostcode · durationMinutes · paymentStatus`
+- `price` → `amountDue`
+- `category` color → derived from `lessonType` (no new field)
+
+This keeps the design language identical without inventing data we don't have.
+
+### Files
+
+- **Edit** `src/components/instructor/HomeTodaySchedule.tsx` — full visual rewrite, same props (`{ instructorId }`), same hook calls plus the additional tomorrow + week-day `useDayLessons` calls.
+- **Edit** `index.html` — add Manrope + JetBrains Mono Google Fonts `<link>` tags in `<head>`.
+- No changes to `InstructorMobileHome.tsx` (it already renders `<HomeTodaySchedule instructorId={instructorId} />`).
+- No changes to hooks, schema, or any other components.
+
+### QA at 390×585
+
+- Header stats remain on one row (font sizes step down at <360px).
+- Tabs switch content; counts update from live queries.
+- Empty Today state shows hero + tomorrow preview; populated Today hides hero.
+- "Add lesson" opens the existing sheet; "View full calendar" navigates to `/instructor/schedule`.
+- Tapping a lesson row navigates to the pupil profile (existing behaviour preserved).
+- Loading shimmer kept for all three tabs.
 
