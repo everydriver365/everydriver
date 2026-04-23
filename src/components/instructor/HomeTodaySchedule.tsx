@@ -1,52 +1,32 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Calendar, ChevronRight, Plus } from "lucide-react";
 import { format, parse, addDays } from "date-fns";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useDayLessons } from "@/hooks/useDayLessons";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { useQueryClient } from "@tanstack/react-query";
-import { SectionHeader } from "@/components/instructor/SectionHeader";
 
 interface HomeTodayScheduleProps {
   instructorId: string | undefined;
 }
 
-// Warm palette (matches global app theme)
-const PAL = {
-  paper: "#F7F5F0",
-  trayBg: "#FAF8F3",
-  trayBorder: "#E8E5DC",
+// iOS 17 tokens — scoped to this card via inline styles
+const IOS = {
+  label: "#000000",
+  secondaryLabel: "rgba(60,60,67,.60)",
+  tertiaryLabel: "rgba(60,60,67,.30)",
+  opaqueSeparator: "#C6C6C8",
+  fill: "rgba(120,120,128,.12)",
+  secondaryFill: "rgba(120,120,128,.08)",
+  tertiaryFill: "rgba(118,118,128,.12)",
+  systemBlue: "#007AFF",
+  systemGreen: "#34C759",
   card: "#FFFFFF",
-  hairline: "#D3D1C7",
-  text: "#2C2C2A",
-  textMuted: "#5F5E5A",
-  textSubtle: "#888780",
-  textNavyDeep: "#042C53",
-  accentBlue: "#185FA5",
-  accentBlueSoft: "#E6F1FB",
-  accentBlueRing: "#B5D4F4",
-  accentRed: "#A32D2D",
-  accentGreen: "#0F6E56",
-  accentGreenSoft: "#E1F5EE",
-  avatarBg: "#F1EFE8",
-  avatarText: "#5F5E5A",
-  chipNeutralBg: "#F1EFE8",
-  toggleActive: "#042C53",
+  secondaryBg: "#F2F2F7",
 };
 
-function totalDurationLabel(mins: number): string {
-  if (mins <= 0) return "0h";
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  if (h === 0) return `${m}m total`;
-  if (m === 0) return `${h}h total`;
-  return `${h}h ${m}m total`;
-}
-
-function formatCurrency(amount: number): string {
-  return amount.toLocaleString("en-GB");
-}
+const IOS_FONT =
+  "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', sans-serif";
 
 function fmtTime(time: string) {
   try {
@@ -64,6 +44,7 @@ function durationLabel(mins: number): string {
 }
 
 function totalHoursLabel(hours: number): string {
+  if (hours <= 0) return "0h";
   return Number.isInteger(hours) ? `${hours}h` : `${hours.toFixed(1)}h`;
 }
 
@@ -83,10 +64,45 @@ function SkeletonBlock({ width, height = 12 }: { width: number | string; height?
         width,
         height,
         borderRadius: 4,
-        background: PAL.textSubtle,
-        opacity: 0.18,
+        background: IOS.tertiaryLabel,
+        opacity: 0.5,
       }}
     />
+  );
+}
+
+// SF Symbol-style inline SVGs
+function CalendarIcon({ size = 16, color = "#fff", strokeWidth = 2.4 }: { size?: number; color?: string; strokeWidth?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="5" width="18" height="16" rx="2.5" />
+      <path d="M3 10h18" />
+      <path d="M8 3v4M16 3v4" />
+    </svg>
+  );
+}
+
+function PoundIcon({ size = 16, color = "#fff", strokeWidth = 2.4 }: { size?: number; color?: string; strokeWidth?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 6.5a4 4 0 0 0-7.5 1.9V13H6M6 13h8M16 19H6c1.5-1 2.5-2.5 2.5-5" />
+    </svg>
+  );
+}
+
+function ChevronIcon() {
+  return (
+    <svg width={7} height={13} viewBox="0 0 7 13" fill="none" stroke={IOS.systemBlue} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 1.5 5.5 6.5 1 11.5" />
+    </svg>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 5v14M5 12h14" />
+    </svg>
   );
 }
 
@@ -117,18 +133,6 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
     return upcoming?.id || null;
   }, [lessons, nowSec, isTomorrow]);
 
-  const minutesUntilNext = useMemo(() => {
-    if (isTomorrow || !nextUpcomingId) return null;
-    const next = lessons.find((l) => l.id === nextUpcomingId);
-    if (!next) return null;
-    const [h, m] = next.startTime.split(":").map(Number);
-    return Math.max(0, Math.round(h * 60 + m - (now.getHours() * 60 + now.getMinutes())));
-  }, [lessons, nextUpcomingId, isTomorrow]);
-
-  const dateLabel = format(targetDate, "EEE d MMM");
-  const isLoading = (tab === "today" && overviewLoading) || lessonsLoading;
-  const hasLessons = lessons.length > 0;
-
   const dayLessonCount = lessons.length;
   const dayTotalHours = lessons.reduce((sum, l) => sum + (l.durationMinutes || 0), 0) / 60;
   const dayAmountDueSum = lessons.reduce((sum, l) => sum + (l.amountDue ?? 0), 0);
@@ -145,180 +149,246 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
     ? Math.round(dayTotalHours * derivedHourlyRate)
     : Math.round(overview?.expectedEarnings ?? 0);
 
-  // Compact "next in" formatter: Nm / Nh / Nd
-  const nextInLabel = (() => {
-    if (isTomorrow) return null;
-    if (minutesUntilNext == null) return null;
-    if (minutesUntilNext < 60) return `${minutesUntilNext}m`;
-    const hours = Math.round(minutesUntilNext / 60);
-    if (hours < 24) return `${hours}h`;
-    return `${Math.round(hours / 24)}d`;
-  })();
+  const dayName = format(targetDate, "EEEE");
+  const dateLabel = format(targetDate, "d MMMM");
+  const isLoading = (tab === "today" && overviewLoading) || lessonsLoading;
+  const hasLessons = lessons.length > 0;
 
-  const totalMinutes = lessons.reduce((sum, l) => sum + (l.durationMinutes || 0), 0);
+  const subtitle = isLoading
+    ? ""
+    : hasLessons
+    ? `${dateLabel} · ${lessonCount} lesson${lessonCount === 1 ? "" : "s"} · ${totalHoursLabel(totalHours)}`
+    : `${dateLabel} · No lessons yet`;
 
   return (
     <div
       style={{
-        background: PAL.paper,
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+        padding: "0 16px",
+        fontFamily: IOS_FONT,
+        WebkitFontSmoothing: "antialiased",
         fontVariantNumeric: "tabular-nums",
       }}
     >
-      <div style={{ padding: "0 16px" }}>
-        {/* ── White tray with navy header strip ── */}
+      <style>{`
+        @keyframes hts-pulse {
+          0%, 100% { box-shadow: 0 0 0 3px rgba(0,122,255,.18); }
+          50% { box-shadow: 0 0 0 6px rgba(0,122,255,.08); }
+        }
+        .hts-row:hover { background: ${IOS.secondaryFill}; }
+        .hts-row:active, .hts-link:active, .hts-add:active { opacity: 0.8; }
+        .hts-add:active { transform: scale(0.98); }
+        .hts-add:hover { background: #0071EB; }
+        @media (prefers-reduced-motion: reduce) {
+          .hts-pulse { animation: none !important; }
+        }
+        @media (max-width: 320px) {
+          .hts-stats { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+
+      <div
+        style={{
+          maxWidth: 440,
+          margin: "0 auto",
+          background: IOS.card,
+          borderRadius: 14,
+          boxShadow: "0 1px 0 rgba(0,0,0,.02), 0 20px 40px -20px rgba(15,23,42,.08)",
+          overflow: "hidden",
+          color: IOS.label,
+        }}
+      >
+        {/* HEAD */}
         <div
           style={{
-            background: PAL.card,
-            border: `0.5px solid ${PAL.hairline}`,
-            borderRadius: 16,
-            overflow: "hidden",
+            padding: 16,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 12,
           }}
         >
-          {/* ── Navy header strip ── */}
-          <div
-            className="flex items-center"
-            style={{
-              background: PAL.textNavyDeep,
-              padding: "10px 14px",
-              gap: 10,
-            }}
-          >
-            <Calendar size={14} strokeWidth={2} color="#B5D4F4" />
-            <span style={{ fontSize: 13, fontWeight: 500, color: "#FFFFFF" }}>
-              {isTomorrow ? "Tomorrow's schedule" : "Today's schedule"}
-            </span>
-            <span style={{ marginLeft: "auto", fontSize: 11, color: "#85B7EB" }}>
-              {isLoading ? (
-                <SkeletonBlock width={120} height={11} />
-              ) : (
-                `${dateLabel} · ${lessonCount} lesson${lessonCount === 1 ? "" : "s"}`
-              )}
-            </span>
-          </div>
-
-          {/* ── Inner content area ── */}
-          <div style={{ padding: 12 }}>
-          {/* ── Day toggle + duration chip ── */}
-          <div className="flex items-center justify-between" style={{ marginBottom: 10 }}>
-            <div
-              className="flex shrink-0"
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+            <span
               style={{
-                background: PAL.chipNeutralBg,
-                borderRadius: 999,
-                padding: 3,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 13,
+                fontWeight: 600,
+                color: IOS.systemBlue,
+                letterSpacing: -0.08,
               }}
             >
-              {(["today", "tomorrow"] as const).map((t) => {
-                const active = tab === t;
-                return (
-                  <button
-                    key={t}
-                    onClick={() => setTab(t)}
-                    style={{
-                      background: active ? PAL.toggleActive : "transparent",
-                      color: active ? "#FFFFFF" : PAL.textMuted,
-                      fontSize: 11,
-                      fontWeight: 500,
-                      padding: "4px 10px",
-                      borderRadius: 999,
-                      transition: "all 0.15s",
-                    }}
-                  >
-                    {t === "today" ? "Today" : "Tomorrow"}
-                  </button>
-                );
-              })}
-            </div>
-            {!isLoading && totalMinutes > 0 && (
-              <span
-                style={{
-                  background: PAL.accentBlueSoft,
-                  color: PAL.accentBlue,
-                  fontSize: 10,
-                  fontWeight: 500,
-                  padding: "3px 8px",
-                  borderRadius: 999,
-                }}
-              >
-                {totalDurationLabel(totalMinutes)}
-              </span>
-            )}
+              <span style={{ width: 5, height: 5, borderRadius: "50%", background: IOS.systemBlue }} />
+              {isTomorrow ? "Tomorrow's schedule" : "Today's schedule"}
+            </span>
+            <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: -0.26, lineHeight: 1.1, color: IOS.label }}>
+              {dayName}
+            </span>
+            <span style={{ fontSize: 13, color: IOS.secondaryLabel, letterSpacing: -0.08 }}>
+              {isLoading ? <SkeletonBlock width={160} height={12} /> : subtitle}
+            </span>
           </div>
-
-          {/* ── Inline summary strip ── */}
-          <div
-            className="flex items-center"
+          <span
             style={{
-              gap: 14,
-              paddingBottom: 10,
-              marginBottom: 10,
-              borderBottom: `0.5px solid ${PAL.trayBorder}`,
+              flexShrink: 0,
+              background: IOS.fill,
+              padding: "4px 10px",
+              borderRadius: 999,
+              fontSize: 13,
+              color: IOS.label,
+              letterSpacing: -0.08,
             }}
           >
-            {isLoading ? (
-              <SkeletonBlock width={180} height={16} />
-            ) : (
-              <>
-                <span style={{ display: "inline-flex", alignItems: "baseline", gap: 4 }}>
-                  <span style={{ fontSize: 16, fontWeight: 500, color: PAL.textNavyDeep, lineHeight: 1 }}>
-                    {lessonCount}
-                  </span>
-                  <span style={{ fontSize: 11, color: PAL.textSubtle }}>
-                    {lessonCount === 1 ? "lesson" : "lessons"}
-                  </span>
-                </span>
-                <span style={{ display: "inline-flex", alignItems: "baseline", gap: 4 }}>
-                  <span style={{ fontSize: 16, fontWeight: 500, color: PAL.textNavyDeep, lineHeight: 1 }}>
-                    £{formatCurrency(earnings)}
-                  </span>
-                  <span style={{ fontSize: 11, color: PAL.textSubtle }}>earned</span>
-                </span>
-                {nextInLabel && (
+            <span style={{ fontWeight: 700 }}>{lessonCount}</span>
+            <span style={{ color: IOS.secondaryLabel }}> lessons</span>
+          </span>
+        </div>
+
+        {/* SEGMENTED CONTROL */}
+        <div
+          style={{
+            margin: "0 16px 16px",
+            padding: 2,
+            background: IOS.tertiaryFill,
+            borderRadius: 9,
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 0,
+            position: "relative",
+          }}
+        >
+          {(["today", "tomorrow"] as const).map((t, i) => {
+            const active = tab === t;
+            const otherActive = tab !== t;
+            return (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                style={{
+                  position: "relative",
+                  padding: "7px 12px",
+                  borderRadius: 7,
+                  fontSize: 13,
+                  fontWeight: active ? 600 : 500,
+                  color: IOS.label,
+                  background: active ? "#FFFFFF" : "transparent",
+                  boxShadow: active ? "0 3px 8px rgba(0,0,0,.12), 0 1px 1px rgba(0,0,0,.04)" : "none",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "all 0.15s cubic-bezier(0.2,0.7,0.2,1)",
+                  letterSpacing: -0.08,
+                  fontFamily: IOS_FONT,
+                }}
+              >
+                {t === "today" ? "Today" : "Tomorrow"}
+                {i === 0 && otherActive && (
                   <span
                     style={{
-                      marginLeft: "auto",
-                      display: "inline-flex",
-                      alignItems: "baseline",
-                      gap: 4,
-                    }}
-                  >
-                    <span style={{ fontSize: 11, color: PAL.textSubtle }}>Next in</span>
-                    <span style={{ fontSize: 16, fontWeight: 500, color: PAL.textNavyDeep, lineHeight: 1 }}>
-                      {nextInLabel}
-                    </span>
-                  </span>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* ── Lesson timeline (no inner card — tray is the card) ── */}
-          <div>
-
-        {isLoading ? (
-          <div className="flex flex-col" style={{ gap: 14 }}>
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="flex items-center" style={{ gap: 14 }}>
-                <div style={{ width: 44, textAlign: "right" }}>
-                  <SkeletonBlock width={36} height={14} />
-                </div>
-                <div style={{ width: 10, display: "flex", justifyContent: "center" }}>
-                  <span
-                    style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: "50%",
-                      background: PAL.hairline,
-                      display: "inline-block",
+                      position: "absolute",
+                      right: 0,
+                      top: "20%",
+                      bottom: "20%",
+                      width: 1,
+                      background: IOS.opaqueSeparator,
+                      opacity: 0.55,
                     }}
                   />
-                </div>
-                <div className="flex-1">
-                  <SkeletonBlock width="60%" height={14} />
-                  <div style={{ marginTop: 4 }}>
-                    <SkeletonBlock width="40%" height={12} />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* STATS ROW */}
+        <div
+          className="hts-stats"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 8,
+            padding: "0 16px 14px",
+          }}
+        >
+          {/* Tile 1 — Lessons */}
+          <div
+            style={{
+              background: IOS.secondaryBg,
+              borderRadius: 10,
+              padding: "10px 14px",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 8,
+                background: IOS.systemBlue,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <CalendarIcon size={16} color="#fff" />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 20, fontWeight: 700, color: IOS.label, lineHeight: 1.1, fontVariantNumeric: "tabular-nums" }}>
+                {isLoading ? <SkeletonBlock width={28} height={18} /> : lessonCount}
+              </div>
+              <div style={{ fontSize: 12, color: IOS.secondaryLabel, marginTop: 2 }}>
+                {lessonCount > 0 ? `lessons · ${totalHoursLabel(totalHours)}` : "lessons"}
+              </div>
+            </div>
+          </div>
+
+          {/* Tile 2 — Earnings */}
+          <div
+            style={{
+              background: IOS.secondaryBg,
+              borderRadius: 10,
+              padding: "10px 14px",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 8,
+                background: IOS.systemGreen,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <PoundIcon size={16} color="#fff" />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 20, fontWeight: 700, color: IOS.label, lineHeight: 1.1, fontVariantNumeric: "tabular-nums" }}>
+                {isLoading ? <SkeletonBlock width={42} height={18} /> : `£${earnings.toLocaleString("en-GB")}`}
+              </div>
+              <div style={{ fontSize: 12, color: IOS.secondaryLabel, marginTop: 2 }}>earned today</div>
+            </div>
+          </div>
+        </div>
+
+        {/* BODY */}
+        {isLoading ? (
+          <div style={{ borderTop: `0.5px solid ${IOS.opaqueSeparator}`, padding: "16px" }}>
+            {[0, 1, 2].map((i) => (
+              <div key={i} style={{ display: "flex", gap: 14, padding: "10px 0" }}>
+                <SkeletonBlock width={40} height={18} />
+                <div style={{ flex: 1 }}>
+                  <SkeletonBlock width="55%" height={14} />
+                  <div style={{ marginTop: 6 }}>
+                    <SkeletonBlock width="35%" height={11} />
                   </div>
                 </div>
               </div>
@@ -326,253 +396,238 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           </div>
         ) : !hasLessons ? (
           <div
-            className="text-center"
-            style={{ padding: "20px 0", fontSize: 13, color: PAL.textMuted }}
+            style={{
+              borderTop: `0.5px solid ${IOS.opaqueSeparator}`,
+              padding: "32px 16px 28px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 10,
+              textAlign: "center",
+            }}
           >
-            No lessons scheduled
+            <div
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: 14,
+                background: IOS.secondaryBg,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <CalendarIcon size={24} color={IOS.tertiaryLabel} strokeWidth={1.8} />
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: IOS.label, letterSpacing: -0.24 }}>
+              No lessons scheduled
+            </div>
+            <div style={{ fontSize: 13, color: IOS.secondaryLabel, maxWidth: 240, lineHeight: 1.4, letterSpacing: -0.08 }}>
+              Add a lesson to your calendar to start tracking your day
+            </div>
           </div>
         ) : (
-          <div className="relative">
+          <div style={{ borderTop: `0.5px solid ${IOS.opaqueSeparator}` }}>
             {lessons.map((lesson, idx) => {
               const time = fmtTime(lesson.startTime);
-              const isLast = idx === lessons.length - 1;
-              const initials = (lesson.pupilInitials || lesson.pupilName.slice(0, 2)).slice(0, 2).toUpperCase();
-              const meta: string[] = [];
-              if (lesson.pickupPostcode) meta.push(lesson.pickupPostcode);
-              meta.push(`£${lesson.amountDue ?? 0} outstanding`);
-
-              // Determine lesson state: done | overdue | next | upcoming
               const isDone = lesson.status === "completed";
-              const [lh, lm] = lesson.startTime.split(":").map(Number);
-              const startSec = lh * 3600 + lm * 60;
-              const endSec = startSec + (lesson.durationMinutes || 0) * 60;
-              const isOverdue = !isTomorrow && !isDone && nowSec > endSec;
               const isNext = !isTomorrow && lesson.id === nextUpcomingId;
+              const isUpcoming = !isDone && !isNext;
 
-              const markerBg = isDone
-                ? PAL.accentGreen
-                : isOverdue
-                ? "#A86A1F"
-                : PAL.accentBlue;
+              const dotColor = isDone
+                ? IOS.tertiaryLabel
+                : isNext
+                ? IOS.systemBlue
+                : IOS.systemGreen;
+
+              const haloShadow = isDone
+                ? "none"
+                : isNext
+                ? "0 0 0 3px rgba(0,122,255,.18)"
+                : "0 0 0 3px rgba(52,199,89,.15)";
+
+              const meta: string[] = [];
+              if ((lesson as any).transmission) meta.push((lesson as any).transmission);
+              if (lesson.pickupPostcode) meta.push(lesson.pickupPostcode);
 
               return (
                 <Link
                   key={lesson.id}
                   to={`/instructor/pupils/${lesson.pupilId}`}
-                  className="flex"
+                  className="hts-row"
                   style={{
-                    gap: 14,
-                    paddingTop: idx === 0 ? 0 : 12,
-                    paddingBottom: 12,
-                    opacity: isDone ? 0.55 : 1,
+                    display: "grid",
+                    gridTemplateColumns: "50px 1fr 16px",
+                    alignItems: "center",
+                    gap: 0,
+                    padding: "12px 16px",
+                    cursor: "pointer",
+                    textDecoration: "none",
+                    color: "inherit",
+                    borderTop: idx === 0 ? "none" : `0.5px solid ${IOS.opaqueSeparator}`,
+                    borderTopLeftRadius: 0,
+                    transition: "background 0.15s cubic-bezier(0.2,0.7,0.2,1)",
+                    opacity: isDone ? 0.6 : 1,
+                    position: "relative",
                   }}
                 >
-                  {/* Time column */}
-                  <div
-                    style={{
-                      minWidth: 40,
-                      textAlign: "right",
-                      flexShrink: 0,
-                      paddingTop: 2,
-                    }}
-                  >
-                    <div style={{ fontSize: 13, fontWeight: 500, color: PAL.textNavyDeep, lineHeight: 1 }}>
-                      {time.hour}
-                    </div>
-                    {time.period && (
-                      <div
-                        style={{
-                          fontSize: 9,
-                          color: PAL.textSubtle,
-                          letterSpacing: 0.5,
-                          marginTop: 2,
-                          fontWeight: 500,
-                        }}
-                      >
-                        {time.period}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Spine column */}
-                  <div
-                    className="relative shrink-0 flex justify-center"
-                    style={{ width: 10 }}
-                  >
-                    {/* Vertical line — stops at last marker */}
+                  {/* Indented separator effect — handled by border above starting at col 1; for spec's "x=80px" indent we override the first row only */}
+                  {idx > 0 && (
                     <span
                       style={{
                         position: "absolute",
-                        top: 0,
-                        bottom: isLast ? "calc(100% - 16px)" : 0,
-                        width: 1,
-                        background: PAL.hairline,
-                        left: "50%",
-                        transform: "translateX(-50%)",
+                        top: -0.5,
+                        left: 80,
+                        right: 0,
+                        height: 0.5,
+                        background: IOS.opaqueSeparator,
                       }}
                     />
-                    {/* Marker */}
-                    <span
-                      style={{
-                        position: "relative",
-                        marginTop: 6,
-                        width: 10,
-                        height: 10,
-                        borderRadius: "50%",
-                        background: markerBg,
-                        border: "2px solid #FFFFFF",
-                        boxShadow: `0 0 0 1px ${PAL.accentBlueRing}`,
-                      }}
-                    />
-                  </div>
+                  )}
 
-                  {/* Content column */}
-                  <div className="flex-1 min-w-0 flex items-start" style={{ gap: 10 }}>
-                    {/* Avatar */}
+                  {/* Time column */}
+                  <div
+                    style={{
+                      paddingRight: 14,
+                      borderRight: `1px solid ${IOS.opaqueSeparator}`,
+                      minWidth: 0,
+                    }}
+                  >
                     <div
-                      className="shrink-0 flex items-center justify-center"
                       style={{
-                        width: 26,
-                        height: 26,
-                        borderRadius: "50%",
-                        background: PAL.avatarBg,
-                        color: PAL.avatarText,
-                        fontSize: 10,
-                        fontWeight: 500,
+                        fontSize: 17,
+                        fontWeight: 600,
+                        color: IOS.label,
+                        letterSpacing: -0.24,
+                        fontVariantNumeric: "tabular-nums",
+                        lineHeight: 1.1,
                       }}
                     >
-                      {initials}
+                      {time.hour}
                     </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: IOS.secondaryLabel,
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        letterSpacing: 0.3,
+                        marginTop: 2,
+                      }}
+                    >
+                      {time.period}
+                      {lesson.durationMinutes ? ` · ${durationLabel(lesson.durationMinutes)}` : ""}
+                    </div>
+                  </div>
 
-                    {/* Name + meta */}
-                    <div className="flex-1 min-w-0">
+                  {/* Body */}
+                  <div style={{ minWidth: 0, paddingLeft: 14 }}>
+                    <div
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: IOS.label,
+                        letterSpacing: -0.24,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        textDecoration: isDone ? "line-through" : "none",
+                      }}
+                    >
+                      {sentenceName(lesson.pupilName)}
+                    </div>
+                    {meta.length > 0 && (
                       <div
-                        className="truncate"
                         style={{
                           fontSize: 13,
-                          fontWeight: 500,
-                          color: PAL.textNavyDeep,
-                          lineHeight: 1.2,
-                          textDecoration: isDone ? "line-through" : "none",
+                          color: IOS.secondaryLabel,
+                          marginTop: 2,
+                          letterSpacing: -0.08,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
                         }}
-                      >
-                        {sentenceName(lesson.pupilName)}
-                      </div>
-                      <div
-                        className="truncate"
-                        style={{ fontSize: 11, color: PAL.textMuted, marginTop: 1 }}
                       >
                         {meta.join(" · ")}
                       </div>
-                    </div>
-
-                    {/* Status / Duration chip */}
-                    {isNext ? (
-                      <span
-                        className="shrink-0"
-                        style={{
-                          fontSize: 10,
-                          color: "#FFFFFF",
-                          background: PAL.accentBlue,
-                          padding: "2px 7px",
-                          borderRadius: 999,
-                          fontWeight: 600,
-                          letterSpacing: 0.3,
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        Next
-                      </span>
-                    ) : isOverdue ? (
-                      <span
-                        className="shrink-0"
-                        style={{
-                          fontSize: 10,
-                          color: "#A86A1F",
-                          background: "#FBEFD9",
-                          padding: "2px 7px",
-                          borderRadius: 999,
-                          fontWeight: 600,
-                        }}
-                      >
-                        End lesson
-                      </span>
-                    ) : isDone ? (
-                      <span
-                        className="shrink-0"
-                        style={{
-                          fontSize: 10,
-                          color: PAL.accentGreen,
-                          background: PAL.accentGreenSoft,
-                          padding: "2px 7px",
-                          borderRadius: 999,
-                          fontWeight: 600,
-                        }}
-                      >
-                        ✓ Done
-                      </span>
-                    ) : (
-                      <span
-                        className="shrink-0"
-                        style={{
-                          fontSize: 10,
-                          color: PAL.textMuted,
-                          background: PAL.chipNeutralBg,
-                          padding: "2px 7px",
-                          borderRadius: 999,
-                          fontWeight: 500,
-                        }}
-                      >
-                        {durationLabel(lesson.durationMinutes)}
-                      </span>
                     )}
                   </div>
+
+                  {/* Status dot */}
+                  <span
+                    className={isNext ? "hts-pulse" : ""}
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: "50%",
+                      background: dotColor,
+                      boxShadow: haloShadow,
+                      flexShrink: 0,
+                      justifySelf: "center",
+                      animation: isNext ? "hts-pulse 2s infinite" : "none",
+                    }}
+                  />
                 </Link>
               );
             })}
-
           </div>
         )}
-      </div>
 
-          {/* ── Footer actions ── */}
-          <div
-            className="flex items-center justify-between"
+        {/* FOOTER */}
+        <div
+          style={{
+            padding: "14px 16px",
+            borderTop: `0.5px solid ${IOS.opaqueSeparator}`,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <Link
+            to="/instructor/schedule"
+            className="hts-link"
             style={{
-              marginTop: 10,
-              paddingTop: 10,
-              borderTop: `0.5px solid ${PAL.trayBorder}`,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              color: IOS.systemBlue,
+              fontSize: 15,
+              fontWeight: 400,
+              letterSpacing: -0.24,
+              textDecoration: "none",
+              transition: "opacity 0.15s",
             }}
           >
-            <Link
-              to="/instructor/schedule"
-              className="flex items-center"
-              style={{ color: PAL.accentBlue, fontSize: 12, fontWeight: 500, gap: 2 }}
-            >
-              View full calendar
-              <ChevronRight size={12} strokeWidth={2} />
-            </Link>
-            <button
-              onClick={() => setAddOpen(true)}
-              className="flex items-center"
-              style={{
-                background: PAL.textNavyDeep,
-                color: "#FFFFFF",
-                fontSize: 12,
-                fontWeight: 500,
-                padding: "7px 12px",
-                borderRadius: 999,
-                gap: 6,
-              }}
-            >
-              <Plus size={12} strokeWidth={2} color="#FFFFFF" />
-              Add lesson
-            </button>
-          </div>
-          </div>
-          {/* end inner content area */}
+            View full calendar
+            <ChevronIcon />
+          </Link>
+          <button
+            onClick={() => setAddOpen(true)}
+            className="hts-add"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              background: IOS.systemBlue,
+              color: "#FFFFFF",
+              border: "none",
+              borderRadius: 999,
+              padding: "10px 18px 10px 14px",
+              fontSize: 15,
+              fontWeight: 600,
+              letterSpacing: -0.24,
+              cursor: "pointer",
+              boxShadow: "0 1px 2px rgba(0,122,255,.2)",
+              transition: "all 0.15s cubic-bezier(0.2,0.7,0.2,1)",
+              fontFamily: IOS_FONT,
+            }}
+          >
+            <PlusIcon />
+            Add lesson
+          </button>
         </div>
-        {/* end white tray */}
+      </div>
 
       {instructorId && (
         <AddLessonSheet
@@ -587,7 +642,6 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           }}
         />
       )}
-      </div>
     </div>
   );
 }
