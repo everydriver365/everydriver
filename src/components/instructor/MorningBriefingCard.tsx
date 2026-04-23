@@ -153,7 +153,7 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
     onNavigate?.(actionId);
   };
 
-  if (!isMorning || dismissed || (!briefing && !loading)) return null;
+  if (!enabled || !isMorning || dismissed || (!briefing && !loading)) return null;
 
   return (
     <motion.div
