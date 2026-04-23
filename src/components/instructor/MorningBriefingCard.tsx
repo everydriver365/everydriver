@@ -58,7 +58,8 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
 
   useEffect(() => {
     if (!instructorId || !enabled) return;
-    const key = `briefing-shown-${instructorId}`;
+    const today = new Date().toISOString().split("T")[0];
+    const key = `briefing-shown-${instructorId}-${today}`;
     if (localStorage.getItem(key)) {
       setDismissed(true);
       return;
@@ -143,7 +144,16 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
   };
 
   const dismiss = () => {
-    const key = `briefing-shown-${instructorId}`;
+    const today = new Date().toISOString().split("T")[0];
+    const key = `briefing-shown-${instructorId}-${today}`;
+    // Clean up older dismiss keys for this instructor
+    try {
+      const prefix = `briefing-shown-${instructorId}-`;
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(prefix) && k !== key) localStorage.removeItem(k);
+      }
+    } catch {}
     localStorage.setItem(key, "1");
     setDismissed(true);
   };
