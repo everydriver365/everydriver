@@ -602,28 +602,7 @@ export function NextUpTile({
             </div>
           </div>
 
-          {/* ── PRIMARY CTA — Start track ── */}
-          <div style={{ padding: "8px 16px 16px 16px" }}>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
-              }}
-              className="active:opacity-80"
-              style={{
-                width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                background: ios.blue, color: "#fff",
-                borderRadius: 12, padding: "13px 16px",
-                fontSize: 17, fontWeight: 600, letterSpacing: -0.4,
-                border: "none", cursor: "pointer",
-                transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-                boxShadow: "0 1px 2px rgba(0,122,255,0.25)",
-              }}
-            >
-              <Send style={{ width: 18, height: 18 }} strokeWidth={2.2} />
-              Start track
-            </button>
-          </div>
+          <div style={{ height: 8 }} />
         </div>
 
         {/* ── EXPANDED CONTENT ── */}
@@ -816,6 +795,18 @@ export function NextUpTile({
 
                 {/* Action Buttons */}
                 <div className="flex flex-col gap-2">
+                  {/* Manual Start Track (auto-start is on by default; this is the manual override) */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-[14px] rounded-2xl font-semibold text-[15px] active:opacity-80"
+                    style={{ background: "#007AFF", color: "#fff", border: "none", letterSpacing: -0.24, transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)" }}
+                  >
+                    <Send className="h-4 w-4" strokeWidth={2.2} /> Start track manually
+                  </button>
+
                   {/* Start Lesson */}
                   {minutesUntil <= 15 && (
                     <button onClick={(e) => {
