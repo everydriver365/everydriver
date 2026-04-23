@@ -807,6 +807,8 @@ export function NextUpTile({
                     <Send className="h-4 w-4" strokeWidth={2.2} /> Start track manually
                   </button>
 
+                  {/* Start Lesson */}
+                  {minutesUntil <= 15 && (
                     <button onClick={(e) => {
                       e.stopPropagation();
                       supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
