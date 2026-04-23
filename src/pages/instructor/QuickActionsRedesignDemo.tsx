@@ -6,33 +6,26 @@ import {
   PoundSterling,
   Car,
   Heart,
-  Megaphone,
-  Camera,
   ArrowLeft,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 /**
- * DSM brand palette (from logo):
- *   Red    #E02020
- *   Blue   #2255FF
- *   Navy   #0F1B2D
- *   Light  #EEF1F5
- *   White  #FFFFFF
- *
- * 10 iOS-style Quick Action grid variants — pick one.
+ * DSM brand: red #E02020, blue #2255FF, navy #0F1B2D
+ * Round 2 — gradient-led, bold, iOS premium. No more flat white squares.
  */
 
 const DSM = {
   red: "#E02020",
-  redSoft: "#FDECEC",
-  redDark: "#B81818",
+  redLight: "#FF5A5A",
+  redDeep: "#9B0E0E",
   blue: "#2255FF",
-  blueSoft: "#E8EEFF",
-  blueDark: "#1A45CC",
+  blueLight: "#5C82FF",
+  blueDeep: "#0E2BAA",
   navy: "#0F1B2D",
-  navySoft: "#1B2840",
+  navy2: "#1B2840",
   light: "#EEF1F5",
   white: "#FFFFFF",
   muted: "#7A8FAA",
@@ -44,43 +37,61 @@ interface ActionItem {
   subtitle: string;
   icon: LucideIcon;
   /** which DSM accent the tile leans toward */
-  tone: "red" | "blue" | "navy";
+  tone: "red" | "blue" | "navy" | "mix";
   status?: string;
 }
 
 const actions: ActionItem[] = [
   { id: "fill-gaps", label: "Fill gaps", subtitle: "Schedule gaps", icon: Calendar, tone: "blue", status: "3 open" },
   { id: "track-live", label: "Track live", subtitle: "GPS tracking", icon: MapPin, tone: "red", status: "Active" },
-  { id: "add-lesson", label: "Add lesson", subtitle: "New booking", icon: Plus, tone: "blue" },
+  { id: "add-lesson", label: "Add lesson", subtitle: "New booking", icon: Plus, tone: "mix" },
   { id: "take-payment", label: "Take payment", subtitle: "Record payment", icon: PoundSterling, tone: "navy", status: "Secure" },
   { id: "find-my-car", label: "Find my car", subtitle: "Car location", icon: Car, tone: "blue", status: "12m" },
   { id: "health-hub", label: "Health hub", subtitle: "Wellness tips", icon: Heart, tone: "red" },
   { id: "test-swap", label: "Test swap", subtitle: "Swap a test", icon: Calendar, tone: "navy", status: "2 pending" },
-  { id: "find-nearby", label: "Find nearby", subtitle: "Toilets & food", icon: MapPin, tone: "blue" },
+  { id: "find-nearby", label: "Find nearby", subtitle: "Toilets & food", icon: MapPin, tone: "mix" },
 ];
 
-const toneFg = (t: ActionItem["tone"]) => (t === "red" ? DSM.red : t === "blue" ? DSM.blue : DSM.navy);
-const toneSoft = (t: ActionItem["tone"]) => (t === "red" ? DSM.redSoft : t === "blue" ? DSM.blueSoft : "#E5EAF1");
+const grad = (t: ActionItem["tone"]) => {
+  switch (t) {
+    case "red":
+      return `linear-gradient(135deg, ${DSM.redLight}, ${DSM.red} 60%, ${DSM.redDeep})`;
+    case "blue":
+      return `linear-gradient(135deg, ${DSM.blueLight}, ${DSM.blue} 60%, ${DSM.blueDeep})`;
+    case "navy":
+      return `linear-gradient(135deg, ${DSM.navy2}, ${DSM.navy})`;
+    case "mix":
+    default:
+      return `linear-gradient(135deg, ${DSM.blue}, ${DSM.red})`;
+  }
+};
 
 const SF = { fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', Inter, sans-serif" };
 
 /* ============================================================
- * 1. Soft Tinted Chips on White
+ * 1. Full-bleed Gradient Tiles (every tile a gradient)
  * ============================================================ */
-function V1_SoftTints() {
+function V1_FullBleedGradient() {
   return (
-    <div className="bg-[#F2F2F7] rounded-3xl p-4" style={SF}>
-      <h3 className="text-[13px] font-semibold uppercase tracking-wider text-[#6B7280] mb-3 px-1">Quick actions</h3>
+    <div className="rounded-3xl p-4" style={{ ...SF, background: DSM.navy }}>
+      <h3 className="text-[13px] font-semibold uppercase tracking-wider text-white/50 mb-3 px-1">Quick actions</h3>
       <div className="grid grid-cols-2 gap-3">
         {actions.map((a) => {
           const Icon = a.icon;
           return (
-            <button key={a.id} className="bg-white rounded-2xl p-4 flex flex-col items-start text-left active:scale-[0.97] transition-transform shadow-[0_1px_3px_rgba(15,27,45,0.06)]">
-              <div className="size-11 rounded-full flex items-center justify-center mb-3" style={{ background: toneSoft(a.tone) }}>
-                <Icon size={20} strokeWidth={2.2} style={{ color: toneFg(a.tone) }} />
+            <button
+              key={a.id}
+              className="rounded-3xl p-4 flex flex-col items-start text-left active:scale-[0.96] transition-transform shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)] relative overflow-hidden h-[120px]"
+              style={{ background: grad(a.tone) }}
+            >
+              <div className="absolute -top-6 -right-6 size-24 rounded-full bg-white/10 blur-xl" />
+              <div className="relative z-10 size-10 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center mb-auto">
+                <Icon size={20} strokeWidth={2.4} color="#fff" />
               </div>
-              <div className="text-[15px] font-semibold text-[#0F1B2D] leading-tight">{a.label}</div>
-              <div className="text-[12px] text-[#7A8FAA] mt-0.5">{a.subtitle}</div>
+              <div className="relative z-10">
+                <div className="text-[15px] font-bold text-white leading-tight">{a.label}</div>
+                <div className="text-[12px] text-white/80 mt-0.5">{a.subtitle}</div>
+              </div>
             </button>
           );
         })}
@@ -90,108 +101,59 @@ function V1_SoftTints() {
 }
 
 /* ============================================================
- * 2. iOS Solid Filled Squircle Icons (Apple Home / Settings style)
+ * 2. Gradient Border (light interior, glowing brand stroke)
  * ============================================================ */
-function V2_SolidSquircle() {
+function V2_GradientBorder() {
   return (
-    <div className="bg-[#F2F2F7] rounded-3xl p-4" style={SF}>
+    <div className="rounded-3xl p-4 bg-[#F4F6FA]" style={SF}>
       <h3 className="text-[22px] font-bold tracking-tight text-[#0F1B2D] mb-3 px-1">Quick actions</h3>
       <div className="grid grid-cols-2 gap-3">
         {actions.map((a) => {
           const Icon = a.icon;
-          const fg = toneFg(a.tone);
           return (
-            <button key={a.id} className="bg-white rounded-2xl p-3.5 flex items-center gap-3 text-left active:scale-[0.97] transition-transform shadow-[0_1px_3px_rgba(15,27,45,0.05)]">
-              <div className="size-10 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: fg }}>
-                <Icon size={20} strokeWidth={2.4} color="#fff" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-[14px] font-semibold text-[#0F1B2D] truncate">{a.label}</div>
-                <div className="text-[11px] text-[#7A8FAA] truncate">{a.subtitle}</div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/* ============================================================
- * 3. Navy Cards with Bright Accent Icons (premium dark)
- * ============================================================ */
-function V3_NavyCards() {
-  return (
-    <div className="bg-[#0F1B2D] rounded-3xl p-4" style={SF}>
-      <h3 className="text-[13px] font-semibold uppercase tracking-wider text-[#4A6280] mb-3 px-1">Quick actions</h3>
-      <div className="grid grid-cols-2 gap-3">
-        {actions.map((a) => {
-          const Icon = a.icon;
-          const fg = a.tone === "navy" ? DSM.blue : toneFg(a.tone);
-          return (
-            <button key={a.id} className="bg-[#1B2840] rounded-2xl p-4 flex flex-col items-start text-left active:scale-[0.97] transition-transform border border-white/5">
-              <div className="size-10 rounded-full flex items-center justify-center mb-3" style={{ background: `${fg}22` }}>
-                <Icon size={18} strokeWidth={2.2} style={{ color: fg }} />
-              </div>
-              <div className="text-[14px] font-semibold text-white leading-tight">{a.label}</div>
-              <div className="text-[11px] text-[#4A6280] mt-0.5">{a.subtitle}</div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/* ============================================================
- * 4. Glass Pills (frosted, horizontal scroll feel)
- * ============================================================ */
-function V4_GlassPills() {
-  return (
-    <div className="rounded-3xl p-4 relative overflow-hidden" style={{ ...SF, background: `linear-gradient(135deg, ${DSM.blue}08, ${DSM.red}08)` }}>
-      <div className="absolute inset-0 bg-[#F2F2F7]/80 backdrop-blur-xl" />
-      <div className="relative">
-        <h3 className="text-[15px] font-semibold text-[#0F1B2D] mb-3 px-1">Quick actions</h3>
-        <div className="grid grid-cols-2 gap-2.5">
-          {actions.map((a) => {
-            const Icon = a.icon;
-            return (
-              <button key={a.id} className="bg-white/80 backdrop-blur rounded-full pl-2 pr-4 py-2 flex items-center gap-2.5 text-left active:scale-[0.97] transition-transform border border-white shadow-[0_2px_8px_rgba(15,27,45,0.06)]">
-                <div className="size-8 rounded-full flex items-center justify-center shrink-0" style={{ background: toneFg(a.tone) }}>
-                  <Icon size={15} strokeWidth={2.4} color="#fff" />
+            <div key={a.id} className="rounded-2xl p-[1.5px]" style={{ background: grad(a.tone) }}>
+              <button className="bg-white rounded-[14px] p-3.5 flex items-center gap-3 w-full text-left active:scale-[0.97] transition-transform">
+                <div className="size-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: grad(a.tone) }}>
+                  <Icon size={18} strokeWidth={2.4} color="#fff" />
                 </div>
-                <div className="text-[13px] font-semibold text-[#0F1B2D] truncate">{a.label}</div>
+                <div className="min-w-0">
+                  <div className="text-[14px] font-semibold text-[#0F1B2D] truncate">{a.label}</div>
+                  <div className="text-[11px] text-[#7A8FAA] truncate">{a.subtitle}</div>
+                </div>
               </button>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
 /* ============================================================
- * 5. Grouped iOS List (Settings.app style)
+ * 3. Glassmorphism on Brand Backdrop
  * ============================================================ */
-function V5_GroupedList() {
+function V3_GlassOnBrand() {
   return (
-    <div className="bg-[#F2F2F7] rounded-3xl p-4" style={SF}>
-      <h3 className="text-[13px] font-semibold uppercase tracking-wider text-[#6B7280] mb-2 px-3">Quick actions</h3>
-      <div className="bg-white rounded-2xl overflow-hidden">
-        {actions.map((a, i) => {
+    <div
+      className="rounded-3xl p-4 relative overflow-hidden"
+      style={{ ...SF, background: `linear-gradient(135deg, ${DSM.blueDeep}, ${DSM.blue} 50%, ${DSM.red})` }}
+    >
+      <div className="absolute -top-20 -left-20 size-64 rounded-full bg-white/15 blur-3xl" />
+      <div className="absolute -bottom-20 -right-20 size-64 rounded-full bg-white/10 blur-3xl" />
+      <h3 className="relative text-[13px] font-bold uppercase tracking-widest text-white/80 mb-3 px-1">Quick actions</h3>
+      <div className="relative grid grid-cols-2 gap-3">
+        {actions.map((a) => {
           const Icon = a.icon;
-          const fg = toneFg(a.tone);
           return (
-            <button key={a.id} className="w-full flex items-center gap-3 px-3.5 py-2.5 active:bg-[#E5EAF1] text-left">
-              <div className="size-8 rounded-[8px] flex items-center justify-center shrink-0" style={{ background: fg }}>
-                <Icon size={17} strokeWidth={2.4} color="#fff" />
+            <button
+              key={a.id}
+              className="rounded-2xl p-4 flex flex-col items-start text-left active:scale-[0.97] transition-transform bg-white/15 backdrop-blur-xl border border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]"
+            >
+              <div className="size-10 rounded-full flex items-center justify-center mb-3 bg-white/25 border border-white/40">
+                <Icon size={18} strokeWidth={2.4} color="#fff" />
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[15px] text-[#0F1B2D] font-normal">{a.label}</div>
-              </div>
-              {a.status && <span className="text-[12px] text-[#7A8FAA]">{a.status}</span>}
-              <ChevronRight size={16} className="text-[#C7CDD6]" />
-              {i < actions.length - 1 && <span className="absolute left-[58px] right-0 bottom-0 h-px bg-[#E5EAF1]" />}
+              <div className="text-[14px] font-bold text-white leading-tight">{a.label}</div>
+              <div className="text-[11px] text-white/75 mt-0.5">{a.subtitle}</div>
             </button>
           );
         })}
@@ -201,30 +163,190 @@ function V5_GroupedList() {
 }
 
 /* ============================================================
- * 6. Big Numbered / Status-led Cards
+ * 4. Aurora / Mesh Gradient Cards
  * ============================================================ */
-function V6_StatusLed() {
+function V4_AuroraMesh() {
+  const meshes = [
+    `radial-gradient(at 20% 20%, ${DSM.blueLight} 0%, transparent 50%), radial-gradient(at 80% 80%, ${DSM.red} 0%, transparent 50%), ${DSM.navy}`,
+    `radial-gradient(at 80% 20%, ${DSM.red} 0%, transparent 50%), radial-gradient(at 20% 80%, ${DSM.blue} 0%, transparent 50%), ${DSM.navy}`,
+    `radial-gradient(at 50% 0%, ${DSM.blue} 0%, transparent 60%), radial-gradient(at 50% 100%, ${DSM.redDeep} 0%, transparent 60%), ${DSM.navy}`,
+    `radial-gradient(at 0% 50%, ${DSM.red} 0%, transparent 60%), radial-gradient(at 100% 50%, ${DSM.blueLight} 0%, transparent 60%), ${DSM.navy}`,
+  ];
   return (
-    <div className="bg-[#F2F2F7] rounded-3xl p-4" style={SF}>
+    <div className="rounded-3xl p-4 bg-[#0B1422]" style={SF}>
+      <h3 className="text-[13px] font-semibold uppercase tracking-wider text-white/50 mb-3 px-1">Quick actions</h3>
+      <div className="grid grid-cols-2 gap-3">
+        {actions.map((a, i) => {
+          const Icon = a.icon;
+          return (
+            <button
+              key={a.id}
+              className="rounded-3xl p-4 flex flex-col items-start text-left active:scale-[0.96] transition-transform h-[120px] relative overflow-hidden border border-white/10 shadow-xl"
+              style={{ background: meshes[i % meshes.length] }}
+            >
+              <div className="size-10 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center mb-auto border border-white/20">
+                <Icon size={20} strokeWidth={2.4} color="#fff" />
+              </div>
+              <div>
+                <div className="text-[15px] font-bold text-white leading-tight">{a.label}</div>
+                <div className="text-[11px] text-white/80 mt-0.5">{a.subtitle}</div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+ * 5. Hero Gradient Header + Floating Tiles
+ * ============================================================ */
+function V5_HeroHeader() {
+  return (
+    <div className="rounded-3xl overflow-hidden bg-[#F4F6FA]" style={SF}>
+      <div
+        className="px-5 pt-5 pb-8 relative"
+        style={{ background: `linear-gradient(135deg, ${DSM.blueDeep}, ${DSM.blue} 55%, ${DSM.red})` }}
+      >
+        <div className="absolute top-0 right-0 size-40 rounded-full bg-white/10 blur-2xl" />
+        <div className="relative">
+          <div className="text-[11px] font-bold uppercase tracking-widest text-white/70 flex items-center gap-1.5">
+            <Sparkles size={12} /> Today
+          </div>
+          <h2 className="text-[24px] font-bold text-white tracking-tight mt-0.5">Quick actions</h2>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3 p-4 -mt-6 relative">
+        {actions.map((a) => {
+          const Icon = a.icon;
+          return (
+            <button
+              key={a.id}
+              className="bg-white rounded-2xl p-4 flex flex-col items-start text-left active:scale-[0.97] transition-transform shadow-[0_8px_24px_-12px_rgba(15,27,45,0.25)]"
+            >
+              <div className="size-10 rounded-2xl flex items-center justify-center mb-3 shadow-md" style={{ background: grad(a.tone) }}>
+                <Icon size={18} strokeWidth={2.4} color="#fff" />
+              </div>
+              <div className="text-[14px] font-semibold text-[#0F1B2D] leading-tight">{a.label}</div>
+              <div className="text-[11px] text-[#7A8FAA] mt-0.5">{a.subtitle}</div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+ * 6. Bento Mosaic (mixed tile sizes, gradient hero)
+ * ============================================================ */
+function V6_Bento() {
+  const [hero, ...rest] = actions;
+  const HIcon = hero.icon;
+  return (
+    <div className="rounded-3xl p-3 bg-[#0F1B2D]" style={SF}>
+      <h3 className="text-[13px] font-semibold uppercase tracking-wider text-white/50 mb-3 px-2 pt-1">Quick actions</h3>
+      <div className="grid grid-cols-3 gap-2.5 auto-rows-[88px]">
+        {/* Hero — spans 2 cols, 2 rows */}
+        <button
+          className="col-span-2 row-span-2 rounded-2xl p-4 flex flex-col justify-between text-left active:scale-[0.97] transition-transform relative overflow-hidden shadow-xl"
+          style={{ background: `linear-gradient(135deg, ${DSM.blue}, ${DSM.red})` }}
+        >
+          <div className="absolute -bottom-10 -right-10 size-40 rounded-full bg-white/15 blur-2xl" />
+          <div className="size-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
+            <HIcon size={24} strokeWidth={2.4} color="#fff" />
+          </div>
+          <div>
+            <div className="text-[18px] font-bold text-white">{hero.label}</div>
+            <div className="text-[12px] text-white/80">{hero.subtitle}</div>
+          </div>
+        </button>
+        {rest.slice(0, 6).map((a, i) => {
+          const Icon = a.icon;
+          // Some tiles are wide (col-span-2) for variety
+          const wide = i === 1 || i === 4;
+          return (
+            <button
+              key={a.id}
+              className={`${wide ? "col-span-2" : ""} rounded-2xl p-3 flex flex-col justify-between text-left active:scale-[0.96] transition-transform border border-white/10`}
+              style={{ background: grad(a.tone) }}
+            >
+              <div className="size-8 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
+                <Icon size={14} strokeWidth={2.4} color="#fff" />
+              </div>
+              <div className="text-[12px] font-bold text-white leading-tight">{a.label}</div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+ * 7. Neumorphic Brand (deep navy, soft inner shadows + accent)
+ * ============================================================ */
+function V7_Neumorphic() {
+  return (
+    <div className="rounded-3xl p-4" style={{ ...SF, background: "#1A2438" }}>
+      <h3 className="text-[13px] font-semibold uppercase tracking-wider text-white/40 mb-3 px-1">Quick actions</h3>
+      <div className="grid grid-cols-2 gap-4">
+        {actions.map((a) => {
+          const Icon = a.icon;
+          return (
+            <button
+              key={a.id}
+              className="rounded-2xl p-4 flex flex-col items-start text-left active:scale-[0.97] transition-transform"
+              style={{
+                background: "#1A2438",
+                boxShadow:
+                  "8px 8px 16px rgba(0,0,0,0.45), -4px -4px 12px rgba(255,255,255,0.04)",
+              }}
+            >
+              <div
+                className="size-11 rounded-full flex items-center justify-center mb-3"
+                style={{ background: grad(a.tone), boxShadow: `0 6px 18px -4px ${a.tone === "red" ? DSM.red : DSM.blue}80` }}
+              >
+                <Icon size={19} strokeWidth={2.4} color="#fff" />
+              </div>
+              <div className="text-[14px] font-bold text-white leading-tight">{a.label}</div>
+              <div className="text-[11px] text-white/55 mt-0.5">{a.subtitle}</div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+ * 8. Animated Conic Gradient Ring (icon ring glow)
+ * ============================================================ */
+function V8_ConicRing() {
+  return (
+    <div className="rounded-3xl p-4 bg-[#F4F6FA]" style={SF}>
       <h3 className="text-[22px] font-bold tracking-tight text-[#0F1B2D] mb-3 px-1">Quick actions</h3>
       <div className="grid grid-cols-2 gap-3">
         {actions.map((a) => {
           const Icon = a.icon;
-          const fg = toneFg(a.tone);
           return (
-            <button key={a.id} className="bg-white rounded-2xl p-4 flex flex-col text-left active:scale-[0.97] transition-transform shadow-[0_1px_3px_rgba(15,27,45,0.05)]">
-              <div className="flex items-center justify-between mb-3">
-                <div className="size-9 rounded-full flex items-center justify-center" style={{ background: toneSoft(a.tone) }}>
-                  <Icon size={17} strokeWidth={2.4} style={{ color: fg }} />
+            <button
+              key={a.id}
+              className="bg-white rounded-2xl p-4 flex flex-col items-start text-left active:scale-[0.97] transition-transform shadow-[0_2px_8px_rgba(15,27,45,0.06)]"
+            >
+              <div
+                className="size-12 rounded-full p-[2px] mb-3"
+                style={{
+                  background: `conic-gradient(from 180deg, ${DSM.blue}, ${DSM.red}, ${DSM.blue})`,
+                }}
+              >
+                <div className="size-full rounded-full bg-white flex items-center justify-center">
+                  <Icon size={18} strokeWidth={2.4} style={{ color: a.tone === "red" ? DSM.red : DSM.blue }} />
                 </div>
-                {a.status && (
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ color: fg, background: toneSoft(a.tone) }}>
-                    {a.status}
-                  </span>
-                )}
               </div>
-              <div className="text-[15px] font-semibold text-[#0F1B2D]">{a.label}</div>
-              <div className="text-[12px] text-[#7A8FAA] mt-0.5">{a.subtitle}</div>
+              <div className="text-[14px] font-semibold text-[#0F1B2D] leading-tight">{a.label}</div>
+              <div className="text-[11px] text-[#7A8FAA] mt-0.5">{a.subtitle}</div>
             </button>
           );
         })}
@@ -234,121 +356,77 @@ function V6_StatusLed() {
 }
 
 /* ============================================================
- * 7. Outlined / Stroke-only (Editorial minimal)
+ * 9. Gradient Underline / Top Accent Bar
  * ============================================================ */
-function V7_Outlined() {
+function V9_TopAccent() {
   return (
-    <div className="bg-white rounded-3xl p-4 border border-[#E5EAF1]" style={SF}>
+    <div className="rounded-3xl p-4 bg-[#F4F6FA]" style={SF}>
       <h3 className="text-[13px] font-semibold uppercase tracking-wider text-[#7A8FAA] mb-3 px-1">Quick actions</h3>
-      <div className="grid grid-cols-2 gap-2">
-        {actions.map((a) => {
-          const Icon = a.icon;
-          const fg = toneFg(a.tone);
-          return (
-            <button key={a.id} className="rounded-2xl p-3.5 flex items-center gap-3 text-left active:bg-[#F2F2F7] transition-colors border border-[#E5EAF1]">
-              <div className="size-9 rounded-full flex items-center justify-center shrink-0 border" style={{ borderColor: fg }}>
-                <Icon size={16} strokeWidth={2} style={{ color: fg }} />
-              </div>
-              <div className="min-w-0">
-                <div className="text-[14px] font-semibold text-[#0F1B2D] truncate">{a.label}</div>
-                <div className="text-[11px] text-[#7A8FAA] truncate">{a.subtitle}</div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/* ============================================================
- * 8. Centered Compact (Apple Wallet quick actions)
- * ============================================================ */
-function V8_CenteredCompact() {
-  return (
-    <div className="bg-white rounded-3xl p-5 shadow-[0_1px_3px_rgba(15,27,45,0.06)]" style={SF}>
-      <h3 className="text-[13px] font-semibold uppercase tracking-wider text-[#7A8FAA] mb-4 text-center">Quick actions</h3>
-      <div className="grid grid-cols-4 gap-y-5">
-        {actions.map((a) => {
-          const Icon = a.icon;
-          const fg = toneFg(a.tone);
-          return (
-            <button key={a.id} className="flex flex-col items-center gap-1.5 active:opacity-60 transition-opacity">
-              <div className="size-12 rounded-full flex items-center justify-center" style={{ background: fg }}>
-                <Icon size={20} strokeWidth={2.2} color="#fff" />
-              </div>
-              <div className="text-[10px] font-semibold text-[#0F1B2D] text-center leading-tight max-w-[60px]">{a.label}</div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/* ============================================================
- * 9. Large Hero Tile + Compact Grid (priority + secondary)
- * ============================================================ */
-function V9_HeroPlusGrid() {
-  const [primary, ...rest] = actions;
-  const PIcon = primary.icon;
-  return (
-    <div className="bg-[#F2F2F7] rounded-3xl p-4 space-y-3" style={SF}>
-      <h3 className="text-[13px] font-semibold uppercase tracking-wider text-[#7A8FAA] px-1">Quick actions</h3>
-      {/* Hero */}
-      <button className="w-full rounded-2xl p-5 flex items-center justify-between text-left active:scale-[0.98] transition-transform" style={{ background: `linear-gradient(135deg, ${DSM.blue}, ${DSM.blueDark})` }}>
-        <div>
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-white/70 mb-1">Recommended</div>
-          <div className="text-[20px] font-bold text-white leading-tight">{primary.label}</div>
-          <div className="text-[13px] text-white/80 mt-0.5">{primary.subtitle}</div>
-        </div>
-        <div className="size-14 rounded-2xl bg-white/15 flex items-center justify-center">
-          <PIcon size={26} strokeWidth={2.2} color="#fff" />
-        </div>
-      </button>
-      {/* Secondary grid */}
-      <div className="grid grid-cols-3 gap-2">
-        {rest.slice(0, 6).map((a) => {
-          const Icon = a.icon;
-          const fg = toneFg(a.tone);
-          return (
-            <button key={a.id} className="bg-white rounded-2xl p-3 flex flex-col items-center gap-1.5 active:scale-[0.97] transition-transform">
-              <div className="size-9 rounded-full flex items-center justify-center" style={{ background: toneSoft(a.tone) }}>
-                <Icon size={16} strokeWidth={2.4} style={{ color: fg }} />
-              </div>
-              <div className="text-[11px] font-semibold text-[#0F1B2D] text-center leading-tight">{a.label}</div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/* ============================================================
- * 10. Brand Gradient Accents (red→blue DSM signature)
- * ============================================================ */
-function V10_BrandGradient() {
-  return (
-    <div className="bg-[#F2F2F7] rounded-3xl p-4" style={SF}>
-      <div className="flex items-center gap-2 mb-3 px-1">
-        <span className="size-2 rounded-full" style={{ background: `linear-gradient(135deg, ${DSM.red}, ${DSM.blue})` }} />
-        <h3 className="text-[15px] font-semibold text-[#0F1B2D]">Quick actions</h3>
-      </div>
       <div className="grid grid-cols-2 gap-3">
-        {actions.map((a, i) => {
+        {actions.map((a) => {
           const Icon = a.icon;
-          // alternate brand gradient direction
-          const grad = i % 2 === 0
-            ? `linear-gradient(135deg, ${DSM.blue}, ${DSM.blueDark})`
-            : `linear-gradient(135deg, ${DSM.red}, ${DSM.redDark})`;
           return (
-            <button key={a.id} className="bg-white rounded-2xl p-4 flex flex-col items-start text-left active:scale-[0.97] transition-transform shadow-[0_1px_3px_rgba(15,27,45,0.06)]">
-              <div className="size-11 rounded-2xl flex items-center justify-center mb-3 shadow-sm" style={{ background: grad }}>
-                <Icon size={20} strokeWidth={2.4} color="#fff" />
+            <button
+              key={a.id}
+              className="bg-white rounded-2xl overflow-hidden flex flex-col items-start text-left active:scale-[0.97] transition-transform shadow-[0_2px_8px_rgba(15,27,45,0.06)]"
+            >
+              <div className="h-1.5 w-full" style={{ background: grad(a.tone) }} />
+              <div className="p-4 w-full">
+                <div className="size-10 rounded-2xl flex items-center justify-center mb-3" style={{ background: grad(a.tone) }}>
+                  <Icon size={18} strokeWidth={2.4} color="#fff" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-[14px] font-semibold text-[#0F1B2D] leading-tight">{a.label}</div>
+                    <div className="text-[11px] text-[#7A8FAA] mt-0.5">{a.subtitle}</div>
+                  </div>
+                  {a.status && (
+                    <ChevronRight size={14} className="text-[#C7CDD6]" />
+                  )}
+                </div>
               </div>
-              <div className="text-[15px] font-semibold text-[#0F1B2D] leading-tight">{a.label}</div>
-              <div className="text-[12px] text-[#7A8FAA] mt-0.5">{a.subtitle}</div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+ * 10. Diagonal Split (brand gradient slash across each tile)
+ * ============================================================ */
+function V10_DiagonalSplit() {
+  return (
+    <div className="rounded-3xl p-4 bg-[#0F1B2D]" style={SF}>
+      <h3 className="text-[13px] font-semibold uppercase tracking-wider text-white/50 mb-3 px-1">Quick actions</h3>
+      <div className="grid grid-cols-2 gap-3">
+        {actions.map((a) => {
+          const Icon = a.icon;
+          return (
+            <button
+              key={a.id}
+              className="rounded-2xl p-4 flex flex-col items-start text-left active:scale-[0.97] transition-transform relative overflow-hidden h-[120px] border border-white/10"
+              style={{
+                background: `linear-gradient(135deg, ${DSM.navy2} 0%, ${DSM.navy2} 55%, ${a.tone === "red" ? DSM.red : a.tone === "blue" ? DSM.blue : DSM.blueDeep} 130%)`,
+              }}
+            >
+              {/* diagonal accent slash */}
+              <div
+                className="absolute -right-10 -bottom-10 size-32 opacity-40"
+                style={{
+                  background: grad(a.tone),
+                  clipPath: "polygon(100% 0, 0 100%, 100% 100%)",
+                  filter: "blur(8px)",
+                }}
+              />
+              <div className="relative size-10 rounded-2xl flex items-center justify-center mb-auto" style={{ background: grad(a.tone), boxShadow: `0 8px 20px -6px ${a.tone === "red" ? DSM.red : DSM.blue}` }}>
+                <Icon size={18} strokeWidth={2.4} color="#fff" />
+              </div>
+              <div className="relative">
+                <div className="text-[15px] font-bold text-white leading-tight">{a.label}</div>
+                <div className="text-[11px] text-white/70 mt-0.5">{a.subtitle}</div>
+              </div>
             </button>
           );
         })}
@@ -364,16 +442,16 @@ export default function QuickActionsRedesignDemo() {
   const navigate = useNavigate();
 
   const variants = [
-    { n: 1, title: "Soft Tinted Chips", desc: "Tinted icon backgrounds on white tiles. Calm, friendly, very iOS.", C: V1_SoftTints },
-    { n: 2, title: "Solid Filled Squircles", desc: "Apple Home / Settings style — solid brand-coloured squircle icons.", C: V2_SolidSquircle },
-    { n: 3, title: "Navy Cards (Premium Dark)", desc: "Dark navy surface with luminous accent icons. Looks premium.", C: V3_NavyCards },
-    { n: 4, title: "Glass Pills", desc: "Frosted gradient backdrop, rounded pill buttons. Modern & light.", C: V4_GlassPills },
-    { n: 5, title: "Grouped iOS List", desc: "Native iOS Settings list — most professional, very compact.", C: V5_GroupedList },
-    { n: 6, title: "Status-led Cards", desc: "Each tile shows live status pill. Operational, info-dense.", C: V6_StatusLed },
-    { n: 7, title: "Outlined / Editorial", desc: "Stroke-only icons, all-white. Editorial minimal, bank-app clean.", C: V7_Outlined },
-    { n: 8, title: "Centered Compact (4-up)", desc: "Apple Wallet style — small circular icons, 4 per row, label below.", C: V8_CenteredCompact },
-    { n: 9, title: "Hero + Secondary Grid", desc: "Big recommended action on top, smaller grid below. Hierarchy.", C: V9_HeroPlusGrid },
-    { n: 10, title: "Brand Gradient Accents", desc: "Red→blue DSM gradient squircles — signature, on-brand.", C: V10_BrandGradient },
+    { n: 1, title: "Full-bleed Gradient Tiles", desc: "Every tile is a brand gradient with soft inner glow. Bold and premium.", C: V1_FullBleedGradient },
+    { n: 2, title: "Gradient Border", desc: "Light interior with a glowing brand-coloured stroke around each tile.", C: V2_GradientBorder },
+    { n: 3, title: "Glass on Brand Backdrop", desc: "Frosted glass tiles floating on a vivid red→blue brand wash.", C: V3_GlassOnBrand },
+    { n: 4, title: "Aurora Mesh Cards", desc: "Each tile is a unique radial-mesh gradient — looks futuristic.", C: V4_AuroraMesh },
+    { n: 5, title: "Hero Gradient Header", desc: "Big brand-gradient banner with floating white tiles overlapping it.", C: V5_HeroHeader },
+    { n: 6, title: "Bento Mosaic", desc: "Mixed tile sizes — large primary action, smaller gradient mosaic around it.", C: V6_Bento },
+    { n: 7, title: "Neumorphic Brand", desc: "Deep navy with soft sculpted shadows + glowing brand-coloured icons.", C: V7_Neumorphic },
+    { n: 8, title: "Conic Ring Icons", desc: "White tiles with rotating red→blue conic gradient ring around each icon.", C: V8_ConicRing },
+    { n: 9, title: "Top Accent Bar", desc: "Clean white tile with a thin gradient bar across the top — subtle.", C: V9_TopAccent },
+    { n: 10, title: "Diagonal Brand Slash", desc: "Dark navy tile with a glowing diagonal brand-gradient slash in the corner.", C: V10_DiagonalSplit },
   ];
 
   return (
@@ -384,8 +462,8 @@ export default function QuickActionsRedesignDemo() {
             <ArrowLeft size={18} className="text-[#0F1B2D]" />
           </button>
           <div>
-            <h1 className="text-[16px] font-semibold text-[#0F1B2D] leading-tight">Quick Actions — 10 designs</h1>
-            <p className="text-[11px] text-[#7A8FAA]">DSM brand colours · iOS style</p>
+            <h1 className="text-[16px] font-semibold text-[#0F1B2D] leading-tight">Quick Actions — Round 2</h1>
+            <p className="text-[11px] text-[#7A8FAA]">Bolder · gradient-led · DSM brand</p>
           </div>
         </div>
       </header>
@@ -397,7 +475,10 @@ export default function QuickActionsRedesignDemo() {
             <section key={v.n} className="space-y-2.5">
               <div className="px-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-bold tracking-widest text-white px-2 py-0.5 rounded-full" style={{ background: DSM.blue }}>
+                  <span
+                    className="text-[10px] font-bold tracking-widest text-white px-2 py-0.5 rounded-full"
+                    style={{ background: `linear-gradient(135deg, ${DSM.blue}, ${DSM.red})` }}
+                  >
                     OPTION {v.n}
                   </span>
                   <span className="h-px flex-1 bg-[#E5EAF1]" />
@@ -411,7 +492,7 @@ export default function QuickActionsRedesignDemo() {
         })}
 
         <div className="text-center text-[12px] text-[#7A8FAA] pt-2">
-          Tell me which option (1–10) and I'll roll it out across the homepage.
+          Pick a number (1–10) and I'll roll it out across the homepage.
         </div>
       </div>
     </main>
