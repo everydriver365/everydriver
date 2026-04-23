@@ -16,6 +16,7 @@ const InstructorSettingsCategory = lazy(() => import("@/pages/InstructorSettings
 const InstructorNotifications = lazy(() => import("@/pages/InstructorNotifications"));
 const InstallInstructor = lazy(() => import("@/pages/InstallInstructor"));
 const IconPreviewPage = lazy(() => import("@/pages/instructor/IconPreviewPage"));
+const QuickActionsRedesignDemo = lazy(() => import("@/pages/instructor/QuickActionsRedesignDemo"));
 const InstructorAccessibilitySettings = lazy(() => import("@/pages/instructor/InstructorAccessibilitySettings"));
 
 // Jobs & scheduling
@@ -134,6 +135,7 @@ export const instructorPortalRoutes = (
     {/* Core — always accessible */}
     <Route path="/instructor" element={<InstructorPortal />} />
     <Route path="/instructor/icon-preview" element={<IconPreviewPage />} />
+    <Route path="/instructor/quick-actions-redesign" element={<QuickActionsRedesignDemo />} />
     <Route path="/instructor/pupils" element={<InstructorPupils />} />
     <Route path="/instructor/pupils/:pupilId" element={<InstructorPupils />} />
     <Route path="/instructor/schedule" element={<InstructorSchedule />} />
