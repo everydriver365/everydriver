@@ -795,8 +795,18 @@ export function NextUpTile({
 
                 {/* Action Buttons */}
                 <div className="flex flex-col gap-2">
-                  {/* Start Lesson */}
-                  {minutesUntil <= 15 && (
+                  {/* Manual Start Track (auto-start is on by default; this is the manual override) */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-[14px] rounded-2xl font-semibold text-[15px] active:opacity-80"
+                    style={{ background: "#007AFF", color: "#fff", border: "none", letterSpacing: -0.24, transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)" }}
+                  >
+                    <Send className="h-4 w-4" strokeWidth={2.2} /> Start track manually
+                  </button>
+
                     <button onClick={(e) => {
                       e.stopPropagation();
                       supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
