@@ -577,6 +577,8 @@ export default function InstructorMenu() {
         );
       case "demo-mode":
         return <DemoModeToggle />;
+      case "daily-briefing":
+        return <DailyBriefingToggle />;
       case "appearance":
         return <AppearanceSettings instructorId={instructorId} />;
       case "dashboard-layout":
