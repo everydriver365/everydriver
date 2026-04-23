@@ -158,6 +158,7 @@ const allTiles: TileDef[] = [
   { id: "routes", title: "Saved Routes", description: "View and manage your recorded driving routes", icon: Route, tintBg: "#EDE9FE", tintColor: "#5B21B6", category: "tracking" },
   { id: "dashcam-portal", title: "Dashcam Portal", description: "View footage on Kinesis Fleet Pro", icon: Camera, tintBg: "#F4F4F5", tintColor: "#52525B", category: "tracking", externalUrl: "https://www.kinesisfleetpro.com/#/login;next=%2Fstatus" },
   { id: "demo-mode", title: "Demo Mode", description: "Preview the app with sample data", icon: Eye, tintBg: "#FEF3C7", tintColor: "#92400E", category: "preferences" },
+  { id: "daily-briefing", title: "Daily Briefing", description: "Show the morning AI briefing on home", icon: Sparkles, tintBg: "#FEF3C7", tintColor: "#92400E", category: "preferences" },
   { id: "appearance", title: "Appearance", description: "Layout, hero image & wallpaper", icon: Paintbrush, tintBg: "#FFE4E6", tintColor: "#BE123C", category: "preferences" },
   { id: "dashboard-layout", title: "Dashboard Layout", description: "Customize your home screen tiles", icon: LayoutGrid, tintBg: "#E8ECF1", tintColor: "#2A394F", category: "preferences" },
   { id: "notifications", title: "Push Notifications", description: "Manage notification preferences", icon: Bell, tintBg: "#FEF3C7", tintColor: "#92400E", category: "preferences" },
@@ -179,6 +180,40 @@ function DemoModeToggle() {
           <p className="text-xs text-muted-foreground">{isDemoMode ? "Viewing sample data" : "Viewing your real data"}</p>
         </div>
         <Switch checked={isDemoMode} onCheckedChange={() => toggleDemoMode()} disabled={loading} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Daily Briefing toggle ───────────────────────────────────────────
+
+const DAILY_BRIEFING_KEY = "daily-briefing-enabled";
+
+function DailyBriefingToggle() {
+  const [enabled, setEnabled] = useState<boolean>(() => {
+    const v = localStorage.getItem(DAILY_BRIEFING_KEY);
+    return v === null ? true : v === "true";
+  });
+
+  const handleToggle = (checked: boolean) => {
+    setEnabled(checked);
+    localStorage.setItem(DAILY_BRIEFING_KEY, String(checked));
+    window.dispatchEvent(new CustomEvent("daily-briefing-toggled", { detail: checked }));
+  };
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">
+        Your morning AI briefing summarises today's lessons, earnings and priorities at the top of your home screen.
+      </p>
+      <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
+        <div>
+          <p className="text-sm font-medium">{enabled ? "Briefing visible" : "Briefing hidden"}</p>
+          <p className="text-xs text-muted-foreground">
+            {enabled ? "Shown once per day on your home screen" : "Won't appear on your home screen"}
+          </p>
+        </div>
+        <Switch checked={enabled} onCheckedChange={handleToggle} />
       </div>
     </div>
   );
