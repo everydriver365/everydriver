@@ -36,6 +36,10 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
   const [loading, setLoading] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [enabled, setEnabled] = useState<boolean>(() => {
+    const v = localStorage.getItem("daily-briefing-enabled");
+    return v === null ? true : v === "true";
+  });
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [todayStats, setTodayStats] = useState<{ lessons: number; earnings: number }>({ lessons: 0, earnings: 0 });
 
@@ -44,7 +48,16 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   useEffect(() => {
-    if (!instructorId) return;
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<boolean>).detail;
+      setEnabled(detail);
+    };
+    window.addEventListener("daily-briefing-toggled", handler);
+    return () => window.removeEventListener("daily-briefing-toggled", handler);
+  }, []);
+
+  useEffect(() => {
+    if (!instructorId || !enabled) return;
     const key = `briefing-shown-${instructorId}`;
     if (localStorage.getItem(key)) {
       setDismissed(true);
@@ -52,7 +65,7 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
     }
     fetchBriefing();
     fetchTodayStats();
-  }, [instructorId]);
+  }, [instructorId, enabled]);
 
   const fetchTodayStats = async () => {
     if (!instructorId) return;
@@ -140,7 +153,7 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
     onNavigate?.(actionId);
   };
 
-  if (!isMorning || dismissed || (!briefing && !loading)) return null;
+  if (!enabled || !isMorning || dismissed || (!briefing && !loading)) return null;
 
   return (
     <motion.div
