@@ -257,302 +257,359 @@ export function NextUpTile({
   const navBlue = "#2A394F";
   const countdownColor = minutesUntil <= 5 ? "#ef4444" : minutesUntil <= 15 ? "#f59e0b" : navBlue;
 
+  // iOS 17 native palette — scoped to this component
+  const ios = {
+    label: "#000000",
+    secondaryLabel: "rgba(60,60,67,0.60)",
+    tertiaryLabel: "rgba(60,60,67,0.30)",
+    separator: "#C6C6C8",
+    fill: "rgba(120,120,128,0.12)",
+    blue: "#007AFF",
+    green: "#34C759",
+    indigo: "#5856D6",
+    orange: "#FF9500",
+    red: "#FF3B30",
+    card: "#FFFFFF",
+    grouped: "#F2F2F7",
+  };
+  const iosFont = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif';
+
   return (
     <>
-      {/* Outer cream-paper margin (so the tray hugs the same 16px gutter as other sections) */}
-      <div style={{ padding: "0 16px" }}>
-        {/* ── LIGHT-NAVY TRAY ── */}
+      <style>{`
+        @keyframes ios-halo-pulse {
+          0% { transform: scale(0.6); opacity: 0.45; }
+          100% { transform: scale(2.6); opacity: 0; }
+        }
+        @keyframes ios-fab-pulse {
+          0% { transform: scale(0.9); opacity: 1; }
+          100% { transform: scale(1.25); opacity: 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ios-halo, .ios-fab-ring { animation: none !important; }
+        }
+      `}</style>
+
+      <div style={{ padding: "0 16px", fontFamily: iosFont, WebkitFontSmoothing: "antialiased" }}>
+        {/* ── iOS 17 CARD ── */}
         <div
-          className="shadow-premium w-full"
           style={{
-            background: "#E6F1FB",
-            borderRadius: 16,
-            padding: 12,
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-            fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
+            background: ios.card,
+            borderRadius: 14,
+            boxShadow: "0 1px 0 rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.04)",
+            overflow: "hidden",
+            position: "relative",
+            maxWidth: 440,
+            margin: "0 auto",
+            width: "100%",
           }}
         >
-        {/* ── MINI MAP CARD (live Google Map preserved) ── */}
-        {pickupPostcode && (
-          <div
-            className="w-full relative overflow-hidden"
-            style={{
-              background: "#FFFFFF",
-              borderRadius: 10,
-              border: "0.5px solid #B5D4F4",
-            }}
-          >
-            <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={160} />
-            {/* Top overlay pills (light) */}
-            <div className="absolute inset-x-0 top-0 flex items-start justify-between px-2 py-2 z-10 gap-2 pointer-events-none">
-              {/* LEFT: Next lesson pill + status badges */}
-              <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
-                <span
-                  className="inline-flex items-center gap-1"
-                  style={{
-                    background: "rgba(255,255,255,0.95)",
-                    backdropFilter: "blur(6px)",
-                    WebkitBackdropFilter: "blur(6px)",
-                    border: "0.5px solid #D3D1C7",
-                    borderRadius: 999,
-                    padding: "5px 10px",
-                  }}
-                >
-                  <Calendar style={{ width: 11, height: 11, color: "#5F5E5A" }} strokeWidth={2} />
-                  <span style={{ fontSize: 11, fontWeight: 500, color: "#2C2C2A" }}>Next lesson</span>
-                </span>
-                {effectiveBalance < 0 && (
-                  <span className="inline-flex items-center gap-1 animate-pulse"
-                    style={{ background: "#A32D2D", color: "#FFFFFF", fontSize: 10, fontWeight: 500, borderRadius: 999, padding: "4px 8px" }}>
-                    <AlertTriangle style={{ width: 10, height: 10 }} />
-                    £{Math.abs(effectiveBalance).toFixed(0)} owed
-                  </span>
-                )}
+          {/* ── HEAD ── */}
+          <div style={{ padding: 16, display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {/* Eyebrow */}
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                <span style={{ width: 5, height: 5, borderRadius: "50%", background: ios.blue, display: "inline-block" }} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: ios.blue, letterSpacing: -0.08 }}>Up next</span>
                 {checkInStatus && (
-                  <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5" />
+                  <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5 ml-1" />
                 )}
               </div>
-
-              {/* RIGHT: Time pill + ETA pill */}
-              <div className="flex items-center gap-1.5 shrink-0 pointer-events-auto">
-                <span
-                  className="inline-flex items-center gap-1"
-                  style={{
-                    background: "rgba(255,255,255,0.95)",
-                    backdropFilter: "blur(6px)",
-                    WebkitBackdropFilter: "blur(6px)",
-                    border: "0.5px solid #D3D1C7",
-                    borderRadius: 999,
-                    padding: "5px 10px",
-                  }}
-                >
-                  <Clock style={{ width: 11, height: 11, color: "#5F5E5A" }} strokeWidth={2} />
-                  <span style={{ fontSize: 11, fontWeight: 500, color: "#2C2C2A" }}>{formatTime24(startTime)}</span>
-                </span>
-                {etaText && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (isRunningLate) setLateSheetOpen(true);
-                      else handleNavigate();
-                    }}
-                    className={`inline-flex items-center gap-1 transition-transform active:scale-95 ${isRunningLate ? "animate-pulse" : ""}`}
-                    style={{
-                      background: "rgba(255,255,255,0.95)",
-                      backdropFilter: "blur(6px)",
-                      WebkitBackdropFilter: "blur(6px)",
-                      border: "0.5px solid #B5D4F4",
-                      borderRadius: 999,
-                      padding: "5px 10px",
-                    }}
-                    title={isRunningLate ? "Running late — tap to notify pupil" : "Tap to open in Google Maps"}
-                  >
-                    <Navigation style={{ width: 11, height: 11, color: "#185FA5" }} strokeWidth={2} />
-                    <span style={{ fontSize: 11, fontWeight: 500, color: "#185FA5" }}>
-                      {etaText}{isRunningLate && lateByMinutes > 0 ? ` · +${lateByMinutes}m` : ""}
-                    </span>
-                  </button>
-                )}
-              </div>
+              {/* Student name */}
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="text-left active:opacity-80"
+                style={{ background: "transparent", padding: 0, display: "block", width: "100%", transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)" }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: -0.26, color: ios.label, lineHeight: 1.15 }} className="truncate">
+                    {toSentenceName(pupilName)}
+                  </span>
+                  {totalUnreadBadge > 0 && (
+                    <span style={{
+                      minWidth: 18, height: 18, padding: "0 5px", borderRadius: 9,
+                      background: ios.red, color: "#fff", fontSize: 11, fontWeight: 600,
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                      fontVariantNumeric: "tabular-nums",
+                    }}>{totalUnreadBadge}</span>
+                  )}
+                </div>
+                <div style={{ fontSize: 15, color: ios.secondaryLabel, marginTop: 2, letterSpacing: -0.2 }} className="truncate">
+                  {formatHoursLong(durationMinutes)} lesson{pickupLocation ? ` · ${pickupLocation.split(",")[0]}` : ""}
+                </div>
+              </button>
             </div>
 
-            {/* Start Track pill — bottom-left, nudged up to keep Google attribution visible */}
-            {!trackerDismissed && (
+            {/* Countdown */}
+            <div style={{ textAlign: "right", flexShrink: 0 }}>
+              <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: -0.4, color: ios.label, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
+                {formatTime24(startTime)}
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: ios.secondaryLabel, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>
+                {minutesUntil <= 0 ? "Now" : `in ${getCountdownText()}`}
+              </div>
+            </div>
+          </div>
+
+          {/* ── MAP PREVIEW (live map preserved) ── */}
+          {pickupPostcode && (
+            <div
+              style={{
+                position: "relative",
+                margin: "0 16px",
+                borderRadius: 12,
+                overflow: "hidden",
+                height: 200,
+                background: ios.fill,
+              }}
+            >
+              <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={200} />
+
+              {/* Frosted recenter / expand button — top right */}
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
-                }}
-                className="absolute z-10 inline-flex items-center gap-1.5 active:scale-95 transition-transform"
+                onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
+                aria-label="Open in maps"
+                className="active:opacity-80"
                 style={{
-                  bottom: 22,
-                  left: 8,
-                  background: "#A32D2D",
-                  color: "#FFFFFF",
-                  borderRadius: 999,
-                  padding: "6px 12px 6px 10px",
+                  position: "absolute", top: 8, right: 8, zIndex: 10,
+                  width: 36, height: 36, borderRadius: 9,
+                  background: "rgba(255,255,255,0.92)",
+                  backdropFilter: "blur(20px) saturate(180%)",
+                  WebkitBackdropFilter: "blur(20px) saturate(180%)",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  border: "none", cursor: "pointer",
+                  transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
                 }}
-                title="Start tracking session for this lesson"
               >
-                <span
-                  aria-hidden
-                  style={{ width: 11, height: 11, borderRadius: "50%", background: "#FFFFFF", display: "inline-block" }}
-                />
-                <span style={{ fontSize: 12, fontWeight: 500 }}>Start track</span>
-                <X
-                  style={{ width: 12, height: 12, marginLeft: 2, opacity: 0.8 }}
+                <Navigation style={{ width: 18, height: 18, color: ios.blue }} strokeWidth={2.2} />
+              </button>
+
+              {/* Frosted distance/ETA pill — bottom left */}
+              {etaText && (
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    dismissTracker(lessonId);
-                    setTrackerDismissed(true);
+                    if (isRunningLate) setLateSheetOpen(true);
+                    else handleNavigate();
+                  }}
+                  className={`active:opacity-80 ${isRunningLate ? "animate-pulse" : ""}`}
+                  style={{
+                    position: "absolute", bottom: 8, left: 8, zIndex: 10,
+                    display: "inline-flex", alignItems: "center", gap: 8,
+                    background: "rgba(255,255,255,0.92)",
+                    backdropFilter: "blur(20px) saturate(180%)",
+                    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+                    borderRadius: 999, padding: "6px 12px 6px 6px",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+                    border: "none", cursor: "pointer",
+                    transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+                  }}
+                  title={isRunningLate ? "Running late — tap to notify pupil" : "Open in maps"}
+                >
+                  <span style={{
+                    width: 22, height: 22, borderRadius: "50%", background: ios.blue,
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <Send style={{ width: 12, height: 12, color: "#fff" }} strokeWidth={2.4} />
+                  </span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: ios.label, fontVariantNumeric: "tabular-nums", letterSpacing: -0.08 }}>
+                    {etaText}{isRunningLate && lateByMinutes > 0 ? ` · +${lateByMinutes}m` : ""}
+                  </span>
+                </button>
+              )}
+
+              {/* Start track pill — bottom right (preserved functionality) */}
+              {!trackerDismissed && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
+                  }}
+                  className="active:opacity-80"
+                  style={{
+                    position: "absolute", bottom: 8, right: 8, zIndex: 10,
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    background: ios.red, color: "#fff",
+                    borderRadius: 999, padding: "6px 10px 6px 8px",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+                    border: "none", cursor: "pointer",
+                    transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+                  }}
+                  title="Start tracking session for this lesson"
+                >
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff", display: "inline-block" }} />
+                  <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: -0.08 }}>Start track</span>
+                  <X
+                    style={{ width: 12, height: 12, marginLeft: 2, opacity: 0.85 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      dismissTracker(lessonId);
+                      setTrackerDismissed(true);
+                    }}
+                  />
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* ── STOPS TIMELINE ── */}
+          {(pickupLocation || pickupPostcode) && (
+            <div style={{ padding: "14px 16px 4px 16px" }}>
+              <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: 12 }}>
+                {/* Dashed connector */}
+                <div
+                  aria-hidden
+                  style={{
+                    position: "absolute",
+                    left: 10,
+                    top: 22,
+                    bottom: 22,
+                    width: 2,
+                    backgroundImage: `linear-gradient(to bottom, ${ios.secondaryLabel} 50%, transparent 0)`,
+                    backgroundSize: "2px 4px",
+                    backgroundRepeat: "repeat-y",
+                    opacity: 0.5,
                   }}
                 />
-              </button>
-            )}
-          </div>
-        )}
 
-        {/* ── STUDENT ROW (white card) ── */}
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="w-full text-left flex items-center"
-          style={{
-            background: "#FFFFFF",
-            border: "0.5px solid #B5D4F4",
-            borderRadius: 10,
-            padding: "10px 12px",
-            gap: 10,
-          }}
-        >
-          {/* Avatar */}
-          <div className="relative shrink-0">
-            <div
-              className="flex items-center justify-center overflow-hidden"
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: "50%",
-                background: "#185FA5",
-                color: "#FFFFFF",
-                fontSize: 11,
-                fontWeight: 500,
-              }}
-            >
-              {pupilProfileImage ? (
-                <img src={pupilProfileImage} alt={pupilName} className="w-full h-full object-cover" />
-              ) : getInitials(pupilName)}
-            </div>
-            {/* Online dot */}
-            <span style={{
-              position: "absolute", bottom: -1, right: -1,
-              width: 10, height: 10, borderRadius: "50%",
-              backgroundColor: "#639922", border: "2px solid #FFFFFF",
-            }} />
-            {totalUnreadBadge > 0 && (
-              <span className="absolute -top-1 -right-1 flex items-center justify-center"
-                style={{ minWidth: 18, height: 18, padding: "0 4px", borderRadius: 9, backgroundColor: "#A32D2D", color: "#fff", fontSize: 9, fontWeight: 500, border: "2px solid #FFFFFF" }}>
-                {totalUnreadBadge}
-              </span>
-            )}
-          </div>
-
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <p style={{ fontSize: 13, fontWeight: 500, color: "#042C53" }} className="truncate">{toSentenceName(pupilName)}</p>
-            <p style={{ fontSize: 11, color: "#185FA5", marginTop: 1 }}>
-              {formatMetaDate(lessonDate)} · {formatHoursLong(durationMinutes)} · {getCountdownText()} done
-            </p>
-            {(pupilUnreadCount > 0 || adminUnreadCount > 0) && (
-              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                {pupilUnreadCount > 0 && (
-                  <span className="inline-flex items-center gap-1"
-                    style={{ background: "#FFFFFF", color: "#185FA5", fontSize: 10, fontWeight: 500, padding: "2px 8px", borderRadius: 999, border: "0.5px solid #B5D4F4" }}>
-                    <MessageCircle className="h-2.5 w-2.5" />
-                    {pupilUnreadCount} from {firstName}
-                  </span>
-                )}
-                {adminUnreadCount > 0 && (
-                  <span className="inline-flex items-center gap-1"
-                    style={{ background: "#FCEBEB", color: "#A32D2D", fontSize: 10, fontWeight: 500, padding: "2px 8px", borderRadius: 999 }}>
-                    <Mail className="h-2.5 w-2.5" />
-                    {adminUnreadCount} admin
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Chevron */}
-          <ChevronRight style={{ width: 12, height: 12, color: "#185FA5" }} strokeWidth={2} />
-        </button>
-
-        {/* ── PICK-UP ROW (white card) ── */}
-        {(pickupLocation || pickupPostcode) && (
-          <div
-            className="flex items-center"
-            style={{
-              background: "#FFFFFF",
-              border: "0.5px solid #B5D4F4",
-              borderRadius: 10,
-              padding: "10px 12px",
-              gap: 10,
-            }}
-          >
-            <MapPin style={{ width: 14, height: 14, color: "#185FA5", flexShrink: 0 }} strokeWidth={2} />
-            <div className="flex-1 min-w-0">
-              <span style={{ fontSize: 9, fontWeight: 500, color: "#185FA5", letterSpacing: 0.8 }}>PICK-UP</span>
-              <p
-                style={{
-                  fontSize: 12,
-                  color: "#042C53",
-                  marginTop: 1,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* ── RUNNING LATE ALERT ── */}
-        <AnimatePresence>
-          {isRunningLate && !lateDismissed && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
-              <div className="mx-4 mb-3 flex items-center gap-2.5 p-3 rounded-2xl"
-                style={{ background: "linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.1))", border: "1px solid rgba(251,191,36,0.3)" }}>
-                <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0"
-                  style={{ background: "rgba(251,191,36,0.2)" }}>
-                  <AlertTriangle className="h-5 w-5" style={{ color: "#FBBF24" }} />
+                {/* Start (instructor location) */}
+                <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: "50%", background: ios.blue,
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}>
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff" }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: ios.label, letterSpacing: -0.24 }}>Your location</div>
+                    <div style={{ fontSize: 13, color: ios.secondaryLabel, letterSpacing: -0.08 }}>Current position</div>
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: ios.secondaryLabel, fontVariantNumeric: "tabular-nums" }}>
+                    {etaText || "—"}
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-bold" style={{ color: "hsl(var(--foreground))" }}>
-                    ~{lateByMinutes} min late
-                  </p>
-                  <p className="text-[10px] mt-0.5 text-muted-foreground">ETA {arrivalTimeText}</p>
+
+                {/* End (pickup) */}
+                <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: "50%", background: "#fff",
+                    border: `2px solid ${ios.red}`,
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}>
+                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: ios.red }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: ios.label, letterSpacing: -0.24 }} className="truncate">
+                      Pick up {firstName}
+                    </div>
+                    <div style={{ fontSize: 13, color: ios.secondaryLabel, letterSpacing: -0.08 }} className="truncate">
+                      {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: ios.label, fontVariantNumeric: "tabular-nums" }}>
+                    {formatTime24(startTime)}
+                  </div>
                 </div>
-                <button onClick={(e) => { e.stopPropagation(); sendLateETA(); }}
-                  className="shrink-0 px-3 py-1.5 rounded-2xl text-[11px] font-bold text-amber-900"
-                  style={{ background: "#FBBF24" }}>
-                  Send ETA
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); setLateDismissed(true); }} className="shrink-0 p-1">
-                  <X className="h-3.5 w-3.5 text-muted-foreground" />
-                </button>
               </div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
 
-        {/* ── QUICK ACTION GRID (4 columns) ── */}
-        <div className="grid grid-cols-4" style={{ gap: 6 }}>
-          {[
-            { icon: Navigation, label: "Navigate", color: "#185FA5", action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
-            { icon: Phone, label: "Call", color: "#0F6E56", action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
-            { icon: MessageSquare, label: "SMS", color: "#BA7517", action: (e: React.MouseEvent) => { e.stopPropagation(); handleMessage(); } },
-            { icon: MapPin, label: "I\u2019m here", color: "#A32D2D", action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
-          ].map((btn) => (
+          {/* ── BALANCE / RUNNING LATE NOTICES (preserved) ── */}
+          {effectiveBalance < 0 && (
+            <div style={{ padding: "8px 16px 0 16px" }}>
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                background: "rgba(255,59,48,0.10)", color: ios.red,
+                borderRadius: 999, padding: "5px 10px",
+                fontSize: 13, fontWeight: 600, letterSpacing: -0.08,
+              }}>
+                <AlertTriangle style={{ width: 12, height: 12 }} strokeWidth={2.2} />
+                £{Math.abs(effectiveBalance).toFixed(0)} owed
+              </div>
+            </div>
+          )}
+
+          <AnimatePresence>
+            {isRunningLate && !lateDismissed && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
+                <div style={{ margin: "8px 16px 0 16px", display: "flex", alignItems: "center", gap: 10, padding: 12, borderRadius: 12, background: "rgba(255,149,0,0.10)", border: `1px solid rgba(255,149,0,0.25)` }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(255,149,0,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <AlertTriangle style={{ width: 18, height: 18, color: ios.orange }} strokeWidth={2.2} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 15, fontWeight: 600, color: ios.label, letterSpacing: -0.24 }}>~{lateByMinutes} min late</p>
+                    <p style={{ fontSize: 13, color: ios.secondaryLabel, marginTop: 1 }}>ETA {arrivalTimeText}</p>
+                  </div>
+                  <button onClick={(e) => { e.stopPropagation(); sendLateETA(); }}
+                    className="active:opacity-80"
+                    style={{ padding: "8px 14px", borderRadius: 999, background: ios.orange, color: "#fff", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)" }}>
+                    Send ETA
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); setLateDismissed(true); }} style={{ padding: 4, background: "none", border: "none", cursor: "pointer" }}>
+                    <X style={{ width: 14, height: 14, color: ios.secondaryLabel }} />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ── ACTION BAR (4 columns) ── */}
+          <div style={{ padding: "14px 16px 8px 16px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+              {[
+                { icon: Navigation, label: "Navigate", color: ios.blue, action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
+                { icon: Phone, label: "Call", color: ios.green, action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
+                { icon: MessageSquare, label: "Message", color: ios.orange, action: (e: React.MouseEvent) => { e.stopPropagation(); handleMessage(); } },
+                { icon: MapPin, label: "I\u2019m here", color: ios.red, action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
+              ].map((btn) => (
+                <button
+                  key={btn.label}
+                  onClick={btn.action}
+                  className="active:opacity-80"
+                  style={{
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+                    background: "transparent", border: "none", cursor: "pointer", padding: "4px 2px",
+                    transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+                  }}
+                  aria-label={btn.label}
+                >
+                  <span style={{
+                    width: 36, height: 36, borderRadius: 7, background: btn.color,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+                  }}>
+                    <btn.icon style={{ width: 18, height: 18, color: "#fff" }} strokeWidth={2.2} />
+                  </span>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: ios.label, letterSpacing: -0.08 }}>{btn.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ── PRIMARY CTA — Start track ── */}
+          <div style={{ padding: "8px 16px 16px 16px" }}>
             <button
-              key={btn.label}
-              onClick={btn.action}
-              className="flex flex-col items-center justify-center transition-transform active:scale-95"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
+              }}
+              className="active:opacity-80"
               style={{
-                background: "#FFFFFF",
-                border: "0.5px solid #B5D4F4",
-                borderRadius: 8,
-                padding: "8px 4px",
-                gap: 4,
+                width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                background: ios.blue, color: "#fff",
+                borderRadius: 12, padding: "13px 16px",
+                fontSize: 17, fontWeight: 600, letterSpacing: -0.4,
+                border: "none", cursor: "pointer",
+                transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+                boxShadow: "0 1px 2px rgba(0,122,255,0.25)",
               }}
             >
-              <btn.icon style={{ width: 14, height: 14, color: btn.color }} strokeWidth={2} />
-              <span style={{ fontSize: 10, fontWeight: 500, color: "#042C53" }}>{btn.label}</span>
+              <Send style={{ width: 18, height: 18 }} strokeWidth={2.2} />
+              Start track
             </button>
-          ))}
+          </div>
         </div>
 
         {/* ── EXPANDED CONTENT ── */}
@@ -825,7 +882,6 @@ export function NextUpTile({
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
       </div>
 
       {/* Dialogs */}
