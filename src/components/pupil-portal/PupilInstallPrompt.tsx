@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { detectNativeWrapper } from "@/hooks/useIsNativeWrapper";
 import { Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -18,9 +19,9 @@ export function PupilInstallPrompt() {
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
-  // Also check if already installed
+  // Also check if already installed or running inside a native wrapper
   const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-  if (isStandalone || dismissed || !deferredPrompt) return null;
+  if (isStandalone || dismissed || !deferredPrompt || detectNativeWrapper()) return null;
 
   const handleInstall = async () => {
     deferredPrompt.prompt();

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { detectNativeWrapper } from "@/hooks/useIsNativeWrapper";
 import { X, Share, Plus, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -27,7 +28,7 @@ export function Drive365InstallBanner({ onDismiss }: Drive365InstallBannerProps)
       
       setIsIOS(isIOSDevice);
       
-      if (!isStandalone && !isDismissed) {
+      if (!isStandalone && !isDismissed && !detectNativeWrapper()) {
         setShowBanner(true);
       }
     };
