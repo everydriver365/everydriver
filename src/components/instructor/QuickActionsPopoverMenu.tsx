@@ -80,31 +80,29 @@ export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMe
         >
           <DrawerPrimitive.Title className="sr-only">Quick actions</DrawerPrimitive.Title>
 
-          {/* Navy header */}
+          {/* Header */}
           <div
-            className="flex items-center gap-3 px-4 pb-4 text-white"
+            className="flex items-center gap-3 px-4 pb-4 bg-background border-b border-border"
             style={{
-              backgroundColor: "hsl(var(--dsm-navy))",
               paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)",
             }}
           >
             <img
-              src="/dsm-icon-192.png"
-              alt=""
-              className="h-9 w-9 rounded-[8px] object-contain bg-white/10 p-1"
+              src={dsmLogo}
+              alt="DSM"
+              className="h-10 w-auto object-contain"
             />
             <div className="flex-1 min-w-0">
-              <div className="text-[15px] font-semibold leading-tight">DSM</div>
-              <div className="text-[11px] text-white/70 leading-tight">
+              <div className="text-[11px] text-muted-foreground leading-tight">
                 Driving School Manager
               </div>
             </div>
             <button
               onClick={onClose}
-              className="h-8 w-8 rounded-full flex items-center justify-center bg-white/10 active:bg-white/20 transition-colors"
+              className="h-8 w-8 rounded-full flex items-center justify-center bg-muted active:bg-muted/70 transition-colors"
               aria-label="Close menu"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4 text-foreground" />
             </button>
           </div>
 
