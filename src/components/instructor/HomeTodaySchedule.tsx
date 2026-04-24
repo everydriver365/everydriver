@@ -31,7 +31,7 @@ const IOS_FONT =
 function fmtTime(time: string) {
   try {
     const d = parse(time, "HH:mm:ss", new Date());
-    return { hour: format(d, "h:mm"), period: format(d, "a").toUpperCase() };
+    return { hour: format(d, "HH:mm"), period: "" };
   } catch {
     return { hour: time.slice(0, 5), period: "" };
   }
