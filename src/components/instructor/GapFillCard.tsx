@@ -199,9 +199,9 @@ export function GapFillCard({
     ) : (
       <>
         <span style={{ fontWeight: 600, color: "#174EA6" }}>
-          {totalCount} {totalCount === 1 ? "pupil" : "pupils"}
+          {totalCount}
         </span>{" "}
-        might fit this {durationLabel} gap
+        may fit · {durationLabel}
       </>
     );
 
