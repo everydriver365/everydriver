@@ -391,11 +391,14 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
     if (!instructorId) return;
     supabase
       .from("instructors")
-      .select("name")
+      .select("name, buffer_minutes")
       .eq("id", instructorId)
       .maybeSingle()
       .then(({ data }) => {
         if (data?.name) setInstructorName(data.name);
+        if (data && typeof (data as { buffer_minutes?: number }).buffer_minutes === "number") {
+          setBufferMinutes((data as { buffer_minutes: number }).buffer_minutes ?? 0);
+        }
       });
   }, [instructorId]);
 
