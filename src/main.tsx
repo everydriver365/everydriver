@@ -7,6 +7,19 @@ import "./i18n";
 import { ThemeProvider } from "./context/ThemeContext";
 import { InstructorThemeProvider } from "./context/InstructorThemeContext";
 import { AppErrorBoundary } from "@/components/common/AppErrorBoundary";
+import { detectNativeWrapper } from "@/hooks/useIsNativeWrapper";
+
+// When the app is loaded inside a native wrapper (Despia / Capacitor / WebView)
+// unregister any service workers so cached assets and Web Push handlers from a
+// previous browser visit don't interfere with the wrapped app. Native push and
+// asset delivery are handled by the wrapper itself.
+if (typeof window !== "undefined" && detectNativeWrapper()) {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.getRegistrations().then((regs) => {
+      regs.forEach((r) => r.unregister().catch(() => {}));
+    }).catch(() => {});
+  }
+}
 
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider>
@@ -17,3 +30,4 @@ createRoot(document.getElementById("root")!).render(
     </InstructorThemeProvider>
   </ThemeProvider>
 );
+
