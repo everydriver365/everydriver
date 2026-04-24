@@ -245,9 +245,21 @@ export function GapFillCard({
                 marginLeft: idx === 0 ? 0 : -6,
                 boxSizing: "border-box",
                 lineHeight: 1,
+                overflow: "hidden",
               }}
             >
-              {getInitials(p.name)}
+              {p.imageUrl ? (
+                <img
+                  src={p.imageUrl}
+                  alt=""
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              ) : (
+                getInitials(p.name)
+              )}
             </div>
           ))}
         </div>
