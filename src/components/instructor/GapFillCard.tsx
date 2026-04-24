@@ -277,6 +277,17 @@ export function GapFillCard({
     });
     if (avatars.length > 0) {
       search.set("pupils", avatars.map((p) => p.id).join(","));
+      // Per-pupil real ETA (minutes), pipe-separated, aligned with `pupils` order.
+      // Empty segment = no real ETA available for that pupil → consumer should
+      // fall back to its own default. Format: "id:out,in|id:out,in".
+      const etaPayload = avatars
+        .map((p) => {
+          const out = p.travelOutMin ?? "";
+          const inn = p.travelInMin ?? "";
+          return `${p.id}:${out},${inn}`;
+        })
+        .join("|");
+      search.set("eta", etaPayload);
     }
     navigate(`/instructor/gaps?${search.toString()}`);
   };
