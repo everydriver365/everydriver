@@ -313,6 +313,39 @@ export function GapFillCard({
         </div>
       </div>
 
+      <button
+        type="button"
+        onClick={handleRefresh}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            handleRefresh(e);
+          }
+        }}
+        aria-label="Refresh suggested pupils for this gap"
+        className="gap-fill-refresh"
+        disabled={isRefreshing}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 32,
+          height: 32,
+          borderRadius: 16,
+          border: "none",
+          background: "transparent",
+          color: "#5F6368",
+          cursor: isRefreshing ? "default" : "pointer",
+          flexShrink: 0,
+          padding: 0,
+        }}
+      >
+        <RefreshCw
+          size={14}
+          aria-hidden="true"
+          className={isRefreshing ? "gap-fill-spin" : undefined}
+        />
+      </button>
+
       <span
         aria-hidden="true"
         style={{
@@ -328,10 +361,14 @@ export function GapFillCard({
 
       <style>{`
         .gap-fill-row:active { background: #F1F3F4 !important; }
+        .gap-fill-refresh:active { background: #F1F3F4 !important; }
+        @keyframes gap-fill-spin { to { transform: rotate(360deg); } }
+        .gap-fill-spin { animation: gap-fill-spin 0.8s linear infinite; transform-origin: center; }
         @media (prefers-reduced-motion: reduce) {
-          .gap-fill-row { transition: none !important; }
+          .gap-fill-row, .gap-fill-refresh { transition: none !important; }
+          .gap-fill-spin { animation: none !important; }
         }
       `}</style>
-    </button>
+    </div>
   );
 }
