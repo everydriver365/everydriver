@@ -36,6 +36,16 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
   const [pupilCount, setPupilCount] = useState(0);
   const [pendingPreselectedSlotId, setPendingPreselectedSlotId] = useState<string | null>(null);
 
+  // Optional feasibility-filtered pupil subset passed in via the `pupils` URL param
+  // by `GapFillCard` after applying buffer + per-pupil travel time. When present we
+  // ONLY text those pupils — never the full list.
+  const targetedPupilIds = (() => {
+    const raw = searchParams.get("pupils");
+    if (!raw) return null;
+    const ids = raw.split(",").map((s) => s.trim()).filter(Boolean);
+    return ids.length > 0 ? ids : null;
+  })();
+
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [isLive, setIsLive] = useState(false);
   const [highlightedIds, setHighlightedIds] = useState<Set<string>>(new Set());
@@ -64,7 +74,14 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instructorId]);
+
+  // Re-count when the targeted (feasibility-filtered) pupil set changes.
+  useEffect(() => {
+    fetchPupilCount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetedPupilIds?.join(",")]);
 
   useEffect(() => {
     const date = searchParams.get("date");
@@ -116,12 +133,18 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
 
   const fetchPupilCount = async () => {
     try {
-      const { count } = await supabase
+      let q = supabase
         .from("pupils")
         .select("*", { count: "exact", head: true })
         .eq("instructor_id", instructorId)
         .not("phone", "is", null);
-      
+
+      // If GapFillCard has narrowed the audience to those who fit the slot, count only those.
+      if (targetedPupilIds && targetedPupilIds.length > 0) {
+        q = q.in("id", targetedPupilIds);
+      }
+
+      const { count } = await q;
       setPupilCount(count || 0);
     } catch (error) {
       console.error("Error fetching pupil count:", error);
@@ -356,6 +379,10 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
           })),
           discountType: discountType === "none" ? null : discountType,
           discountValue: discountType === "none" ? null : discountValue,
+          // Only text pupils that can fit the slot after buffer + travel time.
+          ...(targetedPupilIds && targetedPupilIds.length > 0
+            ? { pupilIds: targetedPupilIds }
+            : {}),
         },
       });
 
@@ -406,7 +433,9 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
         )}
       </div>
       <p className="text-sm text-muted-foreground mb-4">
-        Text all {pupilCount} pupils with phone numbers about available slots
+        {targetedPupilIds && targetedPupilIds.length > 0
+          ? `Texting ${pupilCount} pupil${pupilCount === 1 ? "" : "s"} who fit this slot after travel time`
+          : `Text all ${pupilCount} pupils with phone numbers about available slots`}
       </p>
       <div className="space-y-4">
         {loading ? (
