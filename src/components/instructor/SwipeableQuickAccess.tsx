@@ -14,7 +14,8 @@ import {
   Gift, Clock, Receipt, FileBarChart, BarChart3, Moon, Megaphone, GraduationCap,
   type LucideIcon,
 } from "lucide-react";
-import { WarmTile, WARM_TILE_STROKE, type WarmTileCategory } from "@/components/instructor/WarmTile";
+import { WARM_TILE_STROKE, type WarmTileCategory } from "@/components/instructor/WarmTile";
+import { IOSInsightTile } from "@/components/instructor/IOSInsightTile";
 import { IOSSearchBar } from "@/components/ui/IOSSearchBar";
 
 interface QuickTile {
