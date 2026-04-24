@@ -36,6 +36,16 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
   const [pupilCount, setPupilCount] = useState(0);
   const [pendingPreselectedSlotId, setPendingPreselectedSlotId] = useState<string | null>(null);
 
+  // Optional feasibility-filtered pupil subset passed in via the `pupils` URL param
+  // by `GapFillCard` after applying buffer + per-pupil travel time. When present we
+  // ONLY text those pupils — never the full list.
+  const targetedPupilIds = (() => {
+    const raw = searchParams.get("pupils");
+    if (!raw) return null;
+    const ids = raw.split(",").map((s) => s.trim()).filter(Boolean);
+    return ids.length > 0 ? ids : null;
+  })();
+
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [isLive, setIsLive] = useState(false);
   const [highlightedIds, setHighlightedIds] = useState<Set<string>>(new Set());
