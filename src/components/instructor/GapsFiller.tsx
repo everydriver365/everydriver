@@ -379,6 +379,10 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
           })),
           discountType: discountType === "none" ? null : discountType,
           discountValue: discountType === "none" ? null : discountValue,
+          // Only text pupils that can fit the slot after buffer + travel time.
+          ...(targetedPupilIds && targetedPupilIds.length > 0
+            ? { pupilIds: targetedPupilIds }
+            : {}),
         },
       });
 
