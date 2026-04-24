@@ -135,6 +135,7 @@ function useGapCandidatePupils(
         .map((p) => ({
           id: p.id,
           name: p.name,
+          imageUrl: (p as { profile_image_url?: string | null }).profile_image_url ?? null,
           score: scoreByPupil.get(p.id) || 0,
         }));
 
