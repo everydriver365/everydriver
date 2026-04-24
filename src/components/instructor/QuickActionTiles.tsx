@@ -519,7 +519,7 @@ export function QuickActionTiles({
                 key={action.id}
                 id={action.id}
                 title={sentenceTitle}
-                icon={Icon}
+                icon={Icon as unknown as import("lucide-react").LucideIcon}
                 onClick={() => navigate(action.route)}
                 metricValue={showBadge ? (badgeCount > 9 ? "9+" : badgeCount) : undefined}
                 subtitle={!showBadge ? subtitle ?? undefined : undefined}
