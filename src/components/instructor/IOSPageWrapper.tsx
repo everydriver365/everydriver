@@ -12,10 +12,7 @@ interface IOSPageWrapperProps {
  */
 export function IOSPageWrapper({ children, className }: IOSPageWrapperProps) {
   return (
-    <div
-      className={cn("space-y-4 pb-24", className)}
-      style={{ fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', system-ui, sans-serif" }}
-    >
+    <div className={cn("space-y-4 pb-24", className)}>
       {children}
     </div>
   );

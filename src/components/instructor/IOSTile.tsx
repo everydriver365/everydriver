@@ -45,7 +45,6 @@ function IOSTileRoot({
         alignItems: "center",
         gap: 14,
         cursor: interactive || onClick ? "pointer" : undefined,
-        fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', Inter, sans-serif",
         fontVariantNumeric: "tabular-nums",
       }}
       className={cn(
