@@ -21,7 +21,7 @@ import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
 import { useAdminUnreadForPupil } from "@/hooks/useAdminUnreadForPupil";
-import { PostcodeMapPreview } from "@/components/instructor/PostcodeMapPreview";
+import { GoogleMapPreview } from "@/components/instructor/GoogleMapPreview";
 import { Mail } from "lucide-react";
 import { useRunningLateDetection } from "@/hooks/useRunningLateDetection";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
