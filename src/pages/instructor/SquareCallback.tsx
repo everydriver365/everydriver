@@ -35,7 +35,7 @@ export default function SquareCallback() {
             action: "callback",
             code,
             instructor_id: parsed.instructor_id,
-            redirect_uri: `https://everydriver.lovable.app/instructor/square-callback`,
+            redirect_uri: `${window.location.origin}/instructor/square-callback`,
           },
         });
 
@@ -47,9 +47,11 @@ export default function SquareCallback() {
 
         setStatus("success");
         setMessage(`Connected to Square${data?.merchant_name ? ` (${data.merchant_name})` : ""}`);
-        
+
         setTimeout(() => {
-          window.close();
+          // window.close() is a no-op inside a native wrapper / opener-less tab —
+          // always navigate as a fallback so the user isn't stranded on this page.
+          try { window.close(); } catch { /* noop */ }
           navigate("/instructor/settings");
         }, 2000);
       } catch {
