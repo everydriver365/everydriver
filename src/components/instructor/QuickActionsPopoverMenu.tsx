@@ -88,7 +88,7 @@ export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMe
             }}
           >
             <img
-              src="/dsm-logo.png"
+              src="/dsm-icon-192.png"
               alt=""
               className="h-9 w-9 rounded-[8px] object-contain bg-white/10 p-1"
             />
