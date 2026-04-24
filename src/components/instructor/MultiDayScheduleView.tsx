@@ -1,7 +1,19 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { format, addDays, isToday, parseISO, startOfDay, endOfDay, isSameDay, differenceInMinutes } from "date-fns";
-import { Calendar, Clock, MapPin, Plus, Loader2, CheckCircle2, ChevronDown, Video, ExternalLink } from "lucide-react";
+import {
+  format,
+  addDays,
+  isToday,
+  parseISO,
+  startOfDay,
+  endOfDay,
+  startOfWeek,
+  endOfWeek,
+  isSameWeek,
+  differenceInMinutes,
+  isSameMonth,
+} from "date-fns";
+import { Loader2, MapPin, Video, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ExpandableLessonCard } from "./ExpandableLessonCard";
 import { LessonTextSheet } from "./LessonTextSheet";
@@ -9,14 +21,15 @@ import { GapFillCard } from "./GapFillCard";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { AddLessonSheet } from "./AddLessonSheet";
-import { TravelTimeIndicator } from "./TravelTimeIndicator";
-import { PupilAvatar } from "./PupilAvatar";
-import { LessonCheckInBadge } from "./LessonCheckInBadge";
-import { useLessonTravelTimes } from "@/hooks/useLessonTravelTimes";
 import { triggerAutomations } from "@/utils/triggerAutomations";
 import { toast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import {
+  CATEGORY_STYLES,
+  categoriseEvent,
+  cleanEventTitle,
+  formatDuration,
+  type EventCategory,
+} from "./scheduleGoogleStyle";
 
 interface ScheduledLesson {
   id: string;
@@ -74,11 +87,8 @@ interface MultiDayScheduleViewProps {
 
 const DAYS_TO_LOAD = 365;
 
-const courseTypeLabels: Record<string, string> = {
-  standard: "Standard", test_prep: "Test Prep", mock_test: "Mock Test",
-  motorway: "Motorway", refresher: "Refresher", intensive: "Intensive",
-  first_lesson: "First Lesson", pass_plus: "Pass Plus", driving_test: "Driving Test",
-};
+const FONT_STACK =
+  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Roboto", "Helvetica Neue", sans-serif';
 
 const formatTime = (timeStr: string) => {
   const [h, m] = timeStr.split(":");
@@ -91,56 +101,122 @@ const getEndTime = (startTime: string, durationMinutes: number) => {
   return `${String(Math.floor(endMin / 60)).padStart(2, "0")}:${String(endMin % 60).padStart(2, "0")}`;
 };
 
-// Google Calendar color mapping — uses the exact hex values stored from the feed
-// Google Calendar colorId → hex: 1=#7986CB, 2=#33B679, 3=#8E24AA, 4=#E67C73,
-// 5=#F6BF26, 6=#F4511E, 7=#039BE5, 8=#616161, 9=#3F51B5, 10=#0B8043, 11=#D50000
-const GOOGLE_COLOR_MAP: Record<string, { bg: string; text: string; textMuted: string }> = {
-  "#7986cb": { bg: "#B3AFF5", text: "#2E2875", textMuted: "rgba(46,40,117,0.75)" },   // 1 Lavender
-  "#33b679": { bg: "#8FCFA5", text: "#1A4D2E", textMuted: "rgba(26,77,46,0.75)" },    // 2 Sage
-  "#8e24aa": { bg: "#C9A0DC", text: "#4A1162", textMuted: "rgba(74,17,98,0.75)" },     // 3 Grape
-  "#e67c73": { bg: "#E89999", text: "#5C1717", textMuted: "rgba(92,23,23,0.75)" },     // 4 Flamingo
-  "#f6bf26": { bg: "#F4D06F", text: "#5C4A0F", textMuted: "rgba(92,74,15,0.75)" },     // 5 Banana
-  "#f4511e": { bg: "#F0A68A", text: "#6B200A", textMuted: "rgba(107,32,10,0.75)" },    // 6 Tangerine
-  "#039be5": { bg: "#7FB3E3", text: "#0A3559", textMuted: "rgba(10,53,89,0.75)" },     // 7 Peacock
-  "#616161": { bg: "#B8B8B8", text: "#2A2A2A", textMuted: "rgba(42,42,42,0.75)" },     // 8 Graphite
-  "#3f51b5": { bg: "#8E9AE6", text: "#1A2266", textMuted: "rgba(26,34,102,0.75)" },    // 9 Blueberry
-  "#0b8043": { bg: "#7CC9A0", text: "#0A3D20", textMuted: "rgba(10,61,32,0.75)" },     // 10 Basil
-  "#d50000": { bg: "#E88A8A", text: "#5C0000", textMuted: "rgba(92,0,0,0.75)" },       // 11 Tomato
-};
-
-function getCardColors(color: string | null, lessonType?: string): { bg: string; text: string; textMuted: string } {
-  // Lesson types get specific colors
-  if (lessonType) {
-    const lessonColors: Record<string, { bg: string; text: string; textMuted: string }> = {
-      standard: { bg: "#7FB3E3", text: "#0A3559", textMuted: "rgba(10,53,89,0.75)" },
-      test_prep: { bg: "#F4D06F", text: "#5C4A0F", textMuted: "rgba(92,74,15,0.75)" },
-      mock_test: { bg: "#E89999", text: "#5C1717", textMuted: "rgba(92,23,23,0.75)" },
-      motorway: { bg: "#8FCFA5", text: "#1A4D2E", textMuted: "rgba(26,77,46,0.75)" },
-      refresher: { bg: "#7FB3E3", text: "#0A3559", textMuted: "rgba(10,53,89,0.75)" },
-      intensive: { bg: "#B3AFF5", text: "#2E2875", textMuted: "rgba(46,40,117,0.75)" },
-      first_lesson: { bg: "#8FCFA5", text: "#1A4D2E", textMuted: "rgba(26,77,46,0.75)" },
-      pass_plus: { bg: "#B3AFF5", text: "#2E2875", textMuted: "rgba(46,40,117,0.75)" },
-      driving_test: { bg: "#F4D06F", text: "#5C4A0F", textMuted: "rgba(92,74,15,0.75)" },
-    };
-    return lessonColors[lessonType] || { bg: "#7FB3E3", text: "#0A3559", textMuted: "rgba(10,53,89,0.75)" };
-  }
-
-  // External events: match the exact hex from the Google Calendar feed
-  if (!color) return { bg: "#D4D4D8", text: "#3F3F46", textMuted: "rgba(63,63,70,0.75)" };
-  
-  const mapped = GOOGLE_COLOR_MAP[color.toLowerCase()];
-  if (mapped) return mapped;
-
-  return { bg: "#D4D4D8", text: "#3F3F46", textMuted: "rgba(63,63,70,0.75)" };
+/** Inline Google-style "+" icon for the FAB. */
+function GooglePlusIcon() {
+  const SW = 2.2;
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      {/* top arm — red */}
+      <line x1="12" y1="4" x2="12" y2="11" stroke="#EA4335" strokeWidth={SW} strokeLinecap="round" />
+      {/* right arm — yellow */}
+      <line x1="13" y1="12" x2="20" y2="12" stroke="#FBBC04" strokeWidth={SW} strokeLinecap="round" />
+      {/* left arm — green */}
+      <line x1="4" y1="12" x2="11" y2="12" stroke="#34A853" strokeWidth={SW} strokeLinecap="round" />
+      {/* bottom arm — blue */}
+      <line x1="12" y1="13" x2="12" y2="20" stroke="#4285F4" strokeWidth={SW} strokeLinecap="round" />
+    </svg>
+  );
 }
 
-// Block type colors
-function getBlockColors(blockType: string): { bg: string; text: string; textMuted: string } {
-  switch (blockType) {
-    case "break": return { bg: "#F4D06F", text: "#5C4A0F", textMuted: "rgba(92,74,15,0.75)" };
-    case "meeting": return { bg: "#B3AFF5", text: "#2E2875", textMuted: "rgba(46,40,117,0.75)" };
-    default: return { bg: "#D4D4D8", text: "#3F3F46", textMuted: "rgba(63,63,70,0.75)" };
-  }
+/** Tinted Google-Calendar-style chip. Used inside ExpandableLessonCard for lessons,
+ *  and standalone for external events / manual blocks. */
+function EventChip({
+  category,
+  title,
+  timeLine,
+  meta,
+  isTask,
+  taskCompleted,
+  onTaskToggle,
+}: {
+  category: EventCategory;
+  title: string;
+  timeLine?: string | null;
+  meta?: string | null;
+  isTask?: boolean;
+  taskCompleted?: boolean;
+  onTaskToggle?: (e: React.MouseEvent) => void;
+}) {
+  const style = CATEGORY_STYLES[category];
+  const padLeft = isTask ? 30 : 12;
+  return (
+    <div
+      style={{
+        position: "relative",
+        backgroundColor: style.bg,
+        borderLeft: `3px solid ${style.border}`,
+        borderRadius: 6,
+        padding: `9px 12px 9px ${padLeft}px`,
+        overflow: "hidden",
+        fontFamily: FONT_STACK,
+      }}
+    >
+      {isTask && (
+        <button
+          type="button"
+          aria-label={taskCompleted ? "Mark task incomplete" : "Mark task complete"}
+          onClick={onTaskToggle}
+          style={{
+            position: "absolute",
+            left: 10,
+            top: "50%",
+            transform: "translateY(-50%)",
+            width: 14,
+            height: 14,
+            border: "1.8px solid #9AA0A6",
+            borderRadius: 3,
+            background: taskCompleted ? "#9AA0A6" : "transparent",
+            padding: 0,
+            cursor: "pointer",
+          }}
+        />
+      )}
+      <div
+        style={{
+          fontSize: 13,
+          fontWeight: 500,
+          letterSpacing: "-0.1px",
+          lineHeight: 1.3,
+          color: style.text,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+      >
+        {title}
+      </div>
+      {timeLine && (
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 400,
+            opacity: 0.85,
+            marginTop: 2,
+            letterSpacing: "-0.04px",
+            color: style.text,
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          {timeLine}
+        </div>
+      )}
+      {meta && (
+        <div
+          style={{
+            fontSize: 11,
+            color: "#5F6368",
+            marginTop: 2,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {meta}
+        </div>
+      )}
+      <span className="sr-only">{` ${category}`}</span>
+    </div>
+  );
 }
 
 export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps) {
@@ -159,8 +235,18 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   const [instructorName, setInstructorName] = useState<string>("Your instructor");
   const [lessonForText, setLessonForText] = useState<ScheduledLesson | null>(null);
 
+  // Live-updated "now" for the today indicator (refresh once a minute).
+  const [nowTick, setNowTick] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   const startDate = useMemo(() => startOfDay(new Date()), []);
-  const days = useMemo(() => Array.from({ length: DAYS_TO_LOAD }, (_, i) => addDays(startDate, i)), [startDate]);
+  const days = useMemo(
+    () => Array.from({ length: DAYS_TO_LOAD }, (_, i) => addDays(startDate, i)),
+    [startDate],
+  );
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -267,9 +353,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
     if (!phone) { toast({ title: "No phone number", variant: "destructive" }); return; }
     window.location.href = `tel:${phone}`;
   };
-  const handleText = (lesson: ScheduledLesson) => {
-    setLessonForText(lesson);
-  };
+  const handleText = (lesson: ScheduledLesson) => { setLessonForText(lesson); };
   const handleOnWay = async (lesson: ScheduledLesson, delayMinutes?: number) => {
     if (!lesson.pupil?.phone) { toast({ title: "No phone number", variant: "destructive" }); return; }
     setSendingMessage(lesson.id);
@@ -335,225 +419,251 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
     });
   }, [days, lessons, externalEvents, manualBlocks]);
 
-  // Now indicator time
-  const nowMinutes = useMemo(() => {
-    const now = new Date();
-    return now.getHours() * 60 + now.getMinutes();
-  }, []);
+  // Days that have at least one event — Google's Schedule view skips empty days.
+  const visibleDays = useMemo(
+    () => dayData.filter((d) => d.timeline.length > 0 || d.allDay.length > 0),
+    [dayData],
+  );
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#2A394F" }} />
+      <div className="flex items-center justify-center py-16" style={{ backgroundColor: "#FFFFFF" }}>
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#1A73E8" }} />
       </div>
     );
   }
 
   return (
-    <div className="space-y-0 pb-32">
-      {/* Add lesson FAB */}
-      <div
-        onClick={() => setAddLessonOpen(true)}
-        style={{
-          position: "fixed",
-          bottom: 80,
-          left: 20,
-          right: 20,
-          maxWidth: 420,
-          margin: "0 auto",
-          background: "#2A394F",
-          color: "#FFFFFF",
-          borderRadius: 12,
-          padding: "14px 20px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-          cursor: "pointer",
-          fontSize: 14,
-          fontWeight: 500,
-          zIndex: 40,
-          boxShadow: "0 4px 12px rgba(107, 99, 214, 0.25)",
-        }}
-      >
-        <Plus style={{ width: 18, height: 18 }} />
-        Add Lesson
-      </div>
-
-      {/* Multi-day list */}
-      <div className="space-y-0">
-        {dayData.map(({ day, dateStr, timeline, allDay }, idx) => {
-          const prevDay = idx > 0 ? dayData[idx - 1].day : null;
-          const showMonthHeader = !prevDay || day.getMonth() !== prevDay.getMonth();
+    <div
+      style={{
+        backgroundColor: "#FFFFFF",
+        color: "#1F1F1F",
+        fontFamily: FONT_STACK,
+        paddingBottom: 96,
+      }}
+    >
+      {/* Day-grouped list */}
+      <div>
+        {visibleDays.map(({ day, dateStr, timeline, allDay }, idx) => {
+          const prevDay = idx > 0 ? visibleDays[idx - 1].day : null;
           const today = isToday(day);
-          const isEmpty = timeline.length === 0 && allDay.length === 0;
 
-          // Compute "now" indicator position for today
-          const shouldShowNow = today;
+          // Week group header — show when this is the first day, or when this day
+          // belongs to a different ISO week (Mon-start) than the previous visible day.
+          const isFirstOfWeek =
+            !prevDay || !isSameWeek(day, prevDay, { weekStartsOn: 1 });
+          const weekStart = startOfWeek(day, { weekStartsOn: 1 });
+          const weekEnd = endOfWeek(day, { weekStartsOn: 1 });
+          const weekLabel = isSameMonth(weekStart, weekEnd)
+            ? `${format(weekStart, "MMMM d")} — ${format(weekEnd, "d")}`
+            : `${format(weekStart, "MMMM d")} — ${format(weekEnd, "MMM d")}`;
+          const isVeryFirst = idx === 0;
+
+          // Now indicator: only on today, only when there are still future items.
+          const nowTimeStr = today
+            ? `${String(nowTick.getHours()).padStart(2, "0")}:${String(nowTick.getMinutes()).padStart(2, "0")}`
+            : null;
+          const futureCount = nowTimeStr
+            ? timeline.filter((t) => {
+                const endStr =
+                  t.kind === "lesson"
+                    ? getEndTime(t.data.start_time, t.data.duration_minutes)
+                    : t.kind === "external"
+                      ? format(parseISO(t.data.end_time), "HH:mm")
+                      : format(parseISO(t.data.end_datetime), "HH:mm");
+                return endStr > nowTimeStr;
+              }).length
+            : 0;
+          const showNowIndicator = today && nowTimeStr && futureCount > 0;
 
           return (
             <div key={dateStr}>
-              {showMonthHeader && (
-                <div style={{ padding: "16px 0 12px" }}>
-                  <span style={{ fontSize: 15, fontWeight: 700, color: "#18181B" }}>
-                    {format(day, "MMMM yyyy")}
-                  </span>
+              {isFirstOfWeek && (
+                <div
+                  style={{
+                    padding: isVeryFirst ? "10px 16px 6px 68px" : "20px 16px 6px 68px",
+                    borderTop: isVeryFirst ? "none" : "0.5px solid #E8EAED",
+                    marginTop: isVeryFirst ? 0 : 10,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    color: "#5F6368",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {weekLabel.toUpperCase()}
                 </div>
               )}
+
               <div
                 id={`schedule-day-${dateStr}`}
                 ref={today ? todayRef : undefined}
-                className="flex"
-                style={{ minHeight: 60, gap: 0, marginBottom: 24 }}
+                style={{
+                  display: "flex",
+                  padding: "14px 12px 10px 0",
+                }}
               >
-                {/* Left date column */}
-                <div style={{ width: 56, flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 4 }}>
-                  <span style={{
-                    fontSize: 11,
-                    fontWeight: 500,
-                    textTransform: "uppercase",
-                    color: today ? "#2A394F" : "#71717A",
-                    letterSpacing: "0.02em",
-                  }}>
-                    {format(day, "EEE")}
-                  </span>
-                  <div style={{
-                    marginTop: 4,
-                    width: 40,
-                    height: 40,
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    ...(today ? { backgroundColor: "#C7C5FF" } : {}),
-                  }}>
-                    <span style={{
-                      fontSize: 28,
-                      fontWeight: 300,
-                      color: today ? "#1A1840" : "#18181B",
+                {/* Date column */}
+                <div
+                  style={{
+                    width: 56,
+                    flexShrink: 0,
+                    textAlign: "center",
+                    paddingTop: 2,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      letterSpacing: "0.08em",
                       lineHeight: 1,
-                    }}>
-                      {format(day, "d")}
-                    </span>
+                      textTransform: "uppercase",
+                      color: today ? "#1A73E8" : "#5F6368",
+                    }}
+                  >
+                    {format(day, "EEE")}
                   </div>
+                  {today ? (
+                    <div
+                      style={{
+                        marginTop: 4,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
+                        background: "#1A73E8",
+                        color: "#FFFFFF",
+                        fontSize: 16,
+                        fontWeight: 500,
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {format(day, "d")}
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        marginTop: 6,
+                        fontSize: 20,
+                        fontWeight: 400,
+                        letterSpacing: "-0.3px",
+                        color: "#1F1F1F",
+                        lineHeight: 1,
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {format(day, "d")}
+                    </div>
+                  )}
                 </div>
 
-                {/* Right events column */}
-                <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 8, position: "relative" }}>
-                  {/* All-day events */}
+                {/* Events column */}
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                    paddingRight: 4,
+                  }}
+                >
+                  {/* All-day externals */}
                   {allDay.map((evt) => {
-                    const colors = getCardColors(evt.color);
+                    const category = categoriseEvent(evt.title, "external", { isAllDay: true });
                     const isExpanded = expandedEventId === evt.id;
                     return (
-                      <div
-                        key={evt.id}
-                        onClick={() => setExpandedEventId(isExpanded ? null : evt.id)}
-                        style={{
-                          position: "relative",
-                          backgroundColor: "#FFFFFF",
-                          borderRadius: 14,
-                          boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)",
-                          padding: "12px 16px 12px 20px",
-                          minHeight: 48,
-                          cursor: "pointer",
-                          overflow: "hidden",
-                        }}
-                      >
-                        {/* Left color accent */}
-                        <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: 4, backgroundColor: colors.bg, borderRadius: "14px 0 0 14px" }} />
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <div style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: colors.bg, flexShrink: 0 }} />
-                          <span style={{ fontSize: 15, fontWeight: 500, color: "#18181B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, fontFamily: "Inter, sans-serif" }}>
-                            {evt.title}
-                          </span>
-                          <span style={{ fontSize: 11, fontWeight: 500, color: "#71717A", flexShrink: 0 }}>All day</span>
-                        </div>
+                      <div key={evt.id}>
+                        <button
+                          type="button"
+                          onClick={() => setExpandedEventId(isExpanded ? null : evt.id)}
+                          aria-label={evt.title}
+                          style={{
+                            display: "block",
+                            width: "100%",
+                            textAlign: "left",
+                            background: "none",
+                            border: "none",
+                            padding: 0,
+                            cursor: "pointer",
+                          }}
+                        >
+                          <EventChip
+                            category={category}
+                            title={cleanEventTitle(evt.title)}
+                            timeLine={null}
+                            meta={evt.location || null}
+                          />
+                        </button>
                         {isExpanded && (
-                          <div style={{ marginTop: 10, borderTop: "1px solid #E4E4E7", paddingTop: 10, display: "flex", flexDirection: "column", gap: 8 }} onClick={(e) => e.stopPropagation()}>
-                            {evt.meeting_url && (
-                              <a
-                                href={evt.meeting_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, backgroundColor: "#007AFF", color: "#FFFFFF", fontSize: 14, fontWeight: 600, padding: "10px 14px", borderRadius: 10, textDecoration: "none" }}
-                              >
-                                <Video style={{ width: 16, height: 16 }} />
-                                Join {evt.meeting_provider || "Meeting"}
-                              </a>
-                            )}
-                            {evt.location && (
-                              <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                                <MapPin style={{ width: 14, height: 14, color: "#71717A", marginTop: 2, flexShrink: 0 }} />
-                                <span style={{ fontSize: 13, color: "#18181B" }}>{evt.location}</span>
-                              </div>
-                            )}
-                            {evt.description && (
-                              <div style={{ fontSize: 13, color: "#71717A", whiteSpace: "pre-wrap", lineHeight: 1.4 }}>
-                                {evt.description}
-                              </div>
-                            )}
-                            {evt.html_link && (
-                              <a
-                                href={evt.html_link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "#007AFF", textDecoration: "none" }}
-                              >
-                                <ExternalLink style={{ width: 12, height: 12 }} />
-                                Open in Google Calendar
-                              </a>
-                            )}
-                            <span style={{ fontSize: 11, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                              {evt.is_busy ? "Busy" : "Free"} · Google Calendar
-                            </span>
-                            {!evt.location && !evt.description && !evt.meeting_url && !evt.html_link && (
-                              <span style={{ fontSize: 12, color: "#A1A1AA", fontStyle: "italic" }}>No additional details</span>
-                            )}
-                          </div>
+                          <ExternalDetails evt={evt} />
                         )}
                       </div>
                     );
                   })}
 
-                  {/* Now indicator */}
-                  {shouldShowNow && timeline.length > 0 && (() => {
-                    // Find position: between which items does "now" fall?
-                    const nowTimeStr = `${String(Math.floor(nowMinutes / 60)).padStart(2, "0")}:${String(nowMinutes % 60).padStart(2, "0")}`;
-                    let insertIdx = timeline.length;
-                    for (let i = 0; i < timeline.length; i++) {
-                      if (timeline[i].time > nowTimeStr) { insertIdx = i; break; }
-                    }
-                    // We'll render it inline via the timeline below
-                    return null;
-                  })()}
-
-                  {/* Timeline items with now-indicator interleaved */}
                   {(() => {
-                    const nowTimeStr = shouldShowNow
-                      ? `${String(Math.floor(nowMinutes / 60)).padStart(2, "0")}:${String(nowMinutes % 60).padStart(2, "0")}`
-                      : null;
+                    const elements: React.ReactNode[] = [];
                     let nowRendered = false;
 
-                    const elements: React.ReactNode[] = [];
+                    const pushNowIndicator = () => {
+                      elements.push(
+                        <div
+                          key="now-indicator"
+                          style={{
+                            display: "flex",
+                            gap: 6,
+                            padding: "4px 0 2px",
+                            alignItems: "center",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: 7,
+                              height: 7,
+                              borderRadius: "50%",
+                              backgroundColor: "#EA4335",
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 700,
+                              color: "#EA4335",
+                              letterSpacing: "0.05em",
+                              fontVariantNumeric: "tabular-nums",
+                            }}
+                          >
+                            {nowTimeStr}
+                          </span>
+                          <div
+                            style={{
+                              flex: 1,
+                              height: 1,
+                              backgroundColor: "#EA4335",
+                              opacity: 0.5,
+                            }}
+                          />
+                        </div>,
+                      );
+                      nowRendered = true;
+                    };
 
                     timeline.forEach((item, i) => {
-                      // Insert now indicator before this item if needed
-                      if (shouldShowNow && nowTimeStr && !nowRendered && item.time > nowTimeStr) {
-                        elements.push(
-                          <div key="now-indicator" style={{ display: "flex", alignItems: "center", gap: 0, margin: "4px 0" }}>
-                            <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#18181B", flexShrink: 0, marginLeft: -32 }} />
-                            <div style={{ flex: 1, height: 1, backgroundColor: "rgba(24,24,27,0.6)" }} />
-                          </div>
-                        );
-                        nowRendered = true;
+                      // Insert now-indicator before the first item that hasn't started yet.
+                      if (showNowIndicator && nowTimeStr && !nowRendered && item.time > nowTimeStr) {
+                        pushNowIndicator();
                       }
 
                       if (item.kind === "lesson") {
                         const lesson = item.data;
-                        const colors = getCardColors(null, lesson.lesson_type);
                         const endTime = getEndTime(lesson.start_time, lesson.duration_minutes);
+                        const durationStr = formatDuration(lesson.duration_minutes);
                         const location = lesson.pickup_location || lesson.pupil?.address;
-
                         elements.push(
                           <ExpandableLessonCard
                             key={lesson.id}
@@ -568,29 +678,14 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                             sendingMessage={sendingMessage}
                             onDelete={handleDeleteLesson}
                             renderCustomCollapsed={
-                              <div
-                                style={{
-                                  position: "relative",
-                                  padding: "12px 32px 12px 20px",
-                                  minHeight: 48,
-                                  overflow: "hidden",
-                                }}
-                              >
-                                {/* Left color accent */}
-                                <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: 4, backgroundColor: colors.bg, borderRadius: "14px 0 0 14px" }} />
-                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                  <div style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: colors.bg, flexShrink: 0 }} />
-                                  <span style={{ fontSize: 15, fontWeight: 500, color: "#18181B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, fontFamily: "Inter, sans-serif" }}>
-                                    {lesson.pupil?.name || "Unknown"}
-                                  </span>
-                                </div>
-                                <div style={{ fontSize: 13, fontWeight: 400, color: "#71717A", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingLeft: 18, fontFamily: "Inter, sans-serif" }}>
-                                  {formatTime(lesson.start_time)} – {endTime}
-                                  {location ? ` at ${location}` : ""}
-                                </div>
-                              </div>
+                              <EventChip
+                                category="lesson"
+                                title={cleanEventTitle(lesson.pupil?.name || "Lesson")}
+                                timeLine={`${formatTime(lesson.start_time)} — ${endTime} · ${durationStr}`}
+                                meta={location || null}
+                              />
                             }
-                          />
+                          />,
                         );
                       }
 
@@ -598,98 +693,35 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         const evt = item.data;
                         const startDt = parseISO(evt.start_time);
                         const endDt = parseISO(evt.end_time);
-                        const colors = getCardColors(evt.color);
+                        const category = categoriseEvent(evt.title, "external", { isAllDay: false });
                         const isExpanded = expandedEventId === evt.id;
                         const durationMins = differenceInMinutes(endDt, startDt);
-                        const durationStr = durationMins >= 60 ? `${Math.floor(durationMins / 60)}h ${durationMins % 60 > 0 ? `${durationMins % 60}m` : ""}` : `${durationMins}m`;
-
+                        const durationStr = formatDuration(durationMins);
                         elements.push(
-                          <div
-                            key={evt.id}
-                            onClick={() => setExpandedEventId(isExpanded ? null : evt.id)}
-                            style={{
-                              position: "relative",
-                              backgroundColor: "#FFFFFF",
-                              borderRadius: 14,
-                              boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)",
-                              padding: "12px 32px 12px 20px",
-                              minHeight: 48,
-                              cursor: "pointer",
-                              overflow: "hidden",
-                              transition: "background 120ms ease",
-                            }}
-                          >
-                            {/* Left color accent */}
-                            <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: 4, backgroundColor: colors.bg, borderRadius: "14px 0 0 14px" }} />
-                            {/* Chevron */}
-                            <ChevronDown
+                          <div key={evt.id}>
+                            <button
+                              type="button"
+                              onClick={() => setExpandedEventId(isExpanded ? null : evt.id)}
+                              aria-label={evt.title}
                               style={{
-                                position: "absolute",
-                                top: "50%",
-                                right: 12,
-                                transform: `translateY(-50%) ${isExpanded ? "rotate(180deg)" : "rotate(0deg)"}`,
-                                width: 16,
-                                height: 16,
-                                color: "#71717A",
-                                transition: "transform 200ms ease",
-                                pointerEvents: "none",
+                                display: "block",
+                                width: "100%",
+                                textAlign: "left",
+                                background: "none",
+                                border: "none",
+                                padding: 0,
+                                cursor: "pointer",
                               }}
-                            />
-                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              <div style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: colors.bg, flexShrink: 0 }} />
-                              <span style={{ fontSize: 15, fontWeight: 500, color: "#18181B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, fontFamily: "Inter, sans-serif" }}>
-                                {evt.title}
-                              </span>
-                            </div>
-                            <div style={{ fontSize: 13, fontWeight: 400, color: "#71717A", marginTop: 2, paddingLeft: 18, fontFamily: "Inter, sans-serif" }}>
-                              {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")} · {durationStr}
-                            </div>
-                            {isExpanded && (
-                              <div style={{ marginTop: 10, borderTop: "1px solid #E4E4E7", paddingTop: 10, display: "flex", flexDirection: "column", gap: 8 }} onClick={(e) => e.stopPropagation()}>
-                                {evt.meeting_url && (
-                                  <a
-                                    href={evt.meeting_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, backgroundColor: "#007AFF", color: "#FFFFFF", fontSize: 14, fontWeight: 600, padding: "10px 14px", borderRadius: 10, textDecoration: "none" }}
-                                  >
-                                    <Video style={{ width: 16, height: 16 }} />
-                                    Join {evt.meeting_provider || "Meeting"}
-                                  </a>
-                                )}
-                                {evt.location && (
-                                  <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                                    <MapPin style={{ width: 14, height: 14, color: "#71717A", marginTop: 2, flexShrink: 0 }} />
-                                    <span style={{ fontSize: 13, color: "#18181B" }}>{evt.location}</span>
-                                  </div>
-                                )}
-                                {evt.description && (
-                                  <div style={{ fontSize: 13, color: "#71717A", whiteSpace: "pre-wrap", lineHeight: 1.4 }}>
-                                    {evt.description}
-                                  </div>
-                                )}
-                                {evt.html_link && (
-                                  <a
-                                    href={evt.html_link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "#007AFF", textDecoration: "none" }}
-                                  >
-                                    <ExternalLink style={{ width: 12, height: 12 }} />
-                                    Open in Google Calendar
-                                  </a>
-                                )}
-                                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 2 }}>
-                                  <span style={{ fontSize: 11, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                                    {evt.is_busy ? "Busy" : "Free"} · Google Calendar
-                                  </span>
-                                </div>
-                                {!evt.location && !evt.description && !evt.meeting_url && !evt.html_link && (
-                                  <span style={{ fontSize: 12, color: "#A1A1AA", fontStyle: "italic" }}>No additional details</span>
-                                )}
-                              </div>
-                            )}
-                          </div>
+                            >
+                              <EventChip
+                                category={category}
+                                title={cleanEventTitle(evt.title)}
+                                timeLine={`${format(startDt, "HH:mm")} — ${format(endDt, "HH:mm")} · ${durationStr}`}
+                                meta={evt.location || null}
+                              />
+                            </button>
+                            {isExpanded && <ExternalDetails evt={evt} />}
+                          </div>,
                         );
                       }
 
@@ -697,142 +729,80 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         const block = item.data;
                         const startDt = parseISO(block.start_datetime);
                         const endDt = parseISO(block.end_datetime);
-                        const colors = getBlockColors(block.block_type);
+                        const category = categoriseEvent(block.title, "block", { blockType: block.block_type });
                         const isExpanded = expandedEventId === `block-${block.id}`;
                         const durationMins = differenceInMinutes(endDt, startDt);
-                        const durationStr = durationMins >= 60 ? `${Math.floor(durationMins / 60)}h ${durationMins % 60 > 0 ? `${durationMins % 60}m` : ""}` : `${durationMins}m`;
-
+                        const durationStr = formatDuration(durationMins);
+                        const isTask = category === "task";
                         elements.push(
-                          <div
-                            key={block.id}
-                            onClick={() => setExpandedEventId(isExpanded ? null : `block-${block.id}`)}
-                            style={{
-                              position: "relative",
-                              backgroundColor: "#FFFFFF",
-                              borderRadius: 14,
-                              boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)",
-                              padding: "12px 32px 12px 20px",
-                              minHeight: 48,
-                              cursor: "pointer",
-                              overflow: "hidden",
-                            }}
-                          >
-                            {/* Left color accent */}
-                            <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: 4, backgroundColor: colors.bg, borderRadius: "14px 0 0 14px" }} />
-                            {/* Chevron */}
-                            <ChevronDown
+                          <div key={block.id}>
+                            <button
+                              type="button"
+                              onClick={() => setExpandedEventId(isExpanded ? null : `block-${block.id}`)}
+                              aria-label={block.title}
                               style={{
-                                position: "absolute",
-                                top: "50%",
-                                right: 12,
-                                transform: `translateY(-50%) ${isExpanded ? "rotate(180deg)" : "rotate(0deg)"}`,
-                                width: 16,
-                                height: 16,
-                                color: "#71717A",
-                                transition: "transform 200ms ease",
-                                pointerEvents: "none",
+                                display: "block",
+                                width: "100%",
+                                textAlign: "left",
+                                background: "none",
+                                border: "none",
+                                padding: 0,
+                                cursor: "pointer",
                               }}
-                            />
-                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              <div style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: colors.bg, flexShrink: 0 }} />
-                              <span style={{ fontSize: 15, fontWeight: 500, color: "#18181B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, fontFamily: "Inter, sans-serif" }}>
-                                {block.title}
-                              </span>
-                            </div>
-                            <div style={{ fontSize: 13, fontWeight: 400, color: "#71717A", marginTop: 2, paddingLeft: 18, fontFamily: "Inter, sans-serif" }}>
-                              {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")} · {durationStr}
-                            </div>
+                            >
+                              <EventChip
+                                category={category}
+                                title={cleanEventTitle(block.title)}
+                                timeLine={`${format(startDt, "HH:mm")} — ${format(endDt, "HH:mm")} · ${durationStr}`}
+                                isTask={isTask}
+                              />
+                            </button>
                             {isExpanded && (
-                              <div style={{ marginTop: 10, borderTop: "1px solid #E4E4E7", paddingTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
-                                <span style={{ fontSize: 12, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                                  {block.block_type === "break" ? "Break" : block.block_type === "meeting" ? "Meeting" : "Personal"}
-                                </span>
-                                {block.notes && (
-                                  <div style={{ fontSize: 13, color: "#18181B", whiteSpace: "pre-wrap", lineHeight: 1.4 }}>
-                                    {block.notes}
-                                  </div>
-                                )}
-                                {!block.notes && (
-                                  <span style={{ fontSize: 12, color: "#A1A1AA", fontStyle: "italic" }}>No notes</span>
+                              <div style={{ padding: "8px 12px", fontSize: 12, color: "#5F6368" }}>
+                                {block.notes || (
+                                  <span style={{ fontStyle: "italic", color: "#9AA0A6" }}>No notes</span>
                                 )}
                               </div>
                             )}
-                          </div>
+                          </div>,
                         );
                       }
 
-                      // Gap insight: check gap to next item
+                      // Gap insight — kept exactly as before, just restyled.
                       if (i < timeline.length - 1) {
                         const nextItem = timeline[i + 1];
-                        const currentEndStr = item.kind === "lesson"
-                          ? getEndTime(item.data.start_time, item.data.duration_minutes)
-                          : item.kind === "external"
-                            ? format(parseISO(item.data.end_time), "HH:mm")
-                            : format(parseISO(item.data.end_datetime), "HH:mm");
+                        const currentEndStr =
+                          item.kind === "lesson"
+                            ? getEndTime(item.data.start_time, item.data.duration_minutes)
+                            : item.kind === "external"
+                              ? format(parseISO(item.data.end_time), "HH:mm")
+                              : format(parseISO(item.data.end_datetime), "HH:mm");
                         const nextStartStr = nextItem.time;
                         const [cH, cM] = currentEndStr.split(":").map(Number);
                         const [nH, nM] = nextStartStr.split(":").map(Number);
                         const gapMin = (nH * 60 + nM) - (cH * 60 + cM);
                         if (gapMin >= 60) {
-                          const isSignificant = gapMin >= 60;
-
-                          if (isSignificant) {
-                            elements.push(
-                              <GapFillCard
-                                key={`gap-${i}`}
-                                instructorId={instructorId}
-                                instructorName={instructorName}
-                                date={dateStr}
-                                startTime={currentEndStr}
-                                endTime={nextStartStr}
-                                gapMinutes={gapMin}
-                              />
-                            );
-                          } else {
-                            const hours = Math.floor(gapMin / 60);
-                            const mins = gapMin % 60;
-                            const label = mins > 0 ? `${hours}h ${mins}m gap` : `${hours}-hour gap`;
-                            elements.push(
-                              <div
-                                key={`gap-${i}`}
-                                onClick={() => setAddLessonOpen(true)}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 8,
-                                  cursor: "pointer",
-                                  margin: "4px 0",
-                                }}
-                              >
-                                <div style={{ flex: 1, borderTop: "1px dashed #D4D4D8" }} />
-                                <span style={{ fontSize: 11, color: "#A1A1AA", whiteSpace: "nowrap" }}>{label}</span>
-                                <div style={{ flex: 1, borderTop: "1px dashed #D4D4D8" }} />
-                              </div>
-                            );
-                          }
+                          elements.push(
+                            <GapFillCard
+                              key={`gap-${i}`}
+                              instructorId={instructorId}
+                              instructorName={instructorName}
+                              date={dateStr}
+                              startTime={currentEndStr}
+                              endTime={nextStartStr}
+                              gapMinutes={gapMin}
+                            />,
+                          );
                         }
                       }
                     });
 
-                    // Now indicator at end if not yet rendered
-                    if (shouldShowNow && nowTimeStr && !nowRendered) {
-                      elements.push(
-                        <div key="now-indicator" style={{ display: "flex", alignItems: "center", gap: 0, margin: "4px 0" }}>
-                          <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#18181B", flexShrink: 0, marginLeft: -32 }} />
-                          <div style={{ flex: 1, height: 1, backgroundColor: "rgba(24,24,27,0.6)" }} />
-                        </div>
-                      );
+                    if (showNowIndicator && nowTimeStr && !nowRendered) {
+                      pushNowIndicator();
                     }
 
                     return elements;
                   })()}
-
-                  {/* Empty state */}
-                  {isEmpty && (
-                    <div style={{ display: "flex", alignItems: "center", height: 48, fontSize: 13, color: "#A1A1AA" }}>
-                      No events
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -841,7 +811,33 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
       </div>
 
       {/* Bottom spacer for FAB */}
-      <div style={{ height: 120 }} />
+      <div style={{ height: 96 }} />
+
+      {/* Google-style FAB */}
+      <button
+        type="button"
+        onClick={() => setAddLessonOpen(true)}
+        aria-label="Create event"
+        style={{
+          position: "fixed",
+          right: 16,
+          bottom: 96,
+          width: 52,
+          height: 52,
+          borderRadius: 16,
+          background: "#FFFFFF",
+          border: "none",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.08)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          zIndex: 50,
+          padding: 0,
+        }}
+      >
+        <GooglePlusIcon />
+      </button>
 
       {/* Cancel Dialog */}
       {selectedLesson && (
@@ -907,6 +903,68 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
           })(),
         } : null}
       />
+    </div>
+  );
+}
+
+/** Expanded details panel for a Google Calendar event (preserves prior info). */
+function ExternalDetails({ evt }: { evt: ExternalEvent }) {
+  return (
+    <div
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        padding: "8px 12px 10px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 6,
+        fontFamily: FONT_STACK,
+      }}
+    >
+      {evt.meeting_url && (
+        <a
+          href={evt.meeting_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            backgroundColor: "#1A73E8",
+            color: "#FFFFFF",
+            fontSize: 13,
+            fontWeight: 500,
+            padding: "8px 12px",
+            borderRadius: 6,
+            textDecoration: "none",
+          }}
+        >
+          <Video style={{ width: 14, height: 14 }} />
+          Join {evt.meeting_provider || "Meeting"}
+        </a>
+      )}
+      {evt.location && (
+        <div style={{ display: "flex", gap: 6, fontSize: 12, color: "#5F6368" }}>
+          <MapPin style={{ width: 12, height: 12, marginTop: 2, flexShrink: 0 }} />
+          <span>{evt.location}</span>
+        </div>
+      )}
+      {evt.description && (
+        <div style={{ fontSize: 12, color: "#5F6368", whiteSpace: "pre-wrap", lineHeight: 1.4 }}>
+          {evt.description}
+        </div>
+      )}
+      {evt.html_link && (
+        <a
+          href={evt.html_link}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "#1A73E8", textDecoration: "none" }}
+        >
+          <ExternalLink style={{ width: 11, height: 11 }} />
+          Open in Google Calendar
+        </a>
+      )}
     </div>
   );
 }
