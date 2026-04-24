@@ -24,7 +24,6 @@ const quickActions = [
   { id: "nearby-adis", label: "Nearby ADIs", icon: UsersRound, color: "99 102 241", route: "/instructor/nearby-friends" },
   { id: "availability", label: "Availability", icon: Clock, color: "20 184 166", route: "/instructor/availability?action=add" },
   { id: "end-of-day", label: "End of Day", icon: Coffee, color: "99 102 241", route: "/instructor/end-of-day" },
-  { id: "platform-updates", label: "Platform Updates", icon: Megaphone, color: "245 158 11", route: "/instructor/platform-updates" },
 ];
 
 function loadPinned(): string[] {
@@ -89,7 +88,7 @@ export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMe
             }}
           >
             <img
-              src="/dsm-logo.png"
+              src="/dsm-icon-192.png"
               alt=""
               className="h-9 w-9 rounded-[8px] object-contain bg-white/10 p-1"
             />
