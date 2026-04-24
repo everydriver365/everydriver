@@ -48,6 +48,7 @@ function colorForPupil(id: string): string {
 interface CandidatePupil {
   id: string;
   name: string;
+  imageUrl: string | null;
   score: number;
 }
 
