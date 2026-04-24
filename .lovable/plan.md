@@ -1,50 +1,34 @@
 
 
-## Redesign: + button menu → iOS-style side drawer
+## Fix: redesign the actual + menu used on the instructor mobile home
 
-Replace the small dropdown that opens from `QuickActionsFAB` with a polished full-height side drawer styled like the reference (navy header, large rows with circular icons, chevron disclosures, active-row tint).
+The previous redesign updated `QuickActionsFAB`, but the mobile home's "+" button opens a different component: `QuickActionsPopoverMenu`. That's why you saw no change. This plan applies the iOS side-drawer styling to the correct component.
 
-### Reference cues being adopted
-- Full-height drawer, ~80% screen width, slides in from the left
-- Dark navy header bar with the DSM logo and product name
-- First row visually "active" with brand-tinted background and pill highlight
-- Each row: circular monochrome icon + label + chevron, generous tap height (~56px)
-- Soft divider lines, rounded-2xl tap targets, iOS spring animation
-- Backdrop dim + blur, swipe-to-close, safe-area padded
+### What's actually wired up
+- Mobile home's "+" → `QuickActionsPopoverMenu` (used by `SwipeableQuickAccess`, `QuickActionTiles`, and the header in `InstructorPortalLayout`)
+- It currently renders as a small floating card above the bottom nav with 9 pinnable actions
 
-### Files to change
-1. **Create** `src/components/instructor/QuickActionsDrawer.tsx`
-   - Built on `vaul` Drawer (already used by `IOSSheet`) with `direction="left"`
-   - Props: `open`, `onOpenChange`, `actions: QuickAction[]`, `onActionClick(action)`
-   - Layout:
-     - Sticky navy header (`hsl(var(--dsm-navy))`) with `dsm-logo.png` + "DSM" wordmark + close `X`
-     - Scrollable list of rows; first row gets tinted background (`#E8EEFF` light / brand-blue 12% dark) and bold label
-     - Bottom safe-area spacer; subtle footer caption "Driving School Manager"
-   - Animation: spring 320 stiffness / 32 damping, scale-background enabled
+### Change
 
-2. **Modify** `src/components/instructor/QuickActionsFAB.tsx`
-   - Keep the existing `QuickAction[]` array, navigation logic, `AddLessonSheet`, haptics, position, scroll/visibility — **unchanged**
-   - Remove the inline `<motion.div>` dropdown panel (lines ~122–162)
-   - Render `<QuickActionsDrawer open={isOpen} onOpenChange={setIsOpen} actions={quickActions} onActionClick={handleActionClick} />` instead
-   - FAB button itself stays the same (rotates +45° when open)
+**Rewrite** `src/components/instructor/QuickActionsPopoverMenu.tsx` to render an iOS-style left side drawer matching the reference, while keeping the existing API (`open`, `onClose`) so all three call sites keep working with no edits.
 
-### Action list (unchanged data, just re-styled)
-Add Lesson · Add Pupil · Track Live · Take Payment · Messages · Nearby ADIs
-
-### Styling tokens used
-- Header background: `hsl(var(--dsm-navy))` with white text
-- Active row tint: `hsl(var(--dsm-accent-blue) / 0.10)`
-- Icon chips: 36px circle, `bg-zinc-100 dark:bg-white/8`, icon `hsl(var(--dsm-text-primary))`
-- Row height: 56px, `px-4`, `rounded-2xl`, separator `bg-black/[0.06]`
-- Drawer width: `min(86vw, 340px)`; full height; rounded right edge `rounded-r-[18px]`
+New look (same as the approved drawer design):
+- Full-height drawer, slides in from the left, `min(86vw, 340px)` wide, `vaul` `direction="left"`
+- Navy header (`hsl(var(--dsm-navy))`) with DSM logo, "Driving School Manager" subtitle, close `X`
+- "Pinned" section (uppercase eyebrow), then "Quick Actions" section
+- 56px rows: 36px circular icon chip (brand-tinted background using each action's existing color at ~12% opacity) + bold label + chevron + star/pin toggle on the right
+- Tinted active state on the first pinned row (`hsl(var(--dsm-accent-blue) / 0.10)`)
+- Backdrop dim + blur, swipe-to-close, safe-area padded, footer caption
 
 ### What stays exactly the same
-- All routes and click handlers in `getQuickActions(...)`
-- `AddLessonSheet` flow
-- Scroll-hide behaviour and FAB position
-- Haptics calls
+- All 9 actions, their routes, icons, and colors (Add Lesson, Add Pupil, Track Live, Take Payment, Messages, Nearby ADIs, Availability, End of Day, Platform Updates)
+- Pin/unpin behaviour and `localStorage` key (`pinned-quick-actions`)
+- Pinned-first sort order
+- Haptics on open / pin / select
+- Component props (`open`, `onClose`) — no caller changes required
 
 ### Out of scope
-- No changes to other FABs (`RadialFAB`, `ScheduleFAB`, `PupilQuickActions`)
-- No backend / data changes
+- `RadialFAB` (the small Note/Navigate/Message/Break radial on mobile) — untouched
+- `QuickActionsFAB` and the new `QuickActionsDrawer` from the previous round — left as-is for desktop/other use
+- No data, route, or backend changes
 
