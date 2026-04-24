@@ -74,7 +74,14 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instructorId]);
+
+  // Re-count when the targeted (feasibility-filtered) pupil set changes.
+  useEffect(() => {
+    fetchPupilCount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetedPupilIds?.join(",")]);
 
   useEffect(() => {
     const date = searchParams.get("date");
