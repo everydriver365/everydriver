@@ -105,10 +105,7 @@ export function CancellationRequestsView({ instructorId, compact = false }: Canc
 
   const formatTime = (timeStr: string) => {
     const [hours, minutes] = timeStr.split(":");
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? "pm" : "am";
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes}${ampm}`;
+    return `${hours.padStart(2, "0")}:${minutes}`;
   };
 
   const getUrgencyBadge = (lessonDate: string, startTime: string) => {
