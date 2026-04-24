@@ -226,7 +226,7 @@ export function GapFillCard({
       style={{
         display: "flex",
         alignItems: "center",
-        gap: 10,
+        gap: 8,
         width: "100%",
         background: "#F8F9FA",
         borderRadius: 8,
@@ -237,6 +237,7 @@ export function GapFillCard({
         fontFamily: FONT_STACK,
         margin: "2px 0",
         minHeight: 44,
+        boxSizing: "border-box",
       }}
     >
       {avatars.length > 0 && (
