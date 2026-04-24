@@ -5,6 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { parseISO } from "date-fns";
 import { RefreshCw, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  evaluateFeasibility,
+  MIN_LESSON_MIN as MIN_LESSON_MIN_SHARED,
+  TRAVEL_FALLBACK_MIN as TRAVEL_FALLBACK_MIN_SHARED,
+} from "./gapFeasibility";
 
 interface GapFillCardProps {
   instructorId: string;
@@ -67,8 +72,8 @@ interface GapCandidatesResult {
   bufferMin: number;
 }
 
-const TRAVEL_FALLBACK_MIN = 10;
-const MIN_LESSON_MIN = 60;
+const TRAVEL_FALLBACK_MIN = TRAVEL_FALLBACK_MIN_SHARED;
+const MIN_LESSON_MIN = MIN_LESSON_MIN_SHARED;
 const UK_POSTCODE_RE = /^[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}$/i;
 
 // In-memory cache of postcode-pair travel minutes (per session)
@@ -237,10 +242,16 @@ function useGapCandidatePupils(
             fetchTravelMinutes(pupilPostcode, nextPickupPostcode),
           ]);
           const realResolved = outMin !== null || inMin !== null;
-          const out = outMin ?? TRAVEL_FALLBACK_MIN;
-          const inn = inMin ?? TRAVEL_FALLBACK_MIN;
-          const needed = bufferMinutes + out + MIN_LESSON_MIN + inn + bufferMinutes;
-          const fits = gapMin >= needed;
+          const feasibility = evaluateFeasibility({
+            gapMin,
+            bufferMinutes,
+            travelOutMin: outMin,
+            travelInMin: inMin,
+          });
+          const out = feasibility.travelOutUsed;
+          const inn = feasibility.travelInUsed;
+          const needed = feasibility.needed;
+          const fits = feasibility.fits;
 
           // Build a clear breakdown sentence
           const outLabel =
