@@ -188,6 +188,11 @@ export function GapFillCard({
     navigate(`/instructor/gaps?${search.toString()}`);
   };
 
+  const handleRefresh = (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.stopPropagation();
+    queryClient.invalidateQueries({ queryKey: candidateQueryKey, exact: true });
+  };
+
   const titleNode =
     totalCount === 0 ? (
       <>{durationLabel} gap</>
