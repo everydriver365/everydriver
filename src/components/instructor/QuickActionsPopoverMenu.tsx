@@ -92,11 +92,7 @@ export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMe
               alt="DSM"
               className="h-10 w-auto object-contain"
             />
-            <div className="flex-1 min-w-0">
-              <div className="text-[11px] text-muted-foreground leading-tight">
-                Driving School Manager
-              </div>
-            </div>
+            <div className="flex-1 min-w-0" />
             <button
               onClick={onClose}
               className="h-8 w-8 rounded-full flex items-center justify-center bg-muted active:bg-muted/70 transition-colors"
