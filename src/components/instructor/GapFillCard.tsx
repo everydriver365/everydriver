@@ -48,6 +48,7 @@ function colorForPupil(id: string): string {
 interface CandidatePupil {
   id: string;
   name: string;
+  imageUrl: string | null;
   score: number;
 }
 
@@ -71,7 +72,7 @@ function useGapCandidatePupils(
       // Active pupils for this instructor
       const { data: pupils } = await supabase
         .from("pupils")
-        .select("id, name, status")
+        .select("id, name, status, profile_image_url")
         .eq("instructor_id", instructorId)
         .eq("status", "active");
 
@@ -134,6 +135,7 @@ function useGapCandidatePupils(
         .map((p) => ({
           id: p.id,
           name: p.name,
+          imageUrl: (p as { profile_image_url?: string | null }).profile_image_url ?? null,
           score: scoreByPupil.get(p.id) || 0,
         }));
 
@@ -243,9 +245,21 @@ export function GapFillCard({
                 marginLeft: idx === 0 ? 0 : -6,
                 boxSizing: "border-box",
                 lineHeight: 1,
+                overflow: "hidden",
               }}
             >
-              {getInitials(p.name)}
+              {p.imageUrl ? (
+                <img
+                  src={p.imageUrl}
+                  alt=""
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              ) : (
+                getInitials(p.name)
+              )}
             </div>
           ))}
         </div>
