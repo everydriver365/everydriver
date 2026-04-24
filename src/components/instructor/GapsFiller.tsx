@@ -433,7 +433,9 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
         )}
       </div>
       <p className="text-sm text-muted-foreground mb-4">
-        Text all {pupilCount} pupils with phone numbers about available slots
+        {targetedPupilIds && targetedPupilIds.length > 0
+          ? `Texting ${pupilCount} pupil${pupilCount === 1 ? "" : "s"} who fit this slot after travel time`
+          : `Text all ${pupilCount} pupils with phone numbers about available slots`}
       </p>
       <div className="space-y-4">
         {loading ? (
