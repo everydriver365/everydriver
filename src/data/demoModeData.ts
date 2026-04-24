@@ -161,6 +161,10 @@ export const demoStats = {
   completedToday: currentHour > 12 ? 2 : currentHour > 11 ? 1 : 0,
   unpaidCount: 2,
   totalOwed: 210,
+  // Insight tile sample counts (used when Demo Mode is enabled)
+  vehicleFaults: 1,
+  dormantPupils: 3,
+  smartNudges: 4,
 };
 
 export const demoWeeklySummary = {

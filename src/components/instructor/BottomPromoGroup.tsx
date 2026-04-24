@@ -3,10 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight, Users, Compass } from "lucide-react";
 import { DiscoverFeaturesSheet } from "./DiscoverFeaturesSheet";
+import { DISCOVER_FEATURES } from "./discoverFeaturesData";
+import { useDemoMode } from "@/context/DemoModeContext";
 
 export function BottomPromoGroup({ className = "" }: { className?: string }) {
   const navigate = useNavigate();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const { isDemoMode } = useDemoMode();
+
+  // Live count of features in the registry; demo mode shows a friendly "45+".
+  const liveFeatureCount = DISCOVER_FEATURES.length;
+  const featureBadge = isDemoMode ? "45+" : `${liveFeatureCount}+`;
 
   const tileStyle: React.CSSProperties = {
     background: "#FFFFFF",
@@ -76,7 +83,7 @@ export function BottomPromoGroup({ className = "" }: { className?: string }) {
               <span style={{
                 fontSize: 10, fontWeight: 500, padding: "2px 7px", borderRadius: 4,
                 backgroundColor: "#DCFCE7", color: "#166534",
-              }}>45+</span>
+              }}>{featureBadge}</span>
             </div>
             <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }}>See everything your app can do</p>
           </div>

@@ -279,7 +279,7 @@ export function MissionControlHomeView({ instructorId, instructor }: MissionCont
       )}
 
       {/* Insight tiles */}
-      <InsightTilesGrid gapCount={gapCount} />
+      <InsightTilesGrid instructorId={instructorId} gapCount={gapCount} />
 
       {/* Bottom promos */}
       <BottomPromoGroup />

@@ -643,7 +643,7 @@ export function InstructorMobileHome({
           <div className="px-4">
             <SectionHeader title="Insights" category="navigation" />
           </div>
-          <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
+          <InsightTilesGrid instructorId={instructorId} gapCount={gapSuggestions?.length || 0} />
         </div>
 
         {/* Telematics */}
