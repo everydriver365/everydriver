@@ -158,12 +158,16 @@ export function GapFillCard({
   gapMinutes,
 }: GapFillCardProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const candidateQueryKey = ["gap-candidate-pupils", instructorId, date, startTime, endTime];
   const { data: candidates } = useGapCandidatePupils(
     instructorId,
     date,
     startTime,
     endTime,
   );
+  const isRefreshing =
+    useIsFetching({ queryKey: candidateQueryKey, exact: true }) > 0;
 
   const durationLabel = useMemo(() => formatDuration(gapMinutes), [gapMinutes]);
 
