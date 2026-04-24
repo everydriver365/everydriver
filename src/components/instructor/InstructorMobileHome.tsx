@@ -362,7 +362,6 @@ export function InstructorMobileHome({
          className="min-h-screen flex flex-col overflow-x-hidden relative"
          style={{
            background: "transparent",
-           fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
          }}
         >
 

@@ -10,7 +10,6 @@ export default function InstructorDashcamGallery() {
     <InstructorPortalLayout>
       <div
         style={{
-          fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
           minHeight: "100vh",
           background: "#F2F2F7",
         }}

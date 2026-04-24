@@ -527,7 +527,7 @@ export default function InstructorPupils() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-3 pb-6" style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
+      <div className="space-y-3 pb-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

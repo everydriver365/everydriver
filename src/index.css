@@ -372,18 +372,22 @@
     overscroll-behavior-y: contain;
   }
 
-  /* iOS instructor portal: SF Pro system font */
-  .ios-instructor {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  /* iOS instructor portal: canonical font stack.
+     Inter first (loaded webfont — identical across iOS/Android/desktop),
+     SF Pro and system fonts as native fallbacks. Applied to all
+     descendants so legacy inline fontFamily styles can't drift. */
+  .ios-instructor,
+  .ios-instructor * {
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   }
 
-  .ios-instructor h1,
-  .ios-instructor h2,
-  .ios-instructor h3,
-  .ios-instructor h4,
-  .ios-instructor h5,
-  .ios-instructor h6 {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+  /* Preserve explicit monospace opt-ins (postcodes, codes, vehicle reg) */
+  .ios-instructor .font-mono,
+  .ios-instructor code,
+  .ios-instructor pre,
+  .ios-instructor kbd,
+  .ios-instructor samp {
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
   }
 }
 
