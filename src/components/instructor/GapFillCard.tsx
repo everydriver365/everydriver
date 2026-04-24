@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient, useIsFetching } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { parseISO } from "date-fns";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface GapFillCardProps {
   instructorId: string;
@@ -55,6 +56,15 @@ interface CandidatePupil {
   travelOutMin: number | null; // prev drop-off → pupil pickup
   travelInMin: number | null; // pupil pickup → next pickup
   etaSource: "real" | "fallback";
+  included: boolean;
+  reason: string; // human-readable explanation of inclusion / exclusion
+}
+
+interface GapCandidatesResult {
+  included: CandidatePupil[];
+  excluded: CandidatePupil[];
+  gapMin: number;
+  bufferMin: number;
 }
 
 const TRAVEL_FALLBACK_MIN = 10;
@@ -98,14 +108,16 @@ function useGapCandidatePupils(
 ) {
   return useQuery({
     queryKey: ["gap-candidate-pupils", instructorId, date, startTime, endTime],
-    queryFn: async (): Promise<CandidatePupil[]> => {
-      if (!instructorId) return [];
+    queryFn: async (): Promise<GapCandidatesResult> => {
+      const empty: GapCandidatesResult = { included: [], excluded: [], gapMin: 0, bufferMin: 0 };
+      if (!instructorId) return empty;
 
       const dayOfWeek = parseISO(date).getDay();
       const [gsH, gsM] = startTime.split(":").map(Number);
       const [geH, geM] = endTime.split(":").map(Number);
       const gapStartMin = gsH * 60 + gsM;
       const gapEndMin = geH * 60 + geM;
+      const gapMin = gapEndMin - gapStartMin;
 
       // Active pupils + instructor buffer + that day's lessons (for adjacency)
       const [{ data: pupils }, { data: instructor }, { data: dayLessons }] =
@@ -130,10 +142,12 @@ function useGapCandidatePupils(
             .neq("status", "cancelled"),
         ]);
 
-      if (!pupils || pupils.length === 0) return [];
-
       const bufferMinutes =
         (instructor as { buffer_minutes?: number | null } | null)?.buffer_minutes ?? 0;
+
+      if (!pupils || pupils.length === 0) {
+        return { ...empty, gapMin, bufferMin: bufferMinutes };
+      }
 
       // Identify previous (drop-off) and next (pickup) lesson around this gap
       type DayLesson = {
@@ -150,6 +164,7 @@ function useGapCandidatePupils(
       let prevDropPostcode: string | null = null;
       let nextPickupPostcode: string | null = null;
       const bookedIds = new Set<string>();
+      const bookedNameById = new Map<string, string>();
 
       for (const l of sortedLessons) {
         const [lh, lm] = l.start_time.split(":").map(Number);
@@ -159,13 +174,16 @@ function useGapCandidatePupils(
           bookedIds.add(l.pupil_id);
         }
         if (le <= gapStartMin) {
-          // Previous lesson ends at or before gap → its pickup postcode is approx drop-off too
           prevDropPostcode = l.pickup_postcode || l.pupils?.postcode || prevDropPostcode;
         }
         if (ls >= gapEndMin && nextPickupPostcode === null) {
           nextPickupPostcode = l.pickup_postcode || l.pupils?.postcode || null;
         }
       }
+      // Map names for booked pupils so we can phrase the exclusion reason nicely
+      pupils.forEach((p) => {
+        if (bookedIds.has(p.id)) bookedNameById.set(p.id, p.name);
+      });
 
       // Recent lessons for pattern-matching score (past ~60 days)
       const sinceDate = new Date();
@@ -193,42 +211,81 @@ function useGapCandidatePupils(
         if (s > 0) scoreByPupil.set(l.pupil_id, (scoreByPupil.get(l.pupil_id) || 0) + s);
       });
 
-      // Resolve real per-pupil travel where possible (parallel, capped)
-      const eligible = pupils.filter((p) => !bookedIds.has(p.id));
+      // Resolve real per-pupil travel where possible
+      const enrichedAll: CandidatePupil[] = await Promise.all(
+        pupils.map(async (p) => {
+          const pupilPostcode = (p as { postcode?: string | null }).postcode ?? null;
 
-      const enriched: CandidatePupil[] = await Promise.all(
-        eligible.map(async (p) => {
-          const pupilPostcode =
-            (p as { postcode?: string | null }).postcode ?? null;
+          // Already-booked pupils get an early exclusion reason and skip ETA lookup
+          if (bookedIds.has(p.id)) {
+            return {
+              id: p.id,
+              name: p.name,
+              imageUrl: (p as { profile_image_url?: string | null }).profile_image_url ?? null,
+              postcode: pupilPostcode,
+              score: scoreByPupil.get(p.id) || 0,
+              travelOutMin: null,
+              travelInMin: null,
+              etaSource: "fallback" as const,
+              included: false,
+              reason: "Already booked in this window",
+            };
+          }
+
           const [outMin, inMin] = await Promise.all([
             fetchTravelMinutes(prevDropPostcode, pupilPostcode),
             fetchTravelMinutes(pupilPostcode, nextPickupPostcode),
           ]);
           const realResolved = outMin !== null || inMin !== null;
+          const out = outMin ?? TRAVEL_FALLBACK_MIN;
+          const inn = inMin ?? TRAVEL_FALLBACK_MIN;
+          const needed = bufferMinutes + out + MIN_LESSON_MIN + inn + bufferMinutes;
+          const fits = gapMin >= needed;
+
+          // Build a clear breakdown sentence
+          const outLabel =
+            outMin === null ? `~${out}m travel in (est.)` : `${out}m travel in`;
+          const inLabel =
+            inMin === null ? `~${inn}m travel out (est.)` : `${inn}m travel out`;
+          const breakdown = `${bufferMinutes}m buffer + ${outLabel} + ${MIN_LESSON_MIN}m lesson + ${inLabel} + ${bufferMinutes}m buffer = ${needed}m needed (gap ${gapMin}m)`;
+
+          let reason: string;
+          if (fits) {
+            const slack = gapMin - needed;
+            reason = realResolved
+              ? `Fits with ${slack}m to spare. ${breakdown}`
+              : `Likely fits (${slack}m spare) — using estimated travel. ${breakdown}`;
+          } else {
+            const short = needed - gapMin;
+            if (!pupilPostcode) {
+              reason = `${short}m short. No postcode on file, so travel is the 10m default. ${breakdown}`;
+            } else if (!realResolved) {
+              reason = `${short}m short using estimated travel (route not resolved). ${breakdown}`;
+            } else {
+              reason = `${short}m short. ${breakdown}`;
+            }
+          }
+
           return {
             id: p.id,
             name: p.name,
-            imageUrl:
-              (p as { profile_image_url?: string | null }).profile_image_url ?? null,
+            imageUrl: (p as { profile_image_url?: string | null }).profile_image_url ?? null,
             postcode: pupilPostcode,
             score: scoreByPupil.get(p.id) || 0,
             travelOutMin: outMin,
             travelInMin: inMin,
             etaSource: realResolved ? "real" : "fallback",
+            included: fits,
+            reason,
           };
         }),
       );
 
-      // Filter by feasibility using real ETA when available, fallback otherwise
-      const feasible = enriched.filter((c) => {
-        const out = c.travelOutMin ?? TRAVEL_FALLBACK_MIN;
-        const inn = c.travelInMin ?? TRAVEL_FALLBACK_MIN;
-        const needed = bufferMinutes + out + MIN_LESSON_MIN + inn + bufferMinutes;
-        return gapEndMin - gapStartMin >= needed;
-      });
+      const included = enrichedAll.filter((c) => c.included);
+      const excluded = enrichedAll.filter((c) => !c.included);
 
-      // Sort: highest score first, then shortest combined travel, then alpha
-      feasible.sort((a, b) => {
+      // Sort included: highest score first, then shortest combined travel, then alpha
+      included.sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
         const at = (a.travelOutMin ?? TRAVEL_FALLBACK_MIN) + (a.travelInMin ?? TRAVEL_FALLBACK_MIN);
         const bt = (b.travelOutMin ?? TRAVEL_FALLBACK_MIN) + (b.travelInMin ?? TRAVEL_FALLBACK_MIN);
@@ -236,7 +293,19 @@ function useGapCandidatePupils(
         return a.name.localeCompare(b.name);
       });
 
-      return feasible;
+      // Sort excluded: closest-to-fitting first (smallest shortfall), then alpha
+      excluded.sort((a, b) => {
+        const aOut = a.travelOutMin ?? TRAVEL_FALLBACK_MIN;
+        const aIn = a.travelInMin ?? TRAVEL_FALLBACK_MIN;
+        const bOut = b.travelOutMin ?? TRAVEL_FALLBACK_MIN;
+        const bIn = b.travelInMin ?? TRAVEL_FALLBACK_MIN;
+        const aNeeded = bufferMinutes + aOut + MIN_LESSON_MIN + aIn + bufferMinutes;
+        const bNeeded = bufferMinutes + bOut + MIN_LESSON_MIN + bIn + bufferMinutes;
+        if (aNeeded !== bNeeded) return aNeeded - bNeeded;
+        return a.name.localeCompare(b.name);
+      });
+
+      return { included, excluded, gapMin, bufferMin: bufferMinutes };
     },
     enabled: !!instructorId,
     staleTime: 5 * 60 * 1000,
@@ -264,9 +333,10 @@ export function GapFillCard({
 
   const durationLabel = useMemo(() => formatDuration(gapMinutes), [gapMinutes]);
 
-  const suggested = candidates ?? [];
-  const totalCount = suggested.length;
-  const avatars = suggested.slice(0, 3);
+  const included = candidates?.included ?? [];
+  const excluded = candidates?.excluded ?? [];
+  const totalCount = included.length;
+  const avatars = included.slice(0, 3);
 
   const handleOpen = () => {
     const search = new URLSearchParams({
@@ -345,65 +415,126 @@ export function GapFillCard({
       }}
     >
       {avatars.length > 0 && (
-        <div
-          aria-hidden="true"
-          style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
-        >
+        <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
           {avatars.map((p, idx) => (
-            <div
-              key={p.id}
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: "50%",
-                background: colorForPupil(p.id),
-                color: "#FFFFFF",
-                fontSize: 10,
-                fontWeight: 600,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                border: "2px solid #F8F9FA",
-                marginLeft: idx === 0 ? 0 : -6,
-                boxSizing: "border-box",
-                lineHeight: 1,
-                overflow: "hidden",
-              }}
-            >
-              {p.imageUrl ? (
-                <img
-                  src={p.imageUrl}
-                  alt=""
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).style.display = "none";
+            <Tooltip key={p.id} delayDuration={150}>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label={`${p.name}: ${p.reason}`}
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: "50%",
+                    background: colorForPupil(p.id),
+                    color: "#FFFFFF",
+                    fontSize: 10,
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "2px solid #F8F9FA",
+                    marginLeft: idx === 0 ? 0 : -6,
+                    boxSizing: "border-box",
+                    lineHeight: 1,
+                    overflow: "hidden",
+                    padding: 0,
+                    cursor: "help",
                   }}
-                />
-              ) : (
-                getInitials(p.name)
-              )}
-            </div>
+                >
+                  {p.imageUrl ? (
+                    <img
+                      src={p.imageUrl}
+                      alt=""
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        display: "block",
+                      }}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    getInitials(p.name)
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[260px] text-xs leading-snug">
+                <div style={{ fontWeight: 600, marginBottom: 2 }}>{p.name}</div>
+                <div>{p.reason}</div>
+              </TooltipContent>
+            </Tooltip>
           ))}
         </div>
       )}
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontSize: 12,
-            fontWeight: 500,
-            color: "#1F1F1F",
-            letterSpacing: "-0.08px",
-            lineHeight: 1.3,
-            margin: 0,
-            overflow: "hidden",
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            wordBreak: "break-word",
-          }}
-        >
-          {titleNode}
+        <div style={{ display: "flex", alignItems: "center", gap: 4, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 500,
+              color: "#1F1F1F",
+              letterSpacing: "-0.08px",
+              lineHeight: 1.3,
+              margin: 0,
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              wordBreak: "break-word",
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
+            {titleNode}
+          </div>
+          {excluded.length > 0 && (
+            <Tooltip delayDuration={150}>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label={`Why ${excluded.length} ${excluded.length === 1 ? "pupil was" : "pupils were"} excluded`}
+                  style={{
+                    width: 16,
+                    height: 16,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "none",
+                    background: "transparent",
+                    color: "#9AA0A6",
+                    cursor: "help",
+                    padding: 0,
+                    flexShrink: 0,
+                  }}
+                >
+                  <Info size={12} aria-hidden="true" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[280px] text-xs leading-snug">
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                  {excluded.length} {excluded.length === 1 ? "pupil doesn't" : "pupils don't"} fit
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 14, display: "grid", gap: 4 }}>
+                  {excluded.slice(0, 6).map((p) => (
+                    <li key={p.id}>
+                      <span style={{ fontWeight: 600 }}>{p.name}:</span> {p.reason}
+                    </li>
+                  ))}
+                  {excluded.length > 6 && (
+                    <li style={{ listStyle: "none", color: "#9AA0A6" }}>
+                      …and {excluded.length - 6} more
+                    </li>
+                  )}
+                </ul>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
         <div
           style={{
