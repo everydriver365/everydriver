@@ -173,6 +173,11 @@
     --dsm-tint-purple-bg: 263 60% 15%;   /* #1E0F3D */
     --dsm-tint-purple-fg: 263 100% 80%;  /* #B499FF */
   }
+  /* Instructor portal font — Accord (if available) with Manrope fallback */
+  .instructor-portal,
+  .instructor-portal * {
+    font-family: "Accord", "Manrope", -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", system-ui, sans-serif;
+  }
   /* Smooth 200ms theme transitions on instructor surfaces */
   .instructor-portal,
   .instructor-portal * {
