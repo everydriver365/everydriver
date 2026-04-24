@@ -50,6 +50,7 @@ import { useVisitorChatUnreadCount } from "@/hooks/useVisitorChatUnreadCount";
 import { cn } from "@/lib/utils";
 import { format, parse } from "date-fns";
 import { QuickActionsPopoverMenu } from "@/components/instructor/QuickActionsPopoverMenu";
+import { Tile, TileGrid } from "@/components/instructor/Tile";
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
