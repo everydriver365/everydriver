@@ -14,8 +14,7 @@ import {
   Gift, Clock, Receipt, FileBarChart, BarChart3, Moon, Megaphone, GraduationCap,
   type LucideIcon,
 } from "lucide-react";
-import { WARM_TILE_STROKE, type WarmTileCategory } from "@/components/instructor/WarmTile";
-import { IOSInsightTile } from "@/components/instructor/IOSInsightTile";
+import { WarmTile, WARM_TILE_STROKE, type WarmTileCategory } from "@/components/instructor/WarmTile";
 import { IOSSearchBar } from "@/components/ui/IOSSearchBar";
 
 interface QuickTile {
@@ -143,10 +142,12 @@ export function SwipeableQuickAccess({
 
     return (
       <div key={tile.title} style={{ opacity: locked ? 0.55 : 1 }}>
-        <IOSInsightTile
+        <WarmTile
           icon={tile.icon}
           title={tile.title}
           subtitle={tile.subtitle}
+          category={tile.category}
+          primary={tile.primary && !locked}
           onClick={handleClick}
           rightSlot={locked ? <Lock size={12} strokeWidth={2} color={WARM_TILE_STROKE.neutral} /> : undefined}
         />
