@@ -314,8 +314,8 @@ export function GapFillCard({
             textOverflow: "ellipsis",
           }}
         >
-          {startTime.slice(0, 5)} — {endTime.slice(0, 5)}
-          {totalCount > 0 ? " · text with one tap" : ""}
+          {startTime.slice(0, 5)}–{endTime.slice(0, 5)}
+          {totalCount > 0 ? " · tap to text" : ""}
         </div>
       </div>
 
