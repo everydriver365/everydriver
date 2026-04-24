@@ -21,6 +21,7 @@ interface SendGapSmsRequest {
   discountValue: number | null;
   customMessage?: string;
   pupilId?: string; // Optional: target a single pupil instead of all instructor pupils
+  pupilIds?: string[]; // Optional: target a specific subset of pupils (e.g. only those that fit the slot after travel time)
 }
 
 function formatPhoneToE164(rawPhone: string): string {
@@ -54,16 +55,16 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { instructorId, instructorName, slots, discountType, discountValue, customMessage, pupilId }: SendGapSmsRequest = await req.json();
+    const { instructorId, instructorName, slots, discountType, discountValue, customMessage, pupilId, pupilIds }: SendGapSmsRequest = await req.json();
 
-    console.log(`Sending gap SMS for instructor ${instructorId}, ${slots.length} slots${pupilId ? `, single pupil ${pupilId}` : ""}`);
+    console.log(`Sending gap SMS for instructor ${instructorId}, ${slots.length} slots${pupilId ? `, single pupil ${pupilId}` : ""}${pupilIds?.length ? `, targeted ${pupilIds.length} pupils` : ""}`);
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch pupils — either a single targeted pupil or all instructor pupils with phone numbers
+    // Fetch pupils — single pupil, a feasibility-filtered subset, or all instructor pupils with phone numbers
     let pupilsQuery = supabase
       .from("pupils")
       .select("id, name, phone")
@@ -72,6 +73,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (pupilId) {
       pupilsQuery = pupilsQuery.eq("id", pupilId);
+    } else if (Array.isArray(pupilIds) && pupilIds.length > 0) {
+      pupilsQuery = pupilsQuery.in("id", pupilIds);
     }
 
     const { data: pupils, error: pupilsError } = await pupilsQuery;
