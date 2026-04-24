@@ -687,7 +687,7 @@ function WeekView({
               key={hour}
               className="h-[60px] text-xs text-muted-foreground text-right pr-2 -mt-2"
             >
-              {format(addHours(startOfDay(new Date()), hour), 'HH')}
+              {format(addHours(startOfDay(new Date()), hour), 'HH:00')}
             </div>
           ))}
         </div>
@@ -861,7 +861,7 @@ function DayView({
             key={hour}
             className="h-[60px] text-xs text-muted-foreground text-right pr-2 -mt-2"
           >
-            {format(addHours(startOfDay(new Date()), hour), 'HH')}
+            {format(addHours(startOfDay(new Date()), hour), 'HH:00')}
           </div>
         ))}
       </div>
