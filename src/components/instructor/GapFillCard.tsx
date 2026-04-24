@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useIsFetching } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { parseISO } from "date-fns";
+import { RefreshCw } from "lucide-react";
 
 interface GapFillCardProps {
   instructorId: string;
@@ -157,12 +158,16 @@ export function GapFillCard({
   gapMinutes,
 }: GapFillCardProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const candidateQueryKey = ["gap-candidate-pupils", instructorId, date, startTime, endTime];
   const { data: candidates } = useGapCandidatePupils(
     instructorId,
     date,
     startTime,
     endTime,
   );
+  const isRefreshing =
+    useIsFetching({ queryKey: candidateQueryKey, exact: true }) > 0;
 
   const durationLabel = useMemo(() => formatDuration(gapMinutes), [gapMinutes]);
 
@@ -183,6 +188,11 @@ export function GapFillCard({
     navigate(`/instructor/gaps?${search.toString()}`);
   };
 
+  const handleRefresh = (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.stopPropagation();
+    queryClient.invalidateQueries({ queryKey: candidateQueryKey, exact: true });
+  };
+
   const titleNode =
     totalCount === 0 ? (
       <>{durationLabel} gap</>
@@ -201,9 +211,16 @@ export function GapFillCard({
       : `Text ${totalCount} ${totalCount === 1 ? "pupil" : "pupils"} about ${durationLabel} gap from ${startTime} to ${endTime}`;
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={handleOpen}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleOpen();
+        }
+      }}
       aria-label={ariaLabel}
       className="gap-fill-row"
       style={{
@@ -296,6 +313,39 @@ export function GapFillCard({
         </div>
       </div>
 
+      <button
+        type="button"
+        onClick={handleRefresh}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            handleRefresh(e);
+          }
+        }}
+        aria-label="Refresh suggested pupils for this gap"
+        className="gap-fill-refresh"
+        disabled={isRefreshing}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 32,
+          height: 32,
+          borderRadius: 16,
+          border: "none",
+          background: "transparent",
+          color: "#5F6368",
+          cursor: isRefreshing ? "default" : "pointer",
+          flexShrink: 0,
+          padding: 0,
+        }}
+      >
+        <RefreshCw
+          size={14}
+          aria-hidden="true"
+          className={isRefreshing ? "gap-fill-spin" : undefined}
+        />
+      </button>
+
       <span
         aria-hidden="true"
         style={{
@@ -311,10 +361,14 @@ export function GapFillCard({
 
       <style>{`
         .gap-fill-row:active { background: #F1F3F4 !important; }
+        .gap-fill-refresh:active { background: #F1F3F4 !important; }
+        @keyframes gap-fill-spin { to { transform: rotate(360deg); } }
+        .gap-fill-spin { animation: gap-fill-spin 0.8s linear infinite; transform-origin: center; }
         @media (prefers-reduced-motion: reduce) {
-          .gap-fill-row { transition: none !important; }
+          .gap-fill-row, .gap-fill-refresh { transition: none !important; }
+          .gap-fill-spin { animation: none !important; }
         }
       `}</style>
-    </button>
+    </div>
   );
 }
