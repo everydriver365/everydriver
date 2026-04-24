@@ -155,8 +155,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
 
   const formatTime = (t: string) => {
     const [h, m] = t.split(":");
-    const hour = parseInt(h);
-    return `${hour % 12 || 12}:${m}${hour >= 12 ? "pm" : "am"}`;
+    return `${h.padStart(2, "0")}:${m}`;
   };
 
   return (

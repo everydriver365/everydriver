@@ -41,10 +41,7 @@ function formatLessonDate(dateStr: string): string {
 
 function formatTime(timeStr: string): string {
   const [hours, minutes] = timeStr.split(":");
-  const h = parseInt(hours, 10);
-  const period = h >= 12 ? "pm" : "am";
-  const displayHour = h > 12 ? h - 12 : h === 0 ? 12 : h;
-  return `${displayHour}:${minutes}${period}`;
+  return `${hours.padStart(2, "0")}:${minutes}`;
 }
 
 function createCustomIcon(initials: string): L.DivIcon {
