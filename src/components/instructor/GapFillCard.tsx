@@ -242,10 +242,16 @@ function useGapCandidatePupils(
             fetchTravelMinutes(pupilPostcode, nextPickupPostcode),
           ]);
           const realResolved = outMin !== null || inMin !== null;
-          const out = outMin ?? TRAVEL_FALLBACK_MIN;
-          const inn = inMin ?? TRAVEL_FALLBACK_MIN;
-          const needed = bufferMinutes + out + MIN_LESSON_MIN + inn + bufferMinutes;
-          const fits = gapMin >= needed;
+          const feasibility = evaluateFeasibility({
+            gapMin,
+            bufferMinutes,
+            travelOutMin: outMin,
+            travelInMin: inMin,
+          });
+          const out = feasibility.travelOutUsed;
+          const inn = feasibility.travelInUsed;
+          const needed = feasibility.needed;
+          const fits = feasibility.fits;
 
           // Build a clear breakdown sentence
           const outLabel =
