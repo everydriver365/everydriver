@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { detectNativeWrapper } from "@/hooks/useIsNativeWrapper";
 import { X, Share, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
