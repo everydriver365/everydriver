@@ -117,37 +117,13 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                   background: isActive ? 'hsl(var(--dsm-accent-blue) / 0.12)' : 'transparent',
                 }}
               >
-                {(() => {
-                  const iconName = (Icon as { displayName?: string; name?: string }).displayName
-                    ?? (Icon as { name?: string }).name
-                    ?? "";
-                  const emoji = getEmojiFor(iconName);
-                  if (emoji) {
-                    return (
-                      <span
-                        role="img"
-                        aria-label={item.label}
-                        style={{
-                          fontFamily: `"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`,
-                          fontSize: 22,
-                          lineHeight: 1,
-                          filter: isActive ? "none" : "grayscale(0.3) opacity(0.85)",
-                        }}
-                      >
-                        {emoji}
-                      </span>
-                    );
-                  }
-                  return (
-                    <Icon
-                      size={22}
-                      strokeWidth={1.2}
-                      color={isActive ? activeColor : trackActiveColor || inactiveColor}
-                      fill={isActive ? activeColor : trackActiveColor || inactiveColor}
-                      style={{ strokeLinecap: 'round', strokeLinejoin: 'round' }}
-                    />
-                  );
-                })()}
+                <Icon
+                  size={26}
+                  strokeWidth={isActive ? 2.2 : 1.8}
+                  color={isActive ? activeColor : trackActiveColor || inactiveColor}
+                  style={{ strokeLinecap: 'round', strokeLinejoin: 'round' }}
+                />
+
                 {/* Pupils badge */}
                 {showNotification && (
                   <span
