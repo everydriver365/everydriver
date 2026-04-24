@@ -28,6 +28,7 @@ import {
   categoriseEvent,
   cleanEventTitle,
   formatDuration,
+  styleFromGoogleColor,
   type EventCategory,
 } from "./scheduleGoogleStyle";
 
@@ -128,6 +129,7 @@ function EventChip({
   isTask,
   taskCompleted,
   onTaskToggle,
+  colorOverride,
 }: {
   category: EventCategory;
   title: string;
@@ -136,8 +138,9 @@ function EventChip({
   isTask?: boolean;
   taskCompleted?: boolean;
   onTaskToggle?: (e: React.MouseEvent) => void;
+  colorOverride?: { bg: string; text: string; border: string } | null;
 }) {
-  const style = CATEGORY_STYLES[category];
+  const style = colorOverride ?? CATEGORY_STYLES[category];
   const padLeft = isTask ? 30 : 12;
   return (
     <div
@@ -574,6 +577,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                   {/* All-day externals */}
                   {allDay.map((evt) => {
                     const category = categoriseEvent(evt.title, "external", { isAllDay: true });
+                    const colorOverride = styleFromGoogleColor(evt.color);
                     const isExpanded = expandedEventId === evt.id;
                     return (
                       <div key={evt.id}>
@@ -596,6 +600,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                             title={cleanEventTitle(evt.title)}
                             timeLine={null}
                             meta={evt.location || null}
+                            colorOverride={colorOverride}
                           />
                         </button>
                         {isExpanded && (
@@ -694,6 +699,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         const startDt = parseISO(evt.start_time);
                         const endDt = parseISO(evt.end_time);
                         const category = categoriseEvent(evt.title, "external", { isAllDay: false });
+                        const colorOverride = styleFromGoogleColor(evt.color);
                         const isExpanded = expandedEventId === evt.id;
                         const durationMins = differenceInMinutes(endDt, startDt);
                         const durationStr = formatDuration(durationMins);
@@ -718,6 +724,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                                 title={cleanEventTitle(evt.title)}
                                 timeLine={`${format(startDt, "HH:mm")} — ${format(endDt, "HH:mm")} · ${durationStr}`}
                                 meta={evt.location || null}
+                                colorOverride={colorOverride}
                               />
                             </button>
                             {isExpanded && <ExternalDetails evt={evt} />}
