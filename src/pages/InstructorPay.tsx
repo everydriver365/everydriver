@@ -202,7 +202,7 @@ export default function InstructorPay() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-[10px] pb-24" style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
+      <div className="space-y-[10px] pb-24">
 
         {/* ── Hero Earnings Card ── */}
         <motion.section

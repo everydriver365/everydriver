@@ -24,7 +24,7 @@ export default function InstructorHealth() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4 pb-24" style={{ fontFamily: "Inter, -apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
+      <div className="space-y-4 pb-24">
         <div className="flex items-center justify-between pt-1">
           <div className="flex items-center gap-2.5">
             <div className="h-[29px] w-[29px] rounded-[7px] flex items-center justify-center" style={{ backgroundColor: "#E8ECF1" }}>

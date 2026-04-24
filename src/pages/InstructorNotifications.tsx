@@ -59,7 +59,7 @@ export default function InstructorNotifications() {
     <div className="min-h-screen bg-primary">
       <InstructorMobileHeader title="Notifications" showBackButton showSettings={false} />
 
-      <div className="bg-background min-h-screen px-4 py-4 space-y-4" style={{ fontFamily: "Inter, -apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
+      <div className="bg-background min-h-screen px-4 py-4 space-y-4">
         {/* Page title — canonical iOS style */}
         <div className="flex items-center justify-between pt-1">
           <div className="flex items-center gap-2.5">

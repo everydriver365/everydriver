@@ -239,7 +239,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
 
   return (
     <>
-      <div className="space-y-4 h-[calc(100vh-8rem)]" style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
+      <div className="space-y-4 h-[calc(100vh-8rem)]">
         {/* iOS inline title */}
         {/* Hero Card */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-700 p-5 text-white shadow-lg">
