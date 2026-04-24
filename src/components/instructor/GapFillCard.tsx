@@ -72,8 +72,8 @@ interface GapCandidatesResult {
   bufferMin: number;
 }
 
-const TRAVEL_FALLBACK_MIN = 10;
-const MIN_LESSON_MIN = 60;
+const TRAVEL_FALLBACK_MIN = TRAVEL_FALLBACK_MIN_SHARED;
+const MIN_LESSON_MIN = MIN_LESSON_MIN_SHARED;
 const UK_POSTCODE_RE = /^[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}$/i;
 
 // In-memory cache of postcode-pair travel minutes (per session)
