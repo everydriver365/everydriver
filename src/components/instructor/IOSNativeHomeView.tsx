@@ -21,7 +21,7 @@ import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
 import { useAdminUnreadForPupil } from "@/hooks/useAdminUnreadForPupil";
-import { GoogleMapPreview } from "@/components/instructor/GoogleMapPreview";
+import { PostcodeMapPreview } from "@/components/instructor/PostcodeMapPreview";
 import { Mail } from "lucide-react";
 import { useRunningLateDetection } from "@/hooks/useRunningLateDetection";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
@@ -245,7 +245,7 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
                     <div className="absolute top-2 right-2 z-[1] bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 pointer-events-none">
                       <Navigation className="h-3 w-3" /> Tap to navigate
                     </div>
-                    <GoogleMapPreview postcode={nextLesson.pickupPostcode} address={nextLesson.pickupLocation ?? null} height={140} className="rounded-2xl overflow-hidden border" />
+                    <PostcodeMapPreview postcode={nextLesson.pickupPostcode} />
                   </div>
                 )}
 
