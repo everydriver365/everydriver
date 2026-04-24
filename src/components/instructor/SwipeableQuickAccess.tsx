@@ -143,12 +143,10 @@ export function SwipeableQuickAccess({
 
     return (
       <div key={tile.title} style={{ opacity: locked ? 0.55 : 1 }}>
-        <WarmTile
+        <IOSInsightTile
           icon={tile.icon}
           title={tile.title}
           subtitle={tile.subtitle}
-          category={tile.category}
-          primary={tile.primary && !locked}
           onClick={handleClick}
           rightSlot={locked ? <Lock size={12} strokeWidth={2} color={WARM_TILE_STROKE.neutral} /> : undefined}
         />
