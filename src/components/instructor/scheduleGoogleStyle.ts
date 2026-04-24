@@ -17,6 +17,52 @@ export const CATEGORY_STYLES: Record<EventCategory, CategoryStyle> = {
   task:    { bg: "#F1F3F4", text: "#3C4043", border: "#9AA0A6" },
 };
 
+/* ---------- Google Calendar live colour mapping ---------- */
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  if (!hex) return null;
+  const h = hex.trim().replace(/^#/, "");
+  if (h.length !== 6 || /[^0-9a-f]/i.test(h)) return null;
+  return {
+    r: parseInt(h.slice(0, 2), 16),
+    g: parseInt(h.slice(2, 4), 16),
+    b: parseInt(h.slice(4, 6), 16),
+  };
+}
+
+const toHex = (n: number) => n.toString(16).padStart(2, "0");
+
+function tintTowardWhite(rgb: { r: number; g: number; b: number }, t: number): string {
+  const r = Math.round(rgb.r + (255 - rgb.r) * t);
+  const g = Math.round(rgb.g + (255 - rgb.g) * t);
+  const b = Math.round(rgb.b + (255 - rgb.b) * t);
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+function shadeTowardBlack(rgb: { r: number; g: number; b: number }, t: number): string {
+  const r = Math.round(rgb.r * (1 - t));
+  const g = Math.round(rgb.g * (1 - t));
+  const b = Math.round(rgb.b * (1 - t));
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+/**
+ * Build a Google-Calendar-style chip palette from the actual hex colour
+ * stored on the event (mapped from Google's colorId on ingest).
+ *  - border = the Google colour itself
+ *  - bg     = tinted ~88% toward white
+ *  - text   = shaded ~55% toward black for AA contrast
+ */
+export function styleFromGoogleColor(hex: string | null | undefined): CategoryStyle | null {
+  const rgb = hexToRgb(hex || "");
+  if (!rgb) return null;
+  return {
+    border: `#${toHex(rgb.r)}${toHex(rgb.g)}${toHex(rgb.b)}`,
+    bg: tintTowardWhite(rgb, 0.88),
+    text: shadeTowardBlack(rgb, 0.55),
+  };
+}
+
 const HOLIDAY_KEYWORDS = [
   "easter holiday",
   "school holiday",
