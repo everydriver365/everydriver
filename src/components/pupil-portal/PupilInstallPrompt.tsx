@@ -19,9 +19,9 @@ export function PupilInstallPrompt() {
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
-  // Also check if already installed
+  // Also check if already installed or running inside a native wrapper
   const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-  if (isStandalone || dismissed || !deferredPrompt) return null;
+  if (isStandalone || dismissed || !deferredPrompt || detectNativeWrapper()) return null;
 
   const handleInstall = async () => {
     deferredPrompt.prompt();

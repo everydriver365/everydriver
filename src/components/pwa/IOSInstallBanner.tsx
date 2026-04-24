@@ -14,7 +14,7 @@ export function IOSInstallBanner() {
       || (window.navigator as any).standalone === true;
     const isDismissed = localStorage.getItem('ios-install-banner-dismissed');
 
-    if (isIOS && !isStandalone && !isDismissed) {
+    if (isIOS && !isStandalone && !isDismissed && !detectNativeWrapper()) {
       setShowBanner(true);
     }
   }, []);

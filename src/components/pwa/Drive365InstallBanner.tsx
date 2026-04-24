@@ -28,7 +28,7 @@ export function Drive365InstallBanner({ onDismiss }: Drive365InstallBannerProps)
       
       setIsIOS(isIOSDevice);
       
-      if (!isStandalone && !isDismissed) {
+      if (!isStandalone && !isDismissed && !detectNativeWrapper()) {
         setShowBanner(true);
       }
     };

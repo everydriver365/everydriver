@@ -24,7 +24,9 @@ export function PortalIOSInstallBanner({
       || (window.navigator as any).standalone === true;
     const isDismissed = localStorage.getItem(storageKey);
 
-    if (isIOS && !isStandalone && !isDismissed) {
+    // Hide install prompts inside native wrappers (Despia/Capacitor) — the
+    // app is already "installed" via the App Store / Play Store.
+    if (isIOS && !isStandalone && !isDismissed && !detectNativeWrapper()) {
       setShowBanner(true);
     }
   }, [storageKey]);
