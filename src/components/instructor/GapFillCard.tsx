@@ -1,6 +1,8 @@
-import { MessageSquare } from "lucide-react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { parseISO } from "date-fns";
 
 interface GapFillCardProps {
   instructorId: string;
@@ -11,47 +13,294 @@ interface GapFillCardProps {
   gapMinutes: number;
 }
 
+const AVATAR_PALETTE = ["#1A73E8", "#188038", "#D93025", "#F9AB00", "#A142F4"];
+
+const FONT_STACK =
+  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Roboto", "Helvetica Neue", sans-serif';
+
+function formatDuration(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h > 0 && m > 0) return `${h}h ${m}m`;
+  if (h > 0) return `${h}h`;
+  return `${m}m`;
+}
+
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+// Stable color assignment from pupil id
+function colorForPupil(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) | 0;
+  }
+  return AVATAR_PALETTE[Math.abs(hash) % AVATAR_PALETTE.length];
+}
+
+interface CandidatePupil {
+  id: string;
+  name: string;
+  score: number;
+}
+
+function useGapCandidatePupils(
+  instructorId: string,
+  date: string,
+  startTime: string,
+  endTime: string,
+) {
+  return useQuery({
+    queryKey: ["gap-candidate-pupils", instructorId, date, startTime, endTime],
+    queryFn: async (): Promise<CandidatePupil[]> => {
+      if (!instructorId) return [];
+
+      const dayOfWeek = parseISO(date).getDay();
+      const [gsH, gsM] = startTime.split(":").map(Number);
+      const [geH, geM] = endTime.split(":").map(Number);
+      const gapStartMin = gsH * 60 + gsM;
+      const gapEndMin = geH * 60 + geM;
+
+      // Active pupils for this instructor
+      const { data: pupils } = await supabase
+        .from("pupils")
+        .select("id, name, status")
+        .eq("instructor_id", instructorId)
+        .eq("status", "active");
+
+      if (!pupils || pupils.length === 0) return [];
+
+      // Pupils already booked during this gap (exclude)
+      const { data: bookedThatDay } = await supabase
+        .from("scheduled_lessons")
+        .select("pupil_id, start_time, duration_minutes, status")
+        .eq("instructor_id", instructorId)
+        .eq("lesson_date", date)
+        .neq("status", "cancelled");
+
+      const bookedIds = new Set<string>();
+      (bookedThatDay || []).forEach((l) => {
+        const [lh, lm] = l.start_time.split(":").map(Number);
+        const ls = lh * 60 + lm;
+        const le = ls + (l.duration_minutes || 60);
+        if (ls < gapEndMin && le > gapStartMin && l.pupil_id) {
+          bookedIds.add(l.pupil_id);
+        }
+      });
+
+      // Recent lessons for pattern matching (past ~60 days)
+      const sinceDate = new Date();
+      sinceDate.setDate(sinceDate.getDate() - 60);
+      const sinceStr = sinceDate.toISOString().slice(0, 10);
+
+      const { data: recentLessons } = await supabase
+        .from("scheduled_lessons")
+        .select("pupil_id, lesson_date, start_time, duration_minutes, status")
+        .eq("instructor_id", instructorId)
+        .gte("lesson_date", sinceStr)
+        .neq("status", "cancelled");
+
+      // Score each pupil based on pattern overlap with the gap window/day
+      const scoreByPupil = new Map<string, number>();
+      (recentLessons || []).forEach((l) => {
+        if (!l.pupil_id) return;
+        const ld = parseISO(l.lesson_date);
+        const [lh, lm] = l.start_time.split(":").map(Number);
+        const ls = lh * 60 + lm;
+        const le = ls + (l.duration_minutes || 60);
+
+        let s = 0;
+        // Same day-of-week
+        if (ld.getDay() === dayOfWeek) s += 2;
+        // Time-window overlap
+        if (ls < gapEndMin && le > gapStartMin) s += 3;
+        // General loose proximity (within 2h either side)
+        else if (Math.abs(ls - gapStartMin) <= 120) s += 1;
+
+        if (s > 0) {
+          scoreByPupil.set(l.pupil_id, (scoreByPupil.get(l.pupil_id) || 0) + s);
+        }
+      });
+
+      const candidates: CandidatePupil[] = pupils
+        .filter((p) => !bookedIds.has(p.id))
+        .map((p) => ({
+          id: p.id,
+          name: p.name,
+          score: scoreByPupil.get(p.id) || 0,
+        }));
+
+      // Sort: highest score first, then alphabetical
+      candidates.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+
+      return candidates;
+    },
+    enabled: !!instructorId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function GapFillCard({
+  instructorId,
   date,
   startTime,
   endTime,
   gapMinutes,
 }: GapFillCardProps) {
   const navigate = useNavigate();
+  const { data: candidates } = useGapCandidatePupils(
+    instructorId,
+    date,
+    startTime,
+    endTime,
+  );
 
-  const hours = Math.floor(gapMinutes / 60);
-  const mins = gapMinutes % 60;
-  const gapLabel = mins > 0 ? `${hours}h ${mins}m gap` : `${hours}h gap`;
+  const durationLabel = useMemo(() => formatDuration(gapMinutes), [gapMinutes]);
 
-  const handleOpenFillGaps = () => {
+  const suggested = candidates ?? [];
+  const totalCount = suggested.length;
+  const avatars = suggested.slice(0, 3);
+
+  const handleOpen = () => {
     const search = new URLSearchParams({
       date,
       start: startTime,
       end: endTime,
       source: "schedule",
     });
-
+    if (avatars.length > 0) {
+      search.set("pupils", avatars.map((p) => p.id).join(","));
+    }
     navigate(`/instructor/gaps?${search.toString()}`);
   };
 
+  const titleNode =
+    totalCount === 0 ? (
+      <>{durationLabel} gap</>
+    ) : (
+      <>
+        <span style={{ fontWeight: 600, color: "#174EA6" }}>
+          {totalCount} {totalCount === 1 ? "pupil" : "pupils"}
+        </span>{" "}
+        might fit this {durationLabel} gap
+      </>
+    );
+
+  const ariaLabel =
+    totalCount === 0
+      ? `Text pupils about ${durationLabel} gap from ${startTime} to ${endTime}`
+      : `Text ${totalCount} ${totalCount === 1 ? "pupil" : "pupils"} about ${durationLabel} gap from ${startTime} to ${endTime}`;
+
   return (
-    <div className="shadow-premium relative my-0.5 flex min-h-11 items-center gap-2 rounded-xl bg-destructive/5 px-3 py-2">
-      <div className="min-w-0 flex-1">
-        <div className="text-xs font-semibold text-foreground">{gapLabel}</div>
-        <div className="text-[11px] text-muted-foreground">
-          {startTime} – {endTime}
+    <button
+      type="button"
+      onClick={handleOpen}
+      aria-label={ariaLabel}
+      className="gap-fill-row"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        width: "100%",
+        background: "#F8F9FA",
+        borderRadius: 8,
+        padding: "10px 12px",
+        border: "none",
+        cursor: "pointer",
+        textAlign: "left",
+        fontFamily: FONT_STACK,
+        margin: "2px 0",
+        minHeight: 44,
+      }}
+    >
+      {avatars.length > 0 && (
+        <div
+          aria-hidden="true"
+          style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
+        >
+          {avatars.map((p, idx) => (
+            <div
+              key={p.id}
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: "50%",
+                background: colorForPupil(p.id),
+                color: "#FFFFFF",
+                fontSize: 10,
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                border: "2px solid #F8F9FA",
+                marginLeft: idx === 0 ? 0 : -6,
+                boxSizing: "border-box",
+                lineHeight: 1,
+              }}
+            >
+              {getInitials(p.name)}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 500,
+            color: "#1F1F1F",
+            letterSpacing: "-0.08px",
+            lineHeight: 1.3,
+            margin: 0,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {titleNode}
+        </div>
+        <div
+          style={{
+            fontSize: 10,
+            fontWeight: 400,
+            color: "#5F6368",
+            letterSpacing: "-0.04px",
+            fontVariantNumeric: "tabular-nums",
+            margin: "2px 0 0",
+          }}
+        >
+          {startTime} — {endTime}
+          {totalCount > 0 ? " · text with one tap" : ""}
         </div>
       </div>
 
-      <Button
-        type="button"
-        size="sm"
-        onClick={handleOpenFillGaps}
-        className="h-8 shrink-0 gap-1.5 bg-destructive px-3 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90"
+      <span
+        aria-hidden="true"
+        style={{
+          fontSize: 16,
+          color: "#9AA0A6",
+          fontWeight: 500,
+          flexShrink: 0,
+          lineHeight: 1,
+        }}
       >
-        <MessageSquare className="h-3.5 w-3.5" />
-        Text Pupils
-      </Button>
-    </div>
+        ›
+      </span>
+
+      <style>{`
+        .gap-fill-row:active { background: #F1F3F4 !important; }
+        @media (prefers-reduced-motion: reduce) {
+          .gap-fill-row { transition: none !important; }
+        }
+      `}</style>
+    </button>
   );
 }
