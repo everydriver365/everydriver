@@ -200,9 +200,7 @@ export function SwipeableQuickAccess({
       {isSearching ? (
         <div>
           {filtered.length > 0 ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, padding: "0 16px 16px" }}>
-              {filtered.map(renderTile)}
-            </div>
+            <TileGrid>{filtered.map(renderTile)}</TileGrid>
           ) : (
             <div className="px-4 pb-4 text-sm text-muted-foreground">
               No actions match “{query.trim()}”
@@ -215,9 +213,7 @@ export function SwipeableQuickAccess({
             <div className="flex">
               {pages.map((page, pageIdx) => (
                 <div key={pageIdx} className="flex-[0_0_100%] min-w-0">
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, padding: "0 16px 16px" }}>
-                    {page.map(renderTile)}
-                  </div>
+                  <TileGrid>{page.map(renderTile)}</TileGrid>
                 </div>
               ))}
             </div>
