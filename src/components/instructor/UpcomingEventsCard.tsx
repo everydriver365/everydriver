@@ -80,6 +80,9 @@ export function UpcomingEventsCard({ className = "", showHeader = true }: Upcomi
   const isLoading = events === null;
   const hasEvents = !!events && events.length > 0;
 
+  // Hide the whole section if loaded with no events
+  if (!isLoading && !hasEvents) return null;
+
   // Header right-side meta
   const headerMeta = (() => {
     if (isLoading || !hasEvents) return undefined;
@@ -103,21 +106,6 @@ export function UpcomingEventsCard({ className = "", showHeader = true }: Upcomi
       <div style={{ padding: "0 16px" }}>
         {isLoading ? (
           <SkeletonRow />
-        ) : !hasEvents ? (
-          <div
-            className="shadow-premium"
-            style={{
-              background: PAL.card,
-              borderRadius: 12,
-              padding: "16px 14px",
-              textAlign: "center",
-              fontSize: 13,
-              color: PAL.textMuted,
-              fontFamily: "Inter, sans-serif",
-            }}
-          >
-            No events scheduled
-          </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {events!.map((event) => (
