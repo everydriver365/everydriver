@@ -291,9 +291,11 @@ export function GapFillCard({
             letterSpacing: "-0.08px",
             lineHeight: 1.3,
             margin: 0,
-            whiteSpace: "nowrap",
             overflow: "hidden",
-            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            wordBreak: "break-word",
           }}
         >
           {titleNode}
@@ -306,9 +308,12 @@ export function GapFillCard({
             letterSpacing: "-0.04px",
             fontVariantNumeric: "tabular-nums",
             margin: "2px 0 0",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         >
-          {startTime} — {endTime}
+          {startTime.slice(0, 5)} — {endTime.slice(0, 5)}
           {totalCount > 0 ? " · text with one tap" : ""}
         </div>
       </div>
