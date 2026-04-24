@@ -577,6 +577,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                   {/* All-day externals */}
                   {allDay.map((evt) => {
                     const category = categoriseEvent(evt.title, "external", { isAllDay: true });
+                    const colorOverride = styleFromGoogleColor(evt.color);
                     const isExpanded = expandedEventId === evt.id;
                     return (
                       <div key={evt.id}>
@@ -599,6 +600,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                             title={cleanEventTitle(evt.title)}
                             timeLine={null}
                             meta={evt.location || null}
+                            colorOverride={colorOverride}
                           />
                         </button>
                         {isExpanded && (
