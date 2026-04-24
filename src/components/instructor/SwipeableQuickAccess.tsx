@@ -15,6 +15,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { WarmTile, WARM_TILE_STROKE, type WarmTileCategory } from "@/components/instructor/WarmTile";
+import { Tile, TileGrid } from "@/components/instructor/Tile";
 import { IOSSearchBar } from "@/components/ui/IOSSearchBar";
 
 interface QuickTile {
