@@ -699,6 +699,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         const startDt = parseISO(evt.start_time);
                         const endDt = parseISO(evt.end_time);
                         const category = categoriseEvent(evt.title, "external", { isAllDay: false });
+                        const colorOverride = styleFromGoogleColor(evt.color);
                         const isExpanded = expandedEventId === evt.id;
                         const durationMins = differenceInMinutes(endDt, startDt);
                         const durationStr = formatDuration(durationMins);
@@ -723,6 +724,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                                 title={cleanEventTitle(evt.title)}
                                 timeLine={`${format(startDt, "HH:mm")} — ${format(endDt, "HH:mm")} · ${durationStr}`}
                                 meta={evt.location || null}
+                                colorOverride={colorOverride}
                               />
                             </button>
                             {isExpanded && <ExternalDetails evt={evt} />}
