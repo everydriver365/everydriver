@@ -94,7 +94,7 @@ const RouteMapView: React.FC<RouteMapViewProps> = ({
 
     L.marker([startPoint.latitude, startPoint.longitude], { icon: startIcon })
       .addTo(map)
-      .bindPopup(`<strong>Start</strong><br/>Time: ${new Date(startPoint.recorded_at).toLocaleTimeString()}`);
+      .bindPopup(`<strong>Start</strong><br/>Time: ${new Date(startPoint.recorded_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`);
 
     // Add end marker
     const endPoint = gpsPoints[gpsPoints.length - 1];
@@ -112,7 +112,7 @@ const RouteMapView: React.FC<RouteMapViewProps> = ({
 
     L.marker([endPoint.latitude, endPoint.longitude], { icon: endIcon })
       .addTo(map)
-      .bindPopup(`<strong>End</strong><br/>Time: ${new Date(endPoint.recorded_at).toLocaleTimeString()}`);
+      .bindPopup(`<strong>End</strong><br/>Time: ${new Date(endPoint.recorded_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`);
 
     // Fit bounds to show entire route
     if (routePoints.length > 1) {
