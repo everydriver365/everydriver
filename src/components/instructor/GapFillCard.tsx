@@ -415,44 +415,58 @@ export function GapFillCard({
       }}
     >
       {avatars.length > 0 && (
-        <div
-          aria-hidden="true"
-          style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
-        >
+        <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
           {avatars.map((p, idx) => (
-            <div
-              key={p.id}
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: "50%",
-                background: colorForPupil(p.id),
-                color: "#FFFFFF",
-                fontSize: 10,
-                fontWeight: 600,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                border: "2px solid #F8F9FA",
-                marginLeft: idx === 0 ? 0 : -6,
-                boxSizing: "border-box",
-                lineHeight: 1,
-                overflow: "hidden",
-              }}
-            >
-              {p.imageUrl ? (
-                <img
-                  src={p.imageUrl}
-                  alt=""
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).style.display = "none";
+            <Tooltip key={p.id} delayDuration={150}>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label={`${p.name}: ${p.reason}`}
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: "50%",
+                    background: colorForPupil(p.id),
+                    color: "#FFFFFF",
+                    fontSize: 10,
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "2px solid #F8F9FA",
+                    marginLeft: idx === 0 ? 0 : -6,
+                    boxSizing: "border-box",
+                    lineHeight: 1,
+                    overflow: "hidden",
+                    padding: 0,
+                    cursor: "help",
                   }}
-                />
-              ) : (
-                getInitials(p.name)
-              )}
-            </div>
+                >
+                  {p.imageUrl ? (
+                    <img
+                      src={p.imageUrl}
+                      alt=""
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        display: "block",
+                      }}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    getInitials(p.name)
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[260px] text-xs leading-snug">
+                <div style={{ fontWeight: 600, marginBottom: 2 }}>{p.name}</div>
+                <div>{p.reason}</div>
+              </TooltipContent>
+            </Tooltip>
           ))}
         </div>
       )}
