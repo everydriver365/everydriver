@@ -1,12 +1,13 @@
 import { useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Plus, X, Calendar, Users, MapPin, PoundSterling, MessageSquare, Settings, FileText, Car, StickyNote, UsersRound } from "lucide-react";
+import { motion } from "framer-motion";
+import { Plus, Calendar, Users, MapPin, PoundSterling, MessageSquare, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { haptics } from "@/lib/haptics";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { QuickActionsDrawer } from "@/components/instructor/QuickActionsDrawer";
 
 interface QuickAction {
   id: string;
@@ -106,60 +107,13 @@ export function QuickActionsFAB({ className, position = "bottom-right" }: QuickA
         className
       )}
     >
-      {/* Backdrop when open */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[59]"
-            onClick={() => setIsOpen(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Dropdown Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className={cn(
-              "absolute bottom-16 mb-2 z-[61]",
-              position === "bottom-right" ? "right-0" : "left-0"
-            )}
-          >
-            <div className="bg-background border border-border rounded-2xl shadow-xl overflow-hidden min-w-[200px]">
-              <div className="p-1.5 space-y-0.5">
-                {quickActions.map((action, index) => {
-                  const Icon = action.icon;
-                  return (
-                    <motion.button
-                      key={action.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.03 }}
-                      onClick={() => handleActionClick(action)}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-muted transition-colors text-left group"
-                    >
-                      <div className={cn(
-                        "h-8 w-8 rounded-full flex items-center justify-center text-white transition-transform group-hover:scale-110",
-                        action.color
-                      )}>
-                        <Icon className="h-4 w-4" />
-                      </div>
-                      <span className="text-sm font-medium text-foreground">{action.label}</span>
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Side drawer menu */}
+      <QuickActionsDrawer
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        actions={quickActions}
+        onActionClick={handleActionClick}
+      />
 
       {/* Main FAB Button */}
       <motion.div
