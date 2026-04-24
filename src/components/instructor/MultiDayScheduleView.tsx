@@ -238,6 +238,12 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [instructorName, setInstructorName] = useState<string>("Your instructor");
   const [lessonForText, setLessonForText] = useState<ScheduledLesson | null>(null);
+  const [bufferMinutes, setBufferMinutes] = useState<number>(0);
+
+  // Default travel allowance applied symmetrically when surfacing fill-gap slots
+  // (overridden by real ETA in the per-pupil text flow).
+  const TRAVEL_FALLBACK_MIN = 10;
+  const MIN_OFFERABLE_GAP_MIN = 60;
 
   // Live-updated "now" for the today indicator (refresh once a minute).
   const [nowTick, setNowTick] = useState(() => new Date());
