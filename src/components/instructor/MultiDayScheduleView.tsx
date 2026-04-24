@@ -326,6 +326,61 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // Live updates: refresh schedule + gap candidates whenever bookings,
+  // external calendar events, or manual blocks change for this instructor.
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (!instructorId) return;
+
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    const trigger = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        fetchData();
+        queryClient.invalidateQueries({ queryKey: ["gap-candidate-pupils"] });
+      }, 250);
+    };
+
+    const channel = supabase
+      .channel(`schedule-live-${instructorId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "scheduled_lessons",
+          filter: `instructor_id=eq.${instructorId}`,
+        },
+        trigger,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "instructor_calendar_events",
+          filter: `instructor_id=eq.${instructorId}`,
+        },
+        trigger,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "instructor_manual_blocks",
+          filter: `instructor_id=eq.${instructorId}`,
+        },
+        trigger,
+      )
+      .subscribe();
+
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      supabase.removeChannel(channel);
+    };
+  }, [instructorId, fetchData, queryClient]);
+
   useEffect(() => {
     if (!instructorId) return;
     supabase
