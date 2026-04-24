@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Drawer as DrawerPrimitive } from "vaul";
 import { haptics } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
+import dsmLogo from "@/assets/dsm-logo.png";
 import {
   Calendar, Users, MapPin, PoundSterling, MessageSquare,
-  UsersRound, X, Coffee, Clock, Star, Megaphone, ChevronRight,
+  UsersRound, X, Coffee, Clock, Star, ChevronRight,
 } from "lucide-react";
 
 interface QuickActionsPopoverMenuProps {
