@@ -9,7 +9,7 @@ import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { supabase } from "@/integrations/supabase/client";
 import type { LucideIcon } from "lucide-react";
-import { getEmojiFor } from "./iconEmojiMap";
+
 
 interface NavItem {
   label: string;
