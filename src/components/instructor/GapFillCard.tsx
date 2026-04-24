@@ -333,9 +333,10 @@ export function GapFillCard({
 
   const durationLabel = useMemo(() => formatDuration(gapMinutes), [gapMinutes]);
 
-  const suggested = candidates ?? [];
-  const totalCount = suggested.length;
-  const avatars = suggested.slice(0, 3);
+  const included = candidates?.included ?? [];
+  const excluded = candidates?.excluded ?? [];
+  const totalCount = included.length;
+  const avatars = included.slice(0, 3);
 
   const handleOpen = () => {
     const search = new URLSearchParams({
