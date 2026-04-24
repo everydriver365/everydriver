@@ -238,6 +238,12 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [instructorName, setInstructorName] = useState<string>("Your instructor");
   const [lessonForText, setLessonForText] = useState<ScheduledLesson | null>(null);
+  const [bufferMinutes, setBufferMinutes] = useState<number>(0);
+
+  // Default travel allowance applied symmetrically when surfacing fill-gap slots
+  // (overridden by real ETA in the per-pupil text flow).
+  const TRAVEL_FALLBACK_MIN = 10;
+  const MIN_OFFERABLE_GAP_MIN = 60;
 
   // Live-updated "now" for the today indicator (refresh once a minute).
   const [nowTick, setNowTick] = useState(() => new Date());
@@ -385,11 +391,14 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
     if (!instructorId) return;
     supabase
       .from("instructors")
-      .select("name")
+      .select("name, buffer_minutes")
       .eq("id", instructorId)
       .maybeSingle()
       .then(({ data }) => {
         if (data?.name) setInstructorName(data.name);
+        if (data && typeof (data as { buffer_minutes?: number }).buffer_minutes === "number") {
+          setBufferMinutes((data as { buffer_minutes: number }).buffer_minutes ?? 0);
+        }
       });
   }, [instructorId]);
 
@@ -831,7 +840,9 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         );
                       }
 
-                      // Gap insight — kept exactly as before, just restyled.
+                      // Gap insight — apply instructor buffer + default travel
+                      // allowance on each side, and only surface if the
+                      // remaining bookable window is at least the minimum.
                       if (i < timeline.length - 1) {
                         const nextItem = timeline[i + 1];
                         const currentEndStr =
@@ -843,20 +854,31 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         const nextStartStr = nextItem.time;
                         const [cH, cM] = currentEndStr.split(":").map(Number);
                         const [nH, nM] = nextStartStr.split(":").map(Number);
-                        const gapMin = (nH * 60 + nM) - (cH * 60 + cM);
-                        if (gapMin >= 60) {
+                        const rawGapMin = (nH * 60 + nM) - (cH * 60 + cM);
+
+                        // Shrink by buffer + travel on both ends
+                        const sideAllowance = bufferMinutes + TRAVEL_FALLBACK_MIN;
+                        const effectiveStartMin = cH * 60 + cM + sideAllowance;
+                        const effectiveEndMin = nH * 60 + nM - sideAllowance;
+                        const effectiveGapMin = effectiveEndMin - effectiveStartMin;
+
+                        if (effectiveGapMin >= MIN_OFFERABLE_GAP_MIN) {
+                          const fmt = (mins: number) =>
+                            `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
                           elements.push(
                             <GapFillCard
                               key={`gap-${i}`}
                               instructorId={instructorId}
                               instructorName={instructorName}
                               date={dateStr}
-                              startTime={currentEndStr}
-                              endTime={nextStartStr}
-                              gapMinutes={gapMin}
+                              startTime={fmt(effectiveStartMin)}
+                              endTime={fmt(effectiveEndMin)}
+                              gapMinutes={effectiveGapMin}
                             />,
                           );
                         }
+                        // (rawGapMin retained for future analytics; not displayed.)
+                        void rawGapMin;
                       }
                     });
 

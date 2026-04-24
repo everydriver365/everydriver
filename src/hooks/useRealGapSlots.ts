@@ -43,6 +43,7 @@ export function useRealGapSlots(instructorId: string | undefined) {
         { data: manualBlocks },
         { data: calendarEvents },
         { data: pupils },
+        { data: instructor },
       ] = await Promise.all([
         supabase
           .from("instructor_working_hours")
@@ -81,7 +82,18 @@ export function useRealGapSlots(instructorId: string | undefined) {
           .eq("status", "active")
           .not("phone", "is", null)
           .limit(10),
+        supabase
+          .from("instructors")
+          .select("buffer_minutes")
+          .eq("id", instructorId)
+          .maybeSingle(),
       ]);
+
+      const bufferMinutes =
+        (instructor as { buffer_minutes?: number | null } | null)?.buffer_minutes ?? 0;
+      const TRAVEL_FALLBACK_MIN = 10;
+      // Hours of allowance to inflate conflict windows by on each side
+      const sideAllowanceHours = (bufferMinutes + TRAVEL_FALLBACK_MIN) / 60;
 
       // Map pupils to suggested format
       const suggestedPupils: SuggestedPupil[] = (pupils || []).map((p) => ({
@@ -155,11 +167,19 @@ export function useRealGapSlots(instructorId: string | undefined) {
           const slotStartHour = hour;
           const slotEndHour = hour + 1;
 
+          // Inflate every conflict window by buffer + travel on each side
+          // so we don't offer a slot that touches another commitment.
+          const pad = sideAllowanceHours;
+
           // Check if this slot overlaps with any scheduled lesson
           const hasLessonConflict = dayLessons.some((lesson) => {
-            const lessonStartHour = parseInt(lesson.start_time.split(":")[0]);
-            const lessonEndHour = lessonStartHour + Math.ceil(lesson.duration_minutes / 60);
-            return slotStartHour < lessonEndHour && slotEndHour > lessonStartHour;
+            const [lh, lm] = lesson.start_time.split(":").map(Number);
+            const lessonStartHour = lh + (lm || 0) / 60;
+            const lessonEndHour = lessonStartHour + lesson.duration_minutes / 60;
+            return (
+              slotStartHour < lessonEndHour + pad &&
+              slotEndHour > lessonStartHour - pad
+            );
           });
 
           // Check if this slot overlaps with any manual block
@@ -170,7 +190,10 @@ export function useRealGapSlots(instructorId: string | undefined) {
             if (format(blockStart, "yyyy-MM-dd") === dateStr) {
               const blockStartHour = blockStart.getHours() + blockStart.getMinutes() / 60;
               const blockEndHour = blockEnd.getHours() + blockEnd.getMinutes() / 60;
-              return slotStartHour < blockEndHour && slotEndHour > blockStartHour;
+              return (
+                slotStartHour < blockEndHour + pad &&
+                slotEndHour > blockStartHour - pad
+              );
             }
             return false;
           });
@@ -183,7 +206,10 @@ export function useRealGapSlots(instructorId: string | undefined) {
             if (format(eventStart, "yyyy-MM-dd") === dateStr) {
               const eventStartHour = eventStart.getHours() + eventStart.getMinutes() / 60;
               const eventEndHour = eventEnd.getHours() + eventEnd.getMinutes() / 60;
-              return slotStartHour < eventEndHour && slotEndHour > eventStartHour;
+              return (
+                slotStartHour < eventEndHour + pad &&
+                slotEndHour > eventStartHour - pad
+              );
             }
             return false;
           });
