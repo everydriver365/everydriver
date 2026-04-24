@@ -245,7 +245,7 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
                     <div className="absolute top-2 right-2 z-[1] bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 pointer-events-none">
                       <Navigation className="h-3 w-3" /> Tap to navigate
                     </div>
-                    <PostcodeMapPreview postcode={nextLesson.pickupPostcode} />
+                    <GoogleMapPreview postcode={nextLesson.pickupPostcode} address={nextLesson.pickupLocation ?? null} height={140} className="rounded-2xl overflow-hidden border" />
                   </div>
                 )}
 
