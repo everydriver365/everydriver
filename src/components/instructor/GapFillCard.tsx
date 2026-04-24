@@ -5,6 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { parseISO } from "date-fns";
 import { RefreshCw, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  evaluateFeasibility,
+  MIN_LESSON_MIN as MIN_LESSON_MIN_SHARED,
+  TRAVEL_FALLBACK_MIN as TRAVEL_FALLBACK_MIN_SHARED,
+} from "./gapFeasibility";
 
 interface GapFillCardProps {
   instructorId: string;
