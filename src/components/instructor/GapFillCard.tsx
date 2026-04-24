@@ -472,22 +472,69 @@ export function GapFillCard({
       )}
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontSize: 12,
-            fontWeight: 500,
-            color: "#1F1F1F",
-            letterSpacing: "-0.08px",
-            lineHeight: 1.3,
-            margin: 0,
-            overflow: "hidden",
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            wordBreak: "break-word",
-          }}
-        >
-          {titleNode}
+        <div style={{ display: "flex", alignItems: "center", gap: 4, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 500,
+              color: "#1F1F1F",
+              letterSpacing: "-0.08px",
+              lineHeight: 1.3,
+              margin: 0,
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              wordBreak: "break-word",
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
+            {titleNode}
+          </div>
+          {excluded.length > 0 && (
+            <Tooltip delayDuration={150}>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label={`Why ${excluded.length} ${excluded.length === 1 ? "pupil was" : "pupils were"} excluded`}
+                  style={{
+                    width: 16,
+                    height: 16,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "none",
+                    background: "transparent",
+                    color: "#9AA0A6",
+                    cursor: "help",
+                    padding: 0,
+                    flexShrink: 0,
+                  }}
+                >
+                  <Info size={12} aria-hidden="true" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[280px] text-xs leading-snug">
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                  {excluded.length} {excluded.length === 1 ? "pupil doesn't" : "pupils don't"} fit
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 14, display: "grid", gap: 4 }}>
+                  {excluded.slice(0, 6).map((p) => (
+                    <li key={p.id}>
+                      <span style={{ fontWeight: 600 }}>{p.name}:</span> {p.reason}
+                    </li>
+                  ))}
+                  {excluded.length > 6 && (
+                    <li style={{ listStyle: "none", color: "#9AA0A6" }}>
+                      …and {excluded.length - 6} more
+                    </li>
+                  )}
+                </ul>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
         <div
           style={{
