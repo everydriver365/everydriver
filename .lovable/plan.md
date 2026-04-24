@@ -1,35 +1,33 @@
 
 
-## Fix: Use Google Maps on Next Lesson card
+## Switch Google Maps to the new API key
 
-The "Next Up" card on the instructor mobile home (`IOSNativeHomeView.tsx`) currently renders `PostcodeMapPreview`, which is a **Leaflet/OpenStreetMap** component — not Google Maps. The project already has a working `GoogleMapPreview` component (used elsewhere) that:
+The Maps key is stored as the `GOOGLE_PLACES_API_KEY` backend secret (served by the `get-google-maps-key` edge function). I'll update the secret value and re-enable Google Maps on the "Next Up" card.
 
-- Loads the Google Maps JS SDK via `loadGoogleMaps()` + `fetchGoogleMapsKey()`
-- Geocodes the pickup postcode
-- Shows pickup marker + your live location + driving route polyline
-- Tap-to-expand into a full-screen interactive map with "Open in Google Maps" button
+### Steps
 
-### Change
+1. **Update backend secret** `GOOGLE_PLACES_API_KEY` → `AIzaSyDyewuNp5nDVuolsNQe0wTqWrTqP8SMiNk`
+   - Used by `supabase/functions/get-google-maps-key/index.ts`
+   - Picked up automatically by every Maps surface (`GoogleMapPreview`, `NearbyFriendsMap`, `LessonRouteRecorder`, live tracking, etc.) — no code change needed for those.
 
-**Edit** `src/components/instructor/IOSNativeHomeView.tsx`
-- Replace import:
-  - Remove `import { PostcodeMapPreview } from "@/components/instructor/PostcodeMapPreview"`
-  - Add `import { GoogleMapPreview } from "@/components/instructor/GoogleMapPreview"`
-- Replace the usage at line ~248:
-  - From: `<PostcodeMapPreview postcode={nextLesson.pickupPostcode} />`
-  - To: `<GoogleMapPreview postcode={nextLesson.pickupPostcode} address={nextLesson.pickupLocation ?? null} height={140} className="rounded-2xl overflow-hidden border" />`
+2. **Re-swap "Next Up" card to Google Maps** in `src/components/instructor/IOSNativeHomeView.tsx`
+   - Remove `PostcodeMapPreview` import + usage
+   - Use `GoogleMapPreview` with `postcode`, `address`, `height={140}`, `className="rounded-2xl overflow-hidden border"`
 
-### What you'll get
-- Real Google Maps tiles (not OSM)
-- Live driving route from your current location to the pupil's pickup
-- Tap the map to open a full-screen interactive view with an "Open in Google Maps" deep-link button
+### Required on your end (Google Cloud, one-time)
 
-### What stays the same
-- All existing card data, ETA, traffic logic, and layout
-- `PostcodeMapPreview` itself is left in place (still used elsewhere)
-- No backend, route, or schema changes
+For the new key to actually render maps, the Google Cloud project that owns it must have:
+- **Billing enabled** (no charges under $200/month free tier)
+- These APIs enabled: **Maps JavaScript API**, **Directions API**, **Geocoding API**
+- HTTP referrer restrictions including `*.lovable.app/*`, `*.lovableproject.com/*`, `*.drive365.co.uk/*`, `*.everydriver.co/*`, `*.drivingschoolmanager.co.uk/*`
+
+If billing/APIs aren't on, the new key will fail with the same `BillingNotEnabledMapError` as the old one.
 
 ### Out of scope
-- Other surfaces still using Leaflet (will continue to work as-is)
-- Map styling beyond the existing `GoogleMapPreview` defaults
+- No changes to other Maps surfaces (they'll just start working with the new key automatically)
+- No changes to Leaflet components
+- No schema or route changes
+
+### Security note
+You've now shared this API key in chat. Once it's working, restrict it to your domains in Google Cloud Console so it can't be abused if leaked.
 
