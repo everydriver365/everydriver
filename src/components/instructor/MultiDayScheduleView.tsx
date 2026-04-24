@@ -28,6 +28,7 @@ import {
   categoriseEvent,
   cleanEventTitle,
   formatDuration,
+  styleFromGoogleColor,
   type EventCategory,
 } from "./scheduleGoogleStyle";
 
