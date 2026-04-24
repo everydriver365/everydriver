@@ -128,6 +128,7 @@ function EventChip({
   isTask,
   taskCompleted,
   onTaskToggle,
+  colorOverride,
 }: {
   category: EventCategory;
   title: string;
@@ -136,8 +137,9 @@ function EventChip({
   isTask?: boolean;
   taskCompleted?: boolean;
   onTaskToggle?: (e: React.MouseEvent) => void;
+  colorOverride?: { bg: string; text: string; border: string } | null;
 }) {
-  const style = CATEGORY_STYLES[category];
+  const style = colorOverride ?? CATEGORY_STYLES[category];
   const padLeft = isTask ? 30 : 12;
   return (
     <div
