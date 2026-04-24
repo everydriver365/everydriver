@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient, useIsFetching } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { parseISO } from "date-fns";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface GapFillCardProps {
   instructorId: string;
@@ -55,6 +56,15 @@ interface CandidatePupil {
   travelOutMin: number | null; // prev drop-off → pupil pickup
   travelInMin: number | null; // pupil pickup → next pickup
   etaSource: "real" | "fallback";
+  included: boolean;
+  reason: string; // human-readable explanation of inclusion / exclusion
+}
+
+interface GapCandidatesResult {
+  included: CandidatePupil[];
+  excluded: CandidatePupil[];
+  gapMin: number;
+  bufferMin: number;
 }
 
 const TRAVEL_FALLBACK_MIN = 10;
