@@ -126,12 +126,18 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
 
   const fetchPupilCount = async () => {
     try {
-      const { count } = await supabase
+      let q = supabase
         .from("pupils")
         .select("*", { count: "exact", head: true })
         .eq("instructor_id", instructorId)
         .not("phone", "is", null);
-      
+
+      // If GapFillCard has narrowed the audience to those who fit the slot, count only those.
+      if (targetedPupilIds && targetedPupilIds.length > 0) {
+        q = q.in("id", targetedPupilIds);
+      }
+
+      const { count } = await q;
       setPupilCount(count || 0);
     } catch (error) {
       console.error("Error fetching pupil count:", error);
