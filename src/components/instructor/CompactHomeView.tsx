@@ -390,7 +390,7 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
 
         <div className="-mx-4 mt-5">
           <SectionHeader title="Insights" category="navigation" />
-          <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
+          <InsightTilesGrid instructorId={instructorId} gapCount={gapSuggestions?.length || 0} />
         </div>
 
         <div className="h-6" />
