@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Briefcase, MessageSquare, ClipboardCheck, CalendarPlus, CheckCircle2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { WarmTile, WarmTileGrid, WarmTileCategory } from "./WarmTile";
+import { Tile, TileGrid } from "./Tile";
 
 interface ActivityTilesGridProps {
   pendingJobsCount: number;
@@ -11,79 +11,58 @@ interface ActivityTilesGridProps {
   gapSlotsCount: number;
 }
 
-const tileConfig: {
+interface TileDef {
+  id: string;
   title: string;
   icon: LucideIcon;
-  category: WarmTileCategory;
   route: string;
-  key: "pendingJobsCount" | "unreadMessagesCount" | "testRequestsCount" | "gapSlotsCount";
+  countKey: keyof ActivityTilesGridProps;
   emptySubtitle: string;
   filledSubtitle: (n: number) => string;
-  iconBg: string;
-  iconColor: string;
-}[] = [
+}
+
+const TILES: TileDef[] = [
   {
+    id: "job-offers",
     title: "Job offers",
     icon: Briefcase,
-    category: "urgent",
     route: "/instructor/jobs",
-    key: "pendingJobsCount",
+    countKey: "pendingJobsCount",
     emptySubtitle: "No pending jobs",
     filledSubtitle: (n) => `${n} pending ${n === 1 ? "job" : "jobs"}`,
-    iconBg: "hsl(var(--dsm-tint-red-bg))",
-    iconColor: "hsl(var(--dsm-tint-red-fg))",
   },
   {
+    id: "messages",
     title: "Messages",
     icon: MessageSquare,
-    category: "messages",
     route: "/instructor/messages",
-    key: "unreadMessagesCount",
+    countKey: "unreadMessagesCount",
     emptySubtitle: "All caught up",
     filledSubtitle: (n) => `${n} unread ${n === 1 ? "chat" : "chats"}`,
-    iconBg: "hsl(var(--dsm-tint-blue-bg))",
-    iconColor: "hsl(var(--dsm-tint-blue-fg))",
   },
   {
+    id: "tests",
     title: "Tests",
     icon: ClipboardCheck,
-    category: "schedule",
     route: "/instructor/test-requests",
-    key: "testRequestsCount",
+    countKey: "testRequestsCount",
     emptySubtitle: "No swap requests",
     filledSubtitle: (n) => `${n} swap ${n === 1 ? "request" : "requests"}`,
-    iconBg: "hsl(var(--dsm-tint-green-bg))",
-    iconColor: "hsl(var(--dsm-tint-green-fg))",
   },
   {
+    id: "fill-gaps",
     title: "Fill gaps",
     icon: CalendarPlus,
-    category: "schedule",
     route: "/instructor/gaps",
-    key: "gapSlotsCount",
+    countKey: "gapSlotsCount",
     emptySubtitle: "No open slots",
     filledSubtitle: (n) => `${n} open ${n === 1 ? "slot" : "slots"}`,
-    iconBg: "hsl(var(--dsm-tint-orange-bg))",
-    iconColor: "hsl(var(--dsm-tint-orange-fg))",
   },
 ];
 
-export function ActivityTilesGrid({
-  pendingJobsCount,
-  unreadMessagesCount,
-  testRequestsCount,
-  gapSlotsCount,
-}: ActivityTilesGridProps) {
+export function ActivityTilesGrid(props: ActivityTilesGridProps) {
   const navigate = useNavigate();
-
-  const counts: Record<string, number> = {
-    pendingJobsCount,
-    unreadMessagesCount,
-    testRequestsCount,
-    gapSlotsCount,
-  };
-
-  const allZero = Object.values(counts).every((c) => c === 0);
+  const allZero = TILES.every((t) => props[t.countKey] === 0);
 
   if (allZero) {
     return (
@@ -112,26 +91,22 @@ export function ActivityTilesGrid({
   }
 
   return (
-    <div style={{ marginTop: 12 }}>
-      <WarmTileGrid>
-        {tileConfig.map((tile) => {
-          const count = counts[tile.key];
-          return (
-            <WarmTile
-              key={tile.title}
-              icon={tile.icon}
-              title={tile.title}
-              subtitle={count > 0 ? tile.filledSubtitle(count) : tile.emptySubtitle}
-              category={tile.category}
-              badgeCount={count}
-              iconBg={tile.iconBg}
-              iconColor={tile.iconColor}
-              iconFilled
-              onClick={() => navigate(tile.route)}
-            />
-          );
-        })}
-      </WarmTileGrid>
-    </div>
+    <TileGrid>
+      {TILES.map((t) => {
+        const count = props[t.countKey];
+        return (
+          <Tile
+            key={t.id}
+            id={t.id}
+            title={t.title}
+            icon={t.icon}
+            onClick={() => navigate(t.route)}
+            metricValue={count > 0 ? count : undefined}
+            metricUnit={count > 0 ? "new" : undefined}
+            subtitle={count > 0 ? t.filledSubtitle(count) : t.emptySubtitle}
+          />
+        );
+      })}
+    </TileGrid>
   );
 }
