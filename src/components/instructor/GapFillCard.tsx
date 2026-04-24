@@ -226,7 +226,7 @@ export function GapFillCard({
       style={{
         display: "flex",
         alignItems: "center",
-        gap: 10,
+        gap: 8,
         width: "100%",
         background: "#F8F9FA",
         borderRadius: 8,
@@ -237,6 +237,7 @@ export function GapFillCard({
         fontFamily: FONT_STACK,
         margin: "2px 0",
         minHeight: 44,
+        boxSizing: "border-box",
       }}
     >
       {avatars.length > 0 && (
@@ -291,9 +292,11 @@ export function GapFillCard({
             letterSpacing: "-0.08px",
             lineHeight: 1.3,
             margin: 0,
-            whiteSpace: "nowrap",
             overflow: "hidden",
-            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            wordBreak: "break-word",
           }}
         >
           {titleNode}
@@ -306,9 +309,12 @@ export function GapFillCard({
             letterSpacing: "-0.04px",
             fontVariantNumeric: "tabular-nums",
             margin: "2px 0 0",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         >
-          {startTime} — {endTime}
+          {startTime.slice(0, 5)} — {endTime.slice(0, 5)}
           {totalCount > 0 ? " · text with one tap" : ""}
         </div>
       </div>
@@ -328,8 +334,8 @@ export function GapFillCard({
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
-          width: 32,
-          height: 32,
+          width: 28,
+          height: 28,
           borderRadius: 16,
           border: "none",
           background: "transparent",
