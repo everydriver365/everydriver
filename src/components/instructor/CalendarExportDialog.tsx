@@ -108,8 +108,8 @@ export function CalendarExportDialog({
         
         return [
           format(event.start, 'EEE, MMM d'),
-          format(event.start, 'h:mm a'),
-          format(event.end, 'h:mm a'),
+          format(event.start, 'HH:mm'),
+          format(event.end, 'HH:mm'),
           event.title,
           eventType,
           status,

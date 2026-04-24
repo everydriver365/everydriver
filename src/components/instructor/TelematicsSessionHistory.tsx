@@ -130,7 +130,7 @@ export function TelematicsSessionHistory({
                         {format(new Date(session.started_at), "EEE, d MMM yyyy")}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {format(new Date(session.started_at), "h:mm a")} · {formatDistanceToNow(new Date(session.started_at), { addSuffix: true })}
+                        {format(new Date(session.started_at), "HH:mm")} · {formatDistanceToNow(new Date(session.started_at), { addSuffix: true })}
                       </p>
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />

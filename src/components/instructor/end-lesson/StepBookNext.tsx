@@ -150,7 +150,7 @@ export function StepBookNext({
             found.push({
               date: dateStr,
               startTime: ct,
-              label: `${format(date, "EEE d MMM")} at ${format(parse(ct, "HH:mm:ss", date), "h:mma")}`,
+              label: `${format(date, "EEE d MMM")} at ${format(parse(ct, "HH:mm:ss", date), "HH:mm")}`,
             });
           }
         }

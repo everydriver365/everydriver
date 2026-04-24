@@ -119,7 +119,7 @@ export function CalendarEventSheet({ event, onClose, onDelete, onRefetch }: Cale
             <div>
               <div className="font-medium">{format(event.start, 'EEEE, MMMM d, yyyy')}</div>
               <div className="text-sm text-muted-foreground">
-                {format(event.start, 'h:mm a')} - {format(event.end, 'h:mm a')}
+                {format(event.start, 'HH:mm')} - {format(event.end, 'HH:mm')}
               </div>
             </div>
           </div>

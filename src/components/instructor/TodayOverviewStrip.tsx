@@ -18,7 +18,7 @@ export function TodayOverviewStrip({ instructorId }: TodayOverviewStripProps) {
 
   // Parse TIME string (HH:mm:ss) from database - not ISO format
   const firstLessonTimeFormatted = overview.firstLessonTime 
-    ? format(parse(overview.firstLessonTime, "HH:mm:ss", new Date()), "h:mm a")
+    ? format(parse(overview.firstLessonTime, "HH:mm:ss", new Date()), "HH:mm")
     : null;
 
   return (

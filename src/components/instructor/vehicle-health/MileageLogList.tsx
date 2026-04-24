@@ -68,7 +68,7 @@ export function MileageLogList({ entries }: MileageLogListProps) {
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {format(new Date(entry.session_date), "h:mm a")}
+                        {format(new Date(entry.session_date), "HH:mm")}
                       </p>
                     </div>
                     <div className="text-right shrink-0">
