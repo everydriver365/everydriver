@@ -72,7 +72,7 @@ function useGapCandidatePupils(
       // Active pupils for this instructor
       const { data: pupils } = await supabase
         .from("pupils")
-        .select("id, name, status")
+        .select("id, name, status, profile_image_url")
         .eq("instructor_id", instructorId)
         .eq("status", "active");
 
