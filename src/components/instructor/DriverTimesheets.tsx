@@ -47,7 +47,7 @@ export function DriverTimesheets({ instructorId }: DriverTimesheetsProps) {
   const formatTime = (iso: string | null) => {
     if (!iso) return "—";
     try {
-      return format(new Date(iso), "h:mm a");
+      return format(new Date(iso), "HH:mm");
     } catch {
       return "—";
     }

@@ -15,7 +15,7 @@ export function LessonEndAlert({ lesson, onComplete, onDismiss }: LessonEndAlert
 
   const formattedTime = (() => {
     try {
-      return format(parse(lesson.startTime, "HH:mm:ss", new Date()), "h:mm a");
+      return format(parse(lesson.startTime, "HH:mm:ss", new Date()), "HH:mm");
     } catch {
       return lesson.startTime;
     }

@@ -357,7 +357,7 @@ export default function InstructorJobs() {
 
                   {/* Request Date */}
                   <p className="text-xs text-muted-foreground text-center">
-                    Requested on {format(new Date(selectedJob.created_at), "MMMM d, yyyy 'at' h:mm a")}
+                    Requested on {format(new Date(selectedJob.created_at), "MMMM d, yyyy 'at' HH:mm")}
                   </p>
                 </div>
 

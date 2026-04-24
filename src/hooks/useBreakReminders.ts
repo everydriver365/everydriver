@@ -144,7 +144,7 @@ export function useBreakReminders() {
   }, [nextBreak]);
 
   // Format time for display
-  const formatBreakTime = (date: Date) => format(date, "h:mm a");
+  const formatBreakTime = (date: Date) => format(date, "HH:mm");
 
   // Get break description
   const getBreakDescription = (slot: BreakSlot) => {

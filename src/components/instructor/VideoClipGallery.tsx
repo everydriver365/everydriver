@@ -219,7 +219,7 @@ const VideoClipGallery: React.FC<VideoClipGalleryProps> = ({
                   {/* Date */}
                   <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
                     <p className="text-[10px] text-white/90">
-                      {format(new Date(clip.created_at), 'MMM d, h:mm a')}
+                      {format(new Date(clip.created_at), 'MMM d, HH:mm')}
                     </p>
                   </div>
 

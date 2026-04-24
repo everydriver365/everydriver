@@ -55,7 +55,7 @@ export function TomorrowPeekCard({
   const formatTime = (time: string) => {
     try {
       const parsed = parse(time, "HH:mm:ss", new Date());
-      return format(parsed, "h:mm a");
+      return format(parsed, "HH:mm");
     } catch {
       return time;
     }

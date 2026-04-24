@@ -334,9 +334,7 @@ export function formatSlotForDisplay(slot: SlotCandidate): string {
   // Format times
   const formatDisplayTime = (time: string) => {
     const [h, m] = time.split(':').map(Number);
-    const period = h >= 12 ? 'pm' : 'am';
-    const hour12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
-    return m === 0 ? `${hour12}${period}` : `${hour12}:${m.toString().padStart(2, '0')}${period}`;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
   };
 
   return `${dayName} ${dateStr}, ${formatDisplayTime(slot.startTime)} - ${formatDisplayTime(slot.endTime)}`;

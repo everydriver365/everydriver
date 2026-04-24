@@ -324,10 +324,7 @@ export function WaitlistManager({ instructorId, availableGaps = [] }: WaitlistMa
 
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(":");
-    const h = parseInt(hours);
-    const ampm = h >= 12 ? "pm" : "am";
-    const hour12 = h % 12 || 12;
-    return `${hour12}:${minutes}${ampm}`;
+    return `${hours.padStart(2, "0")}:${minutes}`;
   };
 
   if (loading) {

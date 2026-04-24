@@ -687,7 +687,7 @@ function WeekView({
               key={hour}
               className="h-[60px] text-xs text-muted-foreground text-right pr-2 -mt-2"
             >
-              {format(addHours(startOfDay(new Date()), hour), 'ha')}
+              {format(addHours(startOfDay(new Date()), hour), 'HH')}
             </div>
           ))}
         </div>
@@ -760,7 +760,7 @@ function WeekView({
                       <div className="font-medium truncate">{event.title}</div>
                       {style.height > 40 && (
                         <div className="text-[10px] opacity-80">
-                          {format(event.start, 'h:mm a')} - {format(event.end, 'h:mm a')}
+                          {format(event.start, 'HH:mm')} - {format(event.end, 'HH:mm')}
                         </div>
                       )}
                       {/* Resize Handle */}
@@ -861,7 +861,7 @@ function DayView({
             key={hour}
             className="h-[60px] text-xs text-muted-foreground text-right pr-2 -mt-2"
           >
-            {format(addHours(startOfDay(new Date()), hour), 'ha')}
+            {format(addHours(startOfDay(new Date()), hour), 'HH')}
           </div>
         ))}
       </div>
@@ -922,7 +922,7 @@ function DayView({
                 )}
                 <div className="font-medium">{event.title}</div>
                 <div className="text-sm opacity-80">
-                  {format(event.start, 'h:mm a')} - {format(event.end, 'h:mm a')}
+                  {format(event.start, 'HH:mm')} - {format(event.end, 'HH:mm')}
                 </div>
                 {/* Resize Handle */}
                 {isResizable && style.height >= 30 && (

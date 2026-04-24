@@ -86,7 +86,7 @@ export function TomorrowPreviewCard({
   const formatTime = (time: string | null) => {
     if (!time) return "—";
     try {
-      return format(parse(time, "HH:mm:ss", new Date()), "h:mm a");
+      return format(parse(time, "HH:mm:ss", new Date()), "HH:mm");
     } catch {
       return time;
     }

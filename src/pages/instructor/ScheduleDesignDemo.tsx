@@ -13,7 +13,7 @@ import { useTomorrowLessons } from "@/hooks/useTomorrowLessons";
 
 // ─── Helpers ───
 const fmtTime = (t: string) => {
-  try { return format(parse(t, "HH:mm:ss", new Date()), "h:mm a"); } catch { return t?.substring(0, 5); }
+  try { return format(parse(t, "HH:mm:ss", new Date()), "HH:mm"); } catch { return t?.substring(0, 5); }
 };
 const fmtTime24 = (t: string) => {
   try { return format(parse(t, "HH:mm:ss", new Date()), "HH:mm"); } catch { return t?.substring(0, 5); }
