@@ -50,7 +50,44 @@ interface CandidatePupil {
   id: string;
   name: string;
   imageUrl: string | null;
+  postcode: string | null;
   score: number;
+  travelOutMin: number | null; // prev drop-off → pupil pickup
+  travelInMin: number | null; // pupil pickup → next pickup
+  etaSource: "real" | "fallback";
+}
+
+const TRAVEL_FALLBACK_MIN = 10;
+const MIN_LESSON_MIN = 60;
+const UK_POSTCODE_RE = /^[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}$/i;
+
+// In-memory cache of postcode-pair travel minutes (per session)
+const travelCache = new Map<string, number | null>();
+
+async function fetchTravelMinutes(
+  fromPostcode: string | null,
+  toPostcode: string | null,
+): Promise<number | null> {
+  if (!fromPostcode || !toPostcode) return null;
+  const a = fromPostcode.replace(/\s+/g, "").toUpperCase();
+  const b = toPostcode.replace(/\s+/g, "").toUpperCase();
+  if (!UK_POSTCODE_RE.test(a) || !UK_POSTCODE_RE.test(b)) return null;
+  if (a === b) return 0;
+  const key = `${a}|${b}`;
+  if (travelCache.has(key)) return travelCache.get(key) ?? null;
+  try {
+    const { data, error } = await supabase.functions.invoke("calculate-route-distance", {
+      body: { from_postcode: a, to_postcode: b },
+    });
+    if (error) throw error;
+    const mins =
+      typeof data?.duration_minutes === "number" ? Math.round(data.duration_minutes) : null;
+    travelCache.set(key, mins);
+    return mins;
+  } catch {
+    travelCache.set(key, null);
+    return null;
+  }
 }
 
 function useGapCandidatePupils(
@@ -70,34 +107,67 @@ function useGapCandidatePupils(
       const gapStartMin = gsH * 60 + gsM;
       const gapEndMin = geH * 60 + geM;
 
-      // Active pupils for this instructor
-      const { data: pupils } = await supabase
-        .from("pupils")
-        .select("id, name, status, profile_image_url")
-        .eq("instructor_id", instructorId)
-        .eq("status", "active");
+      // Active pupils + instructor buffer + that day's lessons (for adjacency)
+      const [{ data: pupils }, { data: instructor }, { data: dayLessons }] =
+        await Promise.all([
+          supabase
+            .from("pupils")
+            .select("id, name, status, profile_image_url, postcode, pickup_address")
+            .eq("instructor_id", instructorId)
+            .eq("status", "active"),
+          supabase
+            .from("instructors")
+            .select("buffer_minutes")
+            .eq("id", instructorId)
+            .maybeSingle(),
+          supabase
+            .from("scheduled_lessons")
+            .select(
+              "pupil_id, start_time, duration_minutes, status, pickup_postcode, pupils:pupils(postcode)",
+            )
+            .eq("instructor_id", instructorId)
+            .eq("lesson_date", date)
+            .neq("status", "cancelled"),
+        ]);
 
       if (!pupils || pupils.length === 0) return [];
 
-      // Pupils already booked during this gap (exclude)
-      const { data: bookedThatDay } = await supabase
-        .from("scheduled_lessons")
-        .select("pupil_id, start_time, duration_minutes, status")
-        .eq("instructor_id", instructorId)
-        .eq("lesson_date", date)
-        .neq("status", "cancelled");
+      const bufferMinutes =
+        (instructor as { buffer_minutes?: number | null } | null)?.buffer_minutes ?? 0;
 
+      // Identify previous (drop-off) and next (pickup) lesson around this gap
+      type DayLesson = {
+        pupil_id: string | null;
+        start_time: string;
+        duration_minutes: number | null;
+        pickup_postcode: string | null;
+        pupils: { postcode: string | null } | null;
+      };
+      const sortedLessons = [...((dayLessons as DayLesson[]) || [])].sort((a, b) =>
+        a.start_time.localeCompare(b.start_time),
+      );
+
+      let prevDropPostcode: string | null = null;
+      let nextPickupPostcode: string | null = null;
       const bookedIds = new Set<string>();
-      (bookedThatDay || []).forEach((l) => {
+
+      for (const l of sortedLessons) {
         const [lh, lm] = l.start_time.split(":").map(Number);
         const ls = lh * 60 + lm;
         const le = ls + (l.duration_minutes || 60);
         if (ls < gapEndMin && le > gapStartMin && l.pupil_id) {
           bookedIds.add(l.pupil_id);
         }
-      });
+        if (le <= gapStartMin) {
+          // Previous lesson ends at or before gap → its pickup postcode is approx drop-off too
+          prevDropPostcode = l.pickup_postcode || l.pupils?.postcode || prevDropPostcode;
+        }
+        if (ls >= gapEndMin && nextPickupPostcode === null) {
+          nextPickupPostcode = l.pickup_postcode || l.pupils?.postcode || null;
+        }
+      }
 
-      // Recent lessons for pattern matching (past ~60 days)
+      // Recent lessons for pattern-matching score (past ~60 days)
       const sinceDate = new Date();
       sinceDate.setDate(sinceDate.getDate() - 60);
       const sinceStr = sinceDate.toISOString().slice(0, 10);
@@ -109,7 +179,6 @@ function useGapCandidatePupils(
         .gte("lesson_date", sinceStr)
         .neq("status", "cancelled");
 
-      // Score each pupil based on pattern overlap with the gap window/day
       const scoreByPupil = new Map<string, number>();
       (recentLessons || []).forEach((l) => {
         if (!l.pupil_id) return;
@@ -117,33 +186,57 @@ function useGapCandidatePupils(
         const [lh, lm] = l.start_time.split(":").map(Number);
         const ls = lh * 60 + lm;
         const le = ls + (l.duration_minutes || 60);
-
         let s = 0;
-        // Same day-of-week
         if (ld.getDay() === dayOfWeek) s += 2;
-        // Time-window overlap
         if (ls < gapEndMin && le > gapStartMin) s += 3;
-        // General loose proximity (within 2h either side)
         else if (Math.abs(ls - gapStartMin) <= 120) s += 1;
-
-        if (s > 0) {
-          scoreByPupil.set(l.pupil_id, (scoreByPupil.get(l.pupil_id) || 0) + s);
-        }
+        if (s > 0) scoreByPupil.set(l.pupil_id, (scoreByPupil.get(l.pupil_id) || 0) + s);
       });
 
-      const candidates: CandidatePupil[] = pupils
-        .filter((p) => !bookedIds.has(p.id))
-        .map((p) => ({
-          id: p.id,
-          name: p.name,
-          imageUrl: (p as { profile_image_url?: string | null }).profile_image_url ?? null,
-          score: scoreByPupil.get(p.id) || 0,
-        }));
+      // Resolve real per-pupil travel where possible (parallel, capped)
+      const eligible = pupils.filter((p) => !bookedIds.has(p.id));
 
-      // Sort: highest score first, then alphabetical
-      candidates.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+      const enriched: CandidatePupil[] = await Promise.all(
+        eligible.map(async (p) => {
+          const pupilPostcode =
+            (p as { postcode?: string | null }).postcode ?? null;
+          const [outMin, inMin] = await Promise.all([
+            fetchTravelMinutes(prevDropPostcode, pupilPostcode),
+            fetchTravelMinutes(pupilPostcode, nextPickupPostcode),
+          ]);
+          const realResolved = outMin !== null || inMin !== null;
+          return {
+            id: p.id,
+            name: p.name,
+            imageUrl:
+              (p as { profile_image_url?: string | null }).profile_image_url ?? null,
+            postcode: pupilPostcode,
+            score: scoreByPupil.get(p.id) || 0,
+            travelOutMin: outMin,
+            travelInMin: inMin,
+            etaSource: realResolved ? "real" : "fallback",
+          };
+        }),
+      );
 
-      return candidates;
+      // Filter by feasibility using real ETA when available, fallback otherwise
+      const feasible = enriched.filter((c) => {
+        const out = c.travelOutMin ?? TRAVEL_FALLBACK_MIN;
+        const inn = c.travelInMin ?? TRAVEL_FALLBACK_MIN;
+        const needed = bufferMinutes + out + MIN_LESSON_MIN + inn + bufferMinutes;
+        return gapEndMin - gapStartMin >= needed;
+      });
+
+      // Sort: highest score first, then shortest combined travel, then alpha
+      feasible.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        const at = (a.travelOutMin ?? TRAVEL_FALLBACK_MIN) + (a.travelInMin ?? TRAVEL_FALLBACK_MIN);
+        const bt = (b.travelOutMin ?? TRAVEL_FALLBACK_MIN) + (b.travelInMin ?? TRAVEL_FALLBACK_MIN);
+        if (at !== bt) return at - bt;
+        return a.name.localeCompare(b.name);
+      });
+
+      return feasible;
     },
     enabled: !!instructorId,
     staleTime: 5 * 60 * 1000,
