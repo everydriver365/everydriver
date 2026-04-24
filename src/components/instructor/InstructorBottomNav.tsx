@@ -81,17 +81,15 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
       <div className="flex items-start justify-around" style={{ padding: '10px 8px 16px' }}>
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
-          const showNotification = item.showBadge && pendingJobsCount > 0;
           const isTrack = item.isTrack;
           const isSchedule = item.isSchedule;
           const isMore = item.isMore;
 
-          const getBadgeCount = () => {
-            if (isSchedule && todayLessonCount > 0) return todayLessonCount;
-            return 0;
-          };
-          const badgeCount = getBadgeCount();
-          const showMoreDot = isMore && (pendingJobsCount > 0 || unreadCount > 0);
+          // Per-tab badge count (iOS-style numbered pill)
+          let tabBadge = 0;
+          if (item.showBadge) tabBadge = pendingJobsCount; // Pupils
+          if (isSchedule && todayLessonCount > 0) tabBadge = todayLessonCount;
+          if (isMore) tabBadge = pendingJobsCount + unreadCount; // combined alerts
 
           const Icon = item.icon;
           const activeColor = 'hsl(var(--dsm-accent-blue))';
@@ -99,6 +97,9 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
           const trackActiveColor = isTrack && isTrackingActive && !isActive
             ? "#10b981"
             : undefined;
+
+          const showBadge = tabBadge > 0 && !(isSchedule && isActive);
+          const badgeLabel = tabBadge > 99 ? "99+" : tabBadge > 9 ? `${tabBadge}` : `${tabBadge}`;
 
           return (
             <button
@@ -124,63 +125,34 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                   style={{ strokeLinecap: 'round', strokeLinejoin: 'round' }}
                 />
 
-                {/* Pupils badge */}
-                {showNotification && (
+                {/* iOS-style numbered notification badge */}
+                {showBadge && (
                   <span
                     className="absolute flex items-center justify-center"
                     style={{
-                      top: 0,
-                      right: 4,
-                      minWidth: 16,
-                      height: 16,
-                      borderRadius: 8,
-                      padding: '0 4px',
-                      background: 'hsl(var(--dsm-accent-red))',
+                      top: -4,
+                      right: -2,
+                      minWidth: 18,
+                      height: 18,
+                      borderRadius: 9,
+                      padding: '0 5px',
+                      background: '#FF3B30',
                       color: 'white',
-                      fontSize: 10,
+                      fontSize: 11,
                       fontWeight: 700,
+                      lineHeight: 1,
+                      letterSpacing: '-0.2px',
+                      border: '2px solid hsl(var(--dsm-card))',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.15)',
                     }}
                   >
-                    {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+                    {badgeLabel}
                   </span>
                 )}
-                {/* Schedule badge */}
-                {isSchedule && badgeCount > 0 && !isActive && (
-                  <span
-                    className="absolute flex items-center justify-center"
-                    style={{
-                      top: 0,
-                      right: 4,
-                      minWidth: 16,
-                      height: 16,
-                      borderRadius: 8,
-                      padding: '0 4px',
-                      background: 'hsl(var(--dsm-accent-red))',
-                      color: 'white',
-                      fontSize: 10,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {badgeCount > 9 ? "9+" : badgeCount}
-                  </span>
-                )}
+
                 {/* Track active dot */}
                 {isTrack && isTrackingActive && (
                   <span className="absolute top-1 right-3 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                )}
-                {/* More dot */}
-                {showMoreDot && (
-                  <span
-                    className="absolute"
-                    style={{
-                      top: 4,
-                      right: 8,
-                      width: 8,
-                      height: 8,
-                      background: 'hsl(var(--dsm-accent-red))',
-                      borderRadius: '50%',
-                    }}
-                  />
                 )}
               </div>
               <span
