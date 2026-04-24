@@ -27,10 +27,16 @@ export default defineConfig(({ mode }) => ({
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
-            handler: "NetworkFirst",
+            // Only cache GET requests to public Supabase storage assets.
+            // Previous NetworkFirst-for-everything caused 24h stale data
+            // after deploys, especially noticeable inside native wrappers.
+            urlPattern: ({ url, request }) =>
+              request.method === "GET" &&
+              /\.supabase\.co$/i.test(url.hostname) &&
+              /\/storage\/v1\/object\/public\//.test(url.pathname),
+            handler: "StaleWhileRevalidate",
             options: {
-              cacheName: "supabase-cache",
+              cacheName: "supabase-public-assets",
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24, // 1 day
