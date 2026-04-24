@@ -211,9 +211,16 @@ export function GapFillCard({
       : `Text ${totalCount} ${totalCount === 1 ? "pupil" : "pupils"} about ${durationLabel} gap from ${startTime} to ${endTime}`;
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={handleOpen}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleOpen();
+        }
+      }}
       aria-label={ariaLabel}
       className="gap-fill-row"
       style={{
