@@ -647,6 +647,16 @@ export function InstructorMobileHome({
           <InsightTilesGrid gapCount={gapSuggestions?.length || 0} />
         </div>
 
+        {/* Telematics */}
+        <div className="mt-5">
+          <div className="px-4">
+            <SectionHeader title="Telematics" category="navigation" />
+          </div>
+          <div className="mb-2">
+            <TelematicsTile />
+          </div>
+        </div>
+
         <div className="px-4">
 
           {/* Vehicle Health & Idle Time */}
