@@ -43,6 +43,7 @@ export function useRealGapSlots(instructorId: string | undefined) {
         { data: manualBlocks },
         { data: calendarEvents },
         { data: pupils },
+        { data: instructor },
       ] = await Promise.all([
         supabase
           .from("instructor_working_hours")
@@ -81,7 +82,18 @@ export function useRealGapSlots(instructorId: string | undefined) {
           .eq("status", "active")
           .not("phone", "is", null)
           .limit(10),
+        supabase
+          .from("instructors")
+          .select("buffer_minutes")
+          .eq("id", instructorId)
+          .maybeSingle(),
       ]);
+
+      const bufferMinutes =
+        (instructor as { buffer_minutes?: number | null } | null)?.buffer_minutes ?? 0;
+      const TRAVEL_FALLBACK_MIN = 10;
+      // Hours of allowance to inflate conflict windows by on each side
+      const sideAllowanceHours = (bufferMinutes + TRAVEL_FALLBACK_MIN) / 60;
 
       // Map pupils to suggested format
       const suggestedPupils: SuggestedPupil[] = (pupils || []).map((p) => ({
