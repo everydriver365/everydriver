@@ -995,19 +995,12 @@ html {
 /* Back-compat alias — class no longer required but harmless if present. */
 .a11y-scope { /* intentionally empty */ }
 
-/* Escape valve for tiles built with hardcoded inline pixel font sizes
-   (Action Needed, Next Lesson, Schedule, Telematics). Applying CSS `zoom`
-   here lets those tiles scale together with the rest of the app even
-   though their text is sized in raw px. Firefox falls back to scale(). */
-.a11y-zoom-tile {
-  zoom: var(--a11y-text-scale, 1);
-}
-@supports not (zoom: 1) {
-  .a11y-zoom-tile {
-    transform: scale(var(--a11y-text-scale, 1));
-    transform-origin: top left;
-  }
-}
+/* `.a11y-zoom-tile` was previously used to apply CSS `zoom` to whole tiles.
+   That caused inconsistent sizing between sibling tiles (some scaling layout
+   width, others only scaling text). Tiles now use the shared `a11yPx()` helper
+   to scale their inline pixel values directly. The class is kept as a no-op
+   alias for backwards compatibility. */
+.a11y-zoom-tile { /* intentionally empty */ }
 
 /* Reduce motion — manual override on top of OS preference */
 html.a11y-reduce-motion *,
