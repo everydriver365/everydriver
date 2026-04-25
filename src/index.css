@@ -1053,20 +1053,7 @@ html.a11y-high-contrast .dsm-instructor.dsm-dark {
 /* High-contrast overrides for the many hardcoded iOS greys/whites used in
    instructor tile primitives, sheets, and inline styles. We boost text and
    border weight without changing layout. */
-html.a11y-high-contrast .a11y-scope p,
-html.a11y-high-contrast .a11y-scope span,
-html.a11y-high-contrast .a11y-scope div,
-html.a11y-high-contrast .a11y-scope button,
-html.a11y-high-contrast .a11y-scope a,
-html.a11y-high-contrast .a11y-scope label,
-html.a11y-high-contrast .a11y-scope li,
-html.a11y-high-contrast .dsm-instructor p,
-html.a11y-high-contrast .dsm-instructor span,
-html.a11y-high-contrast .dsm-instructor div,
-html.a11y-high-contrast .dsm-instructor button,
-html.a11y-high-contrast .dsm-instructor a {
-  /* Force any of the well-known low-contrast greys to a darker tone. */
-}
+/* (legacy specific-grey overrides removed — superseded by universal rule below) */
 
 /* Universal high-contrast text override — wins over inline `color: "#XXX"`
    because of !important. Applies to every descendant inside the scope. */
