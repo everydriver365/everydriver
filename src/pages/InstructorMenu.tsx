@@ -802,26 +802,24 @@ export default function InstructorMenu() {
         {/* Quick Toggles (hidden during search) */}
         {!lowerQuery && instructorId && (
           <div>
-            <div className="px-1 pb-[10px]">
-              <span className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em]">Quick Toggles</span>
-            </div>
+            <SectionLabel>Quick toggles</SectionLabel>
             <div>
               {/* Listed on Website */}
               <div className={cardClass}>
-                <div className="flex items-center justify-between px-4 py-[14px] gap-[14px]">
-                  <div className="flex items-center gap-[14px]">
+                <div className="flex items-center justify-between px-4 py-[14px] gap-3">
+                  <div className="flex items-center gap-3">
                     {renderIconTile(Eye, "#EDE9FE", "#5B21B6")}
-                    <p className="text-[15px] font-medium text-[#18181B]" style={{ fontFamily: "Inter, sans-serif" }}>Listed on Website</p>
+                    <p style={{ fontSize: 15, fontWeight: 500, color: "#000000", letterSpacing: -0.2, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif' }}>Listed on website</p>
                   </div>
                   <Switch checked={isActive} onCheckedChange={handleVisibilityToggle} />
                 </div>
               </div>
               {/* Hey ED */}
               <div className={cardClass}>
-                <div className="flex items-center justify-between px-4 py-[14px] gap-[14px]">
-                  <div className="flex items-center gap-[14px]">
+                <div className="flex items-center justify-between px-4 py-[14px] gap-3">
+                  <div className="flex items-center gap-3">
                     {renderIconTile(Mic, "#E8ECF1", "#2A394F")}
-                    <p className="text-[15px] font-medium text-[#18181B]" style={{ fontFamily: "Inter, sans-serif" }}>"Hey ED" Always Listening</p>
+                    <p style={{ fontSize: 15, fontWeight: 500, color: "#000000", letterSpacing: -0.2, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif' }}>"Hey ED" always listening</p>
                   </div>
                   <Switch
                     checked={heyEdEnabled}
@@ -841,8 +839,8 @@ export default function InstructorMenu() {
               </div>
             </div>
             {!isActive && (
-              <div className="mt-2 rounded-[14px] bg-[#FEF3C7] border border-[#FDE68A] p-3">
-                <p className="text-sm text-[#92400E]">You're currently hidden from the website.</p>
+              <div className="mt-2 rounded-[12px] bg-[#FBF1DE] border-[0.5px] border-[#E5E5EA] p-3">
+                <p className="text-sm" style={{ color: "#B8801F" }}>You're currently hidden from the website.</p>
               </div>
             )}
           </div>
@@ -854,9 +852,7 @@ export default function InstructorMenu() {
           if (tilesInCat.length === 0) return null;
           return (
             <div key={cat.id}>
-              <div className="px-1 pb-[10px]">
-                <span className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em]">{cat.title}</span>
-              </div>
+              <SectionLabel>{cat.title}</SectionLabel>
               <div>
                 {tilesInCat.map((tile) => (
                   <SettingsTile key={tile.id} tile={tile} statusBadge={getStatusBadge(tile.id)}>
@@ -871,19 +867,17 @@ export default function InstructorMenu() {
         {/* Account */}
         {!lowerQuery && (
           <div>
-            <div className="px-1 pb-[10px]">
-              <span className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em]">Account</span>
-            </div>
+            <SectionLabel>Account</SectionLabel>
             <div className={cardClass}>
               <motion.button
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 onClick={handleLogout}
-                className="w-full px-4 py-[14px] text-left flex items-center gap-[14px]"
+                className="w-full px-4 py-[14px] text-left flex items-center gap-3"
               >
                 {renderIconTile(LogOut, "#FEF2F2", "#DC2626")}
-                <p className="flex-1 font-medium text-[15px] text-[#18181B]" style={{ fontFamily: "Inter, sans-serif" }}>Sign Out</p>
-                <ChevronRight size={18} strokeWidth={2} color="#A1A1AA" className="shrink-0" />
+                <p className="flex-1" style={{ fontSize: 15, fontWeight: 500, color: "#C8434F", letterSpacing: -0.2, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif' }}>Sign out</p>
+                <ChevronRight size={12} strokeWidth={1.6} color="#6E6E73" className="shrink-0" />
               </motion.button>
             </div>
           </div>
