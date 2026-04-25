@@ -559,8 +559,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
 
         <div
           style={{
-            padding: "14px 16px",
-            borderTop: `0.5px solid ${IOS.opaqueSeparator}`,
+            paddingTop: 4,
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -574,16 +573,19 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               display: "inline-flex",
               alignItems: "center",
               gap: 4,
+              background: "transparent",
+              padding: 0,
               color: IOS.systemBlue,
-              fontSize: 15,
-              fontWeight: 400,
-              letterSpacing: -0.24,
+              fontSize: 13,
+              fontWeight: 500,
               textDecoration: "none",
               transition: "opacity 0.15s",
             }}
           >
             View full calendar
-            <ChevronIcon />
+            <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke={IOS.systemBlue} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
           </Link>
           <button
             onClick={() => setAddOpen(true)}
@@ -595,18 +597,18 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               background: IOS.systemBlue,
               color: "#FFFFFF",
               border: "none",
-              borderRadius: 999,
-              padding: "10px 18px 10px 14px",
-              fontSize: 15,
-              fontWeight: 600,
-              letterSpacing: -0.24,
+              borderRadius: 10,
+              padding: "10px 16px",
+              fontSize: 13,
+              fontWeight: 500,
               cursor: "pointer",
-              boxShadow: "0 1px 2px rgba(0,122,255,.2)",
               transition: "all 0.15s cubic-bezier(0.2,0.7,0.2,1)",
               fontFamily: IOS_FONT,
             }}
           >
-            <PlusIcon />
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
             Add lesson
           </button>
         </div>
