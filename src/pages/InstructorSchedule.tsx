@@ -225,7 +225,7 @@ export default function InstructorSchedule() {
                   border: "none",
                   background: "transparent",
                   cursor: "pointer",
-                  color: "#3F3F46",
+                  color: "#6E6E73",
                 }}
               >
                 <RefreshCw style={{ width: 18, height: 18, ...(isSyncing ? { animation: "spin 1s linear infinite" } : {}) }} />
