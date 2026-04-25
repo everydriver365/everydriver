@@ -142,7 +142,7 @@ export default function InstructorSchedule() {
     <InstructorPortalLayout>
       <div
         className="h-full flex flex-col"
-        style={{ backgroundColor: "transparent", margin: "-16px -16px 0", padding: "0 20px" }}
+        style={{ backgroundColor: viewMode === 'list' && isMobile ? "#F2F2F4" : "transparent", margin: "-16px -16px 0", padding: viewMode === 'list' && isMobile ? "0" : "0 20px" }}
       >
         {/* Header */}
         <div
