@@ -546,13 +546,14 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
               {isFirstOfWeek && (
                 <div
                   style={{
-                    padding: isVeryFirst ? "10px 16px 6px 68px" : "20px 16px 6px 68px",
-                    borderTop: isVeryFirst ? "none" : "0.5px solid #E8EAED",
-                    marginTop: isVeryFirst ? 0 : 10,
+                    padding: isVeryFirst ? "10px 16px 12px 56px" : "20px 16px 12px 56px",
+                    borderTop: isVeryFirst ? "none" : "0.5px solid #E5E5EA",
+                    marginTop: isVeryFirst ? 0 : 20,
+                    marginBottom: 0,
                     fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: "0.08em",
-                    color: "#5F6368",
+                    fontWeight: 500,
+                    letterSpacing: "0.3px",
+                    color: "#6E6E73",
                     textTransform: "uppercase",
                   }}
                 >
@@ -565,13 +566,15 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                 ref={today ? todayRef : undefined}
                 style={{
                   display: "flex",
-                  padding: "14px 12px 10px 0",
+                  gap: 12,
+                  alignItems: "flex-start",
+                  padding: "10px 16px 0 16px",
                 }}
               >
                 {/* Date column */}
                 <div
                   style={{
-                    width: 56,
+                    width: 44,
                     flexShrink: 0,
                     textAlign: "center",
                     paddingTop: 2,
@@ -580,11 +583,11 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                   <div
                     style={{
                       fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: "0.08em",
+                      fontWeight: 500,
+                      letterSpacing: "0.3px",
                       lineHeight: 1,
                       textTransform: "uppercase",
-                      color: today ? "#1A73E8" : "#5F6368",
+                      color: today ? "#2B7BC8" : "#6E6E73",
                     }}
                   >
                     {format(day, "EEE")}
@@ -599,10 +602,11 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         width: 32,
                         height: 32,
                         borderRadius: "50%",
-                        background: "#1A73E8",
+                        background: "#2B7BC8",
                         color: "#FFFFFF",
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: 500,
+                        letterSpacing: "-0.3px",
                         fontVariantNumeric: "tabular-nums",
                       }}
                     >
@@ -611,11 +615,11 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                   ) : (
                     <div
                       style={{
-                        marginTop: 6,
-                        fontSize: 20,
-                        fontWeight: 400,
+                        marginTop: 4,
+                        fontSize: 18,
+                        fontWeight: 500,
                         letterSpacing: "-0.3px",
-                        color: "#1F1F1F",
+                        color: "#000000",
                         lineHeight: 1,
                         fontVariantNumeric: "tabular-nums",
                       }}
