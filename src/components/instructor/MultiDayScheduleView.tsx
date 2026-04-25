@@ -148,6 +148,7 @@ function EventChip({
       style={{
         position: "relative",
         backgroundColor: style.bg,
+        border: "0.5px solid #E5E5EA",
         borderRadius: 10,
         padding: `10px 12px 10px ${padLeft}px`,
         overflow: "hidden",
