@@ -169,29 +169,29 @@ export function TelematicsTile() {
                       <div className="flex items-center gap-2">
                         {dashcamActive != null && (
                           <div className="flex items-center gap-1" style={{ fontSize: 10 }}>
-                            <Camera className="h-3 w-3" style={{ color: dashcamActive ? "#30D158" : "#8E8E93" }} />
-                            <span style={{ color: dashcamActive ? "#30D158" : "#8E8E93", fontWeight: 600 }}>
+                            <Camera className="h-3 w-3" style={{ color: dashcamActive ? "#3B8B3B" : "#6E6E73" }} />
+                            <span style={{ color: dashcamActive ? "#3B8B3B" : "#6E6E73", fontWeight: 500 }}>
                               {dashcamActive ? "Cam On" : "Cam Off"}
                             </span>
                           </div>
                         )}
                         {panicPressed && (
                           <div className="flex items-center gap-1" style={{ fontSize: 10 }}>
-                            <ShieldAlert className="h-3 w-3 animate-pulse" style={{ color: "#FF3B30" }} />
-                            <span style={{ color: "#FF3B30", fontWeight: 700 }}>PANIC</span>
+                            <ShieldAlert className="h-3 w-3 animate-pulse" style={{ color: "#C8434F" }} />
+                            <span style={{ color: "#C8434F", fontWeight: 500 }}>PANIC</span>
                           </div>
                         )}
                       </div>
                     )}
 
                     <div className="flex items-center justify-between pt-1">
-                      <p style={{ fontSize: 10, color: "#8E8E93" }}>
+                      <p style={{ fontSize: 10, color: "#6E6E73" }}>
                         {odometerKm != null && `${Math.round(odometerKm).toLocaleString()} km`}
                         {lastSeen && ` · ${formatDistanceToNow(new Date(lastSeen), { addSuffix: true })}`}
                       </p>
                       <button
                         onClick={(e) => { e.stopPropagation(); navigate("/instructor/fleet-dashboard"); }}
-                        style={{ fontSize: 11, fontWeight: 700, color: "#0A7AFF" }}
+                        style={{ fontSize: 11, fontWeight: 500, color: "#2B7BC8" }}
                       >
                         Full Dashboard →
                       </button>
@@ -199,10 +199,10 @@ export function TelematicsTile() {
                   </>
                 ) : (
                   <div className="text-center py-3">
-                    <p style={{ fontSize: 12, color: "#8E8E93" }}>No telematics device connected</p>
+                    <p style={{ fontSize: 12, color: "#6E6E73" }}>No telematics device connected</p>
                     <button
                       onClick={(e) => { e.stopPropagation(); navigate("/instructor/gps-setup"); }}
-                      style={{ fontSize: 12, fontWeight: 600, color: "#0A7AFF", marginTop: 4 }}
+                      style={{ fontSize: 12, fontWeight: 500, color: "#2B7BC8", marginTop: 4 }}
                     >
                       Set up tracking →
                     </button>
