@@ -613,18 +613,37 @@ export default function InstructorMenu() {
   // ─── Tile styling ───────────────────────────────────────────────────
   const cardClass = "bg-white rounded-[14px] overflow-hidden border-[0.5px] border-[#E4E4E7] mb-[10px]";
 
-  // Icon tile helper — muted tint rounded square
+  // ─── System palette remap ──────────────────────────────────────────
+  // Maps legacy saturated tint colours to the unified premium palette so
+  // every icon block in Settings reads as a category recognition aid
+  // rather than decoration.
+  const remapTint = (tintBg: string, tintColor: string): { bg: string; color: string } => {
+    switch (tintColor) {
+      case "#1E40AF": return { bg: "#E6F1FB", color: "#2B7BC8" }; // schedule blue
+      case "#5B21B6": return { bg: "#F1ECFA", color: "#8A5BC9" }; // insights purple
+      case "#059669": return { bg: "#E8F3E8", color: "#3B8B3B" }; // people green
+      case "#DC2626": return { bg: "#FBEAEC", color: "#C8434F" }; // location red
+      case "#BE123C": return { bg: "#FBEAEC", color: "#C8434F" }; // rose
+      case "#92400E": return { bg: "#FBF1DE", color: "#B8801F" }; // money amber
+      case "#2A394F": return { bg: "#F2F2F4", color: "#6E6E73" }; // settings slate→neutral
+      case "#52525B": return { bg: "#F2F2F4", color: "#6E6E73" }; // neutral
+      default: return { bg: tintBg, color: tintColor };
+    }
+  };
+
+  // Icon tile helper — pale tinted square (settings-row spec, 32×32)
   const renderIconTile = (icon: React.ElementType, tintBg: string, tintColor: string, iconSrc?: string) => {
     const Icon = icon;
+    const { bg, color } = remapTint(tintBg, tintColor);
     return (
       <div
-        className="h-[44px] w-[44px] rounded-[12px] flex items-center justify-center shrink-0 overflow-hidden"
-        style={{ backgroundColor: tintBg }}
+        className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden"
+        style={{ backgroundColor: bg }}
       >
         {iconSrc ? (
-          <img src={iconSrc} alt="" className="h-5 w-5 object-contain" />
+          <img src={iconSrc} alt="" className="h-4 w-4 object-contain" />
         ) : (
-          <Icon size={22} strokeWidth={2} color={tintColor} />
+          <Icon size={18} strokeWidth={2} color={color} />
         )}
       </div>
     );
