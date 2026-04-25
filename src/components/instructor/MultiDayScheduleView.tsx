@@ -685,26 +685,26 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                           key="now-indicator"
                           style={{
                             display: "flex",
-                            gap: 6,
-                            padding: "4px 0 2px",
+                            gap: 8,
+                            padding: "0 8px",
                             alignItems: "center",
                           }}
                         >
                           <div
                             style={{
-                              width: 7,
-                              height: 7,
+                              width: 6,
+                              height: 6,
                               borderRadius: "50%",
-                              backgroundColor: "#EA4335",
+                              backgroundColor: "#C8434F",
                               flexShrink: 0,
                             }}
                           />
                           <span
                             style={{
-                              fontSize: 10,
-                              fontWeight: 700,
-                              color: "#EA4335",
-                              letterSpacing: "0.05em",
+                              fontSize: 11,
+                              fontWeight: 500,
+                              color: "#C8434F",
+                              letterSpacing: "0.2px",
                               fontVariantNumeric: "tabular-nums",
                             }}
                           >
@@ -714,8 +714,8 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                             style={{
                               flex: 1,
                               height: 1,
-                              backgroundColor: "#EA4335",
-                              opacity: 0.5,
+                              backgroundColor: "#C8434F",
+                              opacity: 0.3,
                             }}
                           />
                         </div>,
