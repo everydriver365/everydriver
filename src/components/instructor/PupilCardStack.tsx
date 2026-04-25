@@ -620,7 +620,7 @@ export function PupilCardStack({
   const hasDebt = balance < 0;
   const hasCredit = balance > 0;
 
-  // Get avatar ring color based on status
+  // Get avatar ring color based on status (legacy desktop ring)
   const getAvatarRingColor = () => {
     if (isTracking) return "ring-2 ring-primary ring-offset-2";
     if (hasDebt) return "ring-2 ring-rose-500 ring-offset-2";
@@ -632,19 +632,32 @@ export function PupilCardStack({
     return "";
   };
 
-  // Avatar color palette based on name
+  // Premium-tile-system avatar palette (deterministic per pupil id/name).
   const avatarColors = [
-    '#D4A843', // gold
-    '#2BA67C', // emerald
-    '#E85D75', // pink
-    '#7C6FD4', // purple
-    '#3B8DD4', // blue
-    '#E08A3A', // orange
-    '#5BBFB0', // teal
-    '#C74D4D', // red
+    "#3B8B3B",
+    "#2B7BC8",
+    "#C8434F",
+    "#8A5BC9",
+    "#B8801F",
+    "#6E6E73",
   ];
-  const avatarColorIndex = pupil.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % avatarColors.length;
+  const avatarHashSeed = pupil.id || pupil.name || "";
+  const avatarColorIndex =
+    avatarHashSeed.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) %
+    avatarColors.length;
   const avatarBg = avatarColors[avatarColorIndex];
+
+  // Status dot in the bottom-right of the avatar (mapped to system palette).
+  const pupilStatusKey = (pupil.status as string | undefined) || "active";
+  const statusDotColor: string | null = isTracking
+    ? "#C8434F"
+    : pupilStatusKey === "on_hold"
+      ? "#B8801F"
+      : pupilStatusKey === "inactive"
+        ? "#6E6E73"
+        : pupilStatusKey === "active"
+          ? "#3B8B3B"
+          : null;
 
   // Calculate total hours from lessons_completed (approximate 2h per lesson if no better data)
   const totalHours = (pupil.lessons_completed || 0) * 2;
