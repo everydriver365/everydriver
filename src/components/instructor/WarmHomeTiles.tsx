@@ -25,14 +25,16 @@ const TXT = {
 
 const RESPONSE_SLA_HOURS = 24;
 
+const scaledPx = (px: number) => `calc(${px}px * var(--a11y-text-scale, 1))`;
+
 function Skeleton({ width, height = 14 }: { width: number | string; height?: number }) {
   return (
     <span
       style={{
         display: "inline-block",
         width,
-        height,
-        borderRadius: 4,
+        height: scaledPx(height),
+        borderRadius: scaledPx(4),
         background: "#EFEDE6",
       }}
       className="animate-pulse"
@@ -44,9 +46,9 @@ function Spine({ color }: { color: string }) {
   return (
     <div
       style={{
-        width: 8,
+        width: scaledPx(8),
         alignSelf: "stretch",
-        borderRadius: 4,
+        borderRadius: scaledPx(4),
         background: color,
         flexShrink: 0,
       }}
@@ -59,10 +61,10 @@ function HealthDot() {
     <span
       style={{
         position: "absolute",
-        top: 8,
-        right: 8,
-        width: 6,
-        height: 6,
+        top: scaledPx(8),
+        right: scaledPx(8),
+        width: scaledPx(6),
+        height: scaledPx(6),
         borderRadius: 999,
         background: "#C68B16",
       }}
@@ -90,9 +92,9 @@ function TileShell({
         background: "#FFFFFF",
         border: "0.5px solid #E5E5EA",
         boxShadow: "none",
-        borderRadius: 12,
-        padding: "14px 16px",
-        gap: 12,
+        borderRadius: scaledPx(12),
+        padding: `${scaledPx(14)} ${scaledPx(16)}`,
+        gap: scaledPx(12),
       }}
     >
       {showHealthDot && <HealthDot />}
