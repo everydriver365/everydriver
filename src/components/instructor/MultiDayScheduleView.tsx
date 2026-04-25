@@ -148,9 +148,8 @@ function EventChip({
       style={{
         position: "relative",
         backgroundColor: style.bg,
-        borderLeft: `3px solid ${style.border}`,
-        borderRadius: 6,
-        padding: `9px 12px 9px ${padLeft}px`,
+        borderRadius: 10,
+        padding: `10px 12px 10px ${padLeft}px`,
         overflow: "hidden",
         fontFamily: FONT_STACK,
       }}
@@ -167,9 +166,9 @@ function EventChip({
             transform: "translateY(-50%)",
             width: 14,
             height: 14,
-            border: "1.8px solid #9AA0A6",
+            border: "1.5px solid #6E6E73",
             borderRadius: 3,
-            background: taskCompleted ? "#9AA0A6" : "transparent",
+            background: taskCompleted ? "#6E6E73" : "transparent",
             padding: 0,
             cursor: "pointer",
           }}
@@ -181,7 +180,8 @@ function EventChip({
           fontWeight: 500,
           letterSpacing: "-0.1px",
           lineHeight: 1.3,
-          color: style.text,
+          color: "#000000",
+          marginBottom: 3,
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -194,10 +194,7 @@ function EventChip({
           style={{
             fontSize: 11,
             fontWeight: 400,
-            opacity: 0.85,
-            marginTop: 2,
-            letterSpacing: "-0.04px",
-            color: style.text,
+            color: "#6E6E73",
             fontVariantNumeric: "tabular-nums",
           }}
         >
@@ -208,7 +205,7 @@ function EventChip({
         <div
           style={{
             fontSize: 11,
-            color: "#5F6368",
+            color: "#6E6E73",
             marginTop: 2,
             whiteSpace: "nowrap",
             overflow: "hidden",
