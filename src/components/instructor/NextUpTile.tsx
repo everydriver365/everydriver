@@ -372,100 +372,32 @@ export function NextUpTile({
             <div
               style={{
                 position: "relative",
-                margin: "0 16px",
-                borderRadius: 12,
+                borderRadius: 10,
                 overflow: "hidden",
-                height: 200,
-                background: ios.fill,
+                height: 140,
+                background: "#F2F2F7",
               }}
             >
-              <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={200} />
+              <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={140} />
 
-              {/* Frosted recenter / expand button — top right */}
+              {/* Subtle recenter / open-in-maps button — top right */}
               <button
                 onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
                 aria-label="Open in maps"
                 className="active:opacity-80"
                 style={{
                   position: "absolute", top: 8, right: 8, zIndex: 10,
-                  width: 36, height: 36, borderRadius: 9,
+                  width: 32, height: 32, borderRadius: 8,
                   background: "rgba(255,255,255,0.92)",
                   backdropFilter: "blur(20px) saturate(180%)",
                   WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  border: "none", cursor: "pointer",
+                  border: "0.5px solid #E5E5EA", cursor: "pointer",
                   transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
                 }}
               >
-                <Navigation style={{ width: 18, height: 18, color: ios.blue }} strokeWidth={2.2} />
+                <Navigation style={{ width: 16, height: 16, color: "#2B7BC8" }} strokeWidth={2} />
               </button>
-
-              {/* Frosted distance/ETA pill — bottom left */}
-              {etaText && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (isRunningLate) setLateSheetOpen(true);
-                    else handleNavigate();
-                  }}
-                  className={`active:opacity-80 ${isRunningLate ? "animate-pulse" : ""}`}
-                  style={{
-                    position: "absolute", bottom: 8, left: 8, zIndex: 10,
-                    display: "inline-flex", alignItems: "center", gap: 8,
-                    background: "rgba(255,255,255,0.92)",
-                    backdropFilter: "blur(20px) saturate(180%)",
-                    WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                    borderRadius: 999, padding: "6px 12px 6px 6px",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
-                    border: "none", cursor: "pointer",
-                    transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-                  }}
-                  title={isRunningLate ? "Running late — tap to notify pupil" : "Open in maps"}
-                >
-                  <span style={{
-                    width: 22, height: 22, borderRadius: "50%", background: ios.blue,
-                    display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  }}>
-                    <Send style={{ width: 12, height: 12, color: "#fff" }} strokeWidth={2.4} />
-                  </span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: ios.label, fontVariantNumeric: "tabular-nums", letterSpacing: -0.08 }}>
-                    {etaText}{isRunningLate && lateByMinutes > 0 ? ` · +${lateByMinutes}m` : ""}
-                  </span>
-                </button>
-              )}
-
-              {/* Start track pill — bottom right (preserved functionality) */}
-              {!trackerDismissed && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
-                  }}
-                  className="active:opacity-80"
-                  style={{
-                    position: "absolute", bottom: 8, right: 8, zIndex: 10,
-                    display: "inline-flex", alignItems: "center", gap: 6,
-                    background: ios.red, color: "#fff",
-                    borderRadius: 999, padding: "6px 10px 6px 8px",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
-                    border: "none", cursor: "pointer",
-                    transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-                  }}
-                  title="Start tracking session for this lesson"
-                >
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff", display: "inline-block" }} />
-                  <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: -0.08 }}>Start track</span>
-                  <X
-                    style={{ width: 12, height: 12, marginLeft: 2, opacity: 0.85 }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      dismissTracker(lessonId);
-                      setTrackerDismissed(true);
-                    }}
-                  />
-                </button>
-              )}
             </div>
           )}
 
