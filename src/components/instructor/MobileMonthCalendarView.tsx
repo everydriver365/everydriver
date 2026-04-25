@@ -493,7 +493,7 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
                 <div
                   key={evt.id}
                   style={{
-                    backgroundColor: LESSON_TINT[cat],
+                    backgroundColor: style.bg,
                     borderRadius: 10,
                     padding: "10px 12px",
                   }}
