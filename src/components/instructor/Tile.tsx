@@ -188,6 +188,9 @@ interface TileProps {
   /** Span both columns (use for solo tiles or odd last tile). */
   fullWidth?: boolean;
 
+  /** Visual variant. "default" = filled icon roundel. "refined" = tinted icon, hairline border, vertical layout. */
+  variant?: "default" | "refined";
+
   ariaLabel?: string;
 }
 
