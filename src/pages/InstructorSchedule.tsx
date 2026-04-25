@@ -147,7 +147,7 @@ export default function InstructorSchedule() {
         {/* Header */}
         <div
           className="flex items-center justify-between gap-2 sticky top-0 z-20 pt-3 pb-2"
-          style={{ backgroundColor: "transparent", position: "relative" }}
+          style={{ backgroundColor: viewMode === 'list' && isMobile ? "#F2F2F4" : "transparent", position: "relative", padding: viewMode === 'list' && isMobile ? "12px 20px 8px" : undefined }}
         >
           {isMobile ? (
             <>
