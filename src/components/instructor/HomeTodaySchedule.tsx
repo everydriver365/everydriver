@@ -193,13 +193,15 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           maxWidth: 440,
           margin: "0 auto",
           background: IOS.card,
-          border: "0.5px solid #E5E5EA",
-          borderRadius: 12,
+          border: "1px solid rgba(15, 23, 42, 0.06)",
+          borderRadius: 14,
           padding: 16,
           display: "flex",
           flexDirection: "column",
           gap: 16,
           color: IOS.label,
+          boxShadow:
+            "0 2px 4px rgba(15, 23, 42, 0.08), 0 12px 24px rgba(15, 23, 42, 0.18), 0 28px 52px rgba(15, 23, 42, 0.22)",
         }}
       >
         {/* HEAD */}
