@@ -610,8 +610,8 @@ export function GapFillCard({
       </div>
 
       <style>{`
-        .gap-fill-row:active { background: #F1F3F4 !important; }
-        .gap-fill-refresh:active { background: #F1F3F4 !important; }
+        .gap-fill-row:active { background: #F2F2F4 !important; }
+        .gap-fill-refresh:active { background: #F2F2F4 !important; }
         @keyframes gap-fill-spin { to { transform: rotate(360deg); } }
         .gap-fill-spin { animation: gap-fill-spin 0.8s linear infinite; transform-origin: center; }
         @media (prefers-reduced-motion: reduce) {
