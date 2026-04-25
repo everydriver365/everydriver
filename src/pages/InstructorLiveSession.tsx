@@ -984,208 +984,226 @@ export default function InstructorLiveSession() {
   // When no session, use standard layout with hamburger menu
   return (
     <InstructorPortalLayout>
-       <div className="min-h-[calc(100dvh-120px)] -mx-4 md:mx-0 -mt-4 md:mt-0" style={{ background: "transparent" }}>
-         {/* Modern card-based layout */}
-         <div className="p-4 pb-24 space-y-3">
-            {/* Live / Fleet toggle — premium card */}
-            <div style={{
-              background: "white",
-              borderRadius: 20,
-              boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
-              border: "0.5px solid rgba(0,0,0,0.06)",
-              padding: 4,
-              display: "flex",
-              gap: 4,
-            }}>
-              {[
-                { value: "live", label: "Live" },
-                { value: "fleet", label: "Fleet" },
-              ].map((seg) => (
-                <button
-                  key={seg.value}
-                  onClick={() => { setViewMode(seg.value as "live" | "fleet"); }}
-                  style={{
-                    flex: 1,
-                    padding: "6px 24px",
-                    borderRadius: 16,
-                    fontSize: 13,
-                    fontWeight: viewMode === seg.value ? 700 : 600,
-                    color: viewMode === seg.value ? "white" : "#8e8e93",
-                    background: viewMode === seg.value ? "linear-gradient(to right, #1F2B3D, #2A394F)" : "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  {seg.label}
-                </button>
-              ))}
-            </div>
+      <div className="min-h-[calc(100dvh-120px)] -mx-4 md:mx-0 -mt-4 md:mt-0" style={{ background: "#FFFFFF" }}>
+        <div style={{ padding: 16, paddingBottom: 96, display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Live / Fleet toggle */}
+          <SegmentedControl
+            value={viewMode}
+            onChange={(v) => setViewMode(v as "live" | "fleet")}
+            options={[
+              { value: "live", label: "Live" },
+              { value: "fleet", label: "Fleet" },
+            ]}
+            ariaLabel="Tracking view"
+          />
 
-            {viewMode === "fleet" ? (
-              <Suspense fallback={<div className="h-[70vh] flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
-                <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)", border: "0.5px solid rgba(0,0,0,0.06)", height: "70vh" }}>
-                  <InstructorFleetMap />
-                </div>
-              </Suspense>
-            ) : (<>
-            {/* Device Selector Dropdown (all providers) */}
-            {instructor?.id && (
-              <DeviceSelectorDropdown
-                instructorId={instructor.id}
-                currentDeviceId={device.id}
-                onDeviceChange={(deviceId, provider) => {
-                  setActiveProvider(provider);
+          {viewMode === "fleet" ? (
+            <Suspense fallback={<div className="h-[70vh] flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
+              <div style={{ borderRadius: 12, overflow: "hidden", border: "0.5px solid #E5E5EA", height: "70vh" }}>
+                <InstructorFleetMap />
+              </div>
+            </Suspense>
+          ) : (<>
+          {/* Device Selector Dropdown (all providers) */}
+          {instructor?.id && (
+            <DeviceSelectorDropdown
+              instructorId={instructor.id}
+              currentDeviceId={device.id}
+              onDeviceChange={(deviceId, provider) => {
+                setActiveProvider(provider);
+                supabase
+                  .from("gps_devices")
+                  .select("*")
+                  .eq("id", deviceId)
+                  .single()
+                  .then(({ data }) => {
+                    if (data) {
+                      deviceIdRef.current = null;
+                      lastSeenRef.current = null;
+                      setDevice(data as GPSDevice);
+                    }
+                  });
+                if (provider) {
                   supabase
-                    .from("gps_devices")
-                    .select("*")
-                    .eq("id", deviceId)
-                    .single()
-                    .then(({ data }) => {
-                      if (data) {
-                        deviceIdRef.current = null;
-                        lastSeenRef.current = null;
-                        setDevice(data as GPSDevice);
-                      }
-                    });
-                  if (provider) {
-                    supabase
-                      .from("instructors")
-                      .update({ preferred_tracking_provider: provider })
-                      .eq("id", instructor.id)
-                      .then(() => {});
-                  }
-                }}
-              />
-            )}
+                    .from("instructors")
+                    .update({ preferred_tracking_provider: provider })
+                    .eq("id", instructor.id)
+                    .then(() => {});
+                }
+              }}
+            />
+          )}
 
+          {/* GPS Status Hero Card */}
+          <GPSStatusHero
+            deviceName={device.device_name}
+            isConnected={isConnected}
+            isParked={isParked}
+            lastSeenLabel={lastSeenLabel}
+            isReconnecting={isReconnecting}
+            retryCount={retryCount}
+            onManualReconnect={manualReconnect}
+            trackingProvider={device.tracking_provider}
+          />
 
-           {/* GPS Status Hero Card */}
-           <GPSStatusHero
-              deviceName={device.device_name}
+          {/* Session Start Panel */}
+          {!isSessionActive && (
+            <SessionStartPanel
+              pupils={pupils}
+              selectedPupilId={selectedPupilId}
+              onPupilChange={setSelectedPupilId}
+              onStartSession={(type) => startSession(type)}
+              onOpenDrivingTestDialog={() => setShowDrivingTestDialog(true)}
+              isStarting={isStarting}
               isConnected={isConnected}
-              isParked={isParked}
-              lastSeenLabel={lastSeenLabel}
-              isReconnecting={isReconnecting}
-              retryCount={retryCount}
-              onManualReconnect={manualReconnect}
-              trackingProvider={device.tracking_provider}
+              isRecording={isSessionActive}
             />
+          )}
 
-           {/* Session Start Panel */}
-           {!isSessionActive && (
-              <SessionStartPanel
-                pupils={pupils}
-                selectedPupilId={selectedPupilId}
-                onPupilChange={setSelectedPupilId}
-                onStartSession={(type) => startSession(type)}
-                onOpenDrivingTestDialog={() => setShowDrivingTestDialog(true)}
-                isStarting={isStarting}
-                isConnected={isConnected}
-              />
-            )}
-
-           {/* Manual GPS Route Recorder */}
-           {instructor?.id && (
-              <LessonRouteRecorder
-                instructorId={instructor.id}
-                pupilId={selectedPupilId || null}
-              />
-            )}
-
-           {/* Dashcam Portal Link — premium card */}
-           <div style={{
-             background: "white",
-             borderRadius: 20,
-             overflow: "hidden",
-             boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
-             border: "0.5px solid rgba(0,0,0,0.06)",
-           }}>
-             <button
-               onClick={() => window.open("https://www.kinesisfleetpro.com/#/login;next=%2Fstatus", "_blank", "noopener,noreferrer")}
-               style={{
-                 width: "100%",
-                 display: "flex",
-                 alignItems: "center",
-                 justifyContent: "space-between",
-                 padding: "12px 16px",
-                 background: "transparent",
-                 border: "none",
-                 cursor: "pointer",
-               }}
-             >
-               <div className="flex items-center gap-2">
-                 <Camera className="h-4 w-4" style={{ color: "#8e8e93" }} />
-                 <span style={{ fontSize: 14, fontWeight: 700, color: "#1c1c1e" }}>Dashcam Portal</span>
-               </div>
-               <span style={{ fontSize: 13, color: "#2A394F", fontWeight: 600 }}>View footage →</span>
-             </button>
-             <div style={{ height: 2, background: "linear-gradient(to right, #1F2B3D, #3D5377)", borderRadius: 2 }} />
-           </div>
-
-           {/* Mini Live Map Preview */}
-           <SatNavLiveMap
-              latitude={device.last_latitude}
-              longitude={device.last_longitude}
-              heading={device.last_heading}
-              speedKmh={device.last_speed_kmh}
-              speedLimitKmh={device.last_speed_limit_kmh ?? speedLimitKmh}
-              roadName={device.last_road_name}
-              lastSeenAt={device.last_seen_at}
-              isActive={isConnected}
-              sessionId={device.current_session_id}
-              ignitionOn={device.last_ignition_status}
-              dailyDistanceKm={
-                device.last_ecu_odometer_km != null && device.daily_start_ecu_odometer_km != null
-                  ? device.last_ecu_odometer_km - device.daily_start_ecu_odometer_km
-                  : null
-              }
+          {/* Manual GPS Route Recorder */}
+          {instructor?.id && (
+            <LessonRouteRecorder
+              instructorId={instructor.id}
+              pupilId={selectedPupilId || null}
             />
-           {/* Resume active session banner — premium card */}
-           {isSessionActive && (
-             <div style={{
-               background: "white",
-               borderRadius: 20,
-               overflow: "hidden",
-               boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
-               border: "0.5px solid rgba(0,0,0,0.06)",
-             }}>
-               <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                   <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#0f9e75", flexShrink: 0 }} />
-                   <div>
-                     <p style={{ fontSize: 14, fontWeight: 700, color: "#1c1c1e" }}>Session in progress</p>
-                     <p style={{ fontSize: 12, color: "#8e8e93" }}>
-                       {currentPupil?.name || "Test route"} · {formatElapsedTime(elapsedTime)}
-                     </p>
-                   </div>
-                 </div>
-                 <button
-                   onClick={() => navigate("/instructor/tracking?fullscreen=true", { replace: true })}
-                   style={{
-                     background: "linear-gradient(to right, #1F2B3D, #2A394F)",
-                     color: "white",
-                     fontSize: 13,
-                     fontWeight: 700,
-                     padding: "8px 18px",
-                     borderRadius: 20,
-                     border: "none",
-                     cursor: "pointer",
-                   }}
-                 >
-                   Resume
-                 </button>
-               </div>
-               <div style={{ height: 2, background: "linear-gradient(to right, #1F2B3D, #3D5377)", borderRadius: 2 }} />
-             </div>
-           )}
+          )}
 
+          {/* Dashcam Portal Link — premium card */}
+          <button
+            type="button"
+            onClick={() => window.open("https://www.kinesisfleetpro.com/#/login;next=%2Fstatus", "_blank", "noopener,noreferrer")}
+            style={{
+              width: "100%",
+              background: "#FFFFFF",
+              border: "0.5px solid #E5E5EA",
+              borderRadius: 12,
+              padding: 14,
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              cursor: "pointer",
+              fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+              textAlign: "left",
+            }}
+          >
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                background: "#F1ECFA",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <Camera size={18} strokeWidth={2} color="#8A5BC9" />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 500, color: "#000000", lineHeight: 1.25 }}>
+                Dashcam portal
+              </div>
+              <div style={{ fontSize: 11, color: "#6E6E73", marginTop: 2 }}>
+                Review past footage
+              </div>
+            </div>
+            <span
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                fontSize: 13,
+                fontWeight: 500,
+                color: "#2B7BC8",
+                flexShrink: 0,
+              }}
+            >
+              View footage
+              <ChevronRight size={10} strokeWidth={1.6} color="#2B7BC8" />
+            </span>
+          </button>
 
-           {/* Recent Sessions */}
-           {instructor?.id && (
-             <RecentSessionsList instructorId={instructor.id} />
-           )}
-            </>)}
+          {/* Mini Live Map Preview */}
+          <SatNavLiveMap
+            latitude={device.last_latitude}
+            longitude={device.last_longitude}
+            heading={device.last_heading}
+            speedKmh={device.last_speed_kmh}
+            speedLimitKmh={device.last_speed_limit_kmh ?? speedLimitKmh}
+            roadName={device.last_road_name}
+            lastSeenAt={device.last_seen_at}
+            isActive={isConnected}
+            sessionId={device.current_session_id}
+            ignitionOn={device.last_ignition_status}
+            dailyDistanceKm={
+              device.last_ecu_odometer_km != null && device.daily_start_ecu_odometer_km != null
+                ? device.last_ecu_odometer_km - device.daily_start_ecu_odometer_km
+                : null
+            }
+          />
+
+          {/* Resume active session banner */}
+          {isSessionActive && (
+            <div
+              style={{
+                background: "#FFFFFF",
+                border: "0.5px solid #E5E5EA",
+                borderRadius: 12,
+                padding: "14px 16px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+                fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                <span
+                  aria-hidden
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: "#3B8B3B",
+                    flexShrink: 0,
+                  }}
+                />
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 500, color: "#000000", letterSpacing: -0.2, margin: 0 }}>
+                    Session in progress
+                  </p>
+                  <p style={{ fontSize: 12, color: "#6E6E73", margin: 0, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {currentPupil?.name || "Test route"} · {formatElapsedTime(elapsedTime)}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate("/instructor/tracking?fullscreen=true", { replace: true })}
+                style={{
+                  background: "#1F2C4A",
+                  color: "#FFFFFF",
+                  fontSize: 13,
+                  fontWeight: 500,
+                  padding: "8px 16px",
+                  borderRadius: 10,
+                  border: "none",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+                }}
+              >
+                Resume
+              </button>
+            </div>
+          )}
+
+          {/* Recent Sessions */}
+          {instructor?.id && (
+            <RecentSessionsList instructorId={instructor.id} />
+          )}
+          </>)}
         </div>
 
         {/* Trip Summary Sheet */}
