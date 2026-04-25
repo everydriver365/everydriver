@@ -636,8 +636,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                     minWidth: 0,
                     display: "flex",
                     flexDirection: "column",
-                    gap: 6,
-                    paddingRight: 4,
+                    gap: 8,
                   }}
                 >
                   {/* All-day externals */}
