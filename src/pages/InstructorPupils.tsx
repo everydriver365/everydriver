@@ -75,6 +75,9 @@ import { PupilAvatarUpload } from "@/components/instructor/PupilAvatarUpload";
 import { PupilProgressReportGenerator } from "@/components/instructor/PupilProgressReportGenerator";
 import { PupilPackageCard } from "@/components/instructor/PupilPackageCard";
 import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
+import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
+import { StatCard } from "@/components/instructor/ui/StatCard";
+import { SearchInput } from "@/components/instructor/ui/SearchInput";
 
 interface Pupil {
   id: string;
@@ -519,110 +522,58 @@ export default function InstructorPupils() {
     );
   }
 
-  const cardClass = "bg-white rounded-[20px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.05)] border-[0.5px] border-black/[0.06]";
-  const GradientLine = () => null;
-
   const getInitials = (name: string) =>
     name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
+  const segmentOptions = [
+    { value: "all" as const, label: "All" },
+    { value: "active" as const, label: "Active" },
+    { value: "passed" as const, label: "Passed" },
+    ...(statusCounts.on_hold > 0 ? [{ value: "on_hold" as const, label: "Hold" }] : []),
+    ...(statusCounts.inactive > 0 ? [{ value: "inactive" as const, label: "Inactive" }] : []),
+  ];
+
   return (
     <InstructorPortalLayout>
-      <div className="space-y-3 pb-6">
+      <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingBottom: 24 }}>
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-[22px] font-bold text-[#1c1c1e]">Pupils</h1>
-            <p className="text-[13px] text-[#8e8e93]">{stats.total} total · {stats.active} active</p>
+            <h1 style={{ fontSize: 22, fontWeight: 500, color: "#000000", letterSpacing: "-0.3px" }}>Pupils</h1>
+            <p style={{ fontSize: 13, color: "#6E6E73", marginTop: 2 }}>{stats.total} total · {stats.active} active</p>
           </div>
-          <Button size="sm" className="bg-gradient-to-r from-[#1F2B3D] to-[#2A394F] text-white rounded-xl h-9 px-3 shadow-[0_4px_12px_rgba(13,79,160,0.3)]" onClick={() => setIsAddOpen(true)}>
+          <Button size="sm" className="bg-[#2B7BC8] hover:bg-[#2670B8] text-white rounded-[10px] h-9 px-3 shadow-none" onClick={() => setIsAddOpen(true)}>
             <Plus className="h-4 w-4 mr-1" />
             Add
           </Button>
         </div>
 
-        {/* Compact stat chips */}
-        <div className="grid grid-cols-4 gap-1.5">
+        {/* Stat cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 8 }}>
           {[
-            { label: "Active", value: stats.active, dot: "#34C759" },
-            { label: "Passed", value: stats.passed, dot: "#007AFF" },
-            { label: "Lessons", value: stats.totalLessons, dot: "#FF9500" },
-            { label: "On Hold", value: statusCounts.on_hold + statusCounts.inactive, dot: "#8E8E93" },
+            { label: "Active", value: stats.active, dot: "#3B8B3B" },
+            { label: "Passed", value: stats.passed, dot: "#2B7BC8" },
+            { label: "Lessons", value: stats.totalLessons, dot: "#B8801F" },
+            { label: "On Hold", value: statusCounts.on_hold + statusCounts.inactive, dot: "#6E6E73" },
           ].map((stat) => (
-            <div
-              key={stat.label}
-              style={{
-                backgroundColor: "#FFFFFF",
-                borderRadius: 14,
-                boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)",
-                padding: "8px 0",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 2,
-              }}
-            >
-              <span className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: stat.dot }} />
-              <span style={{ fontSize: 16, fontWeight: 600, color: "#18181B", fontFamily: "Inter, sans-serif", lineHeight: 1.2 }}>{stat.value}</span>
-              <span style={{ fontSize: 11, fontWeight: 400, color: "#71717A", fontFamily: "Inter, sans-serif" }}>{stat.label}</span>
-            </div>
+            <StatCard key={stat.label} dot={stat.dot} value={stat.value} label={stat.label} />
           ))}
         </div>
 
-        {/* Search bar card */}
-        <div className={cardClass}>
-          <div className="p-[10px_16px] flex items-center gap-[10px]">
-            <Search className="h-4 w-4 text-[#8e8e93] shrink-0" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search pupils..."
-              className="flex-1 bg-transparent outline-none text-[14px] text-[#1c1c1e] placeholder:text-[#c7c7cc]"
-            />
-          </div>
-          <GradientLine />
-        </div>
+        {/* Search */}
+        <SearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search pupils"
+        />
 
-        {/* All / Active / Passed toggle */}
-        <div
-          style={{
-            display: "flex",
-            gap: 6,
-            backgroundColor: "#FFFFFF",
-            borderRadius: 14,
-            boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)",
-            padding: 4,
-          }}
-        >
-          {[
-            { value: "all", label: "All" },
-            { value: "active", label: "Active" },
-            { value: "passed", label: "Passed" },
-            ...(statusCounts.on_hold > 0 ? [{ value: "on_hold", label: "Hold" }] : []),
-            ...(statusCounts.inactive > 0 ? [{ value: "inactive", label: "Inactive" }] : []),
-          ].map((seg) => (
-            <button
-              key={seg.value}
-              onClick={() => setActiveTab(seg.value as any)}
-              style={{
-                flex: 1,
-                padding: "7px 0",
-                borderRadius: 10,
-                fontSize: 13,
-                fontWeight: activeTab === seg.value ? 600 : 500,
-                fontFamily: "Inter, sans-serif",
-                transition: "all 0.15s ease",
-                cursor: "pointer",
-                border: "none",
-                ...(activeTab === seg.value
-                  ? { backgroundColor: "#18181B", color: "#FFFFFF" }
-                  : { backgroundColor: "transparent", color: "#71717A" }),
-              }}
-            >
-              {seg.label}
-            </button>
-          ))}
-        </div>
+        {/* Filter */}
+        <SegmentedControl
+          value={activeTab}
+          options={segmentOptions}
+          onChange={(v) => setActiveTab(v as any)}
+          ariaLabel="Filter pupils"
+        />
 
         {/* Pupils List */}
         {displayedPupils.length === 0 ? (
