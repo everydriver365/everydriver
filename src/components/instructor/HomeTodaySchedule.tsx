@@ -465,9 +465,150 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               );
             })}
           </div>
+        ) : (
+          <div style={{ borderTop: `0.5px solid ${IOS.opaqueSeparator}` }}>
+            {lessons.map((lesson, idx) => {
+              const time = fmtTime(lesson.startTime);
+              const isDone = lesson.status === "completed";
+              const isNext = !isTomorrow && lesson.id === nextUpcomingId;
+
+              const dotColor = isDone
+                ? IOS.tertiaryLabel
+                : isNext
+                ? IOS.systemBlue
+                : IOS.systemGreen;
+
+              const haloShadow = isDone
+                ? "none"
+                : isNext
+                ? "0 0 0 3px rgba(0,122,255,.18)"
+                : "0 0 0 3px rgba(52,199,89,.15)";
+
+              const meta: string[] = [];
+              if ((lesson as any).transmission) meta.push((lesson as any).transmission);
+              if (lesson.pickupPostcode) meta.push(lesson.pickupPostcode);
+
+              return (
+                <Link
+                  key={lesson.id}
+                  to={`/instructor/pupils/${lesson.pupilId}`}
+                  className="hts-row"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "50px 1fr 16px",
+                    alignItems: "center",
+                    gap: 0,
+                    padding: "12px 16px",
+                    cursor: "pointer",
+                    textDecoration: "none",
+                    color: "inherit",
+                    borderTop: idx === 0 ? "none" : `0.5px solid ${IOS.opaqueSeparator}`,
+                    transition: "background 0.15s cubic-bezier(0.2,0.7,0.2,1)",
+                    opacity: isDone ? 0.6 : 1,
+                    position: "relative",
+                  }}
+                >
+                  {idx > 0 && (
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: -0.5,
+                        left: 80,
+                        right: 0,
+                        height: 0.5,
+                        background: IOS.opaqueSeparator,
+                      }}
+                    />
+                  )}
+
+                  {/* Time column */}
+                  <div
+                    style={{
+                      paddingRight: 14,
+                      borderRight: `1px solid ${IOS.opaqueSeparator}`,
+                      minWidth: 0,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 17,
+                        fontWeight: 600,
+                        color: IOS.label,
+                        letterSpacing: -0.24,
+                        fontVariantNumeric: "tabular-nums",
+                        lineHeight: 1.1,
+                      }}
+                    >
+                      {time.hour}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: IOS.secondaryLabel,
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        letterSpacing: 0.3,
+                        marginTop: 2,
+                      }}
+                    >
+                      {time.period}
+                      {lesson.durationMinutes ? ` · ${durationLabel(lesson.durationMinutes)}` : ""}
+                    </div>
+                  </div>
+
+                  {/* Body */}
+                  <div style={{ minWidth: 0, paddingLeft: 14 }}>
+                    <div
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: IOS.label,
+                        letterSpacing: -0.24,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        textDecoration: isDone ? "line-through" : "none",
+                      }}
+                    >
+                      {sentenceName(lesson.pupilName)}
+                    </div>
+                    {meta.length > 0 && (
+                      <div
+                        style={{
+                          fontSize: 13,
+                          color: IOS.secondaryLabel,
+                          marginTop: 2,
+                          letterSpacing: -0.08,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {meta.join(" · ")}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Status dot */}
+                  <span
+                    className={isNext ? "hts-pulse" : ""}
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: "50%",
+                      background: dotColor,
+                      boxShadow: haloShadow,
+                      flexShrink: 0,
+                      justifySelf: "center",
+                      animation: isNext ? "hts-pulse 2s infinite" : "none",
+                    }}
+                  />
+                </Link>
+              );
+            })}
+          </div>
         )}
 
-        {/* FOOTER */}
         <div
           style={{
             padding: "14px 16px",
