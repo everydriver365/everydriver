@@ -1,27 +1,24 @@
-## Goal
+I found why it still looks unchanged: the previous global rule only targeted `.instructor-portal`, but the instructor app marketing/mobile pages use `InstructorSaaSLayout` and DSM uses its own page wrapper, so many tiles were outside the scope. Some tiles also have inline/custom shadows that override the intended lift.
 
-Make the existing instructor mobile tiles **stand out** more from the page background — same layout, same icons, same content, same components. Just lift the surface so the tiles read as raised cards (like the screenshot) instead of barely-there outlined boxes.
+Plan:
 
-## What changes
+1. Scope the lift to the actual instructor app wrappers
+   - Add an instructor-app class to `InstructorSaaSLayout` so every `/instructor-app/...` page is covered.
+   - Add the same scope to the DSM mobile app page so its Quick Actions, schedule, next lesson, feature grid, and CTA tiles are covered.
 
-A single-file edit to `src/components/instructor/InstructorTile.tsx`:
+2. Create one stronger, visible tile elevation rule
+   - Define a shared “lifted tile” shadow that is noticeably deeper on the light blue/grey backgrounds.
+   - Apply it to standard tile/card surfaces: `Card`, `shadow-lift`, `shadow-premium`, Tailwind shadow classes, white/card rounded tiles, and common tile buttons inside the instructor app scope.
+   - Keep the design unchanged apart from tile elevation: no layout, colour, typography, or content changes.
 
-- **Add a soft drop shadow** to the tile container so it lifts off the cool-grey backdrop  
-  `boxShadow: "0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.06)"`
-- **Soften the hairline border** from `0.5px solid #E5E5EA` to `0.5px solid rgba(0,0,0,0.04)` so the lift comes from shadow, not a hard line (matches the screenshot)
-- **Bump the corner radius** from 12 → 14 to match the screenshot's slightly softer corners
-- **Add a subtle press-shadow reduction** on `:active` (already scales 0.97 — just compress the shadow at the same time) for the premium tap feedback
+3. Explicitly catch Quick Actions and Telematics
+   - Update DSM Quick Action tiles and DSM feature tiles so they use the stronger lift directly instead of their current tiny `0_1px_3px` shadow.
+   - Ensure Telematics page cards, metric tiles, scorecard, and comparison/benefit cards inherit the same lift through the new instructor app scope.
 
-## What does NOT change
+4. Protect non-tile surfaces
+   - Exclude maps, dialogs, popovers, bottom nav, headers, menus, and full-width section backgrounds so only tiles/cards are lifted.
+   - Leave gradient CTA cards with their existing coloured shadow unless they need the added depth without changing their look.
 
-- No new components, no new files
-- No layout, spacing, padding, icon sizes, typography, palette, or grid changes
-- No behaviour, routes, data, or props change
-- `WarmTile`, `BestMateTile`, `StatCard`, the side menu drawer, the bottom nav — all untouched
-- Dark mode tiles untouched (shadow tokens are subtle enough to work on both, but I'll keep the existing dark treatment via the `.dsm-dark` scope if any consumer overrides it)
-
-## Files
-
-- **Edit**: `src/components/instructor/InstructorTile.tsx` (container style + active state only)
-
-That's it — one small visual change, applied everywhere the unified tile is used.
+5. Verify coverage
+   - Check the instructor app pages for remaining `bg-white`/`bg-card` rounded tile patterns that do not use any shadow utility and add the shared class where needed.
+   - Run a focused code search for tile/card/shadow patterns after changes to confirm no obvious instructor tiles were missed.

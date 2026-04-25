@@ -29,7 +29,7 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
   const location = useLocation();
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="instructor-portal flex min-h-screen flex-col">
       {/* Header - Clean white */}
       <header className="sticky top-0 z-50 w-full">
         <div className="bg-primary">
