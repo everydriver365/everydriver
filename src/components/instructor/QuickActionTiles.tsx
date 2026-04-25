@@ -36,7 +36,8 @@ import {
   X,
   Plus,
   Heart,
-  ListTodo
+  ListTodo,
+  Accessibility
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QuickAction } from "@/hooks/useInstructorHomepageContent";
@@ -69,6 +70,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Heart,
   Fuel: Car,
   ListTodo,
+  Accessibility,
 };
 
 // Custom image icons for specific tiles (iOS-style)
@@ -127,6 +129,7 @@ const additionalTiles: QuickAction[] = [
   { id: "pipeline", title: "Pipeline", icon: "Briefcase", route: "/instructor/pipeline", display_order: 113 },
   { id: "automations", title: "Automations", icon: "Zap", route: "/instructor/automations", display_order: 114 },
   { id: "find-nearby", title: "Find Nearby", icon: "MapPin", route: "/instructor/find-nearby", display_order: 115 },
+  { id: "accessibility", title: "Accessibility", icon: "Accessibility", route: "/instructor/accessibility", display_order: 116 },
 ];
 
 interface QuickActionTilesProps {
