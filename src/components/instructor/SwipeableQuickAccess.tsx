@@ -201,7 +201,7 @@ export function SwipeableQuickAccess({
       {isSearching ? (
         <div>
           {filtered.length > 0 ? (
-            <TileGrid>{filtered.map(renderTile)}</TileGrid>
+            <TileGrid variant="refined">{filtered.map(renderTile)}</TileGrid>
           ) : (
             <div className="px-4 pb-4 text-sm text-muted-foreground">
               No actions match “{query.trim()}”
