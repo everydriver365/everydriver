@@ -1,12 +1,16 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameDay, isSameMonth, isToday, parseISO, isSunday } from "date-fns";
-import { ChevronLeft, ChevronRight, CalendarDays, Loader2, Calendar, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameDay, isSameMonth, isToday, parseISO, isWeekend } from "date-fns";
+import { ChevronLeft, ChevronRight, Loader2, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
 
 interface MobileMonthCalendarViewProps {
   instructorId: string;
+}
+
+type DotCategory = "lesson" | "course" | "test" | "personal";
+
+interface DayDots {
+  categories: DotCategory[]; // unique categories present
 }
 
 interface DayEvents {
@@ -31,16 +35,27 @@ interface DayEvents {
   }>;
 }
 
-const lessonTypeBarColors: Record<string, string> = {
-  standard: "#3b82f6",
-  test_prep: "#f59e0b",
-  mock_test: "#f43f5e",
-  motorway: "#10b981",
-  refresher: "#06b6d4",
-  intensive: "#8b5cf6",
-  first_lesson: "#22c55e",
-  pass_plus: "#2A394F",
-  driving_test: "#f97316",
+// System palette dot colours
+const DOT_COLORS: Record<DotCategory, string> = {
+  lesson: "#3B8B3B",   // green
+  course: "#B8801F",   // amber
+  test: "#2B7BC8",     // blue
+  personal: "#8A5BC9", // purple
+};
+
+const DOT_LABELS: Record<DotCategory, string> = {
+  lesson: "Lesson",
+  course: "Course",
+  test: "Test",
+  personal: "Personal",
+};
+
+// Pale tints for lesson blocks (mirrors agenda view)
+const LESSON_TINT: Record<DotCategory, string> = {
+  lesson: "#E6F1FB",
+  course: "#FBF1DE",
+  test: "#FBEAEC",
+  personal: "#F1ECFA",
 };
 
 const courseTypeLabels: Record<string, string> = {
@@ -55,22 +70,25 @@ const courseTypeLabels: Record<string, string> = {
   driving_test: "Driving Test",
 };
 
-function contrastText(hex: string): string {
-  const c = hex.replace("#", "");
-  const r = parseInt(c.substring(0, 2), 16);
-  const g = parseInt(c.substring(2, 4), 16);
-  const b = parseInt(c.substring(4, 6), 16);
-  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return lum > 0.6 ? "text-gray-900" : "text-white";
+function categoriseLessonType(lessonType: string): DotCategory {
+  if (lessonType === "driving_test" || lessonType === "mock_test") return "test";
+  if (lessonType === "pass_plus" || lessonType === "intensive") return "course";
+  return "lesson";
+}
+
+function categoriseExternal(title: string): DotCategory {
+  const t = (title || "").toLowerCase();
+  if (/\b(test|exam|dvsa)\b/.test(t)) return "test";
+  if (/(course|wdu|nsac|workshop|classroom|speed awareness)/.test(t)) return "course";
+  return "personal";
 }
 
 export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [lessonDots, setLessonDots] = useState<Record<string, number>>({});
-  const [externalDots, setExternalDots] = useState<Record<string, boolean>>({});
+  const [dayDotMap, setDayDotMap] = useState<Record<string, DayDots>>({});
+  const [presentCategories, setPresentCategories] = useState<Set<DotCategory>>(new Set());
   const [dayEvents, setDayEvents] = useState<DayEvents>({ lessons: [], external: [] });
-  const [loading, setLoading] = useState(false);
   const [eventsLoading, setEventsLoading] = useState(false);
 
   const monthStart = startOfMonth(currentMonth);
@@ -86,10 +104,10 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
       day = addDays(day, 1);
     }
     return days;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [calendarStart.getTime(), calendarEnd.getTime()]);
 
   const fetchDots = useCallback(async () => {
-    setLoading(true);
     const from = format(calendarStart, "yyyy-MM-dd");
     const to = format(calendarEnd, "yyyy-MM-dd");
 
@@ -97,40 +115,47 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
       const [lessonsRes, externalRes] = await Promise.all([
         supabase
           .from("scheduled_lessons")
-          .select("lesson_date")
+          .select("lesson_date, lesson_type")
           .eq("instructor_id", instructorId)
           .neq("status", "cancelled")
           .gte("lesson_date", from)
           .lte("lesson_date", to),
         supabase
           .from("instructor_calendar_events")
-          .select("start_time")
+          .select("start_time, title")
           .eq("instructor_id", instructorId)
           .gte("start_time", `${from}T00:00:00`)
           .lte("start_time", `${to}T23:59:59`),
       ]);
 
-      if (lessonsRes.data) {
-        const counts: Record<string, number> = {};
-        lessonsRes.data.forEach((r) => {
-          counts[r.lesson_date] = (counts[r.lesson_date] || 0) + 1;
-        });
-        setLessonDots(counts);
-      }
+      const map: Record<string, Set<DotCategory>> = {};
+      const present = new Set<DotCategory>();
 
-      if (externalRes.data) {
-        const ext: Record<string, boolean> = {};
-        externalRes.data.forEach((r) => {
-          const dateKey = format(parseISO(r.start_time), "yyyy-MM-dd");
-          ext[dateKey] = true;
-        });
-        setExternalDots(ext);
-      }
+      (lessonsRes.data || []).forEach((r: any) => {
+        const cat = categoriseLessonType(r.lesson_type);
+        if (!map[r.lesson_date]) map[r.lesson_date] = new Set();
+        map[r.lesson_date].add(cat);
+        present.add(cat);
+      });
+
+      (externalRes.data || []).forEach((r: any) => {
+        const dateKey = format(parseISO(r.start_time), "yyyy-MM-dd");
+        const cat = categoriseExternal(r.title);
+        if (!map[dateKey]) map[dateKey] = new Set();
+        map[dateKey].add(cat);
+        present.add(cat);
+      });
+
+      const out: Record<string, DayDots> = {};
+      Object.entries(map).forEach(([k, v]) => {
+        out[k] = { categories: Array.from(v) };
+      });
+      setDayDotMap(out);
+      setPresentCategories(present);
     } catch (e) {
       console.error("Failed to fetch calendar dots:", e);
-    } finally {
-      setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instructorId, calendarStart.getTime(), calendarEnd.getTime()]);
 
   useEffect(() => { fetchDots(); }, [fetchDots]);
@@ -182,12 +207,6 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
 
   useEffect(() => { fetchDayEvents(); }, [fetchDayEvents]);
 
-  const goToToday = () => {
-    const today = new Date();
-    setCurrentMonth(today);
-    setSelectedDate(today);
-  };
-
   const formatTime = (timeStr: string) => {
     const [h, m] = timeStr.split(":");
     return `${h}:${m}`;
@@ -205,65 +224,183 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
 
   const weekDayHeaders = ["M", "T", "W", "T", "F", "S", "S"];
 
+  const fontFamily = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
+
+  const legendCategories: DotCategory[] = (["lesson", "course", "test", "personal"] as DotCategory[])
+    .filter(c => presentCategories.has(c));
+
   return (
-    <div className="flex flex-col h-full">
-      {/* Month Header */}
-      <div className="flex items-center justify-between px-2 py-3">
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
-        <h2 className="text-base font-bold text-foreground">
+    <div
+      className="flex flex-col h-full"
+      style={{ backgroundColor: "#FFFFFF", padding: 16, gap: 16, fontFamily }}
+    >
+      {/* Month Navigation Header */}
+      <div className="flex items-center justify-between" style={{ padding: "0 4px" }}>
+        <button
+          onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+          aria-label="Previous month"
+          style={{
+            background: "transparent",
+            border: "none",
+            padding: 6,
+            borderRadius: 8,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+          }}
+        >
+          <ChevronLeft size={18} strokeWidth={1.8} color="#6E6E73" style={{ strokeLinecap: "round", strokeLinejoin: "round" }} />
+        </button>
+        <h2
+          style={{
+            fontSize: 16,
+            fontWeight: 500,
+            color: "#000000",
+            letterSpacing: "-0.2px",
+            margin: 0,
+          }}
+        >
           {format(currentMonth, "MMMM yyyy")}
         </h2>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
-          <ChevronRight className="h-5 w-5" />
-        </Button>
+        <button
+          onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+          aria-label="Next month"
+          style={{
+            background: "transparent",
+            border: "none",
+            padding: 6,
+            borderRadius: 8,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+          }}
+        >
+          <ChevronRight size={18} strokeWidth={1.8} color="#6E6E73" style={{ strokeLinecap: "round", strokeLinejoin: "round" }} />
+        </button>
       </div>
 
       {/* Weekday Headers */}
-      <div className="grid grid-cols-7 px-2">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
         {weekDayHeaders.map((d, i) => (
-          <div key={i} className={cn(
-            "text-center text-xs font-medium py-1",
-            i === 6 ? "text-destructive" : "text-muted-foreground"
-          )}>
+          <div
+            key={i}
+            style={{
+              textAlign: "center",
+              padding: "4px 0",
+              fontSize: 11,
+              fontWeight: 500,
+              color: "#6E6E73",
+              letterSpacing: "0.2px",
+            }}
+          >
             {d}
           </div>
         ))}
       </div>
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7 px-2 gap-y-0.5">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
         {calendarDays.map((day) => {
           const dateKey = format(day, "yyyy-MM-dd");
           const inMonth = isSameMonth(day, currentMonth);
           const selected = isSameDay(day, selectedDate);
           const today = isToday(day);
-          const hasLessons = lessonDots[dateKey] > 0;
-          const hasExternal = externalDots[dateKey];
-          const sunday = isSunday(day);
+          const weekend = isWeekend(day);
+          const dots = dayDotMap[dateKey]?.categories || [];
+
+          // Determine date number colour
+          let dateColor: string;
+          if (today || (selected && !today)) {
+            dateColor = "#FFFFFF";
+          } else if (!inMonth) {
+            dateColor = "#C7C7CC";
+          } else if (weekend) {
+            dateColor = "#6E6E73";
+          } else {
+            dateColor = "#000000";
+          }
+
+          // Render up to 3 dots; >3 → first 2 + grey "more" dot
+          const dotsToRender: string[] = [];
+          if (dots.length <= 3) {
+            dots.forEach(c => dotsToRender.push(DOT_COLORS[c]));
+          } else {
+            dotsToRender.push(DOT_COLORS[dots[0]]);
+            dotsToRender.push(DOT_COLORS[dots[1]]);
+            dotsToRender.push("#6E6E73");
+          }
+
+          const indicatorBg = today ? "#2B7BC8" : selected ? "#1F1F1F" : null;
+          const dotInsideIndicator = today || selected;
 
           return (
             <button
               key={dateKey}
               onClick={() => setSelectedDate(day)}
-              className={cn(
-                "flex flex-col items-center justify-center py-1.5 rounded-full transition-colors relative",
-                "min-h-[44px]",
-                !inMonth && "opacity-30",
-                selected && "bg-[#1a3a4a] text-white",
-                !selected && today && "ring-2 ring-[#1a3a4a]/40",
-                !selected && sunday && "text-destructive",
-                !selected && !sunday && "text-foreground",
-              )}
+              style={{
+                position: "relative",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                padding: "6px 0",
+                gap: 4,
+                cursor: "pointer",
+                background: "transparent",
+                border: "none",
+                minHeight: 44,
+              }}
             >
-              <span className="text-sm font-medium leading-none">{format(day, "d")}</span>
-              <div className="flex gap-0.5 mt-1 h-1.5">
-                {hasLessons && (
-                  <span className={cn("w-1.5 h-1.5 rounded-full", selected ? "bg-white/70" : "bg-amber-500")} />
-                )}
-                {hasExternal && (
-                  <span className={cn("w-1.5 h-1.5 rounded-full", selected ? "bg-white/50" : "bg-teal-500")} />
+              {indicatorBg && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 2,
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    background: indicatorBg,
+                  }}
+                />
+              )}
+              <span
+                style={{
+                  position: "relative",
+                  fontSize: 14,
+                  fontWeight: today || (selected && !today) ? 500 : 400,
+                  color: dateColor,
+                  lineHeight: "20px",
+                  zIndex: 1,
+                }}
+              >
+                {format(day, "d")}
+              </span>
+              <div
+                style={{
+                  position: "relative",
+                  zIndex: 1,
+                  display: "flex",
+                  gap: 2,
+                  height: 4,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {dotsToRender.length === 0 ? (
+                  <div style={{ width: 4, height: 4 }} />
+                ) : (
+                  dotsToRender.map((color, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        width: 4,
+                        height: 4,
+                        borderRadius: "50%",
+                        background: dotInsideIndicator ? "#FFFFFF" : color,
+                      }}
+                    />
+                  ))
                 )}
               </div>
             </button>
@@ -271,110 +408,192 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
         })}
       </div>
 
-      {/* Divider */}
-      <div className="border-t border-border mt-2" />
+      {/* Dot Legend */}
+      {legendCategories.length > 0 && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 14,
+            padding: "4px 0",
+            flexWrap: "wrap",
+          }}
+        >
+          {legendCategories.map((cat) => (
+            <div key={cat} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: DOT_COLORS[cat],
+                }}
+              />
+              <span style={{ fontSize: 11, color: "#6E6E73" }}>{DOT_LABELS[cat]}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
-      {/* Selected Day Events */}
-      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1.5">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-2">
+      {/* Selected Day Detail Panel */}
+      <div
+        className="flex-1 overflow-y-auto"
+        style={{
+          borderTop: "0.5px solid #E5E5EA",
+          paddingTop: 16,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 500,
+            color: "#6E6E73",
+            letterSpacing: "0.3px",
+            textTransform: "uppercase",
+            margin: "0 0 12px",
+          }}
+        >
           {format(selectedDate, "EEEE, d MMMM")}
-        </p>
+        </div>
 
         {eventsLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <div className="flex items-center justify-center" style={{ padding: "32px 0" }}>
+            <Loader2 className="animate-spin" size={20} color="#6E6E73" />
           </div>
         ) : allDayEvents.length === 0 && timedLessons.length === 0 && timedExternal.length === 0 ? (
-          <div className="flex flex-col items-center py-8 text-center">
-            <Calendar className="h-8 w-8 text-muted-foreground/40 mb-2" />
-            <p className="text-sm text-muted-foreground">No events</p>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 6,
+              padding: "32px 0",
+              textAlign: "center",
+            }}
+          >
+            <Calendar size={20} strokeWidth={1.8} color="#6E6E73" />
+            <span style={{ fontSize: 13, fontWeight: 500, color: "#000000" }}>No lessons</span>
+            <span style={{ fontSize: 12, color: "#6E6E73" }}>Tap a different date or add a lesson</span>
           </div>
         ) : (
-          <>
-            {/* All-day events */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {/* All-day external events */}
             {allDayEvents.map((evt) => {
-              const bgColor = evt.color || "#039be5";
+              const cat = categoriseExternal(evt.title);
               return (
                 <div
                   key={evt.id}
-                  className="rounded-lg px-3 py-2.5 space-y-0.5"
-                  style={{ backgroundColor: bgColor }}
+                  style={{
+                    backgroundColor: LESSON_TINT[cat],
+                    borderRadius: 10,
+                    padding: "10px 12px",
+                  }}
                 >
-                  <span className={`text-[13px] font-bold ${contrastText(bgColor)}`}>{evt.title}</span>
-                  <div className={`text-[12px] ${contrastText(bgColor)} opacity-80`}>All day</div>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: "#000000",
+                      letterSpacing: "-0.1px",
+                      marginBottom: 3,
+                    }}
+                  >
+                    {evt.title}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#6E6E73" }}>All day</div>
                 </div>
               );
             })}
 
-            {/* Lessons - matching schedule view design */}
+            {/* Lessons */}
             {timedLessons.map((lesson) => {
-              const barColor = lessonTypeBarColors[lesson.lesson_type] || "#3b82f6";
+              const cat = categoriseLessonType(lesson.lesson_type);
               const paid = lesson.payment_status === "paid";
               return (
                 <div
                   key={lesson.id}
-                  className="rounded-lg px-3 py-2.5 space-y-0.5"
-                  style={{ backgroundColor: barColor }}
+                  style={{
+                    backgroundColor: LESSON_TINT[cat],
+                    borderRadius: 10,
+                    padding: "10px 12px",
+                  }}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[13px] font-bold text-white truncate">
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: 3,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 500,
+                        color: "#000000",
+                        letterSpacing: "-0.1px",
+                      }}
+                    >
                       {lesson.pupil?.name || "Unknown"}
                     </span>
                     {!paid && (
-                      <span className="text-[10px] font-semibold bg-white/25 text-white rounded px-1.5 py-0.5">
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 500,
+                          color: "#6E6E73",
+                          background: "rgba(0,0,0,0.06)",
+                          borderRadius: 4,
+                          padding: "1px 6px",
+                        }}
+                      >
                         Unpaid
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5 text-white/90 text-[12px]">
-                    <span>{formatTime(lesson.start_time)} – {getEndTime(lesson.start_time, lesson.duration_minutes)}</span>
-                    <span className="text-white/60">·</span>
-                    <span>{courseTypeLabels[lesson.lesson_type] || lesson.lesson_type}</span>
+                  <div style={{ fontSize: 11, color: "#6E6E73" }}>
+                    {formatTime(lesson.start_time)} – {getEndTime(lesson.start_time, lesson.duration_minutes)}
+                    {" · "}
+                    {courseTypeLabels[lesson.lesson_type] || lesson.lesson_type}
                   </div>
-                  {(lesson.pickup_location || lesson.pupil?.address) && (
-                    <div className="flex items-center gap-1 text-white/75 text-[11px]">
-                      <MapPin className="h-3 w-3 shrink-0" />
-                      <span className="truncate">{lesson.pickup_location || lesson.pupil?.address}</span>
-                    </div>
-                  )}
                 </div>
               );
             })}
 
-            {/* External events - matching schedule view design */}
+            {/* Timed external events */}
             {timedExternal.map((evt) => {
-              const bgColor = evt.color || "#039be5";
+              const cat = categoriseExternal(evt.title);
               const startDt = parseISO(evt.start_time);
               const endDt = parseISO(evt.end_time);
               return (
                 <div
                   key={evt.id}
-                  className="rounded-lg px-3 py-2.5 space-y-0.5"
-                  style={{ backgroundColor: bgColor }}
+                  style={{
+                    backgroundColor: LESSON_TINT[cat],
+                    borderRadius: 10,
+                    padding: "10px 12px",
+                  }}
                 >
-                  <span className={`text-[13px] font-bold ${contrastText(bgColor)}`}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: "#000000",
+                      letterSpacing: "-0.1px",
+                      marginBottom: 3,
+                    }}
+                  >
                     {evt.title}
-                  </span>
-                  <div className={`text-[12px] ${contrastText(bgColor)} opacity-80`}>
+                  </div>
+                  <div style={{ fontSize: 11, color: "#6E6E73" }}>
                     {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")}
                   </div>
                 </div>
               );
             })}
-          </>
+          </div>
         )}
-      </div>
-
-      {/* Today Button */}
-      <div className="px-4 py-3 border-t border-border">
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full rounded-2xl"
-          onClick={goToToday}
-        >
-          Today
-        </Button>
       </div>
     </div>
   );
