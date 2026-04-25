@@ -20,7 +20,7 @@ interface GapFillCardProps {
   gapMinutes: number;
 }
 
-const AVATAR_PALETTE = ["#1A73E8", "#188038", "#D93025", "#F9AB00", "#A142F4"];
+const AVATAR_PALETTE = ["#C8434F", "#2B7BC8", "#3B8B3B", "#8A5BC9", "#B8801F"];
 
 const FONT_STACK =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Roboto", "Helvetica Neue", sans-serif';
