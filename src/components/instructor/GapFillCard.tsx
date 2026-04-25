@@ -20,7 +20,7 @@ interface GapFillCardProps {
   gapMinutes: number;
 }
 
-const AVATAR_PALETTE = ["#1A73E8", "#188038", "#D93025", "#F9AB00", "#A142F4"];
+const AVATAR_PALETTE = ["#C8434F", "#2B7BC8", "#3B8B3B", "#8A5BC9", "#B8801F"];
 
 const FONT_STACK =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Roboto", "Helvetica Neue", sans-serif';
@@ -383,7 +383,7 @@ export function GapFillCard({
       <>{durationLabel} gap</>
     ) : (
       <>
-        <span style={{ fontWeight: 600, color: "#174EA6" }}>
+        <span style={{ fontWeight: 500, color: "#000000" }}>
           {totalCount}
         </span>{" "}
         may fit · {durationLabel}
@@ -411,16 +411,16 @@ export function GapFillCard({
       style={{
         display: "flex",
         alignItems: "center",
-        gap: 8,
+        gap: 10,
         width: "100%",
-        background: "#F8F9FA",
-        borderRadius: 8,
+        background: "#FFFFFF",
+        border: "0.5px solid #E5E5EA",
+        borderRadius: 10,
         padding: "10px 12px",
-        border: "none",
         cursor: "pointer",
         textAlign: "left",
         fontFamily: FONT_STACK,
-        margin: "2px 0",
+        margin: 0,
         minHeight: 44,
         boxSizing: "border-box",
       }}
@@ -435,18 +435,18 @@ export function GapFillCard({
                   onClick={(e) => e.stopPropagation()}
                   aria-label={`${p.name}: ${p.reason}`}
                   style={{
-                    width: 24,
-                    height: 24,
+                    width: 22,
+                    height: 22,
                     borderRadius: "50%",
                     background: colorForPupil(p.id),
                     color: "#FFFFFF",
-                    fontSize: 10,
-                    fontWeight: 600,
+                    fontSize: 9,
+                    fontWeight: 500,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    border: "2px solid #F8F9FA",
-                    marginLeft: idx === 0 ? 0 : -6,
+                    border: "1.5px solid #FFFFFF",
+                    marginLeft: idx === 0 ? 0 : -8,
                     boxSizing: "border-box",
                     lineHeight: 1,
                     overflow: "hidden",
@@ -486,73 +486,27 @@ export function GapFillCard({
         <div style={{ display: "flex", alignItems: "center", gap: 4, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 12,
+              fontSize: 13,
               fontWeight: 500,
-              color: "#1F1F1F",
-              letterSpacing: "-0.08px",
+              color: "#000000",
+              letterSpacing: "-0.1px",
               lineHeight: 1.3,
               margin: 0,
               overflow: "hidden",
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              wordBreak: "break-word",
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
               flex: 1,
               minWidth: 0,
             }}
           >
             {titleNode}
           </div>
-          {excluded.length > 0 && (
-            <Tooltip delayDuration={150}>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={(e) => e.stopPropagation()}
-                  aria-label={`Why ${excluded.length} ${excluded.length === 1 ? "pupil was" : "pupils were"} excluded`}
-                  style={{
-                    width: 16,
-                    height: 16,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: "none",
-                    background: "transparent",
-                    color: "#9AA0A6",
-                    cursor: "help",
-                    padding: 0,
-                    flexShrink: 0,
-                  }}
-                >
-                  <Info size={12} aria-hidden="true" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-[280px] text-xs leading-snug">
-                <div style={{ fontWeight: 600, marginBottom: 4 }}>
-                  {excluded.length} {excluded.length === 1 ? "pupil doesn't" : "pupils don't"} fit
-                </div>
-                <ul style={{ margin: 0, paddingLeft: 14, display: "grid", gap: 4 }}>
-                  {excluded.slice(0, 6).map((p) => (
-                    <li key={p.id}>
-                      <span style={{ fontWeight: 600 }}>{p.name}:</span> {p.reason}
-                    </li>
-                  ))}
-                  {excluded.length > 6 && (
-                    <li style={{ listStyle: "none", color: "#9AA0A6" }}>
-                      …and {excluded.length - 6} more
-                    </li>
-                  )}
-                </ul>
-              </TooltipContent>
-            </Tooltip>
-          )}
         </div>
         <div
           style={{
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 400,
-            color: "#5F6368",
-            letterSpacing: "-0.04px",
+            color: "#6E6E73",
             fontVariantNumeric: "tabular-nums",
             margin: "2px 0 0",
             whiteSpace: "nowrap",
@@ -560,60 +514,104 @@ export function GapFillCard({
             textOverflow: "ellipsis",
           }}
         >
-          {startTime.slice(0, 5)}–{endTime.slice(0, 5)}
-          {totalCount > 0 ? " · tap to text" : ""}
+          {startTime.slice(0, 5)} – {endTime.slice(0, 5)}
+          {totalCount > 0 ? " · tap to view" : ""}
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={handleRefresh}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            handleRefresh(e);
-          }
-        }}
-        aria-label="Refresh suggested pupils for this gap"
-        className="gap-fill-refresh"
-        disabled={isRefreshing}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 28,
-          height: 28,
-          borderRadius: 16,
-          border: "none",
-          background: "transparent",
-          color: "#5F6368",
-          cursor: isRefreshing ? "default" : "pointer",
-          flexShrink: 0,
-          padding: 0,
-        }}
-      >
-        <RefreshCw
-          size={14}
-          aria-hidden="true"
-          className={isRefreshing ? "gap-fill-spin" : undefined}
-        />
-      </button>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+        {excluded.length > 0 && (
+          <Tooltip delayDuration={150}>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={(e) => e.stopPropagation()}
+                aria-label={`Why ${excluded.length} ${excluded.length === 1 ? "pupil was" : "pupils were"} excluded`}
+                style={{
+                  width: 14,
+                  height: 14,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "none",
+                  background: "transparent",
+                  color: "#6E6E73",
+                  cursor: "help",
+                  padding: 0,
+                  flexShrink: 0,
+                }}
+              >
+                <Info size={14} strokeWidth={1.5} aria-hidden="true" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-[280px] text-xs leading-snug">
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                {excluded.length} {excluded.length === 1 ? "pupil doesn't" : "pupils don't"} fit
+              </div>
+              <ul style={{ margin: 0, paddingLeft: 14, display: "grid", gap: 4 }}>
+                {excluded.slice(0, 6).map((p) => (
+                  <li key={p.id}>
+                    <span style={{ fontWeight: 600 }}>{p.name}:</span> {p.reason}
+                  </li>
+                ))}
+                {excluded.length > 6 && (
+                  <li style={{ listStyle: "none", color: "#9AA0A6" }}>
+                    …and {excluded.length - 6} more
+                  </li>
+                )}
+              </ul>
+            </TooltipContent>
+          </Tooltip>
+        )}
 
-      <span
-        aria-hidden="true"
-        style={{
-          fontSize: 16,
-          color: "#9AA0A6",
-          fontWeight: 500,
-          flexShrink: 0,
-          lineHeight: 1,
-        }}
-      >
-        ›
-      </span>
+        <button
+          type="button"
+          onClick={handleRefresh}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              handleRefresh(e);
+            }
+          }}
+          aria-label="Refresh suggested pupils for this gap"
+          className="gap-fill-refresh"
+          disabled={isRefreshing}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 14,
+            height: 14,
+            border: "none",
+            background: "transparent",
+            color: "#6E6E73",
+            cursor: isRefreshing ? "default" : "pointer",
+            flexShrink: 0,
+            padding: 0,
+          }}
+        >
+          <RefreshCw
+            size={14}
+            strokeWidth={1.5}
+            aria-hidden="true"
+            className={isRefreshing ? "gap-fill-spin" : undefined}
+          />
+        </button>
+
+        <svg
+          aria-hidden="true"
+          width="10"
+          height="10"
+          viewBox="0 0 10 10"
+          fill="none"
+          style={{ flexShrink: 0, color: "#6E6E73" }}
+        >
+          <path d="M3.5 1.5 L7 5 L3.5 8.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
 
       <style>{`
-        .gap-fill-row:active { background: #F1F3F4 !important; }
-        .gap-fill-refresh:active { background: #F1F3F4 !important; }
+        .gap-fill-row:active { background: #F2F2F4 !important; }
+        .gap-fill-refresh:active { background: #F2F2F4 !important; }
         @keyframes gap-fill-spin { to { transform: rotate(360deg); } }
         .gap-fill-spin { animation: gap-fill-spin 0.8s linear infinite; transform-origin: center; }
         @media (prefers-reduced-motion: reduce) {

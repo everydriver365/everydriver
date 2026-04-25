@@ -148,9 +148,8 @@ function EventChip({
       style={{
         position: "relative",
         backgroundColor: style.bg,
-        borderLeft: `3px solid ${style.border}`,
-        borderRadius: 6,
-        padding: `9px 12px 9px ${padLeft}px`,
+        borderRadius: 10,
+        padding: `10px 12px 10px ${padLeft}px`,
         overflow: "hidden",
         fontFamily: FONT_STACK,
       }}
@@ -167,9 +166,9 @@ function EventChip({
             transform: "translateY(-50%)",
             width: 14,
             height: 14,
-            border: "1.8px solid #9AA0A6",
+            border: "1.5px solid #6E6E73",
             borderRadius: 3,
-            background: taskCompleted ? "#9AA0A6" : "transparent",
+            background: taskCompleted ? "#6E6E73" : "transparent",
             padding: 0,
             cursor: "pointer",
           }}
@@ -181,7 +180,8 @@ function EventChip({
           fontWeight: 500,
           letterSpacing: "-0.1px",
           lineHeight: 1.3,
-          color: style.text,
+          color: "#000000",
+          marginBottom: 3,
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -194,10 +194,7 @@ function EventChip({
           style={{
             fontSize: 11,
             fontWeight: 400,
-            opacity: 0.85,
-            marginTop: 2,
-            letterSpacing: "-0.04px",
-            color: style.text,
+            color: "#6E6E73",
             fontVariantNumeric: "tabular-nums",
           }}
         >
@@ -208,7 +205,7 @@ function EventChip({
         <div
           style={{
             fontSize: 11,
-            color: "#5F6368",
+            color: "#6E6E73",
             marginTop: 2,
             whiteSpace: "nowrap",
             overflow: "hidden",
@@ -496,7 +493,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16" style={{ backgroundColor: "#FFFFFF" }}>
-        <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#1A73E8" }} />
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#2B7BC8" }} />
       </div>
     );
   }
@@ -549,13 +546,14 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
               {isFirstOfWeek && (
                 <div
                   style={{
-                    padding: isVeryFirst ? "10px 16px 6px 68px" : "20px 16px 6px 68px",
-                    borderTop: isVeryFirst ? "none" : "0.5px solid #E8EAED",
-                    marginTop: isVeryFirst ? 0 : 10,
+                    padding: isVeryFirst ? "10px 16px 12px 56px" : "20px 16px 12px 56px",
+                    borderTop: isVeryFirst ? "none" : "0.5px solid #E5E5EA",
+                    marginTop: isVeryFirst ? 0 : 20,
+                    marginBottom: 0,
                     fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: "0.08em",
-                    color: "#5F6368",
+                    fontWeight: 500,
+                    letterSpacing: "0.3px",
+                    color: "#6E6E73",
                     textTransform: "uppercase",
                   }}
                 >
@@ -568,13 +566,15 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                 ref={today ? todayRef : undefined}
                 style={{
                   display: "flex",
-                  padding: "14px 12px 10px 0",
+                  gap: 12,
+                  alignItems: "flex-start",
+                  padding: "10px 16px 0 16px",
                 }}
               >
                 {/* Date column */}
                 <div
                   style={{
-                    width: 56,
+                    width: 44,
                     flexShrink: 0,
                     textAlign: "center",
                     paddingTop: 2,
@@ -583,11 +583,11 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                   <div
                     style={{
                       fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: "0.08em",
+                      fontWeight: 500,
+                      letterSpacing: "0.3px",
                       lineHeight: 1,
                       textTransform: "uppercase",
-                      color: today ? "#1A73E8" : "#5F6368",
+                      color: today ? "#2B7BC8" : "#6E6E73",
                     }}
                   >
                     {format(day, "EEE")}
@@ -602,10 +602,11 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         width: 32,
                         height: 32,
                         borderRadius: "50%",
-                        background: "#1A73E8",
+                        background: "#2B7BC8",
                         color: "#FFFFFF",
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: 500,
+                        letterSpacing: "-0.3px",
                         fontVariantNumeric: "tabular-nums",
                       }}
                     >
@@ -614,11 +615,11 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                   ) : (
                     <div
                       style={{
-                        marginTop: 6,
-                        fontSize: 20,
-                        fontWeight: 400,
+                        marginTop: 4,
+                        fontSize: 18,
+                        fontWeight: 500,
                         letterSpacing: "-0.3px",
-                        color: "#1F1F1F",
+                        color: "#000000",
                         lineHeight: 1,
                         fontVariantNumeric: "tabular-nums",
                       }}
@@ -635,8 +636,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                     minWidth: 0,
                     display: "flex",
                     flexDirection: "column",
-                    gap: 6,
-                    paddingRight: 4,
+                    gap: 8,
                   }}
                 >
                   {/* All-day externals */}
@@ -685,26 +685,26 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                           key="now-indicator"
                           style={{
                             display: "flex",
-                            gap: 6,
-                            padding: "4px 0 2px",
+                            gap: 8,
+                            padding: "0 8px",
                             alignItems: "center",
                           }}
                         >
                           <div
                             style={{
-                              width: 7,
-                              height: 7,
+                              width: 6,
+                              height: 6,
                               borderRadius: "50%",
-                              backgroundColor: "#EA4335",
+                              backgroundColor: "#C8434F",
                               flexShrink: 0,
                             }}
                           />
                           <span
                             style={{
-                              fontSize: 10,
-                              fontWeight: 700,
-                              color: "#EA4335",
-                              letterSpacing: "0.05em",
+                              fontSize: 11,
+                              fontWeight: 500,
+                              color: "#C8434F",
+                              letterSpacing: "0.2px",
                               fontVariantNumeric: "tabular-nums",
                             }}
                           >
@@ -714,8 +714,8 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                             style={{
                               flex: 1,
                               height: 1,
-                              backgroundColor: "#EA4335",
-                              opacity: 0.5,
+                              backgroundColor: "#C8434F",
+                              opacity: 0.3,
                             }}
                           />
                         </div>,
