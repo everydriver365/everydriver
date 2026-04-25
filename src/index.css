@@ -986,10 +986,23 @@ html {
   --a11y-text-scale: 1;
 }
 
-/* The scope applied to the instructor app shell. Sets the local root font
-   size so all `rem`/`em` values scale, without affecting marketing pages. */
+/* The scope applied to the instructor app shell.
+   We use CSS `zoom` so EVERY size — rem, em, AND hardcoded inline pixel
+   values like style={{ fontSize: 15 }} — scales together. This is the only
+   reliable way to scale tiles like Action Needed, Next Lesson, Schedule and
+   Telematics, which set inline pixel font sizes. Firefox fallback uses
+   transform: scale(). */
 .a11y-scope {
   font-size: calc(16px * var(--a11y-text-scale));
+  zoom: var(--a11y-text-scale, 1);
+}
+
+@supports not (zoom: 1) {
+  .a11y-scope {
+    transform: scale(var(--a11y-text-scale, 1));
+    transform-origin: top left;
+    width: calc(100% / var(--a11y-text-scale, 1));
+  }
 }
 
 /* Reduce motion — manual override on top of OS preference */
@@ -1040,37 +1053,43 @@ html.a11y-high-contrast .dsm-instructor.dsm-dark {
 /* High-contrast overrides for the many hardcoded iOS greys/whites used in
    instructor tile primitives, sheets, and inline styles. We boost text and
    border weight without changing layout. */
-html.a11y-high-contrast .a11y-scope p,
-html.a11y-high-contrast .a11y-scope span,
-html.a11y-high-contrast .a11y-scope div,
-html.a11y-high-contrast .a11y-scope button,
-html.a11y-high-contrast .a11y-scope a,
-html.a11y-high-contrast .a11y-scope label,
-html.a11y-high-contrast .a11y-scope li,
-html.a11y-high-contrast .dsm-instructor p,
-html.a11y-high-contrast .dsm-instructor span,
-html.a11y-high-contrast .dsm-instructor div,
-html.a11y-high-contrast .dsm-instructor button,
-html.a11y-high-contrast .dsm-instructor a {
-  /* Force any of the well-known low-contrast greys to a darker tone. */
+/* (legacy specific-grey overrides removed — superseded by universal rule below) */
+
+/* Universal high-contrast text override — wins over inline `color: "#XXX"`
+   because of !important. Applies to every descendant inside the scope. */
+html.a11y-high-contrast .a11y-scope,
+html.a11y-high-contrast .a11y-scope * {
+  color: #0a0a0a !important;
+  border-color: #0a0a0a !important;
 }
 
-html.a11y-high-contrast .a11y-scope [style*="#6E6E73"],
-html.a11y-high-contrast .a11y-scope [style*="#6e6e73"],
-html.a11y-high-contrast .a11y-scope [style*="#71717A"],
-html.a11y-high-contrast .a11y-scope [style*="#71717a"],
-html.a11y-high-contrast .a11y-scope [style*="#8E8E93"] {
-  color: #1a1a1a !important;
+html.a11y-high-contrast.dark .a11y-scope,
+html.a11y-high-contrast.dark .a11y-scope *,
+html.a11y-high-contrast .a11y-scope.dsm-dark,
+html.a11y-high-contrast .a11y-scope.dsm-dark *,
+html.a11y-high-contrast .instructor-portal.dsm-dark,
+html.a11y-high-contrast .instructor-portal.dsm-dark * {
+  color: #ffffff !important;
+  border-color: #ffffff !important;
 }
 
-html.a11y-high-contrast .a11y-scope [style*="#E5E5EA"],
-html.a11y-high-contrast .a11y-scope [style*="#e5e5ea"] {
-  border-color: #1a1a1a !important;
+/* Preserve brand accent colours on icons/SVGs so the UI stays legible */
+html.a11y-high-contrast .a11y-scope svg,
+html.a11y-high-contrast .a11y-scope svg * {
+  color: inherit !important;
+}
+
+/* Force tile backgrounds opaque for readability */
+html.a11y-high-contrast .a11y-scope [class*="bg-white"],
+html.a11y-high-contrast .a11y-scope [style*="background: #FFFFFF"],
+html.a11y-high-contrast .a11y-scope [style*="background:#FFFFFF"],
+html.a11y-high-contrast .a11y-scope [style*="background: #fff"] {
+  background-color: #ffffff !important;
 }
 
 /* Slightly thicker borders on cards/tiles for readability */
 html.a11y-high-contrast .a11y-scope .border,
 html.a11y-high-contrast .a11y-scope [class*="border-"] {
-  border-width: 1px;
+  border-width: 1.5px !important;
 }
 

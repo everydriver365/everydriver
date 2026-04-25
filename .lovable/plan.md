@@ -1,52 +1,49 @@
-I found why the accessibility controls feel disjointed: the current implementation mixes a global `html` font-size change, portal `zoom`, hardcoded pixel font sizes, hardcoded colours, and separate instructor/accessible styling systems. Some sections are inside `.instructor-portal` / `.ios-instructor`, others are portalled into `body`, and many tile components use inline `fontSize`/`color`, so contrast and text size changes only affect parts of the app.
+## Why these tiles don't change
 
-Plan to fix it properly:
+The Action needed, Next lesson, Schedule (Today's Schedule), and Telematics tiles use **inline `style={{ fontSize: 15, color: "#000000", ... }}`** with hardcoded pixel numbers and hex colors. 
 
-1. Centralise accessibility application
-   - Update `AccessibilityContext` so settings are applied immediately on load and every change.
-   - Add stable root attributes/classes for:
-     - text scale
-     - high contrast
-     - reduced motion
-     - larger tap targets
-   - Keep local persistence so there is no separate save step required.
+- The `.a11y-scope { font-size: calc(16px * var(--a11y-text-scale)) }` rule only scales things written in `rem`/`em` or that inherit `font-size`. Inline `fontSize: 15` becomes `15px` which ignores the scope.
+- The previous refactor only converted `Tile.tsx` and `InstructorTile.tsx` to `em`. `WarmHomeTiles.tsx`, `TelematicsTile.tsx`, `HomeTodaySchedule.tsx`, and `InstructorMobileHome.tsx` were never touched — they hold the real "Action needed / Next lesson / Schedule / Telematics" content.
+- High-contrast `[style*="#6E6E73"]` selectors only match exact substring presence and don't cover `IOS.label` constants, dark backgrounds, or the `#000000` text on tiles.
 
-2. Replace the current inconsistent scaling approach
-   - Remove the broad `html { font-size: calc(...) }` scaling that can affect unrelated areas unpredictably.
-   - Apply instructor-app scaling through a dedicated `.a11y-scope` wrapper/class on instructor portal containers and portalled panels.
-   - Use a consistent CSS variable system so both Tailwind `rem` text and fixed-pixel/inline-styled instructor tiles can respond.
+## Fix
 
-3. Make the instructor shell the accessibility scope
-   - Add the accessibility scope class to the instructor mobile/desktop layout container.
-   - Add the same scope to instructor sheets/drawers/dialog-like content that renders outside the main DOM tree where needed.
-   - Ensure the `/instructor/accessibility` page itself uses the same scope so the preview matches the real app.
+### 1. Convert hardcoded pixel font sizes to `em` in the four tile components
+For every `style={{ fontSize: N, ... }}` in:
+- `src/components/instructor/WarmHomeTiles.tsx`
+- `src/components/instructor/TelematicsTile.tsx`
+- `src/components/instructor/HomeTodaySchedule.tsx`
+- `src/components/instructor/InstructorMobileHome.tsx`
 
-4. Fix hardcoded tile and section text sizing
-   - Update the shared instructor tile primitives (`Tile`, `WarmTile`/`InstructorTile` where needed) to use CSS variables or scalable helper values instead of fixed `15px`, `12px`, etc.
-   - This will make the horizontal quick actions, dashboard tiles, and repeated tile components respond consistently.
+replace `fontSize: 15` → `fontSize: "0.9375em"` (15/16), `14` → `"0.875em"`, `13` → `"0.8125em"`, `12` → `"0.75em"`, `11` → `"0.6875em"`, `10` → `"0.625em"`, `9` → `"0.5625em"`, `17` → `"1.0625em"`, `18` → `"1.125em"`, `20` → `"1.25em"`, `22` → `"1.375em"`. These then scale with the `.a11y-scope` root font-size.
 
-5. Fix contrast mode properly
-   - Expand high-contrast CSS beyond just changing `--dsm-text` and `--dsm-border`.
-   - Override key instructor variables for card backgrounds, secondary text, icons, muted text, borders, focus rings, and input/switch colours.
-   - Add targeted rules for common hardcoded iOS colours like `#6E6E73`, `#E5E5EA`, and white cards inside the instructor scope so sections do not remain low contrast.
+### 2. Add a wrapping `<div className="a11y-scaled">` (or rely on existing `.a11y-scope`)
+Confirm `InstructorPortalLayout` and `EveryInstructorLayout` both wrap children in `.a11y-scope`. If `InstructorMobileHome` is rendered outside that scope (e.g. via portal), add `a11y-scope` to its root div.
 
-6. Make the accessibility page clearer
-   - Update the page copy to say settings apply automatically.
-   - Keep the reset button.
-   - Make the preview use the same CSS rules as the app instead of manually calculating font sizes, so it reflects the real result.
+### 3. Strengthen high-contrast overrides
+In `src/index.css`, replace the brittle `[style*="#XXXX"]` rules with broader rules that target the tile primitives directly. Add:
+```css
+html.a11y-high-contrast .a11y-scope * {
+  color: #0a0a0a !important;
+}
+html.a11y-high-contrast.dark .a11y-scope * {
+  color: #ffffff !important;
+}
+html.a11y-high-contrast .a11y-scope [style*="background"],
+html.a11y-high-contrast .a11y-scope .bg-white,
+html.a11y-high-contrast .a11y-scope [class*="bg-slate"] {
+  background-color: #ffffff !important;
+  border: 1.5px solid #0a0a0a !important;
+}
+```
+This forces every tile (regardless of inline color) to high-contrast colors when the toggle is on.
 
-7. Validate the common instructor areas
-   - Check the mobile home page, horizontal quick actions, menu drawer, notifications/search overlays, and a couple of secondary instructor pages to confirm:
-     - text sizes change consistently
-     - high contrast is visibly stronger
-     - larger tap targets apply
-     - reduced motion still disables transitions/animations
+### 4. Verify reduce-motion + large-tap also reach these tiles
+Add `data-a11y="tile"` (or use existing classes) to tile root elements and ensure existing motion/tap CSS selectors include them.
 
-Technical notes:
-- No database changes are needed.
-- Main files expected to change:
-  - `src/context/AccessibilityContext.tsx`
-  - `src/index.css`
-  - `src/components/layout/InstructorPortalLayout.tsx`
-  - `src/pages/InstructorAccessibility.tsx`
-  - shared instructor tile components such as `src/components/instructor/Tile.tsx` and any related tile primitive needed for consistency.
+### Files changed
+- `src/components/instructor/WarmHomeTiles.tsx`
+- `src/components/instructor/TelematicsTile.tsx`
+- `src/components/instructor/HomeTodaySchedule.tsx`
+- `src/components/instructor/InstructorMobileHome.tsx`
+- `src/index.css`
