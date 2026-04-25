@@ -501,7 +501,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   return (
     <div
       style={{
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "transparent",
         color: "#1F1F1F",
         fontFamily: FONT_STACK,
         paddingBottom: 96,
