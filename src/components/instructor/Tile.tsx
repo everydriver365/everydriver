@@ -115,15 +115,18 @@ interface TileGridProps {
   className?: string;
   /** Apply outer section padding (18px 14px 20px). Defaults true. */
   padded?: boolean;
+  /** "default" = grey backdrop / 9px gap. "refined" = white backdrop / 12px gap. */
+  variant?: "default" | "refined";
 }
 
-export function TileGrid({ children, className, padded = true }: TileGridProps) {
+export function TileGrid({ children, className, padded = true, variant = "default" }: TileGridProps) {
+  const isRefined = variant === "refined";
   return (
     <div
       className={className}
       style={{
         padding: padded ? "18px 14px 20px" : undefined,
-        background: "#F2F2F7",
+        background: isRefined ? "#FFFFFF" : "#F2F2F7",
         fontFamily: FONT_STACK,
       }}
     >
@@ -147,7 +150,7 @@ export function TileGrid({ children, className, padded = true }: TileGridProps) 
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          gap: 9,
+          gap: isRefined ? 12 : 9,
         }}
       >
         {children}
