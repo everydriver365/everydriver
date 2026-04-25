@@ -508,7 +508,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetContent
                 side="right"
-                className="w-[296px] max-w-[calc(100vw-18px)] border-l border-[hsl(var(--dsm-border))] bg-[hsl(var(--dsm-bg))] p-0 shadow-2xl [&>button]:hidden"
+                className="dsm-instructor w-[296px] max-w-[calc(100vw-18px)] border-l border-[hsl(var(--dsm-border))] bg-[hsl(var(--dsm-bg))] p-0 shadow-2xl [&>button]:hidden"
               >
                 <SheetHeader className="border-b border-[hsl(var(--dsm-border))] px-4 py-4 text-left">
                   <SheetTitle className="sr-only">Instructor menu</SheetTitle>
