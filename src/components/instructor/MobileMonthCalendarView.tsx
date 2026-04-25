@@ -2,15 +2,27 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameDay, isSameMonth, isToday, parseISO, isWeekend } from "date-fns";
 import { ChevronLeft, ChevronRight, Loader2, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  CATEGORY_STYLES,
+  categoriseEvent,
+  styleFromGoogleColor,
+  type EventCategory,
+} from "./scheduleGoogleStyle";
 
 interface MobileMonthCalendarViewProps {
   instructorId: string;
 }
 
-type DotCategory = "lesson" | "course" | "test" | "personal";
+interface DayDot {
+  // The saturated source colour used for the status dot (chip border).
+  dot: string;
+  // The pale chip background colour used for legend swatches and lesson blocks.
+  bg: string;
+}
 
 interface DayDots {
-  categories: DotCategory[]; // unique categories present
+  // Deduped by `dot` colour so identical-coloured events collapse to one dot.
+  entries: DayDot[];
 }
 
 interface DayEvents {
@@ -35,29 +47,6 @@ interface DayEvents {
   }>;
 }
 
-// System palette dot colours
-const DOT_COLORS: Record<DotCategory, string> = {
-  lesson: "#3B8B3B",   // green
-  course: "#B8801F",   // amber
-  test: "#2B7BC8",     // blue
-  personal: "#8A5BC9", // purple
-};
-
-const DOT_LABELS: Record<DotCategory, string> = {
-  lesson: "Lesson",
-  course: "Course",
-  test: "Test",
-  personal: "Personal",
-};
-
-// Pale tints for lesson blocks (mirrors agenda view)
-const LESSON_TINT: Record<DotCategory, string> = {
-  lesson: "#E6F1FB",
-  course: "#FBF1DE",
-  test: "#FBEAEC",
-  personal: "#F1ECFA",
-};
-
 const courseTypeLabels: Record<string, string> = {
   standard: "Standard",
   test_prep: "Test Prep",
@@ -70,24 +59,27 @@ const courseTypeLabels: Record<string, string> = {
   driving_test: "Driving Test",
 };
 
-function categoriseLessonType(lessonType: string): DotCategory {
-  if (lessonType === "driving_test" || lessonType === "mock_test") return "test";
-  if (lessonType === "pass_plus" || lessonType === "intensive") return "course";
-  return "lesson";
+// Resolve the same chip style the list view renders for an external event.
+function externalStyle(title: string, color: string | null, isAllDay: boolean) {
+  const category = categoriseEvent(title, "external", { isAllDay });
+  return styleFromGoogleColor(color) ?? CATEGORY_STYLES[category];
 }
 
-function categoriseExternal(title: string): DotCategory {
-  const t = (title || "").toLowerCase();
-  if (/\b(test|exam|dvsa)\b/.test(t)) return "test";
-  if (/(course|wdu|nsac|workshop|classroom|speed awareness)/.test(t)) return "course";
-  return "personal";
-}
+// Friendly legend label for a chip background colour.
+const CATEGORY_BY_BG: Record<string, { label: string; color: string }> = {
+  [CATEGORY_STYLES.lesson.bg]: { label: "Lesson", color: CATEGORY_STYLES.lesson.bg },
+  [CATEGORY_STYLES.blocked.bg]: { label: "Blocked", color: CATEGORY_STYLES.blocked.bg },
+  [CATEGORY_STYLES.holiday.bg]: { label: "Holiday", color: CATEGORY_STYLES.holiday.bg },
+  [CATEGORY_STYLES.course.bg]: { label: "Course", color: CATEGORY_STYLES.course.bg },
+  [CATEGORY_STYLES.admin.bg]: { label: "Admin", color: CATEGORY_STYLES.admin.bg },
+  [CATEGORY_STYLES.task.bg]: { label: "Task", color: CATEGORY_STYLES.task.bg },
+};
 
 export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dayDotMap, setDayDotMap] = useState<Record<string, DayDots>>({});
-  const [presentCategories, setPresentCategories] = useState<Set<DotCategory>>(new Set());
+  const [presentEntries, setPresentEntries] = useState<DayDot[]>([]);
   const [dayEvents, setDayEvents] = useState<DayEvents>({ lessons: [], external: [] });
   const [eventsLoading, setEventsLoading] = useState(false);
 
@@ -122,36 +114,49 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
           .lte("lesson_date", to),
         supabase
           .from("instructor_calendar_events")
-          .select("start_time, title")
+          .select("start_time, end_time, title, color")
           .eq("instructor_id", instructorId)
           .gte("start_time", `${from}T00:00:00`)
           .lte("start_time", `${to}T23:59:59`),
       ]);
 
-      const map: Record<string, Set<DotCategory>> = {};
-      const present = new Set<DotCategory>();
+      // Track unique event styles per day (keyed by dot colour to dedupe),
+      // mirroring the list view's resolved chip palette.
+      const map: Record<string, Map<string, DayDot>> = {};
+      const present = new Map<string, DayDot>();
 
+      const recordEntry = (dateKey: string, entry: DayDot) => {
+        if (!map[dateKey]) map[dateKey] = new Map();
+        if (!map[dateKey].has(entry.dot)) map[dateKey].set(entry.dot, entry);
+        if (!present.has(entry.dot)) present.set(entry.dot, entry);
+      };
+
+      // All lessons render with the lesson chip in the list view.
+      const lessonEntry: DayDot = {
+        dot: CATEGORY_STYLES.lesson.border,
+        bg: CATEGORY_STYLES.lesson.bg,
+      };
       (lessonsRes.data || []).forEach((r: any) => {
-        const cat = categoriseLessonType(r.lesson_type);
-        if (!map[r.lesson_date]) map[r.lesson_date] = new Set();
-        map[r.lesson_date].add(cat);
-        present.add(cat);
+        recordEntry(r.lesson_date, lessonEntry);
       });
 
       (externalRes.data || []).forEach((r: any) => {
         const dateKey = format(parseISO(r.start_time), "yyyy-MM-dd");
-        const cat = categoriseExternal(r.title);
-        if (!map[dateKey]) map[dateKey] = new Set();
-        map[dateKey].add(cat);
-        present.add(cat);
+        const start = parseISO(r.start_time);
+        const end = r.end_time ? parseISO(r.end_time) : start;
+        const startMin = start.getHours() + start.getMinutes();
+        const endHour = end.getHours();
+        const isAllDay = startMin === 0 && (endHour === 23 || endHour === 0);
+        const style = externalStyle(r.title, r.color, isAllDay);
+        recordEntry(dateKey, { dot: style.border, bg: style.bg });
       });
 
       const out: Record<string, DayDots> = {};
       Object.entries(map).forEach(([k, v]) => {
-        out[k] = { categories: Array.from(v) };
+        out[k] = { entries: Array.from(v.values()) };
       });
       setDayDotMap(out);
-      setPresentCategories(present);
+      setPresentEntries(Array.from(present.values()));
     } catch (e) {
       console.error("Failed to fetch calendar dots:", e);
     }
@@ -226,8 +231,7 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
 
   const fontFamily = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
 
-  const legendCategories: DotCategory[] = (["lesson", "course", "test", "personal"] as DotCategory[])
-    .filter(c => presentCategories.has(c));
+  const legendEntries = presentEntries;
 
   return (
     <div
@@ -308,7 +312,7 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
           const selected = isSameDay(day, selectedDate);
           const today = isToday(day);
           const weekend = isWeekend(day);
-          const dots = dayDotMap[dateKey]?.categories || [];
+          const dots = dayDotMap[dateKey]?.entries || [];
 
           // Determine date number colour
           let dateColor: string;
@@ -325,10 +329,10 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
           // Render up to 3 dots; >3 → first 2 + grey "more" dot
           const dotsToRender: string[] = [];
           if (dots.length <= 3) {
-            dots.forEach(c => dotsToRender.push(DOT_COLORS[c]));
+            dots.forEach(d => dotsToRender.push(d.dot));
           } else {
-            dotsToRender.push(DOT_COLORS[dots[0]]);
-            dotsToRender.push(DOT_COLORS[dots[1]]);
+            dotsToRender.push(dots[0].dot);
+            dotsToRender.push(dots[1].dot);
             dotsToRender.push("#6E6E73");
           }
 
@@ -408,8 +412,8 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
         })}
       </div>
 
-      {/* Dot Legend */}
-      {legendCategories.length > 0 && (
+      {/* Dot Legend — derived from the chip styles actually present this month */}
+      {legendEntries.length > 0 && (
         <div
           style={{
             display: "flex",
@@ -420,19 +424,23 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
             flexWrap: "wrap",
           }}
         >
-          {legendCategories.map((cat) => (
-            <div key={cat} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <span
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: DOT_COLORS[cat],
-                }}
-              />
-              <span style={{ fontSize: 11, color: "#6E6E73" }}>{DOT_LABELS[cat]}</span>
-            </div>
-          ))}
+          {legendEntries.map((entry) => {
+            const meta = CATEGORY_BY_BG[entry.bg];
+            const label = meta?.label ?? "Event";
+            return (
+              <div key={entry.dot} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: entry.dot,
+                  }}
+                />
+                <span style={{ fontSize: 11, color: "#6E6E73" }}>{label}</span>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -480,12 +488,12 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {/* All-day external events */}
             {allDayEvents.map((evt) => {
-              const cat = categoriseExternal(evt.title);
+              const style = externalStyle(evt.title, evt.color, true);
               return (
                 <div
                   key={evt.id}
                   style={{
-                    backgroundColor: LESSON_TINT[cat],
+                    backgroundColor: style.bg,
                     borderRadius: 10,
                     padding: "10px 12px",
                   }}
@@ -508,13 +516,12 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
 
             {/* Lessons */}
             {timedLessons.map((lesson) => {
-              const cat = categoriseLessonType(lesson.lesson_type);
               const paid = lesson.payment_status === "paid";
               return (
                 <div
                   key={lesson.id}
                   style={{
-                    backgroundColor: LESSON_TINT[cat],
+                    backgroundColor: CATEGORY_STYLES.lesson.bg,
                     borderRadius: 10,
                     padding: "10px 12px",
                   }}
@@ -563,14 +570,14 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
 
             {/* Timed external events */}
             {timedExternal.map((evt) => {
-              const cat = categoriseExternal(evt.title);
+              const style = externalStyle(evt.title, evt.color, false);
               const startDt = parseISO(evt.start_time);
               const endDt = parseISO(evt.end_time);
               return (
                 <div
                   key={evt.id}
                   style={{
-                    backgroundColor: LESSON_TINT[cat],
+                    backgroundColor: style.bg,
                     borderRadius: 10,
                     padding: "10px 12px",
                   }}
