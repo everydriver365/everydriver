@@ -10,19 +10,21 @@ interface HomeTodayScheduleProps {
   instructorId: string | undefined;
 }
 
-// iOS 17 tokens — scoped to this card via inline styles
+// Premium tile tokens — scoped to this card via inline styles
 const IOS = {
   label: "#000000",
-  secondaryLabel: "rgba(60,60,67,.60)",
+  secondaryLabel: "#6E6E73",
   tertiaryLabel: "rgba(60,60,67,.30)",
-  opaqueSeparator: "#C6C6C8",
-  fill: "rgba(120,120,128,.12)",
+  opaqueSeparator: "#E5E5EA",
+  fill: "#F2F2F4",
   secondaryFill: "rgba(120,120,128,.08)",
-  tertiaryFill: "rgba(118,118,128,.12)",
-  systemBlue: "#007AFF",
-  systemGreen: "#34C759",
+  tertiaryFill: "#F2F2F4",
+  systemBlue: "#2B7BC8",
+  systemGreen: "#3B8B3B",
   card: "#FFFFFF",
-  secondaryBg: "#F2F2F7",
+  secondaryBg: "#F2F2F4",
+  blueTint: "#E6F1FB",
+  greenTint: "#E8F3E8",
 };
 
 const IOS_FONT =
@@ -191,41 +193,45 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           maxWidth: 440,
           margin: "0 auto",
           background: IOS.card,
-          borderRadius: 14,
-          boxShadow: "0 1px 0 rgba(0,0,0,.02), 0 20px 40px -20px rgba(15,23,42,.08)",
-          overflow: "hidden",
+          border: "0.5px solid #E5E5EA",
+          borderRadius: 12,
+          padding: 16,
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
           color: IOS.label,
         }}
       >
         {/* HEAD */}
         <div
           style={{
-            padding: 16,
             display: "flex",
             justifyContent: "space-between",
             alignItems: "flex-start",
             gap: 12,
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
             <span
               style={{
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,
-                fontSize: 13,
-                fontWeight: 600,
+                fontSize: 11,
+                fontWeight: 500,
                 color: IOS.systemBlue,
-                letterSpacing: -0.08,
+                letterSpacing: 0.2,
+                textTransform: "uppercase",
+                marginBottom: 6,
               }}
             >
-              <span style={{ width: 5, height: 5, borderRadius: "50%", background: IOS.systemBlue }} />
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: IOS.systemBlue }} />
               {isTomorrow ? "Tomorrow's schedule" : "Today's schedule"}
             </span>
-            <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: -0.26, lineHeight: 1.1, color: IOS.label }}>
+            <span style={{ fontSize: 18, fontWeight: 500, letterSpacing: -0.3, lineHeight: 1.15, color: IOS.label }}>
               {dayName}
             </span>
-            <span style={{ fontSize: 13, color: IOS.secondaryLabel, letterSpacing: -0.08 }}>
+            <span style={{ fontSize: 12, color: IOS.secondaryLabel, marginTop: 2 }}>
               {isLoading ? <SkeletonBlock width={160} height={12} /> : subtitle}
             </span>
           </div>
@@ -235,66 +241,46 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               background: IOS.fill,
               padding: "4px 10px",
               borderRadius: 999,
-              fontSize: 13,
+              fontSize: 11,
               color: IOS.label,
-              letterSpacing: -0.08,
             }}
           >
-            <span style={{ fontWeight: 700 }}>{lessonCount}</span>
-            <span style={{ color: IOS.secondaryLabel }}> lessons</span>
+            <span style={{ fontWeight: 500 }}>{lessonCount}</span>
+            <span style={{ color: IOS.secondaryLabel, fontWeight: 400, marginLeft: 3 }}>lessons</span>
           </span>
         </div>
 
         {/* SEGMENTED CONTROL */}
         <div
           style={{
-            margin: "0 16px 16px",
-            padding: 2,
+            padding: 4,
             background: IOS.tertiaryFill,
-            borderRadius: 9,
+            borderRadius: 10,
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 0,
-            position: "relative",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            gap: 4,
           }}
         >
-          {(["today", "tomorrow"] as const).map((t, i) => {
+          {(["today", "tomorrow"] as const).map((t) => {
             const active = tab === t;
-            const otherActive = tab !== t;
             return (
               <button
                 key={t}
                 onClick={() => setTab(t)}
                 style={{
-                  position: "relative",
-                  padding: "7px 12px",
-                  borderRadius: 7,
+                  padding: "8px 12px",
+                  borderRadius: 8,
                   fontSize: 13,
-                  fontWeight: active ? 600 : 500,
-                  color: IOS.label,
+                  fontWeight: active ? 500 : 400,
+                  color: active ? IOS.label : IOS.secondaryLabel,
                   background: active ? "#FFFFFF" : "transparent",
-                  boxShadow: active ? "0 3px 8px rgba(0,0,0,.12), 0 1px 1px rgba(0,0,0,.04)" : "none",
                   border: "none",
                   cursor: "pointer",
                   transition: "all 0.15s cubic-bezier(0.2,0.7,0.2,1)",
-                  letterSpacing: -0.08,
                   fontFamily: IOS_FONT,
                 }}
               >
                 {t === "today" ? "Today" : "Tomorrow"}
-                {i === 0 && otherActive && (
-                  <span
-                    style={{
-                      position: "absolute",
-                      right: 0,
-                      top: "20%",
-                      bottom: "20%",
-                      width: 1,
-                      background: IOS.opaqueSeparator,
-                      opacity: 0.55,
-                    }}
-                  />
-                )}
               </button>
             );
           })}
@@ -305,41 +291,40 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           className="hts-stats"
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 8,
-            padding: "0 16px 14px",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            gap: 10,
           }}
         >
           {/* Tile 1 — Lessons */}
           <div
             style={{
-              background: IOS.secondaryBg,
-              borderRadius: 10,
-              padding: "10px 14px",
+              background: "#FFFFFF",
+              border: "0.5px solid #E5E5EA",
+              borderRadius: 12,
+              padding: 12,
               display: "flex",
-              alignItems: "center",
-              gap: 12,
+              flexDirection: "column",
+              gap: 10,
             }}
           >
             <div
               style={{
-                width: 34,
-                height: 34,
+                width: 32,
+                height: 32,
                 borderRadius: 8,
-                background: IOS.systemBlue,
+                background: IOS.blueTint,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                flexShrink: 0,
               }}
             >
-              <CalendarIcon size={16} color="#fff" />
+              <CalendarIcon size={18} color={IOS.systemBlue} strokeWidth={2} />
             </div>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 20, fontWeight: 700, color: IOS.label, lineHeight: 1.1, fontVariantNumeric: "tabular-nums" }}>
+              <div style={{ fontSize: 20, fontWeight: 500, color: IOS.label, lineHeight: 1.1, letterSpacing: -0.3, fontVariantNumeric: "tabular-nums" }}>
                 {isLoading ? <SkeletonBlock width={28} height={18} /> : lessonCount}
               </div>
-              <div style={{ fontSize: 12, color: IOS.secondaryLabel, marginTop: 2 }}>
+              <div style={{ fontSize: 11, color: IOS.secondaryLabel, marginTop: 2 }}>
                 {lessonCount > 0 ? `lessons · ${totalHoursLabel(totalHours)}` : "lessons"}
               </div>
             </div>
@@ -348,33 +333,33 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           {/* Tile 2 — Earnings */}
           <div
             style={{
-              background: IOS.secondaryBg,
-              borderRadius: 10,
-              padding: "10px 14px",
+              background: "#FFFFFF",
+              border: "0.5px solid #E5E5EA",
+              borderRadius: 12,
+              padding: 12,
               display: "flex",
-              alignItems: "center",
-              gap: 12,
+              flexDirection: "column",
+              gap: 10,
             }}
           >
             <div
               style={{
-                width: 34,
-                height: 34,
+                width: 32,
+                height: 32,
                 borderRadius: 8,
-                background: IOS.systemGreen,
+                background: IOS.greenTint,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                flexShrink: 0,
               }}
             >
-              <PoundIcon size={16} color="#fff" />
+              <PoundIcon size={18} color={IOS.systemGreen} strokeWidth={2} />
             </div>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 20, fontWeight: 700, color: IOS.label, lineHeight: 1.1, fontVariantNumeric: "tabular-nums" }}>
+              <div style={{ fontSize: 20, fontWeight: 500, color: IOS.label, lineHeight: 1.1, letterSpacing: -0.3, fontVariantNumeric: "tabular-nums" }}>
                 {isLoading ? <SkeletonBlock width={42} height={18} /> : `£${earnings.toLocaleString("en-GB")}`}
               </div>
-              <div style={{ fontSize: 12, color: IOS.secondaryLabel, marginTop: 2 }}>earned today</div>
+              <div style={{ fontSize: 11, color: IOS.secondaryLabel, marginTop: 2 }}>earned today</div>
             </div>
           </div>
         </div>
@@ -398,32 +383,34 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           <div
             style={{
               borderTop: `0.5px solid ${IOS.opaqueSeparator}`,
-              padding: "32px 16px 28px",
+              paddingTop: 20,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 10,
+              gap: 12,
               textAlign: "center",
             }}
           >
             <div
               style={{
-                width: 52,
-                height: 52,
-                borderRadius: 14,
-                background: IOS.secondaryBg,
+                width: 44,
+                height: 44,
+                borderRadius: 10,
+                background: "#F2F2F4",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <CalendarIcon size={24} color={IOS.tertiaryLabel} strokeWidth={1.8} />
+              <CalendarIcon size={22} color="#6E6E73" strokeWidth={2} />
             </div>
-            <div style={{ fontSize: 15, fontWeight: 600, color: IOS.label, letterSpacing: -0.24 }}>
-              No lessons scheduled
-            </div>
-            <div style={{ fontSize: 13, color: IOS.secondaryLabel, maxWidth: 240, lineHeight: 1.4, letterSpacing: -0.08 }}>
-              Add a lesson to your calendar to start tracking your day
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 500, color: IOS.label, letterSpacing: -0.2, marginBottom: 4 }}>
+                No lessons scheduled
+              </div>
+              <div style={{ fontSize: 12, color: IOS.secondaryLabel, maxWidth: 260, lineHeight: 1.5 }}>
+                Add a lesson to your calendar to start tracking your day
+              </div>
             </div>
           </div>
         ) : (
@@ -432,7 +419,6 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               const time = fmtTime(lesson.startTime);
               const isDone = lesson.status === "completed";
               const isNext = !isTomorrow && lesson.id === nextUpcomingId;
-              const isUpcoming = !isDone && !isNext;
 
               const dotColor = isDone
                 ? IOS.tertiaryLabel
@@ -465,13 +451,11 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                     textDecoration: "none",
                     color: "inherit",
                     borderTop: idx === 0 ? "none" : `0.5px solid ${IOS.opaqueSeparator}`,
-                    borderTopLeftRadius: 0,
                     transition: "background 0.15s cubic-bezier(0.2,0.7,0.2,1)",
                     opacity: isDone ? 0.6 : 1,
                     position: "relative",
                   }}
                 >
-                  {/* Indented separator effect — handled by border above starting at col 1; for spec's "x=80px" indent we override the first row only */}
                   {idx > 0 && (
                     <span
                       style={{
@@ -573,11 +557,9 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           </div>
         )}
 
-        {/* FOOTER */}
         <div
           style={{
-            padding: "14px 16px",
-            borderTop: `0.5px solid ${IOS.opaqueSeparator}`,
+            paddingTop: 4,
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -591,16 +573,19 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               display: "inline-flex",
               alignItems: "center",
               gap: 4,
+              background: "transparent",
+              padding: 0,
               color: IOS.systemBlue,
-              fontSize: 15,
-              fontWeight: 400,
-              letterSpacing: -0.24,
+              fontSize: 13,
+              fontWeight: 500,
               textDecoration: "none",
               transition: "opacity 0.15s",
             }}
           >
             View full calendar
-            <ChevronIcon />
+            <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke={IOS.systemBlue} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
           </Link>
           <button
             onClick={() => setAddOpen(true)}
@@ -612,18 +597,18 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               background: IOS.systemBlue,
               color: "#FFFFFF",
               border: "none",
-              borderRadius: 999,
-              padding: "10px 18px 10px 14px",
-              fontSize: 15,
-              fontWeight: 600,
-              letterSpacing: -0.24,
+              borderRadius: 10,
+              padding: "10px 16px",
+              fontSize: 13,
+              fontWeight: 500,
               cursor: "pointer",
-              boxShadow: "0 1px 2px rgba(0,122,255,.2)",
               transition: "all 0.15s cubic-bezier(0.2,0.7,0.2,1)",
               fontFamily: IOS_FONT,
             }}
           >
-            <PlusIcon />
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
             Add lesson
           </button>
         </div>
