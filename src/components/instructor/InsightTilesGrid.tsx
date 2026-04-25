@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { CalendarPlus, Car, Sparkles, UserCheck } from "lucide-react";
-import { Tile, TileGrid } from "./Tile";
+import { InstructorTile, InstructorTileGrid } from "./InstructorTile";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { useDormantPupilsCount } from "@/hooks/useDormantPupilsCount";
 import { useSmartNudgesCount } from "@/hooks/useSmartNudgesCount";
@@ -32,25 +32,25 @@ export function InsightTilesGrid({ instructorId, gapCount = 0 }: InsightTilesGri
   const fillGapsCount = isDemoMode ? 2 : gapCount;
 
   return (
-    <TileGrid variant="refined">
-      <Tile
-        variant="refined"
-        id="fill-gaps"
-        title="Fill gaps"
+    <InstructorTileGrid>
+      <InstructorTile
         icon={CalendarPlus}
-        onClick={() => navigate("/instructor/gaps")}
+        title="Fill gaps"
+        category="schedule"
+        onPress={() => navigate("/instructor/gaps")}
+        count={fillGapsCount > 0 ? fillGapsCount : undefined}
         subtitle={
           fillGapsCount > 0
             ? `${fillGapsCount} open ${fillGapsCount === 1 ? "slot" : "slots"}`
             : "No open slots"
         }
       />
-      <Tile
-        variant="refined"
-        id="vehicle-health"
-        title="Vehicle health"
+      <InstructorTile
         icon={Car}
-        onClick={() => navigate("/instructor/vehicle-health")}
+        title="Vehicle health"
+        category="location"
+        onPress={() => navigate("/instructor/vehicle-health")}
+        count={faultCount > 0 ? faultCount : undefined}
         subtitle={
           faultCount > 0
             ? `${faultCount} ${faultCount === 1 ? "fault" : "faults"} detected`
@@ -58,24 +58,24 @@ export function InsightTilesGrid({ instructorId, gapCount = 0 }: InsightTilesGri
         }
         liveDot={faultCount > 0}
       />
-      <Tile
-        variant="refined"
-        id="smart-nudges"
-        title="Smart nudges"
+      <InstructorTile
         icon={Sparkles}
-        onClick={() => navigate("/instructor/nudges")}
+        title="Smart nudges"
+        category="insights"
+        onPress={() => navigate("/instructor/nudges")}
+        count={nudgesCount > 0 ? nudgesCount : undefined}
         subtitle={
           nudgesCount > 0
             ? `${nudgesCount} ${nudgesCount === 1 ? "tip" : "tips"} ready`
             : "No suggestions"
         }
       />
-      <Tile
-        variant="refined"
-        id="re-engage"
-        title="Re-engage"
+      <InstructorTile
         icon={UserCheck}
-        onClick={() => navigate("/instructor/dormant-pupils")}
+        title="Re-engage"
+        category="people"
+        onPress={() => navigate("/instructor/dormant-pupils")}
+        count={dormantCount > 0 ? dormantCount : undefined}
         subtitle={
           dormantCount > 0
             ? `${dormantCount} dormant ${dormantCount === 1 ? "pupil" : "pupils"}`
@@ -83,6 +83,6 @@ export function InsightTilesGrid({ instructorId, gapCount = 0 }: InsightTilesGri
         }
         liveDot={dormantCount > 0}
       />
-    </TileGrid>
+    </InstructorTileGrid>
   );
 }
