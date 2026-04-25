@@ -214,7 +214,7 @@ export function SwipeableQuickAccess({
             <div className="flex">
               {pages.map((page, pageIdx) => (
                 <div key={pageIdx} className="flex-[0_0_100%] min-w-0">
-                  <TileGrid>{page.map(renderTile)}</TileGrid>
+                  <TileGrid variant="refined">{page.map(renderTile)}</TileGrid>
                 </div>
               ))}
             </div>
