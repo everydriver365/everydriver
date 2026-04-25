@@ -30,6 +30,27 @@ export const TILE_COLORS = {
 
 export type TileColorName = keyof typeof TILE_COLORS;
 
+/**
+ * Refined palette — desaturated mid-tone accent + matching pale tinted background.
+ * Used by the "refined" tile variant (Insights section).
+ */
+export const TILE_REFINED_COLORS: Record<TileColorName, { accent: string; tint: string }> = {
+  indigo: { accent: "#5B6BC9", tint: "#EEF0FB" },
+  blue:   { accent: "#2B7BC8", tint: "#E6F1FB" },
+  green:  { accent: "#3B8B3B", tint: "#E8F3E8" },
+  red:    { accent: "#C8434F", tint: "#FBEAEC" },
+  purple: { accent: "#7A6BC2", tint: "#EFEDF8" },
+  orange: { accent: "#C77A3A", tint: "#FBEFE3" },
+  teal:   { accent: "#3B8B86", tint: "#E6F2F1" },
+  slate:  { accent: "#5A6470", tint: "#EEF0F2" },
+};
+
+export function getTileRefinedColors(id: string, override?: TileColorName) {
+  const name: TileColorName =
+    override ?? TILE_IDENTITY_COLORS[id] ?? CYCLE_COLORS[hashString(id) % CYCLE_COLORS.length];
+  return TILE_REFINED_COLORS[name];
+}
+
 /** Deterministic hash so the same tile id always picks the same colour. */
 function hashString(str: string): number {
   let hash = 0;
