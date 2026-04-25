@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Search, X, Loader2, ChevronRight, Lock, LogOut, Eye, Mic, ExternalLink, type LucideIcon } from "lucide-react";
+import { Loader2, ChevronRight, Lock, LogOut, Eye, Mic, ExternalLink, type LucideIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/instructor/ui/SearchInput";
+import { SectionLabel } from "@/components/instructor/ui/SectionLabel";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Settings, Camera, User, Calendar, Users, Award, Receipt, CreditCard,
@@ -117,13 +119,13 @@ interface TileDef {
 // ─── Settings tile & category definitions ────────────────────────────
 
 const settingsCategories = [
-  { id: "profile", title: "Profile & Identity" },
-  { id: "teaching", title: "Compliance & Teaching" },
-  { id: "courses", title: "Courses & Payments" },
-  { id: "website", title: "Website & Branding" },
+  { id: "profile", title: "Profile & identity" },
+  { id: "teaching", title: "Compliance & teaching" },
+  { id: "courses", title: "Courses & payments" },
+  { id: "website", title: "Website & branding" },
   { id: "scheduling", title: "Scheduling" },
-  { id: "tracking", title: "Tracking & Routes" },
-  { id: "preferences", title: "Preferences & Data" },
+  { id: "tracking", title: "Tracking & routes" },
+  { id: "preferences", title: "Preferences & data" },
 ];
 
 const allTiles: TileDef[] = [
@@ -349,12 +351,12 @@ export default function InstructorMenu() {
 
   const menuSections: { title: string; items: MenuItem[] }[] = [
     {
-      title: "Quick Actions",
+      title: "Quick actions",
       items: [
         { icon: CheckSquare, label: "To Do", description: "Task list", gateKey: "todos", path: "/instructor/todos", tintBg: "#E8ECF1", tintColor: "#2A394F" },
         { icon: MessageCircle, label: "Messages", description: "Chat with pupils", gateKey: "messages", path: "/instructor/messages", tintBg: "#ECFDF5", tintColor: "#059669" },
-        { icon: Briefcase, label: "Job Offers", description: "Pending jobs", gateKey: "jobs", path: "/instructor/jobs", tintBg: "#EDE9FE", tintColor: "#5B21B6" },
-        { icon: CalendarPlus, label: "New Bookings", description: "Pending schedule", gateKey: "pending-scheduling", path: "/instructor/pending-scheduling", tintBg: "#FEF3C7", tintColor: "#92400E" },
+        { icon: Briefcase, label: "Job offers", description: "Pending jobs", gateKey: "jobs", path: "/instructor/jobs", tintBg: "#EDE9FE", tintColor: "#5B21B6" },
+        { icon: CalendarPlus, label: "New bookings", description: "Pending schedule", gateKey: "pending-scheduling", path: "/instructor/pending-scheduling", tintBg: "#FEF3C7", tintColor: "#92400E" },
         { icon: QrCode, label: "Take Payment", description: "QR code payment", gateKey: "pay", path: "/instructor/pay", tintBg: "#ECFDF5", tintColor: "#059669" },
         { icon: Car, label: "Live Tracking", description: "GPS tracking", gateKey: "tracking", path: "/instructor/tracking", tintBg: "#DBEAFE", tintColor: "#1E40AF" },
         { icon: Navigation, label: "Find My Car", description: "Car location", gateKey: "find-my-car", path: "/instructor/find-my-car", tintBg: "#FEF2F2", tintColor: "#DC2626" },
@@ -363,7 +365,7 @@ export default function InstructorMenu() {
       ],
     },
     {
-      title: "Money & Reports",
+      title: "Money & reports",
       items: [
         { icon: CreditCard, label: "Payments", description: "Full breakdown", gateKey: "payments", path: "/instructor/pay", tintBg: "#ECFDF5", tintColor: "#059669" },
         { icon: TrendingUp, label: "Income Summary", description: "Earnings overview", gateKey: "income", path: "/instructor/income", tintBg: "#ECFDF5", tintColor: "#059669" },
@@ -373,7 +375,7 @@ export default function InstructorMenu() {
       ],
     },
     {
-      title: "Schedule & Pupils",
+      title: "Schedule & pupils",
       items: [
         { icon: Calendar, label: "Schedule", description: "View calendar", gateKey: "schedule", path: "/instructor/schedule", tintBg: "#DBEAFE", tintColor: "#1E40AF" },
         { icon: Users, label: "Pupils", description: "Manage pupils", gateKey: "pupils", path: "/instructor/pupils", tintBg: "#E8ECF1", tintColor: "#2A394F" },
@@ -609,20 +611,39 @@ export default function InstructorMenu() {
   };
 
   // ─── Tile styling ───────────────────────────────────────────────────
-  const cardClass = "bg-white rounded-[14px] overflow-hidden border-[0.5px] border-[#E4E4E7] mb-[10px]";
+  const cardClass = "bg-white rounded-[12px] overflow-hidden border-[0.5px] border-[#E5E5EA] mb-[10px]";
 
-  // Icon tile helper — muted tint rounded square
+  // ─── System palette remap ──────────────────────────────────────────
+  // Maps legacy saturated tint colours to the unified premium palette so
+  // every icon block in Settings reads as a category recognition aid
+  // rather than decoration.
+  const remapTint = (tintBg: string, tintColor: string): { bg: string; color: string } => {
+    switch (tintColor) {
+      case "#1E40AF": return { bg: "#E6F1FB", color: "#2B7BC8" }; // schedule blue
+      case "#5B21B6": return { bg: "#F1ECFA", color: "#8A5BC9" }; // insights purple
+      case "#059669": return { bg: "#E8F3E8", color: "#3B8B3B" }; // people green
+      case "#DC2626": return { bg: "#FBEAEC", color: "#C8434F" }; // location red
+      case "#BE123C": return { bg: "#FBEAEC", color: "#C8434F" }; // rose
+      case "#92400E": return { bg: "#FBF1DE", color: "#B8801F" }; // money amber
+      case "#2A394F": return { bg: "#F2F2F4", color: "#6E6E73" }; // settings slate→neutral
+      case "#52525B": return { bg: "#F2F2F4", color: "#6E6E73" }; // neutral
+      default: return { bg: tintBg, color: tintColor };
+    }
+  };
+
+  // Icon tile helper — pale tinted square (settings-row spec, 32×32)
   const renderIconTile = (icon: React.ElementType, tintBg: string, tintColor: string, iconSrc?: string) => {
     const Icon = icon;
+    const { bg, color } = remapTint(tintBg, tintColor);
     return (
       <div
-        className="h-[44px] w-[44px] rounded-[12px] flex items-center justify-center shrink-0 overflow-hidden"
-        style={{ backgroundColor: tintBg }}
+        className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden"
+        style={{ backgroundColor: bg }}
       >
         {iconSrc ? (
-          <img src={iconSrc} alt="" className="h-5 w-5 object-contain" />
+          <img src={iconSrc} alt="" className="h-4 w-4 object-contain" />
         ) : (
-          <Icon size={22} strokeWidth={2} color={tintColor} />
+          <Icon size={18} strokeWidth={2} color={color} />
         )}
       </div>
     );
@@ -631,18 +652,27 @@ export default function InstructorMenu() {
   // ─── Settings tile component ───────────────────────────────────────
 
   const SettingsTile = ({ tile, statusBadge, children }: { tile: TileDef; statusBadge?: React.ReactNode; children: React.ReactNode }) => {
+    const titleStyle: React.CSSProperties = {
+      fontSize: 15,
+      fontWeight: 500,
+      color: "#000000",
+      letterSpacing: -0.2,
+      fontFamily:
+        '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+    };
+
     if (tile.externalUrl) {
       return (
         <div id={`settings-tile-${tile.id}`} className={cardClass}>
           <button
-            className="w-full flex items-center gap-[14px] px-4 py-[14px]"
+            className="w-full flex items-center gap-3 px-4 py-[14px]"
             onClick={() => window.open(tile.externalUrl, "_blank", "noopener,noreferrer")}
           >
             {renderIconTile(tile.icon, tile.tintBg, tile.tintColor, tile.iconSrc)}
             <div className="flex-1 text-left min-w-0">
-              <span className="text-[15px] font-medium text-[#18181B]" style={{ fontFamily: "Inter, sans-serif" }}>{tile.title}</span>
+              <span style={titleStyle}>{tile.title}</span>
             </div>
-            <ExternalLink size={18} strokeWidth={2} color="#A1A1AA" className="shrink-0" />
+            <ExternalLink size={14} strokeWidth={1.6} color="#6E6E73" className="shrink-0" />
           </button>
         </div>
       );
@@ -652,19 +682,19 @@ export default function InstructorMenu() {
       <div id={`settings-tile-${tile.id}`} className={cardClass}>
         <Collapsible open={isOpen(tile.id)} onOpenChange={() => toggleSection(tile.id)}>
           <CollapsibleTrigger asChild>
-            <button className="w-full flex items-center gap-[14px] px-4 py-[14px]">
+            <button className="w-full flex items-center gap-3 px-4 py-[14px]">
               {renderIconTile(tile.icon, tile.tintBg, tile.tintColor, tile.iconSrc)}
               <div className="flex-1 text-left min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-[15px] font-medium text-[#18181B]" style={{ fontFamily: "Inter, sans-serif" }}>{tile.title}</span>
+                  <span style={titleStyle}>{tile.title}</span>
                   {statusBadge}
                 </div>
               </div>
-              <ChevronRight size={18} strokeWidth={2} color="#A1A1AA" className={cn("transition-transform duration-200 shrink-0", isOpen(tile.id) && "rotate-90")} />
+              <ChevronRight size={12} strokeWidth={1.6} color="#6E6E73" className={cn("transition-transform duration-200 shrink-0", isOpen(tile.id) && "rotate-90")} />
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="px-4 pb-4 border-t border-[#E4E4E7] pt-4">{children}</div>
+            <div className="px-4 pb-4 border-t border-[#E5E5EA] pt-4">{children}</div>
           </CollapsibleContent>
         </Collapsible>
       </div>
@@ -703,9 +733,7 @@ export default function InstructorMenu() {
 
     return (
       <div key={section.title}>
-        <div className="px-1 pb-[10px]">
-          <span className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em]">{section.title}</span>
-        </div>
+        <SectionLabel>{section.title}</SectionLabel>
         <WarmTileGrid>
           {filteredItems.map((item) => {
             const locked = item.gateKey ? isFeatureLocked(item.gateKey, subscription?.features) : false;
@@ -760,23 +788,13 @@ export default function InstructorMenu() {
     <InstructorPortalLayout>
       <div className="space-y-5 pb-24">
         {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search menu & settings..."
-            className="pl-9 pr-8 rounded-[20px] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.05)] border-[0.5px] border-black/[0.06] h-10"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8e8e93] hover:text-[#1c1c1e]"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+        <SearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search menu & settings"
+          ariaLabel="Search menu and settings"
+        />
+
 
         {/* Menu Sections (navigation items) */}
         {menuSections.map((section) => renderMenuSection(section))}
@@ -784,26 +802,24 @@ export default function InstructorMenu() {
         {/* Quick Toggles (hidden during search) */}
         {!lowerQuery && instructorId && (
           <div>
-            <div className="px-1 pb-[10px]">
-              <span className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em]">Quick Toggles</span>
-            </div>
+            <SectionLabel>Quick toggles</SectionLabel>
             <div>
               {/* Listed on Website */}
               <div className={cardClass}>
-                <div className="flex items-center justify-between px-4 py-[14px] gap-[14px]">
-                  <div className="flex items-center gap-[14px]">
+                <div className="flex items-center justify-between px-4 py-[14px] gap-3">
+                  <div className="flex items-center gap-3">
                     {renderIconTile(Eye, "#EDE9FE", "#5B21B6")}
-                    <p className="text-[15px] font-medium text-[#18181B]" style={{ fontFamily: "Inter, sans-serif" }}>Listed on Website</p>
+                    <p style={{ fontSize: 15, fontWeight: 500, color: "#000000", letterSpacing: -0.2, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif' }}>Listed on website</p>
                   </div>
                   <Switch checked={isActive} onCheckedChange={handleVisibilityToggle} />
                 </div>
               </div>
               {/* Hey ED */}
               <div className={cardClass}>
-                <div className="flex items-center justify-between px-4 py-[14px] gap-[14px]">
-                  <div className="flex items-center gap-[14px]">
+                <div className="flex items-center justify-between px-4 py-[14px] gap-3">
+                  <div className="flex items-center gap-3">
                     {renderIconTile(Mic, "#E8ECF1", "#2A394F")}
-                    <p className="text-[15px] font-medium text-[#18181B]" style={{ fontFamily: "Inter, sans-serif" }}>"Hey ED" Always Listening</p>
+                    <p style={{ fontSize: 15, fontWeight: 500, color: "#000000", letterSpacing: -0.2, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif' }}>"Hey ED" always listening</p>
                   </div>
                   <Switch
                     checked={heyEdEnabled}
@@ -823,8 +839,8 @@ export default function InstructorMenu() {
               </div>
             </div>
             {!isActive && (
-              <div className="mt-2 rounded-[14px] bg-[#FEF3C7] border border-[#FDE68A] p-3">
-                <p className="text-sm text-[#92400E]">You're currently hidden from the website.</p>
+              <div className="mt-2 rounded-[12px] bg-[#FBF1DE] border-[0.5px] border-[#E5E5EA] p-3">
+                <p className="text-sm" style={{ color: "#B8801F" }}>You're currently hidden from the website.</p>
               </div>
             )}
           </div>
@@ -836,9 +852,7 @@ export default function InstructorMenu() {
           if (tilesInCat.length === 0) return null;
           return (
             <div key={cat.id}>
-              <div className="px-1 pb-[10px]">
-                <span className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em]">{cat.title}</span>
-              </div>
+              <SectionLabel>{cat.title}</SectionLabel>
               <div>
                 {tilesInCat.map((tile) => (
                   <SettingsTile key={tile.id} tile={tile} statusBadge={getStatusBadge(tile.id)}>
@@ -853,19 +867,17 @@ export default function InstructorMenu() {
         {/* Account */}
         {!lowerQuery && (
           <div>
-            <div className="px-1 pb-[10px]">
-              <span className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em]">Account</span>
-            </div>
+            <SectionLabel>Account</SectionLabel>
             <div className={cardClass}>
               <motion.button
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 onClick={handleLogout}
-                className="w-full px-4 py-[14px] text-left flex items-center gap-[14px]"
+                className="w-full px-4 py-[14px] text-left flex items-center gap-3"
               >
                 {renderIconTile(LogOut, "#FEF2F2", "#DC2626")}
-                <p className="flex-1 font-medium text-[15px] text-[#18181B]" style={{ fontFamily: "Inter, sans-serif" }}>Sign Out</p>
-                <ChevronRight size={18} strokeWidth={2} color="#A1A1AA" className="shrink-0" />
+                <p className="flex-1" style={{ fontSize: 15, fontWeight: 500, color: "#C8434F", letterSpacing: -0.2, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif' }}>Sign out</p>
+                <ChevronRight size={12} strokeWidth={1.6} color="#6E6E73" className="shrink-0" />
               </motion.button>
             </div>
           </div>
