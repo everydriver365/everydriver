@@ -570,14 +570,14 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
 
             {/* Timed external events */}
             {timedExternal.map((evt) => {
-              const cat = categoriseExternal(evt.title);
+              const style = externalStyle(evt.title, evt.color, false);
               const startDt = parseISO(evt.start_time);
               const endDt = parseISO(evt.end_time);
               return (
                 <div
                   key={evt.id}
                   style={{
-                    backgroundColor: LESSON_TINT[cat],
+                    backgroundColor: style.bg,
                     borderRadius: 10,
                     padding: "10px 12px",
                   }}
