@@ -3,7 +3,8 @@ import { Loader2, ChevronRight, Lock, LogOut, Eye, Mic, ExternalLink, type Lucid
 import { Input } from "@/components/ui/input";
 import { SearchInput } from "@/components/instructor/ui/SearchInput";
 import { SectionLabel } from "@/components/instructor/ui/SectionLabel";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { MenuRow } from "@/components/instructor/ui/MenuRow";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import {
   Settings, Camera, User, Calendar, Users, Award, Receipt, CreditCard,
   MapPin, Car, MessageCircle, HelpCircle, Briefcase, Route, Globe,
@@ -225,6 +226,7 @@ function DailyBriefingToggle() {
 
 export default function InstructorMenu() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const { instructor, subscription, signOut, refreshInstructor } = useInstructorAuth();
   const instructorId = instructor?.id;
@@ -731,13 +733,27 @@ export default function InstructorMenu() {
       : section.items;
     if (filteredItems.length === 0) return null;
 
+    // Sentence-case label helper: keep first letter upper, lowercase the rest
+    // unless the word is fully uppercase (e.g. "GPS", "DL25A", "SMS", "HMRC").
+    const toSentence = (s: string) => {
+      if (!s) return s;
+      const words = s.split(" ");
+      return words
+        .map((w, i) => {
+          if (/^[A-Z0-9]{2,}$/.test(w)) return w; // acronym
+          if (i === 0) return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+          return w.toLowerCase();
+        })
+        .join(" ");
+    };
+
     return (
       <div key={section.title}>
         <SectionLabel>{section.title}</SectionLabel>
-        <WarmTileGrid>
-          {filteredItems.map((item) => {
+        <div className={cardClass}>
+          {filteredItems.map((item, idx) => {
             const locked = item.gateKey ? isFeatureLocked(item.gateKey, subscription?.features) : false;
-            const category = tintToCategory(item.tintColor);
+            const isActive = !!item.path && (location.pathname === item.path);
 
             const handleClick = () => {
               if (locked) {
@@ -759,27 +775,38 @@ export default function InstructorMenu() {
               </Badge>
             ) : undefined;
 
-            const iconSlot = item.iconSrc ? (
-              <img src={item.iconSrc} alt={item.label} className="h-4 w-4 object-contain" />
-            ) : locked ? (
-              <Lock size={15} strokeWidth={2} color="#A1A1AA" />
-            ) : undefined;
-
             return (
-              <div key={item.label} style={{ opacity: locked ? 0.6 : 1 }}>
-                <WarmTile
-                  icon={item.icon as LucideIcon}
-                  title={item.label}
-                  subtitle={item.description}
-                  category={category}
-                  onClick={handleClick}
-                  rightSlot={lockedBadge}
-                  iconSlot={iconSlot}
+              <div
+                key={item.label}
+                style={{
+                  padding: "2px 8px",
+                  borderTop: idx === 0 ? "none" : "0.5px solid #F2F2F4",
+                }}
+              >
+                <MenuRow
+                  icon={item.iconSrc ? undefined : (item.icon as LucideIcon)}
+                  iconSrc={item.iconSrc}
+                  iconColor={item.tintColor}
+                  iconBackground={item.tintBg}
+                  label={toSentence(item.label)}
+                  isActive={isActive}
+                  onPress={handleClick}
+                  rightSlot={
+                    locked ? (
+                      <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        {lockedBadge}
+                        <Lock size={14} strokeWidth={1.8} color="#A1A1AA" />
+                      </span>
+                    ) : (
+                      <ChevronRight size={14} strokeWidth={1.8} color="#6E6E73" />
+                    )
+                  }
+                  disabled={locked}
                 />
               </div>
             );
           })}
-        </WarmTileGrid>
+        </div>
       </div>
     );
   };
