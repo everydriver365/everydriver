@@ -50,7 +50,7 @@ import { useVisitorChatUnreadCount } from "@/hooks/useVisitorChatUnreadCount";
 import { cn } from "@/lib/utils";
 import { format, parse } from "date-fns";
 import { QuickActionsPopoverMenu } from "@/components/instructor/QuickActionsPopoverMenu";
-import { Tile, TileGrid } from "@/components/instructor/Tile";
+import { InstructorTile, InstructorTileGrid, type TileCategory } from "@/components/instructor/InstructorTile";
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -339,17 +339,18 @@ export function QuickActionTiles({
     return null;
   };
 
-  // Category mapping for warm DSM tiles (icon stroke colour)
-  const getCategory = (action: QuickAction): "schedule" | "planning" | "people" | "money" | "messages" | "urgent" | "neutral" => {
+  // Category mapping for unified InstructorTile
+  const getTileCategory = (action: QuickAction): TileCategory => {
     const id = action.id;
-    if (id === "track-lesson") return "urgent";
-    if (id === "schedule" || id === "satnav" || id === "fill-gaps" || id === "find-my-car" || id === "find-nearby" || id === "availability" || id === "test-requests" || id === "test-results") return "schedule";
-    if (id === "cpd-log") return "planning";
-    if (id === "pupils" || id === "referrals") return "people";
-    if (id === "take-payment" || id === "payments" || id === "expenses") return "money";
-    if (id === "messages") return "messages";
-    if (isJobOffersAction(action)) return "urgent";
-    return "neutral";
+    if (id === "track-lesson" || id === "find-my-car" || id === "satnav" || id === "find-nearby" || id === "locations") return "location";
+    if (id === "schedule" || id === "fill-gaps" || id === "availability" || id === "test-requests" || id === "test-results") return "schedule";
+    if (id === "cpd-log" || id === "tests") return "education";
+    if (id === "pupils" || id === "referrals" || id === "messages") return "people";
+    if (id === "take-payment" || id === "payments" || id === "expenses" || isJobOffersAction(action)) return "money";
+    if (id === "vehicle-health" || id === "find-fuel" || id === "health-hub") return "location";
+    if (id === "todos" || id === "settings") return "settings";
+    if (id === "pipeline" || id === "automations") return "insights";
+    return "settings";
   };
 
   const STROKE: Record<string, string> = {
@@ -501,8 +502,8 @@ export function QuickActionTiles({
           )}
         </>
       ) : (
-        // Normal view mode — canonical Tile system (matches Job Offers / Messages)
-        <TileGrid>
+        // Normal view mode — unified InstructorTile system
+        <InstructorTileGrid padded={false}>
           {localTiles.map((action) => {
             const Icon = getIcon(action.icon);
             const badgeCount = getBadgeCount(action);
@@ -515,19 +516,19 @@ export function QuickActionTiles({
               action.title.slice(1).toLowerCase().replace(/\bsatnav\b/i, "Sat nav");
 
             return (
-              <Tile
+              <InstructorTile
                 key={action.id}
-                id={action.id}
-                title={sentenceTitle}
                 icon={Icon as unknown as import("lucide-react").LucideIcon}
-                onClick={() => navigate(action.route)}
-                metricValue={showBadge ? (badgeCount > 9 ? "9+" : badgeCount) : undefined}
-                subtitle={!showBadge ? subtitle ?? undefined : undefined}
+                title={sentenceTitle}
+                category={getTileCategory(action)}
+                onPress={() => navigate(action.route)}
+                count={showBadge ? (badgeCount > 9 ? "9+" : badgeCount) : undefined}
+                subtitle={subtitle ?? undefined}
                 liveDot={isLive}
               />
             );
           })}
-        </TileGrid>
+        </InstructorTileGrid>
       )}
 
       <QuickActionsPopoverMenu
