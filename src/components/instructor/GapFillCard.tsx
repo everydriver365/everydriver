@@ -383,7 +383,7 @@ export function GapFillCard({
       <>{durationLabel} gap</>
     ) : (
       <>
-        <span style={{ fontWeight: 600, color: "#174EA6" }}>
+        <span style={{ fontWeight: 500, color: "#000000" }}>
           {totalCount}
         </span>{" "}
         may fit · {durationLabel}
