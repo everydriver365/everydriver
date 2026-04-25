@@ -152,6 +152,7 @@ export function SwipeableQuickAccess({
           title={tile.title}
           subtitle={tile.subtitle}
           onClick={handleClick}
+          variant="refined"
         />
       </div>
     );
