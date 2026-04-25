@@ -12,6 +12,7 @@ import {
   Wrench, Fuel, ClipboardCheck, ArrowLeftRight, Target,
   MessageSquare, MapPinned, BookOpen, Settings,
   Gift, Clock, Receipt, FileBarChart, BarChart3, Moon, Megaphone, GraduationCap,
+  Accessibility,
   type LucideIcon,
 } from "lucide-react";
 import { WarmTile, WARM_TILE_STROKE, type WarmTileCategory } from "@/components/instructor/WarmTile";
@@ -41,6 +42,7 @@ const TILE_FEATURE_MAP: Record<string, string> = {
 const ALL_TILES: QuickTile[] = [
   { title: "Course planner", subtitle: "Plan to test day", icon: GraduationCap, category: "planning", route: "/instructor/course-planner" },
   { title: "Agenda", subtitle: "Your schedule", icon: CalendarDays, category: "schedule", route: "/instructor/schedule" },
+  { title: "Accessibility", subtitle: "Text size", icon: Accessibility, category: "neutral", route: "/instructor/accessibility" },
   { title: "Pupils", subtitle: "Manage learners", icon: Users, category: "people", route: "/instructor/pupils" },
   { title: "Track lesson", subtitle: "Start GPS", icon: MapPin, category: "urgent", route: "/instructor/tracking", primary: true },
   { title: "Take payment", subtitle: "Record a payment", icon: PoundSterling, category: "money", route: "/instructor/pay" },
