@@ -19,6 +19,7 @@ import {
   Star,
   Flame,
   Zap,
+  Accessibility,
 } from "lucide-react";
 import { EveryInstructorLayout } from "@/components/layout/EveryInstructorLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -461,6 +462,14 @@ export default function EveryInstructorHome() {
           accent="#FFB800"
           accentLight="#FFD60A"
           onClick={() => navigate("/every-instructor/reviews")}
+        />
+        <ToolCard
+          title="Accessibility"
+          subtitle="Text size"
+          icon={Accessibility}
+          accent="#007AFF"
+          accentLight="#5AC8FA"
+          onClick={() => navigate("/every-instructor/accessibility")}
         />
       </Section>
 
