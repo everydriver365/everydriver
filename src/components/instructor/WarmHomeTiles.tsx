@@ -193,12 +193,11 @@ export function WarmHomeTiles({ instructorId }: Props) {
   // ---------- Render ----------
   return (
     <div
-      className="a11y-zoom-tile"
       style={{
-        padding: "0 14px",
+        padding: `0 ${scaledPx(14)}`,
         display: "flex",
         flexDirection: "column",
-        gap: 8,
+        gap: scaledPx(8),
       }}
     >
       {/* Tile 1 — Action needed */}
@@ -224,7 +223,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                 fontSize: 11,
                 fontWeight: 500,
                 color: TXT.red,
-                letterSpacing: 0.5,
+                letterSpacing: 0,
               }}
             >
               ACTION NEEDED
@@ -234,12 +233,12 @@ export function WarmHomeTiles({ instructorId }: Props) {
                 fontSize: 14,
                 fontWeight: 500,
                 color: TXT.primary,
-                marginTop: 4,
+                marginTop: scaledPx(4),
               }}
             >
               {alert.title}
             </div>
-            <div style={{ fontSize: 12, color: TXT.secondary, marginTop: 2 }}>
+            <div style={{ fontSize: 12, color: TXT.secondary, marginTop: scaledPx(2) }}>
               {alert.subtitle}
             </div>
           </div>
