@@ -3,7 +3,8 @@ import { Loader2, ChevronRight, Lock, LogOut, Eye, Mic, ExternalLink, type Lucid
 import { Input } from "@/components/ui/input";
 import { SearchInput } from "@/components/instructor/ui/SearchInput";
 import { SectionLabel } from "@/components/instructor/ui/SectionLabel";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { MenuRow } from "@/components/instructor/ui/MenuRow";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import {
   Settings, Camera, User, Calendar, Users, Award, Receipt, CreditCard,
   MapPin, Car, MessageCircle, HelpCircle, Briefcase, Route, Globe,
