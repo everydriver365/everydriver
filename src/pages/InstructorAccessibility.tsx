@@ -3,7 +3,6 @@ import { ArrowLeft, RotateCcw, Type, Contrast, Sparkles, Hand } from "lucide-rea
 import {
   useAccessibility,
   TEXT_SCALE_LABELS,
-  TEXT_SCALE_VALUES,
   type TextScale,
 } from "@/context/AccessibilityContext";
 import { Switch } from "@/components/ui/switch";
