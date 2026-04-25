@@ -516,13 +516,12 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
 
             {/* Lessons */}
             {timedLessons.map((lesson) => {
-              const cat = categoriseLessonType(lesson.lesson_type);
               const paid = lesson.payment_status === "paid";
               return (
                 <div
                   key={lesson.id}
                   style={{
-                    backgroundColor: LESSON_TINT[cat],
+                    backgroundColor: CATEGORY_STYLES.lesson.bg,
                     borderRadius: 10,
                     padding: "10px 12px",
                   }}
