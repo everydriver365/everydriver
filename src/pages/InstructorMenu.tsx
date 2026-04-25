@@ -226,6 +226,7 @@ function DailyBriefingToggle() {
 
 export default function InstructorMenu() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const { instructor, subscription, signOut, refreshInstructor } = useInstructorAuth();
   const instructorId = instructor?.id;
