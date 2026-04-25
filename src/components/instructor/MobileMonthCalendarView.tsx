@@ -412,8 +412,8 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
         })}
       </div>
 
-      {/* Dot Legend */}
-      {legendCategories.length > 0 && (
+      {/* Dot Legend — derived from the chip styles actually present this month */}
+      {legendEntries.length > 0 && (
         <div
           style={{
             display: "flex",
@@ -424,19 +424,23 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
             flexWrap: "wrap",
           }}
         >
-          {legendCategories.map((cat) => (
-            <div key={cat} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <span
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: DOT_COLORS[cat],
-                }}
-              />
-              <span style={{ fontSize: 11, color: "#6E6E73" }}>{DOT_LABELS[cat]}</span>
-            </div>
-          ))}
+          {legendEntries.map((entry) => {
+            const meta = CATEGORY_BY_BG[entry.bg];
+            const label = meta?.label ?? "Event";
+            return (
+              <div key={entry.dot} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: entry.dot,
+                  }}
+                />
+                <span style={{ fontSize: 11, color: "#6E6E73" }}>{label}</span>
+              </div>
+            );
+          })}
         </div>
       )}
 
