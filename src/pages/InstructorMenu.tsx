@@ -762,23 +762,13 @@ export default function InstructorMenu() {
     <InstructorPortalLayout>
       <div className="space-y-5 pb-24">
         {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search menu & settings..."
-            className="pl-9 pr-8 rounded-[20px] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.05)] border-[0.5px] border-black/[0.06] h-10"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8e8e93] hover:text-[#1c1c1e]"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+        <SearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search menu & settings"
+          ariaLabel="Search menu and settings"
+        />
+
 
         {/* Menu Sections (navigation items) */}
         {menuSections.map((section) => renderMenuSection(section))}
