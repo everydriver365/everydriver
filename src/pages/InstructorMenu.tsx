@@ -733,9 +733,7 @@ export default function InstructorMenu() {
 
     return (
       <div key={section.title}>
-        <div className="px-1 pb-[10px]">
-          <span className="text-[11px] font-bold text-[#8e8e93] uppercase tracking-[0.06em]">{section.title}</span>
-        </div>
+        <SectionLabel>{section.title}</SectionLabel>
         <WarmTileGrid>
           {filteredItems.map((item) => {
             const locked = item.gateKey ? isFeatureLocked(item.gateKey, subscription?.features) : false;
