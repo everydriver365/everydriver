@@ -488,7 +488,7 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {/* All-day external events */}
             {allDayEvents.map((evt) => {
-              const cat = categoriseExternal(evt.title);
+              const style = externalStyle(evt.title, evt.color, true);
               return (
                 <div
                   key={evt.id}
