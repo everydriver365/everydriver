@@ -577,6 +577,39 @@
     0 18px 36px rgba(15, 23, 42, 0.14);
   transition: box-shadow 150ms ease, transform 150ms ease;
 }
+
+/* App-wide tile lift inside the instructor portal.
+   Upgrades every standard Tailwind shadow utility to the canonical
+   3-layer "lifted card" elevation so quick actions, telematics, money
+   tiles, settings rows and dashboard cards all sit visibly above the page. */
+.instructor-portal .shadow-sm,
+.instructor-portal .shadow,
+.instructor-portal .shadow-md,
+.instructor-portal .shadow-lg,
+.instructor-portal .shadow-xl {
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 6px 14px rgba(15, 23, 42, 0.10),
+    0 18px 36px rgba(15, 23, 42, 0.14) !important;
+}
+.instructor-portal .hover\:shadow-md:hover,
+.instructor-portal .hover\:shadow-lg:hover,
+.instructor-portal .hover\:shadow-xl:hover {
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.08),
+    0 10px 22px rgba(15, 23, 42, 0.14),
+    0 24px 48px rgba(15, 23, 42, 0.18) !important;
+}
+/* Don't lift map containers, modals/sheets, or popovers — they have their own elevation language. */
+.instructor-portal .leaflet-container.shadow-sm,
+.instructor-portal .leaflet-container.shadow,
+.instructor-portal .leaflet-container.shadow-md,
+.instructor-portal [role="dialog"].shadow-lg,
+.instructor-portal [data-radix-popper-content-wrapper] .shadow-lg,
+.instructor-portal .gm-style .shadow-sm {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
+}
+
 .shadow-premium-lg {
   box-shadow:
     0 2px 4px rgba(15, 23, 42, 0.08),
