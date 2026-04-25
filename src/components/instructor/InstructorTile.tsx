@@ -89,7 +89,7 @@ export function InstructorTile({
       type="button"
       onClick={onPress}
       aria-label={ariaLabel ?? title}
-      className={`instructor-tile ${className ?? ""}`}
+      className={`instructor-tile instructor-tile-lift ${className ?? ""}`}
       style={{
         gridColumn: fullWidth ? "1 / span 2" : undefined,
         background: "#FFFFFF",
