@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { pupilAvatarColor } from "@/lib/pupilAvatarColor";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
