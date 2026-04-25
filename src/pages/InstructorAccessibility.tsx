@@ -3,7 +3,6 @@ import { ArrowLeft, RotateCcw, Type, Contrast, Sparkles, Hand } from "lucide-rea
 import {
   useAccessibility,
   TEXT_SCALE_LABELS,
-  TEXT_SCALE_VALUES,
   type TextScale,
 } from "@/context/AccessibilityContext";
 import { Switch } from "@/components/ui/switch";
@@ -17,7 +16,7 @@ export default function InstructorAccessibility() {
 
   return (
     <div
-      className="min-h-screen ios-instructor instructor-portal"
+      className="min-h-screen ios-instructor instructor-portal a11y-scope"
       style={{ backgroundColor: "hsl(var(--dsm-bg))" }}
     >
       {/* Header */}
@@ -44,6 +43,11 @@ export default function InstructorAccessibility() {
       </div>
 
       <div className="px-4 py-4 space-y-5 pb-20">
+        {/* Auto-save note */}
+        <p className="text-[12px] text-[#6E6E73] px-1 -mt-1">
+          Changes apply instantly across the app and are saved automatically.
+        </p>
+
         {/* Live preview */}
         <section className="rounded-2xl bg-white border border-[hsl(var(--dsm-border))] p-5">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-[#6E6E73] mb-2">
@@ -53,16 +57,14 @@ export default function InstructorAccessibility() {
             className="font-medium leading-snug"
             style={{
               color: "hsl(var(--dsm-text))",
-              fontSize: `${15 * TEXT_SCALE_VALUES[a11y.textScale]}px`,
+              fontSize: "0.9375em",
             }}
           >
             The quick brown fox jumps over the lazy dog.
           </p>
           <p
             className="mt-1 text-[#6E6E73]"
-            style={{
-              fontSize: `${13 * TEXT_SCALE_VALUES[a11y.textScale]}px`,
-            }}
+            style={{ fontSize: "0.8125em" }}
           >
             This is how secondary text will appear.
           </p>

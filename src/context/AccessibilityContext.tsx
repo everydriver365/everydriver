@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from "react";
 
 export type TextScale = "sm" | "md" | "lg" | "xl";
 
@@ -21,8 +21,8 @@ const STORAGE_KEY = "dsm:accessibility:v1";
 export const TEXT_SCALE_VALUES: Record<TextScale, number> = {
   sm: 0.9,
   md: 1,
-  lg: 1.15,
-  xl: 1.3,
+  lg: 1.18,
+  xl: 1.35,
 };
 
 export const TEXT_SCALE_LABELS: Record<TextScale, string> = {
@@ -53,20 +53,31 @@ function readStored(): AccessibilitySettings {
   }
 }
 
+/**
+ * Apply accessibility state to <html>. We use a single CSS variable for the
+ * text scale plus class hooks for the boolean toggles. The actual styling
+ * lives in index.css, scoped to `.a11y-scope` (the instructor app shell).
+ */
 function applyToDocument(s: AccessibilitySettings) {
+  if (typeof document === "undefined") return;
   const root = document.documentElement;
   root.style.setProperty("--a11y-text-scale", String(TEXT_SCALE_VALUES[s.textScale]));
   root.classList.toggle("a11y-high-contrast", s.highContrast);
   root.classList.toggle("a11y-reduce-motion", s.reduceMotion);
   root.classList.toggle("a11y-large-tap", s.largeTapTargets);
+  root.dataset.textScale = s.textScale;
   root.dataset.reduceMotion = s.reduceMotion ? "true" : "false";
 }
 
+// Apply immediately on module load so the very first paint reflects settings
+if (typeof window !== "undefined") {
+  applyToDocument(readStored());
+}
+
 export function AccessibilityProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<AccessibilitySettings>(() => {
-    if (typeof window === "undefined") return DEFAULTS;
-    return readStored();
-  });
+  const [settings, setSettings] = useState<AccessibilitySettings>(() =>
+    typeof window === "undefined" ? DEFAULTS : readStored()
+  );
 
   useEffect(() => {
     applyToDocument(settings);
@@ -83,14 +94,17 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
     []
   );
 
-  const value: AccessibilityContextValue = {
-    ...settings,
-    setTextScale: (s) => update("textScale", s),
-    setHighContrast: (v) => update("highContrast", v),
-    setReduceMotion: (v) => update("reduceMotion", v),
-    setLargeTapTargets: (v) => update("largeTapTargets", v),
-    reset: () => setSettings(DEFAULTS),
-  };
+  const value = useMemo<AccessibilityContextValue>(
+    () => ({
+      ...settings,
+      setTextScale: (s) => update("textScale", s),
+      setHighContrast: (v) => update("highContrast", v),
+      setReduceMotion: (v) => update("reduceMotion", v),
+      setLargeTapTargets: (v) => update("largeTapTargets", v),
+      reset: () => setSettings(DEFAULTS),
+    }),
+    [settings, update]
+  );
 
   return <AccessibilityContext.Provider value={value}>{children}</AccessibilityContext.Provider>;
 }
@@ -98,7 +112,6 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
 export function useAccessibility() {
   const ctx = useContext(AccessibilityContext);
   if (!ctx) {
-    // Safe fallback so isolated previews don't crash
     return {
       ...DEFAULTS,
       setTextScale: () => {},

@@ -481,7 +481,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
       )}
       <div
         className={cn(
-          "min-h-screen instructor-portal ios-instructor",
+          "min-h-screen instructor-portal ios-instructor a11y-scope",
            isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : "pb-16 instructor-shell-bg"
         )}
       >
@@ -509,7 +509,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               <SheetContent
                 side="right"
                 className={cn(
-                  "dsm-instructor flex w-[296px] max-w-[calc(100vw-18px)] flex-col border-l border-[hsl(var(--dsm-border))] !bg-[hsl(var(--dsm-bg))] bg-none p-0 text-[hsl(var(--dsm-text))] opacity-100 shadow-2xl backdrop-blur-none [&>button]:hidden",
+                  "dsm-instructor a11y-scope flex w-[296px] max-w-[calc(100vw-18px)] flex-col border-l border-[hsl(var(--dsm-border))] !bg-[hsl(var(--dsm-bg))] bg-none p-0 text-[hsl(var(--dsm-text))] opacity-100 shadow-2xl backdrop-blur-none [&>button]:hidden",
                   (resolvedTheme === "dark" || resolvedTheme === "oled") && "dsm-dark"
                 )}
                 style={{ backgroundColor: "hsl(var(--dsm-bg))" }}
@@ -775,7 +775,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
       )}
       <CommandPalette variant="instructor" />
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-background instructor-portal">
+        <div className="min-h-screen flex w-full bg-background instructor-portal a11y-scope">
           <InstructorDesktopSidebar
             instructor={instructor}
             subscription={subscription}
