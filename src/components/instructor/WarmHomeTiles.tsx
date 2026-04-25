@@ -25,14 +25,16 @@ const TXT = {
 
 const RESPONSE_SLA_HOURS = 24;
 
+const scaledPx = (px: number) => `calc(${px}px * var(--a11y-text-scale, 1))`;
+
 function Skeleton({ width, height = 14 }: { width: number | string; height?: number }) {
   return (
     <span
       style={{
         display: "inline-block",
         width,
-        height,
-        borderRadius: 4,
+        height: scaledPx(height),
+        borderRadius: scaledPx(4),
         background: "#EFEDE6",
       }}
       className="animate-pulse"
@@ -44,9 +46,9 @@ function Spine({ color }: { color: string }) {
   return (
     <div
       style={{
-        width: 8,
+        width: scaledPx(8),
         alignSelf: "stretch",
-        borderRadius: 4,
+        borderRadius: scaledPx(4),
         background: color,
         flexShrink: 0,
       }}
@@ -59,10 +61,10 @@ function HealthDot() {
     <span
       style={{
         position: "absolute",
-        top: 8,
-        right: 8,
-        width: 6,
-        height: 6,
+        top: scaledPx(8),
+        right: scaledPx(8),
+        width: scaledPx(6),
+        height: scaledPx(6),
         borderRadius: 999,
         background: "#C68B16",
       }}
@@ -90,9 +92,9 @@ function TileShell({
         background: "#FFFFFF",
         border: "0.5px solid #E5E5EA",
         boxShadow: "none",
-        borderRadius: 12,
-        padding: "14px 16px",
-        gap: 12,
+        borderRadius: scaledPx(12),
+        padding: `${scaledPx(14)} ${scaledPx(16)}`,
+        gap: scaledPx(12),
       }}
     >
       {showHealthDot && <HealthDot />}
@@ -191,12 +193,11 @@ export function WarmHomeTiles({ instructorId }: Props) {
   // ---------- Render ----------
   return (
     <div
-      className="a11y-zoom-tile"
       style={{
-        padding: "0 14px",
+        padding: `0 ${scaledPx(14)}`,
         display: "flex",
         flexDirection: "column",
-        gap: 8,
+        gap: scaledPx(8),
       }}
     >
       {/* Tile 1 — Action needed */}
@@ -222,7 +223,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                 fontSize: 11,
                 fontWeight: 500,
                 color: TXT.red,
-                letterSpacing: 0.5,
+                letterSpacing: 0,
               }}
             >
               ACTION NEEDED
@@ -232,12 +233,12 @@ export function WarmHomeTiles({ instructorId }: Props) {
                 fontSize: 14,
                 fontWeight: 500,
                 color: TXT.primary,
-                marginTop: 4,
+                marginTop: scaledPx(4),
               }}
             >
               {alert.title}
             </div>
-            <div style={{ fontSize: 12, color: TXT.secondary, marginTop: 2 }}>
+            <div style={{ fontSize: 12, color: TXT.secondary, marginTop: scaledPx(2) }}>
               {alert.subtitle}
             </div>
           </div>
@@ -254,7 +255,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                 fontSize: 11,
                 fontWeight: 500,
                 color: TXT.muted,
-                letterSpacing: 0.5,
+                letterSpacing: 0,
               }}
             >
               NO PENDING ACTIONS
@@ -264,7 +265,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                 fontSize: 14,
                 fontWeight: 500,
                 color: TXT.primary,
-                marginTop: 4,
+                marginTop: scaledPx(4),
               }}
             >
               You're all caught up
@@ -309,7 +310,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                     fontSize: 11,
                     fontWeight: 500,
                     color: TXT.blue,
-                    letterSpacing: 0.5,
+                    letterSpacing: 0,
                   }}
                 >
                   UP NEXT · {startTime}
@@ -319,7 +320,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                     fontSize: 14,
                     fontWeight: 500,
                     color: TXT.primary,
-                    marginTop: 4,
+                    marginTop: scaledPx(4),
                   }}
                 >
                   {displayName} — {lessonType}
@@ -329,7 +330,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                     style={{
                       fontSize: 12,
                       color: TXT.secondary,
-                      marginTop: 2,
+                      marginTop: scaledPx(2),
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
@@ -358,7 +359,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                 fontSize: 11,
                 fontWeight: 500,
                 color: TXT.muted,
-                letterSpacing: 0.5,
+                letterSpacing: 0,
               }}
             >
               NOTHING LEFT TODAY
@@ -368,14 +369,14 @@ export function WarmHomeTiles({ instructorId }: Props) {
                 fontSize: 14,
                 fontWeight: 500,
                 color: TXT.primary,
-                marginTop: 4,
+                marginTop: scaledPx(4),
               }}
             >
               You're done for today
             </div>
             {nextLesson && (
               <div
-                style={{ fontSize: 12, color: TXT.secondary, marginTop: 2 }}
+                style={{ fontSize: 12, color: TXT.secondary, marginTop: scaledPx(2) }}
               >
                 Next lesson: {formatNextLessonDay(nextLesson.lessonDate)} at{" "}
                 {nextLesson.startTime.slice(0, 5)}
@@ -391,8 +392,8 @@ export function WarmHomeTiles({ instructorId }: Props) {
         style={{
           background: "#FFFFFF",
           border: "0.5px solid #E5E5EA",
-          borderRadius: 12,
-          padding: "14px 16px",
+          borderRadius: scaledPx(12),
+          padding: `${scaledPx(14)} ${scaledPx(16)}`,
         }}
       >
         {tile3Outage && <HealthDot />}
@@ -400,8 +401,8 @@ export function WarmHomeTiles({ instructorId }: Props) {
           style={{
             fontSize: 11,
             color: TXT.muted,
-            letterSpacing: 0.5,
-            marginBottom: 10,
+            letterSpacing: 0,
+            marginBottom: scaledPx(10),
             fontWeight: 500,
           }}
         >
@@ -411,7 +412,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr 1fr",
-            gap: 10,
+            gap: scaledPx(10),
           }}
         >
           {[
@@ -442,7 +443,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
               <div
                 key={col.label}
                 style={{
-                  paddingLeft: idx === 0 ? 0 : 10,
+                  paddingLeft: idx === 0 ? 0 : scaledPx(10),
                   borderLeft:
                     idx === 0 ? "none" : `0.5px solid ${TXT.hairline}`,
                 }}
@@ -466,7 +467,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                   style={{
                     fontSize: 11,
                     color: TXT.muted,
-                    marginTop: 2,
+                    marginTop: scaledPx(2),
                   }}
                 >
                   {col.label}
