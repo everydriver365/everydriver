@@ -1,52 +1,76 @@
-# Tracking screen redesign + functional improvements
+## What you'll get
 
-Restyle `/instructor/tracking` (and `/every-instructor/tracking`) to the premium tile system used by Home / Schedule / Pupils / Settings. Behaviour, routing, and data bindings stay identical — only the visuals change, plus three small functional improvements baked in.
+A new **Accessibility** tile in the instructor home Quick Actions grid (between the existing tiles like "Health hub" and "Updates"). Tapping it opens a dedicated **Accessibility** settings page where the user can adjust:
 
-## Files
+1. **Text size** — 4 presets: Small (90%), Default (100%), Large (115%), Extra Large (130%).
+2. **High contrast** — bumps text/border contrast in light & dark modes.
+3. **Reduce motion** — disables non-essential animations (Framer Motion + Tailwind transitions).
+4. **Larger tap targets** — adds extra padding to interactive elements (≥48px).
 
-### Modified
-- **`src/pages/InstructorLiveSession.tsx`** — page shell: replace the navy-pill toggle with `<SegmentedControl>`, rebuild the dashcam card and the active-session "Resume" banner, drop legacy box-shadows on the page wrapper, restore #FFFFFF background.
-- **`src/components/instructor/tracking/GPSStatusHero.tsx`** — refactor to the new `<ConnectionStatusCard>` spec inline (state-aware tinted icon + dot, uppercase device eyebrow, bullet separator, vehicle/driver name).
-- **`src/components/instructor/tracking/SessionStartPanel.tsx`** — full rebuild around the new spec (eyebrow "Test route", 17px title, two-state pupil row, primary button blue at rest / navy when recording, secondary outline button, dynamic helper text). All callbacks unchanged.
+Settings persist in `localStorage` and are restored on app load. A live preview at the top of the settings page shows what the changes look like before leaving the screen.
 
-### Created
-- **`src/components/instructor/ui/PupilSelectorRow.tsx`** — two-state row (no pupil → tinted icon block; selected → deterministic avatar matching the Pupils-list hash). Tap opens picker.
-- **`src/components/instructor/ui/ConnectionStatusCard.tsx`** — generic state-aware status card (40×40 tinted icon, 10px overlay status dot, 15px title, eyebrow + bullet + detail row).
-- **`src/lib/pupilAvatarColor.ts`** — extracted avatar-colour hash (same palette + seed logic already in `PupilCardStack.tsx`) so Tracking uses the exact same colour for the same pupil. Pupils list is also refactored to import from here (single source of truth — no behaviour change).
+## Why this approach is safe for the UI
 
-### Reused
-- `<SegmentedControl>` for Live / Fleet.
-- `<SectionLabel>` for any eyebrow labels.
-- The `LessonRouteRecorder`, `SatNavLiveMap`, `RecentSessionsList`, `DeviceSelectorDropdown`, `FloatingSessionTimer`, `DrivingTestStartDialog`, `TripSummarySheet`, fullscreen-mode branch, and "no device configured" empty state are left untouched (out of scope per prompt — they are sub-screens / overlays).
+The text-size scaling uses a **root font-size multiplier on `<html>`** rather than overriding individual `text-[15px]` style values. Because the entire DSM tile system uses a mix of `rem`-based and pixel-based typography, we will:
 
-## Visual spec (summary)
+- Apply the multiplier as a CSS variable (`--a11y-text-scale`) consumed by a small set of opt-in selectors (`body`, key text utilities), so fixed pixel sizes inside tiles are preserved at the default scale and only "grow" gracefully.
+- Cap maximum scale at 130% so 2-column tile grids don't break.
+- Use `clamp()` on the body font-size so layouts stay stable on small viewports (440px wide).
 
-**Page** — `#FFFFFF` background, 16px padding, 16px gap between sections.
+## Where things are added
 
-**Live / Fleet** — `<SegmentedControl>` (`#F2F2F4` track, white active pill, 13/500 active / 13/400 idle, `#000`/`#6E6E73`).
+```text
+src/components/instructor/HomeQuickActions.tsx     ← add "Accessibility" tile (Accessibility icon, neutral)
+src/pages/InstructorAccessibility.tsx              ← new settings page
+src/context/AccessibilityContext.tsx               ← provider: read/write settings + apply to <html>
+src/index.css                                      ← add --a11y-text-scale rules + .a11y-high-contrast / .a11y-reduce-motion / .a11y-large-tap classes
+src/App.tsx                                        ← wrap app in <AccessibilityProvider>
+src/routes/instructorAppRoutes.tsx                 ← add /instructor/accessibility route
+```
 
-**Connection card** — white surface, 0.5px `#E5E5EA`, radius 12, padding 14. 40×40 tinted icon (green/neutral/red by state), 10×10 status dot overlay with 2px white border. Title 15/500 -0.2px, eyebrow uppercase device name 11/500 `#6E6E73` 0.3px tracking + 3px bullet + 12px vehicle/driver line.
+## Tile spec
 
-**Start tracking card** — white card, blue eyebrow "TEST ROUTE", 17/500 title "Begin a lesson or test route", 12px subtitle, then:
-- Pupil selector row (`#F2F2F4` fill, 10px radius) — State A (no pupil): 32×32 `#E6F1FB` block + person icon `#2B7BC8`, "No pupil selected" / "Test route mode". State B (selected): 32×32 round avatar with deterministic palette colour + white initial 12/500, pupil's name + lesson type/status. Both states: 12px chevron `#6E6E73`. Tap opens existing picker.
-- Primary button: `#2B7BC8` at rest, `#1F2C4A` when `isStarting || isSessionActive` (active recording). White triangle / pause icon, 14/500 white label, label tracks existing logic.
-- Secondary button: white, 0.5px `#E5E5EA`, line-style check-circle, "Record official driving test".
-- Helper text 11px `#6E6E73` centred, copy switches by selection.
+Follows the existing `WarmTile` pattern (matches Health hub, Updates):
 
-**Dashcam portal card** — white, 0.5px border, radius 12. 32×32 `#F1ECFA` block + camera icon `#8A5BC9`. Title "Dashcam portal" 14/500, subtitle "Review past footage" 11px. Right-side "View footage" link 13/500 `#2B7BC8` + 10px chevron. Whole card tappable (preserves existing route).
+```text
+Icon:    Accessibility (lucide-react)
+Title:   "Accessibility"
+Subtitle:"Text size & contrast"
+Category:"neutral"
+Route:   "/instructor/accessibility"
+```
 
-**Active-session "Resume" banner** — same white-card spec, dot `#3B8B3B`, Resume button `#1F2C4A` (active recording state).
+Inserted just before the "Updates" tile in `HomeQuickActions.tsx` so it sits with the other settings-style entries.
 
-## Functional improvements
+## Settings page layout
 
-1. **Pupil selector state-aware** — when `selectedPupilId` resolves to a pupil, render avatar + name + (lesson type / "Live lesson" / "Driving test prep" derived from existing `effectiveSessionType`) instead of "No pupil selected". Avatar colour from shared `pupilAvatarColor()` helper.
-2. **Primary button colour mirrors recording state** — bind background to `isStarting || isSessionActive`: `#2B7BC8` at rest, `#1F2C4A` only when actively recording. Label & icon already swap via existing logic.
-3. **Helper text follows pupil selection** — show "Recording for {name}" when a pupil is selected, "Recording without pupil assignment" when none. (Replaces the existing three-branch text with the simpler two-branch copy the prompt specifies; existing data binding preserved.)
+Mobile-first, matches the iOS-styled instructor portal (white grouped cards on the cool grey background, indented dividers, uppercase section headers — per the existing `ios-consistency-patterns` memory):
 
-## Removed
+```text
+┌─ Accessibility ─────────────────────┐
+│  Live preview card                  │
+│  "The quick brown fox..." (scaled)  │
+├─────────────────────────────────────┤
+│  TEXT SIZE                          │
+│  [S]  [M ✓]  [L]  [XL]              │ ← segmented control
+├─────────────────────────────────────┤
+│  DISPLAY                            │
+│  ◯ High contrast            [toggle]│
+│  ◯ Reduce motion            [toggle]│
+│  ◯ Larger tap targets       [toggle]│
+├─────────────────────────────────────┤
+│  Reset to defaults                  │
+└─────────────────────────────────────┘
+```
 
-Drop-shadows on page-level cards, the navy-gradient toggle pill, dashed dark borders on the secondary button, font-weight 700 titles, ring-glow on the Practice/TestRoute cards (those cards stay functional but adopt the row-spec restraint), and the gradient bar at the bottom of the dashcam / resume cards.
+## Technical notes
 
-## Out of scope (untouched)
+- **No backend changes** — settings live in `localStorage` under key `dsm:accessibility:v1`.
+- **Reduce motion** also sets `html[data-reduce-motion="true"]`, which a small CSS rule targets to disable `transition` and `animation` properties globally (respecting user choice on top of OS-level `prefers-reduced-motion`).
+- **High contrast** swaps a handful of `--dsm-*` token values inside a `.a11y-high-contrast` scope so we don't fight the existing theme system.
+- The existing `ThemeContext` is untouched; `AccessibilityProvider` is independent and composes cleanly.
 
-Fullscreen recording view, picker dropdown internals (visual already acceptable; behaviour preserved), `LessonRouteRecorder`, the empty/loading states, `DeviceSelectorDropdown`, `RecentSessionsList`, dashcam destination, official-test dialog. Each is a separate sub-screen per the prompt.
+## Out of scope
+
+- No changes to the QuickActionsDrawer (slide-out menu) — confirmed home grid only.
+- No screen-reader audit or ARIA refactor in this pass — focused on user-controllable visual settings.
