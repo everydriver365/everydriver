@@ -89,6 +89,7 @@ export function EveryInstructorLayout({
         open={addLessonOpen}
         onOpenChange={setAddLessonOpen}
         instructorId={instructor?.id}
+        onSuccess={() => setAddLessonOpen(false)}
       />
     </div>
   );
