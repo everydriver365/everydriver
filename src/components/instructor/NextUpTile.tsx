@@ -290,7 +290,7 @@ export function NextUpTile({
         }
       `}</style>
 
-      <div style={{ padding: "0 16px", fontFamily: iosFont, WebkitFontSmoothing: "antialiased" }}>
+      <div className="a11y-zoom-tile" style={{ padding: "0 16px", fontFamily: iosFont, WebkitFontSmoothing: "antialiased" }}>
         {/* ── Premium card ── */}
         <div
           style={{

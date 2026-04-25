@@ -33,7 +33,7 @@ export function TelematicsTile() {
     : "No vehicle linked";
 
   return (
-    <div className="px-4 mt-3">
+    <div className="px-4 mt-3 a11y-zoom-tile">
       <div
         style={{
           backgroundColor: "#FFFFFF",

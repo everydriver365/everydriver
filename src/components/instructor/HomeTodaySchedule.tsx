@@ -164,6 +164,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
 
   return (
     <div
+      className="a11y-zoom-tile"
       style={{
         padding: "0 16px",
         fontFamily: IOS_FONT,
