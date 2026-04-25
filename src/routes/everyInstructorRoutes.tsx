@@ -26,6 +26,7 @@ const InstructorReferrals = lazy(() => import("@/pages/InstructorReferrals"));
 const InstructorCPD = lazy(() => import("@/pages/InstructorCPD"));
 const InstructorReportsHub = lazy(() => import("@/pages/InstructorReportsHub"));
 const InstructorClockInOut = lazy(() => import("@/pages/InstructorClockInOut"));
+const InstructorAccessibility = lazy(() => import("@/pages/InstructorAccessibility"));
 
 export const everyInstructorRoutes = (
   <>
@@ -51,5 +52,6 @@ export const everyInstructorRoutes = (
     <Route path="/every-instructor/cpd" element={<InstructorCPD />} />
     <Route path="/every-instructor/reports" element={<InstructorReportsHub />} />
     <Route path="/every-instructor/clock" element={<InstructorClockInOut />} />
+    <Route path="/every-instructor/accessibility" element={<InstructorAccessibility />} />
   </>
 );
