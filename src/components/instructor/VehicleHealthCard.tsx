@@ -88,7 +88,7 @@ export function VehicleHealthCard({ instructorId, className = "" }: { instructor
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`rounded-2xl border border-border bg-card overflow-hidden ${className}`}
+      className={`rounded-2xl border border-border bg-card overflow-hidden instructor-tile-lift ${className}`}
     >
       {/* Header */}
       <div className="p-4 flex items-center justify-between border-b border-border">
