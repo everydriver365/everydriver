@@ -1068,22 +1068,41 @@ html.a11y-high-contrast .dsm-instructor a {
   /* Force any of the well-known low-contrast greys to a darker tone. */
 }
 
-html.a11y-high-contrast .a11y-scope [style*="#6E6E73"],
-html.a11y-high-contrast .a11y-scope [style*="#6e6e73"],
-html.a11y-high-contrast .a11y-scope [style*="#71717A"],
-html.a11y-high-contrast .a11y-scope [style*="#71717a"],
-html.a11y-high-contrast .a11y-scope [style*="#8E8E93"] {
-  color: #1a1a1a !important;
+/* Universal high-contrast text override — wins over inline `color: "#XXX"`
+   because of !important. Applies to every descendant inside the scope. */
+html.a11y-high-contrast .a11y-scope,
+html.a11y-high-contrast .a11y-scope * {
+  color: #0a0a0a !important;
+  border-color: #0a0a0a !important;
 }
 
-html.a11y-high-contrast .a11y-scope [style*="#E5E5EA"],
-html.a11y-high-contrast .a11y-scope [style*="#e5e5ea"] {
-  border-color: #1a1a1a !important;
+html.a11y-high-contrast.dark .a11y-scope,
+html.a11y-high-contrast.dark .a11y-scope *,
+html.a11y-high-contrast .a11y-scope.dsm-dark,
+html.a11y-high-contrast .a11y-scope.dsm-dark *,
+html.a11y-high-contrast .instructor-portal.dsm-dark,
+html.a11y-high-contrast .instructor-portal.dsm-dark * {
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+
+/* Preserve brand accent colours on icons/SVGs so the UI stays legible */
+html.a11y-high-contrast .a11y-scope svg,
+html.a11y-high-contrast .a11y-scope svg * {
+  color: inherit !important;
+}
+
+/* Force tile backgrounds opaque for readability */
+html.a11y-high-contrast .a11y-scope [class*="bg-white"],
+html.a11y-high-contrast .a11y-scope [style*="background: #FFFFFF"],
+html.a11y-high-contrast .a11y-scope [style*="background:#FFFFFF"],
+html.a11y-high-contrast .a11y-scope [style*="background: #fff"] {
+  background-color: #ffffff !important;
 }
 
 /* Slightly thicker borders on cards/tiles for readability */
 html.a11y-high-contrast .a11y-scope .border,
 html.a11y-high-contrast .a11y-scope [class*="border-"] {
-  border-width: 1px;
+  border-width: 1.5px !important;
 }
 
