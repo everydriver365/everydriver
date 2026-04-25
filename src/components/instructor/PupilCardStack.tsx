@@ -672,8 +672,8 @@ export function PupilCardStack({
         animate={{ opacity: 1, y: 0 }}
         style={{
           backgroundColor: "#FFFFFF",
-          borderRadius: 14,
-          boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)",
+          border: "0.5px solid #E5E5EA",
+          borderRadius: 12,
           overflow: "hidden",
           position: "relative",
         }}
@@ -697,17 +697,16 @@ export function PupilCardStack({
               style={{
                 position: "absolute",
                 transform: "rotate(45deg)",
-                background: "linear-gradient(135deg, #FF6B6B, #FF3B30)",
+                background: "#C8434F",
                 color: "#FFFFFF",
                 fontSize: 8,
-                fontWeight: 700,
+                fontWeight: 500,
                 letterSpacing: 0.3,
                 textAlign: "center",
                 lineHeight: "16px",
                 width: 88,
                 top: 12,
                 right: -28,
-                boxShadow: "0 2px 5px rgba(255,59,48,0.35)",
                 fontFamily: "Inter, sans-serif",
               }}
             >
@@ -718,71 +717,134 @@ export function PupilCardStack({
         {/* Collapsed Card */}
         <button
           onClick={handleCardClick}
-          className="w-full text-left px-[14px] py-[14px] flex items-center gap-3"
+          className="w-full text-left flex items-center gap-3"
+          style={{ padding: 14 }}
         >
           {/* Circular Avatar */}
-          <div className="relative">
-            <Avatar className={cn("h-[42px] w-[42px] shrink-0 shadow-[0_3px_8px_rgba(15,158,117,0.3)]", getAvatarRingColor())}>
+          <div className="relative shrink-0" style={{ width: 44, height: 44 }}>
+            <Avatar className="h-[44px] w-[44px]">
               <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
               <AvatarFallback
-                className="text-white text-[13px] font-bold"
-                style={{ background: pupil.profile_image_url ? avatarBg : 'linear-gradient(135deg, #0f9e75, #1dcaa5)' }}
+                className="text-white"
+                style={{
+                  background: avatarBg,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  fontFamily: "Inter, sans-serif",
+                }}
               >
                 {getInitials(pupil.name)}
               </AvatarFallback>
             </Avatar>
-            {/* Live tracking indicator */}
-            {isTracking && (
-              <div className="absolute -top-1 -right-1">
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
-                </span>
-              </div>
+            {/* Status indicator dot */}
+            {statusDotColor && (
+              <span
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  width: 12,
+                  height: 12,
+                  borderRadius: "50%",
+                  background: statusDotColor,
+                  border: "2px solid #FFFFFF",
+                  boxSizing: "border-box",
+                }}
+              />
             )}
           </div>
 
           {/* Name + Phone + Stats */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0" style={{ display: "flex", flexDirection: "column", gap: 3 }}>
             <div className="flex items-center gap-2">
-              <h3 style={{ fontSize: 15, fontWeight: 500, color: "#18181B", fontFamily: "Inter, sans-serif" }} className="truncate">{pupil.name}</h3>
+              <h3
+                className="truncate"
+                style={{
+                  fontSize: 15,
+                  fontWeight: 500,
+                  color: "#000000",
+                  letterSpacing: "-0.2px",
+                  fontFamily: "Inter, sans-serif",
+                }}
+              >
+                {pupil.name}
+              </h3>
               {isTracking && (
-                <Badge className="bg-primary/10 text-primary border-0 text-[10px] px-1.5 py-0">
+                <span
+                  style={{
+                    background: "#FBEAEC",
+                    color: "#C8434F",
+                    fontSize: 10,
+                    fontWeight: 500,
+                    letterSpacing: "0.3px",
+                    padding: "2px 6px",
+                    borderRadius: 4,
+                    textTransform: "uppercase",
+                    fontFamily: "Inter, sans-serif",
+                    lineHeight: 1.2,
+                  }}
+                >
                   LIVE
-                </Badge>
+                </span>
               )}
             </div>
             {pupil.phone && (
-              <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }} className="flex items-center gap-1">
-                <Phone className="h-3 w-3" />
+              <p
+                className="flex items-center"
+                style={{
+                  fontSize: 12,
+                  fontWeight: 400,
+                  color: "#6E6E73",
+                  gap: 5,
+                  fontFamily: "Inter, sans-serif",
+                }}
+              >
+                <Phone size={11} strokeWidth={1.3} aria-hidden="true" />
                 {pupil.phone}
               </p>
             )}
-            <p style={{ fontSize: 12, fontWeight: 400, color: "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }}>
-              {pupil.lessons_completed || 0} lessons · {totalHours}h
-              {pupil.test_date && ` · Test: ${format(parseISO(pupil.test_date), "yyyy-MM-dd")}`}
-            </p>
-            {lessonSummary && (
-              <p style={{ fontSize: 11, fontWeight: 500, marginTop: 2, fontFamily: "Inter, sans-serif" }}
-                 className={cn("flex items-center gap-1", lessonSummary.type === "next" ? "text-emerald-600" : "text-zinc-500")}>
-                <Calendar className="h-3 w-3" />
-                {lessonSummary.type === "next" ? "Next" : "Last"}: {format(parseISO(lessonSummary.date), "d MMM")}
-              </p>
-            )}
+            <div
+              className="flex items-center"
+              style={{
+                gap: 12,
+                fontFamily: "Inter, sans-serif",
+                flexWrap: "wrap",
+                rowGap: 3,
+              }}
+            >
+              <span style={{ fontSize: 12, color: "#6E6E73" }}>
+                {pupil.lessons_completed || 0} {pupil.lessons_completed === 1 ? "lesson" : "lessons"} · {totalHours}h
+              </span>
+              {lessonSummary && (
+                <span className="flex items-center" style={{ gap: 5, fontSize: 12, color: "#6E6E73" }}>
+                  <Calendar size={11} strokeWidth={1.3} aria-hidden="true" />
+                  {lessonSummary.type === "next" ? "Next" : "Last"}: {format(parseISO(lessonSummary.date), "d MMM")}
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* Balance badge */}
+          {/* Balance badge — kept (not in spec but live data field; preserves behaviour) */}
           {(hasDebt || hasCredit) && (
-            <span className={cn(
-              "text-[13px] font-semibold px-2.5 py-1 rounded-2xl shrink-0",
-              hasDebt ? "bg-[#fff0f0] text-[#e24b4a]" : "bg-[#eaf3de] text-[#4a8c3f]"
-            )}>
+            <span
+              className="shrink-0"
+              style={{
+                fontSize: 12,
+                fontWeight: 500,
+                padding: "2px 8px",
+                borderRadius: 6,
+                fontFamily: "Inter, sans-serif",
+                background: hasDebt ? "#FBEAEC" : "#E8F3E8",
+                color: hasDebt ? "#C8434F" : "#3B8B3B",
+              }}
+            >
               £{Math.abs(balance).toFixed(0)}
             </span>
           )}
 
           {/* Chevron */}
-          <ChevronRight size={16} strokeWidth={2} color="#A1A1AA" className="shrink-0" />
+          <ChevronRight size={12} strokeWidth={1.6} color="#6E6E73" className="shrink-0" />
         </button>
 
         {/* Subtle divider */}
