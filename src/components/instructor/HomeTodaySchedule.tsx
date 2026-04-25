@@ -10,19 +10,21 @@ interface HomeTodayScheduleProps {
   instructorId: string | undefined;
 }
 
-// iOS 17 tokens — scoped to this card via inline styles
+// Premium tile tokens — scoped to this card via inline styles
 const IOS = {
   label: "#000000",
-  secondaryLabel: "rgba(60,60,67,.60)",
+  secondaryLabel: "#6E6E73",
   tertiaryLabel: "rgba(60,60,67,.30)",
-  opaqueSeparator: "#C6C6C8",
-  fill: "rgba(120,120,128,.12)",
+  opaqueSeparator: "#E5E5EA",
+  fill: "#F2F2F4",
   secondaryFill: "rgba(120,120,128,.08)",
-  tertiaryFill: "rgba(118,118,128,.12)",
-  systemBlue: "#007AFF",
-  systemGreen: "#34C759",
+  tertiaryFill: "#F2F2F4",
+  systemBlue: "#2B7BC8",
+  systemGreen: "#3B8B3B",
   card: "#FFFFFF",
-  secondaryBg: "#F2F2F7",
+  secondaryBg: "#F2F2F4",
+  blueTint: "#E6F1FB",
+  greenTint: "#E8F3E8",
 };
 
 const IOS_FONT =
