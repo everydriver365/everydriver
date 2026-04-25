@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect } from "react";
+import { type ElementType, type ReactNode, useState, useEffect } from "react";
 import { RealtimeHubProvider } from "@/hooks/useRealtimeHub";
 import { useGlobalLessonSync } from "@/hooks/useGlobalLessonSync";
 import { motion } from "framer-motion";
@@ -402,7 +402,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     onClick,
     children,
   }: {
-    icon: React.ElementType;
+    icon: ElementType;
     label: string;
     active?: boolean;
     destructive?: boolean;
