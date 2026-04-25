@@ -135,7 +135,7 @@ export default function InstructorSchedule() {
 
   // Syncing progress bar
   const syncProgressBar = isSyncing ? (
-    <div style={{ height: 2, backgroundColor: "#2A394F", position: "absolute", bottom: 0, left: 0, right: 0, animation: "pulse 1.5s ease-in-out infinite" }} />
+    <div style={{ height: 1, backgroundColor: "#2B7BC8", position: "absolute", bottom: 0, left: 0, right: 0, opacity: 0.6, animation: "pulse 1.5s ease-in-out infinite" }} />
   ) : null;
 
   return (
@@ -155,7 +155,8 @@ export default function InstructorSchedule() {
               <div
                 style={{
                   display: "flex",
-                  backgroundColor: "#EAEAEA",
+                  backgroundColor: "#FFFFFF",
+                  border: "0.5px solid #E5E5EA",
                   padding: 3,
                   borderRadius: 10,
                 }}
@@ -172,8 +173,8 @@ export default function InstructorSchedule() {
                     fontWeight: 500,
                     transition: "all 0.2s",
                     ...(viewMode === 'list'
-                      ? { backgroundColor: "#FFFFFF", color: "#18181B", boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)" }
-                      : { backgroundColor: "transparent", color: "#71717A", border: "0.5px solid transparent" }),
+                      ? { backgroundColor: "#F2F2F4", color: "#000000" }
+                      : { backgroundColor: "transparent", color: "#6E6E73" }),
                   }}
                 >
                   <List style={{ width: 14, height: 14 }} />
@@ -191,8 +192,8 @@ export default function InstructorSchedule() {
                     fontWeight: 500,
                     transition: "all 0.2s",
                     ...(viewMode === 'month'
-                      ? { backgroundColor: "#FFFFFF", color: "#18181B", boxShadow: "0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)" }
-                      : { backgroundColor: "transparent", color: "#71717A", border: "0.5px solid transparent" }),
+                      ? { backgroundColor: "#F2F2F4", color: "#000000" }
+                      : { backgroundColor: "transparent", color: "#6E6E73" }),
                   }}
                 >
                   <CalendarRange style={{ width: 14, height: 14 }} />
@@ -202,10 +203,10 @@ export default function InstructorSchedule() {
 
               {/* Center: SCHEDULE label + month */}
               <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 11, fontWeight: 500, color: "#71717A", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                <div style={{ fontSize: 11, fontWeight: 500, color: "#6E6E73", textTransform: "uppercase", letterSpacing: "0.3px" }}>
                   Schedule
                 </div>
-                <div style={{ fontSize: 18, fontWeight: 500, color: "#18181B" }}>
+                <div style={{ fontSize: 18, fontWeight: 500, color: "#000000", letterSpacing: "-0.3px" }}>
                   {new Date().toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
                 </div>
               </div>
@@ -224,7 +225,7 @@ export default function InstructorSchedule() {
                   border: "none",
                   background: "transparent",
                   cursor: "pointer",
-                  color: "#3F3F46",
+                  color: "#6E6E73",
                 }}
               >
                 <RefreshCw style={{ width: 18, height: 18, ...(isSyncing ? { animation: "spin 1s linear infinite" } : {}) }} />
