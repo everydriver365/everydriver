@@ -119,13 +119,13 @@ interface TileDef {
 // ─── Settings tile & category definitions ────────────────────────────
 
 const settingsCategories = [
-  { id: "profile", title: "Profile & Identity" },
-  { id: "teaching", title: "Compliance & Teaching" },
-  { id: "courses", title: "Courses & Payments" },
-  { id: "website", title: "Website & Branding" },
+  { id: "profile", title: "Profile & identity" },
+  { id: "teaching", title: "Compliance & teaching" },
+  { id: "courses", title: "Courses & payments" },
+  { id: "website", title: "Website & branding" },
   { id: "scheduling", title: "Scheduling" },
-  { id: "tracking", title: "Tracking & Routes" },
-  { id: "preferences", title: "Preferences & Data" },
+  { id: "tracking", title: "Tracking & routes" },
+  { id: "preferences", title: "Preferences & data" },
 ];
 
 const allTiles: TileDef[] = [
