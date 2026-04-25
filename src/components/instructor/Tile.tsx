@@ -206,9 +206,11 @@ export function Tile({
   subtitle,
   liveDot,
   fullWidth,
+  variant = "default",
   ariaLabel,
 }: TileProps) {
   const iconBg = useMemo(() => getTileColor(id, color), [id, color]);
+  const refined = useMemo(() => getTileRefinedColors(id, color), [id, color]);
 
   // Determine which secondary line to render (deterministic, exactly one).
   const secondary: "metric" | "status" | "subtitle" | "none" =
