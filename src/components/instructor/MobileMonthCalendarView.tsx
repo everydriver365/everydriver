@@ -312,7 +312,7 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
           const selected = isSameDay(day, selectedDate);
           const today = isToday(day);
           const weekend = isWeekend(day);
-          const dots = dayDotMap[dateKey]?.categories || [];
+          const dots = dayDotMap[dateKey]?.entries || [];
 
           // Determine date number colour
           let dateColor: string;
@@ -329,10 +329,10 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
           // Render up to 3 dots; >3 → first 2 + grey "more" dot
           const dotsToRender: string[] = [];
           if (dots.length <= 3) {
-            dots.forEach(c => dotsToRender.push(DOT_COLORS[c]));
+            dots.forEach(d => dotsToRender.push(d.dot));
           } else {
-            dotsToRender.push(DOT_COLORS[dots[0]]);
-            dotsToRender.push(DOT_COLORS[dots[1]]);
+            dotsToRender.push(dots[0].dot);
+            dotsToRender.push(dots[1].dot);
             dotsToRender.push("#6E6E73");
           }
 
