@@ -154,10 +154,10 @@ export function TelematicsTile() {
                     </div>
 
                     {hasFaults && (
-                      <div style={{ backgroundColor: "rgba(217,119,6,0.1)", borderRadius: 12, padding: 10 }}>
-                        <p style={{ fontSize: 11, fontWeight: 600, color: "#D97706", marginBottom: 4 }}>Active Faults</p>
+                      <div style={{ backgroundColor: "#FBF1DE", borderRadius: 10, padding: 10 }}>
+                        <p style={{ fontSize: 11, fontWeight: 500, color: "#000000", marginBottom: 4 }}>Active Faults</p>
                         {faultCodes.slice(0, 3).map((fault, i) => (
-                          <p key={i} style={{ fontSize: 10, color: "#D97706" }} className="truncate">
+                          <p key={i} style={{ fontSize: 10, color: "#6E6E73" }} className="truncate">
                             {fault.code}: {fault.description}
                           </p>
                         ))}
