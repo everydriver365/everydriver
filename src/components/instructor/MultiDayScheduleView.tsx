@@ -502,14 +502,16 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   return (
     <div
       style={{
-        backgroundColor: "transparent",
+        backgroundColor: "#F2F2F4",
         color: "#1F1F1F",
         fontFamily: FONT_STACK,
         paddingBottom: 96,
+        minHeight: "100%",
       }}
     >
       {/* Day-grouped list */}
       <div>
+
         {visibleDays.map(({ day, dateStr, timeline, allDay }, idx) => {
           const prevDay = idx > 0 ? visibleDays[idx - 1].day : null;
           const today = isToday(day);
