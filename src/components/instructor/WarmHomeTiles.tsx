@@ -7,6 +7,7 @@ import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useTileHealth } from "@/hooks/useTileHealth";
+import { a11yPx } from "@/lib/a11yScale";
 
 interface Props {
   instructorId: string | undefined;
@@ -24,10 +25,6 @@ const TXT = {
 };
 
 const RESPONSE_SLA_HOURS = 24;
-
-import { a11yPx } from "@/lib/a11yScale";
-
-function Skeleton({ width, height = 14 }: { width: number | string; height?: number }) {
   return (
     <span
       style={{
