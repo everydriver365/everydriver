@@ -291,77 +291,79 @@ export function NextUpTile({
       `}</style>
 
       <div style={{ padding: "0 16px", fontFamily: iosFont, WebkitFontSmoothing: "antialiased" }}>
-        {/* ── iOS 17 CARD ── */}
+        {/* ── Premium card ── */}
         <div
           style={{
-            background: ios.card,
-            borderRadius: 14,
-            boxShadow: "0 1px 0 rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.04)",
-            overflow: "hidden",
+            background: "#FFFFFF",
+            border: "0.5px solid #E5E5EA",
+            boxShadow: "none",
+            borderRadius: 12,
+            padding: 16,
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
             position: "relative",
             maxWidth: 440,
             margin: "0 auto",
             width: "100%",
           }}
         >
-          {/* ── HEAD (whole row tappable to expand) ── */}
+          {/* ── Header (whole row tappable to expand) ── */}
           <button
             onClick={() => setExpanded(!expanded)}
             aria-expanded={expanded}
             aria-label={expanded ? "Hide lesson details" : "Show lesson details"}
             className="active:opacity-80"
             style={{
-              width: "100%", padding: 16, display: "flex", alignItems: "flex-start", gap: 12,
+              width: "100%", padding: 0, display: "flex", alignItems: "flex-start", gap: 12,
               background: "transparent", border: "none", cursor: "pointer", textAlign: "left",
               transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
             }}
           >
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                <span style={{ width: 5, height: 5, borderRadius: "50%", background: ios.blue, display: "inline-block" }} />
-                <span style={{ fontSize: 13, fontWeight: 600, color: ios.blue, letterSpacing: -0.08 }}>Up next</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2B7BC8", display: "inline-block" }} />
+                <span style={{ fontSize: 11, fontWeight: 500, color: "#2B7BC8", letterSpacing: 0.2, textTransform: "uppercase" }}>Up next</span>
                 {checkInStatus && (
                   <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5 ml-1" />
                 )}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: -0.26, color: ios.label, lineHeight: 1.15 }} className="truncate">
+                <span style={{ fontSize: 16, fontWeight: 500, letterSpacing: -0.2, color: "#000000", lineHeight: 1.2 }}>
                   {toSentenceName(pupilName)}
                 </span>
                 {totalUnreadBadge > 0 && (
                   <span style={{
                     minWidth: 18, height: 18, padding: "0 5px", borderRadius: 9,
-                    background: ios.red, color: "#fff", fontSize: 11, fontWeight: 600,
+                    background: "#C8434F", color: "#fff", fontSize: 11, fontWeight: 600,
                     display: "inline-flex", alignItems: "center", justifyContent: "center",
                     fontVariantNumeric: "tabular-nums",
                   }}>{totalUnreadBadge}</span>
                 )}
               </div>
-              <div style={{ fontSize: 15, color: ios.secondaryLabel, marginTop: 2, letterSpacing: -0.2 }} className="truncate">
+              <div style={{ fontSize: 12, color: "#6E6E73", marginTop: 2 }}>
                 {formatHoursLong(durationMinutes)} lesson{pickupLocation ? ` · ${pickupLocation.split(",")[0]}` : ""}
               </div>
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: -0.4, color: ios.label, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
+                <div style={{ fontSize: 18, fontWeight: 500, letterSpacing: -0.4, color: "#000000", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
                   {formatTime24(startTime)}
                 </div>
-                <div style={{ fontSize: 13, fontWeight: 500, color: ios.secondaryLabel, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: 11, fontWeight: 400, color: "#6E6E73", marginTop: 4, fontVariantNumeric: "tabular-nums" }}>
                   {minutesUntil <= 0 ? "Now" : `in ${getCountdownText()}`}
                 </div>
               </div>
-              <span
+              <ChevronDown
                 aria-hidden
                 style={{
-                  width: 28, height: 28, borderRadius: "50%", background: ios.fill,
-                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  width: 18, height: 18, color: "#6E6E73",
                   transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
                   transition: "transform 250ms cubic-bezier(0.2,0.7,0.2,1)",
                 }}
-              >
-                <ChevronDown style={{ width: 16, height: 16, color: ios.secondaryLabel }} strokeWidth={2.4} />
-              </span>
+                strokeWidth={1.5}
+              />
             </div>
           </button>
 
@@ -370,160 +372,75 @@ export function NextUpTile({
             <div
               style={{
                 position: "relative",
-                margin: "0 16px",
-                borderRadius: 12,
+                borderRadius: 10,
                 overflow: "hidden",
-                height: 200,
-                background: ios.fill,
+                height: 140,
+                background: "#F2F2F7",
               }}
             >
-              <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={200} />
+              <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={140} />
 
-              {/* Frosted recenter / expand button — top right */}
+              {/* Subtle recenter / open-in-maps button — top right */}
               <button
                 onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
                 aria-label="Open in maps"
                 className="active:opacity-80"
                 style={{
                   position: "absolute", top: 8, right: 8, zIndex: 10,
-                  width: 36, height: 36, borderRadius: 9,
+                  width: 32, height: 32, borderRadius: 8,
                   background: "rgba(255,255,255,0.92)",
                   backdropFilter: "blur(20px) saturate(180%)",
                   WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  border: "none", cursor: "pointer",
+                  border: "0.5px solid #E5E5EA", cursor: "pointer",
                   transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
                 }}
               >
-                <Navigation style={{ width: 18, height: 18, color: ios.blue }} strokeWidth={2.2} />
+                <Navigation style={{ width: 16, height: 16, color: "#2B7BC8" }} strokeWidth={2} />
               </button>
-
-              {/* Frosted distance/ETA pill — bottom left */}
-              {etaText && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (isRunningLate) setLateSheetOpen(true);
-                    else handleNavigate();
-                  }}
-                  className={`active:opacity-80 ${isRunningLate ? "animate-pulse" : ""}`}
-                  style={{
-                    position: "absolute", bottom: 8, left: 8, zIndex: 10,
-                    display: "inline-flex", alignItems: "center", gap: 8,
-                    background: "rgba(255,255,255,0.92)",
-                    backdropFilter: "blur(20px) saturate(180%)",
-                    WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                    borderRadius: 999, padding: "6px 12px 6px 6px",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
-                    border: "none", cursor: "pointer",
-                    transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-                  }}
-                  title={isRunningLate ? "Running late — tap to notify pupil" : "Open in maps"}
-                >
-                  <span style={{
-                    width: 22, height: 22, borderRadius: "50%", background: ios.blue,
-                    display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  }}>
-                    <Send style={{ width: 12, height: 12, color: "#fff" }} strokeWidth={2.4} />
-                  </span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: ios.label, fontVariantNumeric: "tabular-nums", letterSpacing: -0.08 }}>
-                    {etaText}{isRunningLate && lateByMinutes > 0 ? ` · +${lateByMinutes}m` : ""}
-                  </span>
-                </button>
-              )}
-
-              {/* Start track pill — bottom right (preserved functionality) */}
-              {!trackerDismissed && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
-                  }}
-                  className="active:opacity-80"
-                  style={{
-                    position: "absolute", bottom: 8, right: 8, zIndex: 10,
-                    display: "inline-flex", alignItems: "center", gap: 6,
-                    background: ios.red, color: "#fff",
-                    borderRadius: 999, padding: "6px 10px 6px 8px",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
-                    border: "none", cursor: "pointer",
-                    transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-                  }}
-                  title="Start tracking session for this lesson"
-                >
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff", display: "inline-block" }} />
-                  <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: -0.08 }}>Start track</span>
-                  <X
-                    style={{ width: 12, height: 12, marginLeft: 2, opacity: 0.85 }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      dismissTracker(lessonId);
-                      setTrackerDismissed(true);
-                    }}
-                  />
-                </button>
-              )}
             </div>
           )}
 
-          {/* ── STOPS TIMELINE ── */}
+          {/* ── ROUTE LIST (origin → destination) ── */}
           {(pickupLocation || pickupPostcode) && (
-            <div style={{ padding: "14px 16px 4px 16px" }}>
-              <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: 12 }}>
-                {/* Dashed connector */}
-                <div
-                  aria-hidden
-                  style={{
-                    position: "absolute",
-                    left: 10,
-                    top: 22,
-                    bottom: 22,
-                    width: 2,
-                    backgroundImage: `linear-gradient(to bottom, ${ios.secondaryLabel} 50%, transparent 0)`,
-                    backgroundSize: "2px 4px",
-                    backgroundRepeat: "repeat-y",
-                    opacity: 0.5,
-                  }}
-                />
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {/* Origin */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{
+                  width: 18, height: 18, borderRadius: "50%", background: "#FFFFFF",
+                  border: "2px solid #2B7BC8",
+                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2B7BC8" }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: "#000000" }}>Your location</div>
+                  <div style={{ fontSize: 12, color: "#6E6E73" }}>Current position</div>
+                </div>
+                <div style={{ fontSize: 12, color: "#6E6E73", fontVariantNumeric: "tabular-nums" }}>
+                  {etaText || "—"}
+                </div>
+              </div>
 
-                {/* Start (instructor location) */}
-                <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
-                  <div style={{
-                    width: 22, height: 22, borderRadius: "50%", background: ios.blue,
-                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  }}>
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff" }} />
+              {/* Destination */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{
+                  width: 18, height: 18, borderRadius: "50%", background: "#FFFFFF",
+                  border: "2px solid #C8434F",
+                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#C8434F" }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: "#000000" }}>
+                    Pick up {firstName}
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: ios.label, letterSpacing: -0.24 }}>Your location</div>
-                    <div style={{ fontSize: 13, color: ios.secondaryLabel, letterSpacing: -0.08 }}>Current position</div>
-                  </div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: ios.secondaryLabel, fontVariantNumeric: "tabular-nums" }}>
-                    {etaText || "—"}
+                  <div style={{ fontSize: 12, color: "#6E6E73" }}>
+                    {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
                   </div>
                 </div>
-
-                {/* End (pickup) */}
-                <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
-                  <div style={{
-                    width: 22, height: 22, borderRadius: "50%", background: "#fff",
-                    border: `2px solid ${ios.red}`,
-                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  }}>
-                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: ios.red }} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: ios.label, letterSpacing: -0.24 }} className="truncate">
-                      Pick up {firstName}
-                    </div>
-                    <div style={{ fontSize: 13, color: ios.secondaryLabel, letterSpacing: -0.08 }} className="truncate">
-                      {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
-                    </div>
-                  </div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: ios.label, fontVariantNumeric: "tabular-nums" }}>
-                    {formatTime24(startTime)}
-                  </div>
+                <div style={{ fontSize: 12, color: "#6E6E73", fontVariantNumeric: "tabular-nums" }}>
+                  {formatTime24(startTime)}
                 </div>
               </div>
             </div>
@@ -569,14 +486,14 @@ export function NextUpTile({
             )}
           </AnimatePresence>
 
-          {/* ── ACTION BAR (4 columns) ── */}
-          <div style={{ padding: "14px 16px 8px 16px" }}>
+          {/* ── ACTION ROW (4 columns) ── */}
+          <div style={{ paddingTop: 4 }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
               {[
-                { icon: Navigation, label: "Navigate", color: ios.blue, action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
-                { icon: Phone, label: "Call", color: ios.green, action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
-                { icon: MessageSquare, label: "Message", color: ios.orange, action: (e: React.MouseEvent) => { e.stopPropagation(); handleMessage(); } },
-                { icon: MapPin, label: "I\u2019m here", color: ios.red, action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
+                { icon: Navigation, label: "Navigate", accent: "#2B7BC8", tint: "#E6F1FB", action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
+                { icon: Phone, label: "Call", accent: "#3B8B3B", tint: "#E8F3E8", action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
+                { icon: MessageSquare, label: "Message", accent: "#B8801F", tint: "#FBF1DE", action: (e: React.MouseEvent) => { e.stopPropagation(); handleMessage(); } },
+                { icon: MapPin, label: "I\u2019m here", accent: "#C8434F", tint: "#FBEAEC", action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
               ].map((btn) => (
                 <button
                   key={btn.label}
@@ -584,25 +501,65 @@ export function NextUpTile({
                   className="active:opacity-80"
                   style={{
                     display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
-                    background: "transparent", border: "none", cursor: "pointer", padding: "4px 2px",
+                    background: "transparent", border: "none", cursor: "pointer", padding: 0,
                     transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
                   }}
                   aria-label={btn.label}
                 >
                   <span style={{
-                    width: 36, height: 36, borderRadius: 7, background: btn.color,
+                    width: "100%", maxWidth: 56, aspectRatio: "1 / 1",
+                    borderRadius: 10, background: btn.tint,
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
                   }}>
-                    <btn.icon style={{ width: 18, height: 18, color: "#fff" }} strokeWidth={2.2} />
+                    <btn.icon style={{ width: 20, height: 20, color: btn.accent }} strokeWidth={2} fill="none" />
                   </span>
-                  <span style={{ fontSize: 12, fontWeight: 500, color: ios.label, letterSpacing: -0.08 }}>{btn.label}</span>
+                  <span style={{ fontSize: 11, fontWeight: 400, color: "#000000" }}>{btn.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          <div style={{ height: 8 }} />
+          {/* ── START TRACK (preserved functionality, repositioned) ── */}
+          {!trackerDismissed && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
+                }}
+                className="active:opacity-90"
+                style={{
+                  flex: 1,
+                  background: "#C8434F", color: "#FFFFFF",
+                  border: "none", borderRadius: 10,
+                  padding: 12, fontSize: 14, fontWeight: 500,
+                  cursor: "pointer",
+                  transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                }}
+                title="Start tracking session for this lesson"
+              >
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FFFFFF", display: "inline-block" }} />
+                Start track
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  dismissTracker(lessonId);
+                  setTrackerDismissed(true);
+                }}
+                aria-label="Dismiss start track"
+                style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  border: "0.5px solid #E5E5EA", background: "#FFFFFF",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  cursor: "pointer",
+                }}
+              >
+                <X style={{ width: 14, height: 14, color: "#6E6E73" }} strokeWidth={2} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ── EXPANDED CONTENT ── */}
