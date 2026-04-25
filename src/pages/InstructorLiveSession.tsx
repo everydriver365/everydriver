@@ -16,7 +16,8 @@ import {
   Loader2,
   ExternalLink,
   MapPin,
-  Camera
+  Camera,
+  ChevronRight
 } from "lucide-react";
 import TripSummarySheet from "@/components/instructor/TripSummarySheet";
 import { autoCaptureLessonRoute } from "@/hooks/useLessonRouteAutoCapture";
@@ -30,7 +31,7 @@ import { DeviceSelectorDropdown } from "@/components/instructor/tracking/DeviceS
 
 import { SatNavLiveMap } from "@/components/instructor/tracking/SatNavLiveMap";
 import { LessonRouteRecorder } from "@/components/instructor/LessonRouteRecorder";
-import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
+import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
 
 const InstructorFleetMap = lazy(() => import("@/pages/InstructorFleetMap"));
 
