@@ -120,16 +120,24 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
           .lte("start_time", `${to}T23:59:59`),
       ]);
 
-      // Track unique chip colours per day, mirroring the list view's resolved styles.
-      const map: Record<string, Set<string>> = {};
-      const present = new Set<string>();
+      // Track unique event styles per day (keyed by dot colour to dedupe),
+      // mirroring the list view's resolved chip palette.
+      const map: Record<string, Map<string, DayDot>> = {};
+      const present = new Map<string, DayDot>();
+
+      const recordEntry = (dateKey: string, entry: DayDot) => {
+        if (!map[dateKey]) map[dateKey] = new Map();
+        if (!map[dateKey].has(entry.dot)) map[dateKey].set(entry.dot, entry);
+        if (!present.has(entry.dot)) present.set(entry.dot, entry);
+      };
 
       // All lessons render with the lesson chip in the list view.
-      const lessonColor = CATEGORY_STYLES.lesson.bg;
+      const lessonEntry: DayDot = {
+        dot: CATEGORY_STYLES.lesson.border,
+        bg: CATEGORY_STYLES.lesson.bg,
+      };
       (lessonsRes.data || []).forEach((r: any) => {
-        if (!map[r.lesson_date]) map[r.lesson_date] = new Set();
-        map[r.lesson_date].add(lessonColor);
-        present.add(lessonColor);
+        recordEntry(r.lesson_date, lessonEntry);
       });
 
       (externalRes.data || []).forEach((r: any) => {
@@ -140,17 +148,15 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
         const endHour = end.getHours();
         const isAllDay = startMin === 0 && (endHour === 23 || endHour === 0);
         const style = externalStyle(r.title, r.color, isAllDay);
-        if (!map[dateKey]) map[dateKey] = new Set();
-        map[dateKey].add(style.bg);
-        present.add(style.bg);
+        recordEntry(dateKey, { dot: style.border, bg: style.bg });
       });
 
       const out: Record<string, DayDots> = {};
       Object.entries(map).forEach(([k, v]) => {
-        out[k] = { colors: Array.from(v) };
+        out[k] = { entries: Array.from(v.values()) };
       });
       setDayDotMap(out);
-      setPresentCategories(present);
+      setPresentEntries(Array.from(present.values()));
     } catch (e) {
       console.error("Failed to fetch calendar dots:", e);
     }
