@@ -1,286 +1,355 @@
- import { useState } from "react";
- import { motion, AnimatePresence } from "framer-motion";
- import { Play, Flag, CheckCircle, User, ChevronDown, Car, Route } from "lucide-react";
- import { Button } from "@/components/ui/button";
- import { PupilQuickInfo } from "./PupilQuickInfo";
- 
- interface Pupil {
-   id: string;
-   name: string;
- }
- 
- type SessionType = "practice" | "test";
- 
- interface SessionStartPanelProps {
-   pupils: Pupil[];
-   selectedPupilId: string;
-   onPupilChange: (pupilId: string) => void;
-   onStartSession: (type: SessionType) => void;
-   onOpenDrivingTestDialog: () => void;
-   isStarting: boolean;
-   isConnected: boolean;
- }
- 
- export function SessionStartPanel({
-   pupils,
-   selectedPupilId,
-   onPupilChange,
-   onStartSession,
-   onOpenDrivingTestDialog,
-   isStarting,
-   isConnected,
- }: SessionStartPanelProps) {
-   const [sessionType, setSessionType] = useState<SessionType>(
-     selectedPupilId ? "practice" : "test"
-   );
-   const [showPupilList, setShowPupilList] = useState(false);
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { CheckCircle, ShieldCheck, Loader2 } from "lucide-react";
+import { PupilQuickInfo } from "./PupilQuickInfo";
+import { PupilSelectorRow } from "@/components/instructor/ui/PupilSelectorRow";
 
-   const effectiveSessionType = selectedPupilId ? sessionType : "test";
-   const selectedPupil = pupils.find(p => p.id === selectedPupilId);
+interface Pupil {
+  id: string;
+  name: string;
+}
 
-   const handleStartClick = () => {
-     onStartSession(effectiveSessionType);
-   };
+type SessionType = "practice" | "test";
 
-   const handlePupilSelect = (pupilId: string) => {
-     onPupilChange(pupilId);
-     setShowPupilList(false);
-   };
+interface SessionStartPanelProps {
+  pupils: Pupil[];
+  selectedPupilId: string;
+  onPupilChange: (pupilId: string) => void;
+  onStartSession: (type: SessionType) => void;
+  onOpenDrivingTestDialog: () => void;
+  isStarting: boolean;
+  isConnected: boolean;
+  /** True when a session is actively recording — drives the primary button colour. */
+  isRecording?: boolean;
+}
 
-   return (
-     <motion.div 
-       className="bg-white dark:bg-card rounded-2xl shadow-lift shadow-xl overflow-hidden"
-       initial={{ opacity: 0, y: 20 }}
-       animate={{ opacity: 1, y: 0 }}
-       transition={{ duration: 0.4, delay: 0.1 }}
-     >
-       {/* Header */}
-       <div className="px-5 pt-5 pb-3">
-         <h3 className="text-lg font-bold text-foreground">Start Tracking</h3>
-         <p className="text-sm text-muted-foreground">Select a pupil or record a test route</p>
-       </div>
+const FONT_STACK =
+  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
 
-       <div className="px-5 pb-5 space-y-4">
-         {/* Pupil Selector */}
-         <div className="relative">
-           <button
-             onClick={() => setShowPupilList(!showPupilList)}
-             className="w-full flex items-center gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-muted/50 hover:bg-slate-100 dark:hover:bg-muted transition-colors"
-           >
-             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-               selectedPupilId 
-                 ? "bg-primary/10" 
-                 : "bg-slate-200 dark:bg-muted"
-             }`}>
-               {selectedPupilId ? (
-                 <span className="text-lg font-bold text-primary">
-                   {selectedPupil?.name?.charAt(0) || "?"}
-                 </span>
-               ) : (
-                 <Route className="h-5 w-5 text-muted-foreground" />
-               )}
-             </div>
-             <div className="flex-1 text-left">
-               <p className="font-semibold text-foreground">
-                 {selectedPupil?.name || "No Pupil Selected"}
-               </p>
-               <p className="text-xs text-muted-foreground">
-                 {selectedPupilId ? "Tap to change" : "Test route mode"}
-               </p>
-             </div>
-             <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform ${showPupilList ? "rotate-180" : ""}`} />
-           </button>
+export function SessionStartPanel({
+  pupils,
+  selectedPupilId,
+  onPupilChange,
+  onStartSession,
+  onOpenDrivingTestDialog,
+  isStarting,
+  isRecording = false,
+}: SessionStartPanelProps) {
+  // Internal session-type state preserved from the original panel.
+  const [sessionType] = useState<SessionType>(selectedPupilId ? "practice" : "test");
+  const [showPupilList, setShowPupilList] = useState(false);
 
-           {/* Pupil List Dropdown */}
-           <AnimatePresence>
-             {showPupilList && (
-               <motion.div
-                 className="absolute top-full left-0 right-0 mt-2 z-50 bg-white dark:bg-card rounded-2xl shadow-lift shadow-2xl border border-border overflow-hidden max-h-64 overflow-y-auto"
-                 initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                 transition={{ duration: 0.2 }}
-               >
-                 {/* No Pupil Option */}
-                 <button
-                   onClick={() => handlePupilSelect("")}
-                   className={`w-full flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-muted/50 transition-colors ${
-                     !selectedPupilId ? "bg-slate-50 dark:bg-muted/50" : ""
-                   }`}
-                 >
-                   <div className="w-10 h-10 rounded-2xl bg-slate-200 dark:bg-muted flex items-center justify-center">
-                     <Route className="h-4 w-4 text-muted-foreground" />
-                   </div>
-                   <div className="text-left">
-                     <p className="font-medium text-foreground">No Pupil</p>
-                     <p className="text-xs text-muted-foreground">Record a test route</p>
-                   </div>
-                   {!selectedPupilId && (
-                     <CheckCircle className="h-5 w-5 text-primary ml-auto" />
-                   )}
-                 </button>
+  const effectiveSessionType: SessionType = selectedPupilId ? sessionType : "test";
+  const selectedPupil = pupils.find((p) => p.id === selectedPupilId);
 
-                 {/* Pupil List */}
-                 {pupils
-                   .filter((pupil) => pupil.id && pupil.id.trim() !== "")
-                   .map((pupil) => (
-                     <button
-                       key={pupil.id}
-                       onClick={() => handlePupilSelect(pupil.id)}
-                       className={`w-full flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-muted/50 transition-colors ${
-                         selectedPupilId === pupil.id ? "bg-slate-50 dark:bg-muted/50" : ""
-                       }`}
-                     >
-                       <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
-                         <span className="text-sm font-bold text-primary">
-                           {pupil.name?.charAt(0) || "?"}
-                         </span>
-                       </div>
-                       <p className="font-medium text-foreground text-left flex-1">{pupil.name}</p>
-                       {selectedPupilId === pupil.id && (
-                         <CheckCircle className="h-5 w-5 text-primary" />
-                       )}
-                     </button>
-                   ))}
-               </motion.div>
-             )}
-           </AnimatePresence>
-         </div>
+  const handleStartClick = () => {
+    onStartSession(effectiveSessionType);
+  };
 
-         {/* Pupil Quick Info */}
-         <AnimatePresence>
-           {selectedPupilId && selectedPupil && (
-             <PupilQuickInfo
-               pupilId={selectedPupilId}
-               pupilName={selectedPupil.name}
-             />
-           )}
-         </AnimatePresence>
+  const handlePupilSelect = (pupilId: string) => {
+    onPupilChange(pupilId);
+    setShowPupilList(false);
+  };
 
-         {/* Session Type Toggle */}
-         <AnimatePresence>
-           {selectedPupilId && (
-             <motion.div 
-               className="grid grid-cols-2 gap-3"
-               initial={{ opacity: 0, height: 0 }}
-               animate={{ opacity: 1, height: "auto" }}
-               exit={{ opacity: 0, height: 0 }}
-             >
-               {/* Practice Card */}
-               <button
-                 onClick={() => setSessionType("practice")}
-                 className={`relative p-4 rounded-2xl text-left transition-all ${
-                   sessionType === "practice"
-                     ? "bg-primary/5 ring-2 ring-primary shadow-md"
-                     : "bg-slate-50 dark:bg-muted/50 hover:bg-slate-100 dark:hover:bg-muted"
-                 }`}
-               >
-                 <div className={`w-10 h-10 rounded-2xl flex items-center justify-center mb-3 ${
-                   sessionType === "practice"
-                     ? "bg-primary text-primary-foreground"
-                     : "bg-slate-200 dark:bg-muted text-muted-foreground"
-                 }`}>
-                   <Car className="h-5 w-5" />
-                 </div>
-                 <p className={`font-semibold mb-1 ${
-                   sessionType === "practice"
-                     ? "text-primary"
-                     : "text-foreground"
-                 }`}>
-                   Practice
-                 </p>
-                 <p className="text-xs text-muted-foreground leading-tight">
-                   Regular lesson with progress tracking
-                 </p>
-                 {sessionType === "practice" && (
-                   <div className="absolute top-3 right-3">
-                     <CheckCircle className="h-5 w-5 text-primary" />
-                   </div>
-                 )}
-               </button>
+  // Primary button visual state: blue at rest, navy only when actively recording.
+  const primaryActive = isRecording || isStarting;
+  const primaryBg = primaryActive ? "#1F2C4A" : "#2B7BC8";
 
-               {/* Test Route Card */}
-               <button
-                 onClick={() => setSessionType("test")}
-                 className={`relative p-4 rounded-2xl text-left transition-all ${
-                   sessionType === "test"
-                     ? "bg-primary/5 ring-2 ring-primary shadow-md"
-                     : "bg-slate-50 dark:bg-muted/50 hover:bg-slate-100 dark:hover:bg-muted"
-                 }`}
-               >
-                 <div className={`w-10 h-10 rounded-2xl flex items-center justify-center mb-3 ${
-                   sessionType === "test"
-                     ? "bg-primary text-primary-foreground"
-                     : "bg-slate-200 dark:bg-muted text-muted-foreground"
-                 }`}>
-                   <Flag className="h-5 w-5" />
-                 </div>
-                 <p className={`font-semibold mb-1 ${
-                   sessionType === "test"
-                     ? "text-primary"
-                     : "text-foreground"
-                 }`}>
-                   Test Route
-                 </p>
-                 <p className="text-xs text-muted-foreground leading-tight">
-                   Record route for test preparation
-                 </p>
-                 {sessionType === "test" && (
-                   <div className="absolute top-3 right-3">
-                     <CheckCircle className="h-5 w-5 text-primary" />
-                   </div>
-                 )}
-               </button>
-             </motion.div>
-           )}
-         </AnimatePresence>
+  // Selected-pupil subtitle — surfaces the existing session-type semantics.
+  const selectedSubtitle = selectedPupil
+    ? effectiveSessionType === "test"
+      ? "Test route prep"
+      : "Live lesson"
+    : null;
 
-         {/* Start Button */}
-         <div className="space-y-3">
-           <Button 
-             size="lg"
-             className="w-full h-14 text-lg font-bold rounded-2xl shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground"
-             onClick={handleStartClick}
-             disabled={isStarting}
-           >
-             {isStarting ? (
-               <motion.div
-                 className="h-6 w-6 border-3 border-white/30 border-t-white rounded-full"
-                 animate={{ rotate: 360 }}
-                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-               />
-             ) : (
-               <>
-                 <Play className="h-6 w-6 mr-2" />
-                 {effectiveSessionType === "test" ? "Start Test Route" : "Start Session"}
-               </>
-             )}
-           </Button>
+  // Helper text — see functional improvement #3.
+  const helperText = selectedPupil
+    ? `Recording for ${selectedPupil.name}`
+    : "Recording without pupil assignment";
 
-           {/* Driving Test Button */}
-           <Button 
-             size="lg"
-             variant="outline"
-             className="w-full h-12 rounded-2xl border-2 border-dashed text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5"
-             onClick={onOpenDrivingTestDialog}
-             disabled={isStarting}
-             title="Record Official Driving Test"
-           >
-             <CheckCircle className="h-5 w-5 mr-2" />
-             Record Official Driving Test
-           </Button>
-         </div>
+  return (
+    <div
+      style={{
+        background: "#FFFFFF",
+        border: "0.5px solid #E5E5EA",
+        borderRadius: 12,
+        padding: 16,
+        display: "flex",
+        flexDirection: "column",
+        gap: 14,
+        fontFamily: FONT_STACK,
+      }}
+    >
+      {/* Header */}
+      <div>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 500,
+            color: "#2B7BC8",
+            letterSpacing: 0.3,
+            textTransform: "uppercase",
+            marginBottom: 8,
+          }}
+        >
+          Test route
+        </div>
+        <div
+          style={{
+            fontSize: 17,
+            fontWeight: 500,
+            color: "#000000",
+            letterSpacing: -0.3,
+            marginBottom: 4,
+            lineHeight: 1.25,
+          }}
+        >
+          Begin a lesson or test route
+        </div>
+        <div style={{ fontSize: 12, color: "#6E6E73", lineHeight: 1.4 }}>
+          Select a pupil or record a test route
+        </div>
+      </div>
 
-         {/* Helper Text */}
-         <p className="text-xs text-center text-muted-foreground pt-1">
-           {selectedPupilId 
-             ? effectiveSessionType === "test" 
-               ? "Recording test route for reference"
-               : `Tracking session for ${selectedPupil?.name}`
-             : "Recording without pupil assignment"
-           }
-         </p>
-       </div>
-     </motion.div>
-   );
- }
+      {/* Pupil selector — two-state row */}
+      <div style={{ position: "relative" }}>
+        <PupilSelectorRow
+          pupilId={selectedPupilId || null}
+          pupilName={selectedPupil?.name ?? null}
+          selectedSubtitle={selectedSubtitle}
+          expanded={showPupilList}
+          onPress={() => setShowPupilList((prev) => !prev)}
+        />
+
+        {/* Picker dropdown — behaviour preserved */}
+        <AnimatePresence>
+          {showPupilList && (
+            <motion.div
+              initial={{ opacity: 0, y: -6, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6, scale: 0.98 }}
+              transition={{ duration: 0.18 }}
+              style={{
+                position: "absolute",
+                top: "calc(100% + 6px)",
+                left: 0,
+                right: 0,
+                zIndex: 50,
+                background: "#FFFFFF",
+                border: "0.5px solid #E5E5EA",
+                borderRadius: 12,
+                overflow: "hidden",
+                maxHeight: 256,
+                overflowY: "auto",
+              }}
+            >
+              {/* "No pupil" option */}
+              <button
+                type="button"
+                onClick={() => handlePupilSelect("")}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "10px 12px",
+                  background: !selectedPupilId ? "#F2F2F4" : "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  fontFamily: FONT_STACK,
+                }}
+              >
+                <span
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 8,
+                    background: "#F2F2F4",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 11,
+                    color: "#6E6E73",
+                    flexShrink: 0,
+                  }}
+                >
+                  —
+                </span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: "#000000" }}>No pupil</div>
+                  <div style={{ fontSize: 11, color: "#6E6E73" }}>Record a test route</div>
+                </div>
+                {!selectedPupilId && <CheckCircle size={16} strokeWidth={2} color="#2B7BC8" />}
+              </button>
+
+              {pupils
+                .filter((pupil) => pupil.id && pupil.id.trim() !== "")
+                .map((pupil) => {
+                  const active = selectedPupilId === pupil.id;
+                  return (
+                    <button
+                      key={pupil.id}
+                      type="button"
+                      onClick={() => handlePupilSelect(pupil.id)}
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        padding: "10px 12px",
+                        background: active ? "#F2F2F4" : "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        fontFamily: FONT_STACK,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: "50%",
+                          background: "#E6F1FB",
+                          color: "#2B7BC8",
+                          fontSize: 12,
+                          fontWeight: 500,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {(pupil.name || "?").charAt(0).toUpperCase()}
+                      </span>
+                      <span
+                        style={{
+                          flex: 1,
+                          fontSize: 13,
+                          fontWeight: 500,
+                          color: "#000000",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {pupil.name}
+                      </span>
+                      {active && <CheckCircle size={16} strokeWidth={2} color="#2B7BC8" />}
+                    </button>
+                  );
+                })}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Pupil quick info — unchanged */}
+      <AnimatePresence>
+        {selectedPupilId && selectedPupil && (
+          <PupilQuickInfo pupilId={selectedPupilId} pupilName={selectedPupil.name} />
+        )}
+      </AnimatePresence>
+
+      {/* Primary action — Start test route (state-aware colour) */}
+      <button
+        type="button"
+        onClick={handleStartClick}
+        disabled={isStarting}
+        style={{
+          background: primaryBg,
+          border: "none",
+          borderRadius: 10,
+          padding: 14,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          cursor: isStarting ? "default" : "pointer",
+          color: "#FFFFFF",
+          fontSize: 14,
+          fontWeight: 500,
+          fontFamily: FONT_STACK,
+          opacity: isStarting ? 0.85 : 1,
+          transition: "background 0.2s",
+        }}
+      >
+        {isStarting ? (
+          <Loader2 size={16} className="animate-spin" />
+        ) : isRecording ? (
+          // Stop indicator — solid white square
+          <span
+            aria-hidden
+            style={{
+              width: 10,
+              height: 10,
+              background: "#FFFFFF",
+              borderRadius: 1,
+            }}
+          />
+        ) : (
+          // Play triangle — filled white
+          <span
+            aria-hidden
+            style={{
+              width: 0,
+              height: 0,
+              borderTop: "6px solid transparent",
+              borderBottom: "6px solid transparent",
+              borderLeft: "10px solid #FFFFFF",
+              marginLeft: 1,
+            }}
+          />
+        )}
+        <span>
+          {isStarting
+            ? "Starting…"
+            : isRecording
+            ? "Stop recording"
+            : effectiveSessionType === "test"
+            ? "Start test route"
+            : "Start session"}
+        </span>
+      </button>
+
+      {/* Secondary action — Record official driving test */}
+      <button
+        type="button"
+        onClick={onOpenDrivingTestDialog}
+        disabled={isStarting}
+        style={{
+          background: "#FFFFFF",
+          border: "0.5px solid #E5E5EA",
+          borderRadius: 10,
+          padding: 12,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          cursor: isStarting ? "default" : "pointer",
+          color: "#000000",
+          fontSize: 14,
+          fontWeight: 500,
+          fontFamily: FONT_STACK,
+          opacity: isStarting ? 0.6 : 1,
+        }}
+      >
+        <ShieldCheck size={16} strokeWidth={2} color="#000000" />
+        <span>Record official driving test</span>
+      </button>
+
+      {/* Helper text — bound to selection */}
+      <p
+        style={{
+          margin: 0,
+          fontSize: 11,
+          color: "#6E6E73",
+          textAlign: "center",
+          fontFamily: FONT_STACK,
+        }}
+      >
+        {helperText}
+      </p>
+    </div>
+  );
+}
