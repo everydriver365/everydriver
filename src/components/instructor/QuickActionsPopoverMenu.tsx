@@ -1,66 +1,44 @@
-import { useState, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Drawer as DrawerPrimitive } from "vaul";
 import { haptics } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
-import dsmLogo from "@/assets/dsm-logo.png";
 import {
-  Calendar, Users, MapPin, PoundSterling, MessageSquare,
-  X, Clock, Star,
+  CalendarPlus, UserPlus, MapPin, PoundSterling, MessageSquare, Clock,
 } from "lucide-react";
+import { DsmLogo } from "./ui/DsmLogo";
+import { CloseButton } from "./ui/CloseButton";
+import { QuickActionRow } from "./ui/QuickActionRow";
 
 interface QuickActionsPopoverMenuProps {
   open: boolean;
   onClose: () => void;
 }
 
-const PINNED_KEY = "pinned-quick-actions";
+const FONT_STACK =
+  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
 
 const quickActions = [
-  { id: "add-lesson", label: "Add Lesson", icon: Calendar, color: "139 92 246", route: "/instructor/schedule?action=add" },
-  { id: "add-pupil", label: "Add Pupil", icon: Users, color: "34 85 255", route: "/instructor/pupils?action=add" },
-  { id: "track-live", label: "Track Live", icon: MapPin, color: "16 185 129", route: "/instructor/tracking" },
-  { id: "take-payment", label: "Take Payment", icon: PoundSterling, color: "244 63 94", route: "/instructor/take-payment" },
-  { id: "messages", label: "Messages", icon: MessageSquare, color: "6 182 212", route: "/instructor/messages?action=new" },
-  { id: "availability", label: "Availability", icon: Clock, color: "20 184 166", route: "/instructor/availability?action=add" },
+  { id: "add-lesson",   label: "Add lesson",   icon: CalendarPlus,  iconColor: "#8A5BC9", iconBackground: "#F1ECFA", route: "/instructor/schedule?action=add" },
+  { id: "add-pupil",    label: "Add pupil",    icon: UserPlus,      iconColor: "#3B8B3B", iconBackground: "#E8F3E8", route: "/instructor/pupils?action=add" },
+  { id: "track-live",   label: "Track live",   icon: MapPin,        iconColor: "#C8434F", iconBackground: "#FBEAEC", route: "/instructor/tracking" },
+  { id: "take-payment", label: "Take payment", icon: PoundSterling, iconColor: "#3B8B3B", iconBackground: "#E8F3E8", route: "/instructor/take-payment" },
+  { id: "messages",     label: "Messages",     icon: MessageSquare, iconColor: "#B8801F", iconBackground: "#FBF1DE", route: "/instructor/messages?action=new" },
+  { id: "availability", label: "Availability", icon: Clock,         iconColor: "#2B7BC8", iconBackground: "#E6F1FB", route: "/instructor/availability?action=add" },
 ];
-
-function loadPinned(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(PINNED_KEY) || "[]");
-  } catch {
-    return [];
-  }
-}
 
 export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMenuProps) {
   const navigate = useNavigate();
-  const [pinned, setPinned] = useState<string[]>(loadPinned);
 
   useEffect(() => {
     if (open) haptics.medium();
   }, [open]);
-
-  const togglePin = useCallback((id: string) => {
-    haptics.light();
-    setPinned(prev => {
-      const next = prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id];
-      localStorage.setItem(PINNED_KEY, JSON.stringify(next));
-      return next;
-    });
-  }, []);
 
   const handleAction = (route: string) => {
     haptics.light();
     onClose();
     navigate(route);
   };
-
-  // Sort: pinned first, preserving original order within each group
-  const sortedActions = [
-    ...quickActions.filter(a => pinned.includes(a.id)),
-    ...quickActions.filter(a => !pinned.includes(a.id)),
-  ];
 
   return (
     <DrawerPrimitive.Root
@@ -70,99 +48,79 @@ export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMe
       shouldScaleBackground
     >
       <DrawerPrimitive.Portal>
-        <DrawerPrimitive.Overlay className="fixed inset-0 z-[80] bg-black/40 backdrop-blur-[2px]" />
+        <DrawerPrimitive.Overlay className="fixed inset-0 z-[80] bg-black/45" />
         <DrawerPrimitive.Content
           className={cn(
-            "fixed inset-y-0 left-0 z-[81] flex flex-col bg-background outline-none",
-            "rounded-r-[18px] shadow-[8px_0_40px_rgba(0,0,0,0.18)]",
-            "h-full"
+            "fixed inset-y-0 left-0 z-[81] flex flex-col outline-none h-full overflow-hidden"
           )}
-          style={{ width: "min(86vw, 340px)" }}
+          style={{
+            width: "min(100% - 32px, 340px)",
+            background: "#FFFFFF",
+            borderTopRightRadius: 16,
+            borderBottomRightRadius: 16,
+          }}
         >
           <DrawerPrimitive.Title className="sr-only">Quick actions</DrawerPrimitive.Title>
 
           {/* Header */}
           <div
-            className="flex items-center gap-3 px-4 pb-3 bg-background border-b border-border"
             style={{
-              paddingTop: "calc(env(safe-area-inset-top, 0px) + 14px)",
+              padding: 16,
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              borderBottom: "0.5px solid #E5E5EA",
             }}
           >
-            <img
-              src={dsmLogo}
-              alt="DSM"
-              className="h-9 w-auto object-contain"
-            />
-            <div className="flex-1 min-w-0" />
-            <button
-              onClick={onClose}
-              className="h-8 w-8 rounded-full flex items-center justify-center bg-muted active:bg-muted/70 transition-colors"
-              aria-label="Close menu"
-            >
-              <X className="h-4 w-4 text-foreground" />
-            </button>
-          </div>
-
-          {/* Section label */}
-          <div className="px-4 pt-3 pb-2">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Quick Actions
-            </p>
-          </div>
-
-          {/* Simple list — no scroll */}
-          <div className="flex-1 overflow-hidden px-2">
-            <div className="flex flex-col">
-              {sortedActions.map((action) => {
-                const Icon = action.icon;
-                const isPinned = pinned.includes(action.id);
-                return (
-                  <div key={action.id} className="flex items-center">
-                    <button
-                      onClick={() => handleAction(action.route)}
-                      className="flex-1 flex items-center gap-3 px-2 py-2 rounded-xl active:bg-muted/60 transition-colors text-left"
-                    >
-                      <div
-                        className="h-8 w-8 rounded-full flex items-center justify-center shrink-0"
-                        style={{ backgroundColor: `rgba(${action.color}, 0.12)` }}
-                      >
-                        <Icon
-                          className="h-[16px] w-[16px]"
-                          style={{ color: `rgb(${action.color})` }}
-                          strokeWidth={2}
-                        />
-                      </div>
-                      <span className="flex-1 text-[14px] font-medium text-foreground">
-                        {action.label}
-                      </span>
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); togglePin(action.id); }}
-                      className="p-2 rounded-full active:bg-muted transition-colors shrink-0"
-                      aria-label={isPinned ? "Unpin action" : "Pin action"}
-                    >
-                      <Star
-                        className={cn(
-                          "h-3.5 w-3.5 transition-colors",
-                          isPinned ? "text-amber-500 fill-amber-500" : "text-muted-foreground/30"
-                        )}
-                        strokeWidth={2}
-                      />
-                    </button>
-                  </div>
-                );
-              })}
+            <DsmLogo size={24} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontFamily: FONT_STACK,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: "#000000",
+                  letterSpacing: -0.2,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                Driving School Manager
+              </div>
             </div>
+            <CloseButton onPress={onClose} ariaLabel="Close menu" />
           </div>
 
-          {/* Footer */}
-          <div
-            className="px-4 pt-3 pb-3 border-t border-border/60 text-center mt-3"
-            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
-          >
-            <p className="text-[11px] text-muted-foreground">
-              Driving School Manager
-            </p>
+          {/* List section */}
+          <div style={{ padding: 16, flex: 1, overflow: "hidden" }}>
+            <div
+              style={{
+                fontFamily: FONT_STACK,
+                fontSize: 11,
+                fontWeight: 500,
+                color: "#6E6E73",
+                letterSpacing: 0.3,
+                textTransform: "uppercase",
+                margin: "0 0 8px",
+              }}
+            >
+              Quick actions
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {quickActions.map((action) => (
+                <QuickActionRow
+                  key={action.id}
+                  icon={action.icon}
+                  iconColor={action.iconColor}
+                  iconBackground={action.iconBackground}
+                  label={action.label}
+                  onPress={() => handleAction(action.route)}
+                />
+              ))}
+            </div>
           </div>
         </DrawerPrimitive.Content>
       </DrawerPrimitive.Portal>
