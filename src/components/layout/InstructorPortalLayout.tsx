@@ -506,96 +506,73 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
             {/* Hidden mobile menu Sheet (controlled via header) */}
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-              <SheetContent side="right" className="w-[280px] p-0">
-                <SheetHeader className="p-4 border-b">
+              <SheetContent
+                side="right"
+                className="w-[296px] max-w-[calc(100vw-18px)] border-l border-[hsl(var(--dsm-border))] bg-[hsl(var(--dsm-bg))] p-0 shadow-2xl [&>button]:hidden"
+              >
+                <SheetHeader className="border-b border-[hsl(var(--dsm-border))] px-4 py-4 text-left">
+                  <SheetTitle className="sr-only">Instructor menu</SheetTitle>
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
+                    <Avatar className="h-11 w-11 border border-[hsl(var(--dsm-border))]">
                       <AvatarImage src={instructor?.profile_image_url || undefined} />
-                      <AvatarFallback className="bg-primary text-primary-foreground">
+                      <AvatarFallback className="bg-[hsl(var(--dsm-tile-icon-bg))] text-[hsl(var(--dsm-text))]">
                         {instructor?.name?.charAt(0) || "I"}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 min-w-0 text-left">
-                      <p className="font-medium text-sm truncate">{instructor?.name || "Instructor"}</p>
-                      <p className="text-xs text-muted-foreground truncate">{instructor?.email}</p>
+                    <div className="min-w-0 flex-1 text-left">
+                      <p className="truncate text-[15px] font-semibold leading-5 tracking-normal text-[hsl(var(--dsm-text))]">{instructor?.name || "Instructor"}</p>
+                      <p className="truncate text-[13px] leading-5 tracking-normal text-[hsl(var(--dsm-text-secondary))]">{instructor?.email}</p>
                     </div>
+                    <SheetClose className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[hsl(var(--dsm-text-secondary))] hover:bg-[hsl(var(--dsm-card)/0.7)]" aria-label="Close menu">
+                      <X className="h-5 w-5" strokeWidth={1.8} />
+                    </SheetClose>
                   </div>
                 </SheetHeader>
 
                 {/* Navigation Links */}
-                <nav className="flex-1 p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]">
-                  <button
+                <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3" style={{ maxHeight: "calc(100dvh - 166px)" }}>
+                  <DrawerRow
+                    icon={Search}
+                    label="Search"
+                    index={0}
                     onClick={() => { setIsMobileMenuOpen(false); setMobileSearchOpen(true); setMobileSearchQuery(""); setMobileSearchResults([]); }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-left"
-                  >
-                    <Search className="h-5 w-5" />
-                    Search
-                  </button>
-                  <button
+                  />
+                  <DrawerRow
+                    icon={Headphones}
+                    label="Voice assistant"
+                    index={1}
                     onClick={() => { setIsMobileMenuOpen(false); handleVoiceTap(); }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-left"
-                  >
-                    <Headphones className="h-5 w-5" />
-                    Voice Assistant
-                  </button>
-                  <div className="h-px bg-border my-2" />
+                  />
+                  <div className="my-2 h-px bg-[hsl(var(--dsm-border))]" />
                   {sidebarLinks.map((link) => {
                     const isActive = location.pathname === link.href;
-                    const isMessages = link.href === "/instructor/messages";
-                    const isAdminChat = link.href === "/instructor/admin-chat";
-                    const isVisitorChats = link.href === "/instructor/visitor-chats";
-                    const isPendingScheduling = link.href === "/instructor/pending-scheduling";
-                    const isHighlighted = "highlight" in link && link.highlight;
                     return (
-                      <button
+                      <DrawerRow
                         key={link.href}
+                        icon={link.icon}
+                        label={link.label === "Test Results" ? "Test results" : link.label === "Test Swap" ? "Test swap" : link.label === "GPS Tracking" ? "GPS tracking" : link.label === "Contact Admin" ? "Contact admin" : link.label === "Visitor Chats" ? "Visitor chats" : link.label === "Fill Gaps" ? "Fill gaps" : link.label === "Saved Routes" ? "Saved routes" : link.label === "Mini Website" ? "Mini website" : link.label}
+                        active={isActive}
+                        index={sidebarLinks.indexOf(link) + 2}
                         onClick={() => handleNavClick(link.href)}
-                        className={cn(
-                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left",
-                          isActive
-                            ? "bg-primary text-primary-foreground"
-                            : isHighlighted
-                            ? "bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                        )}
                       >
-                        <span className="relative">
-                          <link.icon
-                            className={cn(
-                              "h-5 w-5",
-                              isHighlighted && !isActive && "text-emerald-500"
-                            )}
-                          />
-                          {isAdminChat && !isActive && <AdminMessageBadge />}
-                        </span>
-                        {link.label}
-                        {isVisitorChats && !isActive && (
-                          <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
-                        )}
-                        {isMessages && !isActive && (
-                          <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
-                        )}
-                        {isPendingScheduling && !isActive && (
-                          <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
-                        )}
-                      </button>
+                        {renderDrawerBadge(link, isActive)}
+                      </DrawerRow>
                     );
                   })}
                 </nav>
 
                 {/* Menu Footer */}
-                <div className="p-3 border-t mt-auto">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-muted-foreground hover:text-foreground"
+                <div className="mt-auto border-t border-[hsl(var(--dsm-border))] p-3">
+                  <DrawerRow
+                    icon={LogOut}
+                    label="Sign out"
+                    destructive
+                    index={0}
                     onClick={() => {
                       handleSignOut();
                       setIsMobileMenuOpen(false);
                     }}
-                  >
-                    <LogOut className="h-5 w-5 mr-3" />
-                    Sign Out
-                  </Button>
+                  />
                 </div>
               </SheetContent>
             </Sheet>
