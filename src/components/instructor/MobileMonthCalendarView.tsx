@@ -231,8 +231,7 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
 
   const fontFamily = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
 
-  const legendCategories: DotCategory[] = (["lesson", "course", "test", "personal"] as DotCategory[])
-    .filter(c => presentCategories.has(c));
+  const legendEntries = presentEntries;
 
   return (
     <div
