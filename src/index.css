@@ -128,9 +128,10 @@
      --schedule-rail: 220 13% 91%;
   }
 
-  /* ===== Instructor app theme tokens (scoped to .instructor-portal) ===== */
-  /* Light mode (default when .instructor-portal is present without .dsm-dark) */
-  .instructor-portal {
+  /* ===== Instructor app theme tokens (scoped to app shell and portalled drawers) ===== */
+  /* Light mode (default when present without .dsm-dark) */
+  .instructor-portal,
+  .dsm-instructor {
     --dsm-bg: 218 27% 95%;          /* #EEF1F5 */
     --dsm-card: 0 0% 100%;          /* #FFFFFF */
     --dsm-text: 217 51% 12%;        /* #0F1B2D */
@@ -151,8 +152,9 @@
     --dsm-tint-purple-bg: 256 100% 95%;  /* #EFE8FF */
     --dsm-tint-purple-fg: 258 60% 48%;   /* #6E3DCC */
   }
-  /* Dark mode for instructor app — toggled via .dsm-dark on .instructor-portal */
-  .instructor-portal.dsm-dark {
+  /* Dark mode for instructor app — toggled via .dsm-dark */
+  .instructor-portal.dsm-dark,
+  .dsm-instructor.dsm-dark {
     --dsm-bg: 217 51% 12%;          /* #0F1B2D */
     --dsm-card: 217 38% 14%;        /* #162035 */
     --dsm-text: 217 100% 95%;       /* #E8F0FF */
@@ -175,12 +177,16 @@
   }
   /* Instructor portal font — Accord (if available) with Manrope fallback */
   .instructor-portal,
-  .instructor-portal * {
+  .instructor-portal *,
+  .dsm-instructor,
+  .dsm-instructor * {
     font-family: "Accord", "Manrope", -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", system-ui, sans-serif;
   }
   /* Smooth 200ms theme transitions on instructor surfaces */
   .instructor-portal,
-  .instructor-portal * {
+  .instructor-portal *,
+  .dsm-instructor,
+  .dsm-instructor * {
     transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
   }
 
