@@ -508,7 +508,11 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetContent
                 side="right"
-                className="dsm-instructor w-[296px] max-w-[calc(100vw-18px)] border-l border-[hsl(var(--dsm-border))] bg-[hsl(var(--dsm-bg))] p-0 shadow-2xl [&>button]:hidden"
+                className={cn(
+                  "dsm-instructor flex w-[296px] max-w-[calc(100vw-18px)] flex-col border-l border-[hsl(var(--dsm-border))] !bg-[hsl(var(--dsm-bg))] bg-none p-0 text-[hsl(var(--dsm-text))] opacity-100 shadow-2xl backdrop-blur-none [&>button]:hidden",
+                  (resolvedTheme === "dark" || resolvedTheme === "oled") && "dsm-dark"
+                )}
+                style={{ backgroundColor: "hsl(var(--dsm-bg))" }}
               >
                 <SheetHeader className="border-b border-[hsl(var(--dsm-border))] px-4 py-4 text-left">
                   <SheetTitle className="sr-only">Instructor menu</SheetTitle>
