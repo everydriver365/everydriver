@@ -191,6 +191,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
   // ---------- Render ----------
   return (
     <div
+      className="a11y-zoom-tile"
       style={{
         padding: "0 14px",
         display: "flex",

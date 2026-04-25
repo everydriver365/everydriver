@@ -972,36 +972,40 @@ html {
 /* ==========================================================================
    Accessibility settings (managed by AccessibilityContext)
    ----------------------------------------------------------------------------
-   Strategy:
+   Strategy (root-level, not scoped):
    - `--a11y-text-scale` is the single multiplier (0.9 / 1 / 1.18 / 1.35).
-   - Inside `.a11y-scope` we set the *root* font-size of the scope, so every
-     `rem` and every `em` (which we use in instructor tile primitives) scales
-     together. This avoids the brittle `zoom` / page-wide `html font-size`
-     hacks that broke layout and only scaled some sections.
-   - High contrast, reduce motion and larger tap targets are global class hooks
-     scoped to `.a11y-scope` (and to portalled instructor surfaces that opt
-     in via `.dsm-instructor` / `.instructor-portal`).
+   - Applied to <html> so EVERY route, layout and React portal (sheets,
+     dialogs, dropdowns, toasts) inherits automatically — no per-layout
+     `.a11y-scope` wiring required.
+   - `rem` is the primary scaling unit (root font-size). `em`-based tile
+     primitives also scale because their parents are sized in rem.
+   - High contrast, reduce motion and large tap targets are global class
+     hooks on <html>.
+   - `.a11y-scope` kept as a no-op alias so existing markup keeps working.
    ========================================================================== */
 :root {
   --a11y-text-scale: 1;
 }
 
-/* The scope applied to the instructor app shell.
-   We use CSS `zoom` so EVERY size — rem, em, AND hardcoded inline pixel
-   values like style={{ fontSize: 15 }} — scales together. This is the only
-   reliable way to scale tiles like Action Needed, Next Lesson, Schedule and
-   Telematics, which set inline pixel font sizes. Firefox fallback uses
-   transform: scale(). */
-.a11y-scope {
-  font-size: calc(16px * var(--a11y-text-scale));
-  zoom: var(--a11y-text-scale, 1);
+/* Root font-size scales every rem in the app. */
+html {
+  font-size: calc(16px * var(--a11y-text-scale, 1));
 }
 
+/* Back-compat alias — class no longer required but harmless if present. */
+.a11y-scope { /* intentionally empty */ }
+
+/* Escape valve for tiles built with hardcoded inline pixel font sizes
+   (Action Needed, Next Lesson, Schedule, Telematics). Applying CSS `zoom`
+   here lets those tiles scale together with the rest of the app even
+   though their text is sized in raw px. Firefox falls back to scale(). */
+.a11y-zoom-tile {
+  zoom: var(--a11y-text-scale, 1);
+}
 @supports not (zoom: 1) {
-  .a11y-scope {
+  .a11y-zoom-tile {
     transform: scale(var(--a11y-text-scale, 1));
     transform-origin: top left;
-    width: calc(100% / var(--a11y-text-scale, 1));
   }
 }
 
@@ -1015,81 +1019,55 @@ html.a11y-reduce-motion *::after {
   scroll-behavior: auto !important;
 }
 
-/* Larger tap targets — bumps min interactive size inside the instructor app
-   and any portalled instructor surfaces. */
-html.a11y-large-tap .a11y-scope button,
-html.a11y-large-tap .a11y-scope [role="button"],
-html.a11y-large-tap .a11y-scope a,
-html.a11y-large-tap .dsm-instructor button,
-html.a11y-large-tap .dsm-instructor [role="button"],
-html.a11y-large-tap .dsm-instructor a {
-  min-height: 48px;
+/* Larger tap targets — applied globally so portalled menus, sheets and
+   dialogs also get the larger hit area. */
+html.a11y-large-tap button,
+html.a11y-large-tap [role="button"],
+html.a11y-large-tap a,
+html.a11y-large-tap input,
+html.a11y-large-tap select,
+html.a11y-large-tap textarea {
+  min-height: 44px;
 }
 
-/* High contrast — strengthens text colours, borders and hardcoded greys
-   inside the instructor portal scope (and portalled DSM surfaces). */
+/* High contrast — override semantic tokens at the root so every shadcn
+   component (which reads --foreground, --background, --border, etc.)
+   responds, including portalled Radix UI. */
+html.a11y-high-contrast {
+  --foreground: 0 0% 4%;
+  --muted-foreground: 222 40% 18%;
+  --border: 222 35% 25%;
+  --input: 222 35% 25%;
+  --card-foreground: 0 0% 4%;
+  --popover-foreground: 0 0% 4%;
+}
+
+/* Instructor portal token overrides for high contrast (light) */
 html.a11y-high-contrast .instructor-portal,
 html.a11y-high-contrast .ios-instructor,
-html.a11y-high-contrast .dsm-instructor,
-html.a11y-high-contrast .a11y-scope {
-  --dsm-text: 222 60% 4%;
-  --dsm-text-secondary: 222 40% 22%;
-  --dsm-border: 222 35% 30%;
+html.a11y-high-contrast .dsm-instructor {
+  --dsm-text: 0 0% 4%;
+  --dsm-text-secondary: 222 40% 18%;
+  --dsm-border: 222 35% 25%;
   --dsm-card: 0 0% 100%;
-  --foreground: 222 60% 4%;
-  --muted-foreground: 222 40% 22%;
-  --border: 222 35% 30%;
 }
 
-/* Dark instructor theme + high contrast */
+/* Instructor portal token overrides for high contrast (dark) */
 html.a11y-high-contrast .instructor-portal.dsm-dark,
 html.a11y-high-contrast .ios-instructor.dsm-dark,
-html.a11y-high-contrast .dsm-instructor.dsm-dark {
+html.a11y-high-contrast .dsm-instructor.dsm-dark,
+html.a11y-high-contrast.dark {
+  --foreground: 0 0% 100%;
+  --muted-foreground: 210 30% 88%;
+  --border: 210 30% 75%;
   --dsm-text: 0 0% 100%;
-  --dsm-text-secondary: 210 30% 85%;
-  --dsm-border: 210 30% 70%;
+  --dsm-text-secondary: 210 30% 88%;
+  --dsm-border: 210 30% 75%;
 }
 
-/* High-contrast overrides for the many hardcoded iOS greys/whites used in
-   instructor tile primitives, sheets, and inline styles. We boost text and
-   border weight without changing layout. */
-/* (legacy specific-grey overrides removed — superseded by universal rule below) */
-
-/* Universal high-contrast text override — wins over inline `color: "#XXX"`
-   because of !important. Applies to every descendant inside the scope. */
-html.a11y-high-contrast .a11y-scope,
-html.a11y-high-contrast .a11y-scope * {
-  color: #0a0a0a !important;
-  border-color: #0a0a0a !important;
-}
-
-html.a11y-high-contrast.dark .a11y-scope,
-html.a11y-high-contrast.dark .a11y-scope *,
-html.a11y-high-contrast .a11y-scope.dsm-dark,
-html.a11y-high-contrast .a11y-scope.dsm-dark *,
-html.a11y-high-contrast .instructor-portal.dsm-dark,
-html.a11y-high-contrast .instructor-portal.dsm-dark * {
-  color: #ffffff !important;
-  border-color: #ffffff !important;
-}
-
-/* Preserve brand accent colours on icons/SVGs so the UI stays legible */
-html.a11y-high-contrast .a11y-scope svg,
-html.a11y-high-contrast .a11y-scope svg * {
-  color: inherit !important;
-}
-
-/* Force tile backgrounds opaque for readability */
-html.a11y-high-contrast .a11y-scope [class*="bg-white"],
-html.a11y-high-contrast .a11y-scope [style*="background: #FFFFFF"],
-html.a11y-high-contrast .a11y-scope [style*="background:#FFFFFF"],
-html.a11y-high-contrast .a11y-scope [style*="background: #fff"] {
-  background-color: #ffffff !important;
-}
-
-/* Slightly thicker borders on cards/tiles for readability */
-html.a11y-high-contrast .a11y-scope .border,
-html.a11y-high-contrast .a11y-scope [class*="border-"] {
+/* Strengthen borders on cards/tiles in high contrast */
+html.a11y-high-contrast .border,
+html.a11y-high-contrast [class*="border-"] {
   border-width: 1.5px !important;
 }
 
