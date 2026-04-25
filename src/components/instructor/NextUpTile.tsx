@@ -486,14 +486,14 @@ export function NextUpTile({
             )}
           </AnimatePresence>
 
-          {/* ── ACTION BAR (4 columns) ── */}
-          <div style={{ padding: "14px 16px 8px 16px" }}>
+          {/* ── ACTION ROW (4 columns) ── */}
+          <div style={{ paddingTop: 4 }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
               {[
-                { icon: Navigation, label: "Navigate", color: ios.blue, action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
-                { icon: Phone, label: "Call", color: ios.green, action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
-                { icon: MessageSquare, label: "Message", color: ios.orange, action: (e: React.MouseEvent) => { e.stopPropagation(); handleMessage(); } },
-                { icon: MapPin, label: "I\u2019m here", color: ios.red, action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
+                { icon: Navigation, label: "Navigate", accent: "#2B7BC8", tint: "#E6F1FB", action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
+                { icon: Phone, label: "Call", accent: "#3B8B3B", tint: "#E8F3E8", action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
+                { icon: MessageSquare, label: "Message", accent: "#B8801F", tint: "#FBF1DE", action: (e: React.MouseEvent) => { e.stopPropagation(); handleMessage(); } },
+                { icon: MapPin, label: "I\u2019m here", accent: "#C8434F", tint: "#FBEAEC", action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
               ].map((btn) => (
                 <button
                   key={btn.label}
@@ -501,25 +501,65 @@ export function NextUpTile({
                   className="active:opacity-80"
                   style={{
                     display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
-                    background: "transparent", border: "none", cursor: "pointer", padding: "4px 2px",
+                    background: "transparent", border: "none", cursor: "pointer", padding: 0,
                     transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
                   }}
                   aria-label={btn.label}
                 >
                   <span style={{
-                    width: 36, height: 36, borderRadius: 7, background: btn.color,
+                    width: "100%", maxWidth: 56, aspectRatio: "1 / 1",
+                    borderRadius: 10, background: btn.tint,
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
                   }}>
-                    <btn.icon style={{ width: 18, height: 18, color: "#fff" }} strokeWidth={2.2} />
+                    <btn.icon style={{ width: 20, height: 20, color: btn.accent }} strokeWidth={2} fill="none" />
                   </span>
-                  <span style={{ fontSize: 12, fontWeight: 500, color: ios.label, letterSpacing: -0.08 }}>{btn.label}</span>
+                  <span style={{ fontSize: 11, fontWeight: 400, color: "#000000" }}>{btn.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          <div style={{ height: 8 }} />
+          {/* ── START TRACK (preserved functionality, repositioned) ── */}
+          {!trackerDismissed && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
+                }}
+                className="active:opacity-90"
+                style={{
+                  flex: 1,
+                  background: "#C8434F", color: "#FFFFFF",
+                  border: "none", borderRadius: 10,
+                  padding: 12, fontSize: 14, fontWeight: 500,
+                  cursor: "pointer",
+                  transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                }}
+                title="Start tracking session for this lesson"
+              >
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FFFFFF", display: "inline-block" }} />
+                Start track
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  dismissTracker(lessonId);
+                  setTrackerDismissed(true);
+                }}
+                aria-label="Dismiss start track"
+                style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  border: "0.5px solid #E5E5EA", background: "#FFFFFF",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  cursor: "pointer",
+                }}
+              >
+                <X style={{ width: 14, height: 14, color: "#6E6E73" }} strokeWidth={2} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ── EXPANDED CONTENT ── */}
