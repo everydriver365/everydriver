@@ -5,6 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { pupilAvatarColor, pupilAvatarInitial } from "@/lib/pupilAvatarColor";
+
+const FONT_STACK =
+  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
 
 interface RecentSession {
   id: string;
