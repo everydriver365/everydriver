@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { format, parse, isToday, isTomorrow, parseISO } from "date-fns";
 import {
+import { a11yPx } from "@/lib/a11yScale";
   Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, ChevronDown,
   Send, Play, MapPin, Calendar, ClipboardList,
   Hourglass, PoundSterling, MessageCircle, AlertTriangle, CheckCircle2,
@@ -290,7 +291,7 @@ export function NextUpTile({
         }
       `}</style>
 
-      <div className="a11y-zoom-tile" style={{ padding: "0 16px", fontFamily: iosFont, WebkitFontSmoothing: "antialiased" }}>
+      <div className="" style={{ padding: "0 16px", fontFamily: iosFont, WebkitFontSmoothing: "antialiased" }}>
         {/* ── Premium card ── */}
         <div
           style={{
@@ -323,35 +324,35 @@ export function NextUpTile({
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
                 <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2B7BC8", display: "inline-block" }} />
-                <span style={{ fontSize: 11, fontWeight: 500, color: "#2B7BC8", letterSpacing: 0.2, textTransform: "uppercase" }}>Up next</span>
+                <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#2B7BC8", letterSpacing: 0.2, textTransform: "uppercase" }}>Up next</span>
                 {checkInStatus && (
                   <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5 ml-1" />
                 )}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 16, fontWeight: 500, letterSpacing: -0.2, color: "#000000", lineHeight: 1.2 }}>
+                <span style={{ fontSize: a11yPx(16), fontWeight: 500, letterSpacing: -0.2, color: "#000000", lineHeight: 1.2 }}>
                   {toSentenceName(pupilName)}
                 </span>
                 {totalUnreadBadge > 0 && (
                   <span style={{
                     minWidth: 18, height: 18, padding: "0 5px", borderRadius: 9,
-                    background: "#C8434F", color: "#fff", fontSize: 11, fontWeight: 600,
+                    background: "#C8434F", color: "#fff", fontSize: a11yPx(11), fontWeight: 600,
                     display: "inline-flex", alignItems: "center", justifyContent: "center",
                     fontVariantNumeric: "tabular-nums",
                   }}>{totalUnreadBadge}</span>
                 )}
               </div>
-              <div style={{ fontSize: 12, color: "#6E6E73", marginTop: 2 }}>
+              <div style={{ fontSize: a11yPx(12), color: "#6E6E73", marginTop: 2 }}>
                 {formatHoursLong(durationMinutes)} lesson{pickupLocation ? ` · ${pickupLocation.split(",")[0]}` : ""}
               </div>
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 18, fontWeight: 500, letterSpacing: -0.4, color: "#000000", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
+                <div style={{ fontSize: a11yPx(18), fontWeight: 500, letterSpacing: -0.4, color: "#000000", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
                   {formatTime24(startTime)}
                 </div>
-                <div style={{ fontSize: 11, fontWeight: 400, color: "#6E6E73", marginTop: 4, fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: a11yPx(11), fontWeight: 400, color: "#6E6E73", marginTop: 4, fontVariantNumeric: "tabular-nums" }}>
                   {minutesUntil <= 0 ? "Now" : `in ${getCountdownText()}`}
                 </div>
               </div>
@@ -414,10 +415,10 @@ export function NextUpTile({
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2B7BC8" }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: "#000000" }}>Your location</div>
-                  <div style={{ fontSize: 12, color: "#6E6E73" }}>Current position</div>
+                  <div style={{ fontSize: a11yPx(14), fontWeight: 500, color: "#000000" }}>Your location</div>
+                  <div style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>Current position</div>
                 </div>
-                <div style={{ fontSize: 12, color: "#6E6E73", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: a11yPx(12), color: "#6E6E73", fontVariantNumeric: "tabular-nums" }}>
                   {etaText || "—"}
                 </div>
               </div>
@@ -432,14 +433,14 @@ export function NextUpTile({
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#C8434F" }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: "#000000" }}>
+                  <div style={{ fontSize: a11yPx(14), fontWeight: 500, color: "#000000" }}>
                     Pick up {firstName}
                   </div>
-                  <div style={{ fontSize: 12, color: "#6E6E73" }}>
+                  <div style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>
                     {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
                   </div>
                 </div>
-                <div style={{ fontSize: 12, color: "#6E6E73", fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: a11yPx(12), color: "#6E6E73", fontVariantNumeric: "tabular-nums" }}>
                   {formatTime24(startTime)}
                 </div>
               </div>
@@ -453,7 +454,7 @@ export function NextUpTile({
                 display: "inline-flex", alignItems: "center", gap: 6,
                 background: "rgba(255,59,48,0.10)", color: ios.red,
                 borderRadius: 999, padding: "5px 10px",
-                fontSize: 13, fontWeight: 600, letterSpacing: -0.08,
+                fontSize: a11yPx(13), fontWeight: 600, letterSpacing: -0.08,
               }}>
                 <AlertTriangle style={{ width: 12, height: 12 }} strokeWidth={2.2} />
                 £{Math.abs(effectiveBalance).toFixed(0)} owed
@@ -470,12 +471,12 @@ export function NextUpTile({
                     <AlertTriangle style={{ width: 18, height: 18, color: ios.orange }} strokeWidth={2.2} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 15, fontWeight: 600, color: ios.label, letterSpacing: -0.24 }}>~{lateByMinutes} min late</p>
-                    <p style={{ fontSize: 13, color: ios.secondaryLabel, marginTop: 1 }}>ETA {arrivalTimeText}</p>
+                    <p style={{ fontSize: a11yPx(15), fontWeight: 600, color: ios.label, letterSpacing: -0.24 }}>~{lateByMinutes} min late</p>
+                    <p style={{ fontSize: a11yPx(13), color: ios.secondaryLabel, marginTop: 1 }}>ETA {arrivalTimeText}</p>
                   </div>
                   <button onClick={(e) => { e.stopPropagation(); sendLateETA(); }}
                     className="active:opacity-80"
-                    style={{ padding: "8px 14px", borderRadius: 999, background: ios.orange, color: "#fff", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)" }}>
+                    style={{ padding: "8px 14px", borderRadius: 999, background: ios.orange, color: "#fff", fontSize: a11yPx(13), fontWeight: 600, border: "none", cursor: "pointer", transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)" }}>
                     Send ETA
                   </button>
                   <button onClick={(e) => { e.stopPropagation(); setLateDismissed(true); }} style={{ padding: 4, background: "none", border: "none", cursor: "pointer" }}>
@@ -513,7 +514,7 @@ export function NextUpTile({
                   }}>
                     <btn.icon style={{ width: 20, height: 20, color: btn.accent }} strokeWidth={2} fill="none" />
                   </span>
-                  <span style={{ fontSize: 11, fontWeight: 400, color: "#000000" }}>{btn.label}</span>
+                  <span style={{ fontSize: a11yPx(11), fontWeight: 400, color: "#000000" }}>{btn.label}</span>
                 </button>
               ))}
             </div>
@@ -532,7 +533,7 @@ export function NextUpTile({
                   flex: 1,
                   background: "#C8434F", color: "#FFFFFF",
                   border: "none", borderRadius: 10,
-                  padding: 12, fontSize: 14, fontWeight: 500,
+                  padding: 12, fontSize: a11yPx(14), fontWeight: 500,
                   cursor: "pointer",
                   transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,

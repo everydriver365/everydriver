@@ -5,6 +5,7 @@ import { Activity, ChevronRight, ChevronDown, ChevronUp, Fuel, Thermometer, Gaug
 import telematicsIcon from "@/assets/telematics-tile-icon.png";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { formatDistanceToNow } from "date-fns";
+import { a11yPx } from "@/lib/a11yScale";
 
 export function TelematicsTile() {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ export function TelematicsTile() {
     : "No vehicle linked";
 
   return (
-    <div className="px-4 mt-3 a11y-zoom-tile">
+    <div className="px-4 mt-3">
       <div
         style={{
           backgroundColor: "#FFFFFF",
@@ -67,8 +68,8 @@ export function TelematicsTile() {
               />
             </div>
             <div className="min-w-0">
-              <p style={{ fontSize: 15, fontWeight: 500, color: "#000000", letterSpacing: "-0.1px", fontFamily: "Inter, sans-serif" }}>Telematics</p>
-              <p style={{ fontSize: 12, fontWeight: 400, color: "#6E6E73", fontFamily: "Inter, sans-serif" }} className="truncate">{vehicleLabel}</p>
+              <p style={{ fontSize: a11yPx(15), fontWeight: 500, color: "#000000", letterSpacing: "-0.1px", fontFamily: "Inter, sans-serif" }}>Telematics</p>
+              <p style={{ fontSize: a11yPx(12), fontWeight: 400, color: "#6E6E73", fontFamily: "Inter, sans-serif" }} className="truncate">{vehicleLabel}</p>
             </div>
           </div>
 
@@ -78,7 +79,7 @@ export function TelematicsTile() {
             ) : (
               <WifiOff className="h-3.5 w-3.5" style={{ color: "#6E6E73" }} />
             )}
-            <span style={{ fontSize: 11, color: "#6E6E73", fontWeight: 500, fontFamily: "Inter, sans-serif" }}>
+            <span style={{ fontSize: a11yPx(11), color: "#6E6E73", fontWeight: 500, fontFamily: "Inter, sans-serif" }}>
               {isConnected ? "Online" : "Offline"}
             </span>
             <svg
@@ -155,9 +156,9 @@ export function TelematicsTile() {
 
                     {hasFaults && (
                       <div style={{ backgroundColor: "#FBF1DE", borderRadius: 10, padding: 10 }}>
-                        <p style={{ fontSize: 11, fontWeight: 500, color: "#000000", marginBottom: 4 }}>Active Faults</p>
+                        <p style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#000000", marginBottom: 4 }}>Active Faults</p>
                         {faultCodes.slice(0, 3).map((fault, i) => (
-                          <p key={i} style={{ fontSize: 10, color: "#6E6E73" }} className="truncate">
+                          <p key={i} style={{ fontSize: a11yPx(10), color: "#6E6E73" }} className="truncate">
                             {fault.code}: {fault.description}
                           </p>
                         ))}
@@ -168,7 +169,7 @@ export function TelematicsTile() {
                     {(dashcamActive != null || panicPressed != null) && (
                       <div className="flex items-center gap-2">
                         {dashcamActive != null && (
-                          <div className="flex items-center gap-1" style={{ fontSize: 10 }}>
+                          <div className="flex items-center gap-1" style={{ fontSize: a11yPx(10) }}>
                             <Camera className="h-3 w-3" style={{ color: dashcamActive ? "#3B8B3B" : "#6E6E73" }} />
                             <span style={{ color: dashcamActive ? "#3B8B3B" : "#6E6E73", fontWeight: 500 }}>
                               {dashcamActive ? "Cam On" : "Cam Off"}
@@ -176,7 +177,7 @@ export function TelematicsTile() {
                           </div>
                         )}
                         {panicPressed && (
-                          <div className="flex items-center gap-1" style={{ fontSize: 10 }}>
+                          <div className="flex items-center gap-1" style={{ fontSize: a11yPx(10) }}>
                             <ShieldAlert className="h-3 w-3 animate-pulse" style={{ color: "#C8434F" }} />
                             <span style={{ color: "#C8434F", fontWeight: 500 }}>PANIC</span>
                           </div>
@@ -185,13 +186,13 @@ export function TelematicsTile() {
                     )}
 
                     <div className="flex items-center justify-between pt-1">
-                      <p style={{ fontSize: 10, color: "#6E6E73" }}>
+                      <p style={{ fontSize: a11yPx(10), color: "#6E6E73" }}>
                         {odometerKm != null && `${Math.round(odometerKm).toLocaleString()} km`}
                         {lastSeen && ` · ${formatDistanceToNow(new Date(lastSeen), { addSuffix: true })}`}
                       </p>
                       <button
                         onClick={(e) => { e.stopPropagation(); navigate("/instructor/fleet-dashboard"); }}
-                        style={{ fontSize: 11, fontWeight: 500, color: "#2B7BC8" }}
+                        style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#2B7BC8" }}
                       >
                         Full Dashboard →
                       </button>
@@ -199,10 +200,10 @@ export function TelematicsTile() {
                   </>
                 ) : (
                   <div className="text-center py-3">
-                    <p style={{ fontSize: 12, color: "#6E6E73" }}>No telematics device connected</p>
+                    <p style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>No telematics device connected</p>
                     <button
                       onClick={(e) => { e.stopPropagation(); navigate("/instructor/gps-setup"); }}
-                      style={{ fontSize: 12, fontWeight: 500, color: "#2B7BC8", marginTop: 4 }}
+                      style={{ fontSize: a11yPx(12), fontWeight: 500, color: "#2B7BC8", marginTop: 4 }}
                     >
                       Set up tracking →
                     </button>
@@ -229,8 +230,8 @@ function MetricCard({ icon, label, value, warning }: { icon: React.ReactNode; la
       <div className="flex justify-center mb-1" style={{ color: warning ? "#C8434F" : "#6E6E73" }}>
         {icon}
       </div>
-      <p style={{ fontSize: 14, fontWeight: 500, color: warning ? "#C8434F" : "#000000" }}>{value}</p>
-      <p style={{ fontSize: 9, color: "#6E6E73", marginTop: 2 }}>{label}</p>
+      <p style={{ fontSize: a11yPx(14), fontWeight: 500, color: warning ? "#C8434F" : "#000000" }}>{value}</p>
+      <p style={{ fontSize: a11yPx(9), color: "#6E6E73", marginTop: 2 }}>{label}</p>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useDayLessons } from "@/hooks/useDayLessons";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { useQueryClient } from "@tanstack/react-query";
+import { a11yPx } from "@/lib/a11yScale";
 
 interface HomeTodayScheduleProps {
   instructorId: string | undefined;
@@ -164,7 +165,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
 
   return (
     <div
-      className="a11y-zoom-tile"
+      className=""
       style={{
         padding: "0 16px",
         fontFamily: IOS_FONT,
@@ -218,7 +219,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,
-                fontSize: 11,
+                fontSize: a11yPx(11),
                 fontWeight: 500,
                 color: IOS.systemBlue,
                 letterSpacing: 0.2,
@@ -229,10 +230,10 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: IOS.systemBlue }} />
               {isTomorrow ? "Tomorrow's schedule" : "Today's schedule"}
             </span>
-            <span style={{ fontSize: 18, fontWeight: 500, letterSpacing: -0.3, lineHeight: 1.15, color: IOS.label }}>
+            <span style={{ fontSize: a11yPx(18), fontWeight: 500, letterSpacing: -0.3, lineHeight: 1.15, color: IOS.label }}>
               {dayName}
             </span>
-            <span style={{ fontSize: 12, color: IOS.secondaryLabel, marginTop: 2 }}>
+            <span style={{ fontSize: a11yPx(12), color: IOS.secondaryLabel, marginTop: 2 }}>
               {isLoading ? <SkeletonBlock width={160} height={12} /> : subtitle}
             </span>
           </div>
@@ -242,7 +243,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               background: IOS.fill,
               padding: "4px 10px",
               borderRadius: 999,
-              fontSize: 11,
+              fontSize: a11yPx(11),
               color: IOS.label,
             }}
           >
@@ -271,7 +272,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                 style={{
                   padding: "8px 12px",
                   borderRadius: 8,
-                  fontSize: 13,
+                  fontSize: a11yPx(13),
                   fontWeight: active ? 500 : 400,
                   color: active ? IOS.label : IOS.secondaryLabel,
                   background: active ? "#FFFFFF" : "transparent",
@@ -322,10 +323,10 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               <CalendarIcon size={18} color={IOS.systemBlue} strokeWidth={2} />
             </div>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 20, fontWeight: 500, color: IOS.label, lineHeight: 1.1, letterSpacing: -0.3, fontVariantNumeric: "tabular-nums" }}>
+              <div style={{ fontSize: a11yPx(20), fontWeight: 500, color: IOS.label, lineHeight: 1.1, letterSpacing: -0.3, fontVariantNumeric: "tabular-nums" }}>
                 {isLoading ? <SkeletonBlock width={28} height={18} /> : lessonCount}
               </div>
-              <div style={{ fontSize: 11, color: IOS.secondaryLabel, marginTop: 2 }}>
+              <div style={{ fontSize: a11yPx(11), color: IOS.secondaryLabel, marginTop: 2 }}>
                 {lessonCount > 0 ? `lessons · ${totalHoursLabel(totalHours)}` : "lessons"}
               </div>
             </div>
@@ -357,10 +358,10 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               <PoundIcon size={18} color={IOS.systemGreen} strokeWidth={2} />
             </div>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 20, fontWeight: 500, color: IOS.label, lineHeight: 1.1, letterSpacing: -0.3, fontVariantNumeric: "tabular-nums" }}>
+              <div style={{ fontSize: a11yPx(20), fontWeight: 500, color: IOS.label, lineHeight: 1.1, letterSpacing: -0.3, fontVariantNumeric: "tabular-nums" }}>
                 {isLoading ? <SkeletonBlock width={42} height={18} /> : `£${earnings.toLocaleString("en-GB")}`}
               </div>
-              <div style={{ fontSize: 11, color: IOS.secondaryLabel, marginTop: 2 }}>earned today</div>
+              <div style={{ fontSize: a11yPx(11), color: IOS.secondaryLabel, marginTop: 2 }}>earned today</div>
             </div>
           </div>
         </div>
@@ -406,10 +407,10 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               <CalendarIcon size={22} color="#6E6E73" strokeWidth={2} />
             </div>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 500, color: IOS.label, letterSpacing: -0.2, marginBottom: 4 }}>
+              <div style={{ fontSize: a11yPx(15), fontWeight: 500, color: IOS.label, letterSpacing: -0.2, marginBottom: 4 }}>
                 No lessons scheduled
               </div>
-              <div style={{ fontSize: 12, color: IOS.secondaryLabel, maxWidth: 260, lineHeight: 1.5 }}>
+              <div style={{ fontSize: a11yPx(12), color: IOS.secondaryLabel, maxWidth: 260, lineHeight: 1.5 }}>
                 Add a lesson to your calendar to start tracking your day
               </div>
             </div>
@@ -480,7 +481,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                   >
                     <div
                       style={{
-                        fontSize: 17,
+                        fontSize: a11yPx(17),
                         fontWeight: 600,
                         color: IOS.label,
                         letterSpacing: -0.24,
@@ -492,7 +493,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                     </div>
                     <div
                       style={{
-                        fontSize: 11,
+                        fontSize: a11yPx(11),
                         color: IOS.secondaryLabel,
                         fontWeight: 600,
                         textTransform: "uppercase",
@@ -509,7 +510,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                   <div style={{ minWidth: 0, paddingLeft: 14 }}>
                     <div
                       style={{
-                        fontSize: 15,
+                        fontSize: a11yPx(15),
                         fontWeight: 600,
                         color: IOS.label,
                         letterSpacing: -0.24,
@@ -524,7 +525,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                     {meta.length > 0 && (
                       <div
                         style={{
-                          fontSize: 13,
+                          fontSize: a11yPx(13),
                           color: IOS.secondaryLabel,
                           marginTop: 2,
                           letterSpacing: -0.08,
@@ -577,7 +578,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               background: "transparent",
               padding: 0,
               color: IOS.systemBlue,
-              fontSize: 13,
+              fontSize: a11yPx(13),
               fontWeight: 500,
               textDecoration: "none",
               transition: "opacity 0.15s",
@@ -600,7 +601,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               border: "none",
               borderRadius: 10,
               padding: "10px 16px",
-              fontSize: 13,
+              fontSize: a11yPx(13),
               fontWeight: 500,
               cursor: "pointer",
               transition: "all 0.15s cubic-bezier(0.2,0.7,0.2,1)",
