@@ -56,7 +56,7 @@ export function IdleTimeCostCard({ instructorId, className = "" }: { instructorI
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`rounded-2xl border border-border bg-card p-4 instructor-tile-lift ${className}`}
+      className={`rounded-2xl border border-border bg-card p-4 ${className}`}
     >
       <div className="flex items-center gap-2 mb-3">
         <div className="h-8 w-8 rounded-2xl bg-amber-500/10 flex items-center justify-center">

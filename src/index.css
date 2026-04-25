@@ -578,26 +578,6 @@
   transition: box-shadow 150ms ease, transform 150ms ease;
 }
 
-/* ===================================================================
-   Unified instructor app tile lift
-   - Single visible 3-layer shadow used by every tile across the app.
-   - Apply via .instructor-tile-lift on the tile element OR rely on the
-     scoped overrides below for tiles that use Tailwind shadow classes.
-   =================================================================== */
-.instructor-tile-lift {
-  box-shadow:
-    0 2px 4px rgba(15, 23, 42, 0.08),
-    0 12px 24px rgba(15, 23, 42, 0.18),
-    0 28px 52px rgba(15, 23, 42, 0.22) !important;
-  transition: box-shadow 150ms ease, transform 150ms ease;
-}
-.instructor-tile-lift:active {
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.06),
-    0 4px 10px rgba(0, 0, 0, 0.08) !important;
-  transform: translateY(2px);
-}
-
 /* App-wide tile lift inside the instructor app.
    Upgrades every standard Tailwind shadow utility AND raw Card surfaces
    so quick actions, telematics cards, money tiles, settings rows and
@@ -615,25 +595,6 @@
     0 2px 4px rgba(15, 23, 42, 0.08),
     0 12px 24px rgba(15, 23, 42, 0.18),
     0 28px 52px rgba(15, 23, 42, 0.22) !important;
-}
-
-/* Catch raw card surfaces inside the instructor app that don't use any
-   shadow utility. We target only obvious tile patterns: rounded white/card
-   surfaces. Excludes dialogs, popovers, headers, nav, maps, sheets. */
-.instructor-portal .bg-white.rounded-xl,
-.instructor-portal .bg-white.rounded-2xl,
-.instructor-portal .bg-white.rounded-\[12px\],
-.instructor-portal .bg-white.rounded-\[14px\],
-.instructor-portal .bg-card.rounded-xl,
-.instructor-portal .bg-card.rounded-2xl,
-.dsm-instructor .bg-white.rounded-xl,
-.dsm-instructor .bg-white.rounded-2xl,
-.dsm-instructor .bg-card.rounded-xl,
-.dsm-instructor .bg-card.rounded-2xl {
-  box-shadow:
-    0 2px 4px rgba(15, 23, 42, 0.08),
-    0 12px 24px rgba(15, 23, 42, 0.18),
-    0 28px 52px rgba(15, 23, 42, 0.22);
 }
 .instructor-portal .hover\:shadow-sm:hover,
 .instructor-portal .hover\:shadow-md:hover,
