@@ -109,33 +109,40 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
           .lte("lesson_date", to),
         supabase
           .from("instructor_calendar_events")
-          .select("start_time, title")
+          .select("start_time, end_time, title, color")
           .eq("instructor_id", instructorId)
           .gte("start_time", `${from}T00:00:00`)
           .lte("start_time", `${to}T23:59:59`),
       ]);
 
-      const map: Record<string, Set<DotCategory>> = {};
-      const present = new Set<DotCategory>();
+      // Track unique chip colours per day, mirroring the list view's resolved styles.
+      const map: Record<string, Set<string>> = {};
+      const present = new Set<string>();
 
+      // All lessons render with the lesson chip in the list view.
+      const lessonColor = CATEGORY_STYLES.lesson.bg;
       (lessonsRes.data || []).forEach((r: any) => {
-        const cat = categoriseLessonType(r.lesson_type);
         if (!map[r.lesson_date]) map[r.lesson_date] = new Set();
-        map[r.lesson_date].add(cat);
-        present.add(cat);
+        map[r.lesson_date].add(lessonColor);
+        present.add(lessonColor);
       });
 
       (externalRes.data || []).forEach((r: any) => {
         const dateKey = format(parseISO(r.start_time), "yyyy-MM-dd");
-        const cat = categoriseExternal(r.title);
+        const start = parseISO(r.start_time);
+        const end = r.end_time ? parseISO(r.end_time) : start;
+        const startMin = start.getHours() + start.getMinutes();
+        const endHour = end.getHours();
+        const isAllDay = startMin === 0 && (endHour === 23 || endHour === 0);
+        const style = externalStyle(r.title, r.color, isAllDay);
         if (!map[dateKey]) map[dateKey] = new Set();
-        map[dateKey].add(cat);
-        present.add(cat);
+        map[dateKey].add(style.bg);
+        present.add(style.bg);
       });
 
       const out: Record<string, DayDots> = {};
       Object.entries(map).forEach(([k, v]) => {
-        out[k] = { categories: Array.from(v) };
+        out[k] = { colors: Array.from(v) };
       });
       setDayDotMap(out);
       setPresentCategories(present);
