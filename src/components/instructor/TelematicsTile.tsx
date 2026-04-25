@@ -37,8 +37,10 @@ export function TelematicsTile() {
       <div
         style={{
           backgroundColor: "#FFFFFF",
-          border: "0.5px solid #E5E5EA",
-          borderRadius: 12,
+          border: "1px solid rgba(15, 23, 42, 0.06)",
+          boxShadow:
+            "0 2px 4px rgba(15, 23, 42, 0.08), 0 12px 24px rgba(15, 23, 42, 0.18), 0 28px 52px rgba(15, 23, 42, 0.22)",
+          borderRadius: 14,
           overflow: "hidden",
           fontFamily: "Inter, sans-serif",
         }}
