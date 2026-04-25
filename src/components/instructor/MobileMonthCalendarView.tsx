@@ -13,11 +13,16 @@ interface MobileMonthCalendarViewProps {
   instructorId: string;
 }
 
+interface DayDot {
+  // The saturated source colour used for the status dot (chip border).
+  dot: string;
+  // The pale chip background colour used for legend swatches and lesson blocks.
+  bg: string;
+}
+
 interface DayDots {
-  // Each entry is the resolved chip background colour for an event on that day,
-  // mirroring exactly what the list view would render (Google override included).
-  // We dedupe by colour so identical-coloured events collapse to a single dot.
-  colors: string[];
+  // Deduped by `dot` colour so identical-coloured events collapse to one dot.
+  entries: DayDot[];
 }
 
 interface DayEvents {
