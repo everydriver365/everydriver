@@ -110,40 +110,35 @@ export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMe
             </p>
           </div>
 
-          {/* 2-column tile grid — no scroll */}
-          <div className="flex-1 overflow-hidden px-3">
-            <div className="grid grid-cols-2 gap-2.5">
+          {/* Simple list — no scroll */}
+          <div className="flex-1 overflow-hidden px-2">
+            <div className="flex flex-col">
               {sortedActions.map((action) => {
                 const Icon = action.icon;
                 const isPinned = pinned.includes(action.id);
                 return (
-                  <div key={action.id} className="relative">
+                  <div key={action.id} className="flex items-center">
                     <button
                       onClick={() => handleAction(action.route)}
-                      className={cn(
-                        "w-full aspect-square flex flex-col items-center justify-center gap-2",
-                        "rounded-2xl border border-border/60 bg-card",
-                        "active:scale-[0.97] active:bg-muted/60 transition-all",
-                        "shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
-                      )}
+                      className="flex-1 flex items-center gap-3 px-2 py-2 rounded-xl active:bg-muted/60 transition-colors text-left"
                     >
                       <div
-                        className="h-11 w-11 rounded-full flex items-center justify-center"
+                        className="h-8 w-8 rounded-full flex items-center justify-center shrink-0"
                         style={{ backgroundColor: `rgba(${action.color}, 0.12)` }}
                       >
                         <Icon
-                          className="h-[20px] w-[20px]"
+                          className="h-[16px] w-[16px]"
                           style={{ color: `rgb(${action.color})` }}
                           strokeWidth={2}
                         />
                       </div>
-                      <span className="text-[12.5px] font-medium text-foreground text-center leading-tight px-1">
+                      <span className="flex-1 text-[14px] font-medium text-foreground">
                         {action.label}
                       </span>
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); togglePin(action.id); }}
-                      className="absolute top-1.5 right-1.5 p-1.5 rounded-full active:bg-muted transition-colors"
+                      className="p-2 rounded-full active:bg-muted transition-colors shrink-0"
                       aria-label={isPinned ? "Unpin action" : "Pin action"}
                     >
                       <Star
