@@ -135,7 +135,7 @@ export default function InstructorSchedule() {
 
   // Syncing progress bar
   const syncProgressBar = isSyncing ? (
-    <div style={{ height: 2, backgroundColor: "#2A394F", position: "absolute", bottom: 0, left: 0, right: 0, animation: "pulse 1.5s ease-in-out infinite" }} />
+    <div style={{ height: 1, backgroundColor: "#2B7BC8", position: "absolute", bottom: 0, left: 0, right: 0, opacity: 0.6, animation: "pulse 1.5s ease-in-out infinite" }} />
   ) : null;
 
   return (
