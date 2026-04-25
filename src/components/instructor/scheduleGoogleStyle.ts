@@ -61,7 +61,8 @@ export function styleFromGoogleColor(hex: string | null | undefined): CategorySt
   return {
     border: `#${toHex(rgb.r)}${toHex(rgb.g)}${toHex(rgb.b)}`,
     bg: tintTowardWhite(rgb, 0.88),
-    text: shadeTowardBlack(rgb, 0.55),
+    // Black title text per premium tile spec — colour is reserved for the chip background.
+    text: "#000000",
   };
 }
 
