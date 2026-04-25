@@ -401,63 +401,46 @@ export function NextUpTile({
             </div>
           )}
 
-          {/* ── STOPS TIMELINE ── */}
+          {/* ── ROUTE LIST (origin → destination) ── */}
           {(pickupLocation || pickupPostcode) && (
-            <div style={{ padding: "14px 16px 4px 16px" }}>
-              <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: 12 }}>
-                {/* Dashed connector */}
-                <div
-                  aria-hidden
-                  style={{
-                    position: "absolute",
-                    left: 10,
-                    top: 22,
-                    bottom: 22,
-                    width: 2,
-                    backgroundImage: `linear-gradient(to bottom, ${ios.secondaryLabel} 50%, transparent 0)`,
-                    backgroundSize: "2px 4px",
-                    backgroundRepeat: "repeat-y",
-                    opacity: 0.5,
-                  }}
-                />
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {/* Origin */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{
+                  width: 18, height: 18, borderRadius: "50%", background: "#FFFFFF",
+                  border: "2px solid #2B7BC8",
+                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2B7BC8" }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: "#000000" }}>Your location</div>
+                  <div style={{ fontSize: 12, color: "#6E6E73" }}>Current position</div>
+                </div>
+                <div style={{ fontSize: 12, color: "#6E6E73", fontVariantNumeric: "tabular-nums" }}>
+                  {etaText || "—"}
+                </div>
+              </div>
 
-                {/* Start (instructor location) */}
-                <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
-                  <div style={{
-                    width: 22, height: 22, borderRadius: "50%", background: ios.blue,
-                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  }}>
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff" }} />
+              {/* Destination */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{
+                  width: 18, height: 18, borderRadius: "50%", background: "#FFFFFF",
+                  border: "2px solid #C8434F",
+                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#C8434F" }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: "#000000" }}>
+                    Pick up {firstName}
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: ios.label, letterSpacing: -0.24 }}>Your location</div>
-                    <div style={{ fontSize: 13, color: ios.secondaryLabel, letterSpacing: -0.08 }}>Current position</div>
-                  </div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: ios.secondaryLabel, fontVariantNumeric: "tabular-nums" }}>
-                    {etaText || "—"}
+                  <div style={{ fontSize: 12, color: "#6E6E73" }}>
+                    {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
                   </div>
                 </div>
-
-                {/* End (pickup) */}
-                <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
-                  <div style={{
-                    width: 22, height: 22, borderRadius: "50%", background: "#fff",
-                    border: `2px solid ${ios.red}`,
-                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  }}>
-                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: ios.red }} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: ios.label, letterSpacing: -0.24 }} className="truncate">
-                      Pick up {firstName}
-                    </div>
-                    <div style={{ fontSize: 13, color: ios.secondaryLabel, letterSpacing: -0.08 }} className="truncate">
-                      {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
-                    </div>
-                  </div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: ios.label, fontVariantNumeric: "tabular-nums" }}>
-                    {formatTime24(startTime)}
-                  </div>
+                <div style={{ fontSize: 12, color: "#6E6E73", fontVariantNumeric: "tabular-nums" }}>
+                  {formatTime24(startTime)}
                 </div>
               </div>
             </div>
