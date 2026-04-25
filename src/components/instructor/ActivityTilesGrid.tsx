@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Briefcase, MessageSquare, ClipboardCheck, CalendarPlus, CheckCircle2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { Tile, TileGrid } from "./Tile";
+import { InstructorTile, InstructorTileGrid, type TileCategory } from "./InstructorTile";
 
 interface ActivityTilesGridProps {
   pendingJobsCount: number;
@@ -17,6 +17,7 @@ interface TileDef {
   icon: LucideIcon;
   route: string;
   countKey: keyof ActivityTilesGridProps;
+  category: TileCategory;
   emptySubtitle: string;
   filledSubtitle: (n: number) => string;
 }
@@ -28,6 +29,7 @@ const TILES: TileDef[] = [
     icon: Briefcase,
     route: "/instructor/jobs",
     countKey: "pendingJobsCount",
+    category: "money",
     emptySubtitle: "No pending jobs",
     filledSubtitle: (n) => `${n} pending ${n === 1 ? "job" : "jobs"}`,
   },
@@ -37,6 +39,7 @@ const TILES: TileDef[] = [
     icon: MessageSquare,
     route: "/instructor/messages",
     countKey: "unreadMessagesCount",
+    category: "people",
     emptySubtitle: "All caught up",
     filledSubtitle: (n) => `${n} unread ${n === 1 ? "chat" : "chats"}`,
   },
@@ -46,6 +49,7 @@ const TILES: TileDef[] = [
     icon: ClipboardCheck,
     route: "/instructor/test-requests",
     countKey: "testRequestsCount",
+    category: "education",
     emptySubtitle: "No swap requests",
     filledSubtitle: (n) => `${n} swap ${n === 1 ? "request" : "requests"}`,
   },
@@ -55,6 +59,7 @@ const TILES: TileDef[] = [
     icon: CalendarPlus,
     route: "/instructor/gaps",
     countKey: "gapSlotsCount",
+    category: "schedule",
     emptySubtitle: "No open slots",
     filledSubtitle: (n) => `${n} open ${n === 1 ? "slot" : "slots"}`,
   },
@@ -70,19 +75,19 @@ export function ActivityTilesGrid(props: ActivityTilesGridProps) {
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="shadow-premium"
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             gap: 8,
             padding: "10px 14px",
-            background: "hsl(var(--dsm-card))",
+            background: "#FFFFFF",
+            border: "0.5px solid #E5E5EA",
             borderRadius: 12,
           }}
         >
-          <CheckCircle2 size={16} strokeWidth={2} color="hsl(var(--dsm-tint-green-fg))" />
-          <span style={{ fontSize: 13, fontWeight: 500, color: "hsl(var(--dsm-text))", fontFamily: "Inter, sans-serif" }}>
+          <CheckCircle2 size={16} strokeWidth={2} color="#3B8B3B" />
+          <span style={{ fontSize: 13, fontWeight: 500, color: "#000000", fontFamily: "Inter, sans-serif" }}>
             All clear — no actions needed
           </span>
         </motion.div>
@@ -91,22 +96,21 @@ export function ActivityTilesGrid(props: ActivityTilesGridProps) {
   }
 
   return (
-    <TileGrid>
+    <InstructorTileGrid>
       {TILES.map((t) => {
         const count = props[t.countKey];
         return (
-          <Tile
+          <InstructorTile
             key={t.id}
-            id={t.id}
-            title={t.title}
             icon={t.icon}
-            onClick={() => navigate(t.route)}
-            metricValue={count > 0 ? count : undefined}
-            metricUnit={count > 0 ? "new" : undefined}
+            title={t.title}
+            category={t.category}
+            onPress={() => navigate(t.route)}
+            count={count > 0 ? count : undefined}
             subtitle={count > 0 ? t.filledSubtitle(count) : t.emptySubtitle}
           />
         );
       })}
-    </TileGrid>
+    </InstructorTileGrid>
   );
 }
