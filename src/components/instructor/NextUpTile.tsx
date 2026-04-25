@@ -291,77 +291,79 @@ export function NextUpTile({
       `}</style>
 
       <div style={{ padding: "0 16px", fontFamily: iosFont, WebkitFontSmoothing: "antialiased" }}>
-        {/* ── iOS 17 CARD ── */}
+        {/* ── Premium card ── */}
         <div
           style={{
-            background: ios.card,
-            borderRadius: 14,
-            boxShadow: "0 1px 0 rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.04)",
-            overflow: "hidden",
+            background: "#FFFFFF",
+            border: "0.5px solid #E5E5EA",
+            boxShadow: "none",
+            borderRadius: 12,
+            padding: 16,
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
             position: "relative",
             maxWidth: 440,
             margin: "0 auto",
             width: "100%",
           }}
         >
-          {/* ── HEAD (whole row tappable to expand) ── */}
+          {/* ── Header (whole row tappable to expand) ── */}
           <button
             onClick={() => setExpanded(!expanded)}
             aria-expanded={expanded}
             aria-label={expanded ? "Hide lesson details" : "Show lesson details"}
             className="active:opacity-80"
             style={{
-              width: "100%", padding: 16, display: "flex", alignItems: "flex-start", gap: 12,
+              width: "100%", padding: 0, display: "flex", alignItems: "flex-start", gap: 12,
               background: "transparent", border: "none", cursor: "pointer", textAlign: "left",
               transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
             }}
           >
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                <span style={{ width: 5, height: 5, borderRadius: "50%", background: ios.blue, display: "inline-block" }} />
-                <span style={{ fontSize: 13, fontWeight: 600, color: ios.blue, letterSpacing: -0.08 }}>Up next</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2B7BC8", display: "inline-block" }} />
+                <span style={{ fontSize: 11, fontWeight: 500, color: "#2B7BC8", letterSpacing: 0.2, textTransform: "uppercase" }}>Up next</span>
                 {checkInStatus && (
                   <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5 ml-1" />
                 )}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: -0.26, color: ios.label, lineHeight: 1.15 }} className="truncate">
+                <span style={{ fontSize: 16, fontWeight: 500, letterSpacing: -0.2, color: "#000000", lineHeight: 1.2 }}>
                   {toSentenceName(pupilName)}
                 </span>
                 {totalUnreadBadge > 0 && (
                   <span style={{
                     minWidth: 18, height: 18, padding: "0 5px", borderRadius: 9,
-                    background: ios.red, color: "#fff", fontSize: 11, fontWeight: 600,
+                    background: "#C8434F", color: "#fff", fontSize: 11, fontWeight: 600,
                     display: "inline-flex", alignItems: "center", justifyContent: "center",
                     fontVariantNumeric: "tabular-nums",
                   }}>{totalUnreadBadge}</span>
                 )}
               </div>
-              <div style={{ fontSize: 15, color: ios.secondaryLabel, marginTop: 2, letterSpacing: -0.2 }} className="truncate">
+              <div style={{ fontSize: 12, color: "#6E6E73", marginTop: 2 }}>
                 {formatHoursLong(durationMinutes)} lesson{pickupLocation ? ` · ${pickupLocation.split(",")[0]}` : ""}
               </div>
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: -0.4, color: ios.label, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
+                <div style={{ fontSize: 18, fontWeight: 500, letterSpacing: -0.4, color: "#000000", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
                   {formatTime24(startTime)}
                 </div>
-                <div style={{ fontSize: 13, fontWeight: 500, color: ios.secondaryLabel, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: 11, fontWeight: 400, color: "#6E6E73", marginTop: 4, fontVariantNumeric: "tabular-nums" }}>
                   {minutesUntil <= 0 ? "Now" : `in ${getCountdownText()}`}
                 </div>
               </div>
-              <span
+              <ChevronDown
                 aria-hidden
                 style={{
-                  width: 28, height: 28, borderRadius: "50%", background: ios.fill,
-                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  width: 18, height: 18, color: "#6E6E73",
                   transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
                   transition: "transform 250ms cubic-bezier(0.2,0.7,0.2,1)",
                 }}
-              >
-                <ChevronDown style={{ width: 16, height: 16, color: ios.secondaryLabel }} strokeWidth={2.4} />
-              </span>
+                strokeWidth={1.5}
+              />
             </div>
           </button>
 
