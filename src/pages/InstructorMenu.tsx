@@ -611,7 +611,7 @@ export default function InstructorMenu() {
   };
 
   // ─── Tile styling ───────────────────────────────────────────────────
-  const cardClass = "bg-white rounded-[14px] overflow-hidden border-[0.5px] border-[#E4E4E7] mb-[10px]";
+  const cardClass = "bg-white rounded-[12px] overflow-hidden border-[0.5px] border-[#E5E5EA] mb-[10px]";
 
   // ─── System palette remap ──────────────────────────────────────────
   // Maps legacy saturated tint colours to the unified premium palette so
