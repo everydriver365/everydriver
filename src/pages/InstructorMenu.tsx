@@ -652,18 +652,27 @@ export default function InstructorMenu() {
   // ─── Settings tile component ───────────────────────────────────────
 
   const SettingsTile = ({ tile, statusBadge, children }: { tile: TileDef; statusBadge?: React.ReactNode; children: React.ReactNode }) => {
+    const titleStyle: React.CSSProperties = {
+      fontSize: 15,
+      fontWeight: 500,
+      color: "#000000",
+      letterSpacing: -0.2,
+      fontFamily:
+        '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+    };
+
     if (tile.externalUrl) {
       return (
         <div id={`settings-tile-${tile.id}`} className={cardClass}>
           <button
-            className="w-full flex items-center gap-[14px] px-4 py-[14px]"
+            className="w-full flex items-center gap-3 px-4 py-[14px]"
             onClick={() => window.open(tile.externalUrl, "_blank", "noopener,noreferrer")}
           >
             {renderIconTile(tile.icon, tile.tintBg, tile.tintColor, tile.iconSrc)}
             <div className="flex-1 text-left min-w-0">
-              <span className="text-[15px] font-medium text-[#18181B]" style={{ fontFamily: "Inter, sans-serif" }}>{tile.title}</span>
+              <span style={titleStyle}>{tile.title}</span>
             </div>
-            <ExternalLink size={18} strokeWidth={2} color="#A1A1AA" className="shrink-0" />
+            <ExternalLink size={14} strokeWidth={1.6} color="#6E6E73" className="shrink-0" />
           </button>
         </div>
       );
@@ -673,19 +682,19 @@ export default function InstructorMenu() {
       <div id={`settings-tile-${tile.id}`} className={cardClass}>
         <Collapsible open={isOpen(tile.id)} onOpenChange={() => toggleSection(tile.id)}>
           <CollapsibleTrigger asChild>
-            <button className="w-full flex items-center gap-[14px] px-4 py-[14px]">
+            <button className="w-full flex items-center gap-3 px-4 py-[14px]">
               {renderIconTile(tile.icon, tile.tintBg, tile.tintColor, tile.iconSrc)}
               <div className="flex-1 text-left min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-[15px] font-medium text-[#18181B]" style={{ fontFamily: "Inter, sans-serif" }}>{tile.title}</span>
+                  <span style={titleStyle}>{tile.title}</span>
                   {statusBadge}
                 </div>
               </div>
-              <ChevronRight size={18} strokeWidth={2} color="#A1A1AA" className={cn("transition-transform duration-200 shrink-0", isOpen(tile.id) && "rotate-90")} />
+              <ChevronRight size={12} strokeWidth={1.6} color="#6E6E73" className={cn("transition-transform duration-200 shrink-0", isOpen(tile.id) && "rotate-90")} />
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="px-4 pb-4 border-t border-[#E4E4E7] pt-4">{children}</div>
+            <div className="px-4 pb-4 border-t border-[#E5E5EA] pt-4">{children}</div>
           </CollapsibleContent>
         </Collapsible>
       </div>
