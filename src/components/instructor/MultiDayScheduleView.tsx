@@ -502,14 +502,16 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   return (
     <div
       style={{
-        backgroundColor: "transparent",
+        backgroundColor: "#F2F2F4",
         color: "#1F1F1F",
         fontFamily: FONT_STACK,
         paddingBottom: 96,
+        minHeight: "100%",
       }}
     >
       {/* Day-grouped list */}
       <div>
+
         {visibleDays.map(({ day, dateStr, timeline, allDay }, idx) => {
           const prevDay = idx > 0 ? visibleDays[idx - 1].day : null;
           const today = isToday(day);
@@ -547,9 +549,8 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
               {isFirstOfWeek && (
                 <div
                   style={{
-                    padding: isVeryFirst ? "10px 16px 12px 56px" : "20px 16px 12px 56px",
-                    borderTop: isVeryFirst ? "none" : "0.5px solid #E5E5EA",
-                    marginTop: isVeryFirst ? 0 : 20,
+                    padding: isVeryFirst ? "16px 16px 12px 16px" : "20px 16px 12px 16px",
+                    marginTop: 0,
                     marginBottom: 0,
                     fontSize: 11,
                     fontWeight: 500,
@@ -569,9 +570,14 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                   display: "flex",
                   gap: 12,
                   alignItems: "flex-start",
-                  padding: "10px 16px 0 16px",
+                  margin: "0 16px 12px 16px",
+                  padding: 14,
+                  backgroundColor: "#FFFFFF",
+                  border: "0.5px solid #E5E5EA",
+                  borderRadius: 12,
                 }}
               >
+
                 {/* Date column */}
                 <div
                   style={{
