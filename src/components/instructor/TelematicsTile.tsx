@@ -222,15 +222,15 @@ function MetricCard({ icon, label, value, warning }: { icon: React.ReactNode; la
     <div
       className="text-center"
       style={{
-        borderRadius: 12, padding: 8,
-        backgroundColor: warning ? "rgba(220,38,38,0.08)" : "#F9F9FB",
+        borderRadius: 10, padding: 8,
+        backgroundColor: warning ? "#FBEAEC" : "#F2F2F4",
       }}
     >
-      <div className="flex justify-center mb-1" style={{ color: warning ? "#DC2626" : "#8E8E93" }}>
+      <div className="flex justify-center mb-1" style={{ color: warning ? "#C8434F" : "#6E6E73" }}>
         {icon}
       </div>
-      <p style={{ fontSize: 14, fontWeight: 700, color: warning ? "#DC2626" : "#000" }}>{value}</p>
-      <p style={{ fontSize: 9, color: "#8E8E93", marginTop: 2 }}>{label}</p>
+      <p style={{ fontSize: 14, fontWeight: 500, color: warning ? "#C8434F" : "#000000" }}>{value}</p>
+      <p style={{ fontSize: 9, color: "#6E6E73", marginTop: 2 }}>{label}</p>
     </div>
   );
 }
