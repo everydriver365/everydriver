@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect } from "react";
+import { type ElementType, type ReactNode, useState, useEffect } from "react";
 import { RealtimeHubProvider } from "@/hooks/useRealtimeHub";
 import { useGlobalLessonSync } from "@/hooks/useGlobalLessonSync";
 import { motion } from "framer-motion";
@@ -61,7 +61,7 @@ import {
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -373,6 +373,76 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     setIsMobileMenuOpen(false);
   };
 
+  const drawerIconTint = (index: number) => {
+    const tints = [
+      { bg: "hsl(var(--dsm-tint-blue-bg))", fg: "hsl(var(--dsm-tint-blue-fg))" },
+      { bg: "hsl(var(--dsm-tint-green-bg))", fg: "hsl(var(--dsm-tint-green-fg))" },
+      { bg: "hsl(var(--dsm-tint-purple-bg))", fg: "hsl(var(--dsm-tint-purple-fg))" },
+      { bg: "hsl(var(--dsm-tint-orange-bg))", fg: "hsl(var(--dsm-tint-orange-fg))" },
+      { bg: "hsl(var(--dsm-tile-icon-bg))", fg: "hsl(var(--dsm-text))" },
+    ];
+    return tints[index % tints.length];
+  };
+
+  const renderDrawerBadge = (link: (typeof sidebarLinks)[number], isActive: boolean) => {
+    if (isActive) return null;
+    if (link.href === "/instructor/messages") return <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />;
+    if (link.href === "/instructor/admin-chat") return <AdminMessageBadge />;
+    if (link.href === "/instructor/visitor-chats") return <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />;
+    if (link.href === "/instructor/pending-scheduling") return <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />;
+    return null;
+  };
+
+  const DrawerRow = ({
+    icon: Icon,
+    label,
+    active = false,
+    destructive = false,
+    index = 0,
+    onClick,
+    children,
+  }: {
+    icon: ElementType;
+    label: string;
+    active?: boolean;
+    destructive?: boolean;
+    index?: number;
+    onClick: () => void;
+    children?: ReactNode;
+  }) => {
+    const tint = drawerIconTint(index);
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={cn(
+          "relative flex w-full items-center gap-3 rounded-[8px] px-2 py-2 text-left transition-colors",
+          active ? "bg-[hsl(var(--dsm-tint-blue-bg))]" : "hover:bg-[hsl(var(--dsm-card)/0.72)]"
+        )}
+      >
+        <span
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px]"
+          style={{ backgroundColor: active ? "hsl(var(--dsm-card))" : destructive ? "hsl(var(--dsm-tint-red-bg))" : tint.bg }}
+        >
+          <Icon
+            className="h-[18px] w-[18px]"
+            strokeWidth={1.8}
+            style={{ color: active ? "hsl(var(--dsm-tint-blue-fg))" : destructive ? "hsl(var(--dsm-tint-red-fg))" : tint.fg }}
+          />
+        </span>
+        <span
+          className={cn(
+            "min-w-0 flex-1 truncate text-[14px] font-medium leading-5 tracking-normal",
+            active ? "text-[hsl(var(--dsm-tint-blue-fg))]" : destructive ? "text-[hsl(var(--dsm-tint-red-fg))]" : "text-[hsl(var(--dsm-text))]"
+          )}
+        >
+          {label}
+        </span>
+        {children}
+      </button>
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -436,96 +506,73 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
             {/* Hidden mobile menu Sheet (controlled via header) */}
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-              <SheetContent side="right" className="w-[280px] p-0">
-                <SheetHeader className="p-4 border-b">
+              <SheetContent
+                side="right"
+                className="w-[296px] max-w-[calc(100vw-18px)] border-l border-[hsl(var(--dsm-border))] bg-[hsl(var(--dsm-bg))] p-0 shadow-2xl [&>button]:hidden"
+              >
+                <SheetHeader className="border-b border-[hsl(var(--dsm-border))] px-4 py-4 text-left">
+                  <SheetTitle className="sr-only">Instructor menu</SheetTitle>
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
+                    <Avatar className="h-11 w-11 border border-[hsl(var(--dsm-border))]">
                       <AvatarImage src={instructor?.profile_image_url || undefined} />
-                      <AvatarFallback className="bg-primary text-primary-foreground">
+                      <AvatarFallback className="bg-[hsl(var(--dsm-tile-icon-bg))] text-[hsl(var(--dsm-text))]">
                         {instructor?.name?.charAt(0) || "I"}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 min-w-0 text-left">
-                      <p className="font-medium text-sm truncate">{instructor?.name || "Instructor"}</p>
-                      <p className="text-xs text-muted-foreground truncate">{instructor?.email}</p>
+                    <div className="min-w-0 flex-1 text-left">
+                      <p className="truncate text-[15px] font-semibold leading-5 tracking-normal text-[hsl(var(--dsm-text))]">{instructor?.name || "Instructor"}</p>
+                      <p className="truncate text-[13px] leading-5 tracking-normal text-[hsl(var(--dsm-text-secondary))]">{instructor?.email}</p>
                     </div>
+                    <SheetClose className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[hsl(var(--dsm-text-secondary))] hover:bg-[hsl(var(--dsm-card)/0.7)]" aria-label="Close menu">
+                      <X className="h-5 w-5" strokeWidth={1.8} />
+                    </SheetClose>
                   </div>
                 </SheetHeader>
 
                 {/* Navigation Links */}
-                <nav className="flex-1 p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]">
-                  <button
+                <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3" style={{ maxHeight: "calc(100dvh - 166px)" }}>
+                  <DrawerRow
+                    icon={Search}
+                    label="Search"
+                    index={0}
                     onClick={() => { setIsMobileMenuOpen(false); setMobileSearchOpen(true); setMobileSearchQuery(""); setMobileSearchResults([]); }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-left"
-                  >
-                    <Search className="h-5 w-5" />
-                    Search
-                  </button>
-                  <button
+                  />
+                  <DrawerRow
+                    icon={Headphones}
+                    label="Voice assistant"
+                    index={1}
                     onClick={() => { setIsMobileMenuOpen(false); handleVoiceTap(); }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-left"
-                  >
-                    <Headphones className="h-5 w-5" />
-                    Voice Assistant
-                  </button>
-                  <div className="h-px bg-border my-2" />
+                  />
+                  <div className="my-2 h-px bg-[hsl(var(--dsm-border))]" />
                   {sidebarLinks.map((link) => {
                     const isActive = location.pathname === link.href;
-                    const isMessages = link.href === "/instructor/messages";
-                    const isAdminChat = link.href === "/instructor/admin-chat";
-                    const isVisitorChats = link.href === "/instructor/visitor-chats";
-                    const isPendingScheduling = link.href === "/instructor/pending-scheduling";
-                    const isHighlighted = "highlight" in link && link.highlight;
                     return (
-                      <button
+                      <DrawerRow
                         key={link.href}
+                        icon={link.icon}
+                        label={link.label === "Test Results" ? "Test results" : link.label === "Test Swap" ? "Test swap" : link.label === "GPS Tracking" ? "GPS tracking" : link.label === "Contact Admin" ? "Contact admin" : link.label === "Visitor Chats" ? "Visitor chats" : link.label === "Fill Gaps" ? "Fill gaps" : link.label === "Saved Routes" ? "Saved routes" : link.label === "Mini Website" ? "Mini website" : link.label}
+                        active={isActive}
+                        index={sidebarLinks.indexOf(link) + 2}
                         onClick={() => handleNavClick(link.href)}
-                        className={cn(
-                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left",
-                          isActive
-                            ? "bg-primary text-primary-foreground"
-                            : isHighlighted
-                            ? "bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                        )}
                       >
-                        <span className="relative">
-                          <link.icon
-                            className={cn(
-                              "h-5 w-5",
-                              isHighlighted && !isActive && "text-emerald-500"
-                            )}
-                          />
-                          {isAdminChat && !isActive && <AdminMessageBadge />}
-                        </span>
-                        {link.label}
-                        {isVisitorChats && !isActive && (
-                          <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
-                        )}
-                        {isMessages && !isActive && (
-                          <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
-                        )}
-                        {isPendingScheduling && !isActive && (
-                          <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
-                        )}
-                      </button>
+                        {renderDrawerBadge(link, isActive)}
+                      </DrawerRow>
                     );
                   })}
                 </nav>
 
                 {/* Menu Footer */}
-                <div className="p-3 border-t mt-auto">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-muted-foreground hover:text-foreground"
+                <div className="mt-auto border-t border-[hsl(var(--dsm-border))] p-3">
+                  <DrawerRow
+                    icon={LogOut}
+                    label="Sign out"
+                    destructive
+                    index={0}
                     onClick={() => {
                       handleSignOut();
                       setIsMobileMenuOpen(false);
                     }}
-                  >
-                    <LogOut className="h-5 w-5 mr-3" />
-                    Sign Out
-                  </Button>
+                  />
                 </div>
               </SheetContent>
             </Sheet>
