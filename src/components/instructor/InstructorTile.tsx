@@ -172,7 +172,7 @@ export function InstructorTile({
       <div style={{ minWidth: 0, width: "100%" }}>
         <p
           style={{
-            fontSize: 15,
+            fontSize: "0.9375em", /* 15px @ default */
             fontWeight: 500,
             color: "#000000",
             letterSpacing: "-0.2px",
@@ -185,7 +185,7 @@ export function InstructorTile({
         {(subtitle || (showCount && countLabel)) && (
           <p
             style={{
-              fontSize: 12,
+              fontSize: "0.75em", /* 12px @ default */
               fontWeight: 400,
               color: "#6E6E73",
               lineHeight: 1.35,

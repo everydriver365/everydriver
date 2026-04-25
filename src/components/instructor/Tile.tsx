@@ -298,7 +298,7 @@ export function Tile({
         <div style={{ minWidth: 0, width: "100%" }}>
           <p
             style={{
-              fontSize: 15,
+              fontSize: "0.9375em",
               fontWeight: 500,
               color: "#000000",
               letterSpacing: "-0.2px",
@@ -311,7 +311,7 @@ export function Tile({
           {secondaryText && (
             <p
               style={{
-                fontSize: 12,
+                fontSize: "0.75em",
                 fontWeight: 400,
                 color: "#6E6E73",
                 lineHeight: 1.35,
@@ -393,7 +393,7 @@ export function Tile({
       <div style={{ flex: 1, minWidth: 0 }}>
         <p
           style={{
-            fontSize: 14,
+            fontSize: "0.875em",
             fontWeight: 600,
             color: "#1C1C1E",
             letterSpacing: "-0.2px",
@@ -410,7 +410,7 @@ export function Tile({
         {secondary === "metric" && (
           <p
             style={{
-              fontSize: 18,
+              fontSize: "1.125em",
               fontWeight: 700,
               color: "#1C1C1E",
               letterSpacing: "-0.4px",
@@ -426,7 +426,7 @@ export function Tile({
             {metricUnit && (
               <span
                 style={{
-                  fontSize: 10,
+                  fontSize: "0.625em",
                   fontWeight: 500,
                   color: "#8E8E93",
                   letterSpacing: "-0.08px",
@@ -442,7 +442,7 @@ export function Tile({
         {secondary === "status" && (
           <p
             style={{
-              fontSize: 12,
+              fontSize: "0.75em",
               fontWeight: 600,
               color: iconBg,
               letterSpacing: "-0.1px",
@@ -457,7 +457,7 @@ export function Tile({
         {secondary === "subtitle" && (
           <p
             style={{
-              fontSize: 12,
+              fontSize: "0.75em",
               fontWeight: 500,
               color: "#8E8E93",
               letterSpacing: "-0.08px",
