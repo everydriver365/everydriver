@@ -330,12 +330,11 @@ export function Tile({
       type="button"
       onClick={onClick}
       aria-label={ariaLabel ?? title}
-      className="tile-press"
+      className="tile-press instructor-tile-lift"
       style={{
         gridColumn: fullWidth ? "1 / span 2" : undefined,
         background: "#FFFFFF",
-        border: "none",
-        boxShadow: "none",
+        border: "1px solid rgba(15, 23, 42, 0.06)",
         borderRadius: 14,
         padding: 12,
         minHeight: 96,
