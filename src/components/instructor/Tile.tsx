@@ -222,6 +222,110 @@ export function Tile({
       ? "subtitle"
       : "none";
 
+  // ---- Refined variant ----------------------------------------------------
+  if (variant === "refined") {
+    const secondaryText =
+      secondary === "metric"
+        ? `${metricValue}${metricUnit ? ` ${metricUnit}` : ""}`
+        : secondary === "status"
+        ? statusText
+        : secondary === "subtitle"
+        ? subtitle
+        : null;
+
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={ariaLabel ?? title}
+        className="tile-press"
+        style={{
+          gridColumn: fullWidth ? "1 / span 2" : undefined,
+          background: "#FFFFFF",
+          border: "0.5px solid #E5E5EA",
+          boxShadow: "none",
+          borderRadius: 12,
+          padding: 16,
+          minHeight: 110,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          gap: 12,
+          textAlign: "left",
+          cursor: onClick ? "pointer" : "default",
+          fontFamily: FONT_STACK,
+          width: "100%",
+        }}
+      >
+        <div
+          style={{
+            position: "relative",
+            width: 40,
+            height: 40,
+            borderRadius: 10,
+            background: refined.tint,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Icon
+            size={22}
+            color={refined.accent}
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+          {liveDot && (
+            <span
+              className="tile-live-dot"
+              style={{
+                position: "absolute",
+                top: 4,
+                right: 4,
+                width: 7,
+                height: 7,
+                borderRadius: "50%",
+                background: refined.accent,
+                boxShadow: "0 0 0 2px #FFFFFF",
+              }}
+            />
+          )}
+        </div>
+
+        <div style={{ minWidth: 0, width: "100%" }}>
+          <p
+            style={{
+              fontSize: 15,
+              fontWeight: 500,
+              color: "#000000",
+              letterSpacing: "-0.2px",
+              lineHeight: 1.25,
+              margin: "0 0 3px",
+            }}
+          >
+            {title}
+          </p>
+          {secondaryText && (
+            <p
+              style={{
+                fontSize: 12,
+                fontWeight: 400,
+                color: "#6E6E73",
+                lineHeight: 1.35,
+                margin: 0,
+              }}
+            >
+              {secondaryText}
+            </p>
+          )}
+        </div>
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"
