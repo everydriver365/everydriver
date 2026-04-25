@@ -255,7 +255,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                 fontSize: 11,
                 fontWeight: 500,
                 color: TXT.muted,
-                letterSpacing: 0.5,
+                letterSpacing: 0,
               }}
             >
               NO PENDING ACTIONS
@@ -265,7 +265,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                 fontSize: 14,
                 fontWeight: 500,
                 color: TXT.primary,
-                marginTop: 4,
+                marginTop: scaledPx(4),
               }}
             >
               You're all caught up
@@ -310,7 +310,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                     fontSize: 11,
                     fontWeight: 500,
                     color: TXT.blue,
-                    letterSpacing: 0.5,
+                    letterSpacing: 0,
                   }}
                 >
                   UP NEXT · {startTime}
@@ -320,7 +320,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                     fontSize: 14,
                     fontWeight: 500,
                     color: TXT.primary,
-                    marginTop: 4,
+                    marginTop: scaledPx(4),
                   }}
                 >
                   {displayName} — {lessonType}
@@ -330,7 +330,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                     style={{
                       fontSize: 12,
                       color: TXT.secondary,
-                      marginTop: 2,
+                      marginTop: scaledPx(2),
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
