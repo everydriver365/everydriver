@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import dsmLogo from "@/assets/dsm-logo.png";
 import {
   Calendar, Users, MapPin, PoundSterling, MessageSquare,
-  UsersRound, X, Coffee, Clock, Star, ChevronRight,
+  X, Clock, Star,
 } from "lucide-react";
 
 interface QuickActionsPopoverMenuProps {
@@ -22,9 +22,7 @@ const quickActions = [
   { id: "track-live", label: "Track Live", icon: MapPin, color: "16 185 129", route: "/instructor/tracking" },
   { id: "take-payment", label: "Take Payment", icon: PoundSterling, color: "244 63 94", route: "/instructor/take-payment" },
   { id: "messages", label: "Messages", icon: MessageSquare, color: "6 182 212", route: "/instructor/messages?action=new" },
-  { id: "nearby-adis", label: "Nearby ADIs", icon: UsersRound, color: "99 102 241", route: "/instructor/nearby-friends" },
   { id: "availability", label: "Availability", icon: Clock, color: "20 184 166", route: "/instructor/availability?action=add" },
-  { id: "end-of-day", label: "End of Day", icon: Coffee, color: "99 102 241", route: "/instructor/end-of-day" },
 ];
 
 function loadPinned(): string[] {
@@ -58,8 +56,11 @@ export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMe
     navigate(route);
   };
 
-  const pinnedVisible = quickActions.filter(a => pinned.includes(a.id));
-  const unpinnedVisible = quickActions.filter(a => !pinned.includes(a.id));
+  // Sort: pinned first, preserving original order within each group
+  const sortedActions = [
+    ...quickActions.filter(a => pinned.includes(a.id)),
+    ...quickActions.filter(a => !pinned.includes(a.id)),
+  ];
 
   return (
     <DrawerPrimitive.Root
@@ -82,15 +83,15 @@ export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMe
 
           {/* Header */}
           <div
-            className="flex items-center gap-3 px-4 pb-4 bg-background border-b border-border"
+            className="flex items-center gap-3 px-4 pb-3 bg-background border-b border-border"
             style={{
-              paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)",
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + 14px)",
             }}
           >
             <img
               src={dsmLogo}
               alt="DSM"
-              className="h-10 w-auto object-contain"
+              className="h-9 w-auto object-contain"
             />
             <div className="flex-1 min-w-0" />
             <button
@@ -102,49 +103,67 @@ export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMe
             </button>
           </div>
 
-          {/* Action list */}
-          <div className="flex-1 overflow-auto ios-scroll px-2 pt-2">
-            {pinnedVisible.length > 0 && (
-              <>
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground px-3 pt-2 pb-1">
-                  Pinned
-                </p>
-                <div className="flex flex-col gap-0.5">
-                  {pinnedVisible.map((action, index) => (
-                    <ActionRow
-                      key={action.id}
-                      action={action}
-                      isActive={index === 0}
-                      isPinned
-                      onAction={handleAction}
-                      onTogglePin={togglePin}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground px-3 pt-3 pb-1">
+          {/* Section label */}
+          <div className="px-4 pt-3 pb-2">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
               Quick Actions
             </p>
-            <div className="flex flex-col gap-0.5">
-              {unpinnedVisible.map((action) => (
-                <ActionRow
-                  key={action.id}
-                  action={action}
-                  isActive={false}
-                  isPinned={false}
-                  onAction={handleAction}
-                  onTogglePin={togglePin}
-                />
-              ))}
+          </div>
+
+          {/* 2-column tile grid — no scroll */}
+          <div className="flex-1 overflow-hidden px-3">
+            <div className="grid grid-cols-2 gap-2.5">
+              {sortedActions.map((action) => {
+                const Icon = action.icon;
+                const isPinned = pinned.includes(action.id);
+                return (
+                  <div key={action.id} className="relative">
+                    <button
+                      onClick={() => handleAction(action.route)}
+                      className={cn(
+                        "w-full aspect-square flex flex-col items-center justify-center gap-2",
+                        "rounded-2xl border border-border/60 bg-card",
+                        "active:scale-[0.97] active:bg-muted/60 transition-all",
+                        "shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
+                      )}
+                    >
+                      <div
+                        className="h-11 w-11 rounded-full flex items-center justify-center"
+                        style={{ backgroundColor: `rgba(${action.color}, 0.12)` }}
+                      >
+                        <Icon
+                          className="h-[20px] w-[20px]"
+                          style={{ color: `rgb(${action.color})` }}
+                          strokeWidth={2}
+                        />
+                      </div>
+                      <span className="text-[12.5px] font-medium text-foreground text-center leading-tight px-1">
+                        {action.label}
+                      </span>
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); togglePin(action.id); }}
+                      className="absolute top-1.5 right-1.5 p-1.5 rounded-full active:bg-muted transition-colors"
+                      aria-label={isPinned ? "Unpin action" : "Pin action"}
+                    >
+                      <Star
+                        className={cn(
+                          "h-3.5 w-3.5 transition-colors",
+                          isPinned ? "text-amber-500 fill-amber-500" : "text-muted-foreground/30"
+                        )}
+                        strokeWidth={2}
+                      />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
           {/* Footer */}
           <div
-            className="px-4 pt-3 pb-4 border-t border-border/60 text-center"
-            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)" }}
+            className="px-4 pt-3 pb-3 border-t border-border/60 text-center mt-3"
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
           >
             <p className="text-[11px] text-muted-foreground">
               Driving School Manager
@@ -153,64 +172,5 @@ export function QuickActionsPopoverMenu({ open, onClose }: QuickActionsPopoverMe
         </DrawerPrimitive.Content>
       </DrawerPrimitive.Portal>
     </DrawerPrimitive.Root>
-  );
-}
-
-interface ActionRowProps {
-  action: typeof quickActions[number];
-  isActive: boolean;
-  isPinned: boolean;
-  onAction: (route: string) => void;
-  onTogglePin: (id: string) => void;
-}
-
-function ActionRow({ action, isActive, isPinned, onAction, onTogglePin }: ActionRowProps) {
-  const Icon = action.icon;
-  return (
-    <div
-      className={cn(
-        "flex items-center rounded-2xl transition-colors",
-        isActive && "bg-[hsl(var(--dsm-accent-blue)/0.10)]"
-      )}
-    >
-      <button
-        onClick={() => onAction(action.route)}
-        className="flex-1 flex items-center gap-3 px-3 py-2.5 rounded-2xl active:bg-muted/60 transition-colors text-left"
-        style={{ minHeight: 56 }}
-      >
-        <div
-          className="h-9 w-9 rounded-full flex items-center justify-center shrink-0"
-          style={{ backgroundColor: `rgba(${action.color}, 0.12)` }}
-        >
-          <Icon
-            className="h-[18px] w-[18px]"
-            style={{ color: `rgb(${action.color})` }}
-            strokeWidth={2}
-          />
-        </div>
-        <span
-          className={cn(
-            "flex-1 text-[15px] text-foreground",
-            isActive ? "font-semibold" : "font-medium"
-          )}
-        >
-          {action.label}
-        </span>
-        <ChevronRight className="h-4 w-4 text-muted-foreground/60 shrink-0" />
-      </button>
-      <button
-        onClick={(e) => { e.stopPropagation(); onTogglePin(action.id); }}
-        className="p-2 mr-1 rounded-full active:bg-muted transition-colors shrink-0"
-        aria-label={isPinned ? "Unpin action" : "Pin action"}
-      >
-        <Star
-          className={cn(
-            "h-4 w-4 transition-colors",
-            isPinned ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40"
-          )}
-          strokeWidth={2}
-        />
-      </button>
-    </div>
   );
 }
