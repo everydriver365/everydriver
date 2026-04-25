@@ -61,7 +61,7 @@ import {
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -371,6 +371,76 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const handleNavClick = (href: string) => {
     navigate(href);
     setIsMobileMenuOpen(false);
+  };
+
+  const drawerIconTint = (index: number) => {
+    const tints = [
+      { bg: "hsl(var(--dsm-tint-blue-bg))", fg: "hsl(var(--dsm-tint-blue-fg))" },
+      { bg: "hsl(var(--dsm-tint-green-bg))", fg: "hsl(var(--dsm-tint-green-fg))" },
+      { bg: "hsl(var(--dsm-tint-purple-bg))", fg: "hsl(var(--dsm-tint-purple-fg))" },
+      { bg: "hsl(var(--dsm-tint-orange-bg))", fg: "hsl(var(--dsm-tint-orange-fg))" },
+      { bg: "hsl(var(--dsm-tile-icon-bg))", fg: "hsl(var(--dsm-text))" },
+    ];
+    return tints[index % tints.length];
+  };
+
+  const renderDrawerBadge = (link: (typeof sidebarLinks)[number], isActive: boolean) => {
+    if (isActive) return null;
+    if (link.href === "/instructor/messages") return <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />;
+    if (link.href === "/instructor/admin-chat") return <AdminMessageBadge />;
+    if (link.href === "/instructor/visitor-chats") return <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />;
+    if (link.href === "/instructor/pending-scheduling") return <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />;
+    return null;
+  };
+
+  const DrawerRow = ({
+    icon: Icon,
+    label,
+    active = false,
+    destructive = false,
+    index = 0,
+    onClick,
+    children,
+  }: {
+    icon: React.ElementType;
+    label: string;
+    active?: boolean;
+    destructive?: boolean;
+    index?: number;
+    onClick: () => void;
+    children?: ReactNode;
+  }) => {
+    const tint = drawerIconTint(index);
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={cn(
+          "relative flex w-full items-center gap-3 rounded-[8px] px-2 py-2 text-left transition-colors",
+          active ? "bg-[hsl(var(--dsm-tint-blue-bg))]" : "hover:bg-[hsl(var(--dsm-card)/0.72)]"
+        )}
+      >
+        <span
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px]"
+          style={{ backgroundColor: active ? "hsl(var(--dsm-card))" : destructive ? "hsl(var(--dsm-tint-red-bg))" : tint.bg }}
+        >
+          <Icon
+            className="h-[18px] w-[18px]"
+            strokeWidth={1.8}
+            style={{ color: active ? "hsl(var(--dsm-tint-blue-fg))" : destructive ? "hsl(var(--dsm-tint-red-fg))" : tint.fg }}
+          />
+        </span>
+        <span
+          className={cn(
+            "min-w-0 flex-1 truncate text-[14px] font-medium leading-5 tracking-normal",
+            active ? "text-[hsl(var(--dsm-tint-blue-fg))]" : destructive ? "text-[hsl(var(--dsm-tint-red-fg))]" : "text-[hsl(var(--dsm-text))]"
+          )}
+        >
+          {label}
+        </span>
+        {children}
+      </button>
+    );
   };
 
   if (loading) {
