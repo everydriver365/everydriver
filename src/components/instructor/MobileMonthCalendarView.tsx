@@ -74,7 +74,7 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dayDotMap, setDayDotMap] = useState<Record<string, DayDots>>({});
-  const [presentCategories, setPresentCategories] = useState<Set<DotCategory>>(new Set());
+  const [presentCategories, setPresentCategories] = useState<Set<string>>(new Set());
   const [dayEvents, setDayEvents] = useState<DayEvents>({ lessons: [], external: [] });
   const [eventsLoading, setEventsLoading] = useState(false);
 
