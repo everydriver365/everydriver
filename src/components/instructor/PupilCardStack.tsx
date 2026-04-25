@@ -633,19 +633,8 @@ export function PupilCardStack({
   };
 
   // Premium-tile-system avatar palette (deterministic per pupil id/name).
-  const avatarColors = [
-    "#3B8B3B",
-    "#2B7BC8",
-    "#C8434F",
-    "#8A5BC9",
-    "#B8801F",
-    "#6E6E73",
-  ];
-  const avatarHashSeed = pupil.id || pupil.name || "";
-  const avatarColorIndex =
-    avatarHashSeed.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) %
-    avatarColors.length;
-  const avatarBg = avatarColors[avatarColorIndex];
+  // Sourced from the shared helper so Tracking + other surfaces match.
+  const avatarBg = pupilAvatarColor(pupil.id || pupil.name || "");
 
   // Status dot in the bottom-right of the avatar (mapped to system palette).
   const pupilStatusKey = (pupil.status as string | undefined) || "active";
