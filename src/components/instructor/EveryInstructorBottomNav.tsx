@@ -1,19 +1,30 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { BottomNav, BottomNavTabConfig } from "@/components/instructor/ui/BottomNav";
 import {
-  Home,
-  CalendarDays,
-  Radio,
-  PoundSterling,
-  Grid3X3,
-} from "lucide-react";
-import { MobilePortalNav, MobileNavItem } from "@/components/layout/MobilePortalNav";
+  HomeNavIcon,
+  ScheduleNavIcon,
+  TrackNavIcon,
+  MoneyNavIcon,
+  PupilsNavIcon,
+  MenuNavIcon,
+} from "@/components/instructor/ui/NavIcons";
 
-const navItems: MobileNavItem[] = [
-  { label: "Home", icon: Home, path: "/every-instructor" },
-  { label: "Schedule", icon: CalendarDays, path: "/every-instructor/schedule" },
-  { label: "Track", icon: Radio, path: "/every-instructor/tracking" },
-  { label: "Money", icon: PoundSterling, path: "/every-instructor/pay" },
-  { label: "More", icon: Grid3X3, path: "/every-instructor/menu" },
+/**
+ * Instructor mobile bottom navigation.
+ *
+ * Tab order, routes, badge bindings and tap behaviour are unchanged from
+ * the previous implementation — this file only swaps the visual layer to
+ * the premium tile design system. The "More" tab's user-visible label is
+ * now "Menu" (route id stays /every-instructor/menu).
+ */
+
+const tabs: BottomNavTabConfig[] = [
+  { label: "Home", icon: HomeNavIcon, path: "/every-instructor", exact: true },
+  { label: "Schedule", icon: ScheduleNavIcon, path: "/every-instructor/schedule" },
+  { label: "Track", icon: TrackNavIcon, path: "/every-instructor/tracking" },
+  { label: "Money", icon: MoneyNavIcon, path: "/every-instructor/pay" },
+  { label: "Pupils", icon: PupilsNavIcon, path: "/every-instructor/pupils" },
+  { label: "Menu", icon: MenuNavIcon, path: "/every-instructor/menu" },
 ];
 
 export function EveryInstructorBottomNav() {
@@ -24,15 +35,5 @@ export function EveryInstructorBottomNav() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  return (
-    <MobilePortalNav
-      items={navItems}
-      layoutId="eiActiveTab"
-      activeColor="text-[#0066FF]"
-      inactiveColor="text-[#8E8E93]"
-      bgClassName="bg-white/80 backdrop-blur-xl border-t border-[hsl(240_5%_78%/0.5)]"
-      pillClassName="bg-[#0066FF]"
-      onNavigate={handleNav}
-    />
-  );
+  return <BottomNav tabs={tabs} onNavigate={handleNav} />;
 }
