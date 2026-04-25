@@ -8,13 +8,15 @@ export interface CategoryStyle {
   border: string;
 }
 
+// Premium tile palette — pale tints with black titles & system-grey secondary text.
+// Border colours retained for the optional left accent (rendered as a thin hairline).
 export const CATEGORY_STYLES: Record<EventCategory, CategoryStyle> = {
-  lesson:  { bg: "#E8F0FE", text: "#174EA6", border: "#1A73E8" },
-  blocked: { bg: "#FEF7E0", text: "#7A4F01", border: "#F9AB00" },
-  holiday: { bg: "#E6F4EA", text: "#0D652D", border: "#188038" },
-  course:  { bg: "#FCE8E6", text: "#A50E0E", border: "#D93025" },
-  admin:   { bg: "#F3E8FD", text: "#5E35B1", border: "#A142F4" },
-  task:    { bg: "#F1F3F4", text: "#3C4043", border: "#9AA0A6" },
+  lesson:  { bg: "#E6F1FB", text: "#000000", border: "#2B7BC8" },
+  blocked: { bg: "#F1ECFA", text: "#000000", border: "#8A5BC9" },
+  holiday: { bg: "#E8F3E8", text: "#000000", border: "#3B8B3B" },
+  course:  { bg: "#FBEAEC", text: "#000000", border: "#C8434F" },
+  admin:   { bg: "#FBF1DE", text: "#000000", border: "#B8801F" },
+  task:    { bg: "#F2F2F4", text: "#000000", border: "#6E6E73" },
 };
 
 /* ---------- Google Calendar live colour mapping ---------- */
