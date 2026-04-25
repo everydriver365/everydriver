@@ -104,7 +104,7 @@ export function TelematicsTile() {
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div style={{ borderTop: "0.5px solid hsl(var(--dsm-border))" }} className="px-[14px] pb-3 pt-3 space-y-2">
+              <div style={{ borderTop: "0.5px solid #E5E5EA" }} className="px-4 pb-3 pt-3 space-y-2">
                 {hasData ? (
                   <>
                     <div className="grid grid-cols-3 gap-2">
