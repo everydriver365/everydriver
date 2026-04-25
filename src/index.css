@@ -968,3 +968,45 @@ html {
   border-bottom: 1px solid transparent;
 }
 .acc-footer-link:hover { border-bottom-color: hsl(var(--acc-primary)); }
+
+/* ==========================================================================
+   Accessibility settings (managed by AccessibilityContext)
+   --a11y-text-scale is a multiplier (0.9 / 1 / 1.15 / 1.3) applied to body
+   text. Capped at 1.3 to keep tile grids stable on small viewports.
+   ========================================================================== */
+:root {
+  --a11y-text-scale: 1;
+}
+
+html {
+  font-size: calc(16px * var(--a11y-text-scale));
+}
+
+/* Keep marketing/public pages unaffected by also offering an opt-out hook */
+html.a11y-no-scale {
+  font-size: 16px;
+}
+
+/* Reduce motion — respects user OS pref already; this is the manual override */
+html.a11y-reduce-motion *,
+html.a11y-reduce-motion *::before,
+html.a11y-reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Larger tap targets — bumps min interactive size */
+html.a11y-large-tap button,
+html.a11y-large-tap [role="button"],
+html.a11y-large-tap a {
+  min-height: 48px;
+}
+
+/* High contrast — strengthens text colours and borders within instructor portal */
+html.a11y-high-contrast .instructor-portal,
+html.a11y-high-contrast .ios-instructor {
+  --dsm-text: 222 47% 5%;
+  --dsm-border: 222 30% 35%;
+}

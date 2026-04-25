@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { InstructorAuthProvider } from "@/context/InstructorAuthContext";
 import { DemoModeProvider } from "@/context/DemoModeContext";
+import { AccessibilityProvider } from "@/context/AccessibilityContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { SchoolAuthProvider } from "@/context/SchoolAuthContext";
 import { DynamicPWAMeta } from "@/components/pwa/DynamicPWAMeta";
@@ -28,6 +29,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <AccessibilityProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -61,6 +63,7 @@ const App = () => (
         </AdminAuthProvider>
       </BrowserRouter>
     </TooltipProvider>
+    </AccessibilityProvider>
   </QueryClientProvider>
 );
 
