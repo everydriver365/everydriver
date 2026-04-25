@@ -75,6 +75,9 @@ import { PupilAvatarUpload } from "@/components/instructor/PupilAvatarUpload";
 import { PupilProgressReportGenerator } from "@/components/instructor/PupilProgressReportGenerator";
 import { PupilPackageCard } from "@/components/instructor/PupilPackageCard";
 import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
+import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
+import { StatCard } from "@/components/instructor/ui/StatCard";
+import { SearchInput } from "@/components/instructor/ui/SearchInput";
 
 interface Pupil {
   id: string;
