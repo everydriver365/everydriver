@@ -493,7 +493,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16" style={{ backgroundColor: "#FFFFFF" }}>
-        <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#1A73E8" }} />
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#2B7BC8" }} />
       </div>
     );
   }
