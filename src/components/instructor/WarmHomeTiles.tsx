@@ -13,14 +13,14 @@ interface Props {
 }
 
 const TXT = {
-  primary: "#2C2C2A",
-  secondary: "#5F5E5A",
-  muted: "#888780",
-  red: "#A32D2D",
-  redBorder: "#F7C1C1",
-  blue: "#185FA5",
-  blueBorder: "#B5D4F4",
-  hairline: "#D3D1C7",
+  primary: "#000000",
+  secondary: "#6E6E73",
+  muted: "#8E8E93",
+  red: "#C8434F",
+  redBorder: "#E5E5EA",
+  blue: "#2B7BC8",
+  blueBorder: "#E5E5EA",
+  hairline: "#E5E5EA",
 };
 
 const RESPONSE_SLA_HOURS = 24;
@@ -85,9 +85,11 @@ function TileShell({
   return (
     <button
       onClick={onClick}
-      className="shadow-premium w-full text-left flex items-stretch relative"
+      className="w-full text-left flex items-stretch relative"
       style={{
         background: "#FFFFFF",
+        border: "0.5px solid #E5E5EA",
+        boxShadow: "none",
         borderRadius: 12,
         padding: "14px 16px",
         gap: 12,
@@ -384,9 +386,10 @@ export function WarmHomeTiles({ instructorId }: Props) {
 
       {/* Tile 3 — This week at a glance */}
       <div
-        className="shadow-premium relative"
+        className="relative"
         style={{
           background: "#FFFFFF",
+          border: "0.5px solid #E5E5EA",
           borderRadius: 12,
           padding: "14px 16px",
         }}
