@@ -572,60 +572,16 @@
    Replaces any 1px hairline border as the separator from the page. */
 .shadow-premium {
   box-shadow:
-    0 2px 4px rgba(15, 23, 42, 0.08),
-    0 12px 24px rgba(15, 23, 42, 0.18),
-    0 28px 52px rgba(15, 23, 42, 0.22);
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 6px 14px rgba(15, 23, 42, 0.10),
+    0 18px 36px rgba(15, 23, 42, 0.14);
   transition: box-shadow 150ms ease, transform 150ms ease;
 }
-
-/* App-wide tile lift inside the instructor app.
-   Upgrades every standard Tailwind shadow utility AND raw Card surfaces
-   so quick actions, telematics cards, money tiles, settings rows and
-   dashboard cards all sit visibly above the page. */
-.instructor-portal .shadow-sm,
-.instructor-portal .shadow,
-.instructor-portal .shadow-md,
-.instructor-portal .shadow-lg,
-.instructor-portal .shadow-xl,
-.instructor-portal .shadow-2xl,
-.instructor-portal [class*="shadow-["],
-.instructor-portal .shadow-lift,
-.instructor-portal .shadow-premium {
-  box-shadow:
-    0 2px 4px rgba(15, 23, 42, 0.08),
-    0 12px 24px rgba(15, 23, 42, 0.18),
-    0 28px 52px rgba(15, 23, 42, 0.22) !important;
-}
-.instructor-portal .hover\:shadow-sm:hover,
-.instructor-portal .hover\:shadow-md:hover,
-.instructor-portal .hover\:shadow-lg:hover,
-.instructor-portal .hover\:shadow-xl:hover,
-.instructor-portal .hover\:shadow-2xl:hover {
-  box-shadow:
-    0 4px 8px rgba(15, 23, 42, 0.10),
-    0 16px 30px rgba(15, 23, 42, 0.22),
-    0 36px 64px rgba(15, 23, 42, 0.26) !important;
-}
-/* Don't lift maps, modals/sheets, popovers, headers/nav, or page sections. */
-.instructor-portal header,
-.instructor-portal nav,
-.instructor-portal section,
-.instructor-portal .leaflet-container,
-.instructor-portal .gm-style,
-.instructor-portal [role="dialog"],
-.instructor-portal [role="menu"],
-.instructor-portal [data-radix-popper-content-wrapper],
-.instructor-portal [data-radix-popper-content-wrapper] *,
-.instructor-portal [data-sonner-toaster],
-.instructor-portal [data-sonner-toast] {
-  box-shadow: revert !important;
-}
-
 .shadow-premium-lg {
   box-shadow:
-    0 4px 8px rgba(15, 23, 42, 0.10),
-    0 16px 30px rgba(15, 23, 42, 0.22),
-    0 36px 64px rgba(15, 23, 42, 0.26);
+    0 2px 4px rgba(15, 23, 42, 0.08),
+    0 10px 22px rgba(15, 23, 42, 0.14),
+    0 24px 48px rgba(15, 23, 42, 0.18);
   transition: box-shadow 150ms ease, transform 150ms ease;
 }
 
@@ -633,17 +589,17 @@
 .shadow-lift\/10,
 .shadow-lift\/\[0\.08\] {
   box-shadow:
-    0 2px 4px rgba(15, 23, 42, 0.08),
-    0 12px 24px rgba(15, 23, 42, 0.18),
-    0 28px 52px rgba(15, 23, 42, 0.22) !important;
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 6px 14px rgba(15, 23, 42, 0.10),
+    0 18px 36px rgba(15, 23, 42, 0.14) !important;
   transition: box-shadow 150ms ease, transform 150ms ease;
 }
 .shadow-lift-hover,
 .hover\:shadow-lift-hover:hover {
   box-shadow:
-    0 4px 8px rgba(15, 23, 42, 0.10),
-    0 16px 30px rgba(15, 23, 42, 0.22),
-    0 36px 64px rgba(15, 23, 42, 0.26) !important;
+    0 2px 4px rgba(15, 23, 42, 0.08),
+    0 10px 22px rgba(15, 23, 42, 0.14),
+    0 24px 48px rgba(15, 23, 42, 0.18) !important;
 }
 .shadow-lift-pressed,
 .active\:shadow-lift-pressed:active,

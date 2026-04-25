@@ -23,9 +23,8 @@ export function StatCard({ dot, icon, value, label, className }: StatCardProps) 
       className={className}
       style={{
         background: "#FFFFFF",
-        border: "1px solid rgba(15, 23, 42, 0.06)",
-        boxShadow: "0 1px 2px rgba(15, 23, 42, 0.06), 0 6px 14px rgba(15, 23, 42, 0.10), 0 18px 36px rgba(15, 23, 42, 0.14)",
-        borderRadius: 14,
+        border: "0.5px solid #E5E5EA",
+        borderRadius: 12,
         padding: "10px 8px",
         display: "flex",
         flexDirection: "column",

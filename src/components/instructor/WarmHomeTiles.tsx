@@ -88,10 +88,9 @@ function TileShell({
       className="w-full text-left flex items-stretch relative"
       style={{
         background: "#FFFFFF",
-        border: "1px solid rgba(15, 23, 42, 0.06)",
-        boxShadow:
-          "0 2px 4px rgba(15, 23, 42, 0.08), 0 12px 24px rgba(15, 23, 42, 0.18), 0 28px 52px rgba(15, 23, 42, 0.22)",
-        borderRadius: 14,
+        border: "0.5px solid #E5E5EA",
+        boxShadow: "none",
+        borderRadius: 12,
         padding: "14px 16px",
         gap: 12,
       }}
@@ -390,10 +389,8 @@ export function WarmHomeTiles({ instructorId }: Props) {
         className="relative"
         style={{
           background: "#FFFFFF",
-          border: "1px solid rgba(15, 23, 42, 0.06)",
-          boxShadow:
-            "0 2px 4px rgba(15, 23, 42, 0.08), 0 12px 24px rgba(15, 23, 42, 0.18), 0 28px 52px rgba(15, 23, 42, 0.22)",
-          borderRadius: 14,
+          border: "0.5px solid #E5E5EA",
+          borderRadius: 12,
           padding: "14px 16px",
         }}
       >
