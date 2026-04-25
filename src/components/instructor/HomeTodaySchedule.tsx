@@ -383,127 +383,36 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           <div
             style={{
               borderTop: `0.5px solid ${IOS.opaqueSeparator}`,
-              padding: "32px 16px 28px",
+              paddingTop: 20,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 10,
+              gap: 12,
               textAlign: "center",
             }}
           >
             <div
               style={{
-                width: 52,
-                height: 52,
-                borderRadius: 14,
-                background: IOS.secondaryBg,
+                width: 44,
+                height: 44,
+                borderRadius: 10,
+                background: "#F2F2F4",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <CalendarIcon size={24} color={IOS.tertiaryLabel} strokeWidth={1.8} />
+              <CalendarIcon size={22} color="#6E6E73" strokeWidth={2} />
             </div>
-            <div style={{ fontSize: 15, fontWeight: 600, color: IOS.label, letterSpacing: -0.24 }}>
-              No lessons scheduled
-            </div>
-            <div style={{ fontSize: 13, color: IOS.secondaryLabel, maxWidth: 240, lineHeight: 1.4, letterSpacing: -0.08 }}>
-              Add a lesson to your calendar to start tracking your day
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 500, color: IOS.label, letterSpacing: -0.2, marginBottom: 4 }}>
+                No lessons scheduled
+              </div>
+              <div style={{ fontSize: 12, color: IOS.secondaryLabel, maxWidth: 260, lineHeight: 1.5 }}>
+                Add a lesson to your calendar to start tracking your day
+              </div>
             </div>
           </div>
-        ) : (
-          <div style={{ borderTop: `0.5px solid ${IOS.opaqueSeparator}` }}>
-            {lessons.map((lesson, idx) => {
-              const time = fmtTime(lesson.startTime);
-              const isDone = lesson.status === "completed";
-              const isNext = !isTomorrow && lesson.id === nextUpcomingId;
-              const isUpcoming = !isDone && !isNext;
-
-              const dotColor = isDone
-                ? IOS.tertiaryLabel
-                : isNext
-                ? IOS.systemBlue
-                : IOS.systemGreen;
-
-              const haloShadow = isDone
-                ? "none"
-                : isNext
-                ? "0 0 0 3px rgba(0,122,255,.18)"
-                : "0 0 0 3px rgba(52,199,89,.15)";
-
-              const meta: string[] = [];
-              if ((lesson as any).transmission) meta.push((lesson as any).transmission);
-              if (lesson.pickupPostcode) meta.push(lesson.pickupPostcode);
-
-              return (
-                <Link
-                  key={lesson.id}
-                  to={`/instructor/pupils/${lesson.pupilId}`}
-                  className="hts-row"
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "50px 1fr 16px",
-                    alignItems: "center",
-                    gap: 0,
-                    padding: "12px 16px",
-                    cursor: "pointer",
-                    textDecoration: "none",
-                    color: "inherit",
-                    borderTop: idx === 0 ? "none" : `0.5px solid ${IOS.opaqueSeparator}`,
-                    borderTopLeftRadius: 0,
-                    transition: "background 0.15s cubic-bezier(0.2,0.7,0.2,1)",
-                    opacity: isDone ? 0.6 : 1,
-                    position: "relative",
-                  }}
-                >
-                  {/* Indented separator effect — handled by border above starting at col 1; for spec's "x=80px" indent we override the first row only */}
-                  {idx > 0 && (
-                    <span
-                      style={{
-                        position: "absolute",
-                        top: -0.5,
-                        left: 80,
-                        right: 0,
-                        height: 0.5,
-                        background: IOS.opaqueSeparator,
-                      }}
-                    />
-                  )}
-
-                  {/* Time column */}
-                  <div
-                    style={{
-                      paddingRight: 14,
-                      borderRight: `1px solid ${IOS.opaqueSeparator}`,
-                      minWidth: 0,
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 17,
-                        fontWeight: 600,
-                        color: IOS.label,
-                        letterSpacing: -0.24,
-                        fontVariantNumeric: "tabular-nums",
-                        lineHeight: 1.1,
-                      }}
-                    >
-                      {time.hour}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: IOS.secondaryLabel,
-                        fontWeight: 600,
-                        textTransform: "uppercase",
-                        letterSpacing: 0.3,
-                        marginTop: 2,
-                      }}
-                    >
-                      {time.period}
-                      {lesson.durationMinutes ? ` · ${durationLabel(lesson.durationMinutes)}` : ""}
-                    </div>
-                  </div>
 
                   {/* Body */}
                   <div style={{ minWidth: 0, paddingLeft: 14 }}>
