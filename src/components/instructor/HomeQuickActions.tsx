@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Plus, PoundSterling, Car, Heart, Megaphone, Camera } from "lucide-react";
+import { Calendar, MapPin, Plus, PoundSterling, Car, Heart, Megaphone, Camera, Accessibility } from "lucide-react";
 import { WarmTile, WarmTileGrid, WarmTileCategory } from "./WarmTile";
 
 interface HomeQuickActionsProps {
@@ -28,6 +28,7 @@ export function HomeQuickActions({ onTakePayment }: HomeQuickActionsProps) {
     { id: "test-requests", label: "Test swap", subtitle: "Swap a test", icon: Calendar, category: "schedule", route: "/instructor/test-requests" },
     { id: "find-nearby", label: "Find nearby", subtitle: "Toilets, food & more", icon: MapPin, category: "schedule", route: "/instructor/find-nearby" },
     { id: "dashcam", label: "Dashcam", subtitle: "View footage", icon: Camera, category: "neutral", onClick: () => window.open("https://www.kinesisfleetpro.com/#/login;next=%2Fstatus", "_blank", "noopener,noreferrer") },
+    { id: "accessibility", label: "Accessibility", subtitle: "Text size & contrast", icon: Accessibility, category: "neutral", route: "/instructor/accessibility" },
     { id: "platform-updates", label: "Updates", subtitle: "News & ideas", icon: Megaphone, category: "neutral", route: "/instructor/platform-updates" },
   ];
 
