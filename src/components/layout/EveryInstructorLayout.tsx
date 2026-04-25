@@ -62,7 +62,7 @@ export function EveryInstructorLayout({
 
   return (
     <div
-      className="min-h-screen ios-instructor instructor-portal ios-scroll"
+      className="min-h-screen ios-instructor instructor-portal ios-scroll a11y-scope"
       style={{ backgroundColor: "hsl(var(--dsm-bg))" }}
     >
       {showHeader && (
