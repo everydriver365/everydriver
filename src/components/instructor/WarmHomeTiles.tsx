@@ -25,6 +25,8 @@ const TXT = {
 };
 
 const RESPONSE_SLA_HOURS = 24;
+
+function Skeleton({ width, height = 14 }: { width: number | string; height?: number }) {
   return (
     <span
       style={{
