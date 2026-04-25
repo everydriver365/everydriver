@@ -359,7 +359,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                 fontSize: 11,
                 fontWeight: 500,
                 color: TXT.muted,
-                letterSpacing: 0.5,
+                letterSpacing: 0,
               }}
             >
               NOTHING LEFT TODAY
@@ -369,14 +369,14 @@ export function WarmHomeTiles({ instructorId }: Props) {
                 fontSize: 14,
                 fontWeight: 500,
                 color: TXT.primary,
-                marginTop: 4,
+                marginTop: scaledPx(4),
               }}
             >
               You're done for today
             </div>
             {nextLesson && (
               <div
-                style={{ fontSize: 12, color: TXT.secondary, marginTop: 2 }}
+                style={{ fontSize: 12, color: TXT.secondary, marginTop: scaledPx(2) }}
               >
                 Next lesson: {formatNextLessonDay(nextLesson.lessonDate)} at{" "}
                 {nextLesson.startTime.slice(0, 5)}
@@ -392,8 +392,8 @@ export function WarmHomeTiles({ instructorId }: Props) {
         style={{
           background: "#FFFFFF",
           border: "0.5px solid #E5E5EA",
-          borderRadius: 12,
-          padding: "14px 16px",
+          borderRadius: scaledPx(12),
+          padding: `${scaledPx(14)} ${scaledPx(16)}`,
         }}
       >
         {tile3Outage && <HealthDot />}
@@ -401,8 +401,8 @@ export function WarmHomeTiles({ instructorId }: Props) {
           style={{
             fontSize: 11,
             color: TXT.muted,
-            letterSpacing: 0.5,
-            marginBottom: 10,
+            letterSpacing: 0,
+            marginBottom: scaledPx(10),
             fontWeight: 500,
           }}
         >
