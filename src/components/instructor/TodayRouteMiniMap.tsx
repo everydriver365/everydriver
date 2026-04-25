@@ -64,28 +64,79 @@ export function TodayRouteMiniMap({ locations }: TodayRouteMiniMapProps) {
     (Math.min(...lngs) + Math.max(...lngs)) / 2,
   ];
 
+  const FONT_STACK =
+    '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="mx-4 mb-4"
     >
-      <div className="bg-card rounded-2xl shadow-lift border border-border/50 overflow-hidden shadow-sm">
-        {/* Header */}
+      <div
+        style={{
+          background: "#FFFFFF",
+          border: "0.5px solid #E5E5EA",
+          borderRadius: 12,
+          overflow: "hidden",
+        }}
+      >
+        {/* Header — premium tile */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
+          className="w-full"
+          style={{
+            background: "transparent",
+            border: "none",
+            padding: 14,
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            cursor: "pointer",
+          }}
         >
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <MapPin className="h-4 w-4 text-primary" />
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              background: "#E6F0FA",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <MapPin size={22} strokeWidth={2} color="#2B7BC8" />
+          </div>
+          <div style={{ flex: 1, textAlign: "left", minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 500,
+                color: "#000000",
+                letterSpacing: -0.2,
+                fontFamily: FONT_STACK,
+                lineHeight: 1.25,
+              }}
+            >
+              Today's route
             </div>
-            <div className="text-left">
-              <p className="text-sm font-semibold text-foreground">Today's Route</p>
-              <p className="text-xs text-muted-foreground">{locations.length} stops</p>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: "#6E6E73",
+                letterSpacing: 0.3,
+                textTransform: "uppercase",
+                fontFamily: FONT_STACK,
+                marginTop: 3,
+              }}
+            >
+              {locations.length} stops
             </div>
           </div>
-          <ExpandChevron isExpanded={isExpanded} size={20} />
+          <ExpandChevron isExpanded={isExpanded} size={16} />
         </button>
 
         {/* Map */}
@@ -96,7 +147,7 @@ export function TodayRouteMiniMap({ locations }: TodayRouteMiniMapProps) {
               animate={{ height: 180, opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="overflow-hidden"
+              style={{ overflow: "hidden", borderTop: "0.5px solid #E5E5EA" }}
             >
               <div className="h-[180px] relative">
                 <MapContainer
@@ -124,17 +175,33 @@ export function TodayRouteMiniMap({ locations }: TodayRouteMiniMapProps) {
                     </Marker>
                   ))}
                 </MapContainer>
-                
+
                 {/* Expand button overlay */}
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="absolute bottom-2 right-2 z-10 h-7 text-xs shadow-md"
+                <button
                   onClick={() => navigate("/instructor/tracking")}
+                  style={{
+                    position: "absolute",
+                    bottom: 8,
+                    right: 8,
+                    zIndex: 10,
+                    height: 28,
+                    padding: "0 10px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    background: "#FFFFFF",
+                    border: "0.5px solid #E5E5EA",
+                    borderRadius: 8,
+                    fontSize: 12,
+                    fontWeight: 500,
+                    color: "#000000",
+                    fontFamily: FONT_STACK,
+                    cursor: "pointer",
+                  }}
                 >
-                  <ExternalLink className="h-3 w-3 mr-1" />
-                  Full Map
-                </Button>
+                  <ExternalLink style={{ width: 12, height: 12 }} />
+                  Full map
+                </button>
               </div>
             </motion.div>
           )}
