@@ -412,7 +412,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr 1fr",
-            gap: 10,
+            gap: scaledPx(10),
           }}
         >
           {[
@@ -443,7 +443,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
               <div
                 key={col.label}
                 style={{
-                  paddingLeft: idx === 0 ? 0 : 10,
+                  paddingLeft: idx === 0 ? 0 : scaledPx(10),
                   borderLeft:
                     idx === 0 ? "none" : `0.5px solid ${TXT.hairline}`,
                 }}
@@ -467,7 +467,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
                   style={{
                     fontSize: 11,
                     color: TXT.muted,
-                    marginTop: 2,
+                    marginTop: scaledPx(2),
                   }}
                 >
                   {col.label}
