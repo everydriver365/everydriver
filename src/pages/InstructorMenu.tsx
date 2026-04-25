@@ -351,12 +351,12 @@ export default function InstructorMenu() {
 
   const menuSections: { title: string; items: MenuItem[] }[] = [
     {
-      title: "Quick Actions",
+      title: "Quick actions",
       items: [
         { icon: CheckSquare, label: "To Do", description: "Task list", gateKey: "todos", path: "/instructor/todos", tintBg: "#E8ECF1", tintColor: "#2A394F" },
         { icon: MessageCircle, label: "Messages", description: "Chat with pupils", gateKey: "messages", path: "/instructor/messages", tintBg: "#ECFDF5", tintColor: "#059669" },
-        { icon: Briefcase, label: "Job Offers", description: "Pending jobs", gateKey: "jobs", path: "/instructor/jobs", tintBg: "#EDE9FE", tintColor: "#5B21B6" },
-        { icon: CalendarPlus, label: "New Bookings", description: "Pending schedule", gateKey: "pending-scheduling", path: "/instructor/pending-scheduling", tintBg: "#FEF3C7", tintColor: "#92400E" },
+        { icon: Briefcase, label: "Job offers", description: "Pending jobs", gateKey: "jobs", path: "/instructor/jobs", tintBg: "#EDE9FE", tintColor: "#5B21B6" },
+        { icon: CalendarPlus, label: "New bookings", description: "Pending schedule", gateKey: "pending-scheduling", path: "/instructor/pending-scheduling", tintBg: "#FEF3C7", tintColor: "#92400E" },
         { icon: QrCode, label: "Take Payment", description: "QR code payment", gateKey: "pay", path: "/instructor/pay", tintBg: "#ECFDF5", tintColor: "#059669" },
         { icon: Car, label: "Live Tracking", description: "GPS tracking", gateKey: "tracking", path: "/instructor/tracking", tintBg: "#DBEAFE", tintColor: "#1E40AF" },
         { icon: Navigation, label: "Find My Car", description: "Car location", gateKey: "find-my-car", path: "/instructor/find-my-car", tintBg: "#FEF2F2", tintColor: "#DC2626" },
@@ -365,7 +365,7 @@ export default function InstructorMenu() {
       ],
     },
     {
-      title: "Money & Reports",
+      title: "Money & reports",
       items: [
         { icon: CreditCard, label: "Payments", description: "Full breakdown", gateKey: "payments", path: "/instructor/pay", tintBg: "#ECFDF5", tintColor: "#059669" },
         { icon: TrendingUp, label: "Income Summary", description: "Earnings overview", gateKey: "income", path: "/instructor/income", tintBg: "#ECFDF5", tintColor: "#059669" },
@@ -375,7 +375,7 @@ export default function InstructorMenu() {
       ],
     },
     {
-      title: "Schedule & Pupils",
+      title: "Schedule & pupils",
       items: [
         { icon: Calendar, label: "Schedule", description: "View calendar", gateKey: "schedule", path: "/instructor/schedule", tintBg: "#DBEAFE", tintColor: "#1E40AF" },
         { icon: Users, label: "Pupils", description: "Manage pupils", gateKey: "pupils", path: "/instructor/pupils", tintBg: "#E8ECF1", tintColor: "#2A394F" },
