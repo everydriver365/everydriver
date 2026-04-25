@@ -413,58 +413,6 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               </div>
             </div>
           </div>
-
-                  {/* Body */}
-                  <div style={{ minWidth: 0, paddingLeft: 14 }}>
-                    <div
-                      style={{
-                        fontSize: 15,
-                        fontWeight: 600,
-                        color: IOS.label,
-                        letterSpacing: -0.24,
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        textDecoration: isDone ? "line-through" : "none",
-                      }}
-                    >
-                      {sentenceName(lesson.pupilName)}
-                    </div>
-                    {meta.length > 0 && (
-                      <div
-                        style={{
-                          fontSize: 13,
-                          color: IOS.secondaryLabel,
-                          marginTop: 2,
-                          letterSpacing: -0.08,
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {meta.join(" · ")}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Status dot */}
-                  <span
-                    className={isNext ? "hts-pulse" : ""}
-                    style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: "50%",
-                      background: dotColor,
-                      boxShadow: haloShadow,
-                      flexShrink: 0,
-                      justifySelf: "center",
-                      animation: isNext ? "hts-pulse 2s infinite" : "none",
-                    }}
-                  />
-                </Link>
-              );
-            })}
-          </div>
         ) : (
           <div style={{ borderTop: `0.5px solid ${IOS.opaqueSeparator}` }}>
             {lessons.map((lesson, idx) => {
