@@ -30,6 +30,27 @@ export const TILE_COLORS = {
 
 export type TileColorName = keyof typeof TILE_COLORS;
 
+/**
+ * Refined palette — desaturated mid-tone accent + matching pale tinted background.
+ * Used by the "refined" tile variant (Insights section).
+ */
+export const TILE_REFINED_COLORS: Record<TileColorName, { accent: string; tint: string }> = {
+  indigo: { accent: "#5B6BC9", tint: "#EEF0FB" },
+  blue:   { accent: "#2B7BC8", tint: "#E6F1FB" },
+  green:  { accent: "#3B8B3B", tint: "#E8F3E8" },
+  red:    { accent: "#C8434F", tint: "#FBEAEC" },
+  purple: { accent: "#7A6BC2", tint: "#EFEDF8" },
+  orange: { accent: "#C77A3A", tint: "#FBEFE3" },
+  teal:   { accent: "#3B8B86", tint: "#E6F2F1" },
+  slate:  { accent: "#5A6470", tint: "#EEF0F2" },
+};
+
+export function getTileRefinedColors(id: string, override?: TileColorName) {
+  const name: TileColorName =
+    override ?? TILE_IDENTITY_COLORS[id] ?? CYCLE_COLORS[hashString(id) % CYCLE_COLORS.length];
+  return TILE_REFINED_COLORS[name];
+}
+
 /** Deterministic hash so the same tile id always picks the same colour. */
 function hashString(str: string): number {
   let hash = 0;
@@ -94,15 +115,18 @@ interface TileGridProps {
   className?: string;
   /** Apply outer section padding (18px 14px 20px). Defaults true. */
   padded?: boolean;
+  /** "default" = grey backdrop / 9px gap. "refined" = white backdrop / 12px gap. */
+  variant?: "default" | "refined";
 }
 
-export function TileGrid({ children, className, padded = true }: TileGridProps) {
+export function TileGrid({ children, className, padded = true, variant = "default" }: TileGridProps) {
+  const isRefined = variant === "refined";
   return (
     <div
       className={className}
       style={{
         padding: padded ? "18px 14px 20px" : undefined,
-        background: "#F2F2F7",
+        background: isRefined ? "#FFFFFF" : "#F2F2F7",
         fontFamily: FONT_STACK,
       }}
     >
@@ -126,7 +150,7 @@ export function TileGrid({ children, className, padded = true }: TileGridProps) 
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          gap: 9,
+          gap: isRefined ? 12 : 9,
         }}
       >
         {children}
@@ -164,6 +188,9 @@ interface TileProps {
   /** Span both columns (use for solo tiles or odd last tile). */
   fullWidth?: boolean;
 
+  /** Visual variant. "default" = filled icon roundel. "refined" = tinted icon, hairline border, vertical layout. */
+  variant?: "default" | "refined";
+
   ariaLabel?: string;
 }
 
@@ -179,9 +206,11 @@ export function Tile({
   subtitle,
   liveDot,
   fullWidth,
+  variant = "default",
   ariaLabel,
 }: TileProps) {
   const iconBg = useMemo(() => getTileColor(id, color), [id, color]);
+  const refined = useMemo(() => getTileRefinedColors(id, color), [id, color]);
 
   // Determine which secondary line to render (deterministic, exactly one).
   const secondary: "metric" | "status" | "subtitle" | "none" =
@@ -192,6 +221,110 @@ export function Tile({
       : subtitle
       ? "subtitle"
       : "none";
+
+  // ---- Refined variant ----------------------------------------------------
+  if (variant === "refined") {
+    const secondaryText =
+      secondary === "metric"
+        ? `${metricValue}${metricUnit ? ` ${metricUnit}` : ""}`
+        : secondary === "status"
+        ? statusText
+        : secondary === "subtitle"
+        ? subtitle
+        : null;
+
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={ariaLabel ?? title}
+        className="tile-press"
+        style={{
+          gridColumn: fullWidth ? "1 / span 2" : undefined,
+          background: "#FFFFFF",
+          border: "0.5px solid #E5E5EA",
+          boxShadow: "none",
+          borderRadius: 12,
+          padding: 16,
+          minHeight: 110,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          gap: 12,
+          textAlign: "left",
+          cursor: onClick ? "pointer" : "default",
+          fontFamily: FONT_STACK,
+          width: "100%",
+        }}
+      >
+        <div
+          style={{
+            position: "relative",
+            width: 40,
+            height: 40,
+            borderRadius: 10,
+            background: refined.tint,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Icon
+            size={22}
+            color={refined.accent}
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+          {liveDot && (
+            <span
+              className="tile-live-dot"
+              style={{
+                position: "absolute",
+                top: 4,
+                right: 4,
+                width: 7,
+                height: 7,
+                borderRadius: "50%",
+                background: refined.accent,
+                boxShadow: "0 0 0 2px #FFFFFF",
+              }}
+            />
+          )}
+        </div>
+
+        <div style={{ minWidth: 0, width: "100%" }}>
+          <p
+            style={{
+              fontSize: 15,
+              fontWeight: 500,
+              color: "#000000",
+              letterSpacing: "-0.2px",
+              lineHeight: 1.25,
+              margin: "0 0 3px",
+            }}
+          >
+            {title}
+          </p>
+          {secondaryText && (
+            <p
+              style={{
+                fontSize: 12,
+                fontWeight: 400,
+                color: "#6E6E73",
+                lineHeight: 1.35,
+                margin: 0,
+              }}
+            >
+              {secondaryText}
+            </p>
+          )}
+        </div>
+      </button>
+    );
+  }
 
   return (
     <button
