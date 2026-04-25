@@ -986,10 +986,23 @@ html {
   --a11y-text-scale: 1;
 }
 
-/* The scope applied to the instructor app shell. Sets the local root font
-   size so all `rem`/`em` values scale, without affecting marketing pages. */
+/* The scope applied to the instructor app shell.
+   We use CSS `zoom` so EVERY size — rem, em, AND hardcoded inline pixel
+   values like style={{ fontSize: 15 }} — scales together. This is the only
+   reliable way to scale tiles like Action Needed, Next Lesson, Schedule and
+   Telematics, which set inline pixel font sizes. Firefox fallback uses
+   transform: scale(). */
 .a11y-scope {
   font-size: calc(16px * var(--a11y-text-scale));
+  zoom: var(--a11y-text-scale, 1);
+}
+
+@supports not (zoom: 1) {
+  .a11y-scope {
+    transform: scale(var(--a11y-text-scale, 1));
+    transform-origin: top left;
+    width: calc(100% / var(--a11y-text-scale, 1));
+  }
 }
 
 /* Reduce motion — manual override on top of OS preference */
