@@ -93,8 +93,8 @@ export function InstructorTile({
       style={{
         gridColumn: fullWidth ? "1 / span 2" : undefined,
         background: "#FFFFFF",
-        border: "0.5px solid rgba(0, 0, 0, 0.04)",
-        boxShadow: "0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.06)",
+        border: "1px solid hsl(var(--border) / 0.75)",
+        boxShadow: "0 2px 4px hsl(var(--foreground) / 0.06), 0 10px 24px hsl(var(--foreground) / 0.14)",
         borderRadius: 14,
         padding: 16,
         minHeight: 110,
@@ -232,7 +232,7 @@ export function InstructorTileGrid({
         }
         .instructor-tile:active {
           transform: scale(0.97);
-          box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 2px 6px rgba(16, 24, 40, 0.05) !important;
+          box-shadow: 0 1px 2px hsl(var(--foreground) / 0.05), 0 4px 10px hsl(var(--foreground) / 0.10) !important;
         }
         .instructor-tile-dot { animation: instructor-tile-pulse 1.6s ease-out infinite; }
         @media (prefers-reduced-motion: reduce) {
