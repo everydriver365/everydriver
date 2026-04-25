@@ -2,15 +2,22 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameDay, isSameMonth, isToday, parseISO, isWeekend } from "date-fns";
 import { ChevronLeft, ChevronRight, Loader2, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  CATEGORY_STYLES,
+  categoriseEvent,
+  styleFromGoogleColor,
+  type EventCategory,
+} from "./scheduleGoogleStyle";
 
 interface MobileMonthCalendarViewProps {
   instructorId: string;
 }
 
-type DotCategory = "lesson" | "course" | "test" | "personal";
-
 interface DayDots {
-  categories: DotCategory[]; // unique categories present
+  // Each entry is the resolved chip background colour for an event on that day,
+  // mirroring exactly what the list view would render (Google override included).
+  // We dedupe by colour so identical-coloured events collapse to a single dot.
+  colors: string[];
 }
 
 interface DayEvents {
@@ -35,29 +42,6 @@ interface DayEvents {
   }>;
 }
 
-// System palette dot colours
-const DOT_COLORS: Record<DotCategory, string> = {
-  lesson: "#3B8B3B",   // green
-  course: "#B8801F",   // amber
-  test: "#2B7BC8",     // blue
-  personal: "#8A5BC9", // purple
-};
-
-const DOT_LABELS: Record<DotCategory, string> = {
-  lesson: "Lesson",
-  course: "Course",
-  test: "Test",
-  personal: "Personal",
-};
-
-// Pale tints for lesson blocks (mirrors agenda view)
-const LESSON_TINT: Record<DotCategory, string> = {
-  lesson: "#E6F1FB",
-  course: "#FBF1DE",
-  test: "#FBEAEC",
-  personal: "#F1ECFA",
-};
-
 const courseTypeLabels: Record<string, string> = {
   standard: "Standard",
   test_prep: "Test Prep",
@@ -70,18 +54,21 @@ const courseTypeLabels: Record<string, string> = {
   driving_test: "Driving Test",
 };
 
-function categoriseLessonType(lessonType: string): DotCategory {
-  if (lessonType === "driving_test" || lessonType === "mock_test") return "test";
-  if (lessonType === "pass_plus" || lessonType === "intensive") return "course";
-  return "lesson";
+// Resolve the same chip style the list view renders for an external event.
+function externalStyle(title: string, color: string | null, isAllDay: boolean) {
+  const category = categoriseEvent(title, "external", { isAllDay });
+  return styleFromGoogleColor(color) ?? CATEGORY_STYLES[category];
 }
 
-function categoriseExternal(title: string): DotCategory {
-  const t = (title || "").toLowerCase();
-  if (/\b(test|exam|dvsa)\b/.test(t)) return "test";
-  if (/(course|wdu|nsac|workshop|classroom|speed awareness)/.test(t)) return "course";
-  return "personal";
-}
+// Friendly legend label for a chip background colour.
+const CATEGORY_BY_BG: Record<string, { label: string; color: string }> = {
+  [CATEGORY_STYLES.lesson.bg]: { label: "Lesson", color: CATEGORY_STYLES.lesson.bg },
+  [CATEGORY_STYLES.blocked.bg]: { label: "Blocked", color: CATEGORY_STYLES.blocked.bg },
+  [CATEGORY_STYLES.holiday.bg]: { label: "Holiday", color: CATEGORY_STYLES.holiday.bg },
+  [CATEGORY_STYLES.course.bg]: { label: "Course", color: CATEGORY_STYLES.course.bg },
+  [CATEGORY_STYLES.admin.bg]: { label: "Admin", color: CATEGORY_STYLES.admin.bg },
+  [CATEGORY_STYLES.task.bg]: { label: "Task", color: CATEGORY_STYLES.task.bg },
+};
 
 export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
