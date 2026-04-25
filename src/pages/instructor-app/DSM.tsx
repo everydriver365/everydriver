@@ -103,7 +103,7 @@ export default function DSM() {
     : null;
 
   return (
-    <div className="min-h-screen bg-[#F2F2F7]">
+    <div className="instructor-portal min-h-screen bg-[#F2F2F7]">
       {/* Status bar spacer */}
       <div className="h-[env(safe-area-inset-top,0px)]" />
 
