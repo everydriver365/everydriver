@@ -8,6 +8,9 @@ import {
   X,
   Check,
   Loader2,
+  Mail,
+  Phone,
+  Car,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -47,6 +50,10 @@ export interface JobOfferDetailJob {
   additional_notes: string | null;
   created_at: string;
   status: string;
+  email?: string | null;
+  phone?: string | null;
+  transmission_type?: string | null;
+  total_cost?: number | null;
 }
 
 interface Props {
