@@ -1,54 +1,51 @@
-The current accessibility scaling is inconsistent because two scaling methods are mixed:
+## Problem
 
-1. `html { font-size: calc(...) }` scales `rem`/Tailwind text globally.
-2. `.a11y-zoom-tile { zoom: ... }` scales whole tiles separately.
-3. Some tiles were then partially converted to `calc(px * scale)`, while their text remained fixed `px`.
+When booking a new lesson via `AddLessonSheet`, the conflict check only flags **hard time overlaps** with existing lessons. It ignores:
 
-That creates double-scaling in some places, no scaling in others, and different visual sizes between Action Needed, Next Lesson, Schedule, and Telematics.
+1. The instructor's configured **`buffer_minutes`** (breathing room between lessons) — even though `RescheduleLessonSheet`, `MultiDayScheduleView` and `GapFillCard` all honor it.
+2. **Travel time** between the previous/next lesson's location and the new pickup — currently only shown as a soft "tap to apply" suggestion based on the *previous* lesson, never the *next* one, and never blocks save.
 
-Plan:
+Result: instructors can book lessons back-to-back with zero gap, or with insufficient time to drive between pickups.
 
-1. Replace tile-level `zoom` with one consistent inline-pixel scaling rule
-   - Remove or disable `.a11y-zoom-tile` zoom behavior from `src/index.css`.
-   - Keep global `html` rem scaling for normal Tailwind/rem UI.
-   - Add a small utility approach for legacy inline `px` components: `calc(basePx * var(--a11y-text-scale))`.
+## Fix
 
-2. Fix `WarmHomeTiles.tsx` completely
-   - Convert Action Needed, Up Next, and Week at a Glance text sizes from raw numbers like `fontSize: 11` to scaled values.
-   - Convert internal spacing, badges, chevrons, skeletons, and tile padding to the same scaled helper.
-   - This ensures Action Needed changes visibly and at the same rate as its sibling tiles.
+Update `src/components/instructor/AddLessonSheet.tsx` so the conflict + travel logic matches the rest of the app:
 
-3. Apply the same rule to the other home tiles
-   - `NextUpTile.tsx`
-   - `HomeTodaySchedule.tsx`
-   - `TelematicsTile.tsx`
-   - Replace `a11y-zoom-tile` wrappers with explicit scaled sizes for the typography and key spacing.
-   - Avoid scaling the whole container with CSS zoom, because that changes layout width and causes mismatched card sizes.
+### 1. Load instructor buffer once
+On sheet open, fetch `instructors.buffer_minutes` for the current `instructorId` and keep in state (default 0 if null). Same pattern as `RescheduleLessonSheet`.
 
-4. Preserve layout consistency
-   - Keep card max-widths, outer margins, and grid structure stable so the dashboard does not feel like tiles are growing at different rates.
-   - Scale text and touch targets, not the entire tile viewport.
-
-5. Verify
-   - Run TypeScript compile check.
-   - Review the instructor home route at the mobile viewport and confirm Action Needed, Next Lesson, Schedule, and Telematics all respond consistently to Small, Default, Large, and Extra Large text settings.
-
-Technical detail:
-
-Use a shared pattern like:
-
-```ts
-const a11yPx = (px: number) => `calc(${px}px * var(--a11y-text-scale, 1))`;
+### 2. Apply buffer to the overlap check
+In the existing lessons loop, treat each existing lesson as occupying:
 ```
-
-Then use it consistently:
-
-```tsx
-style={{
-  fontSize: a11yPx(14),
-  padding: `${a11yPx(14)} ${a11yPx(16)}`,
-  gap: a11yPx(12),
-}}
+[existingStart - bufferMinutes,  existingEnd + bufferMinutes]
 ```
+Flag a conflict when the new lesson `[newStart, newEnd]` intersects that buffered window. Message: `"Too close to {names} (needs {buffer} min buffer)"`.
 
-This avoids mixing root rem scaling, CSS zoom, and fixed inline pixels in the same area.
+### 3. Resolve travel time on **both sides** (previous and next lesson)
+Currently only the previous lesson is checked. Extend to also find the lesson that starts soonest *after* the new lesson and call `check-travel-buffer` for `newPickup → nextPickup`.
+
+Effective rules (mirrors `mem://features/instructor/gap-offer-buffer-rules`):
+- `requiredGapBefore = bufferMinutes + travelInMinutes`
+- `requiredGapAfter  = bufferMinutes + travelOutMinutes`
+- If `(newStart - prevEnd) < requiredGapBefore` → conflict (with suggested time, like today).
+- If `(nextStart - newEnd) < requiredGapAfter` → conflict (suggest moving the new lesson earlier or shortening duration).
+
+### 4. Block save when buffer/travel is violated
+The existing `handleAddLessonExisting` / `handleAddLessonNew` handlers already abort on `conflictWarning`. Because rules 2 + 3 now feed into `conflictWarning`, save will be blocked until the instructor either:
+- adjusts the start time (the suggestion chip stays available for one-tap fix), or
+- explicitly accepts the warning via a new "Book anyway" override link inside the warning banner (writes `override_buffer = true` to the booking note for audit, no DB schema change needed).
+
+### 5. First-lesson-of-day travel allowance
+If there is no previous lesson on that date, fall back to the existing first-lesson logic already used elsewhere (home postcode → pickup via `check-travel-buffer`) so the first slot of the day still warns when there isn't enough time to drive from home.
+
+## Files touched
+
+- `src/components/instructor/AddLessonSheet.tsx` — load `buffer_minutes`, expand conflict check, add next-lesson travel check, "Book anyway" override.
+
+No DB migrations, no edge function changes (reuses `check-travel-buffer`).
+
+## Out of scope
+
+- Reschedule sheet (already correct).
+- Gap-fill / scheduler flows (already correct).
+- Changing buffer defaults or adding per-pupil overrides.
