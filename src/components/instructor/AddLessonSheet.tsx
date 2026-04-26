@@ -115,6 +115,9 @@ export function AddLessonSheet({
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
   const [checkingConflict, setCheckingConflict] = useState(false);
   const [travelSuggestion, setTravelSuggestion] = useState<{ suggestedTime: string; travelMinutes: number; fromName: string } | null>(null);
+  const [bufferMinutes, setBufferMinutes] = useState<number>(0);
+  const [instructorHomePostcode, setInstructorHomePostcode] = useState<string>('');
+  const [overrideBuffer, setOverrideBuffer] = useState(false);
   const [newPupilName, setNewPupilName] = useState('');
   const [newPupilPhone, setNewPupilPhone] = useState('');
   const [newPupilAddress, setNewPupilAddress] = useState('');
