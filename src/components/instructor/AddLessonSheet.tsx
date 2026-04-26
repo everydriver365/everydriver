@@ -1004,16 +1004,31 @@ export function AddLessonSheet({
               </div>
             </div>
 
-            {/* Conflict Warning */}
+            {/* Conflict banner — premium tile-system red block */}
             {conflictWarning && (
               <div style={{
                 display: "flex", alignItems: "flex-start", gap: 10,
-                padding: "12px 16px", borderRadius: 12,
-                backgroundColor: "#FEF2F2", border: "1px solid #FECACA",
+                padding: 12, borderRadius: 10,
+                background: "#FBEAEC", border: "0.5px solid #C8434F",
+                marginTop: 8,
               }}>
-                <AlertTriangle style={{ width: 16, height: 16, color: "#DC2626", flexShrink: 0, marginTop: 2 }} />
-                <div style={{ flex: 1, fontSize: 13, color: "#991B1B", lineHeight: 1.4 }}>
-                  <div>{conflictWarning}</div>
+                <span style={{
+                  width: 20, height: 20, borderRadius: "50%",
+                  background: "#C8434F", flexShrink: 0, marginTop: 1,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <X style={{ width: 12, height: 12, color: "#FFFFFF" }} strokeWidth={2} strokeLinecap="round" />
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontSize: 13, fontWeight: 500, color: "#C8434F",
+                    letterSpacing: -0.1, margin: "0 0 3px",
+                  }}>
+                    {getConflictHeadline(conflictWarning)}
+                  </div>
+                  <div style={{ fontSize: 12, color: "#000000", lineHeight: 1.4, margin: "0 0 8px" }}>
+                    {conflictWarning}
+                  </div>
                   {travelSuggestion && (
                     <button
                       type="button"
@@ -1022,15 +1037,20 @@ export function AddLessonSheet({
                         setTravelSuggestion(null);
                       }}
                       style={{
-                        marginTop: 6, padding: 0, background: "none", border: "none",
-                        color: "#1E3A8A", textDecoration: "underline", cursor: "pointer", fontSize: 13,
+                        padding: 0, background: "none", border: "none",
+                        color: "#C8434F", cursor: "pointer", fontSize: 12, fontWeight: 500,
+                        display: "inline-flex", alignItems: "center", gap: 4,
                       }}
                     >
                       Use suggested time {travelSuggestion.suggestedTime}
+                      <ChevronRight style={{ width: 10, height: 10 }} strokeWidth={2} />
                     </button>
                   )}
                   <div style={{ marginTop: 6 }}>
-                    <label style={{ display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 12, color: "#991B1B" }}>
+                    <label style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      cursor: "pointer", fontSize: 12, color: "#000000",
+                    }}>
                       <input
                         type="checkbox"
                         checked={overrideBuffer}
