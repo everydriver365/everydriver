@@ -46,6 +46,17 @@ interface WeatherData {
 interface WeatherAlertBannerProps {
   className?: string;
   trafficAlerts?: DrivingAlert[];
+  /**
+   * Preferred current weather, sourced from the instructor's saved home location
+   * (via useDrivingAlerts). When provided, we skip the in-component geolocation
+   * fetch — that fallback geolocates the device or defaults to London which
+   * makes the banner irrelevant for instructors outside that area.
+   */
+  currentWeather?: {
+    temperature: number | null;
+    weatherCode: number | null;
+    windSpeed: number | null;
+  } | null;
   onDismissTraffic?: (alertId: string) => void;
   nextLessonMinutesUntil?: number;
   nextLessonEtaMinutes?: number | null;
@@ -69,14 +80,23 @@ async function fetchWeather(lat: number, lon: number): Promise<WeatherData> {
 export function WeatherAlertBanner({
   className = "",
   trafficAlerts = [],
+  currentWeather,
   onDismissTraffic,
   nextLessonMinutesUntil,
   nextLessonEtaMinutes,
   nextLessonPupilName,
   nextLessonPupilPhone,
 }: WeatherAlertBannerProps) {
-  const { data: weather } = useQuery({
-    queryKey: ["weather-alert"],
+  // Only run the geolocation/London fallback if the parent didn't supply
+  // location-correct weather from the instructor record.
+  const hasParentWeather =
+    !!currentWeather &&
+    currentWeather.temperature != null &&
+    currentWeather.weatherCode != null;
+
+  const { data: fallbackWeather } = useQuery({
+    queryKey: ["weather-alert-fallback"],
+    enabled: !hasParentWeather,
     queryFn: async () => {
       try {
         const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
@@ -90,6 +110,15 @@ export function WeatherAlertBanner({
     staleTime: 15 * 60 * 1000,
     refetchInterval: 15 * 60 * 1000,
   });
+
+  const weather: WeatherData | null = hasParentWeather
+    ? {
+        temperature: currentWeather!.temperature as number,
+        weatherCode: currentWeather!.weatherCode as number,
+        windSpeed: currentWeather!.windSpeed ?? 0,
+        isIcy: (currentWeather!.temperature as number) <= 3,
+      }
+    : fallbackWeather ?? null;
 
   // Weather alert
   let weatherAlert: { message: string; severity: "low" | "warning" | "danger"; Icon: React.ElementType } | null = null;
