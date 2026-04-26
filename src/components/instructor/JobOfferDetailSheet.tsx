@@ -29,6 +29,7 @@ import { UserAvatar } from "@/components/instructor/UserAvatar";
 import { CloseButton } from "@/components/instructor/CloseButton";
 import { StatCard } from "@/components/instructor/StatCard";
 import { EyebrowLabel } from "@/components/instructor/EyebrowLabel";
+import { CourseTypeLabel } from "@/components/instructor/CourseTypeLabel";
 import {
   formatUkPostcode,
   toSentenceCase,
