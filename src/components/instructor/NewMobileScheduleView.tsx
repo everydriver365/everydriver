@@ -417,6 +417,12 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                             <span className="truncate">{lesson.notes.replace('Test Centre: ', '')}</span>
                           </div>
                         )}
+                        {/* Route tracking status (driving tests only) */}
+                        {lesson.lesson_type === 'driving_test' && (
+                          <div className="flex items-center gap-2">
+                            <RouteStatusBadge lessonId={lesson.id} />
+                          </div>
+                        )}
                         {/* Location */}
                         {pickupAddress !== "No address" && (
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
