@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { format, addWeeks } from 'date-fns';
-import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Car, CheckSquare, MapPin, AlertTriangle, Clock, ChevronRight, ChevronDown, CreditCard, Mail, Send, Banknote, Sparkles } from 'lucide-react';
+import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Car, CheckSquare, MapPin, AlertTriangle, Clock, ChevronRight, ChevronDown, CreditCard, Mail, Send, Banknote, Sparkles, X } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,8 @@ import { CompetencyPicker } from './CompetencyPicker';
 import { GoogleAddressAutocomplete } from '@/components/admin/GoogleAddressAutocomplete';
 import { ExaminerSelector } from './driving-test/ExaminerSelector';
 import { TestCentrePicker } from './driving-test/TestCentrePicker';
+import { SegmentedControl } from '@/components/instructor/ui/SegmentedControl';
+import { pupilAvatarColor, pupilAvatarInitial } from '@/lib/pupilAvatarColor';
 
 interface AddLessonSheetProps {
   open: boolean;
