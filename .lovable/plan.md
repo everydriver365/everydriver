@@ -1,52 +1,97 @@
-## Problem
+## Goal
 
-When booking a new lesson via `AddLessonSheet`, the conflict warning sometimes doesn't appear even when there's a clear clash. Three gaps in the current logic:
+Split the existing combined "conflict warning" into two distinct layers in `AddLessonSheet`:
 
-1. **Google Calendar events are ignored.** Only `scheduled_lessons` for the current instructor are scanned. Synced events from `instructor_calendar_events` (Google Calendar busy blocks, manual blocks, courses, holidays) are not checked, so a new lesson can be booked right on top of one.
-2. **Back-to-back lessons don't always warn.** If `bufferMinutes` is 0 (instructor hasn't configured a buffer), a lesson that starts the exact second another ends produces `newStart < existingEnd` = false, so no overlap is reported — even though there's zero gap to drive.
-3. **Save debounce race.** The conflict check is debounced ~400ms. Pressing Save before it lands lets the booking through because `conflictWarning` is still `null`.
+- **Hard overlap** (Phase 1 — unchanged): blocks Save, no override allowed except via the existing "Book anyway" checkbox **only for buffer-shortfall** (kept as today). Direct time clashes with another lesson or Google Calendar busy event still cannot be overridden by travel-time logic.
+- **Travel-time concerns** (new soft layer): an amber, dismissible warning that informs the instructor "tight travel from X" or "tight travel to Y", **never blocks Save**, and never sets `conflictWarning`.
 
-## Fix
+Phase 1's overlap detection, calendar-event scan, debounce race fix, and effective-buffer logic all remain intact.
 
-All changes in `src/components/instructor/AddLessonSheet.tsx`. No DB changes.
+## What changes
 
-### 1. Include Google Calendar / external events in the scan
+All changes in `src/components/instructor/AddLessonSheet.tsx`. No DB, no edge function changes.
 
-Alongside the existing `scheduled_lessons` query, also fetch from `instructor_calendar_events` for the same instructor and date window:
+### 1. New parallel state
 
-```text
-- where instructor_id = current
-- where start_time/end_time intersect the chosen lesson_date (UTC → local day window)
-- where is_busy = true   (free/transparent events don't block)
+Add alongside existing `conflictWarning` / `travelSuggestion`:
+
+```ts
+type TravelWarning = {
+  direction: 'before' | 'after';
+  fromName: string;
+  toName: string;
+  travelMinutes: number;
+  gapMinutes: number;
+  shortfallMinutes: number;        // required - gap
+  suggestedTime?: string;          // only for 'before' direction
+};
+const [travelWarning, setTravelWarning] = useState<TravelWarning | null>(null);
 ```
 
-Convert each event's `start_time`/`end_time` into local minutes-from-midnight (matching how `scheduled_lessons` are compared), and feed them into the same buffered-overlap loop. Label them by `title` (fallback "Calendar event") in the warning message, e.g. `Overlaps with WDU Course` or `Too close to Dentist (needs 15 min buffer)`.
+`travelSuggestion` is kept (used for the "Use suggested time" tap action) but is no longer the **only** way travel info surfaces.
 
-The same merged list also feeds the previous/next lookup for the travel-time check, so travel from a Google event's `location` postcode is considered when present (skip travel check if no postcode can be parsed from the event).
+### 2. Rework the travel sections of the conflict-check effect
 
-### 2. Always enforce a minimum gap (even when buffer = 0)
+Inside `run()` in the existing `useEffect`:
 
-Treat `effectiveBuffer = max(bufferMinutes, 1)` for the overlap test only, so a brand-new lesson starting at exactly the same minute another ends still trips the warning ("Too close to … — back-to-back"). The actual configured buffer is still used in the displayed message and travel maths.
+- **Step 1 (overlap check)** — UNCHANGED. Still sets `conflictWarning` for hard overlap or buffer-shortfall against lessons/events; still `return`s early.
+- **Step 2 (travel from previous)** — when `gap < required`:
+  - **Do NOT set `conflictWarning`.**
+  - Set `travelWarning` with direction `'before'`, `shortfallMinutes`, `suggestedTime`.
+  - Keep populating `travelSuggestion` (so the "Use suggested time" button still works).
+  - Do NOT `return`; continue to step 3 so a "before" + "after" situation can both be considered (last-write-wins favours the more severe one — see ranking below).
+- **Step 3 (travel to next)** — when `gapAfter < required`:
+  - **Do NOT set `conflictWarning`.**
+  - If no `travelWarning` yet, set one with direction `'after'`.
+  - If a `'before'` warning already exists, keep whichever has the larger `shortfallMinutes` (more urgent wins). Tie → keep `'before'`.
 
-### 3. Close the Save debounce race
+At the top of `run()`, reset `setTravelWarning(null)` alongside the existing resets.
 
-In both `handleAddLessonExisting` and `handleAddLessonNew`, before the existing `if (conflictWarning && !overrideBuffer)` guard:
+### 3. Save handlers — keep Phase 1 hard block, ignore travel warning
 
-- If `checkingConflict === true`, await a small promise that resolves when the in-flight check finishes (track with a ref to the latest check's promise).
-- Then re-read `conflictWarning` and apply the guard.
+`handleAddLessonExisting` and `handleAddLessonNew`:
 
-This guarantees Save can never bypass a pending check.
+- Keep the existing `await pendingCheckRef.current` race fix.
+- Keep `if (conflictWarning && !overrideBuffer) { toast.error(...); return; }` — unchanged.
+- Do **nothing** with `travelWarning`. Save proceeds even when it is set. (Optional: a `console.debug` for traceability, no UI block.)
 
-### 4. Render tweak
+### 4. UI — add an amber soft-warning banner
 
-The warning banner already shows `conflictWarning` text and the "Override buffer / Book anyway" link — no UI change needed; it'll just trigger more often and with clearer source labels.
+Right after the existing red `conflictWarning` block (around line 800), add a new banner that renders when `travelWarning` is set AND `conflictWarning` is null (so we never stack two warnings about the same time):
+
+```text
+[icon]  Tight travel — only {gap} min {before {nextName} | after {fromName}}
+        for a {travelMinutes} min drive. You can still book this.
+        [Use suggested time HH:MM]   ← only for 'before' direction
+```
+
+Styling: amber palette to clearly differ from the red hard-block:
+- background `#FFFBEB`, border `#FDE68A`, icon/text `#92400E` (Tailwind amber-50/200/800 family)
+- `Clock` or `Car` icon from `lucide-react` (already imported set — pick whichever is already in scope; fall back to `AlertTriangle` styled amber if not).
+- No "Book anyway" checkbox (Save is never blocked by this).
+- The "Use suggested time" link sets `lessonStartTime` and clears both `travelWarning` and `travelSuggestion`.
+
+The existing blue `Sparkles` "tap to start at HH:MM" suggestion banner (line 804) stays, but its render condition becomes `!conflictWarning && !travelWarning && travelSuggestion` so it doesn't duplicate the amber warning.
+
+### 5. Wording inside the existing red banner
+
+The "Book anyway (override buffer / travel)" label currently mentions travel. Trim it to **"Book anyway (override buffer)"** since travel no longer routes through this banner. The override checkbox itself is unchanged.
+
+## What stays exactly the same
+
+- `instructor_calendar_events` scan and merging into `allSlots`.
+- `effectiveBuffer = max(bufferMinutes, 1)` for overlap detection.
+- `pendingCheckRef` debounce-race fix on Save.
+- Hard overlap message text and red banner.
+- The "Use suggested time" tap behaviour.
+- All edge function contracts (`check-travel-buffer` unchanged).
 
 ## Out of scope
 
-- Other instructors' lessons in a multi-instructor school (separate feature).
-- Reschedule sheet (already correct per earlier review).
-- Any DB migrations.
+- No new fields, no DB migrations, no edge function edits.
+- Reschedule sheet — not touched.
+- No change to how travel time is computed (still TomTom via `check-travel-buffer`).
 
 ## Files touched
 
-- `src/components/instructor/AddLessonSheet.tsx` — extend conflict scan to include `instructor_calendar_events`, enforce minimum 1-minute gap, await in-flight check on Save.
+- `src/components/instructor/AddLessonSheet.tsx` — add `travelWarning` state, split travel branches off `conflictWarning`, add amber banner, adjust override-checkbox label and blue-suggestion render condition.
