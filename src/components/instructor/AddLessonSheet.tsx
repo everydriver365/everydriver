@@ -943,22 +943,18 @@ export function AddLessonSheet({
               <div>
                 <div style={{ fontSize: 11, color: "#6E6E73", margin: "0 0 4px", paddingLeft: 2 }}>Start time</div>
                 <Select value={lessonStartTime} onValueChange={setLessonStartTime}>
-                  <SelectTrigger asChild>
-                    <button
-                      type="button"
-                      style={{
-                        width: "100%", display: "flex", alignItems: "center", gap: 8,
-                        padding: 12, background: "#FFFFFF",
-                        border: "0.5px solid #E5E5EA", borderRadius: 10,
-                        cursor: "pointer", textAlign: "left",
-                      }}
-                    >
-                      <Clock style={{ width: 16, height: 16, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
-                      <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: "#000000" }}>
-                        <SelectValue />
-                      </span>
-                      <ChevronDown style={{ width: 10, height: 10, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
-                    </button>
+                  <SelectTrigger
+                    style={{
+                      width: "100%", display: "flex", alignItems: "center", gap: 8,
+                      padding: 12, background: "#FFFFFF",
+                      border: "0.5px solid #E5E5EA", borderRadius: 10,
+                      height: "auto", textAlign: "left",
+                    }}
+                  >
+                    <Clock style={{ width: 16, height: 16, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
+                    <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: "#000000" }}>
+                      <SelectValue />
+                    </span>
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
                     {timeSlots.map((time) => (
@@ -970,22 +966,18 @@ export function AddLessonSheet({
               <div>
                 <div style={{ fontSize: 11, color: "#6E6E73", margin: "0 0 4px", paddingLeft: 2 }}>Duration</div>
                 <Select value={lessonDuration} onValueChange={setLessonDuration}>
-                  <SelectTrigger asChild>
-                    <button
-                      type="button"
-                      style={{
-                        width: "100%", display: "flex", alignItems: "center", gap: 8,
-                        padding: 12, background: "#FFFFFF",
-                        border: "0.5px solid #E5E5EA", borderRadius: 10,
-                        cursor: "pointer", textAlign: "left",
-                      }}
-                    >
-                      <Clock style={{ width: 16, height: 16, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
-                      <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: "#000000" }}>
-                        <SelectValue />
-                      </span>
-                      <ChevronDown style={{ width: 10, height: 10, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
-                    </button>
+                  <SelectTrigger
+                    style={{
+                      width: "100%", display: "flex", alignItems: "center", gap: 8,
+                      padding: 12, background: "#FFFFFF",
+                      border: "0.5px solid #E5E5EA", borderRadius: 10,
+                      height: "auto", textAlign: "left",
+                    }}
+                  >
+                    <Clock style={{ width: 16, height: 16, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
+                    <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: "#000000" }}>
+                      <SelectValue />
+                    </span>
                   </SelectTrigger>
                   <SelectContent>
                     {DURATIONS.map((d) => (
