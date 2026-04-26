@@ -336,8 +336,11 @@ export function PupilPortalSchedule({
                       </div>
                     </div>
 
-                    <div className="text-sm mb-3" style={{ color: 'var(--brand-muted)' }}>
-                      {lesson.lesson_type}
+                    <div className="text-sm mb-3 flex items-center gap-2 flex-wrap" style={{ color: 'var(--brand-muted)' }}>
+                      <span>{lesson.lesson_type}</span>
+                      {lesson.lesson_type === 'driving_test' && (
+                        <RouteStatusBadge lessonId={lesson.id} />
+                      )}
                     </div>
 
                     {lesson.pickup_location && (
