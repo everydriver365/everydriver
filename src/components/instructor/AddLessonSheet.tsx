@@ -133,8 +133,18 @@ export function AddLessonSheet({
     if (open) {
       fetchPupils();
       if (defaultDate) setLessonDate(defaultDate);
+      // Load instructor buffer + home postcode for conflict/travel checks
+      (async () => {
+        const { data } = await supabase
+          .from('instructors')
+          .select('buffer_minutes, home_postcode')
+          .eq('id', instructorId)
+          .maybeSingle();
+        setBufferMinutes(((data as any)?.buffer_minutes as number | null) ?? 0);
+        setInstructorHomePostcode(((data as any)?.home_postcode as string | null) ?? '');
+      })();
     }
-  }, [open, defaultDate]);
+  }, [open, defaultDate, instructorId]);
 
   useEffect(() => {
     if (isDrivingTest && instructorId) fetchTestCentres();
