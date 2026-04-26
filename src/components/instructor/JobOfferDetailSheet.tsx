@@ -190,7 +190,7 @@ export function JobOfferDetailSheet({
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {lessonType}
+                      {transmissionLabel ? `${lessonType} · ${transmissionLabel}` : lessonType}
                     </p>
                   </div>
                   {isUnread && (
@@ -343,6 +343,88 @@ export function JobOfferDetailSheet({
                   </div>
                 </div>
               </div>
+
+              {/* Lesson details card */}
+              <div
+                style={{
+                  background: "#FFFFFF",
+                  border: "0.5px solid #E5E5EA",
+                  borderRadius: 12,
+                  padding: 14,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
+              >
+                <EyebrowLabel>Lesson details</EyebrowLabel>
+                <DetailRow
+                  icon={Car}
+                  iconColor="#8A5BC9"
+                  iconBackground="#F1ECFA"
+                  label="Course"
+                  value={lessonType}
+                />
+                {transmissionLabel && (
+                  <DetailRow
+                    icon={Car}
+                    iconColor="#2B7BC8"
+                    iconBackground="#E6F1FB"
+                    label="Transmission"
+                    value={transmissionLabel}
+                  />
+                )}
+                <DetailRow
+                  icon={Clock}
+                  iconColor="#2B7BC8"
+                  iconBackground="#E6F1FB"
+                  label="Requested hours"
+                  value={`${hours} hour${hours === 1 ? "" : "s"}`}
+                />
+                {job.total_cost != null && (
+                  <DetailRow
+                    icon={PoundSterling}
+                    iconColor="#3B8B3B"
+                    iconBackground="#E8F3E8"
+                    label="Quoted total"
+                    value={formatGbp(Number(job.total_cost))}
+                  />
+                )}
+              </div>
+
+              {/* Contact card */}
+              {(job.email || job.phone) && (
+                <div
+                  style={{
+                    background: "#FFFFFF",
+                    border: "0.5px solid #E5E5EA",
+                    borderRadius: 12,
+                    padding: 14,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 10,
+                  }}
+                >
+                  <EyebrowLabel>Contact (revealed on accept)</EyebrowLabel>
+                  {job.phone && (
+                    <DetailRow
+                      icon={Phone}
+                      iconColor="#3B8B3B"
+                      iconBackground="#E8F3E8"
+                      label="Phone"
+                      value={job.phone}
+                    />
+                  )}
+                  {job.email && (
+                    <DetailRow
+                      icon={Mail}
+                      iconColor="#2B7BC8"
+                      iconBackground="#E6F1FB"
+                      label="Email"
+                      value={job.email}
+                    />
+                  )}
+                </div>
+              )}
 
               {/* Notes (preserved) */}
               {job.additional_notes && (
