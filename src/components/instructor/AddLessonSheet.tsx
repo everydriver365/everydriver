@@ -114,6 +114,7 @@ export function AddLessonSheet({
   const [checklistOpen, setChecklistOpen] = useState(true);
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
   const [checkingConflict, setCheckingConflict] = useState(false);
+  const pendingCheckRef = useRef<Promise<void> | null>(null);
   const [travelSuggestion, setTravelSuggestion] = useState<{ suggestedTime: string; travelMinutes: number; fromName: string } | null>(null);
   const [bufferMinutes, setBufferMinutes] = useState<number>(0);
   const [instructorHomePostcode, setInstructorHomePostcode] = useState<string>('');
