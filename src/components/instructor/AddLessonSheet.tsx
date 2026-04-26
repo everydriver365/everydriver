@@ -1144,6 +1144,24 @@ export function AddLessonSheet({
               </div>
             )}
 
+            {/* All clear (green) — no clashes and travel time sufficient */}
+            {!conflictWarning && !travelWarning && !travelSuggestion && !checkingConflict && lessonDate && lessonStartTime && (
+              <div
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", gap: 10,
+                  padding: "12px 16px", borderRadius: 12,
+                  backgroundColor: "#ECFDF5", border: "1px solid #A7F3D0",
+                }}
+                role="status"
+                aria-live="polite"
+              >
+                <CheckCircle2 style={{ width: 16, height: 16, color: "#047857", flexShrink: 0 }} />
+                <div style={{ flex: 1, fontSize: 13, color: "#065F46", lineHeight: 1.4, fontWeight: 600 }}>
+                  All OK — no clashes and travel time looks fine.
+                </div>
+              </div>
+            )}
+
             {/* Travel-time Suggestion (blue informational — only when no warning of any kind) */}
             {!conflictWarning && !travelWarning && travelSuggestion && (
               <button
