@@ -328,6 +328,7 @@ export function AddLessonSheet({
                 : `Too close to ${names} (${bufferLabel})`
             );
             setTravelSuggestion(null);
+            setTravelWarning(null);
             return;
           }
           setConflictWarning(null);
@@ -342,6 +343,11 @@ export function AddLessonSheet({
         const next = allSlots
           .filter(s => s._start >= newEndMinutes)
           .sort((a, b) => a._start - b._start)[0];
+
+        // Phase 2: travel-time concerns are SOFT warnings only — they never set
+        // conflictWarning and never block Save. Track the most severe shortfall.
+        let pendingTravelWarning: typeof travelWarning = null;
+        let pendingTravelSuggestion: typeof travelSuggestion = null;
 
         // 2) Travel from PREVIOUS lesson/event (or instructor home if first of day)
         const fromPostcode = previous?._postcode || (!previous ? instructorHomePostcode : '');
@@ -366,25 +372,25 @@ export function AddLessonSheet({
                 const sh = Math.floor(suggestedMinutes / 60);
                 const sm = suggestedMinutes % 60;
                 const suggestedTime = `${sh.toString().padStart(2, '0')}:${sm.toString().padStart(2, '0')}`;
-                setConflictWarning(
-                  `Only ${gap} min after ${fromName} — needs ${required} min (${data.travel_minutes} min drive + ${bufferMinutes} min buffer)`
-                );
-                setTravelSuggestion({
+                pendingTravelSuggestion = {
                   suggestedTime,
                   travelMinutes: data.travel_minutes,
                   fromName,
-                });
-                return;
+                };
+                pendingTravelWarning = {
+                  direction: 'before',
+                  fromName,
+                  toName: 'this lesson',
+                  travelMinutes: data.travel_minutes,
+                  gapMinutes: gap,
+                  shortfallMinutes: required - gap,
+                  suggestedTime,
+                };
               }
-              setTravelSuggestion(null);
-            } else {
-              setTravelSuggestion(null);
             }
           } catch {
-            setTravelSuggestion(null);
+            /* swallow — travel check is best-effort */
           }
-        } else {
-          setTravelSuggestion(null);
         }
 
         // 3) Travel to NEXT lesson/event
@@ -404,16 +410,27 @@ export function AddLessonSheet({
             if (data?.travel_minutes != null) {
               const required = (data.required_minutes ?? data.travel_minutes + bufferMinutes);
               if (gapAfter < required) {
-                setConflictWarning(
-                  `Only ${gapAfter} min before ${nextName} — needs ${required} min (${data.travel_minutes} min drive + ${bufferMinutes} min buffer)`
-                );
-                return;
+                const afterShortfall = required - gapAfter;
+                // Keep the more severe of before/after; tie → keep 'before'.
+                if (!pendingTravelWarning || afterShortfall > pendingTravelWarning.shortfallMinutes) {
+                  pendingTravelWarning = {
+                    direction: 'after',
+                    fromName: 'this lesson',
+                    toName: nextName,
+                    travelMinutes: data.travel_minutes,
+                    gapMinutes: gapAfter,
+                    shortfallMinutes: afterShortfall,
+                  };
+                }
               }
             }
           } catch {
             /* swallow */
           }
         }
+
+        setTravelSuggestion(pendingTravelSuggestion);
+        setTravelWarning(pendingTravelWarning);
       } catch {
         setConflictWarning(null);
         setTravelSuggestion(null);
