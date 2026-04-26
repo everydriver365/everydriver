@@ -188,6 +188,50 @@ export function useGoogleServiceCalendar(instructorId: string) {
     }
   }, [instructorId, checkConnection]);
 
+  // Re-sync a date range and return diff (added/removed events)
+  const resyncRange = useCallback(
+    async (from: Date, to: Date) => {
+      if (!instructorId) return null;
+      setIsSyncing(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("google-calendar-service", {
+          body: {
+            action: "resyncRange",
+            instructorId,
+            fromDate: from.toISOString(),
+            toDate: to.toISOString(),
+          },
+        });
+        if (error) {
+          toast.error("Failed to re-sync range");
+          return null;
+        }
+        if (data?.error) {
+          toast.error(data.error);
+          return null;
+        }
+        const a = data?.counts?.added ?? 0;
+        const r = data?.counts?.removed ?? 0;
+        toast.success(`Re-sync complete · +${a} added · −${r} removed`);
+        await checkConnection();
+        return data as {
+          success: boolean;
+          range: { from: string; to: string };
+          counts: { added: number; removed: number; unchanged: number };
+          added: Array<{ id: string; title: string; start: string; end: string; location: string | null }>;
+          removed: Array<{ id: string; title: string; start: string; end: string; location: string | null }>;
+        };
+      } catch (err) {
+        console.error("Error re-syncing range:", err);
+        toast.error("Failed to re-sync range");
+        return null;
+      } finally {
+        setIsSyncing(false);
+      }
+    },
+    [instructorId, checkConnection]
+  );
+
   return {
     isConnecting,
     isTesting,
@@ -201,5 +245,6 @@ export function useGoogleServiceCalendar(instructorId: string) {
     saveConnection,
     disconnect,
     syncExternalEvents,
+    resyncRange,
   };
 }
