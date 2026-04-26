@@ -394,7 +394,12 @@ export function AdminBookingsManager() {
                         {format(new Date(booking.lesson_date), "dd-MMM-yy")}
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {booking.lesson_type || "Lesson"}
+                        <div className="flex items-center gap-2">
+                          <span>{booking.lesson_type || "Lesson"}</span>
+                          {booking.lesson_type === "driving_test" && (
+                            <RouteStatusBadge lessonId={booking.id} />
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         £{(booking.amount_due || 0).toFixed(2)}
