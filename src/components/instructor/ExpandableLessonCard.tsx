@@ -52,6 +52,19 @@ interface ScheduledLesson {
   notes: string | null;
   recurrence_rule?: string | null;
   google_event_id?: string | null;
+  test_centre_id?: string | null;
+  examiner_id?: string | null;
+  test_centre?: {
+    id: string;
+    name: string;
+    address: string | null;
+    postcode: string | null;
+  } | null;
+  examiner?: {
+    id: string;
+    name: string;
+    dvsa_staff_number: string | null;
+  } | null;
   pupil: {
     id: string;
     name: string;
