@@ -220,6 +220,7 @@ export function AddLessonSheet({
     if (!lessonDate || !lessonStartTime || !open) {
       setConflictWarning(null);
       setTravelSuggestion(null);
+      setTravelWarning(null);
       return;
     }
     // Any change to inputs invalidates a previous override
