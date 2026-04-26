@@ -145,18 +145,49 @@ export function JobOfferDetailSheet({
                     gap: 12,
                   }}
                 >
-                  <h2
-                    style={{
-                      flex: 1,
-                      fontSize: 15,
-                      fontWeight: 500,
-                      color: "#000000",
-                      letterSpacing: "-0.2px",
-                      margin: 0,
-                    }}
-                  >
-                    Job offer
-                  </h2>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      className="flex items-center"
+                      style={{ gap: 6, marginBottom: 2 }}
+                    >
+                      <CourseTypeLabel courseType={job.course_type} />
+                      <span
+                        aria-hidden="true"
+                        style={{
+                          width: 3,
+                          height: 3,
+                          borderRadius: "50%",
+                          background: "#C7C7CC",
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 500,
+                          letterSpacing: "0.3px",
+                          textTransform: "uppercase",
+                          color: "#6E6E73",
+                        }}
+                      >
+                        {hours}h
+                      </span>
+                    </div>
+                    <h2
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 600,
+                        color: "#000000",
+                        letterSpacing: "-0.3px",
+                        margin: 0,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {job.name}
+                    </h2>
+                  </div>
                   <CloseButton onClick={onClose} />
                 </div>
 
