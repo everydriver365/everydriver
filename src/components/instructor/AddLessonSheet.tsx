@@ -801,65 +801,93 @@ export function AddLessonSheet({
           </Section>
 
 
-          {/* Pupil selector tabs */}
+          {/* Pupil */}
           <Section>
             <SectionLabel>Pupil</SectionLabel>
-            <div style={{
-              display: "flex", backgroundColor: "#EAEAEA", padding: 3, borderRadius: 10, marginBottom: 12,
-            }}>
-              <button
-                onClick={() => setTab('existing')}
-                style={{
-                  flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                  padding: "8px 0", borderRadius: 8, fontSize: 13, fontWeight: 500,
-                  border: "none", cursor: "pointer", transition: "all 0.2s",
-                  ...(tab === 'existing'
-                    ? { backgroundColor: "#FFFFFF", color: "#18181B", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }
-                    : { backgroundColor: "transparent", color: "#71717A" }),
-                }}
-              >
-                <Users style={{ width: 14, height: 14 }} />
-                Existing
-              </button>
-              <button
-                onClick={() => setTab('new')}
-                style={{
-                  flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                  padding: "8px 0", borderRadius: 8, fontSize: 13, fontWeight: 500,
-                  border: "none", cursor: "pointer", transition: "all 0.2s",
-                  ...(tab === 'new'
-                    ? { backgroundColor: "#FFFFFF", color: "#18181B", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }
-                    : { backgroundColor: "transparent", color: "#71717A" }),
-                }}
-              >
-                <UserPlus style={{ width: 14, height: 14 }} />
-                New Pupil
-              </button>
+            <div style={{ marginBottom: 8 }}>
+              <SegmentedControl
+                value={tab}
+                onChange={(v) => setTab(v as 'existing' | 'new')}
+                ariaLabel="Pupil source"
+                options={[
+                  { value: 'existing', label: (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                      <Users style={{ width: 13, height: 13 }} strokeWidth={2} />
+                      Existing
+                    </span>
+                  )},
+                  { value: 'new', label: (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                      <UserPlus style={{ width: 13, height: 13 }} strokeWidth={2} />
+                      New pupil
+                    </span>
+                  )},
+                ]}
+              />
             </div>
 
             {tab === 'existing' ? (
               loadingPupils ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 0", color: "#71717A", fontSize: 13 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 0", color: "#6E6E73", fontSize: 13 }}>
                   <Loader2 style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} />
-                  Loading pupils...
+                  Loading pupils…
                 </div>
               ) : (
                 <Select value={selectedPupil} onValueChange={setSelectedPupil}>
-                  <SelectTrigger
-                    style={{
-                      backgroundColor: "#FFFFFF", borderRadius: 12,
-                      border: "1px solid #E4E4E7", padding: "12px 16px",
-                      fontSize: 15, height: "auto",
-                    }}
-                  >
-                    <SelectValue placeholder="Choose a pupil..." />
+                  <SelectTrigger asChild>
+                    <button
+                      type="button"
+                      style={{
+                        width: "100%", display: "flex", alignItems: "center", gap: 10,
+                        padding: "12px 14px", background: "#FFFFFF",
+                        border: "0.5px solid #E5E5EA", borderRadius: 10,
+                        cursor: "pointer", textAlign: "left",
+                      }}
+                    >
+                      {(() => {
+                        const pupil = pupils.find(p => p.id === selectedPupil);
+                        if (pupil) {
+                          const display = toProperCase(pupil.name || '');
+                          return (
+                            <>
+                              <span style={{
+                                width: 28, height: 28, borderRadius: "50%",
+                                background: pupilAvatarColor(pupil.id),
+                                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                                color: "#FFFFFF", fontSize: 11, fontWeight: 500, flexShrink: 0,
+                              }}>
+                                {pupilAvatarInitial(display)}
+                              </span>
+                              <span style={{
+                                flex: 1, minWidth: 0, fontSize: 15, fontWeight: 500,
+                                color: "#000000", letterSpacing: -0.2,
+                                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                              }}>
+                                {display}
+                              </span>
+                            </>
+                          );
+                        }
+                        return (
+                          <>
+                            <Users style={{ width: 18, height: 18, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
+                            <span style={{
+                              flex: 1, fontSize: 15, fontWeight: 400, color: "#6E6E73",
+                            }}>
+                              Select pupil
+                            </span>
+                          </>
+                        );
+                      })()}
+                      <ChevronDown style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
+                    </button>
                   </SelectTrigger>
                   <SelectContent>
                     {pupils.length === 0 ? (
                       <div className="p-3 text-center text-sm text-muted-foreground">No pupils yet</div>
                     ) : (
                       pupils.map((pupil) => (
-                        <SelectItem key={pupil.id} value={pupil.id}>{pupil.name}</SelectItem>
+                        <SelectItem key={pupil.id} value={pupil.id}>{toProperCase(pupil.name)}</SelectItem>
                       ))
                     )}
                   </SelectContent>
@@ -870,7 +898,7 @@ export function AddLessonSheet({
                 <InputField label="Name" placeholder="John Smith" value={newPupilName} onChange={setNewPupilName} required />
                 <InputField label="Phone" placeholder="07123 456789" value={newPupilPhone} onChange={setNewPupilPhone} type="tel" />
                 <div>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Address</span>
+                  <span style={{ fontSize: 12, color: "#6E6E73", marginBottom: 6, display: "block" }}>Address</span>
                   <GoogleAddressAutocomplete
                     value={newPupilAddress}
                     onChange={setNewPupilAddress}
@@ -881,9 +909,6 @@ export function AddLessonSheet({
               </div>
             )}
           </Section>
-
-          {/* Divider */}
-          <div style={{ height: 1, backgroundColor: "#E4E4E7", margin: "20px 0" }} />
 
           {/* Date & Time */}
           <Section>
