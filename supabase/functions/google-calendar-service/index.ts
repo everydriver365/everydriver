@@ -77,7 +77,7 @@ async function importPrivateKey(rawPrivateKey: string): Promise<CryptoKey> {
 
   return await crypto.subtle.importKey(
     "pkcs8",
-    binaryDer,
+    binaryDer.buffer.slice(binaryDer.byteOffset, binaryDer.byteOffset + binaryDer.byteLength) as ArrayBuffer,
     {
       name: "RSASSA-PKCS1-v1_5",
       hash: { name: "SHA-256" },
