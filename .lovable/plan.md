@@ -1,24 +1,24 @@
 ## Goal
 
-In the New Lesson conflict check, ignore all-day calendar events when looking for clashes — except when the event title indicates a Holiday or Annual Leave, which should still block.
+On the instructor mobile homepage, visually strike through and dim any lesson tile in the "Today's Lessons" list once that lesson has been conducted (i.e. its status is `completed`), so the instructor can see at a glance what's already done.
 
-## Why
+## Where
 
-All-day Google Calendar events (birthdays, reminders, "Bin day", etc.) currently mark the entire day as busy and can trigger false clashes for any lesson booked that day. Holidays and annual leave are the only all-day events that genuinely should block lessons.
+`src/components/instructor/TodayLessonsList.tsx` — the timeline-style list that renders today's lesson cards on the mobile home (`InstructorMobileHome.tsx`).
 
-## Scope
+The data hook (`useTodayRemainingLessons`) already returns lessons with their `status`, including `completed`, so no data changes are needed.
 
-Single file: `src/components/instructor/AddLessonSheet.tsx`, inside the conflict-check `useEffect` where calendar events are normalised into slots (around lines 390–397).
+## Visual treatment for completed lessons
 
-## Approach
+- Pupil name, time range, and time label rendered with `line-through`.
+- Whole tile faded to ~55% opacity (matches the existing cancelled-lesson treatment).
+- Timeline dot switched from primary to muted grey so the timeline reflects which stops are done.
+- Lesson-type badge replaced with a subtle "Done" badge, since the existing payment "Done/Unpaid" badge stays as-is on the right.
 
-1. Detect all-day events on the fly — the schema has no `all_day` column, so treat any event whose duration is ≥ 24 hours (or whose start/end align with local midnight and span the full day) as all-day.
-2. Define an allowlist of keywords matched case-insensitively against the event title: `holiday`, `annual leave`, `vacation`, `bank holiday`, `time off`, `leave`, `off work`, `out of office`, `ooo`.
-3. When building `eventSlots`, drop any all-day event whose title does NOT match the allowlist. All-day events that DO match are kept and continue to block as today (spanning 00:00–24:00 of the day, so any lesson on that day clashes — which is the intended behaviour for holidays).
-4. Non-all-day events behave exactly as today.
+The `HomeTodaySchedule` component already has line-through for completed lessons, so this brings `TodayLessonsList` in line with it.
 
-## Notes
+## Out of scope
 
-- No DB schema change, no migration, no other components touched.
-- Behaviour for `scheduled_lessons` is unchanged.
-- Travel-time checks already skip slots with no postcode, so all-day Holiday slots remain harmless to the soft travel warning.
+- No change to how a lesson becomes `completed` (that still flows from the existing lesson-completion / GPS-end logic).
+- No change to data fetching, ordering, or the cancelled-lesson behaviour.
+- No change to `HomeTodaySchedule` — it already handles this.
