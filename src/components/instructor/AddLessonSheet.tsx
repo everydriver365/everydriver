@@ -747,37 +747,33 @@ export function AddLessonSheet({
           <Section>
             <SectionLabel>Lesson type</SectionLabel>
             <Select value={lessonType} onValueChange={setLessonType}>
-              <SelectTrigger asChild>
-                <button
-                  type="button"
-                  style={{
-                    width: "100%", display: "flex", alignItems: "center", gap: 10,
-                    padding: "12px 14px", background: "#FFFFFF",
-                    border: "0.5px solid #E5E5EA", borderRadius: 10,
-                    cursor: "pointer", textAlign: "left",
-                  }}
-                >
-                  {(() => {
-                    const palette = getLessonTypePalette(lessonType);
-                    return (
-                      <span style={{
-                        width: 28, height: 28, borderRadius: 7,
-                        background: palette.tint, display: "inline-flex",
-                        alignItems: "center", justifyContent: "center", flexShrink: 0,
-                      }}>
-                        <Car style={{ width: 16, height: 16, color: palette.icon }} strokeWidth={2} />
-                      </span>
-                    );
-                  })()}
-                  <span style={{
-                    flex: 1, minWidth: 0, fontSize: 15, fontWeight: 500,
-                    color: "#000000", letterSpacing: -0.2,
-                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                  }}>
-                    <SelectValue />
-                  </span>
-                  <ChevronDown style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
-                </button>
+              <SelectTrigger
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", gap: 10,
+                  padding: "12px 14px", background: "#FFFFFF",
+                  border: "0.5px solid #E5E5EA", borderRadius: 10,
+                  height: "auto", textAlign: "left",
+                }}
+              >
+                {(() => {
+                  const palette = getLessonTypePalette(lessonType);
+                  return (
+                    <span style={{
+                      width: 28, height: 28, borderRadius: 7,
+                      background: palette.tint, display: "inline-flex",
+                      alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    }}>
+                      <Car style={{ width: 16, height: 16, color: palette.icon }} strokeWidth={2} />
+                    </span>
+                  );
+                })()}
+                <span style={{
+                  flex: 1, minWidth: 0, fontSize: 15, fontWeight: 500,
+                  color: "#000000", letterSpacing: -0.2,
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                }}>
+                  <SelectValue />
+                </span>
               </SelectTrigger>
               <SelectContent>
                 {LESSON_TYPES.map((type) => {
