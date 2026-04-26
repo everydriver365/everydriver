@@ -327,11 +327,11 @@ export function AddLessonSheet({
                 ? `Overlaps with ${names}`
                 : `Too close to ${names} (${bufferLabel})`
             );
-            setTravelSuggestion(null);
-            setTravelWarning(null);
-            return;
+            // Fall through — travel-time checks below still run so the amber
+            // soft warning can appear alongside the red hard-block banner.
+          } else {
+            setConflictWarning(null);
           }
-          setConflictWarning(null);
         } else {
           setConflictWarning(null);
         }
@@ -830,7 +830,7 @@ export function AddLessonSheet({
             )}
 
             {/* Travel-time soft warning (Phase 2) — informs only, never blocks Save */}
-            {!conflictWarning && travelWarning && (
+            {travelWarning && (
               <div style={{
                 display: "flex", alignItems: "flex-start", gap: 10,
                 padding: "12px 16px", borderRadius: 12,
