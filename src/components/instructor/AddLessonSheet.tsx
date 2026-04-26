@@ -659,21 +659,36 @@ export function AddLessonSheet({
                 <SectionLabel>Test Details</SectionLabel>
                 <div>
                   <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Test Centre</span>
-                  <Select value={selectedTestCentre} onValueChange={setSelectedTestCentre}>
+                  <TestCentrePicker
+                    value={selectedTestCentre}
+                    onChange={(id, centre) => {
+                      setSelectedTestCentre(id);
+                      // If pickup empty and centre has address, prefill so the route logs cleanly
+                      if (centre && !pickupAddress) {
+                        const addr = [centre.address, centre.postcode].filter(Boolean).join(', ');
+                        if (addr) setPickupAddress(addr);
+                      }
+                    }}
+                    instructorId={instructorId}
+                  />
+                  <span style={{ fontSize: 11, color: "#71717A", marginTop: 6, display: "block" }}>
+                    Search any UK test centre — your saved centres appear first.
+                  </span>
+                </div>
+
+                <div>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Test Time</span>
+                  <Select value={lessonStartTime} onValueChange={setLessonStartTime}>
                     <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <MapPin style={{ width: 16, height: 16, color: "#2A394F" }} />
-                        <SelectValue placeholder="Select test centre..." />
+                        <Clock style={{ width: 16, height: 16, color: "#2A394F" }} />
+                        <SelectValue />
                       </div>
                     </SelectTrigger>
-                    <SelectContent>
-                      {testCentres.length === 0 ? (
-                        <div className="p-3 text-center text-sm text-muted-foreground">No test centres saved</div>
-                      ) : (
-                        testCentres.map((centre) => (
-                          <SelectItem key={centre.id} value={centre.id}>{centre.name}</SelectItem>
-                        ))
-                      )}
+                    <SelectContent className="max-h-[260px]">
+                      {timeSlots.map((slot) => (
+                        <SelectItem key={slot} value={slot}>{slot}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
