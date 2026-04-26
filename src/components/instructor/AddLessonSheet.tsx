@@ -462,6 +462,7 @@ export function AddLessonSheet({
 
   const handleAddLessonExisting = async () => {
     if (!selectedPupil || !lessonDate) { toast.error('Please select a pupil and date'); return; }
+    if (pendingCheckRef.current) { try { await pendingCheckRef.current; } catch { /* ignore */ } }
     if (conflictWarning && !overrideBuffer) { toast.error(conflictWarning); return; }
     if (!(await validateExaminerCentreMatch())) return;
     setLoading(true);
