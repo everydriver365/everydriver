@@ -1393,6 +1393,7 @@ export function AddLessonSheet({
               </div>
             </>
           )}
+          </div>
         </div>
       </SheetContent>
     </Sheet>
