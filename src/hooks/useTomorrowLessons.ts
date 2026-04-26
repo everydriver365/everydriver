@@ -14,7 +14,7 @@ export function useTomorrowLessons(instructorId: string | undefined) {
       const { data, error } = await supabase
         .from("scheduled_lessons")
         .select(`
-          id, pupil_id, start_time, duration_minutes, pickup_postcode, pickup_location, status, lesson_type, payment_status, amount_due,
+          id, pupil_id, start_time, duration_minutes, pickup_postcode, pickup_location, status, lesson_type, payment_status, amount_due, google_event_id,
           pupils!inner (id, name, postcode, address, profile_image_url)
         `)
         .eq("instructor_id", instructorId)
@@ -42,6 +42,7 @@ export function useTomorrowLessons(instructorId: string | undefined) {
           paymentStatus: l.payment_status || "unpaid",
           amountDue: l.amount_due ?? null,
           status: l.status || "scheduled",
+          googleEventId: (l as any).google_event_id ?? null,
         };
       });
     },

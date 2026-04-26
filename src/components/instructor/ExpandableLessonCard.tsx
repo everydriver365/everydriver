@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -476,9 +477,27 @@ export function ExpandableLessonCard({
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">Google Calendar</span>
                     {lesson.google_event_id ? (
-                      <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
-                        <Check className="h-3 w-3" /> Synced
-                      </span>
+                      <TooltipProvider delayDuration={150}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-500/10 text-sky-600"
+                              aria-label="Imported from Google Calendar"
+                            >
+                              <CalendarClock className="h-3 w-3" />
+                              Imported from Google
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[260px]">
+                            <div className="text-xs font-medium">Imported from Google Calendar</div>
+                            <div className="text-[10px] text-muted-foreground font-mono break-all mt-0.5">
+                              Event ID: {lesson.google_event_id}
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     ) : (
                       <span className="text-muted-foreground">Not synced</span>
                     )}
