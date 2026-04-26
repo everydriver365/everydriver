@@ -747,37 +747,33 @@ export function AddLessonSheet({
           <Section>
             <SectionLabel>Lesson type</SectionLabel>
             <Select value={lessonType} onValueChange={setLessonType}>
-              <SelectTrigger asChild>
-                <button
-                  type="button"
-                  style={{
-                    width: "100%", display: "flex", alignItems: "center", gap: 10,
-                    padding: "12px 14px", background: "#FFFFFF",
-                    border: "0.5px solid #E5E5EA", borderRadius: 10,
-                    cursor: "pointer", textAlign: "left",
-                  }}
-                >
-                  {(() => {
-                    const palette = getLessonTypePalette(lessonType);
-                    return (
-                      <span style={{
-                        width: 28, height: 28, borderRadius: 7,
-                        background: palette.tint, display: "inline-flex",
-                        alignItems: "center", justifyContent: "center", flexShrink: 0,
-                      }}>
-                        <Car style={{ width: 16, height: 16, color: palette.icon }} strokeWidth={2} />
-                      </span>
-                    );
-                  })()}
-                  <span style={{
-                    flex: 1, minWidth: 0, fontSize: 15, fontWeight: 500,
-                    color: "#000000", letterSpacing: -0.2,
-                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                  }}>
-                    <SelectValue />
-                  </span>
-                  <ChevronDown style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
-                </button>
+              <SelectTrigger
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", gap: 10,
+                  padding: "12px 14px", background: "#FFFFFF",
+                  border: "0.5px solid #E5E5EA", borderRadius: 10,
+                  height: "auto", textAlign: "left",
+                }}
+              >
+                {(() => {
+                  const palette = getLessonTypePalette(lessonType);
+                  return (
+                    <span style={{
+                      width: 28, height: 28, borderRadius: 7,
+                      background: palette.tint, display: "inline-flex",
+                      alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    }}>
+                      <Car style={{ width: 16, height: 16, color: palette.icon }} strokeWidth={2} />
+                    </span>
+                  );
+                })()}
+                <span style={{
+                  flex: 1, minWidth: 0, fontSize: 15, fontWeight: 500,
+                  color: "#000000", letterSpacing: -0.2,
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                }}>
+                  <SelectValue />
+                </span>
               </SelectTrigger>
               <SelectContent>
                 {LESSON_TYPES.map((type) => {
@@ -834,53 +830,49 @@ export function AddLessonSheet({
                 </div>
               ) : (
                 <Select value={selectedPupil} onValueChange={setSelectedPupil}>
-                  <SelectTrigger asChild>
-                    <button
-                      type="button"
-                      style={{
-                        width: "100%", display: "flex", alignItems: "center", gap: 10,
-                        padding: "12px 14px", background: "#FFFFFF",
-                        border: "0.5px solid #E5E5EA", borderRadius: 10,
-                        cursor: "pointer", textAlign: "left",
-                      }}
-                    >
-                      {(() => {
-                        const pupil = pupils.find(p => p.id === selectedPupil);
-                        if (pupil) {
-                          const display = toProperCase(pupil.name || '');
-                          return (
-                            <>
-                              <span style={{
-                                width: 28, height: 28, borderRadius: "50%",
-                                background: pupilAvatarColor(pupil.id),
-                                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                                color: "#FFFFFF", fontSize: 11, fontWeight: 500, flexShrink: 0,
-                              }}>
-                                {pupilAvatarInitial(display)}
-                              </span>
-                              <span style={{
-                                flex: 1, minWidth: 0, fontSize: 15, fontWeight: 500,
-                                color: "#000000", letterSpacing: -0.2,
-                                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                              }}>
-                                {display}
-                              </span>
-                            </>
-                          );
-                        }
+                  <SelectTrigger
+                    style={{
+                      width: "100%", display: "flex", alignItems: "center", gap: 10,
+                      padding: "12px 14px", background: "#FFFFFF",
+                      border: "0.5px solid #E5E5EA", borderRadius: 10,
+                      height: "auto", textAlign: "left",
+                    }}
+                  >
+                    {(() => {
+                      const pupil = pupils.find(p => p.id === selectedPupil);
+                      if (pupil) {
+                        const display = toProperCase(pupil.name || '');
                         return (
                           <>
-                            <Users style={{ width: 18, height: 18, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
                             <span style={{
-                              flex: 1, fontSize: 15, fontWeight: 400, color: "#6E6E73",
+                              width: 28, height: 28, borderRadius: "50%",
+                              background: pupilAvatarColor(pupil.id),
+                              display: "inline-flex", alignItems: "center", justifyContent: "center",
+                              color: "#FFFFFF", fontSize: 11, fontWeight: 500, flexShrink: 0,
                             }}>
-                              Select pupil
+                              {pupilAvatarInitial(display)}
+                            </span>
+                            <span style={{
+                              flex: 1, minWidth: 0, fontSize: 15, fontWeight: 500,
+                              color: "#000000", letterSpacing: -0.2,
+                              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                            }}>
+                              {display}
                             </span>
                           </>
                         );
-                      })()}
-                      <ChevronDown style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
-                    </button>
+                      }
+                      return (
+                        <>
+                          <Users style={{ width: 18, height: 18, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
+                          <span style={{
+                            flex: 1, fontSize: 15, fontWeight: 400, color: "#6E6E73",
+                          }}>
+                            Select pupil
+                          </span>
+                        </>
+                      );
+                    })()}
                   </SelectTrigger>
                   <SelectContent>
                     {pupils.length === 0 ? (
@@ -951,22 +943,18 @@ export function AddLessonSheet({
               <div>
                 <div style={{ fontSize: 11, color: "#6E6E73", margin: "0 0 4px", paddingLeft: 2 }}>Start time</div>
                 <Select value={lessonStartTime} onValueChange={setLessonStartTime}>
-                  <SelectTrigger asChild>
-                    <button
-                      type="button"
-                      style={{
-                        width: "100%", display: "flex", alignItems: "center", gap: 8,
-                        padding: 12, background: "#FFFFFF",
-                        border: "0.5px solid #E5E5EA", borderRadius: 10,
-                        cursor: "pointer", textAlign: "left",
-                      }}
-                    >
-                      <Clock style={{ width: 16, height: 16, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
-                      <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: "#000000" }}>
-                        <SelectValue />
-                      </span>
-                      <ChevronDown style={{ width: 10, height: 10, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
-                    </button>
+                  <SelectTrigger
+                    style={{
+                      width: "100%", display: "flex", alignItems: "center", gap: 8,
+                      padding: 12, background: "#FFFFFF",
+                      border: "0.5px solid #E5E5EA", borderRadius: 10,
+                      height: "auto", textAlign: "left",
+                    }}
+                  >
+                    <Clock style={{ width: 16, height: 16, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
+                    <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: "#000000" }}>
+                      <SelectValue />
+                    </span>
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
                     {timeSlots.map((time) => (
@@ -978,22 +966,18 @@ export function AddLessonSheet({
               <div>
                 <div style={{ fontSize: 11, color: "#6E6E73", margin: "0 0 4px", paddingLeft: 2 }}>Duration</div>
                 <Select value={lessonDuration} onValueChange={setLessonDuration}>
-                  <SelectTrigger asChild>
-                    <button
-                      type="button"
-                      style={{
-                        width: "100%", display: "flex", alignItems: "center", gap: 8,
-                        padding: 12, background: "#FFFFFF",
-                        border: "0.5px solid #E5E5EA", borderRadius: 10,
-                        cursor: "pointer", textAlign: "left",
-                      }}
-                    >
-                      <Clock style={{ width: 16, height: 16, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
-                      <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: "#000000" }}>
-                        <SelectValue />
-                      </span>
-                      <ChevronDown style={{ width: 10, height: 10, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
-                    </button>
+                  <SelectTrigger
+                    style={{
+                      width: "100%", display: "flex", alignItems: "center", gap: 8,
+                      padding: 12, background: "#FFFFFF",
+                      border: "0.5px solid #E5E5EA", borderRadius: 10,
+                      height: "auto", textAlign: "left",
+                    }}
+                  >
+                    <Clock style={{ width: 16, height: 16, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
+                    <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: "#000000" }}>
+                      <SelectValue />
+                    </span>
                   </SelectTrigger>
                   <SelectContent>
                     {DURATIONS.map((d) => (
