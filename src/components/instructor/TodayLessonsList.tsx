@@ -131,6 +131,29 @@ export function TodayLessonsList({ lessons, instructorId, className = "" }: Toda
                               >
                                 {lesson.pupilName}
                               </p>
+                              {lesson.googleEventId && (
+                                <TooltipProvider delayDuration={150}>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-500/10 text-sky-600 shrink-0"
+                                        aria-label="Imported from Google Calendar"
+                                      >
+                                        <Calendar className="h-[10px] w-[10px]" />
+                                        Google
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className="max-w-[260px]">
+                                      <div className="text-xs font-medium">Imported from Google Calendar</div>
+                                      <div className="text-[10px] text-muted-foreground font-mono break-all mt-0.5">
+                                        Event ID: {lesson.googleEventId}
+                                      </div>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
                               <Badge
                                 variant="outline"
                                 className={
