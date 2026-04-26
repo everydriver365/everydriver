@@ -26,9 +26,9 @@ export function renderTemplate(
   vars: { firstName: string; slotList: string; instructorFirstName: string }
 ): string {
   return template
-    .replaceAll("{first_name}", vars.firstName)
-    .replaceAll("{slot_list}", vars.slotList)
-    .replaceAll("{instructor_first_name}", vars.instructorFirstName);
+    .split("{first_name}").join(vars.firstName)
+    .split("{slot_list}").join(vars.slotList)
+    .split("{instructor_first_name}").join(vars.instructorFirstName);
 }
 
 export function MessageTemplateEditor({
