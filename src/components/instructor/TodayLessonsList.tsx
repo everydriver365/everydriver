@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { format, parse, addMinutes } from "date-fns";
 import { motion } from "framer-motion";
-import { CalendarOff, Navigation } from "lucide-react";
+import { CalendarOff, Navigation, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import { TodayLesson } from "@/hooks/useTodayRemainingLessons";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { PupilAvatar } from "./PupilAvatar";
 import { LessonRouteRecorder } from "./LessonRouteRecorder";
 
