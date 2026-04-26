@@ -18,6 +18,7 @@ import { TravelTimeIndicator } from "./TravelTimeIndicator";
 import { PupilAvatar } from "./PupilAvatar";
 import { useLessonTravelTimes } from "@/hooks/useLessonTravelTimes";
 import { LessonCheckInBadge } from "./LessonCheckInBadge";
+import { RouteStatusBadge } from "./driving-test/RouteStatusBadge";
 
 interface ScheduledLesson {
   id: string;
@@ -415,6 +416,12 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                           <div className="flex items-center gap-2 text-sm font-medium text-orange-700 dark:text-orange-400">
                             <MapPin className="h-3.5 w-3.5" />
                             <span className="truncate">{lesson.notes.replace('Test Centre: ', '')}</span>
+                          </div>
+                        )}
+                        {/* Route tracking status (driving tests only) */}
+                        {lesson.lesson_type === 'driving_test' && (
+                          <div className="flex items-center gap-2">
+                            <RouteStatusBadge lessonId={lesson.id} />
                           </div>
                         )}
                         {/* Location */}

@@ -30,6 +30,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ArloPageLayout, ArloTableWrapper } from "@/components/ui/arlo-page-layout";
+import { RouteStatusBadge } from "@/components/instructor/driving-test/RouteStatusBadge";
 
 interface Booking {
   id: string;
@@ -394,7 +395,12 @@ export function AdminBookingsManager() {
                         {format(new Date(booking.lesson_date), "dd-MMM-yy")}
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {booking.lesson_type || "Lesson"}
+                        <div className="flex items-center gap-2">
+                          <span>{booking.lesson_type || "Lesson"}</span>
+                          {booking.lesson_type === "driving_test" && (
+                            <RouteStatusBadge lessonId={booking.id} />
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         £{(booking.amount_due || 0).toFixed(2)}

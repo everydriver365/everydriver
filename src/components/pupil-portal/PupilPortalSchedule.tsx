@@ -3,6 +3,7 @@ import { Calendar, Clock, MapPin, Phone, MessageSquare, X, AlertTriangle, ArrowR
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { RouteStatusBadge } from "@/components/instructor/driving-test/RouteStatusBadge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
@@ -336,8 +337,11 @@ export function PupilPortalSchedule({
                       </div>
                     </div>
 
-                    <div className="text-sm mb-3" style={{ color: 'var(--brand-muted)' }}>
-                      {lesson.lesson_type}
+                    <div className="text-sm mb-3 flex items-center gap-2 flex-wrap" style={{ color: 'var(--brand-muted)' }}>
+                      <span>{lesson.lesson_type}</span>
+                      {lesson.lesson_type === 'driving_test' && (
+                        <RouteStatusBadge lessonId={lesson.id} />
+                      )}
                     </div>
 
                     {lesson.pickup_location && (

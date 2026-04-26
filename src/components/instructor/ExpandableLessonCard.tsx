@@ -36,6 +36,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { RouteStatusBadge } from "./driving-test/RouteStatusBadge";
 
 interface ScheduledLesson {
   id: string;
@@ -405,10 +406,13 @@ export function ExpandableLessonCard({
                   )}
 
                   {/* Driving test details — examiner + test centre */}
-                  {lesson.lesson_type === "driving_test" && (lesson.test_centre || lesson.examiner) && (
+                  {lesson.lesson_type === "driving_test" && (
                     <div className="rounded-lg bg-amber-50 border border-amber-200 p-2 space-y-1.5 mt-1">
-                      <div className="text-[10px] uppercase tracking-wider font-semibold text-amber-800">
-                        Driving Test
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-[10px] uppercase tracking-wider font-semibold text-amber-800">
+                          Driving Test
+                        </div>
+                        <RouteStatusBadge lessonId={lesson.id} />
                       </div>
                       {lesson.test_centre && (
                         <div className="flex items-start justify-between gap-2 text-xs">
