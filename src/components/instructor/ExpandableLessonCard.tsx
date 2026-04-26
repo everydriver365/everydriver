@@ -404,6 +404,44 @@ export function ExpandableLessonCard({
                     </div>
                   )}
 
+                  {/* Driving test details — examiner + test centre */}
+                  {lesson.lesson_type === "driving_test" && (lesson.test_centre || lesson.examiner) && (
+                    <div className="rounded-lg bg-amber-50 border border-amber-200 p-2 space-y-1.5 mt-1">
+                      <div className="text-[10px] uppercase tracking-wider font-semibold text-amber-800">
+                        Driving Test
+                      </div>
+                      {lesson.test_centre && (
+                        <div className="flex items-start justify-between gap-2 text-xs">
+                          <span className="text-muted-foreground shrink-0">Centre</span>
+                          <span className="text-foreground text-right">
+                            <span className="font-medium">{lesson.test_centre.name}</span>
+                            {lesson.test_centre.postcode && (
+                              <span className="text-muted-foreground"> · {lesson.test_centre.postcode}</span>
+                            )}
+                          </span>
+                        </div>
+                      )}
+                      {lesson.examiner ? (
+                        <div className="flex items-start justify-between gap-2 text-xs">
+                          <span className="text-muted-foreground shrink-0">Examiner</span>
+                          <span className="text-foreground text-right">
+                            <span className="font-medium">{lesson.examiner.name}</span>
+                            {lesson.examiner.dvsa_staff_number && (
+                              <span className="text-muted-foreground"> · #{lesson.examiner.dvsa_staff_number}</span>
+                            )}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Examiner</span>
+                          <span className="text-muted-foreground italic">Not assigned</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Recurrence */}
+
                   {/* Recurrence */}
                   {isRecurring && (
                     <div className="flex items-center justify-between text-xs">
