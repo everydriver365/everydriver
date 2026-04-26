@@ -165,33 +165,50 @@ export function JobOfferDetailSheet({
                   className="flex items-center"
                   style={{ padding: 16, gap: 12 }}
                 >
-                  <UserAvatar name={job.name} size={44} />
+                  <UserAvatar name={job.name} size={48} />
                   <div style={{ flex: 1, minWidth: 0 }}>
+                    {/* Eyebrow: course type · duration */}
+                    <div
+                      className="flex items-center"
+                      style={{ gap: 6, marginBottom: 3 }}
+                    >
+                      <CourseTypeLabel courseType={job.course_type} />
+                      <span
+                        aria-hidden="true"
+                        style={{
+                          width: 3,
+                          height: 3,
+                          borderRadius: "50%",
+                          background: "#C7C7CC",
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 500,
+                          letterSpacing: "0.3px",
+                          textTransform: "uppercase",
+                          color: "#6E6E73",
+                        }}
+                      >
+                        {hours}h
+                      </span>
+                    </div>
+                    {/* Pupil name title */}
                     <p
                       style={{
-                        fontSize: 15,
+                        fontSize: 17,
                         fontWeight: 500,
                         color: "#000000",
-                        letterSpacing: "-0.2px",
-                        margin: "0 0 2px",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {job.name}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: 12,
-                        color: "#6E6E73",
+                        letterSpacing: "-0.3px",
                         margin: 0,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {transmissionLabel ? `${lessonType} · ${transmissionLabel}` : lessonType}
+                      {job.name}
                     </p>
                   </div>
                   {isUnread && (
