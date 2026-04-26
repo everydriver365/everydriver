@@ -1230,9 +1230,11 @@ Deno.serve(async (req) => {
         );
       }
     }
-
+    return new Response(
+      JSON.stringify({ error: "Unknown action" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+
 
   } catch (err) {
     console.error("Google Calendar Service error:", err);
