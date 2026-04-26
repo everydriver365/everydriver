@@ -1036,8 +1036,201 @@ Deno.serve(async (req) => {
       );
     }
 
-    return new Response(
-      JSON.stringify({ error: "Unknown action" }),
+    // Re-sync a specific date range and return added/removed diff
+    if (action === "resyncRange") {
+      if (!instructorId || !fromDate || !toDate) {
+        return new Response(
+          JSON.stringify({ error: "instructorId, fromDate and toDate are required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const fromTs = new Date(fromDate);
+      const toTs = new Date(toDate);
+      if (isNaN(fromTs.getTime()) || isNaN(toTs.getTime()) || fromTs >= toTs) {
+        return new Response(
+          JSON.stringify({ error: "Invalid date range" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const rangeDays = (toTs.getTime() - fromTs.getTime()) / (24 * 60 * 60 * 1000);
+      if (rangeDays > 366) {
+        return new Response(
+          JSON.stringify({ error: "Range cannot exceed 366 days" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: connection } = await supabase
+        .from("instructor_google_service_calendar")
+        .select("*")
+        .eq("instructor_id", instructorId)
+        .eq("is_active", true)
+        .single();
+
+      if (!connection) {
+        return new Response(
+          JSON.stringify({ error: "No Google Calendar connected" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      try {
+        // Snapshot current rows in the window
+        const { data: snapshotRows } = await supabase
+          .from("instructor_calendar_events")
+          .select("external_event_id, title, start_time, end_time, location")
+          .eq("instructor_id", instructorId)
+          .gte("start_time", fromTs.toISOString())
+          .lt("start_time", toTs.toISOString());
+
+        const snapshot = new Map<string, any>();
+        (snapshotRows || []).forEach((r: any) => {
+          if (r.external_event_id) snapshot.set(r.external_event_id, r);
+        });
+
+        // Fetch fresh events from Google for the exact window
+        const jwt = await generateJWT(serviceEmail, privateKey);
+        const accessToken = await getAccessToken(jwt);
+
+        const googleColorMap: Record<string, string> = {
+          "1": "#7986CB", "2": "#33B679", "3": "#8E24AA", "4": "#E67C73",
+          "5": "#F6BF26", "6": "#F4511E", "7": "#039BE5", "8": "#616161",
+          "9": "#3F51B5", "10": "#0B8043", "11": "#D50000",
+        };
+
+        let calendarDefaultColor = "#039BE5";
+        try {
+          const calMeta = await fetch(
+            `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(connection.calendar_id)}`,
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+          );
+          if (calMeta.ok) {
+            const calData = await calMeta.json();
+            if (calData.backgroundColor) calendarDefaultColor = calData.backgroundColor;
+          }
+        } catch (_) { /* ignore */ }
+
+        const fresh = new Map<string, any>();
+        let pageToken: string | undefined;
+        do {
+          const params = new URLSearchParams({
+            timeMin: fromTs.toISOString(),
+            timeMax: toTs.toISOString(),
+            singleEvents: "true",
+            orderBy: "startTime",
+            maxResults: "2500",
+            conferenceDataVersion: "1",
+          });
+          if (pageToken) params.set("pageToken", pageToken);
+
+          const response = await fetch(
+            `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(connection.calendar_id)}/events?${params}`,
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+          );
+          if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`Failed to fetch events: ${errText}`);
+          }
+          const data = await response.json();
+          (data.items || []).forEach((item: any) => {
+            if (!(item.start?.dateTime || item.start?.date)) return;
+            if (!(item.end?.dateTime || item.end?.date)) return;
+            fresh.set(item.id, {
+              id: item.id,
+              title: item.summary || "Busy",
+              start: item.start.dateTime || `${item.start.date}T00:00:00`,
+              end: item.end.dateTime || `${item.end.date}T23:59:59`,
+              color: item.colorId ? (googleColorMap[item.colorId] || calendarDefaultColor) : calendarDefaultColor,
+              location: item.location || null,
+              description: item.description || null,
+              html_link: item.htmlLink || null,
+            });
+          });
+          pageToken = data.nextPageToken;
+        } while (pageToken);
+
+        // Diff
+        const addedList: any[] = [];
+        const removedList: any[] = [];
+        let unchanged = 0;
+
+        for (const [id, ev] of fresh) {
+          if (snapshot.has(id)) unchanged++;
+          else addedList.push({ id, title: ev.title, start: ev.start, end: ev.end, location: ev.location });
+        }
+        for (const [id, row] of snapshot) {
+          if (!fresh.has(id)) {
+            removedList.push({
+              id,
+              title: row.title,
+              start: row.start_time,
+              end: row.end_time,
+              location: row.location,
+            });
+          }
+        }
+
+        // Apply: delete removed rows
+        if (removedList.length > 0) {
+          const removedIds = removedList.map((r) => r.id);
+          const { error: delErr } = await supabase
+            .from("instructor_calendar_events")
+            .delete()
+            .eq("instructor_id", instructorId)
+            .in("external_event_id", removedIds);
+          if (delErr) console.error("resyncRange delete error:", delErr);
+        }
+
+        // Upsert all fresh events (covers added + updates)
+        if (fresh.size > 0) {
+          const rows = Array.from(fresh.values()).map((ev) => ({
+            instructor_id: instructorId,
+            external_event_id: ev.id,
+            title: ev.title,
+            start_time: ev.start,
+            end_time: ev.end,
+            is_busy: true,
+            color: ev.color,
+            location: ev.location,
+            description: ev.description,
+            html_link: ev.html_link,
+            synced_at: new Date().toISOString(),
+          }));
+          const { error: upErr } = await supabase
+            .from("instructor_calendar_events")
+            .upsert(rows, { onConflict: "instructor_id,external_event_id" });
+          if (upErr) console.error("resyncRange upsert error:", upErr);
+        }
+
+        await supabase
+          .from("instructor_google_service_calendar")
+          .update({ last_sync: new Date().toISOString(), sync_error: null })
+          .eq("instructor_id", instructorId);
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            range: { from: fromTs.toISOString(), to: toTs.toISOString() },
+            counts: { added: addedList.length, removed: removedList.length, unchanged },
+            added: addedList,
+            removed: removedList,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } catch (err) {
+        console.error("resyncRange error:", err);
+        await supabase
+          .from("instructor_google_service_calendar")
+          .update({ sync_error: String(err) })
+          .eq("instructor_id", instructorId);
+        return new Response(
+          JSON.stringify({ error: `Failed to re-sync: ${err}` }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
