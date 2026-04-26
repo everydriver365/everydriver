@@ -1,12 +1,44 @@
 import { useState, useEffect, useCallback } from "react";
 import { AnimatePresence } from "framer-motion";
-import { Briefcase, MapPin, Clock, User, Calendar, FileText, X, Check, Navigation } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Briefcase,
+  MapPin,
+  Calendar,
+  FileText,
+  X,
+  Check,
+  Navigation,
+  Clock,
+  PoundSterling,
+  Loader2,
+} from "lucide-react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { PostcodeMapPreview } from "@/components/instructor/PostcodeMapPreview";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { JobOfferCard } from "@/components/instructor/JobOfferCard";
 import { EmptyState } from "@/components/instructor/EmptyState";
+import { UserAvatar } from "@/components/instructor/UserAvatar";
+import { CloseButton } from "@/components/instructor/CloseButton";
+import { StatCard } from "@/components/instructor/StatCard";
+import { EyebrowLabel } from "@/components/instructor/EyebrowLabel";
+import {
+  formatUkPostcode,
+  toSentenceCase,
+  toTitleCase,
+  formatGbp,
+  formatTimingHeadline,
+  formatLongDate,
+} from "@/lib/formatJobOffer";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useInstructorProfile } from "@/hooks/useInstructorProfile";
 import { supabase } from "@/integrations/supabase/client";
