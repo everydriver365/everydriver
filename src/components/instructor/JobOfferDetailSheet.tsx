@@ -87,8 +87,12 @@ export function JobOfferDetailSheet({
   }
 
   const hours = job.requested_hours ?? 10;
-  const earnings = hours * hourlyRate;
+  const earnings = job.total_cost != null ? Number(job.total_cost) : hours * hourlyRate;
+  const effectiveRate = hours > 0 ? earnings / hours : hourlyRate;
   const lessonType = toSentenceCase(job.course_type) || "Lesson course";
+  const transmissionLabel = job.transmission_type
+    ? toSentenceCase(job.transmission_type)
+    : null;
   const postcode = formatUkPostcode(job.postcode);
   const distanceLabel = formatDistanceMiles(distanceMi ?? null);
   const distanceNumber = distanceLabel ? distanceLabel.replace(" mi", "") : "—";
