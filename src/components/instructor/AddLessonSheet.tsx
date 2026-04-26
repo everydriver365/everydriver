@@ -82,9 +82,106 @@ function Section({ children, className }: { children: React.ReactNode; className
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span style={{ fontSize: 11, fontWeight: 600, color: "#71717A", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+    <div style={{
+      fontSize: 11, fontWeight: 500, color: "#6E6E73",
+      textTransform: "uppercase", letterSpacing: 0.3, margin: "0 0 8px",
+    }}>
       {children}
-    </span>
+    </div>
+  );
+}
+
+// Premium tile-system palette for lesson types: [tint, icon] colour pair.
+const LESSON_TYPE_PALETTE: Record<string, { tint: string; icon: string }> = {
+  standard:     { tint: "#E6F1FB", icon: "#2B7BC8" },
+  intensive:    { tint: "#E6F1FB", icon: "#2B7BC8" },
+  motorway:     { tint: "#E6F1FB", icon: "#2B7BC8" },
+  refresher:    { tint: "#E6F1FB", icon: "#2B7BC8" },
+  first_lesson: { tint: "#E8F3E8", icon: "#3B8B3B" },
+  test_prep:    { tint: "#E8F3E8", icon: "#3B8B3B" },
+  pass_plus:    { tint: "#FBF1DE", icon: "#B8801F" },
+  mock_test:    { tint: "#FBEAEC", icon: "#C8434F" },
+  driving_test: { tint: "#FBEAEC", icon: "#C8434F" },
+};
+const LESSON_TYPE_FALLBACK = { tint: "#F2F2F4", icon: "#6E6E73" };
+
+function getLessonTypePalette(value: string) {
+  return LESSON_TYPE_PALETTE[value] ?? LESSON_TYPE_FALLBACK;
+}
+
+// Render-only proper-case (does not mutate stored data).
+function toProperCase(name: string): string {
+  return name
+    .toLowerCase()
+    .split(/(\s+|-)/)
+    .map((part) => (part.match(/^\s+$/) || part === "-") ? part : part.charAt(0).toUpperCase() + part.slice(1))
+    .join("");
+}
+
+// Short headline for the conflict banner derived from the existing conflict message.
+function getConflictHeadline(message: string | null): string {
+  if (!message) return "";
+  if (/^overlaps/i.test(message)) return "Lesson clash";
+  if (/calendar/i.test(message))  return "Calendar clash";
+  if (/test/i.test(message))      return "Test clash";
+  return "Heads up";
+}
+
+// White hairline-bordered tappable input row used for type / pupil / date.
+interface FormInputCardProps {
+  iconNode?: React.ReactNode;       // 28×28 tinted tile (or 18×18 placeholder icon)
+  iconTint?: string;                 // background of the icon tile
+  iconColor?: string;                // stroke colour for the lucide icon
+  Icon?: React.ComponentType<{ style?: React.CSSProperties; size?: number }>;
+  primary?: React.ReactNode;         // value text
+  placeholder?: string;              // shown when primary is empty
+  trailing?: React.ReactNode;        // defaults to a chevron-down
+  compact?: boolean;
+  onClick?: () => void;
+  disabled?: boolean;
+  asChild?: boolean;                 // when true, render children directly (for shadcn triggers)
+  children?: React.ReactNode;
+}
+
+function FormInputCard({
+  iconNode, iconTint, iconColor, Icon, primary, placeholder, trailing,
+  compact, onClick, disabled, children,
+}: FormInputCardProps) {
+  const padding = compact ? 12 : "12px 14px";
+  const iconBox = (Icon || iconNode) ? (
+    <div style={{
+      width: compact ? 24 : 28, height: compact ? 24 : 28, borderRadius: 7,
+      background: iconTint ?? "#F2F2F4",
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      flexShrink: 0,
+    }}>
+      {iconNode ?? (Icon ? <Icon style={{ width: 16, height: 16, color: iconColor ?? "#6E6E73" }} /> : null)}
+    </div>
+  ) : null;
+
+  const value = primary ?? <span style={{ color: "#6E6E73", fontWeight: 400 }}>{placeholder}</span>;
+  const trailingNode = trailing ?? <ChevronDown style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        width: "100%", display: "flex", alignItems: "center", gap: 10,
+        padding, background: "#FFFFFF", border: "0.5px solid #E5E5EA",
+        borderRadius: 10, cursor: disabled ? "default" : "pointer", textAlign: "left",
+      }}
+    >
+      {iconBox}
+      <span style={{
+        flex: 1, minWidth: 0, fontSize: compact ? 14 : 15, fontWeight: 500,
+        color: "#000000", letterSpacing: -0.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+      }}>
+        {children ?? value}
+      </span>
+      {trailingNode}
+    </button>
   );
 }
 
