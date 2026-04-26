@@ -36,6 +36,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { RouteStatusBadge } from "./driving-test/RouteStatusBadge";
 
 interface ScheduledLesson {
   id: string;
