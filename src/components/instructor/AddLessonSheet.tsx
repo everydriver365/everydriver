@@ -822,15 +822,54 @@ export function AddLessonSheet({
                         checked={overrideBuffer}
                         onChange={(e) => setOverrideBuffer(e.target.checked)}
                       />
-                      Book anyway (override buffer / travel)
+                      Book anyway (override buffer)
                     </label>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Travel-time Suggestion */}
-            {!conflictWarning && travelSuggestion && (
+            {/* Travel-time soft warning (Phase 2) — informs only, never blocks Save */}
+            {!conflictWarning && travelWarning && (
+              <div style={{
+                display: "flex", alignItems: "flex-start", gap: 10,
+                padding: "12px 16px", borderRadius: 12,
+                backgroundColor: "#FFFBEB", border: "1px solid #FDE68A",
+              }}>
+                <Car style={{ width: 16, height: 16, color: "#92400E", flexShrink: 0, marginTop: 2 }} />
+                <div style={{ flex: 1, fontSize: 13, color: "#92400E", lineHeight: 1.4 }}>
+                  <div>
+                    {travelWarning.direction === 'before'
+                      ? <>Tight travel — only <strong>{travelWarning.gapMinutes} min</strong> after {travelWarning.fromName} for a {travelWarning.travelMinutes} min drive.</>
+                      : <>Tight travel — only <strong>{travelWarning.gapMinutes} min</strong> before {travelWarning.toName} for a {travelWarning.travelMinutes} min drive.</>
+                    }
+                  </div>
+                  <div style={{ marginTop: 2, fontSize: 12, opacity: 0.85 }}>
+                    You can still book this — it's just a heads-up.
+                  </div>
+                  {travelWarning.direction === 'before' && travelWarning.suggestedTime && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const t = travelWarning.suggestedTime!;
+                        setLessonStartTime(t);
+                        setTravelWarning(null);
+                        setTravelSuggestion(null);
+                      }}
+                      style={{
+                        marginTop: 6, padding: 0, background: "none", border: "none",
+                        color: "#1E3A8A", textDecoration: "underline", cursor: "pointer", fontSize: 13,
+                      }}
+                    >
+                      Use suggested time {travelWarning.suggestedTime}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Travel-time Suggestion (blue informational — only when no warning of any kind) */}
+            {!conflictWarning && !travelWarning && travelSuggestion && (
               <button
                 type="button"
                 onClick={() => {
