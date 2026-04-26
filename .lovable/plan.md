@@ -1,51 +1,52 @@
 ## Problem
 
-When booking a new lesson via `AddLessonSheet`, the conflict check only flags **hard time overlaps** with existing lessons. It ignores:
+When booking a new lesson via `AddLessonSheet`, the conflict warning sometimes doesn't appear even when there's a clear clash. Three gaps in the current logic:
 
-1. The instructor's configured **`buffer_minutes`** (breathing room between lessons) — even though `RescheduleLessonSheet`, `MultiDayScheduleView` and `GapFillCard` all honor it.
-2. **Travel time** between the previous/next lesson's location and the new pickup — currently only shown as a soft "tap to apply" suggestion based on the *previous* lesson, never the *next* one, and never blocks save.
-
-Result: instructors can book lessons back-to-back with zero gap, or with insufficient time to drive between pickups.
+1. **Google Calendar events are ignored.** Only `scheduled_lessons` for the current instructor are scanned. Synced events from `instructor_calendar_events` (Google Calendar busy blocks, manual blocks, courses, holidays) are not checked, so a new lesson can be booked right on top of one.
+2. **Back-to-back lessons don't always warn.** If `bufferMinutes` is 0 (instructor hasn't configured a buffer), a lesson that starts the exact second another ends produces `newStart < existingEnd` = false, so no overlap is reported — even though there's zero gap to drive.
+3. **Save debounce race.** The conflict check is debounced ~400ms. Pressing Save before it lands lets the booking through because `conflictWarning` is still `null`.
 
 ## Fix
 
-Update `src/components/instructor/AddLessonSheet.tsx` so the conflict + travel logic matches the rest of the app:
+All changes in `src/components/instructor/AddLessonSheet.tsx`. No DB changes.
 
-### 1. Load instructor buffer once
-On sheet open, fetch `instructors.buffer_minutes` for the current `instructorId` and keep in state (default 0 if null). Same pattern as `RescheduleLessonSheet`.
+### 1. Include Google Calendar / external events in the scan
 
-### 2. Apply buffer to the overlap check
-In the existing lessons loop, treat each existing lesson as occupying:
+Alongside the existing `scheduled_lessons` query, also fetch from `instructor_calendar_events` for the same instructor and date window:
+
+```text
+- where instructor_id = current
+- where start_time/end_time intersect the chosen lesson_date (UTC → local day window)
+- where is_busy = true   (free/transparent events don't block)
 ```
-[existingStart - bufferMinutes,  existingEnd + bufferMinutes]
-```
-Flag a conflict when the new lesson `[newStart, newEnd]` intersects that buffered window. Message: `"Too close to {names} (needs {buffer} min buffer)"`.
 
-### 3. Resolve travel time on **both sides** (previous and next lesson)
-Currently only the previous lesson is checked. Extend to also find the lesson that starts soonest *after* the new lesson and call `check-travel-buffer` for `newPickup → nextPickup`.
+Convert each event's `start_time`/`end_time` into local minutes-from-midnight (matching how `scheduled_lessons` are compared), and feed them into the same buffered-overlap loop. Label them by `title` (fallback "Calendar event") in the warning message, e.g. `Overlaps with WDU Course` or `Too close to Dentist (needs 15 min buffer)`.
 
-Effective rules (mirrors `mem://features/instructor/gap-offer-buffer-rules`):
-- `requiredGapBefore = bufferMinutes + travelInMinutes`
-- `requiredGapAfter  = bufferMinutes + travelOutMinutes`
-- If `(newStart - prevEnd) < requiredGapBefore` → conflict (with suggested time, like today).
-- If `(nextStart - newEnd) < requiredGapAfter` → conflict (suggest moving the new lesson earlier or shortening duration).
+The same merged list also feeds the previous/next lookup for the travel-time check, so travel from a Google event's `location` postcode is considered when present (skip travel check if no postcode can be parsed from the event).
 
-### 4. Block save when buffer/travel is violated
-The existing `handleAddLessonExisting` / `handleAddLessonNew` handlers already abort on `conflictWarning`. Because rules 2 + 3 now feed into `conflictWarning`, save will be blocked until the instructor either:
-- adjusts the start time (the suggestion chip stays available for one-tap fix), or
-- explicitly accepts the warning via a new "Book anyway" override link inside the warning banner (writes `override_buffer = true` to the booking note for audit, no DB schema change needed).
+### 2. Always enforce a minimum gap (even when buffer = 0)
 
-### 5. First-lesson-of-day travel allowance
-If there is no previous lesson on that date, fall back to the existing first-lesson logic already used elsewhere (home postcode → pickup via `check-travel-buffer`) so the first slot of the day still warns when there isn't enough time to drive from home.
+Treat `effectiveBuffer = max(bufferMinutes, 1)` for the overlap test only, so a brand-new lesson starting at exactly the same minute another ends still trips the warning ("Too close to … — back-to-back"). The actual configured buffer is still used in the displayed message and travel maths.
 
-## Files touched
+### 3. Close the Save debounce race
 
-- `src/components/instructor/AddLessonSheet.tsx` — load `buffer_minutes`, expand conflict check, add next-lesson travel check, "Book anyway" override.
+In both `handleAddLessonExisting` and `handleAddLessonNew`, before the existing `if (conflictWarning && !overrideBuffer)` guard:
 
-No DB migrations, no edge function changes (reuses `check-travel-buffer`).
+- If `checkingConflict === true`, await a small promise that resolves when the in-flight check finishes (track with a ref to the latest check's promise).
+- Then re-read `conflictWarning` and apply the guard.
+
+This guarantees Save can never bypass a pending check.
+
+### 4. Render tweak
+
+The warning banner already shows `conflictWarning` text and the "Override buffer / Book anyway" link — no UI change needed; it'll just trigger more often and with clearer source labels.
 
 ## Out of scope
 
-- Reschedule sheet (already correct).
-- Gap-fill / scheduler flows (already correct).
-- Changing buffer defaults or adding per-pupil overrides.
+- Other instructors' lessons in a multi-instructor school (separate feature).
+- Reschedule sheet (already correct per earlier review).
+- Any DB migrations.
+
+## Files touched
+
+- `src/components/instructor/AddLessonSheet.tsx` — extend conflict scan to include `instructor_calendar_events`, enforce minimum 1-minute gap, await in-flight check on Save.

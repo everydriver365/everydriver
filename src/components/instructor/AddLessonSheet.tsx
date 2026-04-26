@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { format, addWeeks } from 'date-fns';
 import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Car, CheckSquare, MapPin, AlertTriangle, Clock, ChevronRight, CreditCard, Mail, Send, Banknote, Sparkles } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -114,6 +114,7 @@ export function AddLessonSheet({
   const [checklistOpen, setChecklistOpen] = useState(true);
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
   const [checkingConflict, setCheckingConflict] = useState(false);
+  const pendingCheckRef = useRef<Promise<void> | null>(null);
   const [travelSuggestion, setTravelSuggestion] = useState<{ suggestedTime: string; travelMinutes: number; fromName: string } | null>(null);
   const [bufferMinutes, setBufferMinutes] = useState<number>(0);
   const [instructorHomePostcode, setInstructorHomePostcode] = useState<string>('');
@@ -222,13 +223,69 @@ export function AddLessonSheet({
         const newStartMinutes = startH * 60 + startM;
         const newEndMinutes = newStartMinutes + durationMinutes;
 
-        const { data: existingLessons } = await supabase
-          .from('scheduled_lessons')
-          .select('start_time, duration_minutes, pupil_id, pickup_location, dropoff_location, pupils(name, postcode, address)')
-          .eq('instructor_id', instructorId)
-          .eq('lesson_date', dateStr)
-          .neq('status', 'cancelled')
-          .order('start_time');
+        // Day window for calendar event query (local day → ISO range)
+        const dayStart = new Date(lessonDate); dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(lessonDate); dayEnd.setHours(23, 59, 59, 999);
+
+        const [lessonsRes, eventsRes] = await Promise.all([
+          supabase
+            .from('scheduled_lessons')
+            .select('start_time, duration_minutes, pupil_id, pickup_location, dropoff_location, pupils(name, postcode, address)')
+            .eq('instructor_id', instructorId)
+            .eq('lesson_date', dateStr)
+            .neq('status', 'cancelled')
+            .order('start_time'),
+          supabase
+            .from('instructor_calendar_events')
+            .select('title, start_time, end_time, is_busy, location')
+            .eq('instructor_id', instructorId)
+            .eq('is_busy', true)
+            .gte('end_time', dayStart.toISOString())
+            .lte('start_time', dayEnd.toISOString()),
+        ]);
+
+        const existingLessons = lessonsRes.data || [];
+        const calendarEvents = eventsRes.data || [];
+
+        // Helper: extract a UK postcode from free-text location, if present
+        const postcodeRegex = /[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}/i;
+        const extractPostcode = (loc?: string | null): string => {
+          if (!loc) return '';
+          const m = loc.match(postcodeRegex);
+          return m ? m[0].toUpperCase() : '';
+        };
+
+        // Convert UTC timestamp → local minutes-from-midnight, clamped to [0, 1440]
+        const tsToLocalMinutes = (iso: string): number => {
+          const d = new Date(iso);
+          if (d < dayStart) return 0;
+          if (d > dayEnd) return 24 * 60;
+          return d.getHours() * 60 + d.getMinutes();
+        };
+
+        // Normalise both sources into a single shape for the overlap/travel logic
+        type Slot = { _start: number; _end: number; _name: string; _postcode: string; _kind: 'lesson' | 'event' };
+        const lessonSlots: Slot[] = existingLessons.map((l: any) => {
+          const [h, m] = (l.start_time || '00:00').split(':').map(Number);
+          const start = h * 60 + m;
+          return {
+            _start: start,
+            _end: start + (l.duration_minutes || 60),
+            _name: l.pupils?.name || 'Unknown',
+            _postcode: l.pupils?.postcode || '',
+            _kind: 'lesson',
+          };
+        });
+        const eventSlots: Slot[] = calendarEvents.map((e: any) => ({
+          _start: tsToLocalMinutes(e.start_time),
+          _end: tsToLocalMinutes(e.end_time),
+          _name: e.title || 'Calendar event',
+          _postcode: extractPostcode(e.location),
+          _kind: 'event',
+        }));
+        const allSlots: Slot[] = [...lessonSlots, ...eventSlots]
+          .filter(s => s._end > s._start)
+          .sort((a, b) => a._start - b._start);
 
         // Determine destination postcode for the new lesson
         let toPostcode = pickupPostcode;
@@ -238,28 +295,26 @@ export function AddLessonSheet({
         }
         if (!toPostcode && tab === 'new') toPostcode = newPupilPostcode;
 
-        // 1) Buffered overlap check
-        if (existingLessons && existingLessons.length > 0) {
-          const conflicts = existingLessons.filter((lesson: any) => {
-            const [h, m] = (lesson.start_time || '00:00').split(':').map(Number);
-            const existingStart = h * 60 + m;
-            const existingEnd = existingStart + (lesson.duration_minutes || 60);
-            const bufferedStart = existingStart - bufferMinutes;
-            const bufferedEnd = existingEnd + bufferMinutes;
+        // 1) Buffered overlap check (min 1-min gap even when buffer is 0)
+        const effectiveBuffer = Math.max(bufferMinutes, 1);
+        if (allSlots.length > 0) {
+          const conflicts = allSlots.filter(slot => {
+            const bufferedStart = slot._start - effectiveBuffer;
+            const bufferedEnd = slot._end + effectiveBuffer;
             return newStartMinutes < bufferedEnd && newEndMinutes > bufferedStart;
           });
           if (conflicts.length > 0) {
-            const names = conflicts.map((c: any) => c.pupils?.name || 'Unknown').join(', ');
-            const hardOverlap = conflicts.some((lesson: any) => {
-              const [h, m] = (lesson.start_time || '00:00').split(':').map(Number);
-              const eStart = h * 60 + m;
-              const eEnd = eStart + (lesson.duration_minutes || 60);
-              return newStartMinutes < eEnd && newEndMinutes > eStart;
-            });
+            const names = conflicts.map(c => c._name).join(', ');
+            const hardOverlap = conflicts.some(slot =>
+              newStartMinutes < slot._end && newEndMinutes > slot._start
+            );
+            const bufferLabel = bufferMinutes > 0
+              ? `needs ${bufferMinutes} min buffer`
+              : 'back-to-back, no gap';
             setConflictWarning(
               hardOverlap
                 ? `Overlaps with ${names}`
-                : `Too close to ${names} (needs ${bufferMinutes} min buffer)`
+                : `Too close to ${names} (${bufferLabel})`
             );
             setTravelSuggestion(null);
             return;
@@ -269,23 +324,17 @@ export function AddLessonSheet({
           setConflictWarning(null);
         }
 
-        const lessonsWithBounds = (existingLessons || []).map((l: any) => {
-          const [h, m] = (l.start_time || '00:00').split(':').map(Number);
-          const start = h * 60 + m;
-          return { ...l, _start: start, _end: start + (l.duration_minutes || 60) };
-        });
+        const previous = allSlots
+          .filter(s => s._end <= newStartMinutes)
+          .sort((a, b) => b._end - a._end)[0];
 
-        const previous = lessonsWithBounds
-          .filter((l: any) => l._end <= newStartMinutes)
-          .sort((a: any, b: any) => b._end - a._end)[0];
+        const next = allSlots
+          .filter(s => s._start >= newEndMinutes)
+          .sort((a, b) => a._start - b._start)[0];
 
-        const next = lessonsWithBounds
-          .filter((l: any) => l._start >= newEndMinutes)
-          .sort((a: any, b: any) => a._start - b._start)[0];
-
-        // 2) Travel from PREVIOUS lesson (or instructor home if first of day)
-        const fromPostcode = previous?.pupils?.postcode || (!previous ? instructorHomePostcode : '');
-        const fromName = previous?.pupils?.name || 'home';
+        // 2) Travel from PREVIOUS lesson/event (or instructor home if first of day)
+        const fromPostcode = previous?._postcode || (!previous ? instructorHomePostcode : '');
+        const fromName = previous?._name || 'home';
         const prevEnd = previous?._end ?? null;
 
         if (fromPostcode && toPostcode && fromPostcode.trim() && toPostcode.trim()) {
@@ -327,9 +376,9 @@ export function AddLessonSheet({
           setTravelSuggestion(null);
         }
 
-        // 3) Travel to NEXT lesson
-        const nextPostcode = next?.pupils?.postcode || '';
-        const nextName = next?.pupils?.name || 'next lesson';
+        // 3) Travel to NEXT lesson/event
+        const nextPostcode = next?._postcode || '';
+        const nextName = next?._name || 'next lesson';
         if (next && toPostcode && nextPostcode && toPostcode.trim() && nextPostcode.trim()) {
           const gapAfter = next._start - newEndMinutes;
           try {
@@ -361,7 +410,9 @@ export function AddLessonSheet({
         setCheckingConflict(false);
       }
     };
-    const timer = setTimeout(run, 400);
+    const timer = setTimeout(() => {
+      pendingCheckRef.current = run();
+    }, 400);
     return () => clearTimeout(timer);
   }, [lessonDate, lessonStartTime, lessonDuration, instructorId, open, selectedPupil, pickupPostcode, newPupilPostcode, tab, pupils, bufferMinutes, instructorHomePostcode]);
 
@@ -411,6 +462,7 @@ export function AddLessonSheet({
 
   const handleAddLessonExisting = async () => {
     if (!selectedPupil || !lessonDate) { toast.error('Please select a pupil and date'); return; }
+    if (pendingCheckRef.current) { try { await pendingCheckRef.current; } catch { /* ignore */ } }
     if (conflictWarning && !overrideBuffer) { toast.error(conflictWarning); return; }
     if (!(await validateExaminerCentreMatch())) return;
     setLoading(true);
@@ -446,6 +498,7 @@ export function AddLessonSheet({
 
   const handleAddLessonNew = async () => {
     if (!newPupilName.trim() || !lessonDate) { toast.error('Please enter a name and date'); return; }
+    if (pendingCheckRef.current) { try { await pendingCheckRef.current; } catch { /* ignore */ } }
     if (conflictWarning && !overrideBuffer) { toast.error(conflictWarning); return; }
     if (!(await validateExaminerCentreMatch())) return;
     setLoading(true);
