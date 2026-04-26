@@ -72,6 +72,7 @@ export function TodayLessonsList({ lessons, instructorId, className = "" }: Toda
           <div className="space-y-0">
             {lessons.map((lesson, idx) => {
               const isCancelled = lesson.status === "cancelled";
+              const isCompleted = lesson.status === "completed";
               const isPaid = lesson.paymentStatus === "paid";
               const colors = typeColors[lesson.lessonType] || typeColors.Standard;
               const isLast = idx === lessons.length - 1;
@@ -80,16 +81,23 @@ export function TodayLessonsList({ lessons, instructorId, className = "" }: Toda
                 <motion.div
                   key={lesson.id}
                   initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: isCancelled ? 0.5 : 1, y: 0 }}
+                  animate={{ opacity: isCancelled || isCompleted ? 0.55 : 1, y: 0 }}
                   transition={{ delay: idx * 0.04 }}
                 >
                   {/* Time label + dot row */}
                   <div className="flex items-center gap-2 pl-0 mb-1.5">
                     <div className="relative flex items-center justify-center w-[38px] shrink-0">
                       {/* Timeline dot */}
-                      <div className="w-2.5 h-2.5 rounded-full bg-primary border-2 border-background shadow-sm z-10" />
+                      <div
+                        className={`w-2.5 h-2.5 rounded-full border-2 border-background shadow-sm z-10 ${
+                          isCompleted ? "bg-muted-foreground" : "bg-primary"
+                        }`}
+                      />
                     </div>
-                    <span className="text-[12px] font-semibold text-muted-foreground tracking-wide">
+                    <span
+                      className="text-[12px] font-semibold text-muted-foreground tracking-wide"
+                      style={{ textDecoration: isCompleted ? "line-through" : "none" }}
+                    >
                       {formatTime(lesson.startTime)}
                     </span>
                   </div>
@@ -116,20 +124,30 @@ export function TodayLessonsList({ lessons, instructorId, className = "" }: Toda
                                 imageUrl={lesson.pupilProfileImageUrl}
                                 size="sm"
                               />
-                              <p className="text-[15px] font-semibold text-foreground leading-tight flex-1 truncate">
+                              <p
+                                className="text-[15px] font-semibold text-foreground leading-tight flex-1 truncate"
+                                style={{ textDecoration: isCompleted ? "line-through" : "none" }}
+                              >
                                 {lesson.pupilName}
                               </p>
                               <Badge
                                 variant="outline"
-                                className={`${colors.bg} ${colors.text} border-0 text-[11px] font-medium px-2 py-0.5 shrink-0`}
+                                className={
+                                  isCompleted
+                                    ? "bg-muted text-muted-foreground border-0 text-[11px] font-medium px-2 py-0.5 shrink-0"
+                                    : `${colors.bg} ${colors.text} border-0 text-[11px] font-medium px-2 py-0.5 shrink-0`
+                                }
                               >
-                                {lesson.lessonType}
+                                {isCompleted ? "Done" : lesson.lessonType}
                               </Badge>
                             </div>
 
                             {/* Bottom row: time range + amount + status + GPS */}
                             <div className="flex items-center justify-between mt-2">
-                              <span className="text-[12px] text-muted-foreground">
+                              <span
+                                className="text-[12px] text-muted-foreground"
+                                style={{ textDecoration: isCompleted ? "line-through" : "none" }}
+                              >
                                 {formatTime(lesson.startTime)} – {getEndTime(lesson.startTime, lesson.durationMinutes)}
                               </span>
                               <div className="flex items-center gap-2">
