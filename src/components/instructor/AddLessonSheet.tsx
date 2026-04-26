@@ -830,7 +830,7 @@ export function AddLessonSheet({
             )}
 
             {/* Travel-time soft warning (Phase 2) — informs only, never blocks Save */}
-            {!conflictWarning && travelWarning && (
+            {travelWarning && (
               <div style={{
                 display: "flex", alignItems: "flex-start", gap: 10,
                 padding: "12px 16px", borderRadius: 12,
