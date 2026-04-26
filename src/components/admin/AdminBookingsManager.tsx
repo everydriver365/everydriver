@@ -30,6 +30,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ArloPageLayout, ArloTableWrapper } from "@/components/ui/arlo-page-layout";
+import { RouteStatusBadge } from "@/components/instructor/driving-test/RouteStatusBadge";
 
 interface Booking {
   id: string;
