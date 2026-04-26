@@ -587,3 +587,50 @@ export function JobOfferDetailSheet({
     </>
   );
 }
+
+interface DetailRowProps {
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>;
+  iconColor: string;
+  iconBackground: string;
+  label: string;
+  value: string;
+}
+
+function DetailRow({ icon: Icon, iconColor, iconBackground, label, value }: DetailRowProps) {
+  return (
+    <div className="flex items-center" style={{ gap: 10 }}>
+      <div
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: 7,
+          background: iconBackground,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon size={16} strokeWidth={2} color={iconColor} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 11, color: "#6E6E73", margin: "0 0 1px", letterSpacing: "0.2px" }}>
+          {label}
+        </p>
+        <p
+          style={{
+            fontSize: 14,
+            fontWeight: 500,
+            color: "#000000",
+            margin: 0,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
