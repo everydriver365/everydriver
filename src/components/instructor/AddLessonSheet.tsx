@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { format, addWeeks } from 'date-fns';
-import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Car, CheckSquare, MapPin, AlertTriangle, Clock, ChevronRight, CreditCard, Mail, Send, Banknote, Sparkles } from 'lucide-react';
+import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Car, CheckSquare, MapPin, AlertTriangle, Clock, ChevronRight, ChevronDown, CreditCard, Mail, Send, Banknote, Sparkles } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -113,6 +113,7 @@ export function AddLessonSheet({
   const [selectedExaminer, setSelectedExaminer] = useState('');
   const [checklistOpen, setChecklistOpen] = useState(true);
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
+  const [travelDetailsOpen, setTravelDetailsOpen] = useState(false);
   const [checkingConflict, setCheckingConflict] = useState(false);
   const pendingCheckRef = useRef<Promise<void> | null>(null);
   const [travelSuggestion, setTravelSuggestion] = useState<{ suggestedTime: string; travelMinutes: number; fromName: string } | null>(null);
@@ -847,6 +848,64 @@ export function AddLessonSheet({
                   <div style={{ marginTop: 2, fontSize: 12, opacity: 0.85 }}>
                     You can still book this — it's just a heads-up.
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setTravelDetailsOpen(o => !o)}
+                    aria-expanded={travelDetailsOpen}
+                    style={{
+                      marginTop: 8, padding: 0, background: "none", border: "none",
+                      color: "#92400E", cursor: "pointer", fontSize: 12,
+                      display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 500,
+                    }}
+                  >
+                    {travelDetailsOpen
+                      ? <ChevronDown style={{ width: 12, height: 12 }} />
+                      : <ChevronRight style={{ width: 12, height: 12 }} />}
+                    {travelDetailsOpen ? 'Hide details' : 'Show details'}
+                  </button>
+
+                  {travelDetailsOpen && (
+                    <div style={{
+                      marginTop: 8, padding: 10, borderRadius: 8,
+                      backgroundColor: "rgba(146, 64, 14, 0.06)",
+                      border: "1px solid rgba(146, 64, 14, 0.15)",
+                      fontSize: 12, lineHeight: 1.6,
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                        <span style={{ opacity: 0.8 }}>Direction</span>
+                        <span style={{ fontWeight: 600 }}>
+                          {travelWarning.direction === 'before'
+                            ? `From ${travelWarning.fromName} → this lesson`
+                            : `This lesson → ${travelWarning.toName}`}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                        <span style={{ opacity: 0.8 }}>Drive time</span>
+                        <span style={{ fontWeight: 600 }}>{travelWarning.travelMinutes} min</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                        <span style={{ opacity: 0.8 }}>Buffer</span>
+                        <span style={{ fontWeight: 600 }}>{bufferMinutes} min</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                        <span style={{ opacity: 0.8 }}>Required</span>
+                        <span style={{ fontWeight: 600 }}>{travelWarning.travelMinutes + bufferMinutes} min</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                        <span style={{ opacity: 0.8 }}>Available gap</span>
+                        <span style={{ fontWeight: 600 }}>{travelWarning.gapMinutes} min</span>
+                      </div>
+                      <div style={{
+                        display: "flex", justifyContent: "space-between", gap: 8,
+                        marginTop: 4, paddingTop: 4, borderTop: "1px solid rgba(146, 64, 14, 0.15)",
+                      }}>
+                        <span style={{ opacity: 0.8 }}>Shortfall</span>
+                        <span style={{ fontWeight: 700 }}>{travelWarning.shortfallMinutes} min short</span>
+                      </div>
+                    </div>
+                  )}
+
                   {travelWarning.direction === 'before' && travelWarning.suggestedTime && (
                     <button
                       type="button"
@@ -855,10 +914,12 @@ export function AddLessonSheet({
                         setLessonStartTime(t);
                         setTravelWarning(null);
                         setTravelSuggestion(null);
+                        setTravelDetailsOpen(false);
                       }}
                       style={{
                         marginTop: 6, padding: 0, background: "none", border: "none",
                         color: "#1E3A8A", textDecoration: "underline", cursor: "pointer", fontSize: 13,
+                        display: "block",
                       }}
                     >
                       Use suggested time {travelWarning.suggestedTime}
