@@ -18,6 +18,7 @@ import { TravelTimeIndicator } from "./TravelTimeIndicator";
 import { PupilAvatar } from "./PupilAvatar";
 import { useLessonTravelTimes } from "@/hooks/useLessonTravelTimes";
 import { LessonCheckInBadge } from "./LessonCheckInBadge";
+import { RouteStatusBadge } from "./driving-test/RouteStatusBadge";
 
 interface ScheduledLesson {
   id: string;
