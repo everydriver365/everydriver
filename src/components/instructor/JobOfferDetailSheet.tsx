@@ -231,7 +231,7 @@ export function JobOfferDetailSheet({
                   iconColor="#3B8B3B"
                   iconBackground="#E8F3E8"
                   value={formatGbp(earnings)}
-                  label={hours > 0 ? `${formatGbp(hourlyRate)}/hr` : "Earnings"}
+                  label={hours > 0 ? `${formatGbp(effectiveRate)}/hr` : "Earnings"}
                 />
                 <StatCard
                   icon={Navigation}
