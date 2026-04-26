@@ -1,36 +1,57 @@
 ## Goal
 
-Show a small "Imported from Google" badge on instructor lesson cards when the lesson was synced in from Google Calendar. The badge has a tooltip that reveals the underlying `google_event_id` so support / instructors can match it back to the source event.
+Give instructors a button to manually re-sync Google Calendar for a chosen **date range**, then show a clear summary of which lessons were **added**, **removed**, or **left unchanged** as a result of the sync.
 
-## Where it appears
+## Where it lives
 
-1. **Mobile homepage — `TodayLessonsList.tsx`** (the timeline cards on the instructor mobile home).
-2. **Desktop / detail — `ExpandableLessonCard.tsx`** — replace the current "Synced / Not synced" row with the same badge style for consistency, plus tooltip.
+In the existing `GoogleServiceAccountSetup` panel (the same place the current "Sync now" button lives), add a new section: **"Re-sync a date range"**.
 
-Any lesson where `scheduled_lessons.google_event_id IS NOT NULL` qualifies.
+UI elements:
+- Two shadcn date pickers: **From** and **To** (defaults: today − 7 days → today + 30 days).
+- Quick presets: **Last 7 days**, **Next 30 days**, **This month**.
+- Primary button: **"Re-sync this range"**.
+- Result panel that appears below the button after sync completes:
+  - Header: counts — `Added: 3 · Removed: 1 · Unchanged: 12`.
+  - Two collapsible lists: **Added** (green) and **Removed** (red), each row showing date · time · pupil/title · pickup location.
+  - "Done" button to dismiss.
 
-## Visual design
+## Backend changes
 
-- Small pill, height matching existing badges (~18–20 px).
-- Light blue tint (`bg-sky-500/10 text-sky-600`) with the Google "G" or `Calendar` icon (4-color G if simple, otherwise lucide `Calendar` icon — to avoid adding an SVG asset, use lucide `Calendar` at 10 px).
-- Label: "Google" (full label "Imported from Google" lives in the tooltip to keep the pill compact on mobile).
-- Tooltip content (shadcn `Tooltip`):
-  - Line 1: "Imported from Google Calendar"
-  - Line 2: monospace `Event ID: {google_event_id}`
-  - Tap-and-hold on touch devices opens the same tooltip (shadcn handles this).
+Extend the existing `google-calendar-service` edge function with a new action: `resyncRange`.
 
-## Data plumbing
+Request body: `{ action: "resyncRange", instructorId, fromDate, toDate }` (ISO date strings).
 
-- Extend `useTodayRemainingLessons` hook to select and return `google_event_id` as `googleEventId: string | null` on the `TodayLesson` type.
-- `ExpandableLessonCard` already receives `lesson.google_event_id` — no data change needed there.
+What it does (server-side, atomic):
+1. Validate input. Reject ranges over 366 days.
+2. Snapshot the current `instructor_calendar_events` rows for that instructor whose `start_time` overlaps `[fromDate, toDate]` — capture `external_event_id`, `title`, `start_time`, `end_time`, `location`.
+3. Fetch fresh Google Calendar events for that exact `timeMin`/`timeMax` window using the same paginated fetch and meeting/colour extraction code already in `fetchExternalEvents` (refactor that block into a shared helper inside the file).
+4. Diff by `external_event_id`:
+   - **Added** = in fresh, not in snapshot.
+   - **Removed** = in snapshot, not in fresh.
+   - **Unchanged / updated** = in both (treated as unchanged for the summary; updates still apply to the row via upsert).
+5. In a single transaction-like sequence: delete the rows in **Removed**, upsert the fresh rows (so both new and changed events land), and update `last_sync`.
+6. Respond with:
+   ```json
+   {
+     "success": true,
+     "range": { "from": "...", "to": "..." },
+     "counts": { "added": 3, "removed": 1, "unchanged": 12 },
+     "added":   [{ "id", "title", "start", "end", "location" }, ...],
+     "removed": [{ "id", "title", "start", "end", "location" }, ...]
+   }
+   ```
 
-## Placement on the mobile card
+Important: only events in the requested window are touched, so this never wipes events outside it.
 
-Slot the new badge into the top row, immediately to the left of the existing lesson-type / "Done" badge, so the row reads: avatar · name · [Google] · [Type/Done].
-On very narrow widths the lesson-type badge already truncates gracefully; the Google badge shows just the icon when truncation is needed.
+## Frontend changes
+
+- New hook method on `useGoogleServiceCalendar`: `resyncRange(from: Date, to: Date)` returning the diff payload above.
+- New component `CalendarResyncRangePanel` rendered inside `GoogleServiceAccountSetup` below the existing "Sync now" controls.
+- Toast on success: `"Re-sync complete · +3 added · −1 removed"`.
+- Invalidate the React Query keys the lessons/calendar use (`today-remaining-lessons`, `day-lessons`, `tomorrow-lessons`, `instructor-calendar-events`) so the rest of the app reflects the diff immediately.
 
 ## Out of scope
 
-- No change to the import / sync flow itself.
-- No change to filtering rules around what gets imported.
-- No badge added to read-only calendar event tiles (those are already obviously calendar items).
+- Modifying scheduled lessons created from Google events through other paths (the diff operates on `instructor_calendar_events` rows, matching the rest of the sync).
+- Changing the existing 30-days-back / 365-days-forward background sync.
+- Multi-calendar selection (still uses the connected calendar on `instructor_google_service_calendar`).
