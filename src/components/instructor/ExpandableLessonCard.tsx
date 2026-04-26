@@ -441,8 +441,6 @@ export function ExpandableLessonCard({
                   )}
 
                   {/* Recurrence */}
-
-                  {/* Recurrence */}
                   {isRecurring && (
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-muted-foreground flex items-center gap-1">
