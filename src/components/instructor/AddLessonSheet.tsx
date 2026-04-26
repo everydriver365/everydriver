@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { CompetencyPicker } from './CompetencyPicker';
 import { GoogleAddressAutocomplete } from '@/components/admin/GoogleAddressAutocomplete';
 import { ExaminerSelector } from './driving-test/ExaminerSelector';
+import { TestCentrePicker } from './driving-test/TestCentrePicker';
 
 interface AddLessonSheetProps {
   open: boolean;
