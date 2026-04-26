@@ -305,9 +305,48 @@ export function AddLessonSheet({
     return centre ? `Test Centre: ${centre.name}` : null;
   };
 
+  /**
+   * Save-time validation: when a driving test has both a test centre and examiner
+   * selected, the examiner must be linked to that test centre. Returns true if
+   * the booking is allowed to proceed, false if it should be blocked.
+   */
+  const validateExaminerCentreMatch = async (): Promise<boolean> => {
+    if (!isDrivingTest) return true;
+    if (!selectedTestCentre || !selectedExaminer) return true;
+
+    const { data, error } = await supabase
+      .from('examiners')
+      .select('test_centre_id, name')
+      .eq('id', selectedExaminer)
+      .maybeSingle();
+
+    if (error || !data) {
+      toast.error('Could not verify examiner. Please reselect.');
+      return false;
+    }
+
+    if (data.test_centre_id && data.test_centre_id !== selectedTestCentre) {
+      const centre = testCentres.find(c => c.id === selectedTestCentre);
+      toast.error(
+        `${data.name} is not assigned to ${centre?.name ?? 'this test centre'}. Please pick a matching examiner or change the centre.`
+      );
+      return false;
+    }
+
+    if (!data.test_centre_id) {
+      toast.error(
+        `${data.name} has no test centre on file. Please update the examiner before scheduling.`
+      );
+      return false;
+    }
+
+    return true;
+  };
+
   const handleAddLessonExisting = async () => {
     if (!selectedPupil || !lessonDate) { toast.error('Please select a pupil and date'); return; }
     if (conflictWarning) { toast.error(conflictWarning); return; }
+    if (!(await validateExaminerCentreMatch())) return;
     setLoading(true);
     try {
       const durationMinutes = parseFloat(lessonDuration) * 60;
@@ -342,6 +381,7 @@ export function AddLessonSheet({
   const handleAddLessonNew = async () => {
     if (!newPupilName.trim() || !lessonDate) { toast.error('Please enter a name and date'); return; }
     if (conflictWarning) { toast.error(conflictWarning); return; }
+    if (!(await validateExaminerCentreMatch())) return;
     setLoading(true);
     try {
       const { data: newPupil, error: pupilError } = await supabase
