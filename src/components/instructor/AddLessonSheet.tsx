@@ -910,23 +910,29 @@ export function AddLessonSheet({
             )}
           </Section>
 
-          {/* Date & Time */}
+          {/* Date & time */}
           <Section>
-            <SectionLabel>Date & Time</SectionLabel>
+            <SectionLabel>Date & time</SectionLabel>
 
             {/* Date picker */}
             <Popover>
               <PopoverTrigger asChild>
-                <button style={{
-                  width: "100%", display: "flex", alignItems: "center", gap: 12,
-                  padding: "14px 16px", backgroundColor: "#FFFFFF", borderRadius: 12,
-                  border: "1px solid #E4E4E7", cursor: "pointer", textAlign: "left",
-                }}>
-                  <CalendarIcon style={{ width: 18, height: 18, color: "#2A394F" }} />
-                  <span style={{ flex: 1, fontSize: 15, fontWeight: 400, color: "#18181B" }}>
+                <button
+                  type="button"
+                  style={{
+                    width: "100%", display: "flex", alignItems: "center", gap: 10,
+                    padding: "12px 14px", background: "#FFFFFF",
+                    border: "0.5px solid #E5E5EA", borderRadius: 10,
+                    cursor: "pointer", textAlign: "left", marginBottom: 8,
+                  }}
+                >
+                  <CalendarIcon style={{ width: 18, height: 18, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
+                  <span style={{
+                    flex: 1, fontSize: 15, fontWeight: 500, color: "#000000", letterSpacing: -0.2,
+                  }}>
                     {lessonDate ? format(lessonDate, 'EEEE, d MMMM yyyy') : 'Pick a date'}
                   </span>
-                  <ChevronRight style={{ width: 16, height: 16, color: "#A1A1AA" }} />
+                  <ChevronDown style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="center">
@@ -940,16 +946,27 @@ export function AddLessonSheet({
               </PopoverContent>
             </Popover>
 
-            {/* Time & Duration side-by-side */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {/* Start time + Duration */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
               <div>
-                <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Start Time</span>
+                <div style={{ fontSize: 11, color: "#6E6E73", margin: "0 0 4px", paddingLeft: 2 }}>Start time</div>
                 <Select value={lessonStartTime} onValueChange={setLessonStartTime}>
-                  <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <Clock style={{ width: 16, height: 16, color: "#2A394F" }} />
-                      <SelectValue />
-                    </div>
+                  <SelectTrigger asChild>
+                    <button
+                      type="button"
+                      style={{
+                        width: "100%", display: "flex", alignItems: "center", gap: 8,
+                        padding: 12, background: "#FFFFFF",
+                        border: "0.5px solid #E5E5EA", borderRadius: 10,
+                        cursor: "pointer", textAlign: "left",
+                      }}
+                    >
+                      <Clock style={{ width: 16, height: 16, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
+                      <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: "#000000" }}>
+                        <SelectValue />
+                      </span>
+                      <ChevronDown style={{ width: 10, height: 10, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
+                    </button>
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
                     {timeSlots.map((time) => (
@@ -959,10 +976,24 @@ export function AddLessonSheet({
                 </Select>
               </div>
               <div>
-                <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Duration</span>
+                <div style={{ fontSize: 11, color: "#6E6E73", margin: "0 0 4px", paddingLeft: 2 }}>Duration</div>
                 <Select value={lessonDuration} onValueChange={setLessonDuration}>
-                  <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
-                    <SelectValue />
+                  <SelectTrigger asChild>
+                    <button
+                      type="button"
+                      style={{
+                        width: "100%", display: "flex", alignItems: "center", gap: 8,
+                        padding: 12, background: "#FFFFFF",
+                        border: "0.5px solid #E5E5EA", borderRadius: 10,
+                        cursor: "pointer", textAlign: "left",
+                      }}
+                    >
+                      <Clock style={{ width: 16, height: 16, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
+                      <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: "#000000" }}>
+                        <SelectValue />
+                      </span>
+                      <ChevronDown style={{ width: 10, height: 10, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
+                    </button>
                   </SelectTrigger>
                   <SelectContent>
                     {DURATIONS.map((d) => (
