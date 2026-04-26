@@ -6,18 +6,18 @@ import { toast } from "sonner";
 import { format, addDays, parseISO, startOfDay } from "date-fns";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeHub";
 import { SectionLabel } from "@/components/instructor/ui/SectionLabel";
-import { SlotPickerRow } from "./SlotPickerRow";
-import { RecipientSummaryCard } from "./RecipientSummaryCard";
+import { SlotPickerRow } from "./gap-filler/SlotPickerRow";
+import { RecipientSummaryCard } from "./gap-filler/RecipientSummaryCard";
 import {
   RecipientPickerSheet,
   RecipientPupil,
-} from "./RecipientPickerSheet";
+} from "./gap-filler/RecipientPickerSheet";
 import {
   ConfirmSendSheet,
   ConfirmSendSheetSlot,
   renderTemplate,
-} from "./ConfirmSendSheet";
-import { SendResultStatus } from "./SendResultSheet";
+} from "./gap-filler/ConfirmSendSheet";
+import { SendResultStatus } from "./gap-filler/SendResultSheet";
 
 const FONT_STACK =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
