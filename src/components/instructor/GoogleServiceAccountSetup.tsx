@@ -15,6 +15,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { useGoogleServiceCalendar } from "@/hooks/useGoogleServiceCalendar";
+import { CalendarResyncRangePanel } from "@/components/instructor/CalendarResyncRangePanel";
 import { toast } from "sonner";
 
 interface GoogleServiceAccountSetupProps {
@@ -175,6 +176,9 @@ export function GoogleServiceAccountSetup({ instructorId }: GoogleServiceAccount
             Disconnect
           </Button>
         </div>
+
+        {/* Manual range re-sync */}
+        <CalendarResyncRangePanel instructorId={instructorId} />
       </div>
     );
   }
