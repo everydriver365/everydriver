@@ -434,6 +434,7 @@ export function AddLessonSheet({
       } catch {
         setConflictWarning(null);
         setTravelSuggestion(null);
+        setTravelWarning(null);
       } finally {
         setCheckingConflict(false);
       }
