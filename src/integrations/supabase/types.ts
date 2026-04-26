@@ -13651,6 +13651,7 @@ export type Database = {
           deleted_at: string | null
           dropoff_postcode: string | null
           duration_minutes: number
+          examiner_id: string | null
           geotab_trip_id: string | null
           google_event_id: string | null
           id: string
@@ -13677,6 +13678,7 @@ export type Database = {
           reminder_24h_sent_at: string | null
           start_time: string
           status: string
+          test_centre_id: string | null
           trip_auto_linked_at: string | null
           updated_at: string
           vehicle_id: string | null
@@ -13693,6 +13695,7 @@ export type Database = {
           deleted_at?: string | null
           dropoff_postcode?: string | null
           duration_minutes?: number
+          examiner_id?: string | null
           geotab_trip_id?: string | null
           google_event_id?: string | null
           id?: string
@@ -13719,6 +13722,7 @@ export type Database = {
           reminder_24h_sent_at?: string | null
           start_time: string
           status?: string
+          test_centre_id?: string | null
           trip_auto_linked_at?: string | null
           updated_at?: string
           vehicle_id?: string | null
@@ -13735,6 +13739,7 @@ export type Database = {
           deleted_at?: string | null
           dropoff_postcode?: string | null
           duration_minutes?: number
+          examiner_id?: string | null
           geotab_trip_id?: string | null
           google_event_id?: string | null
           id?: string
@@ -13761,11 +13766,19 @@ export type Database = {
           reminder_24h_sent_at?: string | null
           start_time?: string
           status?: string
+          test_centre_id?: string | null
           trip_auto_linked_at?: string | null
           updated_at?: string
           vehicle_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "scheduled_lessons_examiner_id_fkey"
+            columns: ["examiner_id"]
+            isOneToOne: false
+            referencedRelation: "examiners"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "scheduled_lessons_instructor_id_fkey"
             columns: ["instructor_id"]
@@ -13792,6 +13805,13 @@ export type Database = {
             columns: ["recurrence_parent_id"]
             isOneToOne: false
             referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_lessons_test_centre_id_fkey"
+            columns: ["test_centre_id"]
+            isOneToOne: false
+            referencedRelation: "test_centres"
             referencedColumns: ["id"]
           },
           {
