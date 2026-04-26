@@ -908,24 +908,22 @@ export function AddLessonSheet({
 
             {/* Date picker */}
             <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  style={{
-                    width: "100%", display: "flex", alignItems: "center", gap: 10,
-                    padding: "12px 14px", background: "#FFFFFF",
-                    border: "0.5px solid #E5E5EA", borderRadius: 10,
-                    cursor: "pointer", textAlign: "left", marginBottom: 8,
-                  }}
-                >
-                  <CalendarIcon style={{ width: 18, height: 18, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
-                  <span style={{
-                    flex: 1, fontSize: 15, fontWeight: 500, color: "#000000", letterSpacing: -0.2,
-                  }}>
-                    {lessonDate ? format(lessonDate, 'EEEE, d MMMM yyyy') : 'Pick a date'}
-                  </span>
-                  <ChevronDown style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
-                </button>
+              <PopoverTrigger
+                type="button"
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", gap: 10,
+                  padding: "12px 14px", background: "#FFFFFF",
+                  border: "0.5px solid #E5E5EA", borderRadius: 10,
+                  cursor: "pointer", textAlign: "left", marginBottom: 8,
+                }}
+              >
+                <CalendarIcon style={{ width: 18, height: 18, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
+                <span style={{
+                  flex: 1, fontSize: 15, fontWeight: 500, color: "#000000", letterSpacing: -0.2,
+                }}>
+                  {lessonDate ? format(lessonDate, 'EEEE, d MMMM yyyy') : 'Pick a date'}
+                </span>
+                <ChevronDown style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="center">
                 <Calendar
