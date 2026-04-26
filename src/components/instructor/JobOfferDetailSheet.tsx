@@ -589,7 +589,7 @@ export function JobOfferDetailSheet({
 }
 
 interface DetailRowProps {
-  icon: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>;
+  icon: import("lucide-react").LucideIcon;
   iconColor: string;
   iconBackground: string;
   label: string;
