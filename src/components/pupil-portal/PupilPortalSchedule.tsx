@@ -3,6 +3,7 @@ import { Calendar, Clock, MapPin, Phone, MessageSquare, X, AlertTriangle, ArrowR
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { RouteStatusBadge } from "@/components/instructor/driving-test/RouteStatusBadge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
