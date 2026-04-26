@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { Briefcase, MapPin, Clock, User, Calendar, FileText, ChevronRight, X, Check, Navigation } from "lucide-react";
-import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
+import { AnimatePresence } from "framer-motion";
+import { Briefcase, MapPin, Clock, User, Calendar, FileText, X, Check, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { InstructorCard } from "@/components/instructor/InstructorCard";
-import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { PostcodeMapPreview } from "@/components/instructor/PostcodeMapPreview";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { JobOfferCard } from "@/components/instructor/JobOfferCard";
+import { EmptyState } from "@/components/instructor/EmptyState";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useInstructorProfile } from "@/hooks/useInstructorProfile";
 import { supabase } from "@/integrations/supabase/client";
@@ -199,68 +199,111 @@ export default function InstructorJobs() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4 pb-24">
-        <div className="flex items-center justify-between pt-1">
-          <div className="flex items-center gap-2.5">
-            <div className="h-[29px] w-[29px] rounded-[7px] flex items-center justify-center" style={{ backgroundColor: "#E8ECF1" }}>
-              <Briefcase className="h-3.5 w-3.5" style={{ color: "#2A394F" }} />
-            </div>
-            <div>
-              <h1 className="text-[17px] font-semibold tracking-[-0.02em]" style={{ color: "#18181B" }}>Available Jobs</h1>
-              <p className="text-[13px]" style={{ color: "#71717A" }}>{jobs.length} open opportunities</p>
-            </div>
+      <div
+        className="pb-24"
+        style={{ background: "#F2F2F4", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}
+      >
+        {/* Page header card */}
+        <div
+          className="flex items-center"
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 12,
+            padding: 16,
+            gap: 12,
+          }}
+        >
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              background: "#F1ECFA",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <Briefcase size={22} strokeWidth={2} color="#8A5BC9" />
           </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: "#6E6E73",
+                letterSpacing: "0.3px",
+                textTransform: "uppercase",
+                margin: "0 0 2px",
+              }}
+            >
+              Opportunities
+            </p>
+            <h1
+              style={{
+                fontSize: 17,
+                fontWeight: 500,
+                color: "#000000",
+                letterSpacing: "-0.3px",
+                margin: 0,
+              }}
+            >
+              Available jobs
+            </h1>
+          </div>
+          {jobs.length > 0 && (
+            <span
+              style={{
+                background: "#F1ECFA",
+                color: "#8A5BC9",
+                borderRadius: 999,
+                padding: "4px 10px",
+                fontSize: 11,
+                fontWeight: 500,
+                flexShrink: 0,
+              }}
+            >
+              {jobs.length} new
+            </span>
+          )}
         </div>
 
         {loading ? (
-          <div className="text-center py-8 text-muted-foreground">Loading jobs...</div>
+          <div
+            className="text-center"
+            style={{
+              background: "#FFFFFF",
+              border: "0.5px solid #E5E5EA",
+              borderRadius: 12,
+              padding: 24,
+              fontSize: 13,
+              color: "#6E6E73",
+            }}
+          >
+            Loading jobs…
+          </div>
         ) : jobs.length === 0 ? (
-          <InstructorCard className="py-8 text-center">
-              <Briefcase className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-              <p className="text-muted-foreground">No available jobs at the moment</p>
-              <p className="text-sm text-muted-foreground mt-1">Check back later for new enquiries</p>
-          </InstructorCard>
+          <EmptyState
+            icon={Briefcase}
+            title="No new opportunities"
+            subtitle="Check back soon — new offers come in regularly"
+          />
         ) : (
-          <div className="space-y-3">
-            {jobs.map((job) => (
-              <InstructorCard
-                key={job.id} 
-                interactive
-                noPadding
-                className="p-4"
-                onClick={() => setSelectedJob(job)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between mb-1">
-                      <div>
-                        <h3 className="font-semibold">{job.name}</h3>
-                        <p className="text-sm text-muted-foreground">{job.course_type}</p>
-                      </div>
-                      <Badge variant="outline" className="ml-2">{job.requested_hours || 10}hrs</Badge>
-                    </div>
-                    
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3.5 w-3.5" />
-                        <span>{job.postcode}</span>
-                      </div>
-                      {jobDistances[job.id] !== undefined && jobDistances[job.id] !== null && (
-                        <div className="flex items-center gap-1">
-                          <Navigation className="h-3.5 w-3.5" />
-                          <span>{jobDistances[job.id]!.toFixed(1)} mi</span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span>{job.preferred_timing}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground ml-2" />
-                </div>
-              </InstructorCard>
-            ))}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <AnimatePresence initial={false}>
+              {jobs.map((job) => (
+                <JobOfferCard
+                  key={job.id}
+                  offer={job}
+                  distanceMi={jobDistances[job.id] ?? null}
+                  onExpand={() => setSelectedJob(job)}
+                  onAccept={() => handleAcceptJob(job)}
+                  onDecline={() => handleDeclineJob(job)}
+                  processing={processing}
+                />
+              ))}
+            </AnimatePresence>
           </div>
         )}
 
