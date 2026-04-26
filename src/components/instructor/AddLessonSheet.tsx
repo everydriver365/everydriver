@@ -1192,7 +1192,7 @@ export function AddLessonSheet({
           {/* Pickup address (existing pupil) */}
           {tab === 'existing' && (
             <Section>
-              <SectionLabel>Pickup Location</SectionLabel>
+              <SectionLabel>Pickup</SectionLabel>
               <GoogleAddressAutocomplete
                 value={pickupAddress}
                 onChange={setPickupAddress}
@@ -1207,9 +1207,9 @@ export function AddLessonSheet({
             <>
               <div style={{ height: 1, backgroundColor: "#E4E4E7", margin: "20px 0" }} />
               <Section>
-                <SectionLabel>Test Details</SectionLabel>
+                <SectionLabel>Test details</SectionLabel>
                 <div>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Test Centre</span>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Test centre</span>
                   <TestCentrePicker
                     value={selectedTestCentre}
                     onChange={(id, centre) => {
@@ -1228,7 +1228,7 @@ export function AddLessonSheet({
                 </div>
 
                 <div>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Test Time</span>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Test time</span>
                   <Select value={lessonStartTime} onValueChange={setLessonStartTime}>
                     <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1266,7 +1266,7 @@ export function AddLessonSheet({
                     fontSize: 13, fontWeight: 600, color: "#5C4A0F", cursor: "pointer",
                   }}>
                     <CheckSquare style={{ width: 16, height: 16 }} />
-                    Test Day Checklist
+                    Test day checklist
                     <span style={{ marginLeft: "auto", fontSize: 12 }}>
                       {checklistOpen ? '▾' : '▸'}
                     </span>
