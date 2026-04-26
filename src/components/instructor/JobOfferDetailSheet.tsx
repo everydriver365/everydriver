@@ -8,6 +8,9 @@ import {
   X,
   Check,
   Loader2,
+  Mail,
+  Phone,
+  Car,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -47,6 +50,10 @@ export interface JobOfferDetailJob {
   additional_notes: string | null;
   created_at: string;
   status: string;
+  email?: string | null;
+  phone?: string | null;
+  transmission_type?: string | null;
+  total_cost?: number | null;
 }
 
 interface Props {
@@ -80,8 +87,12 @@ export function JobOfferDetailSheet({
   }
 
   const hours = job.requested_hours ?? 10;
-  const earnings = hours * hourlyRate;
+  const earnings = job.total_cost != null ? Number(job.total_cost) : hours * hourlyRate;
+  const effectiveRate = hours > 0 ? earnings / hours : hourlyRate;
   const lessonType = toSentenceCase(job.course_type) || "Lesson course";
+  const transmissionLabel = job.transmission_type
+    ? toSentenceCase(job.transmission_type)
+    : null;
   const postcode = formatUkPostcode(job.postcode);
   const distanceLabel = formatDistanceMiles(distanceMi ?? null);
   const distanceNumber = distanceLabel ? distanceLabel.replace(" mi", "") : "—";
@@ -179,7 +190,7 @@ export function JobOfferDetailSheet({
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {lessonType}
+                      {transmissionLabel ? `${lessonType} · ${transmissionLabel}` : lessonType}
                     </p>
                   </div>
                   {isUnread && (
@@ -220,7 +231,7 @@ export function JobOfferDetailSheet({
                   iconColor="#3B8B3B"
                   iconBackground="#E8F3E8"
                   value={formatGbp(earnings)}
-                  label={hours > 0 ? `${formatGbp(hourlyRate)}/hr` : "Earnings"}
+                  label={hours > 0 ? `${formatGbp(effectiveRate)}/hr` : "Earnings"}
                 />
                 <StatCard
                   icon={Navigation}
@@ -332,6 +343,88 @@ export function JobOfferDetailSheet({
                   </div>
                 </div>
               </div>
+
+              {/* Lesson details card */}
+              <div
+                style={{
+                  background: "#FFFFFF",
+                  border: "0.5px solid #E5E5EA",
+                  borderRadius: 12,
+                  padding: 14,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
+              >
+                <EyebrowLabel>Lesson details</EyebrowLabel>
+                <DetailRow
+                  icon={Car}
+                  iconColor="#8A5BC9"
+                  iconBackground="#F1ECFA"
+                  label="Course"
+                  value={lessonType}
+                />
+                {transmissionLabel && (
+                  <DetailRow
+                    icon={Car}
+                    iconColor="#2B7BC8"
+                    iconBackground="#E6F1FB"
+                    label="Transmission"
+                    value={transmissionLabel}
+                  />
+                )}
+                <DetailRow
+                  icon={Clock}
+                  iconColor="#2B7BC8"
+                  iconBackground="#E6F1FB"
+                  label="Requested hours"
+                  value={`${hours} hour${hours === 1 ? "" : "s"}`}
+                />
+                {job.total_cost != null && (
+                  <DetailRow
+                    icon={PoundSterling}
+                    iconColor="#3B8B3B"
+                    iconBackground="#E8F3E8"
+                    label="Quoted total"
+                    value={formatGbp(Number(job.total_cost))}
+                  />
+                )}
+              </div>
+
+              {/* Contact card */}
+              {(job.email || job.phone) && (
+                <div
+                  style={{
+                    background: "#FFFFFF",
+                    border: "0.5px solid #E5E5EA",
+                    borderRadius: 12,
+                    padding: 14,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 10,
+                  }}
+                >
+                  <EyebrowLabel>Contact (revealed on accept)</EyebrowLabel>
+                  {job.phone && (
+                    <DetailRow
+                      icon={Phone}
+                      iconColor="#3B8B3B"
+                      iconBackground="#E8F3E8"
+                      label="Phone"
+                      value={job.phone}
+                    />
+                  )}
+                  {job.email && (
+                    <DetailRow
+                      icon={Mail}
+                      iconColor="#2B7BC8"
+                      iconBackground="#E6F1FB"
+                      label="Email"
+                      value={job.email}
+                    />
+                  )}
+                </div>
+              )}
 
               {/* Notes (preserved) */}
               {job.additional_notes && (
@@ -492,5 +585,52 @@ export function JobOfferDetailSheet({
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+interface DetailRowProps {
+  icon: import("lucide-react").LucideIcon;
+  iconColor: string;
+  iconBackground: string;
+  label: string;
+  value: string;
+}
+
+function DetailRow({ icon: Icon, iconColor, iconBackground, label, value }: DetailRowProps) {
+  return (
+    <div className="flex items-center" style={{ gap: 10 }}>
+      <div
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: 7,
+          background: iconBackground,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon size={16} strokeWidth={2} color={iconColor} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 11, color: "#6E6E73", margin: "0 0 1px", letterSpacing: "0.2px" }}>
+          {label}
+        </p>
+        <p
+          style={{
+            fontSize: 14,
+            fontWeight: 500,
+            color: "#000000",
+            margin: 0,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {value}
+        </p>
+      </div>
+    </div>
   );
 }
