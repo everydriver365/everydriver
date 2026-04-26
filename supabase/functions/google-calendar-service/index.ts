@@ -341,7 +341,7 @@ Deno.serve(async (req) => {
     const serviceEmail = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL");
     const privateKey = Deno.env.get("GOOGLE_PRIVATE_KEY");
 
-    const { action, instructorId, calendarId, event, eventId, timeMin, timeMax } = await req.json();
+    const { action, instructorId, calendarId, event, eventId, timeMin, timeMax, fromDate, toDate } = await req.json();
 
     console.log(`Google Calendar Service: ${action} for instructor ${instructorId}`);
 
