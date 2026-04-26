@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { format, addWeeks } from 'date-fns';
-import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Car, CheckSquare, MapPin, AlertTriangle, Clock, ChevronRight, ChevronDown, CreditCard, Mail, Send, Banknote, Sparkles, X } from 'lucide-react';
+import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Car, CheckSquare, MapPin, AlertTriangle, Clock, ChevronRight, ChevronDown, CreditCard, Mail, Send, Banknote, Sparkles, X, CheckCircle2 } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -1140,6 +1140,24 @@ export function AddLessonSheet({
                       Use suggested time {travelWarning.suggestedTime}
                     </button>
                   )}
+                </div>
+              </div>
+            )}
+
+            {/* All clear (green) — no clashes and travel time sufficient */}
+            {!conflictWarning && !travelWarning && !travelSuggestion && !checkingConflict && lessonDate && lessonStartTime && (
+              <div
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", gap: 10,
+                  padding: "12px 16px", borderRadius: 12,
+                  backgroundColor: "#ECFDF5", border: "1px solid #A7F3D0",
+                }}
+                role="status"
+                aria-live="polite"
+              >
+                <CheckCircle2 style={{ width: 16, height: 16, color: "#047857", flexShrink: 0 }} />
+                <div style={{ flex: 1, fontSize: 13, color: "#065F46", lineHeight: 1.4, fontWeight: 600 }}>
+                  All OK — no clashes and travel time looks fine.
                 </div>
               </div>
             )}
