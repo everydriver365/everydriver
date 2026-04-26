@@ -31,12 +31,12 @@ export default function InstructorGaps() {
       <div
         style={{
           background: "#F2F2F4",
-          padding: 16,
+          padding: 8,
           minHeight: "100%",
           fontFamily: FONT_STACK,
           display: "flex",
           flexDirection: "column",
-          gap: 12,
+          gap: 8,
         }}
       >
         {/* Page header card */}
@@ -97,6 +97,9 @@ export default function InstructorGaps() {
             background: "#FFFFFF",
             borderRadius: 12,
             padding: 16,
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           <div style={{ marginBottom: 16 }}>
