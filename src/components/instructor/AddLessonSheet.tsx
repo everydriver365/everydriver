@@ -711,12 +711,39 @@ export function AddLessonSheet({
             {/* Conflict Warning */}
             {conflictWarning && (
               <div style={{
-                display: "flex", alignItems: "center", gap: 10,
+                display: "flex", alignItems: "flex-start", gap: 10,
                 padding: "12px 16px", borderRadius: 12,
                 backgroundColor: "#FEF2F2", border: "1px solid #FECACA",
               }}>
-                <AlertTriangle style={{ width: 16, height: 16, color: "#DC2626", flexShrink: 0 }} />
-                <span style={{ fontSize: 13, color: "#991B1B" }}>{conflictWarning}</span>
+                <AlertTriangle style={{ width: 16, height: 16, color: "#DC2626", flexShrink: 0, marginTop: 2 }} />
+                <div style={{ flex: 1, fontSize: 13, color: "#991B1B", lineHeight: 1.4 }}>
+                  <div>{conflictWarning}</div>
+                  {travelSuggestion && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLessonStartTime(travelSuggestion.suggestedTime);
+                        setTravelSuggestion(null);
+                      }}
+                      style={{
+                        marginTop: 6, padding: 0, background: "none", border: "none",
+                        color: "#1E3A8A", textDecoration: "underline", cursor: "pointer", fontSize: 13,
+                      }}
+                    >
+                      Use suggested time {travelSuggestion.suggestedTime}
+                    </button>
+                  )}
+                  <div style={{ marginTop: 6 }}>
+                    <label style={{ display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 12, color: "#991B1B" }}>
+                      <input
+                        type="checkbox"
+                        checked={overrideBuffer}
+                        onChange={(e) => setOverrideBuffer(e.target.checked)}
+                      />
+                      Book anyway (override buffer / travel)
+                    </label>
+                  </div>
+                </div>
               </div>
             )}
 
