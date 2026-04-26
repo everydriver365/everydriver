@@ -698,7 +698,15 @@ export function AddLessonSheet({
 
                 <div>
                   <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Examiner (optional)</span>
-                  <ExaminerSelector value={selectedExaminer} onChange={setSelectedExaminer} instructorId={instructorId} />
+                  <ExaminerSelector
+                    value={selectedExaminer}
+                    onChange={setSelectedExaminer}
+                    instructorId={instructorId}
+                    testCentreId={selectedTestCentre || null}
+                  />
+                  <span style={{ fontSize: 11, color: "#71717A", marginTop: 6, display: "block" }}>
+                    Examiners linked to the chosen test centre appear first.
+                  </span>
                 </div>
 
                 {/* Checklist */}

@@ -118,6 +118,9 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
           id, lesson_date, start_time, duration_minutes, lesson_type,
           pickup_location, pickup_postcode, status, payment_status,
           prepaid_hours_used, amount_due, notes, check_in_status,
+          test_centre_id, examiner_id,
+          test_centre:test_centres(id, name, address, postcode),
+          examiner:examiners(id, name, dvsa_staff_number),
           pupil:pupils(id, name, phone, address, postcode, prepaid_hours, account_balance, profile_image_url)
         `)
         .eq("instructor_id", instructorId)
