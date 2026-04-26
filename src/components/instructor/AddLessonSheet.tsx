@@ -387,13 +387,23 @@ export function AddLessonSheet({
             _kind: 'lesson',
           };
         });
-        const eventSlots: Slot[] = calendarEvents.map((e: any) => ({
-          _start: tsToLocalMinutes(e.start_time),
-          _end: tsToLocalMinutes(e.end_time),
-          _name: e.title || 'Calendar event',
-          _postcode: extractPostcode(e.location),
-          _kind: 'event',
-        }));
+        // Detect all-day events (no `all_day` column — infer from duration ≥ 24h).
+        // Skip them UNLESS the title indicates a holiday / annual leave / time off.
+        const blockingAllDayKeywords = /(holiday|annual leave|vacation|bank holiday|time off|\bleave\b|off work|out of office|\booo\b)/i;
+        const isAllDay = (e: any) => {
+          const start = new Date(e.start_time).getTime();
+          const end = new Date(e.end_time).getTime();
+          return (end - start) >= 24 * 60 * 60 * 1000;
+        };
+        const eventSlots: Slot[] = calendarEvents
+          .filter((e: any) => !isAllDay(e) || blockingAllDayKeywords.test(e.title || ''))
+          .map((e: any) => ({
+            _start: tsToLocalMinutes(e.start_time),
+            _end: tsToLocalMinutes(e.end_time),
+            _name: e.title || 'Calendar event',
+            _postcode: extractPostcode(e.location),
+            _kind: 'event',
+          }));
         const allSlots: Slot[] = [...lessonSlots, ...eventSlots]
           .filter(s => s._end > s._start)
           .sort((a, b) => a._start - b._start);
