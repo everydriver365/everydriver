@@ -681,67 +681,125 @@ export function AddLessonSheet({
       <SheetContent
         side="bottom"
         className="rounded-t-[20px] p-0 border-0"
-        style={{ height: "90vh", backgroundColor: "#F7F7F7" }}
+        style={{ height: "90vh", backgroundColor: "#F2F2F4", display: "flex", flexDirection: "column" }}
       >
-        {/* Handle bar */}
-        <div style={{ display: "flex", justifyContent: "center", paddingTop: 8, paddingBottom: 4 }}>
-          <div style={{ width: 36, height: 5, borderRadius: 3, backgroundColor: "#D4D4D8" }} />
-        </div>
+        {/* Premium tile-system header */}
+        {(() => {
+          const saveDisabled = loading || (!!conflictWarning && !overrideBuffer);
+          const onSavePress = () => {
+            if (saveDisabled) return;
+            if (tab === 'existing') handleAddLessonExisting();
+            else handleAddLessonNew();
+          };
+          const titleText = isDrivingTest ? 'Schedule test' : 'New lesson';
+          return (
+            <div style={{
+              display: "flex", alignItems: "center", gap: 12,
+              padding: "12px 16px",
+              background: "#FFFFFF",
+              borderBottom: "0.5px solid #E5E5EA",
+              flexShrink: 0,
+            }}>
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                style={{
+                  background: "transparent", border: "none", padding: 4,
+                  flexShrink: 0, fontSize: 14, fontWeight: 500, color: "#2B7BC8",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <span style={{
+                flex: 1, textAlign: "center", fontSize: 15, fontWeight: 500,
+                color: "#000000", letterSpacing: -0.2,
+              }}>
+                {titleText}
+              </span>
+              <button
+                type="button"
+                onClick={onSavePress}
+                disabled={saveDisabled}
+                aria-disabled={saveDisabled}
+                style={{
+                  background: "transparent", border: "none", padding: 4,
+                  flexShrink: 0, fontSize: 14, fontWeight: 500, color: "#2B7BC8",
+                  opacity: loading ? 0.6 : (saveDisabled ? 0.4 : 1),
+                  cursor: loading ? "wait" : (saveDisabled ? "not-allowed" : "pointer"),
+                }}
+              >
+                {loading ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          );
+        })()}
 
-        {/* Header */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "8px 20px 16px",
-        }}>
-          <button
-            onClick={() => onOpenChange(false)}
-            style={{ fontSize: 15, fontWeight: 400, color: "#2A394F", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-          >
-            Cancel
-          </button>
-          <span style={{ fontSize: 17, fontWeight: 600, color: "#18181B" }}>
-            {isDrivingTest ? 'Schedule Test' : 'New Lesson'}
-          </span>
-          <button
-            onClick={tab === 'existing' ? handleAddLessonExisting : handleAddLessonNew}
-            disabled={loading}
-            style={{
-              fontSize: 15, fontWeight: 600,
-              color: loading ? "#A1A1AA" : "#2A394F",
-              background: "none", border: "none", cursor: loading ? "default" : "pointer", padding: 0,
-            }}
-          >
-            {loading ? 'Saving...' : 'Save'}
-          </button>
-        </div>
-
-        {/* Scrollable form */}
-        <div style={{ overflowY: "auto", height: "calc(90vh - 80px)", padding: "0 20px 40px" }}>
-          {/* Lesson type chips */}
+        {/* Scrollable form (white card on grey page) */}
+        <div style={{ overflowY: "auto", flex: 1, padding: "0 0 40px" }}>
+          <div style={{
+            background: "#FFFFFF",
+            padding: 16,
+            display: "flex", flexDirection: "column", gap: 18,
+            borderRadius: "0 0 12px 12px",
+          }}>
+          {/* Lesson type */}
           <Section>
-            <SectionLabel>Lesson Type</SectionLabel>
+            <SectionLabel>Lesson type</SectionLabel>
             <Select value={lessonType} onValueChange={setLessonType}>
-              <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <Car style={{ width: 16, height: 16, color: currentTypeColor }} />
-                  <SelectValue />
-                </div>
+              <SelectTrigger asChild>
+                <button
+                  type="button"
+                  style={{
+                    width: "100%", display: "flex", alignItems: "center", gap: 10,
+                    padding: "12px 14px", background: "#FFFFFF",
+                    border: "0.5px solid #E5E5EA", borderRadius: 10,
+                    cursor: "pointer", textAlign: "left",
+                  }}
+                >
+                  {(() => {
+                    const palette = getLessonTypePalette(lessonType);
+                    return (
+                      <span style={{
+                        width: 28, height: 28, borderRadius: 7,
+                        background: palette.tint, display: "inline-flex",
+                        alignItems: "center", justifyContent: "center", flexShrink: 0,
+                      }}>
+                        <Car style={{ width: 16, height: 16, color: palette.icon }} strokeWidth={2} />
+                      </span>
+                    );
+                  })()}
+                  <span style={{
+                    flex: 1, minWidth: 0, fontSize: 15, fontWeight: 500,
+                    color: "#000000", letterSpacing: -0.2,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>
+                    <SelectValue />
+                  </span>
+                  <ChevronDown style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
+                </button>
               </SelectTrigger>
               <SelectContent>
-                {LESSON_TYPES.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: type.color, display: "inline-block" }} />
-                      {type.label}
-                    </div>
-                  </SelectItem>
-                ))}
+                {LESSON_TYPES.map((type) => {
+                  const p = getLessonTypePalette(type.value);
+                  return (
+                    <SelectItem key={type.value} value={type.value}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{
+                          width: 18, height: 18, borderRadius: 5, background: p.tint,
+                          display: "inline-flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          <Car style={{ width: 11, height: 11, color: p.icon }} strokeWidth={2} />
+                        </span>
+                        {type.label}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </Section>
 
-          {/* Divider */}
-          <div style={{ height: 1, backgroundColor: "#E4E4E7", margin: "20px 0" }} />
 
           {/* Pupil selector tabs */}
           <Section>
