@@ -1,14 +1,20 @@
+import { useState } from "react";
+import { MapPin, Clock } from "lucide-react";
 import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { WaitlistManager } from "@/components/instructor/WaitlistManager";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import { MapPin, Clock } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
+import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
+
+const FONT_STACK =
+  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
+
+type GapsTab = "gaps" | "waitlist";
 
 export default function InstructorGaps() {
   const { instructor } = useInstructorAuth();
   const instructorId = instructor?.id;
+  const [tab, setTab] = useState<GapsTab>("gaps");
 
   if (!instructorId) {
     return (
@@ -22,30 +28,133 @@ export default function InstructorGaps() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4">
-        <InstructorPageHeader
-          lucideIcon={MapPin}
-          title="Gaps & Waitlist"
-        />
+      <div
+        style={{
+          background: "#F2F2F4",
+          padding: 16,
+          minHeight: "100%",
+          fontFamily: FONT_STACK,
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
+      >
+        {/* Page header card */}
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 12,
+            padding: 16,
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              background: "#FBEAEC",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <MapPin size={22} strokeWidth={2} color="#C8434F" />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: "#6E6E73",
+                letterSpacing: 0.3,
+                textTransform: "uppercase",
+                margin: "0 0 2px",
+              }}
+            >
+              Outreach
+            </div>
+            <h1
+              style={{
+                fontSize: 17,
+                fontWeight: 500,
+                color: "#000000",
+                letterSpacing: -0.3,
+                margin: 0,
+              }}
+            >
+              Gaps & waitlist
+            </h1>
+          </div>
+        </div>
 
-        <Tabs defaultValue="gaps" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="gaps" className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              Fill Gaps
-            </TabsTrigger>
-            <TabsTrigger value="waitlist" className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Waitlist
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="gaps" className="mt-4">
+        {/* Main content card */}
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 12,
+            padding: 16,
+          }}
+        >
+          <div style={{ marginBottom: 16 }}>
+            <SegmentedControl<GapsTab>
+              value={tab}
+              onChange={setTab}
+              ariaLabel="Outreach view"
+              options={[
+                {
+                  value: "gaps",
+                  label: (
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                    >
+                      <MapPin
+                        size={13}
+                        strokeWidth={2}
+                        color={tab === "gaps" ? "#000000" : "#6E6E73"}
+                      />
+                      Fill gaps
+                    </span>
+                  ),
+                },
+                {
+                  value: "waitlist",
+                  label: (
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                    >
+                      <Clock
+                        size={13}
+                        strokeWidth={2}
+                        color={tab === "waitlist" ? "#000000" : "#6E6E73"}
+                      />
+                      Waitlist
+                    </span>
+                  ),
+                },
+              ]}
+            />
+          </div>
+
+          {tab === "gaps" ? (
             <GapsFiller instructorId={instructorId} />
-          </TabsContent>
-          <TabsContent value="waitlist" className="mt-4">
+          ) : (
+            // Wrap-only: existing WaitlistManager renders inside the new tile
+            // shell so all current waitlist + offer features keep working.
             <WaitlistManager instructorId={instructorId} />
-          </TabsContent>
-        </Tabs>
+          )}
+        </div>
       </div>
     </InstructorPortalLayout>
   );
