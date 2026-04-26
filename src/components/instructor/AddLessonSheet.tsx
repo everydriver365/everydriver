@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { format, addWeeks } from 'date-fns';
-import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Car, CheckSquare, MapPin, AlertTriangle, Clock, ChevronRight, ChevronDown, CreditCard, Mail, Send, Banknote, Sparkles } from 'lucide-react';
+import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat, Car, CheckSquare, MapPin, AlertTriangle, Clock, ChevronRight, ChevronDown, CreditCard, Mail, Send, Banknote, Sparkles, X } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,8 @@ import { CompetencyPicker } from './CompetencyPicker';
 import { GoogleAddressAutocomplete } from '@/components/admin/GoogleAddressAutocomplete';
 import { ExaminerSelector } from './driving-test/ExaminerSelector';
 import { TestCentrePicker } from './driving-test/TestCentrePicker';
+import { SegmentedControl } from '@/components/instructor/ui/SegmentedControl';
+import { pupilAvatarColor, pupilAvatarInitial } from '@/lib/pupilAvatarColor';
 
 interface AddLessonSheetProps {
   open: boolean;
@@ -80,9 +82,106 @@ function Section({ children, className }: { children: React.ReactNode; className
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span style={{ fontSize: 11, fontWeight: 600, color: "#71717A", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+    <div style={{
+      fontSize: 11, fontWeight: 500, color: "#6E6E73",
+      textTransform: "uppercase", letterSpacing: 0.3, margin: "0 0 8px",
+    }}>
       {children}
-    </span>
+    </div>
+  );
+}
+
+// Premium tile-system palette for lesson types: [tint, icon] colour pair.
+const LESSON_TYPE_PALETTE: Record<string, { tint: string; icon: string }> = {
+  standard:     { tint: "#E6F1FB", icon: "#2B7BC8" },
+  intensive:    { tint: "#E6F1FB", icon: "#2B7BC8" },
+  motorway:     { tint: "#E6F1FB", icon: "#2B7BC8" },
+  refresher:    { tint: "#E6F1FB", icon: "#2B7BC8" },
+  first_lesson: { tint: "#E8F3E8", icon: "#3B8B3B" },
+  test_prep:    { tint: "#E8F3E8", icon: "#3B8B3B" },
+  pass_plus:    { tint: "#FBF1DE", icon: "#B8801F" },
+  mock_test:    { tint: "#FBEAEC", icon: "#C8434F" },
+  driving_test: { tint: "#FBEAEC", icon: "#C8434F" },
+};
+const LESSON_TYPE_FALLBACK = { tint: "#F2F2F4", icon: "#6E6E73" };
+
+function getLessonTypePalette(value: string) {
+  return LESSON_TYPE_PALETTE[value] ?? LESSON_TYPE_FALLBACK;
+}
+
+// Render-only proper-case (does not mutate stored data).
+function toProperCase(name: string): string {
+  return name
+    .toLowerCase()
+    .split(/(\s+|-)/)
+    .map((part) => (part.match(/^\s+$/) || part === "-") ? part : part.charAt(0).toUpperCase() + part.slice(1))
+    .join("");
+}
+
+// Short headline for the conflict banner derived from the existing conflict message.
+function getConflictHeadline(message: string | null): string {
+  if (!message) return "";
+  if (/^overlaps/i.test(message)) return "Lesson clash";
+  if (/calendar/i.test(message))  return "Calendar clash";
+  if (/test/i.test(message))      return "Test clash";
+  return "Heads up";
+}
+
+// White hairline-bordered tappable input row used for type / pupil / date.
+interface FormInputCardProps {
+  iconNode?: React.ReactNode;       // 28×28 tinted tile (or 18×18 placeholder icon)
+  iconTint?: string;                 // background of the icon tile
+  iconColor?: string;                // stroke colour for the lucide icon
+  Icon?: React.ComponentType<{ style?: React.CSSProperties; size?: number }>;
+  primary?: React.ReactNode;         // value text
+  placeholder?: string;              // shown when primary is empty
+  trailing?: React.ReactNode;        // defaults to a chevron-down
+  compact?: boolean;
+  onClick?: () => void;
+  disabled?: boolean;
+  asChild?: boolean;                 // when true, render children directly (for shadcn triggers)
+  children?: React.ReactNode;
+}
+
+function FormInputCard({
+  iconNode, iconTint, iconColor, Icon, primary, placeholder, trailing,
+  compact, onClick, disabled, children,
+}: FormInputCardProps) {
+  const padding = compact ? 12 : "12px 14px";
+  const iconBox = (Icon || iconNode) ? (
+    <div style={{
+      width: compact ? 24 : 28, height: compact ? 24 : 28, borderRadius: 7,
+      background: iconTint ?? "#F2F2F4",
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      flexShrink: 0,
+    }}>
+      {iconNode ?? (Icon ? <Icon style={{ width: 16, height: 16, color: iconColor ?? "#6E6E73" }} /> : null)}
+    </div>
+  ) : null;
+
+  const value = primary ?? <span style={{ color: "#6E6E73", fontWeight: 400 }}>{placeholder}</span>;
+  const trailingNode = trailing ?? <ChevronDown style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        width: "100%", display: "flex", alignItems: "center", gap: 10,
+        padding, background: "#FFFFFF", border: "0.5px solid #E5E5EA",
+        borderRadius: 10, cursor: disabled ? "default" : "pointer", textAlign: "left",
+      }}
+    >
+      {iconBox}
+      <span style={{
+        flex: 1, minWidth: 0, fontSize: compact ? 14 : 15, fontWeight: 500,
+        color: "#000000", letterSpacing: -0.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+      }}>
+        {children ?? value}
+      </span>
+      {trailingNode}
+    </button>
   );
 }
 
@@ -582,127 +681,213 @@ export function AddLessonSheet({
       <SheetContent
         side="bottom"
         className="rounded-t-[20px] p-0 border-0"
-        style={{ height: "90vh", backgroundColor: "#F7F7F7" }}
+        style={{ height: "90vh", backgroundColor: "#F2F2F4", display: "flex", flexDirection: "column" }}
       >
-        {/* Handle bar */}
-        <div style={{ display: "flex", justifyContent: "center", paddingTop: 8, paddingBottom: 4 }}>
-          <div style={{ width: 36, height: 5, borderRadius: 3, backgroundColor: "#D4D4D8" }} />
-        </div>
+        {/* Premium tile-system header */}
+        {(() => {
+          const saveDisabled = loading || (!!conflictWarning && !overrideBuffer);
+          const onSavePress = () => {
+            if (saveDisabled) return;
+            if (tab === 'existing') handleAddLessonExisting();
+            else handleAddLessonNew();
+          };
+          const titleText = isDrivingTest ? 'Schedule test' : 'New lesson';
+          return (
+            <div style={{
+              display: "flex", alignItems: "center", gap: 12,
+              padding: "12px 16px",
+              background: "#FFFFFF",
+              borderBottom: "0.5px solid #E5E5EA",
+              flexShrink: 0,
+            }}>
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                style={{
+                  background: "transparent", border: "none", padding: 4,
+                  flexShrink: 0, fontSize: 14, fontWeight: 500, color: "#2B7BC8",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <span style={{
+                flex: 1, textAlign: "center", fontSize: 15, fontWeight: 500,
+                color: "#000000", letterSpacing: -0.2,
+              }}>
+                {titleText}
+              </span>
+              <button
+                type="button"
+                onClick={onSavePress}
+                disabled={saveDisabled}
+                aria-disabled={saveDisabled}
+                style={{
+                  background: "transparent", border: "none", padding: 4,
+                  flexShrink: 0, fontSize: 14, fontWeight: 500, color: "#2B7BC8",
+                  opacity: loading ? 0.6 : (saveDisabled ? 0.4 : 1),
+                  cursor: loading ? "wait" : (saveDisabled ? "not-allowed" : "pointer"),
+                }}
+              >
+                {loading ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          );
+        })()}
 
-        {/* Header */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "8px 20px 16px",
-        }}>
-          <button
-            onClick={() => onOpenChange(false)}
-            style={{ fontSize: 15, fontWeight: 400, color: "#2A394F", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-          >
-            Cancel
-          </button>
-          <span style={{ fontSize: 17, fontWeight: 600, color: "#18181B" }}>
-            {isDrivingTest ? 'Schedule Test' : 'New Lesson'}
-          </span>
-          <button
-            onClick={tab === 'existing' ? handleAddLessonExisting : handleAddLessonNew}
-            disabled={loading}
-            style={{
-              fontSize: 15, fontWeight: 600,
-              color: loading ? "#A1A1AA" : "#2A394F",
-              background: "none", border: "none", cursor: loading ? "default" : "pointer", padding: 0,
-            }}
-          >
-            {loading ? 'Saving...' : 'Save'}
-          </button>
-        </div>
-
-        {/* Scrollable form */}
-        <div style={{ overflowY: "auto", height: "calc(90vh - 80px)", padding: "0 20px 40px" }}>
-          {/* Lesson type chips */}
+        {/* Scrollable form (white card on grey page) */}
+        <div style={{ overflowY: "auto", flex: 1, padding: "0 0 40px" }}>
+          <div style={{
+            background: "#FFFFFF",
+            padding: 16,
+            display: "flex", flexDirection: "column", gap: 18,
+            borderRadius: "0 0 12px 12px",
+          }}>
+          {/* Lesson type */}
           <Section>
-            <SectionLabel>Lesson Type</SectionLabel>
+            <SectionLabel>Lesson type</SectionLabel>
             <Select value={lessonType} onValueChange={setLessonType}>
-              <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <Car style={{ width: 16, height: 16, color: currentTypeColor }} />
-                  <SelectValue />
-                </div>
+              <SelectTrigger asChild>
+                <button
+                  type="button"
+                  style={{
+                    width: "100%", display: "flex", alignItems: "center", gap: 10,
+                    padding: "12px 14px", background: "#FFFFFF",
+                    border: "0.5px solid #E5E5EA", borderRadius: 10,
+                    cursor: "pointer", textAlign: "left",
+                  }}
+                >
+                  {(() => {
+                    const palette = getLessonTypePalette(lessonType);
+                    return (
+                      <span style={{
+                        width: 28, height: 28, borderRadius: 7,
+                        background: palette.tint, display: "inline-flex",
+                        alignItems: "center", justifyContent: "center", flexShrink: 0,
+                      }}>
+                        <Car style={{ width: 16, height: 16, color: palette.icon }} strokeWidth={2} />
+                      </span>
+                    );
+                  })()}
+                  <span style={{
+                    flex: 1, minWidth: 0, fontSize: 15, fontWeight: 500,
+                    color: "#000000", letterSpacing: -0.2,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>
+                    <SelectValue />
+                  </span>
+                  <ChevronDown style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
+                </button>
               </SelectTrigger>
               <SelectContent>
-                {LESSON_TYPES.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: type.color, display: "inline-block" }} />
-                      {type.label}
-                    </div>
-                  </SelectItem>
-                ))}
+                {LESSON_TYPES.map((type) => {
+                  const p = getLessonTypePalette(type.value);
+                  return (
+                    <SelectItem key={type.value} value={type.value}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{
+                          width: 18, height: 18, borderRadius: 5, background: p.tint,
+                          display: "inline-flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          <Car style={{ width: 11, height: 11, color: p.icon }} strokeWidth={2} />
+                        </span>
+                        {type.label}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </Section>
 
-          {/* Divider */}
-          <div style={{ height: 1, backgroundColor: "#E4E4E7", margin: "20px 0" }} />
 
-          {/* Pupil selector tabs */}
+          {/* Pupil */}
           <Section>
             <SectionLabel>Pupil</SectionLabel>
-            <div style={{
-              display: "flex", backgroundColor: "#EAEAEA", padding: 3, borderRadius: 10, marginBottom: 12,
-            }}>
-              <button
-                onClick={() => setTab('existing')}
-                style={{
-                  flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                  padding: "8px 0", borderRadius: 8, fontSize: 13, fontWeight: 500,
-                  border: "none", cursor: "pointer", transition: "all 0.2s",
-                  ...(tab === 'existing'
-                    ? { backgroundColor: "#FFFFFF", color: "#18181B", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }
-                    : { backgroundColor: "transparent", color: "#71717A" }),
-                }}
-              >
-                <Users style={{ width: 14, height: 14 }} />
-                Existing
-              </button>
-              <button
-                onClick={() => setTab('new')}
-                style={{
-                  flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                  padding: "8px 0", borderRadius: 8, fontSize: 13, fontWeight: 500,
-                  border: "none", cursor: "pointer", transition: "all 0.2s",
-                  ...(tab === 'new'
-                    ? { backgroundColor: "#FFFFFF", color: "#18181B", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }
-                    : { backgroundColor: "transparent", color: "#71717A" }),
-                }}
-              >
-                <UserPlus style={{ width: 14, height: 14 }} />
-                New Pupil
-              </button>
+            <div style={{ marginBottom: 8 }}>
+              <SegmentedControl
+                value={tab}
+                onChange={(v) => setTab(v as 'existing' | 'new')}
+                ariaLabel="Pupil source"
+                options={[
+                  { value: 'existing', label: (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                      <Users style={{ width: 13, height: 13 }} strokeWidth={2} />
+                      Existing
+                    </span>
+                  )},
+                  { value: 'new', label: (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                      <UserPlus style={{ width: 13, height: 13 }} strokeWidth={2} />
+                      New pupil
+                    </span>
+                  )},
+                ]}
+              />
             </div>
 
             {tab === 'existing' ? (
               loadingPupils ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 0", color: "#71717A", fontSize: 13 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 0", color: "#6E6E73", fontSize: 13 }}>
                   <Loader2 style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} />
-                  Loading pupils...
+                  Loading pupils…
                 </div>
               ) : (
                 <Select value={selectedPupil} onValueChange={setSelectedPupil}>
-                  <SelectTrigger
-                    style={{
-                      backgroundColor: "#FFFFFF", borderRadius: 12,
-                      border: "1px solid #E4E4E7", padding: "12px 16px",
-                      fontSize: 15, height: "auto",
-                    }}
-                  >
-                    <SelectValue placeholder="Choose a pupil..." />
+                  <SelectTrigger asChild>
+                    <button
+                      type="button"
+                      style={{
+                        width: "100%", display: "flex", alignItems: "center", gap: 10,
+                        padding: "12px 14px", background: "#FFFFFF",
+                        border: "0.5px solid #E5E5EA", borderRadius: 10,
+                        cursor: "pointer", textAlign: "left",
+                      }}
+                    >
+                      {(() => {
+                        const pupil = pupils.find(p => p.id === selectedPupil);
+                        if (pupil) {
+                          const display = toProperCase(pupil.name || '');
+                          return (
+                            <>
+                              <span style={{
+                                width: 28, height: 28, borderRadius: "50%",
+                                background: pupilAvatarColor(pupil.id),
+                                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                                color: "#FFFFFF", fontSize: 11, fontWeight: 500, flexShrink: 0,
+                              }}>
+                                {pupilAvatarInitial(display)}
+                              </span>
+                              <span style={{
+                                flex: 1, minWidth: 0, fontSize: 15, fontWeight: 500,
+                                color: "#000000", letterSpacing: -0.2,
+                                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                              }}>
+                                {display}
+                              </span>
+                            </>
+                          );
+                        }
+                        return (
+                          <>
+                            <Users style={{ width: 18, height: 18, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
+                            <span style={{
+                              flex: 1, fontSize: 15, fontWeight: 400, color: "#6E6E73",
+                            }}>
+                              Select pupil
+                            </span>
+                          </>
+                        );
+                      })()}
+                      <ChevronDown style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
+                    </button>
                   </SelectTrigger>
                   <SelectContent>
                     {pupils.length === 0 ? (
                       <div className="p-3 text-center text-sm text-muted-foreground">No pupils yet</div>
                     ) : (
                       pupils.map((pupil) => (
-                        <SelectItem key={pupil.id} value={pupil.id}>{pupil.name}</SelectItem>
+                        <SelectItem key={pupil.id} value={pupil.id}>{toProperCase(pupil.name)}</SelectItem>
                       ))
                     )}
                   </SelectContent>
@@ -713,7 +898,7 @@ export function AddLessonSheet({
                 <InputField label="Name" placeholder="John Smith" value={newPupilName} onChange={setNewPupilName} required />
                 <InputField label="Phone" placeholder="07123 456789" value={newPupilPhone} onChange={setNewPupilPhone} type="tel" />
                 <div>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Address</span>
+                  <span style={{ fontSize: 12, color: "#6E6E73", marginBottom: 6, display: "block" }}>Address</span>
                   <GoogleAddressAutocomplete
                     value={newPupilAddress}
                     onChange={setNewPupilAddress}
@@ -725,26 +910,29 @@ export function AddLessonSheet({
             )}
           </Section>
 
-          {/* Divider */}
-          <div style={{ height: 1, backgroundColor: "#E4E4E7", margin: "20px 0" }} />
-
-          {/* Date & Time */}
+          {/* Date & time */}
           <Section>
-            <SectionLabel>Date & Time</SectionLabel>
+            <SectionLabel>Date & time</SectionLabel>
 
             {/* Date picker */}
             <Popover>
               <PopoverTrigger asChild>
-                <button style={{
-                  width: "100%", display: "flex", alignItems: "center", gap: 12,
-                  padding: "14px 16px", backgroundColor: "#FFFFFF", borderRadius: 12,
-                  border: "1px solid #E4E4E7", cursor: "pointer", textAlign: "left",
-                }}>
-                  <CalendarIcon style={{ width: 18, height: 18, color: "#2A394F" }} />
-                  <span style={{ flex: 1, fontSize: 15, fontWeight: 400, color: "#18181B" }}>
+                <button
+                  type="button"
+                  style={{
+                    width: "100%", display: "flex", alignItems: "center", gap: 10,
+                    padding: "12px 14px", background: "#FFFFFF",
+                    border: "0.5px solid #E5E5EA", borderRadius: 10,
+                    cursor: "pointer", textAlign: "left", marginBottom: 8,
+                  }}
+                >
+                  <CalendarIcon style={{ width: 18, height: 18, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
+                  <span style={{
+                    flex: 1, fontSize: 15, fontWeight: 500, color: "#000000", letterSpacing: -0.2,
+                  }}>
                     {lessonDate ? format(lessonDate, 'EEEE, d MMMM yyyy') : 'Pick a date'}
                   </span>
-                  <ChevronRight style={{ width: 16, height: 16, color: "#A1A1AA" }} />
+                  <ChevronDown style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="center">
@@ -758,16 +946,27 @@ export function AddLessonSheet({
               </PopoverContent>
             </Popover>
 
-            {/* Time & Duration side-by-side */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {/* Start time + Duration */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
               <div>
-                <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Start Time</span>
+                <div style={{ fontSize: 11, color: "#6E6E73", margin: "0 0 4px", paddingLeft: 2 }}>Start time</div>
                 <Select value={lessonStartTime} onValueChange={setLessonStartTime}>
-                  <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <Clock style={{ width: 16, height: 16, color: "#2A394F" }} />
-                      <SelectValue />
-                    </div>
+                  <SelectTrigger asChild>
+                    <button
+                      type="button"
+                      style={{
+                        width: "100%", display: "flex", alignItems: "center", gap: 8,
+                        padding: 12, background: "#FFFFFF",
+                        border: "0.5px solid #E5E5EA", borderRadius: 10,
+                        cursor: "pointer", textAlign: "left",
+                      }}
+                    >
+                      <Clock style={{ width: 16, height: 16, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
+                      <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: "#000000" }}>
+                        <SelectValue />
+                      </span>
+                      <ChevronDown style={{ width: 10, height: 10, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
+                    </button>
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
                     {timeSlots.map((time) => (
@@ -777,10 +976,24 @@ export function AddLessonSheet({
                 </Select>
               </div>
               <div>
-                <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Duration</span>
+                <div style={{ fontSize: 11, color: "#6E6E73", margin: "0 0 4px", paddingLeft: 2 }}>Duration</div>
                 <Select value={lessonDuration} onValueChange={setLessonDuration}>
-                  <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
-                    <SelectValue />
+                  <SelectTrigger asChild>
+                    <button
+                      type="button"
+                      style={{
+                        width: "100%", display: "flex", alignItems: "center", gap: 8,
+                        padding: 12, background: "#FFFFFF",
+                        border: "0.5px solid #E5E5EA", borderRadius: 10,
+                        cursor: "pointer", textAlign: "left",
+                      }}
+                    >
+                      <Clock style={{ width: 16, height: 16, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.8} />
+                      <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: "#000000" }}>
+                        <SelectValue />
+                      </span>
+                      <ChevronDown style={{ width: 10, height: 10, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
+                    </button>
                   </SelectTrigger>
                   <SelectContent>
                     {DURATIONS.map((d) => (
@@ -791,16 +1004,31 @@ export function AddLessonSheet({
               </div>
             </div>
 
-            {/* Conflict Warning */}
+            {/* Conflict banner — premium tile-system red block */}
             {conflictWarning && (
               <div style={{
                 display: "flex", alignItems: "flex-start", gap: 10,
-                padding: "12px 16px", borderRadius: 12,
-                backgroundColor: "#FEF2F2", border: "1px solid #FECACA",
+                padding: 12, borderRadius: 10,
+                background: "#FBEAEC", border: "0.5px solid #C8434F",
+                marginTop: 8,
               }}>
-                <AlertTriangle style={{ width: 16, height: 16, color: "#DC2626", flexShrink: 0, marginTop: 2 }} />
-                <div style={{ flex: 1, fontSize: 13, color: "#991B1B", lineHeight: 1.4 }}>
-                  <div>{conflictWarning}</div>
+                <span style={{
+                  width: 20, height: 20, borderRadius: "50%",
+                  background: "#C8434F", flexShrink: 0, marginTop: 1,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <X style={{ width: 12, height: 12, color: "#FFFFFF" }} strokeWidth={2} strokeLinecap="round" />
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontSize: 13, fontWeight: 500, color: "#C8434F",
+                    letterSpacing: -0.1, margin: "0 0 3px",
+                  }}>
+                    {getConflictHeadline(conflictWarning)}
+                  </div>
+                  <div style={{ fontSize: 12, color: "#000000", lineHeight: 1.4, margin: "0 0 8px" }}>
+                    {conflictWarning}
+                  </div>
                   {travelSuggestion && (
                     <button
                       type="button"
@@ -809,15 +1037,20 @@ export function AddLessonSheet({
                         setTravelSuggestion(null);
                       }}
                       style={{
-                        marginTop: 6, padding: 0, background: "none", border: "none",
-                        color: "#1E3A8A", textDecoration: "underline", cursor: "pointer", fontSize: 13,
+                        padding: 0, background: "none", border: "none",
+                        color: "#C8434F", cursor: "pointer", fontSize: 12, fontWeight: 500,
+                        display: "inline-flex", alignItems: "center", gap: 4,
                       }}
                     >
                       Use suggested time {travelSuggestion.suggestedTime}
+                      <ChevronRight style={{ width: 10, height: 10 }} strokeWidth={2} />
                     </button>
                   )}
                   <div style={{ marginTop: 6 }}>
-                    <label style={{ display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 12, color: "#991B1B" }}>
+                    <label style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      cursor: "pointer", fontSize: 12, color: "#000000",
+                    }}>
                       <input
                         type="checkbox"
                         checked={overrideBuffer}
@@ -959,7 +1192,7 @@ export function AddLessonSheet({
           {/* Pickup address (existing pupil) */}
           {tab === 'existing' && (
             <Section>
-              <SectionLabel>Pickup Location</SectionLabel>
+              <SectionLabel>Pickup</SectionLabel>
               <GoogleAddressAutocomplete
                 value={pickupAddress}
                 onChange={setPickupAddress}
@@ -974,9 +1207,9 @@ export function AddLessonSheet({
             <>
               <div style={{ height: 1, backgroundColor: "#E4E4E7", margin: "20px 0" }} />
               <Section>
-                <SectionLabel>Test Details</SectionLabel>
+                <SectionLabel>Test details</SectionLabel>
                 <div>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Test Centre</span>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Test centre</span>
                   <TestCentrePicker
                     value={selectedTestCentre}
                     onChange={(id, centre) => {
@@ -995,7 +1228,7 @@ export function AddLessonSheet({
                 </div>
 
                 <div>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Test Time</span>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "#3F3F46", marginBottom: 6, display: "block" }}>Test time</span>
                   <Select value={lessonStartTime} onValueChange={setLessonStartTime}>
                     <SelectTrigger style={{ backgroundColor: "#FFFFFF", borderRadius: 12, border: "1px solid #E4E4E7", height: 48 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1033,7 +1266,7 @@ export function AddLessonSheet({
                     fontSize: 13, fontWeight: 600, color: "#5C4A0F", cursor: "pointer",
                   }}>
                     <CheckSquare style={{ width: 16, height: 16 }} />
-                    Test Day Checklist
+                    Test day checklist
                     <span style={{ marginLeft: "auto", fontSize: 12 }}>
                       {checklistOpen ? '▾' : '▸'}
                     </span>
@@ -1160,6 +1393,7 @@ export function AddLessonSheet({
               </div>
             </>
           )}
+          </div>
         </div>
       </SheetContent>
     </Sheet>
