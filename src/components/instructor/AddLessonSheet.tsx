@@ -116,6 +116,16 @@ export function AddLessonSheet({
   const [checkingConflict, setCheckingConflict] = useState(false);
   const pendingCheckRef = useRef<Promise<void> | null>(null);
   const [travelSuggestion, setTravelSuggestion] = useState<{ suggestedTime: string; travelMinutes: number; fromName: string } | null>(null);
+  // Soft (non-blocking) travel-time warning — Phase 2. Save is never gated on this.
+  const [travelWarning, setTravelWarning] = useState<{
+    direction: 'before' | 'after';
+    fromName: string;
+    toName: string;
+    travelMinutes: number;
+    gapMinutes: number;
+    shortfallMinutes: number;
+    suggestedTime?: string;
+  } | null>(null);
   const [bufferMinutes, setBufferMinutes] = useState<number>(0);
   const [instructorHomePostcode, setInstructorHomePostcode] = useState<string>('');
   const [overrideBuffer, setOverrideBuffer] = useState(false);
