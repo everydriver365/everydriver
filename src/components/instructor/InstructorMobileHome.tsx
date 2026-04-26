@@ -510,6 +510,7 @@ export function InstructorMobileHome({
       <div className="px-4 mt-3">
         <WeatherAlertBanner
           trafficAlerts={trafficAlerts}
+          currentWeather={currentWeather}
           onDismissTraffic={dismissAlert}
           nextLessonMinutesUntil={nextLesson?.minutesUntil}
           nextLessonEtaMinutes={etaToNextLesson > 0 ? etaToNextLesson : null}

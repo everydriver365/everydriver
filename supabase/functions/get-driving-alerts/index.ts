@@ -271,32 +271,33 @@ serve(async (req) => {
       console.error("Weather API error:", weatherError);
     }
 
-    // Fetch traffic incidents from TomTom (reduced to ~3 miles / 5km radius)
+    // Fetch traffic incidents from TomTom (~25km / 15 mile radius around the
+    // instructor's home location — a small 5km box was returning empty for most
+    // postcodes, making the alerts strip look broken).
     if (tomtomApiKey) {
       try {
-        // Search within 5km radius (~3 miles)
-        const radiusDeg = 0.045; // ~5km at UK latitudes
+        const radiusDeg = 0.225; // ~25km at UK latitudes
         const trafficUrl = `https://api.tomtom.com/traffic/services/5/incidentDetails?key=${tomtomApiKey}&bbox=${lng - radiusDeg},${lat - radiusDeg},${lng + radiusDeg},${lat + radiusDeg}&fields=%7Bincidents%7Btype,geometry%7Bcoordinates%7D,properties%7BiconCategory,magnitudeOfDelay,events%7Bdescription%7D,from,to%7D%7D%7D&language=en-GB`;
-        
+
         const trafficResponse = await fetch(trafficUrl);
-        
+
         if (trafficResponse.ok) {
           const trafficData = await trafficResponse.json();
           const incidents = trafficData.incidents || [];
-          
-          // Filter and process incidents
-          for (const incident of incidents.slice(0, 3)) {
+
+          // Process up to 5 incidents
+          for (const incident of incidents.slice(0, 5)) {
             const props = incident.properties;
             if (!props) continue;
 
-            const iconCategory = props.iconCategory;
-            const delay = props.magnitudeOfDelay;
+            const iconCategory = props.iconCategory ?? 0;
+            const delay = props.magnitudeOfDelay ?? 0;
             const events = props.events || [];
             const description = events[0]?.description || "Traffic incident";
             const roadName = props.from || props.to || "";
 
-            // Only show significant delays (> 10 mins) or major incidents
-            if (delay < 2 && iconCategory < 6) continue;
+            // Skip only the most trivial incidents (no delay AND minor category)
+            if (delay < 1 && iconCategory < 3) continue;
 
             let severity: "low" | "moderate" | "severe" = "low";
             if (delay >= 4 || iconCategory >= 8) severity = "severe";
@@ -308,7 +309,7 @@ serve(async (req) => {
               type: "traffic",
               severity,
               title: getTrafficTitle(iconCategory),
-              description: roadName 
+              description: roadName
                 ? `${roadName} • ${delayMinutes > 0 ? `${delayMinutes} min delay` : description}`
                 : description,
               delay: delayMinutes,
