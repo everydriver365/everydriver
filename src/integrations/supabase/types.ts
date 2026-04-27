@@ -10732,6 +10732,53 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_disputes: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          payment_id: string
+          pupil_id: string
+          reason: string
+          resolution_note: string | null
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["payment_dispute_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          payment_id: string
+          pupil_id: string
+          reason: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["payment_dispute_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          payment_id?: string
+          pupil_id?: string
+          reason?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["payment_dispute_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_disputes_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payment_history"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_history: {
         Row: {
           amount: number
@@ -16737,6 +16784,23 @@ export type Database = {
         }
         Relationships: []
       }
+      pupil_weekly_streaks: {
+        Row: {
+          last_active_week: string | null
+          pupil_id: string | null
+          total_active_weeks: number | null
+          total_lessons: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_lessons_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       auto_cleanup_stale_sessions: { Args: never; Returns: undefined }
@@ -16832,6 +16896,7 @@ export type Database = {
         | "holiday_block"
         | "seasonal"
       friendship_status: "pending" | "accepted" | "declined"
+      payment_dispute_status: "open" | "resolved" | "dismissed"
       pipeline_stage:
         | "new_lead"
         | "contacted"
@@ -17000,6 +17065,7 @@ export const Constants = {
         "seasonal",
       ],
       friendship_status: ["pending", "accepted", "declined"],
+      payment_dispute_status: ["open", "resolved", "dismissed"],
       pipeline_stage: [
         "new_lead",
         "contacted",
