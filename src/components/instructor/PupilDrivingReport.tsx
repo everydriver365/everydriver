@@ -530,102 +530,118 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
       </div>
 
       {/* Performance score hero card */}
-      <div
-        style={{
-          background: '#FFFFFF',
-          borderRadius: 12,
-          padding: 16,
-        }}
-      >
+      {scoreTier === 'none' ? (
+        <ProvisionalScoreState />
+      ) : (
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 14,
-          }}
-        >
-          <div>
-            <p
-              style={{
-                fontSize: 11,
-                fontWeight: 500,
-                color: '#6E6E73',
-                letterSpacing: '0.3px',
-                textTransform: 'uppercase',
-                margin: '0 0 2px',
-              }}
-            >
-              Performance score
-            </p>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              <span
-                style={{
-                  fontSize: 30,
-                  fontWeight: 500,
-                  color: '#000000',
-                  letterSpacing: '-0.5px',
-                }}
-              >
-                {noSessions ? '—' : overallScore}
-              </span>
-              <span style={{ fontSize: 13, color: '#6E6E73', fontWeight: 500 }}>
-                / 100
-              </span>
-            </div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <p
-              style={{
-                fontSize: 11,
-                fontWeight: 500,
-                color: '#6E6E73',
-                letterSpacing: '0.3px',
-                textTransform: 'uppercase',
-                margin: '0 0 2px',
-              }}
-            >
-              Rating
-            </p>
-            <span
-              style={{
-                display: 'inline-block',
-                borderRadius: 999,
-                padding: '4px 10px',
-                fontSize: 12,
-                fontWeight: 500,
-                background: noSessions ? '#F2F2F4' : palette.bg,
-                color: noSessions ? '#6E6E73' : palette.fg,
-              }}
-            >
-              {noSessions ? 'No data' : rating}
-            </span>
-          </div>
-        </div>
-
-        {/* Progress bar */}
-        <div
-          style={{
-            height: 4,
-            background: '#F2F2F4',
-            borderRadius: 2,
-            overflow: 'hidden',
-            marginBottom: 8,
+            background: '#FFFFFF',
+            borderRadius: 12,
+            padding: 16,
           }}
         >
           <div
             style={{
-              height: '100%',
-              width: `${noSessions ? 0 : overallScore}%`,
-              background: noSessions ? '#C7C7CC' : palette.fg,
-              transition: 'width 200ms ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 14,
+              gap: 12,
             }}
-          />
+          >
+            <div style={{ minWidth: 0 }}>
+              <p
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: '#6E6E73',
+                  letterSpacing: '0.3px',
+                  textTransform: 'uppercase',
+                  margin: '0 0 2px',
+                }}
+              >
+                Performance score
+              </p>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                <span
+                  style={{
+                    fontSize: 30,
+                    fontWeight: 500,
+                    color: '#000000',
+                    letterSpacing: '-0.5px',
+                  }}
+                >
+                  {overallScore}
+                </span>
+                <span style={{ fontSize: 13, color: '#6E6E73', fontWeight: 500 }}>
+                  / 100
+                </span>
+              </div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: '#6E6E73',
+                  letterSpacing: '0.3px',
+                  textTransform: 'uppercase',
+                  margin: '0 0 2px',
+                }}
+              >
+                Rating
+              </p>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                <span
+                  style={{
+                    display: 'inline-block',
+                    borderRadius: 999,
+                    padding: '4px 10px',
+                    fontSize: 12,
+                    fontWeight: 500,
+                    background: scoreTier === 'full' ? palette.bg : '#F2F2F4',
+                    color: scoreTier === 'full' ? palette.fg : '#6E6E73',
+                  }}
+                >
+                  {scoreTier === 'full' ? rating : 'Provisional'}
+                </span>
+                {scoreTier === 'full' && <TrendPill delta={trendDelta} />}
+              </div>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div
+            style={{
+              height: 4,
+              background: '#F2F2F4',
+              borderRadius: 2,
+              overflow: 'hidden',
+              marginBottom: 8,
+            }}
+          >
+            <div
+              style={{
+                height: '100%',
+                width: `${overallScore}%`,
+                background: scoreTier === 'full' ? palette.fg : '#C7C7CC',
+                transition: 'width 200ms ease',
+              }}
+            />
+          </div>
+          {caveat && (
+            <p style={{ fontSize: 11, color: '#6E6E73', margin: 0, lineHeight: 1.4 }}>
+              {caveat}
+            </p>
+          )}
         </div>
-        <p style={{ fontSize: 11, color: '#6E6E73', margin: 0, lineHeight: 1.4 }}>
-          {caveat}
-        </p>
-      </div>
+      )}
 
       {/* Stats grid 2x2 */}
       <div
