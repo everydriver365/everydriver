@@ -34,11 +34,18 @@ interface PaymentEntry {
   payment_method: string | null;
   notes: string | null;
   lesson_id?: string | null;
-  scheduled_lessons?: { lesson_date: string; start_time: string | null } | null;
+  scheduled_lessons?: {
+    lesson_date: string;
+    start_time: string | null;
+    pickup_postcode: string | null;
+    pickup_location: string | null;
+    lesson_type: string | null;
+  } | null;
 }
 
 type DatePreset = "all" | "7d" | "30d" | "90d" | "year";
 type LinkFilter = "all" | "linked" | "unlinked";
+type WeekdayFilter = "all" | "0" | "1" | "2" | "3" | "4" | "5" | "6";
 
 function getPaymentIcon(_method: string | null, amount: number) {
   if (amount > 0) return ArrowDownCircle;
@@ -74,6 +81,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
   const [search, setSearch] = useState("");
   const [datePreset, setDatePreset] = useState<DatePreset>("all");
   const [linkFilter, setLinkFilter] = useState<LinkFilter>("all");
+  const [weekday, setWeekday] = useState<WeekdayFilter>("all");
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -81,7 +89,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
       const { data } = await (supabase as any)
         .from("payment_history")
         .select(
-          "id, amount, recorded_at, payment_method, notes, lesson_id, scheduled_lessons:lesson_id(lesson_date, start_time)"
+          "id, amount, recorded_at, payment_method, notes, lesson_id, scheduled_lessons:lesson_id(lesson_date, start_time, pickup_postcode, pickup_location, lesson_type)"
         )
         .eq("pupil_id", pupilId)
         .order("recorded_at", { ascending: false })
@@ -106,11 +114,19 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
       if (linkFilter === "linked" && !p.lesson_id) return false;
       if (linkFilter === "unlinked" && p.lesson_id) return false;
 
-      // Free-text search across notes, method, amount, recorded date, lesson date
+      // Weekday filter (matches the linked lesson's day-of-week)
+      if (weekday !== "all") {
+        if (!p.scheduled_lessons?.lesson_date) return false;
+        const dow = parseISO(p.scheduled_lessons.lesson_date).getDay();
+        if (dow !== Number(weekday)) return false;
+      }
+
+      // Free-text search across notes, method, amount, dates, postcode, pickup, lesson type
       if (term) {
         const recorded = parseISO(p.recorded_at);
-        const lessonDateLabel = p.scheduled_lessons?.lesson_date
-          ? format(parseISO(p.scheduled_lessons.lesson_date), "d MMM yyyy").toLowerCase()
+        const lesson = p.scheduled_lessons;
+        const lessonDateLabel = lesson?.lesson_date
+          ? format(parseISO(lesson.lesson_date), "EEEE d MMM yyyy").toLowerCase()
           : "";
         const haystack = [
           p.notes ?? "",
@@ -119,6 +135,10 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
           format(recorded, "d MMM yyyy").toLowerCase(),
           format(recorded, "yyyy-MM-dd"),
           lessonDateLabel,
+          lesson?.start_time ?? "",
+          (lesson?.pickup_postcode ?? "").toLowerCase(),
+          (lesson?.pickup_location ?? "").toLowerCase(),
+          (lesson?.lesson_type ?? "").toLowerCase(),
         ]
           .join(" ")
           .toLowerCase();
@@ -126,10 +146,13 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
       }
       return true;
     });
-  }, [payments, search, interval, linkFilter]);
+  }, [payments, search, interval, linkFilter, weekday]);
 
   const filtersActive =
-    search.trim().length > 0 || datePreset !== "all" || linkFilter !== "all";
+    search.trim().length > 0 ||
+    datePreset !== "all" ||
+    linkFilter !== "all" ||
+    weekday !== "all";
   const grouped = groupByMonth(filtered);
 
   const handleExportCsv = () => {
@@ -145,6 +168,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
       "Payment Method",
       "Notes",
       "Linked Lesson Date",
+      "Lesson Pickup Postcode",
     ];
     const rows = filtered.map((p) => [
       format(parseISO(p.recorded_at), "yyyy-MM-dd HH:mm"),
@@ -155,6 +179,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
       p.scheduled_lessons?.lesson_date
         ? format(parseISO(p.scheduled_lessons.lesson_date), "yyyy-MM-dd")
         : "",
+      p.scheduled_lessons?.pickup_postcode ?? "",
     ]);
     const csv = [headers, ...rows]
       .map((r) => r.map(escape).join(","))
@@ -192,7 +217,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by date, lesson date, amount, notes…"
+            placeholder="Search postcode, lesson date, notes, amount…"
             className="pl-9 pr-9 h-9 text-sm"
             aria-label="Search payments"
           />
@@ -240,6 +265,25 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
           </Select>
         </div>
 
+        <Select
+          value={weekday}
+          onValueChange={(v) => setWeekday(v as WeekdayFilter)}
+        >
+          <SelectTrigger className="h-9 text-xs w-full" aria-label="Lesson day">
+            <SelectValue placeholder="Lesson day" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Any lesson day</SelectItem>
+            <SelectItem value="1">Monday lessons</SelectItem>
+            <SelectItem value="2">Tuesday lessons</SelectItem>
+            <SelectItem value="3">Wednesday lessons</SelectItem>
+            <SelectItem value="4">Thursday lessons</SelectItem>
+            <SelectItem value="5">Friday lessons</SelectItem>
+            <SelectItem value="6">Saturday lessons</SelectItem>
+            <SelectItem value="0">Sunday lessons</SelectItem>
+          </SelectContent>
+        </Select>
+
         <div className="flex items-center justify-between gap-2">
           {filtersActive ? (
             <button
@@ -248,6 +292,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
                 setSearch("");
                 setDatePreset("all");
                 setLinkFilter("all");
+                setWeekday("all");
               }}
               className="text-[11px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
             >
