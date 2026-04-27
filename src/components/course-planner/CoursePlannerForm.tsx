@@ -728,3 +728,53 @@ export function CoursePlannerForm({
     </div>
   );
 }
+
+interface CoursePreviewCardProps {
+  totalHours: number | null;
+  lessonLengthMinutes: number | null;
+  testDate: Date | null;
+  testCentreName: string | null;
+  pupilName: string | null;
+}
+
+function CoursePreviewCard(props: CoursePreviewCardProps) {
+  const preview = useMemo(
+    () => buildCoursePreview(props),
+    [props.totalHours, props.lessonLengthMinutes, props.testDate, props.testCentreName, props.pupilName],
+  );
+
+  if (!preview.bold && !preview.helper) return null;
+
+  return (
+    <div style={{ background: "#F2F2F4", borderRadius: 10, padding: 12 }}>
+      <p
+        style={{
+          fontSize: 11,
+          fontWeight: 500,
+          color: "#6E6E73",
+          letterSpacing: "0.3px",
+          textTransform: "uppercase",
+          margin: "0 0 6px",
+        }}
+      >
+        Preview
+      </p>
+      {preview.bold ? (
+        <p style={{ fontSize: 13, color: "#000000", margin: 0, lineHeight: 1.4 }}>
+          <strong style={{ fontWeight: 500 }}>{preview.bold}</strong>
+          {preview.rest}
+        </p>
+      ) : null}
+      {preview.helper && (
+        <p style={{ fontSize: 12, color: "#6E6E73", margin: "4px 0 0", lineHeight: 1.4 }}>
+          {preview.helper}
+        </p>
+      )}
+      {preview.hint && (
+        <p style={{ fontSize: 11, color: "#6E6E73", margin: "6px 0 0", lineHeight: 1.4 }}>
+          {preview.hint}
+        </p>
+      )}
+    </div>
+  );
+}
