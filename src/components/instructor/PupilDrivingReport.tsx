@@ -110,6 +110,88 @@ function ratingPalette(rating: string): { bg: string; fg: string } {
   return { bg: '#E6F1FB', fg: '#2B7BC8' };
 }
 
+/* ---------------- Period helpers ---------------- */
+
+interface DateInterval {
+  start: Date;
+  end: Date;
+}
+
+/** Resolve a PeriodKey into the current and previous comparable interval. */
+function resolvePeriod(period: PeriodKey, now: Date = new Date()): {
+  current: DateInterval | null;
+  previous: DateInterval | null;
+} {
+  switch (period) {
+    case 'this_week': {
+      const start = startOfWeek(now, { weekStartsOn: 1 });
+      const end = endOfWeek(now, { weekStartsOn: 1 });
+      return {
+        current: { start, end },
+        previous: { start: subDays(start, 7), end: subDays(end, 7) },
+      };
+    }
+    case 'last_7_days': {
+      const end = now;
+      const start = subDays(now, 7);
+      return {
+        current: { start, end },
+        previous: { start: subDays(start, 7), end: start },
+      };
+    }
+    case 'last_30_days': {
+      const end = now;
+      const start = subDays(now, 30);
+      return {
+        current: { start, end },
+        previous: { start: subDays(start, 30), end: start },
+      };
+    }
+    case 'this_year': {
+      const start = startOfYear(now);
+      return { current: { start, end: now }, previous: null };
+    }
+    case 'all_time':
+    default:
+      return { current: null, previous: null };
+  }
+}
+
+function formatRangeLabel(period: PeriodKey, now: Date = new Date()): string {
+  const { current } = resolvePeriod(period, now);
+  if (!current) return 'All time';
+  if (period === 'this_week') {
+    return `${format(current.start, 'EEE d')} – ${format(current.end, 'EEE d')}`;
+  }
+  return `${format(current.start, 'd MMM')} – ${format(current.end, 'd MMM')}`;
+}
+
+/* ---------------- Score helpers ---------------- */
+
+function scoreForEvents(good: number, bad: number): number {
+  return Math.max(0, Math.min(100, 100 - bad * 5 + good * 2));
+}
+
+/** Derive a per-session score from its events. Returns null when no events at all. */
+function perSessionScore(
+  sessionId: string,
+  events: Array<{ telematics_id?: string | null; event_type: string }>,
+): number | null {
+  const own = events.filter((e) => e.telematics_id === sessionId);
+  if (own.length === 0) return null;
+  const good = own.filter(
+    (e) => e.event_type === 'smooth_stop' || e.event_type === 'good_acceleration',
+  ).length;
+  const bad = own.filter(
+    (e) =>
+      e.event_type === 'harsh_brake' ||
+      e.event_type === 'harsh_acceleration' ||
+      e.event_type === 'speeding' ||
+      e.event_type === 'sharp_turn',
+  ).length;
+  return scoreForEvents(good, bad);
+}
+
 const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
   pupilId,
   pupilName,
