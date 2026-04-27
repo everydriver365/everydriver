@@ -575,7 +575,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
                               <button
                                 type="button"
                                 onClick={() => setDisputeId(entry.id)}
-                                className="flex-1 inline-flex items-center justify-center gap-1 text-[11px] font-medium text-amber-700 dark:text-amber-400 border border-amber-300/60 dark:border-amber-800/60 rounded-md px-2 py-1.5 hover:bg-amber-50/60 dark:hover:bg-amber-950/30"
+                                className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-400 border border-amber-300/60 dark:border-amber-800/60 rounded-md px-2 py-2 hover:bg-amber-50/60 dark:hover:bg-amber-950/30 min-h-[36px]"
                               >
                                 <AlertTriangle className="h-3 w-3" /> Flag for review
                               </button>
