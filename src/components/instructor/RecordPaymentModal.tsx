@@ -515,6 +515,50 @@ export function RecordPaymentModal({
                 />
               </section>
 
+              {/* For lesson (optional) — gracefully hidden if no lessons in window */}
+              {lessonOptions.length > 0 && (
+                <section>
+                  <EyebrowLabel>
+                    For lesson
+                    <span style={{ color: C.optional, fontWeight: 400 }}> — optional</span>
+                  </EyebrowLabel>
+                  <div
+                    style={{
+                      background: C.surface,
+                      border: `0.5px solid transparent`,
+                      borderRadius: 10,
+                      padding: "4px 6px",
+                    }}
+                  >
+                    <select
+                      value={lessonId ?? ""}
+                      onChange={(e) => setLessonId(e.target.value || null)}
+                      aria-label="Link payment to a specific lesson"
+                      style={{
+                        width: "100%",
+                        background: "transparent",
+                        border: "none",
+                        outline: "none",
+                        fontSize: 14,
+                        color: C.text,
+                        fontFamily: FONT_STACK,
+                        padding: "8px 6px",
+                        appearance: "none",
+                        WebkitAppearance: "none",
+                      }}
+                    >
+                      <option value="">Not linked to a lesson</option>
+                      {lessonOptions.map((opt) => (
+                        <option key={opt.id} value={opt.id}>
+                          {opt.label}
+                          {opt.sub ? ` · ${opt.sub}` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </section>
+              )}
+
               {/* Notes */}
               <section>
                 <EyebrowLabel>
