@@ -1000,7 +1000,7 @@ function SessionsTab({
                 margin: 0,
               }}
             >
-              No recorded sessions yet
+              No sessions in this period
             </p>
             <p
               style={{
@@ -1010,7 +1010,7 @@ function SessionsTab({
                 lineHeight: 1.4,
               }}
             >
-              Sessions appear here once you start tracking lessons.
+              Sessions appear here once you start tracking lessons. Try a wider date range above.
             </p>
           </div>
         </div>
