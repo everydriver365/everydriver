@@ -35,6 +35,26 @@ export function formatSwapTime(start: string, end?: string | null): string {
   return s;
 }
 
+/**
+ * Short, human-readable date label for form inputs.
+ * - Same year as today → "18 Feb"
+ * - Other year → "18 Feb 2027"
+ * Pass `pairedYear` (the other end of a range) to force showing the year
+ * when only one side spans a different year.
+ */
+export function formatShortDate(date: Date, pairedYear?: number): string {
+  const currentYear = new Date().getFullYear();
+  const y = date.getFullYear();
+  const showYear = y !== currentYear || (pairedYear != null && pairedYear !== y);
+  return format(date, showYear ? "d MMM yyyy" : "d MMM");
+}
+
+/** Time formatter mirroring `fmtTime` for shared use in form inputs. */
+export function formatShortTime(time: string): string {
+  if (!time) return "";
+  return fmtTime(time);
+}
+
 export function formatTestCentre(name?: string | null): string {
   if (!name) return "Test centre";
   const trimmed = name.trim();
