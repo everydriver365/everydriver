@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, CheckCircle2, AlertCircle, Loader2, MessageSquare, FileText, Phone, Star, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { ReengagementSettingsCard } from "@/components/instructor/ReengagementSettingsCard";
 
 export default function InstructorWhatsAppSettings() {
   const navigate = useNavigate();
@@ -154,6 +155,8 @@ export default function InstructorWhatsAppSettings() {
             <ArrowLeft className="h-4 w-4 text-muted-foreground rotate-180" />
           </div>
         </Card>
+
+        <ReengagementSettingsCard />
       </div>
     </div>
   );

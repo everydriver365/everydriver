@@ -3684,6 +3684,45 @@ export type Database = {
           },
         ]
       }
+      funnel_events: {
+        Row: {
+          event_data: Json | null
+          event_name: string
+          id: string
+          instructor_id: string | null
+          occurred_at: string
+        }
+        Insert: {
+          event_data?: Json | null
+          event_name: string
+          id?: string
+          instructor_id?: string | null
+          occurred_at?: string
+        }
+        Update: {
+          event_data?: Json | null
+          event_name?: string
+          id?: string
+          instructor_id?: string | null
+          occurred_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funnel_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "funnel_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gap_offers: {
         Row: {
           batch_id: string | null
@@ -6931,8 +6970,12 @@ export type Database = {
           id: string
           instructor_id: string
           is_pdi_programme: boolean | null
+          paused_at: string | null
           plan_id: string
           qualification_converted_at: string | null
+          resume_at: string | null
+          save_discount_percent: number | null
+          save_discount_until: string | null
           seat_count: number | null
           square_card_id: string | null
           square_customer_id: string | null
@@ -6955,8 +6998,12 @@ export type Database = {
           id?: string
           instructor_id: string
           is_pdi_programme?: boolean | null
+          paused_at?: string | null
           plan_id: string
           qualification_converted_at?: string | null
+          resume_at?: string | null
+          save_discount_percent?: number | null
+          save_discount_until?: string | null
           seat_count?: number | null
           square_card_id?: string | null
           square_customer_id?: string | null
@@ -6979,8 +7026,12 @@ export type Database = {
           id?: string
           instructor_id?: string
           is_pdi_programme?: boolean | null
+          paused_at?: string | null
           plan_id?: string
           qualification_converted_at?: string | null
+          resume_at?: string | null
+          save_discount_percent?: number | null
+          save_discount_until?: string | null
           seat_count?: number | null
           square_card_id?: string | null
           square_customer_id?: string | null
@@ -7783,6 +7834,7 @@ export type Database = {
           allowed_lesson_lengths: number[] | null
           app_slug: string | null
           auth_user_id: string | null
+          auto_reengage_dormant: boolean
           auto_reengagement_enabled: boolean | null
           auto_start_tracker: boolean
           availability_paused: boolean
@@ -7943,6 +7995,7 @@ export type Database = {
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           auth_user_id?: string | null
+          auto_reengage_dormant?: boolean
           auto_reengagement_enabled?: boolean | null
           auto_start_tracker?: boolean
           availability_paused?: boolean
@@ -8103,6 +8156,7 @@ export type Database = {
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           auth_user_id?: string | null
+          auto_reengage_dormant?: boolean
           auto_reengagement_enabled?: boolean | null
           auto_start_tracker?: boolean
           availability_paused?: boolean
@@ -12222,6 +12276,70 @@ export type Database = {
           },
         ]
       }
+      pupil_reengagement_log: {
+        Row: {
+          channel: string
+          error: string | null
+          id: string
+          instructor_id: string
+          message_body: string | null
+          message_template: string | null
+          pupil_id: string
+          responded_at: string | null
+          resulted_in_booking: boolean | null
+          sent_at: string
+          status: string
+        }
+        Insert: {
+          channel: string
+          error?: string | null
+          id?: string
+          instructor_id: string
+          message_body?: string | null
+          message_template?: string | null
+          pupil_id: string
+          responded_at?: string | null
+          resulted_in_booking?: boolean | null
+          sent_at?: string
+          status?: string
+        }
+        Update: {
+          channel?: string
+          error?: string | null
+          id?: string
+          instructor_id?: string
+          message_body?: string | null
+          message_template?: string | null
+          pupil_id?: string
+          responded_at?: string | null
+          resulted_in_booking?: boolean | null
+          sent_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_reengagement_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_reengagement_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_reengagement_log_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pupil_referrals: {
         Row: {
           bonus_points_awarded: number | null
@@ -14889,6 +15007,63 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_save_offers: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          declined_at: string | null
+          expires_at: string
+          from_plan_slug: string
+          id: string
+          instructor_id: string
+          offer_type: string
+          offer_value: Json | null
+          shown_at: string
+          to_plan_slug: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          declined_at?: string | null
+          expires_at?: string
+          from_plan_slug: string
+          id?: string
+          instructor_id: string
+          offer_type: string
+          offer_value?: Json | null
+          shown_at?: string
+          to_plan_slug: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          declined_at?: string | null
+          expires_at?: string
+          from_plan_slug?: string
+          id?: string
+          instructor_id?: string
+          offer_type?: string
+          offer_value?: Json | null
+          shown_at?: string
+          to_plan_slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_save_offers_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_save_offers_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       syllabus_templates: {
         Row: {
           competencies: Json
@@ -16879,6 +17054,10 @@ export type Database = {
       auto_cleanup_stale_sessions: { Args: never; Returns: undefined }
       award_course_completion_bonus: {
         Args: { p_instructor_id: string; p_pupil_id: string }
+        Returns: boolean
+      }
+      check_save_offer_eligibility: {
+        Args: { p_instructor_id: string }
         Returns: boolean
       }
       cleanup_expired_otp_codes: { Args: never; Returns: undefined }
