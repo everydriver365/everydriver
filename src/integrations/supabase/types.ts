@@ -6388,6 +6388,57 @@ export type Database = {
           },
         ]
       }
+      instructor_notification_settings: {
+        Row: {
+          category_mutes: Json
+          created_at: string
+          delivery_cadence: string
+          instructor_id: string
+          notification_rules: Json
+          quiet_hours_enabled: boolean
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          updated_at: string
+        }
+        Insert: {
+          category_mutes?: Json
+          created_at?: string
+          delivery_cadence?: string
+          instructor_id: string
+          notification_rules?: Json
+          quiet_hours_enabled?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category_mutes?: Json
+          created_at?: string
+          delivery_cadence?: string
+          instructor_id?: string
+          notification_rules?: Json
+          quiet_hours_enabled?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_notification_settings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_notification_settings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_notifications: {
         Row: {
           action_url: string | null
@@ -6397,6 +6448,7 @@ export type Database = {
           is_read: boolean
           message: string
           metadata: Json | null
+          snoozed_until: string | null
           title: string
           type: string
         }
@@ -6408,6 +6460,7 @@ export type Database = {
           is_read?: boolean
           message: string
           metadata?: Json | null
+          snoozed_until?: string | null
           title: string
           type?: string
         }
@@ -6419,6 +6472,7 @@ export type Database = {
           is_read?: boolean
           message?: string
           metadata?: Json | null
+          snoozed_until?: string | null
           title?: string
           type?: string
         }
