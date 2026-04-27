@@ -1604,140 +1604,20 @@ export default function InstructorUnifiedInbox() {
         </div>
       </div>
 
-      {/* New chat dialog — premium-tile redesign */}
-      <Dialog open={showNewChat} onOpenChange={setShowNewChat}>
-        <DialogContent
-          className="max-w-md p-0 gap-0 overflow-hidden"
-          style={{
-            background: CARD_BG,
-            borderRadius: 16,
-            border: "none",
-            fontFamily: FONT_STACK,
-          }}
-        >
-          {/* Sticky header */}
-          <div
-            style={{
-              padding: "12px 16px",
-              borderBottom: HAIRLINE,
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-            }}
-          >
-            <h2
-              style={{
-                flex: 1,
-                margin: 0,
-                fontSize: 15,
-                fontWeight: 500,
-                color: TEXT,
-                letterSpacing: "-0.2px",
-              }}
-            >
-              Start new chat
-            </h2>
-            <button
-              type="button"
-              aria-label="Close"
-              onClick={() => {
-                setShowNewChat(false);
-                setPupilSearch("");
-              }}
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: "50%",
-                background: "#F2F2F4",
-                border: "none",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                padding: 0,
-              }}
-            >
-              <X size={16} strokeWidth={1.8} color={MUTED} />
-            </button>
-          </div>
-
-          {/* Search row */}
-          <div style={{ padding: "12px 16px" }}>
-            <div style={{ position: "relative" }}>
-              <SearchInput
-                value={pupilSearch}
-                onChange={setPupilSearch}
-                placeholder="Search pupils"
-                ariaLabel="Search pupils"
-              />
-              <button
-                type="button"
-                aria-label="Voice search"
-                onClick={() => {
-                  const SR =
-                    (window as any).SpeechRecognition ||
-                    (window as any).webkitSpeechRecognition;
-                  if (!SR) {
-                    toast.error("Voice search isn't available in this browser");
-                    return;
-                  }
-                  const r = new SR();
-                  r.lang = "en-GB";
-                  r.interimResults = false;
-                  r.maxAlternatives = 1;
-                  r.onresult = (e: any) =>
-                    setPupilSearch(e.results[0][0].transcript);
-                  r.onerror = () =>
-                    toast.error("Couldn't capture voice input");
-                  try {
-                    r.start();
-                  } catch {
-                    /* noop */
-                  }
-                }}
-                style={{
-                  position: "absolute",
-                  right: 10,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "transparent",
-                  border: "none",
-                  padding: 4,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Mic size={14} strokeWidth={1.5} color={MUTED} />
-              </button>
-            </div>
-          </div>
-
-          {/* Body */}
-          <ScrollArea style={{ height: 380 }}>
-            {loadingPupils ? (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "32px 0",
-                }}
-              >
-                <Loader2 className="h-5 w-5 animate-spin" />
-              </div>
-            ) : (
-              <NewChatBody
-                pupils={pupils}
-                conversations={conversations}
-                search={pupilSearch}
-                onPick={(p) => void startChatWith(p)}
-              />
-            )}
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+      {/* New chat picker — shared component */}
+      <PupilPickerSheet
+        open={showNewChat}
+        onOpenChange={(o) => {
+          setShowNewChat(o);
+          if (!o) setPupilSearch("");
+        }}
+        pupils={pupils}
+        loading={loadingPupils}
+        recentSource={conversations}
+        onPick={(p) => void startChatWith(p)}
+        title="Start new chat"
+        searchPlaceholder="Search pupils"
+      />
 
       <BroadcastMessageSheet
         open={showBroadcast}
