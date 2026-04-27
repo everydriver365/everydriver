@@ -63,15 +63,42 @@ function getPaymentColor(amount: number) {
   return amount > 0 ? "text-emerald-500" : "text-red-500";
 }
 
-function groupByMonth(entries: PaymentEntry[]) {
-  const groups: Record<string, PaymentEntry[]> = {};
-  entries.forEach((e) => {
-    const date = parseISO(e.recorded_at);
-    const key = format(date, "MMMM yyyy");
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(e);
+type EntryWithBalance = PaymentEntry & { runningBalance: number };
+
+function computeRunningBalances(entries: PaymentEntry[]): EntryWithBalance[] {
+  // entries are newest-first. Walk oldest→newest to accumulate, then preserve original order.
+  const oldestFirst = [...entries].sort(
+    (a, b) => parseISO(a.recorded_at).getTime() - parseISO(b.recorded_at).getTime()
+  );
+  let bal = 0;
+  const balanceById = new Map<string, number>();
+  oldestFirst.forEach((e) => {
+    bal += e.amount;
+    balanceById.set(e.id, bal);
   });
-  return groups;
+  return entries.map((e) => ({ ...e, runningBalance: balanceById.get(e.id) ?? 0 }));
+}
+
+interface MonthGroup {
+  key: string;
+  entries: EntryWithBalance[];
+  paidTotal: number;
+  lessonCount: number;
+}
+
+function groupByMonth(entries: EntryWithBalance[]): MonthGroup[] {
+  const map = new Map<string, EntryWithBalance[]>();
+  entries.forEach((e) => {
+    const key = format(parseISO(e.recorded_at), "MMMM yyyy");
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(e);
+  });
+  return Array.from(map.entries()).map(([key, items]) => ({
+    key,
+    entries: items,
+    paidTotal: items.filter((i) => i.amount > 0).reduce((s, i) => s + i.amount, 0),
+    lessonCount: items.filter((i) => !!i.lesson_id).length,
+  }));
 }
 
 function presetToInterval(preset: DatePreset): { start: Date; end: Date } | null {
@@ -164,7 +191,12 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
     datePreset !== "all" ||
     linkFilter !== "all" ||
     weekday !== "all";
-  const grouped = groupByMonth(filtered);
+
+  const filteredWithBalances = useMemo(
+    () => computeRunningBalances(filtered),
+    [filtered]
+  );
+  const grouped = groupByMonth(filteredWithBalances);
 
   const handleExportCsv = () => {
     if (filtered.length === 0) return;
@@ -345,11 +377,15 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
           </p>
         </div>
       ) : (
-        Object.entries(grouped).map(([month, entries]) => (
+        grouped.map(({ key: month, entries, paidTotal, lessonCount }) => (
           <div key={month}>
-            <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm px-4 py-2">
+            <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm px-4 py-2 flex items-baseline justify-between gap-2">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 {month}
+              </p>
+              <p className="text-[10px] text-muted-foreground/80 tabular-nums">
+                £{paidTotal.toFixed(2)} paid · {lessonCount}{" "}
+                {lessonCount === 1 ? "lesson" : "lessons"}
               </p>
             </div>
 
@@ -423,10 +459,23 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
                       </div>
 
                       <div className="text-right shrink-0 flex items-center gap-2">
-                        <p className={`text-sm font-bold ${colorClass}`}>
-                          {entry.amount > 0 ? "+" : ""}£
-                          {Math.abs(entry.amount).toFixed(2)}
-                        </p>
+                        <div className="flex flex-col items-end leading-tight">
+                          <p className={`text-sm font-bold ${colorClass}`}>
+                            {entry.amount > 0 ? "+" : ""}£
+                            {Math.abs(entry.amount).toFixed(2)}
+                          </p>
+                          <p
+                            className={`text-[10px] tabular-nums ${
+                              entry.runningBalance < 0
+                                ? "text-destructive/80"
+                                : "text-muted-foreground/70"
+                            }`}
+                            title="Balance after this transaction"
+                          >
+                            Bal {entry.runningBalance < 0 ? "-" : ""}£
+                            {Math.abs(entry.runningBalance).toFixed(2)}
+                          </p>
+                        </div>
                         {hasLesson && (
                           <ExpandChevron isExpanded={isExpanded} size={14} />
                         )}
