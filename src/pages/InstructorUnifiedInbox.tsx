@@ -811,6 +811,14 @@ export default function InstructorUnifiedInbox() {
   const showAudienceToggle = source === "in-app";
   const showBroadcastLink =
     source === "in-app" && audience === "pupils" && broadcastEnabled;
+  // "Select" link visible when there are selectable rows in the current view
+  const selectableCount =
+    source === "whatsapp"
+      ? filteredWa.length
+      : source === "in-app" && audience === "pupils"
+      ? filteredInApp.length
+      : 0;
+  const showSelectLink = !selectMode && selectableCount > 0;
 
   return (
     <InstructorPortalLayout>
@@ -1108,25 +1116,44 @@ export default function InstructorUnifiedInbox() {
             }}
           >
             <EyebrowLabel className="!m-0">Conversations</EyebrowLabel>
-            {showBroadcastLink && (
-              <button
-                type="button"
-                onClick={() => setShowBroadcast(true)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  padding: 0,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 4,
-                  cursor: "pointer",
-                  color: BLUE,
-                }}
-              >
-                <Megaphone size={12} strokeWidth={1.8} />
-                <span style={{ fontSize: 12, fontWeight: 500 }}>Broadcast</span>
-              </button>
-            )}
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 14 }}>
+              {showBroadcastLink && (
+                <button
+                  type="button"
+                  onClick={() => setShowBroadcast(true)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    padding: 0,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    cursor: "pointer",
+                    color: BLUE,
+                  }}
+                >
+                  <Megaphone size={12} strokeWidth={1.8} />
+                  <span style={{ fontSize: 12, fontWeight: 500 }}>Broadcast</span>
+                </button>
+              )}
+              {showSelectLink && (
+                <button
+                  type="button"
+                  onClick={() => enterSelectMode()}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    color: BLUE,
+                    fontSize: 12,
+                    fontWeight: 500,
+                  }}
+                >
+                  Select
+                </button>
+              )}
+            </span>
           </div>
 
           {/* List */}
