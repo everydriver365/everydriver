@@ -16866,6 +16866,16 @@ export type Database = {
       }
     }
     Functions: {
+      audit_list_cron_jobs: {
+        Args: never
+        Returns: {
+          active: boolean
+          command: string
+          jobid: number
+          jobname: string
+          schedule: string
+        }[]
+      }
       auto_cleanup_stale_sessions: { Args: never; Returns: undefined }
       award_course_completion_bonus: {
         Args: { p_instructor_id: string; p_pupil_id: string }
