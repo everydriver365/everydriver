@@ -1,9 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
 import {
   CalendarIcon, Clock, Sparkles, AlertTriangle, Loader2,
   GraduationCap, MapPin, User, Mail, Phone, Check, ChevronsUpDown, CalendarCheck,
+  ChevronDown,
 } from "lucide-react";
+import { SectionLabel } from "@/components/instructor/ui/SectionLabel";
+import { FormInputCard } from "@/components/instructor/ui/FormInputCard";
+import { TestCentrePicker } from "@/components/instructor/ui/TestCentrePicker";
+import { UserAvatar } from "@/components/instructor/UserAvatar";
+import { buildCoursePreview } from "./buildCoursePreview";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
