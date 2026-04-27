@@ -408,41 +408,53 @@ export default function InstructorNotifications() {
     </div>
   );
 
-  const SegFilter = (
+  const filterPills: { key: FilterKey; label: string; show?: boolean }[] = [
+    { key: "all", label: "All" },
+    { key: "unread", label: `Unread · ${unreadCount}` },
+    { key: "test_swap", label: "Test swaps" },
+    { key: "message", label: "Messages" },
+    { key: "job", label: "Job offers" },
+    { key: "default", label: "System" },
+    { key: "snoozed", label: `Snoozed · ${snoozedCount}`, show: snoozedCount > 0 },
+  ];
+
+  const PillFilter = (
     <div
-      className="grid grid-cols-2"
-      style={{ gap: 4, background: PAGE_BG, borderRadius: 8, padding: 3, flex: 1, maxWidth: 180 }}
+      className="flex items-center overflow-x-auto no-scrollbar"
+      style={{ gap: 6, marginRight: 8, paddingBottom: 2 }}
     >
-      {(["all", "unread"] as const).map(key => {
-        const active = filter === key;
-        const label = key === "all" ? "All" : `Unread · ${unreadCount}`;
+      {filterPills.filter(p => p.show !== false).map(p => {
+        const active = filter === p.key;
         return (
           <button
-            key={key}
+            key={p.key}
             type="button"
-            onClick={() => setFilter(key)}
+            onClick={() => setFilter(p.key)}
+            className="flex-shrink-0"
             style={{
-              borderRadius: 6,
-              padding: "6px 0",
-              background: active ? CARD_BG : "transparent",
+              padding: "6px 10px",
+              borderRadius: 999,
               fontSize: 12,
-              fontWeight: active ? 500 : 400,
-              color: active ? TEXT : MUTED,
+              fontWeight: 500,
+              background: active ? TEXT : PAGE_BG,
+              color: active ? "#FFF" : MUTED,
+              whiteSpace: "nowrap",
             }}
           >
-            {label}
+            {p.label}
           </button>
         );
       })}
     </div>
   );
 
+  const visibleUnreadCount = visibleUnreadIds.length;
   const MarkAllLink = (
     <button
       type="button"
-      onClick={() => unreadCount > 0 && markAllAsRead()}
-      disabled={unreadCount === 0}
-      className="flex items-center"
+      onClick={handleMarkAllRead}
+      disabled={visibleUnreadCount === 0}
+      className="flex items-center flex-shrink-0"
       style={{
         background: "transparent",
         border: "none",
@@ -451,8 +463,8 @@ export default function InstructorNotifications() {
         fontWeight: 500,
         color: LINK,
         gap: 4,
-        opacity: unreadCount === 0 ? 0.4 : 1,
-        cursor: unreadCount === 0 ? "not-allowed" : "pointer",
+        opacity: visibleUnreadCount === 0 ? 0.4 : 1,
+        cursor: visibleUnreadCount === 0 ? "not-allowed" : "pointer",
       }}
     >
       <CheckCheck style={{ width: 12, height: 12, strokeWidth: 1.6, color: LINK }} />
