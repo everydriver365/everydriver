@@ -155,6 +155,8 @@ export default function InstructorWhatsAppSettings() {
             <ArrowLeft className="h-4 w-4 text-muted-foreground rotate-180" />
           </div>
         </Card>
+
+        <ReengagementSettingsCard />
       </div>
     </div>
   );
