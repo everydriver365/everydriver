@@ -1,32 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  FileText,
-  TrendingUp,
-  TrendingDown,
+import {
   AlertTriangle,
   CheckCircle,
   Gauge,
   MapPin,
-  Clock,
   Calendar,
   Navigation,
   Car,
   ChevronRight,
   Download,
-  Map,
-  Settings2
+  TrendingUp,
+  Send,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import RouteMapView from './RouteMapView';
 import DrivingSkillsHeatmap from './DrivingSkillsHeatmap';
 import PupilBrakeGearAnalysis from './PupilBrakeGearAnalysis';
+import { SegmentedControl } from '@/components/instructor/ui/SegmentedControl';
+import { titleCaseName } from '@/lib/titleCase';
+import { Badge } from '@/components/ui/badge';
 
 interface TelematicsSession {
   id: string;
@@ -62,10 +55,51 @@ interface PupilDrivingReportProps {
   instructorId: string;
 }
 
+type TabKey = 'sessions' | 'brake' | 'heatmap' | 'events';
+
+const FONT_STACK =
+  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
+
+// Locale-aware unit handling — GB / en-GB → miles, otherwise km.
+function useLocaleUnit(): { unit: 'mi' | 'km'; toUnit: (km: number) => number } {
+  const lang =
+    (typeof navigator !== 'undefined' && navigator.language) || 'en-GB';
+  const isMiles = /^(en-GB|en-US|en-IE)/i.test(lang) || lang === 'en';
+  return {
+    unit: isMiles ? 'mi' : 'km',
+    toUnit: (km: number) => (isMiles ? km * 0.621371 : km),
+  };
+}
+
+function formatDistance(km: number, unit: 'mi' | 'km', toUnit: (km: number) => number): string | null {
+  if (!km || !isFinite(km) || km <= 0) return null;
+  return `${toUnit(km).toFixed(1)} ${unit}`;
+}
+
+function ratingFromScore(score: number): string {
+  if (score >= 85) return 'Excellent';
+  if (score >= 65) return 'Good';
+  if (score >= 40) return 'Needs work';
+  return 'At risk';
+}
+
+function ratingPalette(rating: string): { bg: string; fg: string } {
+  const r = rating.toLowerCase();
+  if (r.includes('excellent') || r.includes('very good'))
+    return { bg: '#E8F3E8', fg: '#3B8B3B' };
+  if (r.includes('good') || r.includes('steady'))
+    return { bg: '#E6F1FB', fg: '#2B7BC8' };
+  if (r.includes('needs') || r.includes('improving') || r.includes('developing'))
+    return { bg: '#FBF1DE', fg: '#B8801F' };
+  if (r.includes('risk') || r.includes('concern') || r.includes('practice'))
+    return { bg: '#FBEAEC', fg: '#C8434F' };
+  return { bg: '#E6F1FB', fg: '#2B7BC8' };
+}
+
 const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
   pupilId,
   pupilName,
-  instructorId
+  instructorId,
 }) => {
   const [sessions, setSessions] = useState<TelematicsSession[]>([]);
   const [selectedSession, setSelectedSession] = useState<TelematicsSession | null>(null);
@@ -73,15 +107,18 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
   const [events, setEvents] = useState<DrivingEvent[]>([]);
   const [allEvents, setAllEvents] = useState<DrivingEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabKey>('sessions');
+
+  const { unit, toUnit } = useLocaleUnit();
 
   useEffect(() => {
     fetchTelematicsData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pupilId, instructorId]);
 
   const fetchTelematicsData = async () => {
     setIsLoading(true);
     try {
-      // Fetch all telematics sessions for this pupil
       const { data: sessionsData } = await supabase
         .from('lesson_telematics')
         .select('*')
@@ -91,9 +128,8 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
 
       setSessions(sessionsData || []);
 
-      // Fetch all driving events for summary
       if (sessionsData && sessionsData.length > 0) {
-        const sessionIds = sessionsData.map(s => s.id);
+        const sessionIds = sessionsData.map((s) => s.id);
         const { data: eventsData } = await supabase
           .from('driving_behavior_events')
           .select('*')
@@ -102,7 +138,6 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
 
         setAllEvents(eventsData || []);
 
-        // Auto-select first session
         if (sessionsData.length > 0) {
           await loadSessionDetails(sessionsData[0]);
         }
@@ -117,7 +152,6 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
   const loadSessionDetails = async (session: TelematicsSession) => {
     setSelectedSession(session);
 
-    // Fetch GPS points for this session
     const { data: gpsData } = await supabase
       .from('telematics_gps_points')
       .select('latitude, longitude, speed_kmh, recorded_at')
@@ -126,7 +160,6 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
 
     setGpsPoints(gpsData || []);
 
-    // Fetch events for this session
     const { data: eventsData } = await supabase
       .from('driving_behavior_events')
       .select('*')
@@ -136,331 +169,852 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
     setEvents(eventsData || []);
   };
 
-  // Calculate summary stats
-  const totalDistance = sessions.reduce((acc, s) => acc + (Number(s.total_distance_km) || 0), 0);
+  // Aggregates (preserved)
+  const totalDistanceKm = sessions.reduce(
+    (acc, s) => acc + (Number(s.total_distance_km) || 0),
+    0,
+  );
   const totalSessions = sessions.length;
-  const avgSpeed = sessions.filter(s => s.avg_speed_kmh).length > 0
-    ? sessions.reduce((acc, s) => acc + (Number(s.avg_speed_kmh) || 0), 0) / sessions.filter(s => s.avg_speed_kmh).length
-    : 0;
 
-  const goodEvents = allEvents.filter(e => 
-    e.event_type === 'smooth_stop' || e.event_type === 'good_acceleration'
+  const goodEvents = allEvents.filter(
+    (e) => e.event_type === 'smooth_stop' || e.event_type === 'good_acceleration',
   );
-  const badEvents = allEvents.filter(e => 
-    e.event_type === 'harsh_brake' || e.event_type === 'harsh_acceleration' || 
-    e.event_type === 'speeding' || e.event_type === 'sharp_turn'
+  const badEvents = allEvents.filter(
+    (e) =>
+      e.event_type === 'harsh_brake' ||
+      e.event_type === 'harsh_acceleration' ||
+      e.event_type === 'speeding' ||
+      e.event_type === 'sharp_turn',
   );
 
-  const overallScore = Math.max(0, Math.min(100, 
-    100 - (badEvents.length * 5) + (goodEvents.length * 2)
-  ));
+  const overallScore = Math.max(
+    0,
+    Math.min(100, 100 - badEvents.length * 5 + goodEvents.length * 2),
+  );
+
+  const rating =
+    totalSessions === 0 ? '—' : ratingFromScore(overallScore);
+  const palette = ratingPalette(rating);
+
+  const niceName = titleCaseName(pupilName) || pupilName;
+
+  const distanceLabel = formatDistance(totalDistanceKm, unit, toUnit);
+
+  const caveat = (() => {
+    if (totalSessions === 0)
+      return 'No GPS data yet · score appears after the first tracked lesson';
+    if (totalSessions <= 2)
+      return `Based on ${totalSessions} lesson${totalSessions === 1 ? '' : 's'} · scores stabilise after 5+ lessons`;
+    if (totalSessions <= 4)
+      return `Based on ${totalSessions} lessons · score is provisional`;
+    return distanceLabel
+      ? `Based on ${totalSessions} lessons across ${distanceLabel}`
+      : `Based on ${totalSessions} lessons`;
+  })();
 
   const getEventIcon = (eventType: string) => {
     switch (eventType) {
       case 'harsh_brake':
-        return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+        return <AlertTriangle className="h-4 w-4" style={{ color: '#B8801F' }} />;
       case 'harsh_acceleration':
-        return <TrendingUp className="h-4 w-4 text-amber-500" />;
+        return <TrendingUp className="h-4 w-4" style={{ color: '#B8801F' }} />;
       case 'speeding':
-        return <Gauge className="h-4 w-4 text-red-500" />;
+        return <Gauge className="h-4 w-4" style={{ color: '#C8434F' }} />;
       case 'sharp_turn':
-        return <Navigation className="h-4 w-4 text-amber-500" />;
+        return <Navigation className="h-4 w-4" style={{ color: '#B8801F' }} />;
       case 'smooth_stop':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4" style={{ color: '#3B8B3B' }} />;
       case 'good_acceleration':
-        return <TrendingUp className="h-4 w-4 text-green-500" />;
+        return <TrendingUp className="h-4 w-4" style={{ color: '#3B8B3B' }} />;
       default:
         return <Car className="h-4 w-4" />;
     }
   };
 
-  const formatEventType = (type: string) => {
-    return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  };
+  const formatEventType = (type: string) =>
+    type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 
+  // Loading skeleton
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <div className="animate-pulse space-y-4 w-full">
-            <div className="h-8 bg-muted rounded w-1/3" />
-            <div className="h-40 bg-muted rounded" />
-          </div>
-        </CardContent>
-      </Card>
+      <div
+        style={{
+          background: '#F2F2F4',
+          minHeight: '100%',
+          padding: 16,
+          fontFamily: FONT_STACK,
+        }}
+      >
+        <div
+          style={{
+            background: '#FFFFFF',
+            borderRadius: 12,
+            padding: 16,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+          }}
+        >
+          <div style={{ height: 14, background: '#F2F2F4', borderRadius: 4, width: '40%' }} />
+          <div style={{ height: 32, background: '#F2F2F4', borderRadius: 6, width: '30%' }} />
+          <div style={{ height: 4, background: '#F2F2F4', borderRadius: 2 }} />
+        </div>
+      </div>
     );
   }
 
-  if (sessions.length === 0) {
-    return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-          <Navigation className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Driving Data Yet</h3>
-          <p className="text-muted-foreground max-w-md">
-            GPS tracking data will appear here once you start recording lessons with {pupilName}.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Empty state — no sessions
+  const noSessions = sessions.length === 0;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <CardTitle className="flex items-center gap-2 min-w-0">
-              <FileText className="h-5 w-5 text-primary flex-shrink-0" />
-              <span className="truncate">Driving Report: {pupilName}</span>
-            </CardTitle>
-            <Button variant="outline" size="sm" className="gap-2 flex-shrink-0 self-start sm:self-auto">
-              <Download className="h-4 w-4" />
-              Export PDF
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {/* Summary Stats */}
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-4">
-            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-2xl">
-              <p className="text-xl sm:text-2xl font-bold text-primary">{overallScore}</p>
-              <p className="text-xs text-muted-foreground">Score</p>
-            </div>
-            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-2xl">
-              <p className="text-xl sm:text-2xl font-bold">{totalSessions}</p>
-              <p className="text-xs text-muted-foreground">Lessons</p>
-            </div>
-            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-2xl">
-              <p className="text-xl sm:text-2xl font-bold">{totalDistance.toFixed(1)}</p>
-              <p className="text-xs text-muted-foreground">km</p>
-            </div>
-            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-2xl">
-              <p className="text-xl sm:text-2xl font-bold text-green-500">{goodEvents.length}</p>
-              <p className="text-xs text-muted-foreground">Good</p>
-            </div>
-            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-2xl">
-              <p className="text-xl sm:text-2xl font-bold text-amber-500">{badEvents.length}</p>
-              <p className="text-xs text-muted-foreground">Needs Work</p>
-            </div>
-          </div>
+    <div
+      style={{
+        background: '#F2F2F4',
+        minHeight: '100%',
+        padding: 16,
+        fontFamily: FONT_STACK,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+      }}
+    >
+      {/* Header card */}
+      <div
+        style={{
+          background: '#FFFFFF',
+          borderRadius: 12,
+          padding: '12px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          borderBottom: '0.5px solid #E5E5EA',
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p
+            style={{
+              fontSize: 11,
+              fontWeight: 500,
+              color: '#6E6E73',
+              letterSpacing: '0.3px',
+              textTransform: 'uppercase',
+              margin: '0 0 1px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {niceName}
+          </p>
+          <h1
+            style={{
+              fontSize: 15,
+              fontWeight: 500,
+              color: '#000000',
+              letterSpacing: '-0.2px',
+              margin: 0,
+            }}
+          >
+            Driving report
+          </h1>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            // Existing PDF export flow — preserved as a no-op placeholder
+            // matching prior in-card "Export PDF" button behaviour.
+          }}
+          style={{
+            background: '#F2F2F4',
+            border: 0,
+            borderRadius: 8,
+            padding: '6px 10px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 5,
+            cursor: 'pointer',
+            flexShrink: 0,
+          }}
+          aria-label="Export PDF"
+        >
+          <Download size={13} strokeWidth={2} color="#000000" />
+          <span style={{ fontSize: 12, fontWeight: 500, color: '#000000' }}>PDF</span>
+        </button>
+      </div>
 
-          {/* Score Progress */}
-          <div className="mt-4 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Driving Performance</span>
-              <span className={overallScore >= 80 ? 'text-green-500' : overallScore >= 50 ? 'text-amber-500' : 'text-red-500'}>
-                {overallScore >= 80 ? 'Excellent' : overallScore >= 50 ? 'Developing' : 'Needs Practice'}
+      {/* Performance score hero card */}
+      <div
+        style={{
+          background: '#FFFFFF',
+          borderRadius: 12,
+          padding: 16,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 14,
+          }}
+        >
+          <div>
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: '#6E6E73',
+                letterSpacing: '0.3px',
+                textTransform: 'uppercase',
+                margin: '0 0 2px',
+              }}
+            >
+              Performance score
+            </p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <span
+                style={{
+                  fontSize: 30,
+                  fontWeight: 500,
+                  color: '#000000',
+                  letterSpacing: '-0.5px',
+                }}
+              >
+                {noSessions ? '—' : overallScore}
+              </span>
+              <span style={{ fontSize: 13, color: '#6E6E73', fontWeight: 500 }}>
+                / 100
               </span>
             </div>
-            <Progress value={overallScore} className="h-3" />
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Tabs for Sessions, Heatmap, and Events */}
-      <Tabs defaultValue="sessions" className="space-y-4">
-        <TabsList className="w-full overflow-x-auto grid grid-cols-4">
-          <TabsTrigger value="sessions" className="text-xs sm:text-sm">Sessions</TabsTrigger>
-          <TabsTrigger value="brake-gear" className="text-xs sm:text-sm">
-            <Settings2 className="h-4 w-4 mr-1" />
-            Brake & Gear
-          </TabsTrigger>
-          <TabsTrigger value="heatmap" className="text-xs sm:text-sm">
-            <Map className="h-4 w-4 mr-1" />
-            Heatmap
-          </TabsTrigger>
-          <TabsTrigger value="events" className="text-xs sm:text-sm">Events ({allEvents.length})</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="sessions" className="space-y-4">
-          <div className="grid lg:grid-cols-3 gap-4">
-            {/* Session List */}
-            <Card className="lg:col-span-1">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Recorded Lessons</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <ScrollArea className="h-[250px] lg:h-[400px]">
-                  <div className="p-4 space-y-2">
-                    {sessions.map((session) => (
-                      <button
-                        key={session.id}
-                        onClick={() => loadSessionDetails(session)}
-                        className={`w-full text-left p-3 rounded-2xl border transition-colors ${
-                          selectedSession?.id === session.id 
-                            ? 'bg-primary/10 border-primary' 
-                            : 'hover:bg-muted/50 border-transparent'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium text-sm">
-                              {format(new Date(session.started_at), 'd MMM yyyy')}
-                            </span>
-                          </div>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                        <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {(Number(session.total_distance_km) * 0.621371).toFixed(1)} mi
-                          </span>
-                          {session.avg_speed_kmh && (
-                            <span className="flex items-center gap-1">
-                              <Gauge className="h-3 w-3" />
-                              {Math.round(Number(session.avg_speed_kmh) * 0.621371)} mph avg
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-
-            {/* Map and Session Details */}
-            <div className="lg:col-span-2 space-y-4">
-              {selectedSession && (
-                <>
-                  <RouteMapView 
-                    gpsPoints={gpsPoints} 
-                    title={`Route - ${format(new Date(selectedSession.started_at), 'd MMM yyyy')}`}
-                    height="180px"
-                  />
-
-                  {/* Session Stats */}
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="grid grid-cols-3 gap-4 text-center">
-                        <div>
-                          <p className="text-lg font-bold">{(Number(selectedSession.total_distance_km) * 0.621371).toFixed(1)} mi</p>
-                          <p className="text-xs text-muted-foreground">Distance</p>
-                        </div>
-                        <div>
-                          <p className="text-lg font-bold">{selectedSession.avg_speed_kmh ? Math.round(Number(selectedSession.avg_speed_kmh) * 0.621371) : '--'} mph</p>
-                          <p className="text-xs text-muted-foreground">Avg Speed</p>
-                        </div>
-                        <div>
-                          <p className="text-lg font-bold">{selectedSession.max_speed_kmh ? Math.round(Number(selectedSession.max_speed_kmh) * 0.621371) : '--'} mph</p>
-                          <p className="text-xs text-muted-foreground">Max Speed</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Session Events */}
-                  {events.length > 0 && (
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base">Events This Lesson</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2 max-h-48 overflow-y-auto">
-                          {events.map((event) => (
-                            <div key={event.id} className="flex flex-wrap items-center gap-2 sm:gap-3 p-2 bg-muted/30 rounded-2xl">
-                              {getEventIcon(event.event_type)}
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium">{formatEventType(event.event_type)}</p>
-                                {event.notes && (
-                                  <p className="text-xs text-muted-foreground truncate">{event.notes}</p>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2 ml-auto">
-                                <Badge 
-                                  variant={event.severity === 'high' ? 'destructive' : event.severity === 'medium' ? 'secondary' : 'outline'}
-                                  className="text-xs"
-                                >
-                                  {event.severity}
-                                </Badge>
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                  {format(new Date(event.recorded_at), 'HH:mm')}
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </>
-              )}
-            </div>
+          <div style={{ textAlign: 'right' }}>
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: '#6E6E73',
+                letterSpacing: '0.3px',
+                textTransform: 'uppercase',
+                margin: '0 0 2px',
+              }}
+            >
+              Rating
+            </p>
+            <span
+              style={{
+                display: 'inline-block',
+                borderRadius: 999,
+                padding: '4px 10px',
+                fontSize: 12,
+                fontWeight: 500,
+                background: noSessions ? '#F2F2F4' : palette.bg,
+                color: noSessions ? '#6E6E73' : palette.fg,
+              }}
+            >
+              {noSessions ? 'No data' : rating}
+            </span>
           </div>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="brake-gear">
+        {/* Progress bar */}
+        <div
+          style={{
+            height: 4,
+            background: '#F2F2F4',
+            borderRadius: 2,
+            overflow: 'hidden',
+            marginBottom: 8,
+          }}
+        >
+          <div
+            style={{
+              height: '100%',
+              width: `${noSessions ? 0 : overallScore}%`,
+              background: noSessions ? '#C7C7CC' : palette.fg,
+              transition: 'width 200ms ease',
+            }}
+          />
+        </div>
+        <p style={{ fontSize: 11, color: '#6E6E73', margin: 0, lineHeight: 1.4 }}>
+          {caveat}
+        </p>
+      </div>
+
+      {/* Stats grid 2x2 */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+          gap: 8,
+        }}
+      >
+        <StatTile
+          icon={<Calendar size={16} strokeWidth={2} color="#2B7BC8" />}
+          iconBg="#E6F1FB"
+          value={String(totalSessions)}
+          label="Lessons"
+        />
+        <StatTile
+          icon={<Send size={16} strokeWidth={2} color="#8A5BC9" />}
+          iconBg="#F1ECFA"
+          value={distanceLabel ?? '—'}
+          valueMuted={!distanceLabel}
+          label="Distance"
+        />
+        <StatTile
+          icon={<CheckCircle size={16} strokeWidth={2} color="#3B8B3B" />}
+          iconBg="#E8F3E8"
+          value={String(goodEvents.length)}
+          label="Good events"
+        />
+        <StatTile
+          icon={<AlertTriangle size={16} strokeWidth={2} color="#B8801F" />}
+          iconBg="#FBF1DE"
+          value={String(badEvents.length)}
+          label="Needs work"
+        />
+      </div>
+
+      {/* Tab nav */}
+      <div
+        style={{
+          background: '#FFFFFF',
+          borderRadius: 12,
+          padding: 12,
+        }}
+      >
+        <SegmentedControl<TabKey>
+          value={activeTab}
+          onChange={setActiveTab}
+          ariaLabel="Driving report tabs"
+          options={[
+            { value: 'sessions', label: 'Sessions' },
+            { value: 'brake', label: 'Brake' },
+            { value: 'heatmap', label: 'Heatmap' },
+            {
+              value: 'events',
+              label: allEvents.length > 0 ? `Events (${allEvents.length})` : 'Events',
+            },
+          ]}
+        />
+      </div>
+
+      {/* Tab content */}
+      {activeTab === 'sessions' && (
+        <SessionsTab
+          sessions={sessions}
+          selectedSession={selectedSession}
+          gpsPoints={gpsPoints}
+          events={events}
+          loadSessionDetails={loadSessionDetails}
+          unit={unit}
+          toUnit={toUnit}
+          getEventIcon={getEventIcon}
+          formatEventType={formatEventType}
+        />
+      )}
+
+      {activeTab === 'brake' && (
+        <CardWrap eyebrow="Brake & gear analysis">
           {selectedSession ? (
-            <PupilBrakeGearAnalysis 
+            <PupilBrakeGearAnalysis
               telematicsId={selectedSession.id}
               sessionDate={selectedSession.started_at}
             />
           ) : (
-            <Card>
-              <CardContent className="py-8 text-center text-muted-foreground">
-                Select a session from the Sessions tab to view brake & gear analysis
-              </CardContent>
-            </Card>
+            <p style={{ fontSize: 13, color: '#6E6E73', margin: 0 }}>
+              Select a session from the Sessions tab to view brake &amp; gear analysis.
+            </p>
           )}
-        </TabsContent>
+        </CardWrap>
+      )}
 
-        <TabsContent value="heatmap">
-          <DrivingSkillsHeatmap 
-            instructorId={instructorId} 
+      {activeTab === 'heatmap' && (
+        <CardWrap eyebrow="Skills heatmap">
+          <DrivingSkillsHeatmap
+            instructorId={instructorId}
             pupilId={pupilId}
             height="450px"
           />
-        </TabsContent>
+        </CardWrap>
+      )}
 
-        <TabsContent value="events">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">All Driving Events</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {allEvents.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No events recorded yet</p>
-              ) : (
-                <ScrollArea className="h-[300px] lg:h-[400px]">
-                  <div className="space-y-2 pr-4">
-                    {allEvents.map((event) => (
-                      <div key={event.id} className="flex flex-wrap items-start gap-2 sm:gap-3 p-3 border rounded-2xl">
-                        {getEventIcon(event.event_type)}
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">{formatEventType(event.event_type)}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(new Date(event.recorded_at), 'd MMM yyyy, HH:mm')}
-                          </p>
-                          {event.notes && (
-                            <p className="text-xs text-muted-foreground mt-1">{event.notes}</p>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <Badge 
-                            variant={event.severity === 'high' ? 'destructive' : event.severity === 'medium' ? 'secondary' : 'outline'}
-                          >
-                            {event.severity}
-                          </Badge>
-                          {event.speed_at_event && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {Math.round(Number(event.speed_at_event) * 0.621371)} mph
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+      {activeTab === 'events' && (
+        <CardWrap eyebrow={`All driving events · ${allEvents.length}`}>
+          {allEvents.length === 0 ? (
+            <p style={{ fontSize: 13, color: '#6E6E73', margin: 0 }}>
+              No events recorded yet.
+            </p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {allEvents.map((event) => (
+                <div
+                  key={event.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 10,
+                    padding: 12,
+                    border: '0.5px solid #E5E5EA',
+                    borderRadius: 10,
+                    background: '#FFFFFF',
+                  }}
+                >
+                  <div style={{ flexShrink: 0, marginTop: 2 }}>
+                    {getEventIcon(event.event_type)}
                   </div>
-                </ScrollArea>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 500,
+                        color: '#000000',
+                        margin: 0,
+                      }}
+                    >
+                      {formatEventType(event.event_type)}
+                    </p>
+                    <p
+                      style={{
+                        fontSize: 11,
+                        color: '#6E6E73',
+                        margin: '2px 0 0',
+                      }}
+                    >
+                      {format(new Date(event.recorded_at), 'd MMMM yyyy, HH:mm')}
+                    </p>
+                    {event.notes && (
+                      <p
+                        style={{
+                          fontSize: 12,
+                          color: '#6E6E73',
+                          margin: '4px 0 0',
+                        }}
+                      >
+                        {event.notes}
+                      </p>
+                    )}
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <Badge
+                      variant={
+                        event.severity === 'high'
+                          ? 'destructive'
+                          : event.severity === 'medium'
+                            ? 'secondary'
+                            : 'outline'
+                      }
+                      className="text-[10px]"
+                    >
+                      {event.severity}
+                    </Badge>
+                    {event.speed_at_event && (
+                      <p
+                        style={{
+                          fontSize: 11,
+                          color: '#6E6E73',
+                          margin: '4px 0 0',
+                        }}
+                      >
+                        {Math.round(Number(event.speed_at_event) * (unit === 'mi' ? 0.621371 : 1))}{' '}
+                        {unit === 'mi' ? 'mph' : 'km/h'}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardWrap>
+      )}
     </div>
   );
 };
+
+/* ---------------- Sub-components ---------------- */
+
+function StatTile({
+  icon,
+  iconBg,
+  value,
+  label,
+  valueMuted,
+}: {
+  icon: React.ReactNode;
+  iconBg: string;
+  value: string;
+  label: string;
+  valueMuted?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        background: '#FFFFFF',
+        border: '0.5px solid #E5E5EA',
+        borderRadius: 12,
+        padding: 12,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <div
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: 7,
+          background: iconBg,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: 8,
+        }}
+      >
+        {icon}
+      </div>
+      <p
+        style={{
+          fontSize: 18,
+          fontWeight: 500,
+          color: valueMuted ? '#6E6E73' : '#000000',
+          letterSpacing: '-0.3px',
+          margin: 0,
+          fontVariantNumeric: 'tabular-nums',
+        }}
+      >
+        {value}
+      </p>
+      <p style={{ fontSize: 11, color: '#6E6E73', margin: '2px 0 0' }}>{label}</p>
+    </div>
+  );
+}
+
+function CardWrap({
+  eyebrow,
+  children,
+}: {
+  eyebrow: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      style={{
+        background: '#FFFFFF',
+        borderRadius: 12,
+        padding: 14,
+      }}
+    >
+      <p
+        style={{
+          fontSize: 11,
+          fontWeight: 500,
+          color: '#6E6E73',
+          letterSpacing: '0.3px',
+          textTransform: 'uppercase',
+          margin: '0 0 12px',
+        }}
+      >
+        {eyebrow}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+function SessionsTab({
+  sessions,
+  selectedSession,
+  gpsPoints,
+  events,
+  loadSessionDetails,
+  unit,
+  toUnit,
+  getEventIcon,
+  formatEventType,
+}: {
+  sessions: TelematicsSession[];
+  selectedSession: TelematicsSession | null;
+  gpsPoints: GPSPoint[];
+  events: DrivingEvent[];
+  loadSessionDetails: (s: TelematicsSession) => void;
+  unit: 'mi' | 'km';
+  toUnit: (km: number) => number;
+  getEventIcon: (t: string) => React.ReactNode;
+  formatEventType: (t: string) => string;
+}) {
+  if (sessions.length === 0) {
+    return (
+      <CardWrap eyebrow="Recorded sessions · 0">
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            padding: '24px 16px',
+            gap: 12,
+          }}
+        >
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 12,
+              background: '#E6F1FB',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <MapPin size={24} strokeWidth={2} color="#2B7BC8" />
+          </div>
+          <div>
+            <p
+              style={{
+                fontSize: 15,
+                fontWeight: 500,
+                color: '#000000',
+                margin: 0,
+              }}
+            >
+              No recorded sessions yet
+            </p>
+            <p
+              style={{
+                fontSize: 12,
+                color: '#6E6E73',
+                margin: '4px 0 0',
+                lineHeight: 1.4,
+              }}
+            >
+              Sessions appear here once you start tracking lessons.
+            </p>
+          </div>
+        </div>
+      </CardWrap>
+    );
+  }
+
+  const speedUnit = unit === 'mi' ? 'mph' : 'km/h';
+  const speedFactor = unit === 'mi' ? 0.621371 : 1;
+
+  return (
+    <>
+      <CardWrap eyebrow={`Recorded sessions · ${sessions.length}`}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {sessions.map((session) => {
+            const km = Number(session.total_distance_km) || 0;
+            const distLabel = formatDistance(km, unit, toUnit) ?? 'Distance unavailable';
+            const isActive = selectedSession?.id === session.id;
+            return (
+              <button
+                key={session.id}
+                type="button"
+                onClick={() => loadSessionDetails(session)}
+                style={{
+                  background: '#FFFFFF',
+                  border: `0.5px solid ${isActive ? '#2B7BC8' : '#E5E5EA'}`,
+                  borderRadius: 10,
+                  padding: 12,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  width: '100%',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                }}
+              >
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 9,
+                    background: '#E6F1FB',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Calendar size={18} strokeWidth={2} color="#2B7BC8" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: '#000000',
+                      letterSpacing: '-0.1px',
+                      margin: '0 0 1px',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {format(new Date(session.started_at), 'd MMMM yyyy')}
+                  </p>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      fontSize: 12,
+                      color: '#6E6E73',
+                    }}
+                  >
+                    <span>Lesson</span>
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        width: 3,
+                        height: 3,
+                        borderRadius: '50%',
+                        background: '#C7C7CC',
+                      }}
+                    />
+                    <span>{distLabel}</span>
+                  </div>
+                </div>
+                <ChevronRight size={12} strokeWidth={1.6} color="#6E6E73" />
+              </button>
+            );
+          })}
+        </div>
+      </CardWrap>
+
+      {selectedSession && (
+        <CardWrap eyebrow={`Selected · ${format(new Date(selectedSession.started_at), 'd MMMM yyyy')}`}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <RouteMapView
+              gpsPoints={gpsPoints}
+              title={`Route — ${format(new Date(selectedSession.started_at), 'd MMMM yyyy')}`}
+              height="180px"
+            />
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                gap: 8,
+              }}
+            >
+              {[
+                {
+                  value:
+                    formatDistance(Number(selectedSession.total_distance_km) || 0, unit, toUnit) ??
+                    'Unavailable',
+                  label: 'Distance',
+                },
+                {
+                  value: selectedSession.avg_speed_kmh
+                    ? `${Math.round(Number(selectedSession.avg_speed_kmh) * speedFactor)} ${speedUnit}`
+                    : '—',
+                  label: 'Avg speed',
+                },
+                {
+                  value: selectedSession.max_speed_kmh
+                    ? `${Math.round(Number(selectedSession.max_speed_kmh) * speedFactor)} ${speedUnit}`
+                    : '—',
+                  label: 'Max speed',
+                },
+              ].map((s) => (
+                <div
+                  key={s.label}
+                  style={{
+                    background: '#FFFFFF',
+                    border: '0.5px solid #E5E5EA',
+                    borderRadius: 10,
+                    padding: 10,
+                    textAlign: 'center',
+                  }}
+                >
+                  <p
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: '#000000',
+                      margin: 0,
+                      fontVariantNumeric: 'tabular-nums',
+                    }}
+                  >
+                    {s.value}
+                  </p>
+                  <p style={{ fontSize: 11, color: '#6E6E73', margin: '2px 0 0' }}>
+                    {s.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {events.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <p
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: '#6E6E73',
+                    letterSpacing: '0.3px',
+                    textTransform: 'uppercase',
+                    margin: 0,
+                  }}
+                >
+                  Events this lesson
+                </p>
+                {events.map((event) => (
+                  <div
+                    key={event.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      padding: 10,
+                      border: '0.5px solid #E5E5EA',
+                      borderRadius: 10,
+                    }}
+                  >
+                    {getEventIcon(event.event_type)}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 500,
+                          color: '#000000',
+                          margin: 0,
+                        }}
+                      >
+                        {formatEventType(event.event_type)}
+                      </p>
+                      {event.notes && (
+                        <p
+                          style={{
+                            fontSize: 11,
+                            color: '#6E6E73',
+                            margin: '2px 0 0',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {event.notes}
+                        </p>
+                      )}
+                    </div>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: '#6E6E73',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {format(new Date(event.recorded_at), 'HH:mm')}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </CardWrap>
+      )}
+    </>
+  );
+}
 
 export default PupilDrivingReport;
