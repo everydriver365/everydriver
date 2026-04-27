@@ -416,191 +416,339 @@ export function TermsSignatureModal({
 
   const needsParentSignature = existingSignature?.requires_parent_signature && !existingSignature?.parent_signature_url;
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            {terms?.title || "Terms & Conditions"}
-          </DialogTitle>
-          <DialogDescription>
-            {existingSignature
-              ? needsParentSignature
-                ? "Parent/guardian signature still required"
-                : `Signed by ${pupilName} on ${new Date(existingSignature.signed_at).toLocaleDateString()}`
-              : `${pupilName} - Please read and sign below`}
-          </DialogDescription>
-        </DialogHeader>
+  const navigate = useNavigate();
+  const displayName = titleCaseName(pupilName) || pupilName;
+  const versionLabel = terms?.version ? `v${terms.version}` : "v1.0";
+  const hasRealTerms = !!terms && !!terms.content && terms.content.trim().length > 5
+    && terms.content.trim().toLowerCase() !== "terms and conds";
 
+  const handleCancel = () => {
+    if (signatureDataUrl || parentSignatureDataUrl) {
+      if (!window.confirm("Discard signed agreement?")) return;
+    }
+    onOpenChange(false);
+  };
+
+  const goToTermsSettings = () => {
+    onOpenChange(false);
+    navigate("/instructor/menu?open=terms");
+  };
+
+  // Premium tile system tokens
+  const COLOR_PRIMARY = "#2B7BC8";
+  const COLOR_TEXT = "#000000";
+  const COLOR_MUTED = "#6E6E73";
+  const COLOR_HAIRLINE = "#E5E5EA";
+  const COLOR_FILL = "#F2F2F4";
+  const COLOR_TINT = "#E6F1FB";
+  const FONT_STACK = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
+
+  // Already-signed view (kept legacy styling — still functional)
+  const renderAlreadySigned = () => (
+    <div className="flex-1 flex flex-col" style={{ fontFamily: FONT_STACK }}>
+      {/* Header */}
+      <div style={{ padding: "12px 16px", borderBottom: `0.5px solid ${COLOR_HAIRLINE}`, display: "flex", alignItems: "center", gap: 12 }}>
+        <button onClick={handleCancel} style={{ background: "transparent", border: "none", padding: 4, fontSize: 14, fontWeight: 500, color: COLOR_PRIMARY, cursor: "pointer" }}>Close</button>
+        <div style={{ flex: 1, textAlign: "center", fontSize: 15, fontWeight: 500, color: COLOR_TEXT, letterSpacing: "-0.2px" }}>Terms &amp; conditions</div>
+        <div style={{ width: 50 }} />
+      </div>
+      <div className="py-6 px-4 space-y-4 overflow-y-auto">
+        <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/30 rounded-2xl">
+          <CheckCircle2 className="h-8 w-8 text-green-600" />
+          <div>
+            <p className="font-medium text-green-800 dark:text-green-200">
+              {existingSignature!.requires_parent_signature ? "Both signatures complete" : "Already signed"}
+            </p>
+            <p className="text-sm text-green-600 dark:text-green-400">
+              Version {existingSignature!.terms.version} signed on {new Date(existingSignature!.signed_at).toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3">
+          <div className="border rounded-2xl p-4">
+            <p className="text-sm text-muted-foreground mb-2">Pupil signature</p>
+            <img src={existingSignature!.signature_url} alt="Pupil Signature" className="max-h-20 border rounded" />
+          </div>
+          {existingSignature!.parent_signature_url && (
+            <div className="border rounded-2xl p-4">
+              <p className="text-sm text-muted-foreground mb-2">
+                Parent/Guardian ({existingSignature!.parent_name}):
+              </p>
+              <img src={existingSignature!.parent_signature_url} alt="Parent Signature" className="max-h-20 border rounded" />
+            </div>
+          )}
+        </div>
+
+        <ScrollArea className="h-32 border rounded-2xl p-4">
+          <div className="prose prose-sm dark:prose-invert whitespace-pre-wrap">{terms!.content}</div>
+        </ScrollArea>
+
+        <Button onClick={handleExportPDF} disabled={exporting} variant="outline" className="w-full">
+          {exporting ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating PDF...</>) : (<><Download className="h-4 w-4 mr-2" />Export signed T&amp;Cs as PDF</>)}
+        </Button>
+      </div>
+    </div>
+  );
+
+  // Gating state — no real T&Cs configured
+  const renderGating = () => (
+    <div className="flex-1 flex flex-col" style={{ fontFamily: FONT_STACK }}>
+      <div style={{ padding: "12px 16px", borderBottom: `0.5px solid ${COLOR_HAIRLINE}`, display: "flex", alignItems: "center", gap: 12 }}>
+        <button onClick={handleCancel} style={{ background: "transparent", border: "none", padding: 4, fontSize: 14, fontWeight: 500, color: COLOR_PRIMARY, cursor: "pointer" }}>Cancel</button>
+        <div style={{ flex: 1, textAlign: "center", fontSize: 15, fontWeight: 500, color: COLOR_TEXT, letterSpacing: "-0.2px" }}>Terms &amp; conditions</div>
+        <div style={{ width: 50 }} />
+      </div>
+      <div style={{ padding: 24, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 14 }}>
+        <div style={{ width: 56, height: 56, borderRadius: 28, background: COLOR_FILL, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <FileText style={{ width: 24, height: 24, color: COLOR_MUTED }} />
+        </div>
+        <div style={{ fontSize: 15, fontWeight: 500, color: COLOR_TEXT, letterSpacing: "-0.2px" }}>No terms configured</div>
+        <div style={{ fontSize: 13, color: COLOR_MUTED, lineHeight: 1.5, maxWidth: 320 }}>
+          Add your terms and conditions in Settings before sharing with pupils.
+        </div>
+        <button
+          onClick={goToTermsSettings}
+          style={{ marginTop: 4, background: COLOR_PRIMARY, color: "#FFFFFF", border: "none", borderRadius: 10, padding: "10px 18px", fontSize: 14, fontWeight: 500, cursor: "pointer", fontFamily: FONT_STACK }}
+        >
+          Add terms
+        </button>
+      </div>
+    </div>
+  );
+
+  // Sign-now (primary) view
+  const renderSigningForm = () => {
+    const t = terms!;
+    const confirmDisabled = !canSubmit || submitting;
+
+    return (
+      <div className="flex-1 flex flex-col overflow-hidden" style={{ fontFamily: FONT_STACK }}>
+        {/* App header */}
+        <div style={{ padding: "12px 16px", borderBottom: `0.5px solid ${COLOR_HAIRLINE}`, display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+          <button
+            onClick={handleCancel}
+            style={{ background: "transparent", border: "none", padding: 4, fontSize: 14, fontWeight: 500, color: COLOR_PRIMARY, cursor: "pointer", flexShrink: 0 }}
+          >
+            Cancel
+          </button>
+          <div style={{ flex: 1, textAlign: "center", fontSize: 15, fontWeight: 500, color: COLOR_TEXT, letterSpacing: "-0.2px" }}>
+            Terms &amp; conditions
+          </div>
+          <button
+            onClick={handleSubmit}
+            disabled={confirmDisabled}
+            style={{
+              background: "transparent", border: "none", padding: 4,
+              fontSize: 14, fontWeight: 500, color: COLOR_PRIMARY,
+              cursor: confirmDisabled ? "not-allowed" : "pointer",
+              opacity: confirmDisabled ? 0.4 : 1,
+              flexShrink: 0,
+            }}
+          >
+            {submitting ? "Confirming…" : "Confirm"}
+          </button>
+        </div>
+
+        {/* Pupil identity bar */}
+        <div style={{ padding: "14px 16px", borderBottom: `0.5px solid ${COLOR_HAIRLINE}`, display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+          <UserAvatar name={displayName} size={36} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11, fontWeight: 500, color: COLOR_MUTED, letterSpacing: "0.3px", textTransform: "uppercase", margin: "0 0 1px" }}>Pupil</div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: COLOR_TEXT, letterSpacing: "-0.1px", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {displayName}
+            </div>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: 16, overflowY: "auto", flex: 1 }}>
+          {isUnder18 && (
+            <div className="flex items-center gap-2 p-3 mb-4 bg-amber-50 dark:bg-amber-950/30 rounded-[10px] border border-amber-200 dark:border-amber-800">
+              <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+              <div className="text-sm">
+                <p className="font-medium text-amber-800 dark:text-amber-200">Under 18 — parent signature required</p>
+                <p className="text-amber-600 dark:text-amber-400">Both pupil and parent/guardian must sign</p>
+              </div>
+            </div>
+          )}
+
+          {/* Agreement section */}
+          <div style={{ fontSize: 11, fontWeight: 500, color: COLOR_MUTED, letterSpacing: "0.3px", textTransform: "uppercase", margin: "0 0 8px" }}>
+            Agreement · {versionLabel}
+          </div>
+          <div
+            data-terms-scroll="modal"
+            onScroll={handleScroll}
+            style={{ background: COLOR_FILL, borderRadius: 10, padding: 14, marginBottom: 16, maxHeight: 180, overflowY: "auto" }}
+          >
+            <div style={{ fontSize: 13, color: COLOR_TEXT, lineHeight: 1.5, whiteSpace: "pre-wrap", margin: 0 }}>
+              {t.content}
+            </div>
+          </div>
+          {!scrolledToBottom && (
+            <div style={{ fontSize: 11, color: COLOR_MUTED, marginTop: -8, marginBottom: 12 }}>
+              Scroll to the bottom of the terms to enable agreement.
+            </div>
+          )}
+
+          {/* Agreement checkbox row */}
+          <button
+            type="button"
+            onClick={() => {
+              if (!agreed && !scrolledToBottom) {
+                toast.error("Please scroll through the terms before agreeing");
+                return;
+              }
+              setAgreed(!agreed);
+            }}
+            style={{
+              background: agreed ? COLOR_TINT : "#FFFFFF",
+              border: `0.5px solid ${agreed ? COLOR_PRIMARY : COLOR_HAIRLINE}`,
+              borderRadius: 10,
+              padding: "12px 14px",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 10,
+              width: "100%",
+              cursor: "pointer",
+              textAlign: "left",
+              marginBottom: 14,
+              fontFamily: FONT_STACK,
+            }}
+          >
+            <span
+              style={{
+                width: 18, height: 18, borderRadius: 5, marginTop: 1, flexShrink: 0,
+                background: agreed ? COLOR_PRIMARY : "#FFFFFF",
+                border: agreed ? "none" : "1.5px solid #C7C7CC",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >
+              {agreed && <Check style={{ width: 11, height: 11, color: "#FFFFFF", strokeWidth: 2.5 }} />}
+            </span>
+            <span style={{ flex: 1, fontSize: 13, color: COLOR_TEXT, lineHeight: 1.4 }}>
+              I have read and agree to the terms above
+            </span>
+          </button>
+
+          {/* Pupil signature */}
+          <div style={{ fontSize: 11, fontWeight: 500, color: COLOR_MUTED, letterSpacing: "0.3px", textTransform: "uppercase", margin: "0 0 8px" }}>
+            Pupil signature
+          </div>
+          <div
+            style={{
+              background: COLOR_FILL,
+              border: `0.5px solid ${COLOR_HAIRLINE}`,
+              borderRadius: 10,
+              padding: "12px",
+              marginBottom: 8,
+              minHeight: 100,
+            }}
+          >
+            <SignaturePad onSignatureChange={setSignatureDataUrl} />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isUnder18 ? 20 : 0 }}>
+            <p style={{ fontSize: 11, color: COLOR_MUTED, margin: 0 }}>Will be timestamped on confirm</p>
+          </div>
+
+          {/* Parent (under-18) — preserved */}
+          {isUnder18 && (
+            <div style={{ marginTop: 20, padding: 12, border: `0.5px solid ${COLOR_HAIRLINE}`, borderRadius: 10, background: "#FFFBEB" }}>
+              <div className="flex items-center gap-2 mb-3">
+                <Badge variant="outline" className="border-amber-500 text-amber-700">
+                  <Users className="h-3 w-3 mr-1" />
+                  Parent/Guardian
+                </Badge>
+              </div>
+
+              <div className="space-y-2 mb-3">
+                <Label htmlFor="parentName" className="text-sm">Parent/Guardian name</Label>
+                <Input
+                  id="parentName"
+                  value={parentName}
+                  onChange={(e) => setParentName(e.target.value)}
+                  placeholder="Enter parent/guardian name"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (!scrolledToBottom || !parentName.trim()) return;
+                  setParentAgreed(!parentAgreed);
+                }}
+                disabled={!scrolledToBottom || !parentName.trim()}
+                style={{
+                  background: parentAgreed ? COLOR_TINT : "#FFFFFF",
+                  border: `0.5px solid ${parentAgreed ? COLOR_PRIMARY : COLOR_HAIRLINE}`,
+                  borderRadius: 10,
+                  padding: "12px 14px",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 10,
+                  width: "100%",
+                  cursor: (!scrolledToBottom || !parentName.trim()) ? "not-allowed" : "pointer",
+                  opacity: (!scrolledToBottom || !parentName.trim()) ? 0.5 : 1,
+                  textAlign: "left",
+                  marginBottom: 12,
+                  fontFamily: FONT_STACK,
+                }}
+              >
+                <span
+                  style={{
+                    width: 18, height: 18, borderRadius: 5, marginTop: 1, flexShrink: 0,
+                    background: parentAgreed ? COLOR_PRIMARY : "#FFFFFF",
+                    border: parentAgreed ? "none" : "1.5px solid #C7C7CC",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}
+                >
+                  {parentAgreed && <Check style={{ width: 11, height: 11, color: "#FFFFFF", strokeWidth: 2.5 }} />}
+                </span>
+                <span style={{ flex: 1, fontSize: 13, color: COLOR_TEXT, lineHeight: 1.4 }}>
+                  I, as parent/guardian of {displayName}, have read and agree to the terms above
+                </span>
+              </button>
+
+              <div style={{ fontSize: 11, fontWeight: 500, color: COLOR_MUTED, letterSpacing: "0.3px", textTransform: "uppercase", margin: "0 0 8px" }}>
+                Parent/guardian signature
+              </div>
+              <div
+                style={{
+                  background: COLOR_FILL,
+                  border: `0.5px solid ${COLOR_HAIRLINE}`,
+                  borderRadius: 10,
+                  padding: 12,
+                  minHeight: 100,
+                }}
+              >
+                <SignaturePad onSignatureChange={setParentSignatureDataUrl} />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); else onOpenChange(o); }}>
+      <DialogContent
+        className="max-w-lg max-h-[90vh] flex flex-col p-0 overflow-hidden gap-0"
+        style={{ background: "#FFFFFF", borderRadius: 16 }}
+      >
         {loading ? (
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 p-6">
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-32" />
           </div>
-        ) : !terms ? (
-          <div className="py-8 text-center">
-            <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No terms and conditions have been set up yet.</p>
-            <p className="text-sm text-muted-foreground mt-2">Go to Settings to create your terms.</p>
-          </div>
+        ) : !hasRealTerms ? (
+          renderGating()
         ) : existingSignature && !needsParentSignature ? (
-          <div className="py-6 space-y-4">
-            <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/30 rounded-2xl">
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
-              <div>
-                <p className="font-medium text-green-800 dark:text-green-200">
-                  {existingSignature.requires_parent_signature ? "Both Signatures Complete" : "Already Signed"}
-                </p>
-                <p className="text-sm text-green-600 dark:text-green-400">
-                  Version {existingSignature.terms.version} signed on {new Date(existingSignature.signed_at).toLocaleString()}
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3">
-              <div className="border rounded-2xl p-4">
-                <p className="text-sm text-muted-foreground mb-2">Pupil Signature:</p>
-                <img src={existingSignature.signature_url} alt="Pupil Signature" className="max-h-20 border rounded" />
-              </div>
-
-              {existingSignature.parent_signature_url && (
-                <div className="border rounded-2xl p-4">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Parent/Guardian ({existingSignature.parent_name}):
-                  </p>
-                  <img src={existingSignature.parent_signature_url} alt="Parent Signature" className="max-h-20 border rounded" />
-                </div>
-              )}
-            </div>
-
-            <ScrollArea className="h-32 border rounded-2xl p-4">
-              <div className="prose prose-sm dark:prose-invert whitespace-pre-wrap">{terms.content}</div>
-            </ScrollArea>
-
-            <Button onClick={handleExportPDF} disabled={exporting} variant="outline" className="w-full">
-              {exporting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Generating PDF...
-                </>
-              ) : (
-                <>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Signed T&Cs as PDF
-                </>
-              )}
-            </Button>
-          </div>
+          renderAlreadySigned()
         ) : (
-          <div className="flex-1 flex flex-col gap-4 overflow-hidden">
-            {isUnder18 && (
-              <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-2xl border border-amber-200 dark:border-amber-800">
-                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
-                <div className="text-sm">
-                  <p className="font-medium text-amber-800 dark:text-amber-200">Under 18 - Parent Signature Required</p>
-                  <p className="text-amber-600 dark:text-amber-400">Both pupil and parent/guardian must sign</p>
-                </div>
-              </div>
-            )}
-
-            <div className="text-xs text-muted-foreground">
-              {!scrolledToBottom && "Please scroll to read all terms before signing"}
-            </div>
-
-            <ScrollArea data-terms-scroll="modal" className="flex-1 border rounded-2xl p-4 min-h-[120px]" onScrollCapture={handleScroll}>
-              <div className="prose prose-sm dark:prose-invert whitespace-pre-wrap">{terms.content}</div>
-            </ScrollArea>
-
-            <div className="space-y-4">
-              {/* Pupil Agreement & Signature */}
-              <div className="space-y-3 p-3 border rounded-2xl">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">Pupil</Badge>
-                  <span className="text-sm font-medium">{pupilName}</span>
-                </div>
-                
-                <div className="flex items-start gap-2">
-                  <Checkbox
-                    id="agree"
-                    checked={agreed}
-                    onCheckedChange={(checked) => {
-                      const next = checked === true;
-                      if (next && !scrolledToBottom) {
-                        toast.error("Please scroll through the terms before agreeing");
-                        return;
-                      }
-                      setAgreed(next);
-                    }}
-                  />
-                  <Label htmlFor="agree" className={`text-sm ${!scrolledToBottom ? "text-muted-foreground" : ""}`}>
-                    I have read and agree to the above terms and conditions
-                  </Label>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm">Pupil Signature</Label>
-                  <SignaturePad onSignatureChange={setSignatureDataUrl} />
-                </div>
-              </div>
-
-              {/* Parent Agreement & Signature (if under 18) */}
-              {isUnder18 && (
-                <div className="space-y-3 p-3 border rounded-2xl border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="border-amber-500 text-amber-700">
-                      <Users className="h-3 w-3 mr-1" />
-                      Parent/Guardian
-                    </Badge>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="parentName" className="text-sm">Parent/Guardian Name</Label>
-                    <Input
-                      id="parentName"
-                      value={parentName}
-                      onChange={(e) => setParentName(e.target.value)}
-                      placeholder="Enter parent/guardian name"
-                    />
-                  </div>
-                  
-                  <div className="flex items-start gap-2">
-                    <Checkbox
-                      id="parentAgree"
-                      checked={parentAgreed}
-                      onCheckedChange={(checked) => setParentAgreed(checked === true)}
-                      disabled={!scrolledToBottom || !parentName.trim()}
-                    />
-                    <Label
-                      htmlFor="parentAgree"
-                      className={`text-sm ${!scrolledToBottom || !parentName.trim() ? "text-muted-foreground" : ""}`}
-                    >
-                      I, as parent/guardian of {pupilName}, have read and agree to the above terms
-                    </Label>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm">Parent/Guardian Signature</Label>
-                    <SignaturePad onSignatureChange={setParentSignatureDataUrl} />
-                  </div>
-                </div>
-              )}
-
-              <Button onClick={handleSubmit} disabled={!canSubmit || submitting} className="w-full">
-                {submitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Submitting...
-                  </>
-                ) : isUnder18 ? (
-                  "Submit Both Signatures"
-                ) : (
-                  "Submit Signature"
-                )}
-              </Button>
-            </div>
-          </div>
+          renderSigningForm()
         )}
       </DialogContent>
     </Dialog>
