@@ -16,6 +16,8 @@ interface PaymentEntry {
   recorded_at: string;
   payment_method: string | null;
   notes: string | null;
+  lesson_id?: string | null;
+  scheduled_lessons?: { lesson_date: string; start_time: string | null } | null;
 }
 
 function getPaymentIcon(method: string | null, amount: number) {
@@ -48,9 +50,11 @@ export function PupilPaymentFeed({ pupilId, brandColour, currentBalance }: Pupil
 
   const fetchPayments = async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from("payment_history")
-      .select("id, amount, recorded_at, payment_method, notes")
+      .select(
+        "id, amount, recorded_at, payment_method, notes, lesson_id, scheduled_lessons:lesson_id(lesson_date, start_time)"
+      )
       .eq("pupil_id", pupilId)
       .order("recorded_at", { ascending: false })
       .limit(100);
@@ -128,6 +132,8 @@ export function PupilPaymentFeed({ pupilId, brandColour, currentBalance }: Pupil
                       <p className="text-[11px] text-muted-foreground">
                         {format(date, "d MMM, HH:mm")}
                         {entry.payment_method && ` · ${entry.payment_method}`}
+                        {entry.scheduled_lessons?.lesson_date &&
+                          ` · For ${format(parseISO(entry.scheduled_lessons.lesson_date), "d MMM")} lesson`}
                       </p>
                     </div>
 

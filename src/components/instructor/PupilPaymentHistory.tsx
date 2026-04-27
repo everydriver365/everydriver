@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { History, PoundSterling, CreditCard, Banknote, Smartphone, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,8 @@ interface PaymentRecord {
   notes: string | null;
   recorded_at: string;
   payout_status: string | null;
+  lesson_id?: string | null;
+  scheduled_lessons?: { lesson_date: string; start_time: string | null } | null;
 }
 
 interface PupilPaymentHistoryProps {
@@ -93,9 +95,11 @@ export function PupilPaymentHistory({
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("payment_history")
-        .select("id, amount, payment_method, notes, recorded_at, payout_status")
+        .select(
+          "id, amount, payment_method, notes, recorded_at, payout_status, lesson_id, scheduled_lessons:lesson_id(lesson_date, start_time)"
+        )
         .eq("pupil_id", pupilId)
         .order("recorded_at", { ascending: false })
         .limit(limit);
@@ -159,6 +163,8 @@ export function PupilPaymentHistory({
                     </div>
                     <div className="text-[10px] text-muted-foreground">
                       {format(new Date(payment.recorded_at), "d MMM, HH:mm")} • {formatPaymentMethod(payment.payment_method)}
+                      {payment.scheduled_lessons?.lesson_date &&
+                        ` • For ${format(parseISO(payment.scheduled_lessons.lesson_date), "d MMM")}`}
                     </div>
                   </div>
                 </div>

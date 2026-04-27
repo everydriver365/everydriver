@@ -115,8 +115,55 @@ export function RecordPaymentModal({
   const [saving, setSaving] = useState(false);
   const [amountFocused, setAmountFocused] = useState(false);
   const [notesFocused, setNotesFocused] = useState(false);
+  const [lessonId, setLessonId] = useState<string | null>(null);
+  const [lessonOptions, setLessonOptions] = useState<
+    { id: string; label: string; sub: string }[]
+  >([]);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
   const paymentLimit = usePaymentLimit();
+
+  // Fetch recent + upcoming lessons for this pupil so the instructor can
+  // optionally link the payment to a specific lesson. Pure additive feature —
+  // selecting nothing keeps the existing "general top-up" behaviour.
+  useEffect(() => {
+    if (!open || !pupilId) return;
+    let cancelled = false;
+    const today = new Date();
+    const from = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const to = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
+    const fmt = (d: Date) => d.toISOString().slice(0, 10);
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("scheduled_lessons")
+        .select("id, lesson_date, start_time, duration_minutes")
+        .eq("pupil_id", pupilId)
+        .gte("lesson_date", fmt(from))
+        .lte("lesson_date", fmt(to))
+        .order("lesson_date", { ascending: false })
+        .order("start_time", { ascending: false })
+        .limit(20);
+      if (cancelled) return;
+      const opts = (data || []).map((l: any) => {
+        const date = new Date(`${l.lesson_date}T${l.start_time ?? "00:00"}`);
+        const datePart = date.toLocaleDateString("en-GB", {
+          weekday: "short",
+          day: "numeric",
+          month: "short",
+        });
+        const timePart = (l.start_time || "").slice(0, 5);
+        const dur = l.duration_minutes ? `${l.duration_minutes}m` : "";
+        return {
+          id: l.id as string,
+          label: `${datePart}${timePart ? ` · ${timePart}` : ""}`,
+          sub: dur,
+        };
+      });
+      setLessonOptions(opts);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, pupilId]);
 
   const displayName = useMemo(() => titleCaseName(pupilName) || pupilName, [pupilName]);
   // Existing convention: balance < 0 means pupil owes. Outstanding shown positively.
@@ -141,6 +188,7 @@ export function RecordPaymentModal({
       setNotes("");
       setAmountFocused(false);
       setNotesFocused(false);
+      setLessonId(null);
     }
     onOpenChange(next);
   };
@@ -152,7 +200,8 @@ export function RecordPaymentModal({
     }
     setSaving(true);
     try {
-      const { error: historyError } = await supabase
+      // 1. Insert payment_history row (with optional lesson link)
+      const { error: historyError } = await (supabase as any)
         .from("payment_history")
         .insert({
           pupil_id: pupilId,
@@ -160,15 +209,18 @@ export function RecordPaymentModal({
           amount: parsedAmount,
           payment_method: paymentMethod,
           notes: notes.trim() || null,
+          lesson_id: lessonId,
         });
       if (historyError) throw historyError;
 
-      const newBalance = currentBalance + parsedAmount;
-      const { error: updateError } = await supabase
-        .from("pupils")
-        .update({ account_balance: newBalance })
-        .eq("id", pupilId);
-      if (updateError) throw updateError;
+      // 2. Atomically credit the pupil balance via the existing RPC.
+      // Using the RPC (instead of read-modify-write) prevents lost updates
+      // when two payments land in the same second.
+      const { error: balErr } = await supabase.rpc("increment_pupil_balance", {
+        p_pupil_id: pupilId,
+        p_amount: parsedAmount,
+      });
+      if (balErr) throw balErr;
 
       toast.success(`${formatCurrency(parsedAmount)} payment recorded for ${displayName}`);
       invalidatePaymentQueries({ pupilId, instructorId });
@@ -462,6 +514,50 @@ export function RecordPaymentModal({
                   }))}
                 />
               </section>
+
+              {/* For lesson (optional) — gracefully hidden if no lessons in window */}
+              {lessonOptions.length > 0 && (
+                <section>
+                  <EyebrowLabel>
+                    For lesson
+                    <span style={{ color: C.optional, fontWeight: 400 }}> — optional</span>
+                  </EyebrowLabel>
+                  <div
+                    style={{
+                      background: C.surface,
+                      border: `0.5px solid transparent`,
+                      borderRadius: 10,
+                      padding: "4px 6px",
+                    }}
+                  >
+                    <select
+                      value={lessonId ?? ""}
+                      onChange={(e) => setLessonId(e.target.value || null)}
+                      aria-label="Link payment to a specific lesson"
+                      style={{
+                        width: "100%",
+                        background: "transparent",
+                        border: "none",
+                        outline: "none",
+                        fontSize: 14,
+                        color: C.text,
+                        fontFamily: FONT_STACK,
+                        padding: "8px 6px",
+                        appearance: "none",
+                        WebkitAppearance: "none",
+                      }}
+                    >
+                      <option value="">Not linked to a lesson</option>
+                      {lessonOptions.map((opt) => (
+                        <option key={opt.id} value={opt.id}>
+                          {opt.label}
+                          {opt.sub ? ` · ${opt.sub}` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </section>
+              )}
 
               {/* Notes */}
               <section>
