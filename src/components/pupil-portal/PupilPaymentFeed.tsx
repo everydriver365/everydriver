@@ -13,7 +13,10 @@ import {
   Clock,
   MapPin,
   FileText,
+  AlertTriangle,
 } from "lucide-react";
+import { PupilPaymentReceiptSheet } from "./PupilPaymentReceiptSheet";
+import { PupilPaymentDisputeSheet } from "./PupilPaymentDisputeSheet";
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
