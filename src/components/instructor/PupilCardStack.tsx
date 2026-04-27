@@ -709,29 +709,40 @@ export function PupilCardStack({
             </div>
           </div>
         )}
-        {/* Collapsed Card */}
+        {/* Collapsed Card — premium tile system */}
         <button
           onClick={handleCardClick}
-          className="w-full text-left flex items-center gap-3"
-          style={{ padding: 14 }}
+          className="w-full text-left flex items-center"
+          style={{ padding: 14, gap: 12, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif' }}
         >
-          {/* Circular Avatar */}
+          {/* Deterministic avatar */}
           <div className="relative shrink-0" style={{ width: 44, height: 44 }}>
-            <Avatar className="h-[44px] w-[44px]">
-              <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
-              <AvatarFallback
-                className="text-white"
+            {pupil.profile_image_url ? (
+              <img
+                src={pupil.profile_image_url}
+                alt={titleCaseName(pupil.name)}
+                style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", display: "block" }}
+              />
+            ) : (
+              <div
                 style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: "50%",
                   background: avatarBg,
-                  fontSize: 14,
+                  color: "#FFFFFF",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 15,
                   fontWeight: 500,
-                  fontFamily: "Inter, sans-serif",
+                  letterSpacing: "0.02em",
                 }}
+                aria-label={titleCaseName(pupil.name)}
               >
                 {getInitials(pupil.name)}
-              </AvatarFallback>
-            </Avatar>
-            {/* Status indicator dot */}
+              </div>
+            )}
             {statusDotColor && (
               <span
                 aria-hidden="true"
@@ -750,9 +761,9 @@ export function PupilCardStack({
             )}
           </div>
 
-          {/* Name + Phone + Stats */}
-          <div className="flex-1 min-w-0" style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            <div className="flex items-center gap-2">
+          {/* Name + meta */}
+          <div className="flex-1 min-w-0" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <div className="flex items-center" style={{ gap: 6, minWidth: 0 }}>
               <h3
                 className="truncate"
                 style={{
@@ -760,10 +771,12 @@ export function PupilCardStack({
                   fontWeight: 500,
                   color: "#000000",
                   letterSpacing: "-0.2px",
-                  fontFamily: "Inter, sans-serif",
+                  lineHeight: 1.25,
+                  margin: 0,
+                  minWidth: 0,
                 }}
               >
-                {pupil.name}
+                {titleCaseName(pupil.name)}
               </h3>
               {isTracking && (
                 <span
@@ -772,74 +785,84 @@ export function PupilCardStack({
                     color: "#C8434F",
                     fontSize: 10,
                     fontWeight: 500,
-                    letterSpacing: "0.3px",
+                    letterSpacing: "0.4px",
                     padding: "2px 6px",
                     borderRadius: 4,
                     textTransform: "uppercase",
-                    fontFamily: "Inter, sans-serif",
                     lineHeight: 1.2,
+                    flexShrink: 0,
                   }}
                 >
                   LIVE
                 </span>
               )}
             </div>
-            {pupil.phone && (
-              <p
-                className="flex items-center"
-                style={{
-                  fontSize: 12,
-                  fontWeight: 400,
-                  color: "#6E6E73",
-                  gap: 5,
-                  fontFamily: "Inter, sans-serif",
-                }}
-              >
-                <Phone size={11} strokeWidth={1.3} aria-hidden="true" />
-                {pupil.phone}
-              </p>
-            )}
+
+            {/* Meta row: lessons · hours · next/last lesson */}
             <div
               className="flex items-center"
               style={{
-                gap: 12,
-                fontFamily: "Inter, sans-serif",
+                gap: 10,
+                fontSize: 12,
+                color: "#6E6E73",
+                lineHeight: 1.35,
                 flexWrap: "wrap",
-                rowGap: 3,
+                rowGap: 2,
               }}
             >
-              <span style={{ fontSize: 12, color: "#6E6E73" }}>
-                {pupil.lessons_completed || 0} {pupil.lessons_completed === 1 ? "lesson" : "lessons"} · {totalHours}h
+              <span style={{ fontVariantNumeric: "tabular-nums" }}>
+                {pupil.lessons_completed || 0} {pupil.lessons_completed === 1 ? "lesson" : "lessons"}
               </span>
+              <span style={{ width: 2, height: 2, borderRadius: "50%", background: "#C7C7CC" }} aria-hidden="true" />
+              <span style={{ fontVariantNumeric: "tabular-nums" }}>{totalHours}h</span>
               {lessonSummary && (
-                <span className="flex items-center" style={{ gap: 5, fontSize: 12, color: "#6E6E73" }}>
-                  <Calendar size={11} strokeWidth={1.3} aria-hidden="true" />
-                  {lessonSummary.type === "next" ? "Next" : "Last"}: {format(parseISO(lessonSummary.date), "d MMM")}
-                </span>
+                <>
+                  <span style={{ width: 2, height: 2, borderRadius: "50%", background: "#C7C7CC" }} aria-hidden="true" />
+                  <span className="flex items-center" style={{ gap: 4 }}>
+                    <Calendar size={11} strokeWidth={1.6} aria-hidden="true" />
+                    {lessonSummary.type === "next" ? "Next" : "Last"}: {format(parseISO(lessonSummary.date), "d MMM")}
+                  </span>
+                </>
               )}
             </div>
+
+            {pupil.phone && (
+              <p
+                className="flex items-center truncate"
+                style={{
+                  fontSize: 12,
+                  fontWeight: 400,
+                  color: "#8E8E93",
+                  gap: 5,
+                  margin: 0,
+                  lineHeight: 1.3,
+                }}
+              >
+                <Phone size={11} strokeWidth={1.6} aria-hidden="true" />
+                {formatPhoneNumber(pupil.phone)}
+              </p>
+            )}
           </div>
 
-          {/* Balance badge — kept (not in spec but live data field; preserves behaviour) */}
-          {(hasDebt || hasCredit) && (
-            <span
-              className="shrink-0"
-              style={{
-                fontSize: 12,
-                fontWeight: 500,
-                padding: "2px 8px",
-                borderRadius: 6,
-                fontFamily: "Inter, sans-serif",
-                background: hasDebt ? "#FBEAEC" : "#E8F3E8",
-                color: hasDebt ? "#C8434F" : "#3B8B3B",
-              }}
-            >
-              £{Math.abs(balance).toFixed(0)}
-            </span>
-          )}
-
-          {/* Chevron */}
-          <ChevronRight size={12} strokeWidth={1.6} color="#6E6E73" className="shrink-0" />
+          {/* Right column: balance + chevron */}
+          <div className="shrink-0 flex items-center" style={{ gap: 8 }}>
+            {(hasDebt || hasCredit) && (
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 500,
+                  padding: "3px 8px",
+                  borderRadius: 6,
+                  fontVariantNumeric: "tabular-nums",
+                  background: hasDebt ? "#FBEAEC" : "#E8F3E8",
+                  color: hasDebt ? "#C8434F" : "#3B8B3B",
+                }}
+              >
+                {hasDebt ? "−" : "+"}£{Math.abs(balance).toFixed(0)}
+              </span>
+            )}
+            <ChevronRight size={14} strokeWidth={1.6} color="#C7C7CC" />
+          </div>
         </button>
 
         {/* Subtle divider */}
