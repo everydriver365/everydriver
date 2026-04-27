@@ -58,6 +58,7 @@ import { format } from "date-fns";
 import { LessonHistory } from "@/components/instructor/LessonHistory";
 import { PupilListSkeleton } from "@/components/ui/skeletons/PupilListSkeleton";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { AddPupilSheet } from "@/components/instructor/pupils/AddPupilSheet";
 import { PupilSplitPane } from "@/components/instructor/PupilSplitPane";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -654,208 +655,17 @@ export default function InstructorPupils() {
         />
       </div>
 
-      {/* Add Pupil Dialog */}
-      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90dvh] overflow-hidden flex flex-col">
-          <DialogHeader className="shrink-0">
-            <DialogTitle>Add New Pupil</DialogTitle>
-            <DialogDescription>
-              Enter the pupil's details below
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 overflow-y-auto flex-1 pr-1 -mr-1">
-            <div className="space-y-2">
-              <Label>Name *</Label>
-              <Input
-                value={addForm.name}
-                onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
-                placeholder="Full name"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Course Type</Label>
-              <Select
-                value={addForm.course_type}
-                onValueChange={(val) => setAddForm({ ...addForm, course_type: val })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select course type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="semi-intensive">Semi-Intensive</SelectItem>
-                  <SelectItem value="intensive">Intensive</SelectItem>
-                  <SelectItem value="refresher">Refresher</SelectItem>
-                  <SelectItem value="pass-plus">Pass Plus</SelectItem>
-                  <SelectItem value="motorway">Motorway</SelectItem>
-                  <SelectItem value="other">Custom</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  value={addForm.email}
-                  onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
-                  placeholder="Email address"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Phone</Label>
-                <Input
-                  value={addForm.phone}
-                  onChange={(e) => setAddForm({ ...addForm, phone: e.target.value })}
-                  placeholder="Phone number"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Address *</Label>
-              <GoogleAddressAutocomplete
-                value={addForm.address}
-                onChange={(address) => setAddForm({ ...addForm, address })}
-                onPostcodeChange={async (postcode) => {
-                  setAddForm(prev => ({ ...prev, postcode }));
-                  // Lookup What3Words when postcode is auto-filled
-                  setIsLookingUpW3W(true);
-                  try {
-                    const { data } = await supabase.functions.invoke('convert-to-what3words', {
-                      body: { postcode }
-                    });
-                    if (data?.what3words) {
-                      setAddForm(prev => ({ ...prev, what3words: data.what3words }));
-                      toast.success(`What3Words: ///${data.what3words}`);
-                    }
-                  } catch (err) {
-                    console.error("What3Words lookup failed:", err);
-                  } finally {
-                    setIsLookingUpW3W(false);
-                  }
-                }}
-                placeholder="Start typing an address..."
-              />
-              <p className="text-xs text-muted-foreground">
-                Type to search – postcode auto-fills when you select
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label>Postcode *</Label>
-              <Input
-                value={addForm.postcode}
-                onChange={(e) => setAddForm({ ...addForm, postcode: e.target.value })}
-                placeholder="Auto-filled from address"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                What3Words
-                {isLookingUpW3W && <Loader2 className="h-3 w-3 animate-spin" />}
-              </Label>
-              <div className="flex gap-2">
-                <span className="flex items-center px-3 bg-muted rounded-l-md border border-r-0 text-muted-foreground text-sm">///</span>
-                <Input
-                  value={addForm.what3words}
-                  onChange={(e) => setAddForm({ ...addForm, what3words: e.target.value })}
-                  placeholder="word.word.word"
-                  className="rounded-l-none"
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Automatically looked up from postcode, or enter manually
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label>Notes</Label>
-              <Textarea
-                value={addForm.notes}
-                onChange={(e) => setAddForm({ ...addForm, notes: e.target.value })}
-                placeholder="Any additional notes..."
-              />
-            </div>
-            <div className="border-t pt-4 mt-4">
-              <p className="text-sm font-medium mb-3 flex items-center gap-2">
-                <CreditCard className="h-4 w-4" />
-                Payment
-              </p>
-              <div className="space-y-2">
-                <Label>Payment Method</Label>
-                <Select
-                  value={addForm.payment_method}
-                  onValueChange={(val) => setAddForm({ ...addForm, payment_method: val })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select payment method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="tbc">TBC — Decide Later</SelectItem>
-                    <SelectItem value="cash">Cash</SelectItem>
-                    <SelectItem value="card">Card</SelectItem>
-                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                    <SelectItem value="send_link">Send Payment Link</SelectItem>
-                    <SelectItem value="take_payment">Take Payment Now (QR)</SelectItem>
-                  </SelectContent>
-                </Select>
-                {addForm.payment_method === 'send_link' && (
-                  <p className="text-xs text-muted-foreground">
-                    A payment link will be sent after saving the pupil
-                  </p>
-                )}
-                {addForm.payment_method === 'take_payment' && (
-                  <p className="text-xs text-muted-foreground">
-                    QR code will be shown after saving the pupil
-                  </p>
-                )}
-              </div>
-            </div>
-            <div className="border-t pt-4 mt-4">
-              <p className="text-sm font-medium mb-3 flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Parent/Guardian (for Parent Portal access)
-              </p>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Date of Birth</Label>
-                  <Input
-                    type="date"
-                    value={addForm.date_of_birth}
-                    onChange={(e) => setAddForm({ ...addForm, date_of_birth: e.target.value })}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Parent signature required on T&Cs for pupils under 18
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Parent Name</Label>
-                    <Input
-                      value={addForm.parent_name}
-                      onChange={(e) => setAddForm({ ...addForm, parent_name: e.target.value })}
-                      placeholder="Parent's name"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Parent Phone</Label>
-                    <Input
-                      value={addForm.parent_phone}
-                      onChange={(e) => setAddForm({ ...addForm, parent_phone: e.target.value })}
-                      placeholder="07XXX XXXXXX"
-                    />
-                  </div>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Parent can use this phone to access the Parent Portal
-              </p>
-            </div>
-            <Button onClick={handleAddPupil} disabled={saving} className="w-full">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Add Pupil
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Add Pupil Sheet (premium iOS design) */}
+      <AddPupilSheet
+        open={isAddOpen}
+        onOpenChange={setIsAddOpen}
+        form={addForm}
+        setForm={setAddForm}
+        saving={saving}
+        onSave={handleAddPupil}
+        isLookingUpW3W={isLookingUpW3W}
+        setIsLookingUpW3W={setIsLookingUpW3W}
+      />
 
       {/* Post-Add Payment Action Dialog */}
       <Dialog open={showPostAddPayment} onOpenChange={setShowPostAddPayment}>
