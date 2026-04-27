@@ -721,6 +721,18 @@ export function CoursePlannerForm({
           </div>
         ) : null}
       </div>
+      <PupilPickerSheet
+        open={pupilPickerOpen}
+        onOpenChange={setPupilPickerOpen}
+        pupils={pupils}
+        onPick={(p) => {
+          setSelectedPupilId(p.id);
+          setSelectedPupilName(p.name);
+          setPupilName(p.name);
+        }}
+        title="Select pupil"
+        searchPlaceholder="Search pupils"
+      />
     </div>
   );
 }
