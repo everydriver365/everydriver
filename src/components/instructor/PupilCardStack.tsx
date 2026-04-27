@@ -1079,14 +1079,14 @@ export function PupilCardStack({
                     <div className="flex-1 min-w-0">
                       {lessonSummary?.type === "next" ? (
                         <>
-                          <p style={{ fontSize: 14, fontWeight: 600, color: "#0F1B2D" }}>
+                          <p style={{ fontSize: 14, fontWeight: 600, color: "#000000" }}>
                             {format(parseISO(lessonSummary.date), "EEE d MMM")}
                           </p>
                           <p style={{ fontSize: 12, color: "#6E6E73", marginTop: 2 }}>Scheduled</p>
                         </>
                       ) : (
                         <>
-                          <p style={{ fontSize: 14, fontWeight: 600, color: "#0F1B2D" }}>Not yet booked</p>
+                          <p style={{ fontSize: 14, fontWeight: 600, color: "#000000" }}>Not yet booked</p>
                           <p style={{ fontSize: 12, color: "#6E6E73", marginTop: 2 }}>
                             Schedule the {lessonsCount === 0 ? "first" : "next"} lesson
                           </p>
@@ -1133,7 +1133,7 @@ export function PupilCardStack({
                         <Calendar size={20} strokeWidth={1.8} color={isUrgent ? "#B8801F" : "#6E6E73"} />
                       </div>
                       <div className="flex-1">
-                        <p style={{ fontSize: 14, fontWeight: 600, color: "#0F1B2D" }}>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: "#000000" }}>
                           {format(testDate, "EEE, d MMM yyyy")}
                         </p>
                         <p style={{ fontSize: 12, color: isUrgent ? "#B8801F" : "#6E6E73", fontWeight: 500, marginTop: 2 }}>
@@ -1182,7 +1182,7 @@ export function PupilCardStack({
                         >
                           <Icon size={18} strokeWidth={1.8} color={tintFg} />
                         </div>
-                        <span className="flex-1 text-left" style={{ fontSize: 14, fontWeight: 500, color: "#0F1B2D" }}>
+                        <span className="flex-1 text-left" style={{ fontSize: 14, fontWeight: 500, color: "#000000" }}>
                           {label}
                         </span>
                         {meta && (
@@ -1212,7 +1212,7 @@ export function PupilCardStack({
                           style={{ borderBottom: (hasEmail || pupil.postcode) ? "1px solid #F0F2F5" : "none" }}
                         >
                           <Phone size={16} strokeWidth={1.8} color="#6E6E73" className="shrink-0" />
-                          <span style={{ fontSize: 14, color: "#0F1B2D" }}>{formattedPhone}</span>
+                          <span style={{ fontSize: 14, color: "#000000" }}>{formattedPhone}</span>
                         </div>
                       )}
                       {hasEmail && (
@@ -1221,7 +1221,7 @@ export function PupilCardStack({
                           style={{ borderBottom: pupil.postcode ? "1px solid #F0F2F5" : "none" }}
                         >
                           <Mail size={16} strokeWidth={1.8} color="#6E6E73" className="shrink-0" />
-                          <span style={{ fontSize: 14, color: "#0F1B2D" }} className="truncate">
+                          <span style={{ fontSize: 14, color: "#000000" }} className="truncate">
                             {pupil.email}
                           </span>
                         </div>
@@ -1229,7 +1229,7 @@ export function PupilCardStack({
                       {pupil.postcode && (
                         <div className="flex items-center gap-3 px-4 py-3">
                           <MapPin size={16} strokeWidth={1.8} color="#6E6E73" className="shrink-0" />
-                          <span style={{ fontSize: 14, color: "#0F1B2D" }}>{pupil.postcode}</span>
+                          <span style={{ fontSize: 14, color: "#000000" }}>{pupil.postcode}</span>
                         </div>
                       )}
                     </div>
