@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { TestRequestForm } from "./TestRequestForm";
 import { TestRequestList } from "./TestRequestList";
 
@@ -25,15 +25,14 @@ export function PupilTestRequests({ pupilId, instructorId, brandColour }: PupilT
               New Request
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>New Test Request</DialogTitle>
-            </DialogHeader>
+          <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden gap-0 border-none [&>button.absolute]:hidden">
+            <DialogTitle className="sr-only">New test request</DialogTitle>
             <TestRequestForm
               instructorId={instructorId}
               pupilId={pupilId}
               mode="pupil"
               onSuccess={() => setFormOpen(false)}
+              onCancel={() => setFormOpen(false)}
             />
           </DialogContent>
         </Dialog>
