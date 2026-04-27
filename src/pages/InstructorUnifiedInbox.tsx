@@ -1,33 +1,442 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { format, formatDistanceToNowStrict, isThisWeek, isYesterday, isToday, differenceInDays } from "date-fns";
+import {
+  MessageSquare,
+  Plus,
+  Megaphone,
+  Loader2,
+  Mic,
+  Search as SearchIcon,
+} from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
-import { InstructorInbox } from "@/components/instructor/InstructorInbox";
-import { AdminChatWindow } from "@/components/instructor/AdminChatWindow";
-import { WhatsAppInbox } from "@/components/instructor/WhatsAppInbox";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
-import { AdminMessageBadge } from "@/components/instructor/AdminMessageBadge";
-import { WhatsAppBadge } from "@/components/instructor/WhatsAppBadge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageCircle, ShieldCheck, Loader2 } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useMessaging, Conversation } from "@/hooks/useMessaging";
+import { useWhatsAppConversations } from "@/hooks/useWhatsAppConversations";
+import { supabase } from "@/integrations/supabase/client";
+import { ChatWindow } from "@/components/instructor/ChatWindow";
+import { AdminChatWindow } from "@/components/instructor/AdminChatWindow";
+import { WhatsAppChat } from "@/components/instructor/WhatsAppChat";
+import { BroadcastMessageSheet } from "@/components/instructor/BroadcastMessageSheet";
+import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
+import { SearchInput } from "@/components/instructor/ui/SearchInput";
+import { EyebrowLabel } from "@/components/instructor/EyebrowLabel";
+import { pupilAvatarColor, pupilAvatarInitial } from "@/lib/pupilAvatarColor";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
 
-// WhatsApp icon as inline SVG since lucide doesn't have it
-function WhatsAppIcon({ className }: { className?: string }) {
+const PAGE_BG = "#F2F2F4";
+const CARD_BG = "#FFFFFF";
+const TEXT = "#000000";
+const MUTED = "#6E6E73";
+const HAIRLINE = "0.5px solid #E5E5EA";
+const BLUE = "#2B7BC8";
+const UNREAD_TINT = "#E6F1FB";
+const RED = "#C8434F";
+const AMBER_TINT = "#FBF1DE";
+const AMBER = "#B8801F";
+
+const FONT_STACK =
+  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
+
+type SourceTab = "in-app" | "whatsapp" | "support";
+type AudienceTab = "pupils" | "admin";
+
+interface Pupil {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  profile_image_url: string | null;
+}
+
+function formatCompactTime(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "Now";
+  if (diffMin < 60) return `${diffMin} min`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24 && isToday(d)) return `${diffHr} hour${diffHr === 1 ? "" : "s"}`;
+  if (isYesterday(d)) return "Yesterday";
+  if (isThisWeek(d, { weekStartsOn: 1 })) return format(d, "EEE");
+  const diffDays = differenceInDays(now, d);
+  if (diffDays < 30) return `${diffDays} days`;
+  return format(d, "d MMM");
+}
+
+function UnreadBadge({ count, onTinted }: { count: number; onTinted?: boolean }) {
+  if (!count || count <= 0) return null;
+  const display = count >= 10 ? "9+" : String(count);
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    <span
+      style={{
+        position: "absolute",
+        top: -2,
+        right: -2,
+        minWidth: 18,
+        height: 18,
+        padding: "0 5px",
+        borderRadius: 999,
+        background: RED,
+        border: `2px solid ${onTinted ? UNREAD_TINT : CARD_BG}`,
+        color: "#FFFFFF",
+        fontSize: 10,
+        fontWeight: 500,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        lineHeight: 1,
+      }}
+    >
+      {display}
+    </span>
+  );
+}
+
+interface ConversationRowProps {
+  name: string;
+  preview: string | null;
+  timestamp: string | null;
+  unreadCount: number;
+  avatarSeed: string;
+  avatarUrl?: string | null;
+  onPress: () => void;
+}
+
+function ConversationRow({
+  name,
+  preview,
+  timestamp,
+  unreadCount,
+  avatarSeed,
+  avatarUrl,
+  onPress,
+}: ConversationRowProps) {
+  const isUnread = unreadCount > 0;
+  const color = pupilAvatarColor(avatarSeed);
+  const initial = pupilAvatarInitial(name);
+  const previewText = preview || "No messages yet";
+  const isEmpty = !preview;
+
+  return (
+    <button
+      type="button"
+      onClick={onPress}
+      style={{
+        background: isUnread ? UNREAD_TINT : "transparent",
+        border: "none",
+        padding: "10px 4px",
+        borderRadius: 8,
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        cursor: "pointer",
+        textAlign: "left",
+        width: "100%",
+        fontFamily: FONT_STACK,
+      }}
+    >
+      <div style={{ position: "relative", flexShrink: 0 }}>
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: "50%",
+            background: avatarUrl ? "transparent" : color,
+            color: "#FFFFFF",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 13,
+            fontWeight: 500,
+            overflow: "hidden",
+          }}
+        >
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={name}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            initial
+          )}
+        </div>
+        <UnreadBadge count={unreadCount} onTinted={isUnread} />
+      </div>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            justifyContent: "space-between",
+            gap: 8,
+            marginBottom: 2,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 500,
+              color: TEXT,
+              letterSpacing: "-0.1px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
+            {name}
+          </span>
+          {timestamp && (
+            <span
+              style={{
+                fontSize: 11,
+                color: isUnread ? BLUE : MUTED,
+                fontWeight: isUnread ? 500 : 400,
+                flexShrink: 0,
+              }}
+            >
+              {formatCompactTime(timestamp)}
+            </span>
+          )}
+        </div>
+        <p
+          style={{
+            fontSize: 12,
+            color: isEmpty ? MUTED : isUnread ? TEXT : MUTED,
+            fontWeight: isUnread && !isEmpty ? 500 : 400,
+            fontStyle: isEmpty ? "italic" : "normal",
+            margin: 0,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {previewText}
+        </p>
+      </div>
+    </button>
+  );
+}
+
+function EmptyState({
+  title,
+  subtitle,
+}: {
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <div
+      style={{
+        padding: "32px 16px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 12,
+        textAlign: "center",
+      }}
+    >
+      <div
+        style={{
+          width: 48,
+          height: 48,
+          borderRadius: 12,
+          background: AMBER_TINT,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <MessageSquare size={24} strokeWidth={2} color={AMBER} />
+      </div>
+      <div>
+        <p style={{ fontSize: 15, fontWeight: 500, color: TEXT, margin: 0 }}>
+          {title}
+        </p>
+        <p style={{ fontSize: 12, color: MUTED, margin: "4px 0 0", lineHeight: 1.4 }}>
+          {subtitle}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// WhatsApp-style chat bubble (rounded with bottom-right tail)
+function WhatsAppGlyph({ size = 13, color }: { size?: number; color: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M4 11c0-3.866 3.582-7 8-7s8 3.134 8 7-3.582 7-8 7c-1.06 0-2.07-.18-3-.5L4 19l1.5-3.5C4.55 14.34 4 12.72 4 11Z"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
 export default function InstructorUnifiedInbox() {
-  const { instructor, loading } = useInstructorAuth();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  const [activeTab, setActiveTab] = useState("pupils");
+  const { instructor, loading: authLoading } = useInstructorAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [source, setSource] = useState<SourceTab>("in-app");
+  const [audience, setAudience] = useState<AudienceTab>("pupils");
+  const [search, setSearch] = useState("");
+  const [showBroadcast, setShowBroadcast] = useState(false);
+  const [showNewChat, setShowNewChat] = useState(false);
+  const [pupils, setPupils] = useState<Pupil[]>([]);
+  const [pupilSearch, setPupilSearch] = useState("");
+  const [loadingPupils, setLoadingPupils] = useState(false);
 
-  if (loading) {
+  const instructorId = instructor?.id || "";
+
+  // In-app pupil messaging
+  const {
+    conversations,
+    loading: convLoading,
+    getOrCreateConversation,
+    fetchConversations,
+  } = useMessaging(instructorId);
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+
+  // WhatsApp
+  const { conversations: waConversations, isLoading: waLoading } =
+    useWhatsAppConversations(instructorId);
+  const [selectedWa, setSelectedWa] = useState<string | null>(null);
+
+  // Support / Admin
+  const [showSupport, setShowSupport] = useState(false);
+
+  // Auto-open conversation when ?pupil=<id> in URL
+  const autoOpenPupilId = searchParams.get("pupil");
+  useEffect(() => {
+    if (!autoOpenPupilId || convLoading || !instructorId) return;
+    const existing = conversations.find((c) => c.pupil_id === autoOpenPupilId);
+    if (existing) {
+      setSelectedConversation(existing);
+      const next = new URLSearchParams(searchParams);
+      next.delete("pupil");
+      setSearchParams(next, { replace: true });
+    } else {
+      void (async () => {
+        const id = await getOrCreateConversation(autoOpenPupilId);
+        if (id) await fetchConversations();
+      })();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoOpenPupilId, convLoading, conversations.length, instructorId]);
+
+  // Filtered in-app conversations
+  const filteredInApp = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return conversations;
+    return conversations.filter((c) =>
+      (c.pupil?.name || "").toLowerCase().includes(q)
+    );
+  }, [conversations, search]);
+
+  // Filtered WhatsApp
+  const filteredWa = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return waConversations;
+    return waConversations.filter(
+      (c) =>
+        (c.visitor_name || "").toLowerCase().includes(q) ||
+        c.phone_number.includes(q) ||
+        (c.last_message || "").toLowerCase().includes(q)
+    );
+  }, [waConversations, search]);
+
+  const totalUnread = conversations.reduce(
+    (sum, c) => sum + (c.unread_count || 0),
+    0
+  );
+
+  // Voice search (uses Web Speech API if available)
+  const handleVoiceSearch = () => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error("Voice search isn't available in this browser");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-GB";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setSearch(transcript);
+    };
+    recognition.onerror = () => toast.error("Couldn't capture voice input");
+    try {
+      recognition.start();
+    } catch {
+      /* noop */
+    }
+  };
+
+  // New chat: load pupils
+  useEffect(() => {
+    if (!showNewChat || !instructorId) return;
+    void (async () => {
+      setLoadingPupils(true);
+      const { data } = await supabase
+        .from("pupils")
+        .select("id, name, phone, email, profile_image_url")
+        .eq("instructor_id", instructorId)
+        .is("deleted_at", null)
+        .order("name");
+      setPupils((data as Pupil[]) || []);
+      setLoadingPupils(false);
+    })();
+  }, [showNewChat, instructorId]);
+
+  const startChatWith = async (pupil: Pupil) => {
+    const id = await getOrCreateConversation(pupil.id);
+    if (!id) {
+      toast.error("Failed to start conversation");
+      return;
+    }
+    await fetchConversations();
+    const conv =
+      conversations.find((c) => c.id === id) ||
+      ({
+        id,
+        instructor_id: instructorId,
+        pupil_id: pupil.id,
+        last_message_at: new Date().toISOString(),
+        last_message_preview: null,
+        created_at: new Date().toISOString(),
+        pupil: {
+          id: pupil.id,
+          name: pupil.name,
+          phone: pupil.phone,
+          profile_image_url: pupil.profile_image_url,
+        },
+      } as any);
+    setSelectedConversation(conv);
+    setShowNewChat(false);
+    setPupilSearch("");
+  };
+
+  if (authLoading) {
     return (
       <InstructorPortalLayout>
         <div className="flex items-center justify-center min-h-[50vh]">
@@ -42,46 +451,496 @@ export default function InstructorUnifiedInbox() {
     return null;
   }
 
+  // === Sub-screens (unchanged behaviour) ===
+  if (selectedConversation) {
+    return (
+      <InstructorPortalLayout>
+        <ChatWindow
+          conversation={selectedConversation}
+          instructorId={instructorId}
+          onBack={() => setSelectedConversation(null)}
+          onDelete={() => {
+            setSelectedConversation(null);
+            void fetchConversations();
+          }}
+          pupilPhone={selectedConversation.pupil?.phone || null}
+        />
+      </InstructorPortalLayout>
+    );
+  }
+
+  if (selectedWa) {
+    const wa = waConversations.find((c) => c.id === selectedWa);
+    if (wa) {
+      return (
+        <InstructorPortalLayout>
+          <WhatsAppChat conversation={wa} onBack={() => setSelectedWa(null)} />
+        </InstructorPortalLayout>
+      );
+    }
+  }
+
+  if (showSupport) {
+    return (
+      <InstructorPortalLayout>
+        <AdminChatWindow
+          instructorId={instructorId}
+          onBack={() => setShowSupport(false)}
+        />
+      </InstructorPortalLayout>
+    );
+  }
+
+  // === Main inbox ===
+  const broadcastEnabled =
+    (instructor as any)?.broadcast_messaging_enabled !== false;
+
+  // Decide what to render in the list area
+  const renderList = () => {
+    // Audience: Admin → support entry (only meaningful for in-app source)
+    if (source === "in-app" && audience === "admin") {
+      return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <ConversationRow
+            name="EveryDriver Support"
+            preview="Contact the admin team for help"
+            timestamp={null}
+            unreadCount={0}
+            avatarSeed="EveryDriver Support"
+            onPress={() => setShowSupport(true)}
+          />
+        </div>
+      );
+    }
+
+    if (source === "support") {
+      return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <ConversationRow
+            name="EveryDriver Support"
+            preview="Tap to open admin chat"
+            timestamp={null}
+            unreadCount={0}
+            avatarSeed="EveryDriver Support"
+            onPress={() => setShowSupport(true)}
+          />
+        </div>
+      );
+    }
+
+    if (source === "whatsapp") {
+      if (waLoading) {
+        return (
+          <div style={{ padding: "32px 0", textAlign: "center" }}>
+            <Loader2 className="h-5 w-5 animate-spin inline-block" color={MUTED} />
+          </div>
+        );
+      }
+      if (filteredWa.length === 0) {
+        const isSearching = search.trim().length > 0;
+        return (
+          <EmptyState
+            title={isSearching ? "No matches" : "No conversations yet"}
+            subtitle={
+              isSearching
+                ? "Try a different search term"
+                : "WhatsApp messages from pupils will appear here"
+            }
+          />
+        );
+      }
+      return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {filteredWa.map((c) => (
+            <ConversationRow
+              key={c.id}
+              name={c.visitor_name || c.phone_number}
+              preview={c.last_message || null}
+              timestamp={c.last_message_at}
+              unreadCount={c.unread_count || 0}
+              avatarSeed={c.id}
+              onPress={() => setSelectedWa(c.id)}
+            />
+          ))}
+        </div>
+      );
+    }
+
+    // In-app + Pupils (default)
+    if (convLoading) {
+      return (
+        <div style={{ padding: "32px 0", textAlign: "center" }}>
+          <Loader2 className="h-5 w-5 animate-spin inline-block" color={MUTED} />
+        </div>
+      );
+    }
+    if (filteredInApp.length === 0) {
+      const isSearching = search.trim().length > 0;
+      let title: string;
+      let subtitle: string;
+      if (isSearching) {
+        title = "No matches";
+        subtitle = "Try a different search term";
+      } else if (conversations.length === 0) {
+        title = "No conversations yet";
+        subtitle = "Start a conversation with a pupil";
+      } else {
+        title = "All caught up";
+        subtitle = "Nothing new in your inbox right now";
+      }
+      return <EmptyState title={title} subtitle={subtitle} />;
+    }
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        {filteredInApp.map((c) => (
+          <ConversationRow
+            key={c.id}
+            name={c.pupil?.name || "Unknown"}
+            preview={c.last_message_preview}
+            timestamp={c.last_message_at}
+            unreadCount={c.unread_count || 0}
+            avatarSeed={c.pupil_id || c.id}
+            avatarUrl={c.pupil?.profile_image_url}
+            onPress={() => setSelectedConversation(c)}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  const showAudienceToggle = source === "in-app";
+  const showBroadcastLink =
+    source === "in-app" && audience === "pupils" && broadcastEnabled;
+
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4">
-        <div>
-          <h1 className="text-2xl font-bold">Inbox</h1>
-          <p className="text-sm text-muted-foreground">All your conversations in one place</p>
+      <div
+        style={{
+          background: PAGE_BG,
+          minHeight: "100%",
+          padding: 16,
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+          fontFamily: FONT_STACK,
+        }}
+      >
+        {/* Hero card */}
+        <div
+          style={{
+            background: CARD_BG,
+            borderRadius: 12,
+            padding: 16,
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              background: AMBER_TINT,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <MessageSquare size={22} strokeWidth={2} color={AMBER} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: MUTED,
+                letterSpacing: "0.3px",
+                textTransform: "uppercase",
+                margin: "0 0 1px",
+              }}
+            >
+              Messages
+            </p>
+            <h1
+              style={{
+                fontSize: 17,
+                fontWeight: 500,
+                color: TEXT,
+                letterSpacing: "-0.3px",
+                margin: 0,
+              }}
+            >
+              Inbox
+            </h1>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowNewChat(true)}
+            style={{
+              background: BLUE,
+              border: "none",
+              borderRadius: 10,
+              padding: "8px 12px",
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              cursor: "pointer",
+              flexShrink: 0,
+              color: "#FFFFFF",
+            }}
+          >
+            <Plus size={13} strokeWidth={2} strokeLinecap="round" />
+            <span style={{ fontSize: 13, fontWeight: 500 }}>New</span>
+          </button>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full grid grid-cols-3 h-10">
-            <TabsTrigger value="pupils" className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <MessageCircle className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Pupils</span>
-              <MessageNotificationBadge instructorId={instructor.id} className="ml-0.5 scale-90" />
-            </TabsTrigger>
-            <TabsTrigger value="enquiries" className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <WhatsAppIcon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Enquiries</span>
-              <WhatsAppBadge instructorId={instructor.id} className="ml-0.5 scale-90" />
-            </TabsTrigger>
-            <TabsTrigger value="admin" className="flex items-center gap-1.5 text-xs sm:text-sm relative">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Support</span>
-              <AdminMessageBadge />
-            </TabsTrigger>
-          </TabsList>
+        {/* Main content card */}
+        <div
+          style={{
+            background: CARD_BG,
+            borderRadius: 12,
+            padding: 16,
+          }}
+        >
+          {/* Source tabs with icon + label */}
+          <div style={{ marginBottom: showAudienceToggle ? 12 : 14 }}>
+            <SegmentedControl<SourceTab>
+              value={source}
+              onChange={setSource}
+              ariaLabel="Message source"
+              options={[
+                {
+                  value: "in-app",
+                  label: (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                      <MessageSquare
+                        size={13}
+                        strokeWidth={2}
+                        color={source === "in-app" ? TEXT : MUTED}
+                      />
+                      In-app
+                    </span>
+                  ),
+                },
+                {
+                  value: "whatsapp",
+                  label: (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                      <WhatsAppGlyph color={source === "whatsapp" ? TEXT : MUTED} />
+                      WhatsApp
+                    </span>
+                  ),
+                },
+                {
+                  value: "support",
+                  label: (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                      <MessageSquare
+                        size={13}
+                        strokeWidth={2}
+                        color={source === "support" ? TEXT : MUTED}
+                      />
+                      Support
+                    </span>
+                  ),
+                },
+              ]}
+            />
+          </div>
 
-          <TabsContent value="pupils" className="mt-4">
-            <InstructorInbox instructorId={instructor.id} />
-          </TabsContent>
+          {/* Audience sub-toggle (only on In-app) */}
+          {showAudienceToggle && (
+            <div style={{ marginBottom: 12 }}>
+              <SegmentedControl<AudienceTab>
+                value={audience}
+                onChange={setAudience}
+                ariaLabel="Audience"
+                options={[
+                  { value: "pupils", label: "Pupils" },
+                  { value: "admin", label: "Admin" },
+                ]}
+              />
+            </div>
+          )}
 
-          <TabsContent value="enquiries" className="mt-4">
-            <WhatsAppInbox instructorId={instructor.id} />
-          </TabsContent>
+          {/* Search */}
+          <div
+            style={{
+              marginBottom: 12,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              background: "#F2F2F4",
+              borderRadius: 10,
+              padding: "9px 12px",
+            }}
+          >
+            <SearchIcon size={16} strokeWidth={1.5} color={MUTED} aria-hidden="true" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search conversations"
+              aria-label="Search conversations"
+              style={{
+                flex: 1,
+                minWidth: 0,
+                background: "transparent",
+                border: "none",
+                outline: "none",
+                padding: 0,
+                fontSize: 13,
+                color: TEXT,
+                fontFamily: FONT_STACK,
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleVoiceSearch}
+              aria-label="Voice search"
+              style={{
+                background: "transparent",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                color: MUTED,
+              }}
+            >
+              <Mic size={14} strokeWidth={1.5} />
+            </button>
+          </div>
 
-          <TabsContent value="admin" className="mt-4">
-            <AdminChatWindow instructorId={instructor.id} />
-          </TabsContent>
-        </Tabs>
+          {/* Section header + Broadcast link */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 8,
+            }}
+          >
+            <EyebrowLabel className="!m-0">Conversations</EyebrowLabel>
+            {showBroadcastLink && (
+              <button
+                type="button"
+                onClick={() => setShowBroadcast(true)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  cursor: "pointer",
+                  color: BLUE,
+                }}
+              >
+                <Megaphone size={12} strokeWidth={1.8} />
+                <span style={{ fontSize: 12, fontWeight: 500 }}>Broadcast</span>
+              </button>
+            )}
+          </div>
+
+          {/* List */}
+          {renderList()}
+        </div>
       </div>
+
+      {/* New chat dialog */}
+      <Dialog open={showNewChat} onOpenChange={setShowNewChat}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Start new chat</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="relative">
+              <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search pupils"
+                value={pupilSearch}
+                onChange={(e) => setPupilSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <ScrollArea className="h-[300px]">
+              {loadingPupils ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                </div>
+              ) : (
+                (() => {
+                  const existingIds = new Set(conversations.map((c) => c.pupil_id));
+                  const q = pupilSearch.trim().toLowerCase();
+                  const matches = pupils.filter(
+                    (p) =>
+                      !existingIds.has(p.id) &&
+                      (!q ||
+                        p.name.toLowerCase().includes(q) ||
+                        (p.email || "").toLowerCase().includes(q) ||
+                        (p.phone || "").includes(pupilSearch))
+                  );
+                  if (matches.length === 0) {
+                    return (
+                      <div className="text-center py-8 text-muted-foreground text-sm">
+                        {pupils.length === 0
+                          ? "No pupils found"
+                          : "All pupils already have conversations"}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="space-y-1">
+                      {matches.map((p) => (
+                        <button
+                          key={p.id}
+                          onClick={() => startChatWith(p)}
+                          className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted text-left"
+                        >
+                          <div
+                            style={{
+                              width: 36,
+                              height: 36,
+                              borderRadius: "50%",
+                              background: pupilAvatarColor(p.id),
+                              color: "#FFFFFF",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: 13,
+                              fontWeight: 500,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {pupilAvatarInitial(p.name)}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{p.name}</p>
+                            {p.phone && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {p.phone}
+                              </p>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()
+              )}
+            </ScrollArea>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <BroadcastMessageSheet
+        open={showBroadcast}
+        onOpenChange={setShowBroadcast}
+        instructorId={instructorId}
+      />
     </InstructorPortalLayout>
   );
 }
