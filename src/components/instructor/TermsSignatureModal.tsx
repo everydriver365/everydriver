@@ -799,7 +799,14 @@ export function TermsSignatureModal({
                   minHeight: 100,
                 }}
               >
-                <SignaturePad onSignatureChange={setParentSignatureDataUrl} />
+                <SignaturePad
+                  onSignatureChange={(dataUrl) => {
+                    const previouslyHad = !!parentSignatureDataUrl;
+                    setParentSignatureDataUrl(dataUrl);
+                    if (dataUrl && !previouslyHad) logLegal("signature_captured", { signer: "parent", parent_name: parentName.trim() || null });
+                    if (!dataUrl && previouslyHad) logLegal("signature_cleared", { signer: "parent" });
+                  }}
+                />
               </div>
             </div>
           )}
