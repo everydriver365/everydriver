@@ -42,9 +42,6 @@ verify_jwt = false
 [functions.klarna-session]
 verify_jwt = false
 
-[functions.npi-checkout]
-verify_jwt = false
-
 [functions.square-checkout]
 verify_jwt = false
 
@@ -57,16 +54,7 @@ verify_jwt = false
 [functions.payment-health]
 verify_jwt = false
 
-[functions.woocommerce-checkout]
-verify_jwt = false
-
-[functions.woocommerce-update-order]
-verify_jwt = false
-
 [functions.generate-route-report]
-verify_jwt = false
-
-[functions.npi-hosted-fields]
 verify_jwt = false
 
 [functions.damoov-register]
@@ -130,24 +118,6 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.square-booking-wallet-payment]
-verify_jwt = false
-
-[functions.payment-intent-create]
-verify_jwt = false
-
-[functions.payment-direct-sale]
-verify_jwt = false
-
-[functions.applepay-validate-merchant]
-verify_jwt = false
-
-[functions.elavon-checkout]
-verify_jwt = false
-
-[functions.cardstream-hostedfields-init]
-verify_jwt = false
-
-[functions.cardstream-direct-sale]
 verify_jwt = false
 
 [functions.traccar-webhook]
@@ -288,5 +258,3 @@ verify_jwt = false
 [functions.auto-stop-lesson-tracker]
 verify_jwt = false
 
-[functions.radius-dashcam-probe]
-verify_jwt = false
