@@ -443,6 +443,358 @@ function TabCountPill({ count, active }: { count: number; active: boolean }) {
   );
 }
 
+// ===== Pupil-picker helper components =====
+
+const RECENT_DAYS = 30;
+const RECENT_MAX = 8;
+
+function DataQualityBadge() {
+  return (
+    <span
+      style={{
+        background: AMBER_TINT,
+        color: AMBER,
+        fontSize: 9,
+        fontWeight: 500,
+        letterSpacing: "0.3px",
+        padding: "2px 5px",
+        borderRadius: 3,
+        textTransform: "uppercase",
+        marginLeft: 6,
+        flexShrink: 0,
+      }}
+    >
+      Review
+    </span>
+  );
+}
+
+function PupilPickerRow({
+  pupil,
+  timestamp,
+  flagged,
+  issueLabel,
+  onPick,
+}: {
+  pupil: Pupil;
+  timestamp?: string;
+  flagged: boolean;
+  issueLabel?: string | null;
+  onPick: () => void;
+}) {
+  const displayName = titleCaseName(pupil.name);
+  const formattedPhone = formatPhoneNumber(pupil.phone);
+  const subtitle =
+    flagged && issueLabel
+      ? formattedPhone
+        ? `${formattedPhone} · ${issueLabel}`
+        : issueLabel
+      : formattedPhone;
+
+  return (
+    <button
+      type="button"
+      onClick={onPick}
+      style={{
+        width: "100%",
+        background: "transparent",
+        border: "none",
+        padding: "10px 8px",
+        borderRadius: 8,
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        cursor: "pointer",
+        textAlign: "left",
+        opacity: flagged ? 0.6 : 1,
+      }}
+    >
+      {flagged ? (
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            background: MUTED,
+            color: "#FFFFFF",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <AlertCircle size={18} strokeWidth={2} color="#FFFFFF" />
+        </div>
+      ) : pupil.profile_image_url ? (
+        <img
+          src={pupil.profile_image_url}
+          alt=""
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            objectFit: "cover",
+            flexShrink: 0,
+          }}
+        />
+      ) : (
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            background: pupilAvatarColor(pupil.id),
+            color: "#FFFFFF",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 12,
+            fontWeight: 500,
+            flexShrink: 0,
+          }}
+        >
+          {pupilAvatarInitial(pupil.name)}
+        </div>
+      )}
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", minWidth: 0 }}>
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 500,
+              color: TEXT,
+              letterSpacing: "-0.1px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              minWidth: 0,
+            }}
+          >
+            {displayName || "Unnamed"}
+          </span>
+          {flagged && <DataQualityBadge />}
+        </div>
+        {subtitle && (
+          <p
+            style={{
+              fontSize: 12,
+              color: MUTED,
+              margin: "1px 0 0",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {subtitle}
+          </p>
+        )}
+      </div>
+
+      {timestamp && (
+        <span
+          style={{
+            fontSize: 11,
+            color: MUTED,
+            flexShrink: 0,
+            marginLeft: 8,
+          }}
+        >
+          {timestamp}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function PickerEmptyState({
+  variant,
+  search,
+  onAddPupil,
+}: {
+  variant: "no-match" | "no-pupils";
+  search?: string;
+  onAddPupil?: () => void;
+}) {
+  const isNoMatch = variant === "no-match";
+  const truncated =
+    search && search.length > 30 ? `${search.slice(0, 30)}…` : search;
+  return (
+    <div
+      style={{
+        padding: "32px 16px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 12,
+        textAlign: "center",
+      }}
+    >
+      <div
+        style={{
+          width: 48,
+          height: 48,
+          borderRadius: 12,
+          background: isNoMatch ? "#F2F2F4" : "#E8F3E8",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {isNoMatch ? (
+          <SearchIcon size={24} strokeWidth={2} color={MUTED} />
+        ) : (
+          <Users size={24} strokeWidth={2} color="#3B8B3B" />
+        )}
+      </div>
+      <h3 style={{ fontSize: 15, fontWeight: 500, color: TEXT, margin: 0 }}>
+        {isNoMatch ? `No pupils match “${truncated}”` : "No pupils yet"}
+      </h3>
+      <p style={{ fontSize: 12, color: MUTED, margin: 0 }}>
+        {isNoMatch
+          ? "Try a different search term"
+          : "Add your first pupil to start messaging"}
+      </p>
+      {!isNoMatch && onAddPupil && (
+        <button
+          type="button"
+          onClick={onAddPupil}
+          style={{
+            background: BLUE,
+            color: "#FFFFFF",
+            border: "none",
+            borderRadius: 10,
+            padding: "10px 16px",
+            fontSize: 14,
+            fontWeight: 500,
+            cursor: "pointer",
+            marginTop: 4,
+          }}
+        >
+          Add pupil
+        </button>
+      )}
+    </div>
+  );
+}
+
+function NewChatBody({
+  pupils,
+  conversations,
+  search,
+  onPick,
+}: {
+  pupils: Pupil[];
+  conversations: Conversation[];
+  search: string;
+  onPick: (p: Pupil) => void;
+}) {
+  const q = search.trim().toLowerCase();
+
+  // Build "recent" map: pupil_id -> last_message_at within window
+  const cutoff = Date.now() - RECENT_DAYS * 24 * 60 * 60 * 1000;
+  const recentMap = new Map<string, string>();
+  for (const c of conversations) {
+    if (!c.pupil_id || !c.last_message_at) continue;
+    const t = new Date(c.last_message_at).getTime();
+    if (Number.isFinite(t) && t >= cutoff) {
+      const prev = recentMap.get(c.pupil_id);
+      if (!prev || new Date(prev).getTime() < t) {
+        recentMap.set(c.pupil_id, c.last_message_at);
+      }
+    }
+  }
+
+  const matchesQuery = (p: Pupil) => {
+    if (!q) return true;
+    const name = (p.name || "").toLowerCase();
+    const phoneDigits = (p.phone || "").replace(/\D/g, "");
+    const searchDigits = q.replace(/\D/g, "");
+    return (
+      name.includes(q) ||
+      (p.email || "").toLowerCase().includes(q) ||
+      (!!searchDigits && phoneDigits.includes(searchDigits))
+    );
+  };
+
+  const recentSorted = pupils
+    .filter((p) => recentMap.has(p.id))
+    .sort(
+      (a, b) =>
+        new Date(recentMap.get(b.id)!).getTime() -
+        new Date(recentMap.get(a.id)!).getTime(),
+    )
+    .slice(0, RECENT_MAX);
+  const recentVisible = recentSorted.filter(matchesQuery);
+  const recentIds = new Set(recentSorted.map((p) => p.id));
+
+  const allVisible = pupils.filter(
+    (p) => !recentIds.has(p.id) && matchesQuery(p),
+  );
+
+  if (pupils.length === 0) {
+    return <PickerEmptyState variant="no-pupils" />;
+  }
+  if (recentVisible.length === 0 && allVisible.length === 0) {
+    return <PickerEmptyState variant="no-match" search={search} />;
+  }
+
+  const renderRow = (p: Pupil, withTimestamp: boolean) => {
+    const issues = detectDataQualityIssues(p, pupils);
+    const flagged = issues.length > 0;
+    let issueLabel: string | null = null;
+    if (flagged) {
+      if (issues.includes("duplicate-phone")) {
+        const dupName = findPhoneDuplicateName(p, pupils);
+        issueLabel = dupName
+          ? `duplicate of ${titleCaseName(dupName)}`
+          : "duplicate phone";
+      } else if (issues.includes("invalid-phone")) {
+        issueLabel = "invalid format";
+      } else if (issues.includes("invalid-name")) {
+        issueLabel = "name needs review";
+      }
+    }
+    const ts = withTimestamp ? compactRelative(recentMap.get(p.id)!) : undefined;
+    return (
+      <PupilPickerRow
+        key={p.id}
+        pupil={p}
+        timestamp={ts}
+        flagged={flagged}
+        issueLabel={issueLabel}
+        onPick={() => onPick(p)}
+      />
+    );
+  };
+
+  return (
+    <div style={{ paddingBottom: 12 }}>
+      {recentVisible.length > 0 && (
+        <div style={{ padding: "0 16px 4px" }}>
+          <EyebrowLabel>Recent · {recentVisible.length}</EyebrowLabel>
+          <div style={{ padding: "0 8px", display: "flex", flexDirection: "column" }}>
+            {recentVisible.map((p) => renderRow(p, true))}
+          </div>
+        </div>
+      )}
+
+      {recentVisible.length > 0 && allVisible.length > 0 && (
+        <div style={{ height: 4, background: "#F2F2F4", margin: "8px 0" }} />
+      )}
+
+      {allVisible.length > 0 && (
+        <div style={{ padding: "4px 16px" }}>
+          <EyebrowLabel>All pupils · {allVisible.length}</EyebrowLabel>
+          <div style={{ padding: "0 8px", display: "flex", flexDirection: "column" }}>
+            {allVisible.map((p) => renderRow(p, false))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function InstructorUnifiedInbox() {
   const navigate = useNavigate();
   const { instructor, loading: authLoading } = useInstructorAuth();
