@@ -163,6 +163,8 @@ export function PupilPaymentHistory({
                     </div>
                     <div className="text-[10px] text-muted-foreground">
                       {format(new Date(payment.recorded_at), "d MMM, HH:mm")} • {formatPaymentMethod(payment.payment_method)}
+                      {payment.scheduled_lessons?.lesson_date &&
+                        ` • For ${format(parseISO(payment.scheduled_lessons.lesson_date), "d MMM")}`}
                     </div>
                   </div>
                 </div>
