@@ -69,6 +69,10 @@ export default function InstructorSignup() {
           setError(signUpError.message);
         }
       } else {
+        // Fire-and-forget signup_started funnel event (instructor row may not exist yet — null instructor_id is allowed)
+        void import("@/lib/funnelTracker").then(({ trackFunnelEvent }) =>
+          trackFunnelEvent("signup_started", { data: { plan: selectedPlan } })
+        );
         toast.success("Account created! Let's set up your profile.");
         navigate(`/instructor-app/onboarding?step=1&plan=${selectedPlan}${promo ? `&promo=${promo}` : ""}`);
       }

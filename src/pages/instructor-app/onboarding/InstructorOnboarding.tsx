@@ -4,6 +4,20 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { trackFunnelEvent, type FunnelEvent } from "@/lib/funnelTracker";
+
+const STEP_TO_EVENT: Record<number, FunnelEvent | undefined> = {
+  1: "onboarding_personal_details",
+  2: "onboarding_listing_preference",
+  3: "onboarding_location",
+  4: "onboarding_vehicle",
+  5: "onboarding_qualifications",
+  6: "onboarding_services",
+  7: "onboarding_plan_selected",
+  8: "onboarding_website",
+  9: "onboarding_domain_hosting",
+  10: "onboarding_payment",
+};
 
 // Step components
 import { StepPersonalDetails } from "./steps/StepPersonalDetails";
@@ -299,6 +313,10 @@ export default function InstructorOnboarding() {
 
   const handleNext = async () => {
     await saveProgress();
+    const currentEvent = STEP_TO_EVENT[currentStep];
+    if (currentEvent && resolvedInstructorId) {
+      void trackFunnelEvent(currentEvent, { instructorId: resolvedInstructorId });
+    }
     const nextStep = getNextStep(currentStep);
     if (nextStep <= 10) {
       goToStep(nextStep);
@@ -424,6 +442,9 @@ export default function InstructorOnboarding() {
       }
       
       // Go to complete step (10)
+      if (instructorId) {
+        void trackFunnelEvent("onboarding_completed", { instructorId });
+      }
       goToStep(10);
     } catch (err) {
       toast.error("Failed to complete setup");
