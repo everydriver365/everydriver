@@ -44,6 +44,7 @@ import { CancellationPolicyEditor } from "@/components/instructor/CancellationPo
 import { NoShowPolicySettings } from "@/components/instructor/NoShowPolicySettings";
 import { ReferralSettingsCard } from "@/components/instructor/ReferralSettingsCard";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
+import NotificationPreferencesPanel from "@/components/instructor/notifications/NotificationPreferencesPanel";
 import { PupilAppBrandingEditor } from "@/components/instructor/PupilAppBrandingEditor";
 import { PupilBookingSettingsEditor } from "@/components/instructor/PupilBookingSettingsEditor";
 import { GoogleServiceAccountSetup } from "@/components/instructor/GoogleServiceAccountSetup";
@@ -588,7 +589,12 @@ export default function InstructorMenu() {
       case "dashboard-layout":
         return <DashboardLayoutManager instructorId={instructorId} />;
       case "notifications":
-        return <PushNotificationSettings instructorId={instructorId} />;
+        return (
+          <div className="flex flex-col gap-4">
+            <PushNotificationSettings instructorId={instructorId} />
+            <NotificationPreferencesPanel instructorId={instructorId} />
+          </div>
+        );
       case "gdpr":
         return <GDPRRetentionWidget instructorId={instructorId} />;
       case "data-backup":
