@@ -96,7 +96,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
       const { data } = await (supabase as any)
         .from("payment_history")
         .select(
-          "id, amount, recorded_at, payment_method, notes, lesson_id, scheduled_lessons:lesson_id(lesson_date, start_time, pickup_postcode, pickup_location, lesson_type)"
+          "id, amount, recorded_at, payment_method, notes, lesson_id, scheduled_lessons:lesson_id(lesson_date, start_time, pickup_postcode, pickup_location, lesson_type, notes)"
         )
         .eq("pupil_id", pupilId)
         .order("recorded_at", { ascending: false })
