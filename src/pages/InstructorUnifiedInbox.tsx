@@ -1092,6 +1092,7 @@ export default function InstructorUnifiedInbox() {
                         color={source === "in-app" ? TEXT : MUTED}
                       />
                       In-app
+                      <TabCountPill count={inAppUnread} active={source === "in-app"} />
                     </span>
                   ),
                 },
@@ -1101,6 +1102,7 @@ export default function InstructorUnifiedInbox() {
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                       <WhatsAppGlyph color={source === "whatsapp" ? TEXT : MUTED} />
                       WhatsApp
+                      <TabCountPill count={waUnread} active={source === "whatsapp"} />
                     </span>
                   ),
                 },
@@ -1114,6 +1116,7 @@ export default function InstructorUnifiedInbox() {
                         color={source === "support" ? TEXT : MUTED}
                       />
                       Support
+                      <TabCountPill count={supportUnread} active={source === "support"} />
                     </span>
                   ),
                 },
