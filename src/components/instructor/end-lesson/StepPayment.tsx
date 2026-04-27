@@ -16,6 +16,8 @@ interface StepPaymentProps {
   instructorId: string;
   currentBalance: number;
   lessonCost: number;
+  /** Optional — when provided, the payment row is linked to this lesson */
+  lessonId?: string;
   paymentQrUrl?: string | null;
   onPaymentRecorded: () => void;
   onSkip: () => void;
