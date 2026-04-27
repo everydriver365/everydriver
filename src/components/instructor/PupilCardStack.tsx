@@ -48,6 +48,7 @@ import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHisto
 import { PupilPaymentHistory } from "@/components/instructor/PupilPaymentHistory";
 import { PupilCreditBreakdown } from "@/components/instructor/PupilCreditBreakdown";
 import { RecordPaymentModal } from "@/components/instructor/RecordPaymentModal";
+import { PupilNoteSheet } from "@/components/instructor/PupilNoteSheet";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { SendPaymentReminderButton } from "@/components/instructor/SendPaymentReminderButton";
 import { DrivingSyllabus } from "@/components/instructor/DrivingSyllabus";
