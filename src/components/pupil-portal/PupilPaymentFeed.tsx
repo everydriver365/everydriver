@@ -240,19 +240,35 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
           </Select>
         </div>
 
-        {filtersActive && (
+        <div className="flex items-center justify-between gap-2">
+          {filtersActive ? (
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("");
+                setDatePreset("all");
+                setLinkFilter("all");
+              }}
+              className="text-[11px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+            >
+              Clear filters · {filtered.length} of {payments.length}
+            </button>
+          ) : (
+            <span className="text-[11px] text-muted-foreground">
+              {payments.length} {payments.length === 1 ? "payment" : "payments"}
+            </span>
+          )}
           <button
             type="button"
-            onClick={() => {
-              setSearch("");
-              setDatePreset("all");
-              setLinkFilter("all");
-            }}
-            className="text-[11px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+            onClick={handleExportCsv}
+            disabled={filtered.length === 0}
+            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-foreground/80 hover:text-foreground border border-border rounded-md px-2 py-1 disabled:opacity-40 disabled:cursor-not-allowed"
+            aria-label="Export payments as CSV"
           >
-            Clear filters · {filtered.length} of {payments.length}
+            <Download className="h-3 w-3" />
+            Export CSV
           </button>
-        )}
+        </div>
       </div>
 
       {loading ? (
