@@ -944,6 +944,7 @@ function CardWrap({
 
 function SessionsTab({
   sessions,
+  allEvents,
   selectedSession,
   gpsPoints,
   events,
@@ -954,6 +955,7 @@ function SessionsTab({
   formatEventType,
 }: {
   sessions: TelematicsSession[];
+  allEvents: DrivingEvent[];
   selectedSession: TelematicsSession | null;
   gpsPoints: GPSPoint[];
   events: DrivingEvent[];
