@@ -123,6 +123,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [receiptId, setReceiptId] = useState<string | null>(null);
   const [disputeId, setDisputeId] = useState<string | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const toggleExpanded = (id: string) =>
     setExpandedId((prev) => (prev === id ? null : id));
