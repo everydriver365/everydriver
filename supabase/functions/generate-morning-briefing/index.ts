@@ -38,13 +38,24 @@ serve(async (req) => {
       .eq("id", instructor_id)
       .maybeSingle();
 
-    // Fetch pupils with negative balance (overdue)
-    const { data: overduePupils } = await supabase
+    // Fetch pupils with negative balance (overdue) — filter out corrupted-looking names server-side
+    const { data: overduePupilsRaw } = await supabase
       .from("pupils")
       .select("name, account_balance")
       .eq("instructor_id", instructor_id)
       .is("deleted_at", null)
       .lt("account_balance", 0);
+
+    const looksCorrupted = (name: string | null | undefined) => {
+      if (!name) return true;
+      const n = name.trim();
+      if (n.length < 3) return true;
+      if (!/[aeiouAEIOU]/.test(n)) return true; // no vowels → likely junk
+      // 3+ same consecutive chars (e.g. "Hdhdhhd" has "hhh"-style runs)
+      if (/(.)\1{2,}/i.test(n)) return true;
+      return false;
+    };
+    const overduePupils = (overduePupilsRaw || []).filter(p => !looksCorrupted(p.name));
 
     // Fetch tests this week
     const { data: upcomingTests } = await supabase
