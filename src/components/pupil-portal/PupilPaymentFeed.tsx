@@ -9,7 +9,13 @@ import {
   X,
   Link2,
   Download,
+  Calendar,
+  Clock,
+  MapPin,
+  FileText,
 } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
+import { AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -40,6 +46,7 @@ interface PaymentEntry {
     pickup_postcode: string | null;
     pickup_location: string | null;
     lesson_type: string | null;
+    notes: string | null;
   } | null;
 }
 
@@ -82,6 +89,10 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
   const [datePreset, setDatePreset] = useState<DatePreset>("all");
   const [linkFilter, setLinkFilter] = useState<LinkFilter>("all");
   const [weekday, setWeekday] = useState<WeekdayFilter>("all");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const toggleExpanded = (id: string) =>
+    setExpandedId((prev) => (prev === id ? null : id));
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -89,7 +100,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
       const { data } = await (supabase as any)
         .from("payment_history")
         .select(
-          "id, amount, recorded_at, payment_method, notes, lesson_id, scheduled_lessons:lesson_id(lesson_date, start_time, pickup_postcode, pickup_location, lesson_type)"
+          "id, amount, recorded_at, payment_method, notes, lesson_id, scheduled_lessons:lesson_id(lesson_date, start_time, pickup_postcode, pickup_location, lesson_type, notes)"
         )
         .eq("pupil_id", pupilId)
         .order("recorded_at", { ascending: false })
@@ -347,6 +358,9 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
                 const Icon = getPaymentIcon(entry.payment_method, entry.amount);
                 const colorClass = getPaymentColor(entry.amount);
                 const date = parseISO(entry.recorded_at);
+                const lesson = entry.scheduled_lessons;
+                const hasLesson = !!lesson?.lesson_date;
+                const isExpanded = expandedId === entry.id;
 
                 return (
                   <motion.div
@@ -354,48 +368,127 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: Math.min(i, 10) * 0.02 }}
-                    className="flex items-center gap-3 px-4 py-3"
+                    className="flex flex-col"
                   >
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                      style={{
-                        backgroundColor:
-                          entry.amount > 0
-                            ? "hsl(142 71% 45% / 0.12)"
-                            : "hsl(0 0% 50% / 0.08)",
-                      }}
+                    <button
+                      type="button"
+                      onClick={() => hasLesson && toggleExpanded(entry.id)}
+                      disabled={!hasLesson}
+                      aria-expanded={isExpanded}
+                      aria-label={
+                        hasLesson
+                          ? isExpanded
+                            ? "Hide lesson details"
+                            : "Show lesson details"
+                          : undefined
+                      }
+                      className={`flex items-center gap-3 px-4 py-3 text-left w-full ${
+                        hasLesson
+                          ? "hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer"
+                          : "cursor-default"
+                      }`}
                     >
-                      <Icon className={`h-5 w-5 ${colorClass}`} />
-                    </div>
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                        style={{
+                          backgroundColor:
+                            entry.amount > 0
+                              ? "hsl(142 71% 45% / 0.12)"
+                              : "hsl(0 0% 50% / 0.08)",
+                        }}
+                      >
+                        <Icon className={`h-5 w-5 ${colorClass}`} />
+                      </div>
 
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {entry.notes ||
-                          (entry.amount > 0 ? "Payment Received" : "Lesson Charge")}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground flex items-center gap-1 flex-wrap">
-                        <span>{format(date, "d MMM, HH:mm")}</span>
-                        {entry.payment_method && <span>· {entry.payment_method}</span>}
-                        {entry.scheduled_lessons?.lesson_date && (
-                          <span className="inline-flex items-center gap-0.5 text-foreground/70">
-                            · <Link2 className="h-2.5 w-2.5" />
-                            For{" "}
-                            {format(
-                              parseISO(entry.scheduled_lessons.lesson_date),
-                              "d MMM"
-                            )}{" "}
-                            lesson
-                          </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {entry.notes ||
+                            (entry.amount > 0 ? "Payment Received" : "Lesson Charge")}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground flex items-center gap-1 flex-wrap">
+                          <span>{format(date, "d MMM, HH:mm")}</span>
+                          {entry.payment_method && <span>· {entry.payment_method}</span>}
+                          {hasLesson && (
+                            <span className="inline-flex items-center gap-0.5 text-foreground/70">
+                              · <Link2 className="h-2.5 w-2.5" />
+                              For{" "}
+                              {format(
+                                parseISO(lesson!.lesson_date),
+                                "d MMM"
+                              )}{" "}
+                              lesson
+                            </span>
+                          )}
+                        </p>
+                      </div>
+
+                      <div className="text-right shrink-0 flex items-center gap-2">
+                        <p className={`text-sm font-bold ${colorClass}`}>
+                          {entry.amount > 0 ? "+" : ""}£
+                          {Math.abs(entry.amount).toFixed(2)}
+                        </p>
+                        {hasLesson && (
+                          <ExpandChevron isExpanded={isExpanded} size={14} />
                         )}
-                      </p>
-                    </div>
+                      </div>
+                    </button>
 
-                    <div className="text-right shrink-0">
-                      <p className={`text-sm font-bold ${colorClass}`}>
-                        {entry.amount > 0 ? "+" : ""}£
-                        {Math.abs(entry.amount).toFixed(2)}
-                      </p>
-                    </div>
+                    <AnimatePresence initial={false}>
+                      {hasLesson && isExpanded && (
+                        <motion.div
+                          key="details"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2, ease: "easeInOut" }}
+                          className="overflow-hidden"
+                        >
+                          <div className="ml-[3.25rem] mr-4 mb-3 mt-0.5 rounded-xl border border-border/60 bg-muted/30 p-3 space-y-1.5">
+                            <div className="flex items-center gap-2 text-[11px] text-foreground/80">
+                              <Calendar className="h-3 w-3 text-muted-foreground shrink-0" />
+                              <span>
+                                {format(
+                                  parseISO(lesson!.lesson_date),
+                                  "EEEE d MMM yyyy"
+                                )}
+                              </span>
+                            </div>
+                            {lesson!.start_time && (
+                              <div className="flex items-center gap-2 text-[11px] text-foreground/80">
+                                <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
+                                <span>
+                                  {lesson!.start_time.slice(0, 5)}
+                                  {lesson!.lesson_type ? ` · ${lesson!.lesson_type}` : ""}
+                                </span>
+                              </div>
+                            )}
+                            {(lesson!.pickup_location || lesson!.pickup_postcode) && (
+                              <div className="flex items-start gap-2 text-[11px] text-foreground/80">
+                                <MapPin className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
+                                <span className="break-words">
+                                  {lesson!.pickup_location || ""}
+                                  {lesson!.pickup_location && lesson!.pickup_postcode
+                                    ? " · "
+                                    : ""}
+                                  {lesson!.pickup_postcode || ""}
+                                </span>
+                              </div>
+                            )}
+                            {lesson!.notes && (
+                              <div className="flex items-start gap-2 text-[11px] text-foreground/80">
+                                <FileText className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
+                                <span className="break-words">
+                                  <span className="text-muted-foreground">
+                                    Instructor ref:
+                                  </span>{" "}
+                                  {lesson!.notes}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 );
               })}
