@@ -101,7 +101,7 @@ export default function InstructorTestRequests() {
         </div>
 
         <Dialog open={formOpen} onOpenChange={setFormOpen}>
-          <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden gap-0 [&>button[type='button'].absolute]:hidden">
+          <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden gap-0 border-none [&>button.absolute]:hidden">
             <DialogTitle className="sr-only">New test request</DialogTitle>
             <TestRequestForm
               instructorId={instructor?.id}
