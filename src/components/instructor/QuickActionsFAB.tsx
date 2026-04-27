@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Plus, Calendar, Users, MapPin, PoundSterling, MessageSquare, UsersRound } from "lucide-react";
+import { Plus, Calendar, Users, MapPin, PoundSterling, MessageSquare, UsersRound, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +8,8 @@ import { haptics } from "@/lib/haptics";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { QuickActionsDrawer } from "@/components/instructor/QuickActionsDrawer";
+import { VoiceQuickAddLessonSheet } from "@/components/instructor/VoiceQuickAddLessonSheet";
+import { useVoiceToText } from "@/hooks/useVoiceToText";
 
 interface QuickAction {
   id: string;
@@ -71,8 +73,10 @@ const getQuickActions = (onAddLesson: () => void): QuickAction[] => [
 export function QuickActionsFAB({ className, position = "bottom-right" }: QuickActionsFABProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [addLessonOpen, setAddLessonOpen] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const navigate = useNavigate();
   const { instructor } = useInstructorAuth();
+  const { isSupported: voiceSupported } = useVoiceToText();
 
   const handleOpenAddLesson = useCallback(() => {
     setAddLessonOpen(true);
@@ -115,6 +119,35 @@ export function QuickActionsFAB({ className, position = "bottom-right" }: QuickA
         onActionClick={handleActionClick}
       />
 
+      {/* Mic button (voice quick-add) */}
+      {voiceSupported && instructor?.id && !isOpen && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className={cn(
+            "absolute bottom-0",
+            position === "bottom-right" ? "right-16" : "left-16"
+          )}
+        >
+          <Button
+            onClick={() => {
+              haptics.medium();
+              setVoiceOpen(true);
+            }}
+            size="lg"
+            className={cn(
+              "h-12 w-12 rounded-full p-0",
+              "bg-violet-500 hover:bg-violet-600 text-white",
+              "shadow-[0_4px_16px_rgba(139,92,246,0.45)]",
+              "touch-manipulation active:scale-95 transition-all"
+            )}
+            aria-label="Voice quick-add lesson"
+          >
+            <Mic className="h-5 w-5" />
+          </Button>
+        </motion.div>
+      )}
+
       {/* Main FAB Button */}
       <motion.div
         animate={{ rotate: isOpen ? 45 : 0 }}
@@ -138,12 +171,19 @@ export function QuickActionsFAB({ className, position = "bottom-right" }: QuickA
         </Button>
       </motion.div>
       {instructor?.id && (
-        <AddLessonSheet
-          open={addLessonOpen}
-          onOpenChange={setAddLessonOpen}
-          instructorId={instructor.id}
-          onSuccess={() => {}}
-        />
+        <>
+          <AddLessonSheet
+            open={addLessonOpen}
+            onOpenChange={setAddLessonOpen}
+            instructorId={instructor.id}
+            onSuccess={() => {}}
+          />
+          <VoiceQuickAddLessonSheet
+            open={voiceOpen}
+            onOpenChange={setVoiceOpen}
+            instructorId={instructor.id}
+          />
+        </>
       )}
     </div>
   );
