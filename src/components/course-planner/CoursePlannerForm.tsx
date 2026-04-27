@@ -127,7 +127,7 @@ export function CoursePlannerForm({
     if (pupils.length > 0) return;
     supabase
       .from("pupils")
-      .select("id, name")
+      .select("id, name, phone, email, profile_image_url")
       .eq("instructor_id", instructorId)
       .order("name")
       .then(({ data }) => { if (data) setPupils(data as any); });
