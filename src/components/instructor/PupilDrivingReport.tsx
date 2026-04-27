@@ -767,8 +767,9 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
               title="No events flagged"
               subtitle="Driving has been smooth — no notable events"
             />
+          ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {allEvents.map((event) => (
+              {periodEvents.map((event) => (
                 <div
                   key={event.id}
                   style={{
