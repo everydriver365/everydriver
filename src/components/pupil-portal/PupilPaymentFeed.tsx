@@ -377,11 +377,15 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
           </p>
         </div>
       ) : (
-        Object.entries(grouped).map(([month, entries]) => (
+        grouped.map(({ key: month, entries, paidTotal, lessonCount }) => (
           <div key={month}>
-            <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm px-4 py-2">
+            <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm px-4 py-2 flex items-baseline justify-between gap-2">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 {month}
+              </p>
+              <p className="text-[10px] text-muted-foreground/80 tabular-nums">
+                £{paidTotal.toFixed(2)} paid · {lessonCount}{" "}
+                {lessonCount === 1 ? "lesson" : "lessons"}
               </p>
             </div>
 
