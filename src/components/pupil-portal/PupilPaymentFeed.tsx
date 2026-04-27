@@ -132,6 +132,44 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
     search.trim().length > 0 || datePreset !== "all" || linkFilter !== "all";
   const grouped = groupByMonth(filtered);
 
+  const handleExportCsv = () => {
+    if (filtered.length === 0) return;
+    const escape = (val: string | number | null | undefined) => {
+      const s = val == null ? "" : String(val);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const headers = [
+      "Recorded At",
+      "Amount (GBP)",
+      "Type",
+      "Payment Method",
+      "Notes",
+      "Linked Lesson Date",
+    ];
+    const rows = filtered.map((p) => [
+      format(parseISO(p.recorded_at), "yyyy-MM-dd HH:mm"),
+      p.amount.toFixed(2),
+      p.amount > 0 ? "Credit" : "Charge",
+      p.payment_method ?? "",
+      p.notes ?? "",
+      p.scheduled_lessons?.lesson_date
+        ? format(parseISO(p.scheduled_lessons.lesson_date), "yyyy-MM-dd")
+        : "",
+    ]);
+    const csv = [headers, ...rows]
+      .map((r) => r.map(escape).join(","))
+      .join("\n");
+    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `payments-${format(new Date(), "yyyy-MM-dd-HHmm")}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-1">
       {/* Balance header */}
