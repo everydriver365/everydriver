@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format, parseISO } from "date-fns";
-import { Loader2, MapPin, Calendar, Clock } from "lucide-react";
+import { Loader2, Calendar, Clock, MapPin, ArrowLeftRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { TestSwapOfferDialog } from "./TestSwapOfferDialog";
+import { TypeBadge, StatusIndicator, MetaRow } from "./shared/swapPills";
+import { formatSwapDate, formatSwapTime, formatTestCentre } from "./shared/formatSwap";
+import { EmptyState } from "@/components/instructor/EmptyState";
 
 interface SwapBoardProps {
   instructorId?: string;
@@ -36,94 +35,78 @@ export function SwapBoard({ instructorId }: SwapBoardProps) {
     );
   }
 
-  if (!requests?.length) {
+  const filtered = (requests ?? []).filter((r) => !instructorId || r.instructor_id !== instructorId);
+
+  if (!filtered.length) {
     return (
-      <div className="text-center py-8 text-muted-foreground text-sm">
-        No active test requests on the swap board.
-      </div>
+      <EmptyState
+        icon={ArrowLeftRight}
+        title="No swaps available right now"
+        subtitle="Check back later — instructors post swaps regularly"
+        iconBg="#E6F1FB"
+        iconColor="#2B7BC8"
+      />
     );
   }
 
-  // Split into have/want
-  const haveTests = requests.filter(r => r.request_type === "have_test");
-  const wantTests = requests.filter(r => r.request_type === "want_test");
-
   return (
-    <div className="space-y-6">
-      {/* People with tests to swap */}
-      {haveTests.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold mb-2 text-muted-foreground">Tests Available to Swap</h3>
-          <div className="space-y-2">
-            {haveTests.map(req => (
-              <Card key={req.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-1.5 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge>Have Test</Badge>
-                      </div>
-                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                        {req.test_centre_name && (
-                          <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{req.test_centre_name}</span>
-                        )}
-                        <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{format(parseISO(req.test_date), "dd/MM/yyyy")}</span>
-                        <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{req.test_time?.slice(0, 5)}</span>
-                      </div>
-                    </div>
-                    {instructorId && req.instructor_id !== instructorId && (
-                      <Button size="sm" variant="outline" onClick={() => setSelectedRequestId(req.id)}>
-                        Offer
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
+    <>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {filtered.map((req) => (
+          <div
+            key={req.id}
+            style={{
+              background: "#FFFFFF",
+              border: "0.5px solid #E5E5EA",
+              borderRadius: 12,
+              overflow: "hidden",
+            }}
+          >
+            <div style={{ padding: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                <TypeBadge type={req.request_type} />
+                <StatusIndicator status={req.status} />
+              </div>
+              <h3 style={{
+                fontSize: 15, fontWeight: 500, color: "#000000",
+                letterSpacing: "-0.2px", margin: "0 0 12px",
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>
+                {formatTestCentre(req.test_centre_name)}
+              </h3>
 
-      {/* People looking for tests */}
-      {wantTests.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold mb-2 text-muted-foreground">Looking for a Test</h3>
-          <div className="space-y-2">
-            {wantTests.map(req => (
-              <Card key={req.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-1.5 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="secondary">Want Test</Badge>
-                      </div>
-                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                        {req.test_centre_name && (
-                          <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{req.test_centre_name}</span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3.5 w-3.5" />
-                          {format(parseISO(req.test_date), "dd/MM/yyyy")}{req.date_range_end && ` – ${format(parseISO(req.date_range_end), "dd/MM/yyyy")}`}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5" />
-                          {req.test_time?.slice(0, 5)}{req.time_range_end && ` – ${req.time_range_end.slice(0, 5)}`}
-                        </span>
-                      </div>
-                      {req.notes && <p className="text-xs text-muted-foreground">{req.notes}</p>}
-                    </div>
-                    {instructorId && req.instructor_id !== instructorId && (
-                      <Button size="sm" variant="outline" onClick={() => setSelectedRequestId(req.id)}>
-                        Offer
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+                <MetaRow icon={<Calendar size={14} strokeWidth={1.8} />} label={formatSwapDate(req.test_date, req.date_range_end)} />
+                <MetaRow icon={<Clock size={14} strokeWidth={1.8} />} label={formatSwapTime(req.test_time, req.time_range_end)} />
+                {req.test_centre_name && (
+                  <MetaRow icon={<MapPin size={14} strokeWidth={1.8} />} label={req.test_centre_name} />
+                )}
+                {req.notes && (
+                  <p style={{ fontSize: 12, color: "#6E6E73", margin: 0 }}>{req.notes}</p>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedRequestId(req.id)}
+                style={{
+                  width: "100%",
+                  background: "#2B7BC8",
+                  color: "#FFFFFF",
+                  border: "none",
+                  borderRadius: 10,
+                  padding: "10px 0",
+                  fontSize: 13,
+                  fontWeight: 500,
+                  cursor: "pointer",
+                }}
+              >
+                Offer to swap
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
 
       {selectedRequestId && (
         <TestSwapOfferDialog
@@ -133,6 +116,6 @@ export function SwapBoard({ instructorId }: SwapBoardProps) {
           onOpenChange={(open) => { if (!open) setSelectedRequestId(null); }}
         />
       )}
-    </div>
+    </>
   );
 }

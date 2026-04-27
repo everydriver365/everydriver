@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { Plus, ArrowLeftRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { TestRequestForm } from "@/components/test-requests/TestRequestForm";
@@ -9,59 +7,111 @@ import { TestRequestList } from "@/components/test-requests/TestRequestList";
 import { SwapBoard } from "@/components/test-requests/SwapBoard";
 import { AvailableTestSlots } from "@/components/test-requests/AvailableTestSlots";
 import { MatchedSlotsList } from "@/components/test-requests/MatchedSlotsList";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
+
+type Tab = "my-requests" | "swap-board" | "available-slots";
 
 export default function InstructorTestRequests() {
   const { instructor } = useInstructorAuth();
   const [formOpen, setFormOpen] = useState(false);
+  const [tab, setTab] = useState<Tab>("my-requests");
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4 pb-24">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <div className="h-11 w-11 rounded-full bg-[#E6E8EC] dark:bg-[#2C2C2E] flex items-center justify-center">
-              <ArrowLeftRight className="h-6 w-6 text-foreground/70" />
-            </div>
-            Test Swap
-          </h1>
-          <Dialog open={formOpen} onOpenChange={setFormOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-1">
-                <Plus className="h-4 w-4" />
-                New Request
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>New Test Request</DialogTitle>
-              </DialogHeader>
-              <TestRequestForm
-                instructorId={instructor?.id}
-                mode="instructor"
-                onSuccess={() => setFormOpen(false)}
-              />
-            </DialogContent>
-          </Dialog>
+      <div style={{ background: "#F2F2F4", padding: 16, paddingBottom: 96, display: "flex", flexDirection: "column", gap: 12 }}>
+        {/* Hero card */}
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 12,
+            padding: 16,
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              background: "#E6F1FB",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <ArrowLeftRight size={22} strokeWidth={2} color="#2B7BC8" />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 11, fontWeight: 500, color: "#6E6E73", letterSpacing: "0.3px", textTransform: "uppercase", margin: "0 0 2px" }}>
+              Tests
+            </p>
+            <h1 style={{ fontSize: 17, fontWeight: 500, color: "#000000", letterSpacing: "-0.3px", margin: 0 }}>
+              Test swap
+            </h1>
+          </div>
+          <button
+            type="button"
+            onClick={() => setFormOpen(true)}
+            style={{
+              background: "#2B7BC8",
+              border: "none",
+              borderRadius: 10,
+              padding: "8px 12px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 5,
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+          >
+            <Plus size={13} strokeWidth={2} color="#FFFFFF" />
+            <span style={{ fontSize: 13, fontWeight: 500, color: "#FFFFFF" }}>New</span>
+          </button>
         </div>
 
-        <Tabs defaultValue="my-requests">
-          <TabsList className="w-full">
-            <TabsTrigger value="my-requests" className="flex-1">My Requests</TabsTrigger>
-            <TabsTrigger value="swap-board" className="flex-1">Swap Board</TabsTrigger>
-            <TabsTrigger value="available-slots" className="flex-1 data-[state=active]:text-emerald-500">Available</TabsTrigger>
-          </TabsList>
-          <TabsContent value="my-requests">
-            <TestRequestList instructorId={instructor?.id} />
-          </TabsContent>
-          <TabsContent value="swap-board">
-            <SwapBoard instructorId={instructor?.id} />
-          </TabsContent>
-          <TabsContent value="available-slots">
-            <MatchedSlotsList instructorId={instructor?.id} />
-            <AvailableTestSlots instructorId={instructor?.id} />
-          </TabsContent>
-        </Tabs>
+        {/* Main content card */}
+        <div style={{ background: "#FFFFFF", borderRadius: 12, padding: 16 }}>
+          <div style={{ marginBottom: 16 }}>
+            <SegmentedControl<Tab>
+              value={tab}
+              onChange={setTab}
+              ariaLabel="Test swap tabs"
+              options={[
+                { value: "my-requests", label: "My requests" },
+                { value: "swap-board", label: "Swap board" },
+                { value: "available-slots", label: "Available" },
+              ]}
+            />
+          </div>
+
+          {tab === "my-requests" && (
+            <TestRequestList instructorId={instructor?.id} onNewRequest={() => setFormOpen(true)} />
+          )}
+          {tab === "swap-board" && <SwapBoard instructorId={instructor?.id} />}
+          {tab === "available-slots" && (
+            <>
+              <MatchedSlotsList instructorId={instructor?.id} />
+              <AvailableTestSlots instructorId={instructor?.id} />
+            </>
+          )}
+        </div>
+
+        <Dialog open={formOpen} onOpenChange={setFormOpen}>
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>New test request</DialogTitle>
+            </DialogHeader>
+            <TestRequestForm
+              instructorId={instructor?.id}
+              mode="instructor"
+              onSuccess={() => setFormOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </InstructorPortalLayout>
   );

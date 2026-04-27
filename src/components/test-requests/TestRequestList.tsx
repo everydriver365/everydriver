@@ -1,21 +1,22 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { format, parseISO } from "date-fns";
-import { Loader2, MapPin, Calendar, Clock, Trash2, Pencil } from "lucide-react";
+import { Loader2, Calendar, Clock, MapPin, Pencil, Trash2, ArrowLeftRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { TestRequestForm, type TestRequestData } from "./TestRequestForm";
+import { TypeBadge, StatusIndicator, IconActionButton, MetaRow } from "./shared/swapPills";
+import { OffersStrip, type OffersStripState } from "./shared/OffersStrip";
+import { formatSwapDate, formatSwapTime, formatTestCentre, postedAgoLabel } from "./shared/formatSwap";
+import { EmptyState } from "@/components/instructor/EmptyState";
 
 interface TestRequestListProps {
   instructorId?: string;
   pupilId?: string;
+  onNewRequest?: () => void;
 }
 
-export function TestRequestList({ instructorId, pupilId }: TestRequestListProps) {
+export function TestRequestList({ instructorId, pupilId, onNewRequest }: TestRequestListProps) {
   const queryClient = useQueryClient();
   const [editingRequest, setEditingRequest] = useState<TestRequestData | null>(null);
 
@@ -27,11 +28,8 @@ export function TestRequestList({ instructorId, pupilId }: TestRequestListProps)
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (pupilId) {
-        query = query.eq("pupil_id", pupilId);
-      } else if (instructorId) {
-        query = query.eq("instructor_id", instructorId);
-      }
+      if (pupilId) query = query.eq("pupil_id", pupilId);
+      else if (instructorId) query = query.eq("instructor_id", instructorId);
 
       const { data, error } = await query;
       if (error) throw error;
@@ -40,7 +38,28 @@ export function TestRequestList({ instructorId, pupilId }: TestRequestListProps)
     enabled: !!(instructorId || pupilId),
   });
 
+  const requestIds = (requests ?? []).map((r) => r.id);
+  const { data: offerCounts } = useQuery({
+    queryKey: ["test-request-offer-counts", requestIds],
+    queryFn: async () => {
+      if (!requestIds.length) return {} as Record<string, number>;
+      const { data, error } = await supabase
+        .from("test_swap_offers")
+        .select("test_request_id, status")
+        .in("test_request_id", requestIds)
+        .eq("status", "pending");
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      (data ?? []).forEach((o) => {
+        counts[o.test_request_id] = (counts[o.test_request_id] ?? 0) + 1;
+      });
+      return counts;
+    },
+    enabled: requestIds.length > 0,
+  });
+
   const handleCancel = async (id: string) => {
+    if (!confirm("Delete this swap request?")) return;
     const { error } = await supabase
       .from("test_requests")
       .update({ status: "cancelled" })
@@ -63,75 +82,144 @@ export function TestRequestList({ instructorId, pupilId }: TestRequestListProps)
 
   if (!requests?.length) {
     return (
-      <div className="text-center py-8 text-muted-foreground text-sm">
-        No test requests yet. Create one to get started.
-      </div>
+      <>
+        <EmptyState
+          icon={ArrowLeftRight}
+          title="No swap requests"
+          subtitle="Create one to find a better test slot"
+          iconBg="#E6F1FB"
+          iconColor="#2B7BC8"
+        />
+        {onNewRequest && (
+          <button
+            type="button"
+            onClick={onNewRequest}
+            style={{
+              marginTop: 12,
+              width: "100%",
+              background: "#2B7BC8",
+              color: "#FFFFFF",
+              border: "none",
+              borderRadius: 10,
+              padding: "12px 0",
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: "pointer",
+            }}
+          >
+            New request
+          </button>
+        )}
+      </>
     );
   }
 
+  const renderOffersStrip = (req: typeof requests[number]) => {
+    if (req.status === "cancelled") return null;
+    const count = offerCounts?.[req.id] ?? 0;
+
+    let state: OffersStripState | null = null;
+    if (req.status === "matched") state = "matched";
+    else if (req.status === "expired") state = "expired";
+    else if (req.status === "paused") state = "paused";
+    else if (req.status === "active") {
+      if (req.request_type === "want_test") state = count > 0 ? "with-offers" : "waiting";
+      else if (req.request_type === "have_test") state = "visible";
+    }
+    if (!state) return null;
+
+    const subtitle =
+      state === "waiting" ? postedAgoLabel(req.created_at) : undefined;
+
+    return (
+      <OffersStrip
+        state={state}
+        count={count}
+        subtitle={subtitle}
+        onPress={state === "with-offers" || state === "matched" || state === "paused" ? () => {
+          // Existing offers/matches review path — open edit dialog as functional fallback
+          // (dedicated review screen wired upstream when available)
+          setEditingRequest(req as TestRequestData);
+        } : undefined}
+      />
+    );
+  };
+
   return (
     <>
-      <div className="space-y-3">
-        {requests.map((req) => (
-          <Card key={req.id}>
-            <CardContent className="p-4 space-y-2">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant={req.request_type === "have_test" ? "default" : "secondary"}>
-                    {req.request_type === "have_test" ? "Have Test" : "Want Test"}
-                  </Badge>
-                  <Badge variant={req.status === "active" ? "outline" : req.status === "matched" ? "default" : "secondary"}>
-                    {req.status}
-                  </Badge>
-                </div>
-                {req.status === "active" && (
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => setEditingRequest(req as TestRequestData)}
-                    >
-                      <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCancel(req.id)}>
-                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                    </Button>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {requests.map((req) => {
+          const isEditable = req.status === "active" || req.status === "paused";
+          return (
+            <div
+              key={req.id}
+              style={{
+                background: "#FFFFFF",
+                border: "0.5px solid #E5E5EA",
+                borderRadius: 12,
+                overflow: "hidden",
+              }}
+            >
+              <div style={{ padding: 14 }}>
+                {/* Top row */}
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                      <TypeBadge type={req.request_type} />
+                      <StatusIndicator status={req.status} />
+                    </div>
+                    <h3 style={{
+                      fontSize: 15, fontWeight: 500, color: "#000000",
+                      letterSpacing: "-0.2px", margin: 0,
+                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    }}>
+                      {formatTestCentre(req.test_centre_name)}
+                    </h3>
                   </div>
-                )}
+                  {isEditable && (
+                    <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                      <IconActionButton ariaLabel="Edit request" onClick={() => setEditingRequest(req as TestRequestData)}>
+                        <Pencil size={13} strokeWidth={2} color="#6E6E73" />
+                      </IconActionButton>
+                      <IconActionButton ariaLabel="Delete request" onClick={() => handleCancel(req.id)}>
+                        <Trash2 size={13} strokeWidth={2} color="#6E6E73" />
+                      </IconActionButton>
+                    </div>
+                  )}
+                </div>
+
+                {/* Meta rows */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <MetaRow
+                    icon={<Calendar size={14} strokeWidth={1.8} />}
+                    label={formatSwapDate(req.test_date, req.date_range_end)}
+                  />
+                  <MetaRow
+                    icon={<Clock size={14} strokeWidth={1.8} />}
+                    label={formatSwapTime(req.test_time, req.time_range_end)}
+                  />
+                  {req.test_centre_name && (
+                    <MetaRow
+                      icon={<MapPin size={14} strokeWidth={1.8} />}
+                      label={req.test_centre_name}
+                    />
+                  )}
+                  {req.notes && (
+                    <p style={{ fontSize: 12, color: "#6E6E73", margin: 0 }}>{req.notes}</p>
+                  )}
+                </div>
               </div>
 
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                {req.test_centre_name && (
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-3.5 w-3.5" />
-                    {req.test_centre_name}
-                  </span>
-                )}
-                <span className="flex items-center gap-1">
-                  <Calendar className="h-3.5 w-3.5" />
-                  {format(parseISO(req.test_date), "dd/MM/yyyy")}
-                  {req.date_range_end && ` – ${format(parseISO(req.date_range_end), "dd/MM/yyyy")}`}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3.5 w-3.5" />
-                  {req.test_time?.slice(0, 5)}
-                  {req.time_range_end && ` – ${req.time_range_end.slice(0, 5)}`}
-                </span>
-              </div>
-
-              {req.notes && (
-                <p className="text-xs text-muted-foreground">{req.notes}</p>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+              {renderOffersStrip(req)}
+            </div>
+          );
+        })}
       </div>
 
       <Dialog open={!!editingRequest} onOpenChange={(open) => !open && setEditingRequest(null)}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Test Request</DialogTitle>
+            <DialogTitle>Edit test request</DialogTitle>
           </DialogHeader>
           {editingRequest && (
             <TestRequestForm
