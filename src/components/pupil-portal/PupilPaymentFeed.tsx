@@ -410,21 +410,10 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
                   >
                     <button
                       type="button"
-                      onClick={() => hasLesson && toggleExpanded(entry.id)}
-                      disabled={!hasLesson}
+                      onClick={() => toggleExpanded(entry.id)}
                       aria-expanded={isExpanded}
-                      aria-label={
-                        hasLesson
-                          ? isExpanded
-                            ? "Hide lesson details"
-                            : "Show lesson details"
-                          : undefined
-                      }
-                      className={`flex items-center gap-3 px-4 py-3 text-left w-full ${
-                        hasLesson
-                          ? "hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer"
-                          : "cursor-default"
-                      }`}
+                      aria-label={isExpanded ? "Hide details" : "Show details"}
+                      className="flex items-center gap-3 px-4 py-3 text-left w-full hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer"
                     >
                       <div
                         className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
@@ -478,14 +467,12 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
                             {Math.abs(entry.runningBalance).toFixed(2)}
                           </p>
                         </div>
-                        {hasLesson && (
-                          <ExpandChevron isExpanded={isExpanded} size={14} />
-                        )}
+                        <ExpandChevron isExpanded={isExpanded} size={14} />
                       </div>
                     </button>
 
                     <AnimatePresence initial={false}>
-                      {hasLesson && isExpanded && (
+                      {isExpanded && (
                         <motion.div
                           key="details"
                           initial={{ height: 0, opacity: 0 }}
