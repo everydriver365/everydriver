@@ -1407,9 +1407,13 @@ export function PupilCardStack({
       />
 
       <Sheet open={showSyllabusSheet} onOpenChange={setShowSyllabusSheet}>
-        <SheetContent side="bottom" className="h-[85vh] rounded-2xl overflow-y-auto">
-          <SheetHeader className="pb-4">
-            <SheetTitle>Driving Syllabus - {pupil.name}</SheetTitle>
+        <SheetContent
+          side="bottom"
+          className="h-[100dvh] max-h-[100dvh] rounded-none p-0 overflow-y-auto border-0"
+          style={{ background: "#F2F2F4" }}
+        >
+          <SheetHeader className="sr-only">
+            <SheetTitle>Driving syllabus — {pupil.name}</SheetTitle>
           </SheetHeader>
           <DrivingSyllabus 
             pupilId={pupil.id} 
