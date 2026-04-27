@@ -6,6 +6,7 @@ const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
 const AdminPortal = lazy(() => import("@/pages/AdminPortal"));
 const TileHealthDashboard = lazy(() => import("@/pages/admin/TileHealthDashboard"));
 const EdgeFunctionAudit = lazy(() => import("@/pages/admin/EdgeFunctionAudit"));
+const OnboardingFunnel = lazy(() => import("@/pages/admin/OnboardingFunnel"));
 
 export const adminRoutes = (
   <>
@@ -31,6 +32,14 @@ export const adminRoutes = (
       element={
         <ProtectedAdminRoute>
           <EdgeFunctionAudit />
+        </ProtectedAdminRoute>
+      }
+    />
+    <Route
+      path="/admin/funnel"
+      element={
+        <ProtectedAdminRoute>
+          <OnboardingFunnel />
         </ProtectedAdminRoute>
       }
     />
