@@ -450,7 +450,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
                       onClick={() => toggleExpanded(entry.id)}
                       aria-expanded={isExpanded}
                       aria-label={isExpanded ? "Hide details" : "Show details"}
-                      className="flex items-center gap-3 px-4 py-3 text-left w-full hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer"
+                      className="flex items-center gap-3 px-3 sm:px-4 py-3.5 text-left w-full hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer min-h-[60px]"
                     >
                       <div
                         className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
