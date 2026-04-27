@@ -57,12 +57,13 @@ export function StepPayment({
     }
     setSaving(true);
     try {
-      const { error: hErr } = await supabase.from("payment_history").insert({
+      const { error: hErr } = await (supabase as any).from("payment_history").insert({
         pupil_id: pupilId,
         instructor_id: instructorId,
         amount: parsed,
         payment_method: method,
         notes: "Recorded at end of lesson",
+        lesson_id: lessonId ?? null,
       });
       if (hErr) throw hErr;
 
