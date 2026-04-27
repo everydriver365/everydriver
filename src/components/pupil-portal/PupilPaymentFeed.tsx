@@ -81,6 +81,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
   const [search, setSearch] = useState("");
   const [datePreset, setDatePreset] = useState<DatePreset>("all");
   const [linkFilter, setLinkFilter] = useState<LinkFilter>("all");
+  const [weekday, setWeekday] = useState<WeekdayFilter>("all");
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -88,7 +89,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
       const { data } = await (supabase as any)
         .from("payment_history")
         .select(
-          "id, amount, recorded_at, payment_method, notes, lesson_id, scheduled_lessons:lesson_id(lesson_date, start_time)"
+          "id, amount, recorded_at, payment_method, notes, lesson_id, scheduled_lessons:lesson_id(lesson_date, start_time, pickup_postcode, pickup_location, lesson_type)"
         )
         .eq("pupil_id", pupilId)
         .order("recorded_at", { ascending: false })
@@ -113,11 +114,19 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
       if (linkFilter === "linked" && !p.lesson_id) return false;
       if (linkFilter === "unlinked" && p.lesson_id) return false;
 
-      // Free-text search across notes, method, amount, recorded date, lesson date
+      // Weekday filter (matches the linked lesson's day-of-week)
+      if (weekday !== "all") {
+        if (!p.scheduled_lessons?.lesson_date) return false;
+        const dow = parseISO(p.scheduled_lessons.lesson_date).getDay();
+        if (dow !== Number(weekday)) return false;
+      }
+
+      // Free-text search across notes, method, amount, dates, postcode, pickup, lesson type
       if (term) {
         const recorded = parseISO(p.recorded_at);
-        const lessonDateLabel = p.scheduled_lessons?.lesson_date
-          ? format(parseISO(p.scheduled_lessons.lesson_date), "d MMM yyyy").toLowerCase()
+        const lesson = p.scheduled_lessons;
+        const lessonDateLabel = lesson?.lesson_date
+          ? format(parseISO(lesson.lesson_date), "EEEE d MMM yyyy").toLowerCase()
           : "";
         const haystack = [
           p.notes ?? "",
@@ -126,6 +135,10 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
           format(recorded, "d MMM yyyy").toLowerCase(),
           format(recorded, "yyyy-MM-dd"),
           lessonDateLabel,
+          lesson?.start_time ?? "",
+          (lesson?.pickup_postcode ?? "").toLowerCase(),
+          (lesson?.pickup_location ?? "").toLowerCase(),
+          (lesson?.lesson_type ?? "").toLowerCase(),
         ]
           .join(" ")
           .toLowerCase();
@@ -133,7 +146,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
       }
       return true;
     });
-  }, [payments, search, interval, linkFilter]);
+  }, [payments, search, interval, linkFilter, weekday]);
 
   const filtersActive =
     search.trim().length > 0 || datePreset !== "all" || linkFilter !== "all";
