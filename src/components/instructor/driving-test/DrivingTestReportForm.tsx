@@ -990,15 +990,27 @@ export function DrivingTestReportForm({
           </div>
         )}
 
-        <DialogFooter>
+        {/* Sticky bottom save bar — mirrors the header Save for reach on long forms. */}
+        <div
+          style={{
+            position: "sticky",
+            bottom: 0,
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 8,
+            padding: "12px 16px",
+            borderTop: "0.5px solid #E5E5EA",
+            background: "#FFFFFF",
+          }}
+        >
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={saving || loading}>
+          <Button onClick={handleSave} disabled={saving || loading || requiredMissing}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
             Save
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
