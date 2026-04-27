@@ -1243,4 +1243,120 @@ function SessionsTab({
   );
 }
 
+function ProvisionalScoreState() {
+  return (
+    <div
+      style={{
+        background: '#FFFFFF',
+        borderRadius: 12,
+        padding: '24px 16px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        textAlign: 'center',
+        gap: 12,
+      }}
+    >
+      <p
+        style={{
+          fontSize: 11,
+          fontWeight: 500,
+          color: '#6E6E73',
+          letterSpacing: '0.3px',
+          textTransform: 'uppercase',
+          margin: 0,
+        }}
+      >
+        Performance score
+      </p>
+      <p
+        style={{
+          fontSize: 17,
+          fontWeight: 500,
+          color: '#000000',
+          margin: 0,
+          letterSpacing: '-0.2px',
+        }}
+      >
+        Not enough data
+      </p>
+      <p
+        style={{
+          fontSize: 12,
+          color: '#6E6E73',
+          margin: 0,
+          lineHeight: 1.4,
+          maxWidth: 260,
+        }}
+      >
+        Track at least one lesson in this period to see a score.
+      </p>
+    </div>
+  );
+}
+
+function TabEmptyState({
+  icon,
+  iconBg,
+  iconFg: _iconFg,
+  title,
+  subtitle,
+}: {
+  icon: React.ReactNode;
+  iconBg: string;
+  iconFg: string;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        textAlign: 'center',
+        padding: '32px 16px',
+        gap: 12,
+      }}
+    >
+      <div
+        style={{
+          width: 48,
+          height: 48,
+          borderRadius: 12,
+          background: iconBg,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {icon}
+      </div>
+      <div>
+        <p
+          style={{
+            fontSize: 15,
+            fontWeight: 500,
+            color: '#000000',
+            margin: 0,
+          }}
+        >
+          {title}
+        </p>
+        <p
+          style={{
+            fontSize: 12,
+            color: '#6E6E73',
+            margin: '4px 0 0',
+            lineHeight: 1.4,
+            maxWidth: 280,
+          }}
+        >
+          {subtitle}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default PupilDrivingReport;
