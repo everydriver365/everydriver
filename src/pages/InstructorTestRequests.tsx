@@ -7,7 +7,7 @@ import { TestRequestList } from "@/components/test-requests/TestRequestList";
 import { SwapBoard } from "@/components/test-requests/SwapBoard";
 import { AvailableTestSlots } from "@/components/test-requests/AvailableTestSlots";
 import { MatchedSlotsList } from "@/components/test-requests/MatchedSlotsList";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
 
 type Tab = "my-requests" | "swap-board" | "available-slots";
