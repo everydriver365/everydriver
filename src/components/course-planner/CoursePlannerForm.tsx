@@ -3,8 +3,9 @@ import { format, parseISO } from "date-fns";
 import {
   CalendarIcon, Clock, Sparkles, AlertTriangle, Loader2,
   GraduationCap, MapPin, User, Mail, Phone, Check, ChevronsUpDown, CalendarCheck,
-  ChevronDown,
+  ChevronDown, X,
 } from "lucide-react";
+import { PupilPickerSheet } from "@/components/instructor/PupilPickerSheet";
 import { SectionLabel } from "@/components/instructor/ui/SectionLabel";
 import { FormInputCard } from "@/components/instructor/ui/FormInputCard";
 import { TestCentrePicker } from "@/components/instructor/ui/TestCentrePicker";
@@ -101,7 +102,7 @@ export function CoursePlannerForm({
   const [lessonsPerWeek, setLessonsPerWeek] = useState("2");
   const [availability, setAvailability] = useState<Record<DayKey, DayWindow>>(DEFAULT_AVAILABILITY);
 
-  const [pupils, setPupils] = useState<Array<{ id: string; name: string }>>([]);
+  const [pupils, setPupils] = useState<Array<{ id: string; name: string; phone: string | null; email: string | null; profile_image_url: string | null }>>([]);
   const [selectedPupilId, setSelectedPupilId] = useState<string | null>(defaultPupilId || null);
   const [selectedPupilName, setSelectedPupilName] = useState<string | null>(defaultPupilName || null);
   const [pupilPickerOpen, setPupilPickerOpen] = useState(false);
@@ -127,7 +128,7 @@ export function CoursePlannerForm({
     if (pupils.length > 0) return;
     supabase
       .from("pupils")
-      .select("id, name")
+      .select("id, name, phone, email, profile_image_url")
       .eq("instructor_id", instructorId)
       .order("name")
       .then(({ data }) => { if (data) setPupils(data as any); });
@@ -344,76 +345,71 @@ export function CoursePlannerForm({
                     value={defaultPupilName || effectivePupilName || ""}
                   />
                 ) : (
-                  <Popover open={pupilPickerOpen} onOpenChange={setPupilPickerOpen}>
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        style={{
-                          width: "100%",
-                          background: "#FFFFFF",
-                          border: "0.5px solid #E5E5EA",
-                          borderRadius: 10,
-                          padding: "12px 14px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 10,
-                          cursor: "pointer",
-                          textAlign: "left",
-                        }}
-                      >
-                        {effectivePupilName ? (
-                          <>
-                            <UserAvatar name={effectivePupilName} size={28} />
-                            <span
-                              style={{
-                                flex: 1,
-                                minWidth: 0,
-                                fontSize: 15,
-                                fontWeight: 500,
-                                color: "#000000",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }}
-                            >
-                              {effectivePupilName}
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <User size={18} strokeWidth={1.8} color="#6E6E73" style={{ flexShrink: 0 }} />
-                            <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 400, color: "#6E6E73" }}>
-                              Pick a pupil <span style={{ color: "#C7C7CC" }}>— optional</span>
-                            </span>
-                          </>
-                        )}
-                        <ChevronDown size={12} strokeWidth={1.6} color="#6E6E73" style={{ flexShrink: 0 }} />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                      <Command>
-                        <CommandInput placeholder="Search pupils…" />
-                        <CommandList>
-                          <CommandEmpty>No pupils found.</CommandEmpty>
-                          <CommandGroup>
-                            {selectedPupilId && (
-                              <CommandItem value="__clear__" onSelect={() => { setSelectedPupilId(null); setSelectedPupilName(null); setPupilPickerOpen(false); }}>
-                                <span className="text-muted-foreground">Clear selection</span>
-                              </CommandItem>
-                            )}
-                            {pupils.map((p) => (
-                              <CommandItem key={p.id} value={p.name} onSelect={() => {
-                                setSelectedPupilId(p.id); setSelectedPupilName(p.name); setPupilName(p.name); setPupilPickerOpen(false);
-                              }}>
-                                <Check className={cn("mr-2 h-4 w-4", selectedPupilId === p.id ? "opacity-100" : "opacity-0")} />
-                                {p.name}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                  <button
+                    type="button"
+                    onClick={() => setPupilPickerOpen(true)}
+                    style={{
+                      width: "100%",
+                      background: "#FFFFFF",
+                      border: "0.5px solid #E5E5EA",
+                      borderRadius: 10,
+                      padding: "12px 14px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      cursor: "pointer",
+                      textAlign: "left",
+                    }}
+                  >
+                    {effectivePupilName ? (
+                      <>
+                        <UserAvatar name={effectivePupilName} size={28} />
+                        <span
+                          style={{
+                            flex: 1,
+                            minWidth: 0,
+                            fontSize: 15,
+                            fontWeight: 500,
+                            color: "#000000",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {effectivePupilName}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedPupilId(null);
+                            setSelectedPupilName(null);
+                            setPupilName("");
+                          }}
+                          aria-label="Clear pupil"
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            padding: 4,
+                            cursor: "pointer",
+                            display: "inline-flex",
+                            color: "#6E6E73",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <X size={14} strokeWidth={1.8} />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <User size={18} strokeWidth={1.8} color="#6E6E73" style={{ flexShrink: 0 }} />
+                        <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 400, color: "#6E6E73" }}>
+                          Pick a pupil <span style={{ color: "#C7C7CC" }}>— optional</span>
+                        </span>
+                      </>
+                    )}
+                    <ChevronDown size={12} strokeWidth={1.6} color="#6E6E73" style={{ flexShrink: 0 }} />
+                  </button>
                 )}
                 <p style={{ fontSize: 11, color: "#6E6E73", margin: "6px 0 0", paddingLeft: 2 }}>
                   Add a pupil now to book directly into your diary, or plan ahead without one.
@@ -725,6 +721,18 @@ export function CoursePlannerForm({
           </div>
         ) : null}
       </div>
+      <PupilPickerSheet
+        open={pupilPickerOpen}
+        onOpenChange={setPupilPickerOpen}
+        pupils={pupils}
+        onPick={(p) => {
+          setSelectedPupilId(p.id);
+          setSelectedPupilName(p.name);
+          setPupilName(p.name);
+        }}
+        title="Select pupil"
+        searchPlaceholder="Search pupils"
+      />
     </div>
   );
 }
