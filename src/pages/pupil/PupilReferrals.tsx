@@ -14,15 +14,15 @@ export default function PupilReferrals() {
     void (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: pupil } = await supabase.from("pupils").select("id, referral_code").eq("auth_user_id", user.id).maybeSingle();
+      const { data: pupil } = await (supabase as any).from("pupils").select("id, referral_code").eq("auth_user_id", user.id).maybeSingle();
       if (pupil) {
         setCode(pupil.referral_code);
-        const { data: r } = await supabase
+        const { data: r } = await (supabase as any)
           .from("pupil_referrals")
           .select("id, status, created_at, credit_awarded_at, referrer_credit_amount")
           .eq("referrer_pupil_id", pupil.id)
           .order("created_at", { ascending: false });
-        setRefs(r ?? []);
+        setRefs((r as any) ?? []);
       }
     })();
   }, []);

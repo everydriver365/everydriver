@@ -19,12 +19,12 @@ export default function PassReport() {
       if (!id) {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          const { data: p } = await supabase.from("pupils").select("id, pass_report_url").eq("auth_user_id", user.id).maybeSingle();
+          const { data: p } = await (supabase as any).from("pupils").select("id, pass_report_url").eq("auth_user_id", user.id).maybeSingle();
           id = p?.id ?? null;
           setUrl(p?.pass_report_url ?? null);
         }
       } else {
-        const { data: p } = await supabase.from("pupils").select("pass_report_url").eq("id", id).maybeSingle();
+        const { data: p } = await (supabase as any).from("pupils").select("pass_report_url").eq("id", id).maybeSingle();
         setUrl(p?.pass_report_url ?? null);
       }
       setPupilId(id);
