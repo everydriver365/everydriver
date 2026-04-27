@@ -205,6 +205,7 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
   const [allEvents, setAllEvents] = useState<DrivingEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabKey>('sessions');
+  const [period, setPeriod] = useState<PeriodKey>('last_30_days');
 
   const { unit, toUnit } = useLocaleUnit();
 
