@@ -482,47 +482,67 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
                           className="overflow-hidden"
                         >
                           <div className="ml-[3.25rem] mr-4 mb-3 mt-0.5 rounded-xl border border-border/60 bg-muted/30 p-3 space-y-1.5">
-                            <div className="flex items-center gap-2 text-[11px] text-foreground/80">
-                              <Calendar className="h-3 w-3 text-muted-foreground shrink-0" />
-                              <span>
-                                {format(
-                                  parseISO(lesson!.lesson_date),
-                                  "EEEE d MMM yyyy"
+                            {hasLesson && (
+                              <>
+                                <div className="flex items-center gap-2 text-[11px] text-foreground/80">
+                                  <Calendar className="h-3 w-3 text-muted-foreground shrink-0" />
+                                  <span>
+                                    {format(
+                                      parseISO(lesson!.lesson_date),
+                                      "EEEE d MMM yyyy"
+                                    )}
+                                  </span>
+                                </div>
+                                {lesson!.start_time && (
+                                  <div className="flex items-center gap-2 text-[11px] text-foreground/80">
+                                    <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
+                                    <span>
+                                      {lesson!.start_time.slice(0, 5)}
+                                      {lesson!.lesson_type ? ` · ${lesson!.lesson_type}` : ""}
+                                    </span>
+                                  </div>
                                 )}
-                              </span>
+                                {(lesson!.pickup_location || lesson!.pickup_postcode) && (
+                                  <div className="flex items-start gap-2 text-[11px] text-foreground/80">
+                                    <MapPin className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
+                                    <span className="break-words">
+                                      {lesson!.pickup_location || ""}
+                                      {lesson!.pickup_location && lesson!.pickup_postcode
+                                        ? " · "
+                                        : ""}
+                                      {lesson!.pickup_postcode || ""}
+                                    </span>
+                                  </div>
+                                )}
+                                {lesson!.notes && (
+                                  <div className="flex items-start gap-2 text-[11px] text-foreground/80">
+                                    <FileText className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
+                                    <span className="break-words">
+                                      <span className="text-muted-foreground">
+                                        Instructor ref:
+                                      </span>{" "}
+                                      {lesson!.notes}
+                                    </span>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                            <div className="flex gap-2 pt-1.5">
+                              <button
+                                type="button"
+                                onClick={() => setReceiptId(entry.id)}
+                                className="flex-1 inline-flex items-center justify-center gap-1 text-[11px] font-medium text-foreground border border-border rounded-md px-2 py-1.5 hover:bg-background"
+                              >
+                                <FileText className="h-3 w-3" /> Receipt
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setDisputeId(entry.id)}
+                                className="flex-1 inline-flex items-center justify-center gap-1 text-[11px] font-medium text-amber-700 dark:text-amber-400 border border-amber-300/60 dark:border-amber-800/60 rounded-md px-2 py-1.5 hover:bg-amber-50/60 dark:hover:bg-amber-950/30"
+                              >
+                                <AlertTriangle className="h-3 w-3" /> Flag for review
+                              </button>
                             </div>
-                            {lesson!.start_time && (
-                              <div className="flex items-center gap-2 text-[11px] text-foreground/80">
-                                <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
-                                <span>
-                                  {lesson!.start_time.slice(0, 5)}
-                                  {lesson!.lesson_type ? ` · ${lesson!.lesson_type}` : ""}
-                                </span>
-                              </div>
-                            )}
-                            {(lesson!.pickup_location || lesson!.pickup_postcode) && (
-                              <div className="flex items-start gap-2 text-[11px] text-foreground/80">
-                                <MapPin className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
-                                <span className="break-words">
-                                  {lesson!.pickup_location || ""}
-                                  {lesson!.pickup_location && lesson!.pickup_postcode
-                                    ? " · "
-                                    : ""}
-                                  {lesson!.pickup_postcode || ""}
-                                </span>
-                              </div>
-                            )}
-                            {lesson!.notes && (
-                              <div className="flex items-start gap-2 text-[11px] text-foreground/80">
-                                <FileText className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
-                                <span className="break-words">
-                                  <span className="text-muted-foreground">
-                                    Instructor ref:
-                                  </span>{" "}
-                                  {lesson!.notes}
-                                </span>
-                              </div>
-                            )}
                           </div>
                         </motion.div>
                       )}
