@@ -9,7 +9,13 @@ import {
   X,
   Link2,
   Download,
+  Calendar,
+  Clock,
+  MapPin,
+  FileText,
 } from "lucide-react";
+import { ExpandChevron } from "@/components/ui/ExpandChevron";
+import { AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { Input } from "@/components/ui/input";
