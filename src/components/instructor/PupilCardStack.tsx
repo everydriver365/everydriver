@@ -1428,6 +1428,15 @@ export function PupilCardStack({
           />
         </SheetContent>
       </Sheet>
+
+      <PupilNoteSheet
+        open={showNoteSheet}
+        onOpenChange={setShowNoteSheet}
+        pupilId={pupil.id}
+        pupilName={pupil.name}
+        initialNote={effectiveNotes}
+        onSaved={(newNote) => setNoteOverride(newNote)}
+      />
     </>
   );
 }
