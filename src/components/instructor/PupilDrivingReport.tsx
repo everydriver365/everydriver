@@ -267,17 +267,54 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
     setEvents(eventsData || []);
   };
 
-  // Aggregates (preserved)
-  const totalDistanceKm = sessions.reduce(
+  // Period-aware filtering. Falls back to "all sessions" when interval is null
+  // (i.e. period === 'all_time'). Trend compares same-shape previous interval.
+  const periodNow = useMemo(() => new Date(), []);
+  const { current: currentInterval, previous: previousInterval } = useMemo(
+    () => resolvePeriod(period, periodNow),
+    [period, periodNow],
+  );
+
+  const filterSessionsBy = (interval: DateInterval | null) => {
+    if (!interval) return sessions;
+    return sessions.filter((s) =>
+      isWithinInterval(new Date(s.started_at), {
+        start: interval.start,
+        end: interval.end,
+      }),
+    );
+  };
+  const filterEventsBy = (interval: DateInterval | null) => {
+    if (!interval) return allEvents;
+    return allEvents.filter((e) =>
+      isWithinInterval(new Date(e.recorded_at), {
+        start: interval.start,
+        end: interval.end,
+      }),
+    );
+  };
+
+  const periodSessions = useMemo(
+    () => filterSessionsBy(currentInterval),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sessions, currentInterval],
+  );
+  const periodEvents = useMemo(
+    () => filterEventsBy(currentInterval),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allEvents, currentInterval],
+  );
+
+  const totalDistanceKm = periodSessions.reduce(
     (acc, s) => acc + (Number(s.total_distance_km) || 0),
     0,
   );
-  const totalSessions = sessions.length;
+  const totalSessions = periodSessions.length;
 
-  const goodEvents = allEvents.filter(
+  const goodEvents = periodEvents.filter(
     (e) => e.event_type === 'smooth_stop' || e.event_type === 'good_acceleration',
   );
-  const badEvents = allEvents.filter(
+  const badEvents = periodEvents.filter(
     (e) =>
       e.event_type === 'harsh_brake' ||
       e.event_type === 'harsh_acceleration' ||
@@ -285,30 +322,60 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
       e.event_type === 'sharp_turn',
   );
 
-  const overallScore = Math.max(
-    0,
-    Math.min(100, 100 - badEvents.length * 5 + goodEvents.length * 2),
-  );
+  const overallScore = scoreForEvents(goodEvents.length, badEvents.length);
 
-  const rating =
-    totalSessions === 0 ? '—' : ratingFromScore(overallScore);
+  // Threshold-aware display tier:
+  //   none        → 0 lessons in period (hide score, show "Not enough data")
+  //   provisional → 1-4 lessons (grey pill, no rating colour)
+  //   full        → 5+ lessons (Phase 1 default)
+  const scoreTier: 'none' | 'provisional' | 'full' =
+    totalSessions === 0
+      ? 'none'
+      : totalSessions < 5
+        ? 'provisional'
+        : 'full';
+
+  const rating = scoreTier === 'full' ? ratingFromScore(overallScore) : '—';
   const palette = ratingPalette(rating);
+
+  // Week-on-week trend — only when both periods have ≥5 lessons and the period
+  // exposes a meaningful previous interval (i.e. not 'this_year' / 'all_time').
+  const trendDelta: number | null = useMemo(() => {
+    if (!previousInterval) return null;
+    if (totalSessions < 5) return null;
+    const prevSessions = filterSessionsBy(previousInterval);
+    if (prevSessions.length < 5) return null;
+    const prevEvents = filterEventsBy(previousInterval);
+    const prevGood = prevEvents.filter(
+      (e) =>
+        e.event_type === 'smooth_stop' || e.event_type === 'good_acceleration',
+    ).length;
+    const prevBad = prevEvents.filter(
+      (e) =>
+        e.event_type === 'harsh_brake' ||
+        e.event_type === 'harsh_acceleration' ||
+        e.event_type === 'speeding' ||
+        e.event_type === 'sharp_turn',
+    ).length;
+    const prevScore = scoreForEvents(prevGood, prevBad);
+    return overallScore - prevScore;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [previousInterval, sessions, allEvents, totalSessions, overallScore]);
 
   const niceName = titleCaseName(pupilName) || pupilName;
 
   const distanceLabel = formatDistance(totalDistanceKm, unit, toUnit);
 
   const caveat = (() => {
-    if (totalSessions === 0)
-      return 'No GPS data yet · score appears after the first tracked lesson';
-    if (totalSessions <= 2)
-      return `Based on ${totalSessions} lesson${totalSessions === 1 ? '' : 's'} · scores stabilise after 5+ lessons`;
-    if (totalSessions <= 4)
-      return `Based on ${totalSessions} lessons · score is provisional`;
+    if (scoreTier === 'none') return null; // hero shows ProvisionalScoreState
+    if (scoreTier === 'provisional')
+      return 'Score becomes reliable after 5 lessons in this period';
     return distanceLabel
       ? `Based on ${totalSessions} lessons across ${distanceLabel}`
       : `Based on ${totalSessions} lessons`;
   })();
+
+  const rangeLabel = formatRangeLabel(period, periodNow);
 
   const getEventIcon = (eventType: string) => {
     switch (eventType) {
