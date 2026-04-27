@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
+import { DowngradeSaveSheet } from "@/components/instructor/dashboard/DowngradeSaveSheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
@@ -36,6 +37,7 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [switching, setSwitching] = useState<string | null>(null);
+  const [saveOffer, setSaveOffer] = useState<{ from: Plan; to: Plan } | null>(null);
   const { subscription, refreshInstructor } = useInstructorAuth();
 
   useEffect(() => {
@@ -63,17 +65,8 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
     fetchPlans();
   }, [open]);
 
-  const handleChangePlan = async (plan: Plan) => {
+  const performPlanSwitch = async (plan: Plan) => {
     if (!subscription?.id) return;
-
-    if (plan.price_monthly > 0 && currentPlanSlug === "free") {
-      toast.success(`To upgrade to ${plan.name}, please contact us`, {
-        description: "Email hello@drive365.co.uk or call us to upgrade your plan.",
-        duration: 5000,
-      });
-      return;
-    }
-
     setSwitching(plan.slug);
     try {
       const { error } = await supabase
@@ -90,6 +83,32 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
     } finally {
       setSwitching(null);
     }
+  };
+
+  const handleChangePlan = async (plan: Plan) => {
+    if (!subscription?.id) return;
+
+    if (plan.price_monthly > 0 && currentPlanSlug === "free") {
+      toast.success(`To upgrade to ${plan.name}, please contact us`, {
+        description: "Email hello@drive365.co.uk or call us to upgrade your plan.",
+        duration: 5000,
+      });
+      return;
+    }
+
+    // Intercept downgrades (paid → cheaper paid) with a save offer
+    const currentPlan = plans.find(p => p.slug === currentPlanSlug);
+    if (
+      currentPlan &&
+      currentPlan.price_monthly > 0 &&
+      plan.price_monthly > 0 &&
+      plan.price_monthly < currentPlan.price_monthly
+    ) {
+      setSaveOffer({ from: currentPlan, to: plan });
+      return;
+    }
+
+    await performPlanSwitch(plan);
   };
 
   return (
