@@ -3,8 +3,9 @@ import { format, parseISO } from "date-fns";
 import {
   CalendarIcon, Clock, Sparkles, AlertTriangle, Loader2,
   GraduationCap, MapPin, User, Mail, Phone, Check, ChevronsUpDown, CalendarCheck,
-  ChevronDown,
+  ChevronDown, X,
 } from "lucide-react";
+import { PupilPickerSheet } from "@/components/instructor/PupilPickerSheet";
 import { SectionLabel } from "@/components/instructor/ui/SectionLabel";
 import { FormInputCard } from "@/components/instructor/ui/FormInputCard";
 import { TestCentrePicker } from "@/components/instructor/ui/TestCentrePicker";
