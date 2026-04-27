@@ -661,9 +661,12 @@ export function TermsSignatureModal({
             onClick={() => {
               if (!agreed && !scrolledToBottom) {
                 toast.error("Please scroll through the terms before agreeing");
+                logLegal("agreement_blocked", { reason: "not_scrolled_to_bottom" });
                 return;
               }
-              setAgreed(!agreed);
+              const next = !agreed;
+              setAgreed(next);
+              logLegal(next ? "agreement_checked" : "agreement_unchecked");
             }}
             style={{
               background: agreed ? COLOR_TINT : "#FFFFFF",
