@@ -3,8 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { format, addHours, differenceInMinutes, isToday, isTomorrow } from "date-fns";
 import { useSoonestPendingOffer } from "@/hooks/useSoonestPendingOffer";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
-import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
-import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
+// useWeeklyGoals/useUnreadMessagesCount now live inside WeekAtAGlanceCard
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useTileHealth } from "@/hooks/useTileHealth";
 import { a11yPx } from "@/lib/a11yScale";
@@ -122,9 +121,6 @@ export function WarmHomeTiles({ instructorId }: Props) {
     useSoonestPendingOffer(instructorId);
   const { data: nextLesson, isLoading: lessonLoading } =
     useNextLessonDetails(instructorId);
-  const { data: weekly, isLoading: weeklyLoading } = useWeeklyGoals(instructorId);
-  const { data: unreadCount, isLoading: unreadLoading } =
-    useUnreadMessagesCount(instructorId);
   const { messageCount, visitorChatCount, pendingJobsCount, swapCount } =
     useCombinedNotificationCount(instructorId);
   const { hasOutageFor } = useTileHealth(instructorId);
@@ -134,10 +130,6 @@ export function WarmHomeTiles({ instructorId }: Props) {
     hasOutageFor("messages") ||
     hasOutageFor("course_enquiries");
   const tile2Outage = hasOutageFor("scheduled_lessons") || hasOutageFor("calendar_sync_queue");
-  const tile3Outage =
-    hasOutageFor("scheduled_lessons") ||
-    hasOutageFor("payment_history") ||
-    hasOutageFor("messages");
 
   // ---------- Tile 1: Action needed (priority resolver) ----------
   let respondText = "Tap to review";
