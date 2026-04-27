@@ -668,10 +668,12 @@ export function CoursePlannerForm({
         ) : null}
       </div>
 
-      <div className={cn(
-        "border-t bg-card px-5 py-3",
-        footerSticky && "pb-[calc(0.75rem+env(safe-area-inset-bottom))]",
-      )}>
+      <div
+        className={cn(
+          step === "form" && !showHeader ? "px-0 pt-3" : "border-t bg-card px-5 py-3",
+          footerSticky && "pb-[calc(0.75rem+env(safe-area-inset-bottom))]",
+        )}
+      >
         {step === "form" ? (
           <button
             type="button"
