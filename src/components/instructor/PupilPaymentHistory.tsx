@@ -95,9 +95,11 @@ export function PupilPaymentHistory({
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("payment_history")
-        .select("id, amount, payment_method, notes, recorded_at, payout_status")
+        .select(
+          "id, amount, payment_method, notes, recorded_at, payout_status, lesson_id, scheduled_lessons:lesson_id(lesson_date, start_time)"
+        )
         .eq("pupil_id", pupilId)
         .order("recorded_at", { ascending: false })
         .limit(limit);
