@@ -35,6 +35,7 @@ export function StepPayment({
   instructorId,
   currentBalance,
   lessonCost,
+  lessonId,
   paymentQrUrl,
   onPaymentRecorded,
   onSkip,
