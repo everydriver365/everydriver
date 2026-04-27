@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Plus, Calendar, Users, MapPin, PoundSterling, MessageSquare, UsersRound } from "lucide-react";
+import { Plus, Calendar, Users, MapPin, PoundSterling, MessageSquare, UsersRound, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +8,8 @@ import { haptics } from "@/lib/haptics";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { QuickActionsDrawer } from "@/components/instructor/QuickActionsDrawer";
+import { VoiceQuickAddLessonSheet } from "@/components/instructor/VoiceQuickAddLessonSheet";
+import { useVoiceToText } from "@/hooks/useVoiceToText";
 
 interface QuickAction {
   id: string;
