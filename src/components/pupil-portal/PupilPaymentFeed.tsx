@@ -14,6 +14,7 @@ import {
   MapPin,
   FileText,
   AlertTriangle,
+  SlidersHorizontal,
 } from "lucide-react";
 import { PupilPaymentReceiptSheet } from "./PupilPaymentReceiptSheet";
 import { PupilPaymentDisputeSheet } from "./PupilPaymentDisputeSheet";
@@ -122,6 +123,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [receiptId, setReceiptId] = useState<string | null>(null);
   const [disputeId, setDisputeId] = useState<string | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const toggleExpanded = (id: string) =>
     setExpandedId((prev) => (prev === id ? null : id));
@@ -246,10 +248,10 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
   return (
     <div className="space-y-1">
       {/* Balance header */}
-      <div className="text-center py-4">
-        <p className="text-xs text-muted-foreground mb-1">Current Balance</p>
+      <div className="text-center py-3 sm:py-4">
+        <p className="text-[11px] sm:text-xs text-muted-foreground mb-1">Current Balance</p>
         <p
-          className={`text-3xl font-bold ${
+          className={`text-2xl sm:text-3xl font-bold ${
             (currentBalance || 0) < 0 ? "text-destructive" : "text-foreground"
           }`}
         >
@@ -258,79 +260,111 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
         </p>
       </div>
 
-      {/* Search + filters */}
-      <div className="px-4 pb-3 space-y-2">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search postcode, lesson date, notes, amount…"
-            className="pl-9 pr-9 h-9 text-sm"
-            aria-label="Search payments"
-          />
-          {search && (
-            <button
-              type="button"
-              onClick={() => setSearch("")}
-              aria-label="Clear search"
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted text-muted-foreground"
+      {/* Sticky search + filters */}
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/60 px-3 sm:px-4 py-2.5 space-y-2 -mx-px">
+        <div className="flex gap-2 items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search payments…"
+              className="pl-9 pr-9 h-10 text-sm"
+              aria-label="Search payments"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-muted text-muted-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowAdvanced((v) => !v)}
+            aria-expanded={showAdvanced}
+            aria-label="Toggle filters"
+            className={`relative h-10 w-10 shrink-0 inline-flex items-center justify-center rounded-md border ${
+              showAdvanced || filtersActive
+                ? "border-primary/60 text-primary bg-primary/5"
+                : "border-border text-muted-foreground"
+            }`}
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            {filtersActive && (
+              <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
+            )}
+          </button>
+        </div>
+
+        <AnimatePresence initial={false}>
+          {showAdvanced && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              className="overflow-hidden"
             >
-              <X className="h-3.5 w-3.5" />
-            </button>
+              <div className="space-y-2 pt-1">
+                <div className="grid grid-cols-2 gap-2">
+                  <Select
+                    value={datePreset}
+                    onValueChange={(v) => setDatePreset(v as DatePreset)}
+                  >
+                    <SelectTrigger className="h-9 text-xs" aria-label="Date range">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All time</SelectItem>
+                      <SelectItem value="7d">Last 7 days</SelectItem>
+                      <SelectItem value="30d">Last 30 days</SelectItem>
+                      <SelectItem value="90d">Last 90 days</SelectItem>
+                      <SelectItem value="year">Last year</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    value={linkFilter}
+                    onValueChange={(v) => setLinkFilter(v as LinkFilter)}
+                  >
+                    <SelectTrigger className="h-9 text-xs" aria-label="Lesson link">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All payments</SelectItem>
+                      <SelectItem value="linked">Linked to lesson</SelectItem>
+                      <SelectItem value="unlinked">Not linked</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Select
+                  value={weekday}
+                  onValueChange={(v) => setWeekday(v as WeekdayFilter)}
+                >
+                  <SelectTrigger className="h-9 text-xs w-full" aria-label="Lesson day">
+                    <SelectValue placeholder="Lesson day" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any lesson day</SelectItem>
+                    <SelectItem value="1">Monday lessons</SelectItem>
+                    <SelectItem value="2">Tuesday lessons</SelectItem>
+                    <SelectItem value="3">Wednesday lessons</SelectItem>
+                    <SelectItem value="4">Thursday lessons</SelectItem>
+                    <SelectItem value="5">Friday lessons</SelectItem>
+                    <SelectItem value="6">Saturday lessons</SelectItem>
+                    <SelectItem value="0">Sunday lessons</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </motion.div>
           )}
-        </div>
-
-        <div className="flex gap-2">
-          <Select
-            value={datePreset}
-            onValueChange={(v) => setDatePreset(v as DatePreset)}
-          >
-            <SelectTrigger className="h-9 text-xs flex-1" aria-label="Date range">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All time</SelectItem>
-              <SelectItem value="7d">Last 7 days</SelectItem>
-              <SelectItem value="30d">Last 30 days</SelectItem>
-              <SelectItem value="90d">Last 90 days</SelectItem>
-              <SelectItem value="year">Last year</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={linkFilter}
-            onValueChange={(v) => setLinkFilter(v as LinkFilter)}
-          >
-            <SelectTrigger className="h-9 text-xs flex-1" aria-label="Lesson link">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All payments</SelectItem>
-              <SelectItem value="linked">Linked to lesson</SelectItem>
-              <SelectItem value="unlinked">Not linked</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Select
-          value={weekday}
-          onValueChange={(v) => setWeekday(v as WeekdayFilter)}
-        >
-          <SelectTrigger className="h-9 text-xs w-full" aria-label="Lesson day">
-            <SelectValue placeholder="Lesson day" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Any lesson day</SelectItem>
-            <SelectItem value="1">Monday lessons</SelectItem>
-            <SelectItem value="2">Tuesday lessons</SelectItem>
-            <SelectItem value="3">Wednesday lessons</SelectItem>
-            <SelectItem value="4">Thursday lessons</SelectItem>
-            <SelectItem value="5">Friday lessons</SelectItem>
-            <SelectItem value="6">Saturday lessons</SelectItem>
-            <SelectItem value="0">Sunday lessons</SelectItem>
-          </SelectContent>
-        </Select>
+        </AnimatePresence>
 
         <div className="flex items-center justify-between gap-2">
           {filtersActive ? (
@@ -344,7 +378,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
               }}
               className="text-[11px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
             >
-              Clear filters · {filtered.length} of {payments.length}
+              Clear · {filtered.length}/{payments.length}
             </button>
           ) : (
             <span className="text-[11px] text-muted-foreground">
@@ -384,12 +418,12 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
       ) : (
         grouped.map(({ key: month, entries, paidTotal, lessonCount }) => (
           <div key={month}>
-            <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm px-4 py-2 flex items-baseline justify-between gap-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <div className="px-3 sm:px-4 pt-3 pb-1.5 flex items-baseline justify-between gap-2 bg-muted/20">
+              <p className="text-[11px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 {month}
               </p>
               <p className="text-[10px] text-muted-foreground/80 tabular-nums">
-                £{paidTotal.toFixed(2)} paid · {lessonCount}{" "}
+                £{paidTotal.toFixed(2)} · {lessonCount}{" "}
                 {lessonCount === 1 ? "lesson" : "lessons"}
               </p>
             </div>
@@ -416,7 +450,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
                       onClick={() => toggleExpanded(entry.id)}
                       aria-expanded={isExpanded}
                       aria-label={isExpanded ? "Hide details" : "Show details"}
-                      className="flex items-center gap-3 px-4 py-3 text-left w-full hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer"
+                      className="flex items-center gap-3 px-3 sm:px-4 py-3.5 text-left w-full hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer min-h-[60px]"
                     >
                       <div
                         className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
@@ -484,7 +518,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
                           transition={{ duration: 0.2, ease: "easeInOut" }}
                           className="overflow-hidden"
                         >
-                          <div className="ml-[3.25rem] mr-4 mb-3 mt-0.5 rounded-xl border border-border/60 bg-muted/30 p-3 space-y-1.5">
+                          <div className="ml-[3.25rem] mr-3 sm:mr-4 mb-3 mt-0.5 rounded-xl border border-border/60 bg-muted/30 p-3 space-y-2">
                             {hasLesson && (
                               <>
                                 <div className="flex items-center gap-2 text-[11px] text-foreground/80">
@@ -534,14 +568,14 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
                               <button
                                 type="button"
                                 onClick={() => setReceiptId(entry.id)}
-                                className="flex-1 inline-flex items-center justify-center gap-1 text-[11px] font-medium text-foreground border border-border rounded-md px-2 py-1.5 hover:bg-background"
+                                className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-foreground border border-border rounded-md px-2 py-2 hover:bg-background min-h-[36px]"
                               >
                                 <FileText className="h-3 w-3" /> Receipt
                               </button>
                               <button
                                 type="button"
                                 onClick={() => setDisputeId(entry.id)}
-                                className="flex-1 inline-flex items-center justify-center gap-1 text-[11px] font-medium text-amber-700 dark:text-amber-400 border border-amber-300/60 dark:border-amber-800/60 rounded-md px-2 py-1.5 hover:bg-amber-50/60 dark:hover:bg-amber-950/30"
+                                className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-400 border border-amber-300/60 dark:border-amber-800/60 rounded-md px-2 py-2 hover:bg-amber-50/60 dark:hover:bg-amber-950/30 min-h-[36px]"
                               >
                                 <AlertTriangle className="h-3 w-3" /> Flag for review
                               </button>
