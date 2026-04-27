@@ -12,6 +12,9 @@ import {
   Bell,
   BellOff,
   Check,
+  X,
+  AlertCircle,
+  Users,
 } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -26,13 +29,17 @@ import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
 import { SearchInput } from "@/components/instructor/ui/SearchInput";
 import { EyebrowLabel } from "@/components/instructor/EyebrowLabel";
 import { pupilAvatarColor, pupilAvatarInitial } from "@/lib/pupilAvatarColor";
+import { formatPhoneNumber, canonicalPhone } from "@/lib/formatPhoneNumber";
+import { titleCaseName } from "@/lib/titleCase";
+import {
+  detectDataQualityIssues,
+  findPhoneDuplicateName,
+} from "@/lib/detectDataQualityIssues";
+import { compactRelative } from "@/lib/relativeTime";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 
