@@ -1195,26 +1195,26 @@ export function PupilCardStack({
                     <div className="flex items-center justify-between px-1 mb-2">
                       <p style={SECTION_LABEL_STYLE}>Notes</p>
                       <button
-                        onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}
+                        onClick={(e) => { e.stopPropagation(); setShowNoteSheet(true); }}
                         style={{ fontSize: 12, fontWeight: 500, color: "#2B7BC8" }}
                       >
                         Edit
                       </button>
                     </div>
                     <button
-                      onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}
+                      onClick={(e) => { e.stopPropagation(); setShowNoteSheet(true); }}
                       className="w-full text-left rounded-2xl bg-white border border-[#E9ECF1] p-3"
                     >
                       <div className="rounded-xl px-3 py-2.5" style={{ background: "#F2F2F4" }}>
                         <p style={{ fontSize: 13, color: "#000000", lineHeight: 1.4, whiteSpace: "pre-wrap" }}>
-                          {pupil.notes}
+                          {effectiveNotes}
                         </p>
                       </div>
                     </button>
                   </div>
                 ) : (
                   <button
-                    onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}
+                    onClick={(e) => { e.stopPropagation(); setShowNoteSheet(true); }}
                     className="mx-4 mt-3 rounded-2xl bg-white border border-[#E9ECF1] px-4 py-3 flex items-center gap-3 active:bg-[#F2F4F7] transition-colors"
                     style={{ width: "calc(100% - 2rem)" }}
                   >
