@@ -1035,25 +1035,25 @@ export function PupilCardStack({
                   >
                     At a glance
                   </p>
-                  <div className="rounded-2xl bg-white border border-[#E9ECF1] grid grid-cols-4 divide-x divide-[#E9ECF1] py-4">
+                  <div className="rounded-2xl bg-white border border-[#E9ECF1] grid grid-cols-4 gap-2 p-3">
                     {[
-                      { value: String(lessonsCount), label: "Lessons", muted: lessonsCount === 0 },
+                      { value: lessonsCount > 0 ? String(lessonsCount) : "—", label: "Lessons", muted: lessonsCount === 0 },
                       { value: hoursDisplay, label: "Hours", muted: hoursDisplay === "—" },
                       { value: progressDisplay, label: "Progress", muted: progressDisplay === "—" },
                       { value: balanceDisplay, label: balanceLabel, debt: hasDebt },
                     ].map(({ value, label, muted, debt }) => (
-                      <div key={label} className="text-center px-1">
+                      <div key={label} className="text-center">
                         <div
                           style={{
                             fontSize: 18,
-                            fontWeight: 600,
-                            color: debt ? "#C8434F" : muted ? "#9AA3B0" : "#0F1B2D",
-                            letterSpacing: -0.2,
+                            fontWeight: 500,
+                            color: debt ? "#C8434F" : muted ? "#6E6E73" : "#000000",
+                            letterSpacing: -0.3,
                           }}
                         >
                           {value}
                         </div>
-                        <div style={{ fontSize: 10, color: "#6E6E73", marginTop: 2, letterSpacing: 0.2 }}>
+                        <div style={{ fontSize: 11, color: "#6E6E73", marginTop: 2 }}>
                           {label}
                         </div>
                       </div>
