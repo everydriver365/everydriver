@@ -48,6 +48,7 @@ import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHisto
 import { PupilPaymentHistory } from "@/components/instructor/PupilPaymentHistory";
 import { PupilCreditBreakdown } from "@/components/instructor/PupilCreditBreakdown";
 import { RecordPaymentModal } from "@/components/instructor/RecordPaymentModal";
+import { PupilNoteSheet } from "@/components/instructor/PupilNoteSheet";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { SendPaymentReminderButton } from "@/components/instructor/SendPaymentReminderButton";
 import { DrivingSyllabus } from "@/components/instructor/DrivingSyllabus";
@@ -215,6 +216,11 @@ export function PupilCardStack({
   
   // Syllabus sheet state
   const [showSyllabusSheet, setShowSyllabusSheet] = useState(false);
+
+  // Note sheet state
+  const [showNoteSheet, setShowNoteSheet] = useState(false);
+  const [noteOverride, setNoteOverride] = useState<string | null>(null);
+  const effectiveNotes = noteOverride !== null ? noteOverride : (pupil.notes ?? "");
 
   // Notes with lesson linking
   const [isAddingNote, setIsAddingNote] = useState(false);
@@ -919,7 +925,7 @@ export function PupilCardStack({
         const balanceLabel = hasDebt ? "Owed" : hasCredit ? "Credit" : "Balance";
 
         const hasRecentLessons = recentLessons.length > 0;
-        const hasNotes = !!(pupil.notes && pupil.notes.trim());
+        const hasNotes = !!(effectiveNotes && effectiveNotes.trim());
         const hasTestJourney = !!pupil.test_date;
         const SECTION_LABEL_STYLE: React.CSSProperties = {
           fontSize: 11,
@@ -1189,26 +1195,26 @@ export function PupilCardStack({
                     <div className="flex items-center justify-between px-1 mb-2">
                       <p style={SECTION_LABEL_STYLE}>Notes</p>
                       <button
-                        onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}
+                        onClick={(e) => { e.stopPropagation(); setShowNoteSheet(true); }}
                         style={{ fontSize: 12, fontWeight: 500, color: "#2B7BC8" }}
                       >
                         Edit
                       </button>
                     </div>
                     <button
-                      onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}
+                      onClick={(e) => { e.stopPropagation(); setShowNoteSheet(true); }}
                       className="w-full text-left rounded-2xl bg-white border border-[#E9ECF1] p-3"
                     >
                       <div className="rounded-xl px-3 py-2.5" style={{ background: "#F2F2F4" }}>
                         <p style={{ fontSize: 13, color: "#000000", lineHeight: 1.4, whiteSpace: "pre-wrap" }}>
-                          {pupil.notes}
+                          {effectiveNotes}
                         </p>
                       </div>
                     </button>
                   </div>
                 ) : (
                   <button
-                    onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}
+                    onClick={(e) => { e.stopPropagation(); setShowNoteSheet(true); }}
                     className="mx-4 mt-3 rounded-2xl bg-white border border-[#E9ECF1] px-4 py-3 flex items-center gap-3 active:bg-[#F2F4F7] transition-colors"
                     style={{ width: "calc(100% - 2rem)" }}
                   >
@@ -1422,6 +1428,15 @@ export function PupilCardStack({
           />
         </SheetContent>
       </Sheet>
+
+      <PupilNoteSheet
+        open={showNoteSheet}
+        onOpenChange={setShowNoteSheet}
+        pupilId={pupil.id}
+        pupilName={pupil.name}
+        initialNote={effectiveNotes}
+        onSaved={(newNote) => setNoteOverride(newNote)}
+      />
     </>
   );
 }
