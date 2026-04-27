@@ -568,7 +568,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
                               <button
                                 type="button"
                                 onClick={() => setReceiptId(entry.id)}
-                                className="flex-1 inline-flex items-center justify-center gap-1 text-[11px] font-medium text-foreground border border-border rounded-md px-2 py-1.5 hover:bg-background"
+                                className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-foreground border border-border rounded-md px-2 py-2 hover:bg-background min-h-[36px]"
                               >
                                 <FileText className="h-3 w-3" /> Receipt
                               </button>
