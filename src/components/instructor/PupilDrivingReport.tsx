@@ -29,7 +29,9 @@ import { SegmentedControl } from '@/components/instructor/ui/SegmentedControl';
 import {
   PeriodSelector,
   type PeriodKey,
+  DEFAULT_PERIOD_OPTIONS,
 } from '@/components/instructor/ui/PeriodSelector';
+import { jsPDF } from 'jspdf';
 import { TrendPill } from '@/components/instructor/ui/TrendPill';
 import { ScoreBadge } from '@/components/instructor/ui/ScoreBadge';
 import { titleCaseName } from '@/lib/titleCase';
