@@ -213,8 +213,14 @@ export function TermsSignatureModal({
     if (!terms || !signatureDataUrl || !agreed) return;
     if (isUnder18 && (!parentSignatureDataUrl || !parentAgreed || !parentName.trim())) {
       toast.error("Parent/guardian signature is required for under-18 pupils");
+      logLegal("confirm_blocked", { reason: "missing_parent_signature" });
       return;
     }
+
+    logLegal("confirm_attempted", {
+      is_under_18: isUnder18,
+      has_parent_signature: !!parentSignatureDataUrl,
+    });
 
     setSubmitting(true);
     try {
@@ -230,7 +236,7 @@ export function TermsSignatureModal({
       // Create signature record — snapshot the exact terms text/version/title
       // signed at this moment so future edits to the source T&Cs never
       // retroactively change what the pupil agreed to.
-      const { error: insertError } = await supabase
+      const { data: insertedRows, error: insertError } = await supabase
         .from("pupil_signatures")
         .insert({
           pupil_id: pupilId,
@@ -245,9 +251,19 @@ export function TermsSignatureModal({
           terms_content_snapshot: terms.content,
           terms_version_snapshot: terms.version,
           terms_title_snapshot: terms.title,
-        });
+        })
+        .select("id")
+        .single();
 
       if (insertError) throw insertError;
+
+      logLegal("save_success", {
+        signature_id: insertedRows?.id ?? null,
+        signature_url: pupilSigUrl,
+        parent_signature_url: parentSigUrl,
+        is_under_18: isUnder18,
+        parent_name: isUnder18 ? parentName.trim() : null,
+      });
 
       toast.success(
         isUnder18
@@ -258,6 +274,9 @@ export function TermsSignatureModal({
       onOpenChange(false);
     } catch (error) {
       console.error("Error submitting signature:", error);
+      logLegal("save_failure", {
+        error_message: error instanceof Error ? error.message : String(error),
+      });
       toast.error("Failed to save signature");
     } finally {
       setSubmitting(false);
