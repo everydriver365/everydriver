@@ -649,11 +649,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             <InstructorBottomNav wallpaperColor={appStyleBg} />
             {/* Floating Ask ED button */}
             <div className="fixed bottom-[88px] right-4 z-40 flex flex-col items-center gap-1">
-              {voiceAssistant.state === "idle" && (
-                <span className="text-[10px] font-semibold text-primary bg-background/90 backdrop-blur-sm px-2 py-0.5 rounded-full shadow-sm border">
-                  Hey ED
-                </span>
-              )}
               <motion.button
                 onClick={handleVoiceTap}
                 whileTap={{ scale: 0.9 }}

@@ -3,11 +3,11 @@ import { ChevronRight } from "lucide-react";
 import { format, addHours, differenceInMinutes, isToday, isTomorrow } from "date-fns";
 import { useSoonestPendingOffer } from "@/hooks/useSoonestPendingOffer";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
-import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
-import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
+// useWeeklyGoals/useUnreadMessagesCount now live inside WeekAtAGlanceCard
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useTileHealth } from "@/hooks/useTileHealth";
 import { a11yPx } from "@/lib/a11yScale";
+import { WeekAtAGlanceCard } from "@/components/instructor/WeekAtAGlanceCard";
 
 interface Props {
   instructorId: string | undefined;
@@ -121,9 +121,6 @@ export function WarmHomeTiles({ instructorId }: Props) {
     useSoonestPendingOffer(instructorId);
   const { data: nextLesson, isLoading: lessonLoading } =
     useNextLessonDetails(instructorId);
-  const { data: weekly, isLoading: weeklyLoading } = useWeeklyGoals(instructorId);
-  const { data: unreadCount, isLoading: unreadLoading } =
-    useUnreadMessagesCount(instructorId);
   const { messageCount, visitorChatCount, pendingJobsCount, swapCount } =
     useCombinedNotificationCount(instructorId);
   const { hasOutageFor } = useTileHealth(instructorId);
@@ -133,10 +130,6 @@ export function WarmHomeTiles({ instructorId }: Props) {
     hasOutageFor("messages") ||
     hasOutageFor("course_enquiries");
   const tile2Outage = hasOutageFor("scheduled_lessons") || hasOutageFor("calendar_sync_queue");
-  const tile3Outage =
-    hasOutageFor("scheduled_lessons") ||
-    hasOutageFor("payment_history") ||
-    hasOutageFor("messages");
 
   // ---------- Tile 1: Action needed (priority resolver) ----------
   let respondText = "Tap to review";
@@ -385,97 +378,8 @@ export function WarmHomeTiles({ instructorId }: Props) {
         </TileShell>
       )}
 
-      {/* Tile 3 — This week at a glance */}
-      <div
-        className="relative"
-        style={{
-          background: "#FFFFFF",
-          border: "0.5px solid #E5E5EA",
-          borderRadius: a11yPx(12),
-          padding: `${a11yPx(14)} ${a11yPx(16)}`,
-        }}
-      >
-        {tile3Outage && <HealthDot />}
-        <div
-          style={{
-            fontSize: a11yPx(11),
-            color: TXT.muted,
-            letterSpacing: 0,
-            marginBottom: a11yPx(10),
-            fontWeight: 500,
-          }}
-        >
-          THIS WEEK AT A GLANCE
-        </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: a11yPx(10),
-          }}
-        >
-          {[
-            {
-              loading: weeklyLoading,
-              value: weekly?.lessonsThisWeek ?? 0,
-              label: "Lessons",
-              format: (v: number) => String(v),
-              activeColor: TXT.blue,
-            },
-            {
-              loading: weeklyLoading,
-              value: weekly?.earningsThisWeek ?? 0,
-              label: "Earned",
-              format: (v: number) => `£${v.toLocaleString("en-GB")}`,
-              activeColor: "#1F7A3A",
-            },
-            {
-              loading: unreadLoading,
-              value: unreadCount ?? 0,
-              label: "Messages",
-              format: (v: number) => String(v),
-              activeColor: TXT.red,
-            },
-          ].map((col, idx) => {
-            const hasData = col.value > 0;
-            return (
-              <div
-                key={col.label}
-                style={{
-                  paddingLeft: idx === 0 ? 0 : a11yPx(10),
-                  borderLeft:
-                    idx === 0 ? "none" : `0.5px solid ${TXT.hairline}`,
-                }}
-              >
-                {col.loading ? (
-                  <Skeleton width={32} height={18} />
-                ) : (
-                  <div
-                    style={{
-                      fontSize: a11yPx(18),
-                      fontWeight: hasData ? 600 : 500,
-                      color: hasData ? col.activeColor : TXT.muted,
-                      lineHeight: 1.1,
-                      transition: "color 200ms ease",
-                    }}
-                  >
-                    {col.format(col.value)}
-                  </div>
-                )}
-                <div
-                  style={{
-                    fontSize: a11yPx(11),
-                    color: TXT.muted,
-                    marginTop: a11yPx(2),
-                  }}
-                >
-                  {col.label}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* Tile 3 — This week at a glance (premium tile system) */}
+      <WeekAtAGlanceCard instructorId={instructorId} />
     </div>
   );
 }
