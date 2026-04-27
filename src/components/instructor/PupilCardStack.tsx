@@ -918,14 +918,24 @@ export function PupilCardStack({
         const balanceDisplay = `£${balanceAbs.toFixed(0)}`;
         const balanceLabel = hasDebt ? "Owed" : hasCredit ? "Credit" : "Balance";
 
+        const hasRecentLessons = recentLessons.length > 0;
+        const hasNotes = !!(pupil.notes && pupil.notes.trim());
+        const hasTestJourney = !!pupil.test_date;
+        const SECTION_LABEL_STYLE: React.CSSProperties = {
+          fontSize: 11,
+          fontWeight: 500,
+          letterSpacing: 0.3,
+          color: "#6E6E73",
+          textTransform: "uppercase",
+        };
         return (
           <Sheet open={isExpanded} onOpenChange={setIsExpanded}>
             <SheetContent
               side="bottom"
-              className="h-[95vh] rounded-t-3xl p-0 overflow-y-auto border-0"
-              style={{ background: "#F2F4F7" }}
+              className="h-[100dvh] max-h-[100dvh] rounded-none p-0 overflow-y-auto border-0"
+              style={{ background: "#F2F2F4" }}
             >
-              <div className="pb-8" style={{ fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif" }}>
+              <div className="pb-10" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, sans-serif" }}>
                 {/* ── Top bar: back / favourite / more ── */}
                 <div className="flex items-center justify-between px-4 pt-4 pb-2">
                   <button
