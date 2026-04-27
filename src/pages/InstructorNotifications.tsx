@@ -508,62 +508,233 @@ export default function InstructorNotifications() {
     const ts = isGroup ? item.latest_at : n.created_at;
 
     return (
-      <button
+      <NotificationRow
         key={isGroup ? item.key : n.id}
-        type="button"
-        onClick={() => handleTapItem(item)}
-        className="w-full text-left flex items-start"
-        style={{
-          padding: 12,
-          borderRadius: 10,
-          gap: 10,
-          background: isUnread ? palette.tintBg : CARD_BG,
-          border: isUnread ? "none" : `0.5px solid ${HAIRLINE}`,
-          marginBottom: 6,
-        }}
-      >
-        <div
-          className="flex items-center justify-center"
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 8,
-            flexShrink: 0,
-            marginTop: 1,
-            background: isUnread ? CARD_BG : palette.tintBg,
-          }}
-        >
-          <Icon style={{ width: 16, height: 16, color: palette.tintFg, strokeWidth: 2 }} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between" style={{ gap: 8, marginBottom: 2 }}>
-            <p
-              className="m-0 truncate"
-              style={{ fontSize: 13, fontWeight: 500, color: TEXT, letterSpacing: "-0.1px" }}
-            >
-              {title}
-            </p>
-            <span
-              className="flex-shrink-0"
-              style={{
-                fontSize: 11,
-                color: isUnread ? LINK : MUTED,
-                fontWeight: isUnread ? 500 : 400,
-              }}
-            >
-              {compactRelative(ts)}
-            </span>
-          </div>
-          <p
-            className="m-0 truncate"
-            style={{ fontSize: 12, color: MUTED, lineHeight: 1.4 }}
-          >
-            {subtitle}
-          </p>
-        </div>
-      </button>
+        item={item}
+        n={n}
+        title={title}
+        subtitle={subtitle}
+        ts={ts}
+        isUnread={isUnread}
+        palette={palette}
+        Icon={Icon}
+        onTap={() => handleTapItem(item)}
+        onLongPress={() => setActionFor(n)}
+      />
     );
   };
+
+  const isListEmpty = filtered.length === 0;
+  const isSnoozedView = filter === "snoozed";
+
+  // Resolve action sheet target
+  const actionTypeLabel =
+    actionFor && categoryFor(actionFor.type) === "test_swap" ? "test swaps"
+    : actionFor && categoryFor(actionFor.type) === "message" ? "messages"
+    : actionFor && categoryFor(actionFor.type) === "job" ? "job offers"
+    : "this type";
+
+  return (
+    <div className="min-h-screen" style={{ background: PAGE_BG }}>
+      <InstructorMobileHeader title="Notifications" showBackButton showSettings={false} />
+      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+        {HeroCard}
+        {CategoriesCard}
+
+        {/* Filter + list combined card */}
+        <div style={{ background: CARD_BG, borderRadius: 12, padding: 12 }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
+            {PillFilter}
+            {MarkAllLink}
+          </div>
+
+          {loading ? (
+            <div className="text-center" style={{ padding: "32px 16px", color: MUTED, fontSize: 13 }}>
+              Loading…
+            </div>
+          ) : isListEmpty ? (
+            isSnoozedView ? (
+              <div className="flex flex-col items-center text-center" style={{ padding: "32px 16px", gap: 12 }}>
+                <div className="flex items-center justify-center" style={{ width: 48, height: 48, borderRadius: 12, background: "#E6F1FB" }}>
+                  <Clock style={{ width: 24, height: 24, color: "#2B7BC8", strokeWidth: 2 }} />
+                </div>
+                <div>
+                  <p className="m-0" style={{ fontSize: 15, fontWeight: 500, color: TEXT }}>Nothing snoozed</p>
+                  <p className="m-0" style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>
+                    Snoozed alerts will appear here until they resurface
+                  </p>
+                </div>
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="flex flex-col items-center text-center" style={{ padding: "32px 16px", gap: 12 }}>
+                <div className="flex items-center justify-center" style={{ width: 48, height: 48, borderRadius: 12, background: CATEGORY.default.tintBg }}>
+                  <Bell style={{ width: 24, height: 24, color: CATEGORY.default.tintFg, strokeWidth: 2 }} />
+                </div>
+                <div>
+                  <p className="m-0" style={{ fontSize: 15, fontWeight: 500, color: TEXT }}>All caught up</p>
+                  <p className="m-0" style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>
+                    You'll see new alerts here as they arrive
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center text-center" style={{ padding: "32px 16px", gap: 12 }}>
+                <div className="flex items-center justify-center" style={{ width: 48, height: 48, borderRadius: 12, background: "#E8F3E8" }}>
+                  <Check style={{ width: 24, height: 24, color: "#3B8B3B", strokeWidth: 2 }} />
+                </div>
+                <div>
+                  <p className="m-0" style={{ fontSize: 15, fontWeight: 500, color: TEXT }}>Nothing here</p>
+                  <p className="m-0" style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>
+                    Switch to All to see your full notification history
+                  </p>
+                </div>
+              </div>
+            )
+          ) : (
+            <div className={cn("flex flex-col")}>
+              {list.map(item => {
+                if (isSnoozedView && item.kind === "single") {
+                  return (
+                    <SnoozedRow
+                      key={item.notification.id}
+                      n={item.notification}
+                      onUnsnooze={() => unsnoozeNotification(item.notification.id)}
+                    />
+                  );
+                }
+                return renderRow(item);
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Action sheet */}
+      <RowActionSheet
+        open={!!actionFor}
+        onOpenChange={v => { if (!v) setActionFor(null); }}
+        isUnread={!!actionFor && !actionFor.is_read}
+        typeLabel={actionTypeLabel}
+        onMarkRead={() => actionFor && markAsRead(actionFor.id)}
+        onMarkUnread={() => actionFor && markAsUnread(actionFor.id)}
+        onSnooze={() => {
+          if (!actionFor) return;
+          const target = actionFor;
+          setActionFor(null);
+          setSnoozeFor(target);
+        }}
+        onMuteType={() => navigate("/instructor/menu?open=notifications")}
+      />
+
+      {/* Snooze sheet */}
+      <SnoozeSheet
+        open={!!snoozeFor}
+        onOpenChange={v => { if (!v) setSnoozeFor(null); }}
+        onPick={(until) => {
+          if (snoozeFor) snoozeNotification(snoozeFor.id, until);
+          setSnoozeFor(null);
+        }}
+      />
+    </div>
+  );
+}
+
+// ─── Row sub-components ────────────────────────────────────────────
+
+interface RowProps {
+  item: ListItem;
+  n: InstructorNotification;
+  title: string;
+  subtitle: string;
+  ts: string;
+  isUnread: boolean;
+  palette: typeof CATEGORY[CategoryKey];
+  Icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  onTap: () => void;
+  onLongPress: () => void;
+}
+
+function NotificationRow({ n, title, subtitle, ts, isUnread, palette, Icon, onTap, onLongPress }: RowProps) {
+  const handlers = useLongPress({ onLongPress, onClick: onTap });
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      {...handlers}
+      className="w-full text-left flex items-start cursor-pointer select-none"
+      style={{
+        padding: 12,
+        borderRadius: 10,
+        gap: 10,
+        background: isUnread ? palette.tintBg : CARD_BG,
+        border: isUnread ? "none" : `0.5px solid ${HAIRLINE}`,
+        marginBottom: 6,
+      }}
+    >
+      <div
+        className="flex items-center justify-center"
+        style={{
+          width: 32, height: 32, borderRadius: 8, flexShrink: 0, marginTop: 1,
+          background: isUnread ? CARD_BG : palette.tintBg,
+        }}
+      >
+        <Icon style={{ width: 16, height: 16, color: palette.tintFg, strokeWidth: 2 }} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between" style={{ gap: 8, marginBottom: 2 }}>
+          <p className="m-0 truncate" style={{ fontSize: 13, fontWeight: 500, color: TEXT, letterSpacing: "-0.1px" }}>
+            {title}
+          </p>
+          <span className="flex-shrink-0" style={{ fontSize: 11, color: isUnread ? LINK : MUTED, fontWeight: isUnread ? 500 : 400 }}>
+            {compactRelative(ts)}
+          </span>
+        </div>
+        <p className="m-0 truncate" style={{ fontSize: 12, color: MUTED, lineHeight: 1.4 }}>
+          {subtitle}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SnoozedRow({ n, onUnsnooze }: { n: InstructorNotification; onUnsnooze: () => void }) {
+  const cat = categoryFor(n.type);
+  const palette = CATEGORY[cat];
+  const Icon = palette.icon;
+  const until = n.snoozed_until ? new Date(n.snoozed_until) : null;
+  const untilLabel = until ? format(until, "d MMM 'at' HH:mm") : "";
+  return (
+    <div
+      className="w-full text-left flex items-start"
+      style={{
+        padding: 12, borderRadius: 10, gap: 10,
+        background: CARD_BG, border: `0.5px solid ${HAIRLINE}`, marginBottom: 6,
+      }}
+    >
+      <div className="flex items-center justify-center" style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, marginTop: 1, background: palette.tintBg }}>
+        <Icon style={{ width: 16, height: 16, color: palette.tintFg, strokeWidth: 2 }} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="m-0 truncate" style={{ fontSize: 13, fontWeight: 500, color: TEXT, letterSpacing: "-0.1px" }}>
+          {sentenceCase(n.title)}
+        </p>
+        <p className="m-0 truncate" style={{ fontSize: 12, color: MUTED, lineHeight: 1.4 }}>
+          Snoozed until {untilLabel}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={onUnsnooze}
+        style={{
+          fontSize: 12, fontWeight: 500, color: LINK, background: "transparent", border: "none",
+          padding: "4px 8px", flexShrink: 0,
+        }}
+      >
+        Unsnooze
+      </button>
+    </div>
+  );
+}
 
   const isListEmpty = filtered.length === 0;
 
