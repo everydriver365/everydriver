@@ -14,6 +14,7 @@ import {
   MapPin,
   FileText,
   AlertTriangle,
+  SlidersHorizontal,
 } from "lucide-react";
 import { PupilPaymentReceiptSheet } from "./PupilPaymentReceiptSheet";
 import { PupilPaymentDisputeSheet } from "./PupilPaymentDisputeSheet";
