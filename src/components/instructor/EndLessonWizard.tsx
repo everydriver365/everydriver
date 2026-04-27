@@ -410,6 +410,7 @@ export function EndLessonWizard({
               instructorId={instructorId}
               currentBalance={currentBalance}
               lessonCost={lessonCost}
+              lessonId={lessonId}
               paymentQrUrl={paymentQrUrl}
               onPaymentRecorded={goNext}
               onSkip={goNext}
