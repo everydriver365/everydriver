@@ -414,19 +414,21 @@ function TabCountPill({ count, active }: { count: number; active: boolean }) {
   return (
     <span
       style={{
-        marginLeft: 4,
-        minWidth: 16,
-        height: 16,
-        padding: "0 5px",
+        marginLeft: 5,
+        minWidth: 18,
+        height: 18,
+        padding: "0 6px",
         borderRadius: 999,
         background: active ? "#FFFFFF" : RED,
         color: active ? BLUE : "#FFFFFF",
-        fontSize: 10,
-        fontWeight: 600,
+        fontSize: 11,
+        fontWeight: 700,
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
         lineHeight: 1,
+        letterSpacing: 0.2,
+        fontVariantNumeric: "tabular-nums",
       }}
     >
       {display}
