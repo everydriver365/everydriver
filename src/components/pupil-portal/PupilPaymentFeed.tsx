@@ -89,6 +89,10 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
   const [datePreset, setDatePreset] = useState<DatePreset>("all");
   const [linkFilter, setLinkFilter] = useState<LinkFilter>("all");
   const [weekday, setWeekday] = useState<WeekdayFilter>("all");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const toggleExpanded = (id: string) =>
+    setExpandedId((prev) => (prev === id ? null : id));
 
   useEffect(() => {
     const fetchPayments = async () => {
