@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { differenceInYears } from "date-fns";
 import { titleCaseName } from "@/lib/titleCase";
+import { logAudit } from "@/lib/auditLogger";
 import jsPDF from "jspdf";
 
 interface TermsSignatureModalProps {
@@ -75,6 +76,26 @@ export function TermsSignatureModal({
     ? differenceInYears(new Date(), new Date(pupilDateOfBirth)) < 18
     : false;
 
+  // Audit-trail helper — every legal step writes to data_audit_log so the
+  // signing flow is reconstructable from open → cancel/confirm.
+  const logLegal = (action: string, extra?: Record<string, unknown>) => {
+    void logAudit({
+      instructorId,
+      tableName: "pupil_signatures",
+      recordId: pupilId,
+      action: `terms_${action}` as never,
+      newValues: {
+        pupil_id: pupilId,
+        pupil_name: pupilName,
+        terms_id: terms?.id ?? null,
+        terms_version: terms?.version ?? null,
+        timestamp: new Date().toISOString(),
+        user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+        ...(extra ?? {}),
+      },
+    });
+  };
+
   useEffect(() => {
     if (open) {
       fetchTermsAndSignature();
@@ -86,6 +107,15 @@ export function TermsSignatureModal({
       setParentName(initialParentName || "");
     }
   }, [open, instructorId, pupilId, initialParentName]);
+
+  // Log form open once terms are loaded (so the version is included).
+  useEffect(() => {
+    if (open && !loading && terms) {
+      logLegal("opened", { has_existing_signature: !!existingSignature });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, loading, terms?.id]);
+
 
   // If the terms content doesn't overflow (no scrolling possible), auto-enable the agree checkbox.
   useEffect(() => {
@@ -183,8 +213,14 @@ export function TermsSignatureModal({
     if (!terms || !signatureDataUrl || !agreed) return;
     if (isUnder18 && (!parentSignatureDataUrl || !parentAgreed || !parentName.trim())) {
       toast.error("Parent/guardian signature is required for under-18 pupils");
+      logLegal("confirm_blocked", { reason: "missing_parent_signature" });
       return;
     }
+
+    logLegal("confirm_attempted", {
+      is_under_18: isUnder18,
+      has_parent_signature: !!parentSignatureDataUrl,
+    });
 
     setSubmitting(true);
     try {
@@ -200,7 +236,7 @@ export function TermsSignatureModal({
       // Create signature record — snapshot the exact terms text/version/title
       // signed at this moment so future edits to the source T&Cs never
       // retroactively change what the pupil agreed to.
-      const { error: insertError } = await supabase
+      const { data: insertedRows, error: insertError } = await supabase
         .from("pupil_signatures")
         .insert({
           pupil_id: pupilId,
@@ -215,9 +251,19 @@ export function TermsSignatureModal({
           terms_content_snapshot: terms.content,
           terms_version_snapshot: terms.version,
           terms_title_snapshot: terms.title,
-        });
+        })
+        .select("id")
+        .single();
 
       if (insertError) throw insertError;
+
+      logLegal("save_success", {
+        signature_id: insertedRows?.id ?? null,
+        signature_url: pupilSigUrl,
+        parent_signature_url: parentSigUrl,
+        is_under_18: isUnder18,
+        parent_name: isUnder18 ? parentName.trim() : null,
+      });
 
       toast.success(
         isUnder18
@@ -228,6 +274,9 @@ export function TermsSignatureModal({
       onOpenChange(false);
     } catch (error) {
       console.error("Error submitting signature:", error);
+      logLegal("save_failure", {
+        error_message: error instanceof Error ? error.message : String(error),
+      });
       toast.error("Failed to save signature");
     } finally {
       setSubmitting(false);
@@ -428,9 +477,18 @@ export function TermsSignatureModal({
     && terms.content.trim().toLowerCase() !== "terms and conds";
 
   const handleCancel = () => {
-    if (signatureDataUrl || parentSignatureDataUrl) {
-      if (!window.confirm("Discard signed agreement?")) return;
+    const hadSignature = !!(signatureDataUrl || parentSignatureDataUrl);
+    if (hadSignature) {
+      if (!window.confirm("Discard signed agreement?")) {
+        logLegal("cancel_aborted", { had_signature: true });
+        return;
+      }
     }
+    logLegal("cancelled", {
+      had_signature: hadSignature,
+      had_agreement: agreed,
+      had_parent_agreement: parentAgreed,
+    });
     onOpenChange(false);
   };
 
@@ -603,9 +661,12 @@ export function TermsSignatureModal({
             onClick={() => {
               if (!agreed && !scrolledToBottom) {
                 toast.error("Please scroll through the terms before agreeing");
+                logLegal("agreement_blocked", { reason: "not_scrolled_to_bottom" });
                 return;
               }
-              setAgreed(!agreed);
+              const next = !agreed;
+              setAgreed(next);
+              logLegal(next ? "agreement_checked" : "agreement_unchecked");
             }}
             style={{
               background: agreed ? COLOR_TINT : "#FFFFFF",
@@ -651,7 +712,14 @@ export function TermsSignatureModal({
               minHeight: 100,
             }}
           >
-            <SignaturePad onSignatureChange={setSignatureDataUrl} />
+            <SignaturePad
+              onSignatureChange={(dataUrl) => {
+                const previouslyHad = !!signatureDataUrl;
+                setSignatureDataUrl(dataUrl);
+                if (dataUrl && !previouslyHad) logLegal("signature_captured", { signer: "pupil" });
+                if (!dataUrl && previouslyHad) logLegal("signature_cleared", { signer: "pupil" });
+              }}
+            />
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isUnder18 ? 20 : 0 }}>
             <p style={{ fontSize: 11, color: COLOR_MUTED, margin: 0 }}>Will be timestamped on confirm</p>
@@ -681,7 +749,11 @@ export function TermsSignatureModal({
                 type="button"
                 onClick={() => {
                   if (!scrolledToBottom || !parentName.trim()) return;
-                  setParentAgreed(!parentAgreed);
+                  const next = !parentAgreed;
+                  setParentAgreed(next);
+                  logLegal(next ? "parent_agreement_checked" : "parent_agreement_unchecked", {
+                    parent_name: parentName.trim(),
+                  });
                 }}
                 disabled={!scrolledToBottom || !parentName.trim()}
                 style={{
@@ -727,7 +799,14 @@ export function TermsSignatureModal({
                   minHeight: 100,
                 }}
               >
-                <SignaturePad onSignatureChange={setParentSignatureDataUrl} />
+                <SignaturePad
+                  onSignatureChange={(dataUrl) => {
+                    const previouslyHad = !!parentSignatureDataUrl;
+                    setParentSignatureDataUrl(dataUrl);
+                    if (dataUrl && !previouslyHad) logLegal("signature_captured", { signer: "parent", parent_name: parentName.trim() || null });
+                    if (!dataUrl && previouslyHad) logLegal("signature_cleared", { signer: "parent" });
+                  }}
+                />
               </div>
             </div>
           )}
