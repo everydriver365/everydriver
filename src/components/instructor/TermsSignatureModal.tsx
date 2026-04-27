@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { differenceInYears } from "date-fns";
 import { titleCaseName } from "@/lib/titleCase";
+import { logAudit } from "@/lib/auditLogger";
 import jsPDF from "jspdf";
 
 interface TermsSignatureModalProps {
