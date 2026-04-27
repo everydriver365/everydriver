@@ -8,6 +8,7 @@ import {
   Search,
   X,
   Link2,
+  Download,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from "date-fns";
