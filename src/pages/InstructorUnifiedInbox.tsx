@@ -1252,89 +1252,138 @@ export default function InstructorUnifiedInbox() {
         </div>
       </div>
 
-      {/* New chat dialog */}
+      {/* New chat dialog — premium-tile redesign */}
       <Dialog open={showNewChat} onOpenChange={setShowNewChat}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Start new chat</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search pupils"
-                value={pupilSearch}
-                onChange={(e) => setPupilSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <ScrollArea className="h-[300px]">
-              {loadingPupils ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                </div>
-              ) : (
-                (() => {
-                  const existingIds = new Set(conversations.map((c) => c.pupil_id));
-                  const q = pupilSearch.trim().toLowerCase();
-                  const matches = pupils.filter(
-                    (p) =>
-                      !existingIds.has(p.id) &&
-                      (!q ||
-                        p.name.toLowerCase().includes(q) ||
-                        (p.email || "").toLowerCase().includes(q) ||
-                        (p.phone || "").includes(pupilSearch))
-                  );
-                  if (matches.length === 0) {
-                    return (
-                      <div className="text-center py-8 text-muted-foreground text-sm">
-                        {pupils.length === 0
-                          ? "No pupils found"
-                          : "All pupils already have conversations"}
-                      </div>
-                    );
-                  }
-                  return (
-                    <div className="space-y-1">
-                      {matches.map((p) => (
-                        <button
-                          key={p.id}
-                          onClick={() => startChatWith(p)}
-                          className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted text-left"
-                        >
-                          <div
-                            style={{
-                              width: 36,
-                              height: 36,
-                              borderRadius: "50%",
-                              background: pupilAvatarColor(p.id),
-                              color: "#FFFFFF",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: 13,
-                              fontWeight: 500,
-                              flexShrink: 0,
-                            }}
-                          >
-                            {pupilAvatarInitial(p.name)}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium truncate">{p.name}</p>
-                            {p.phone && (
-                              <p className="text-xs text-muted-foreground truncate">
-                                {p.phone}
-                              </p>
-                            )}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  );
-                })()
-              )}
-            </ScrollArea>
+        <DialogContent
+          className="max-w-md p-0 gap-0 overflow-hidden"
+          style={{
+            background: CARD_BG,
+            borderRadius: 16,
+            border: "none",
+            fontFamily: FONT_STACK,
+          }}
+        >
+          {/* Sticky header */}
+          <div
+            style={{
+              padding: "12px 16px",
+              borderBottom: HAIRLINE,
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <h2
+              style={{
+                flex: 1,
+                margin: 0,
+                fontSize: 15,
+                fontWeight: 500,
+                color: TEXT,
+                letterSpacing: "-0.2px",
+              }}
+            >
+              Start new chat
+            </h2>
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={() => {
+                setShowNewChat(false);
+                setPupilSearch("");
+              }}
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
+                background: "#F2F2F4",
+                border: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                padding: 0,
+              }}
+            >
+              <X size={16} strokeWidth={1.8} color={MUTED} />
+            </button>
           </div>
+
+          {/* Search row */}
+          <div style={{ padding: "12px 16px" }}>
+            <div style={{ position: "relative" }}>
+              <SearchInput
+                value={pupilSearch}
+                onChange={setPupilSearch}
+                placeholder="Search pupils"
+                ariaLabel="Search pupils"
+              />
+              <button
+                type="button"
+                aria-label="Voice search"
+                onClick={() => {
+                  const SR =
+                    (window as any).SpeechRecognition ||
+                    (window as any).webkitSpeechRecognition;
+                  if (!SR) {
+                    toast.error("Voice search isn't available in this browser");
+                    return;
+                  }
+                  const r = new SR();
+                  r.lang = "en-GB";
+                  r.interimResults = false;
+                  r.maxAlternatives = 1;
+                  r.onresult = (e: any) =>
+                    setPupilSearch(e.results[0][0].transcript);
+                  r.onerror = () =>
+                    toast.error("Couldn't capture voice input");
+                  try {
+                    r.start();
+                  } catch {
+                    /* noop */
+                  }
+                }}
+                style={{
+                  position: "absolute",
+                  right: 10,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "transparent",
+                  border: "none",
+                  padding: 4,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Mic size={14} strokeWidth={1.5} color={MUTED} />
+              </button>
+            </div>
+          </div>
+
+          {/* Body */}
+          <ScrollArea style={{ height: 380 }}>
+            {loadingPupils ? (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "32px 0",
+                }}
+              >
+                <Loader2 className="h-5 w-5 animate-spin" />
+              </div>
+            ) : (
+              <NewChatBody
+                pupils={pupils}
+                conversations={conversations}
+                search={pupilSearch}
+                onPick={(p) => void startChatWith(p)}
+              />
+            )}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
