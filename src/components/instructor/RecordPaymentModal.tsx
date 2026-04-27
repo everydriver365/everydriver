@@ -115,8 +115,55 @@ export function RecordPaymentModal({
   const [saving, setSaving] = useState(false);
   const [amountFocused, setAmountFocused] = useState(false);
   const [notesFocused, setNotesFocused] = useState(false);
+  const [lessonId, setLessonId] = useState<string | null>(null);
+  const [lessonOptions, setLessonOptions] = useState<
+    { id: string; label: string; sub: string }[]
+  >([]);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
   const paymentLimit = usePaymentLimit();
+
+  // Fetch recent + upcoming lessons for this pupil so the instructor can
+  // optionally link the payment to a specific lesson. Pure additive feature —
+  // selecting nothing keeps the existing "general top-up" behaviour.
+  useEffect(() => {
+    if (!open || !pupilId) return;
+    let cancelled = false;
+    const today = new Date();
+    const from = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const to = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
+    const fmt = (d: Date) => d.toISOString().slice(0, 10);
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("scheduled_lessons")
+        .select("id, lesson_date, start_time, duration_minutes")
+        .eq("pupil_id", pupilId)
+        .gte("lesson_date", fmt(from))
+        .lte("lesson_date", fmt(to))
+        .order("lesson_date", { ascending: false })
+        .order("start_time", { ascending: false })
+        .limit(20);
+      if (cancelled) return;
+      const opts = (data || []).map((l: any) => {
+        const date = new Date(`${l.lesson_date}T${l.start_time ?? "00:00"}`);
+        const datePart = date.toLocaleDateString("en-GB", {
+          weekday: "short",
+          day: "numeric",
+          month: "short",
+        });
+        const timePart = (l.start_time || "").slice(0, 5);
+        const dur = l.duration_minutes ? `${l.duration_minutes}m` : "";
+        return {
+          id: l.id as string,
+          label: `${datePart}${timePart ? ` · ${timePart}` : ""}`,
+          sub: dur,
+        };
+      });
+      setLessonOptions(opts);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, pupilId]);
 
   const displayName = useMemo(() => titleCaseName(pupilName) || pupilName, [pupilName]);
   // Existing convention: balance < 0 means pupil owes. Outstanding shown positively.
