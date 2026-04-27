@@ -79,7 +79,15 @@ function formatCompactTime(iso: string | null | undefined): string {
   return format(d, "d MMM");
 }
 
-function UnreadBadge({ count, onTinted }: { count: number; onTinted?: boolean }) {
+function UnreadBadge({
+  count,
+  onTinted,
+  muted,
+}: {
+  count: number;
+  onTinted?: boolean;
+  muted?: boolean;
+}) {
   if (!count || count <= 0) return null;
   const display = count >= 10 ? "9+" : String(count);
   return (
@@ -92,7 +100,7 @@ function UnreadBadge({ count, onTinted }: { count: number; onTinted?: boolean })
         height: 18,
         padding: "0 5px",
         borderRadius: 999,
-        background: RED,
+        background: muted ? "#A0A0A6" : RED,
         border: `2px solid ${onTinted ? UNREAD_TINT : CARD_BG}`,
         color: "#FFFFFF",
         fontSize: 10,
@@ -109,13 +117,20 @@ function UnreadBadge({ count, onTinted }: { count: number; onTinted?: boolean })
 }
 
 interface ConversationRowProps {
+  id: string;
   name: string;
   preview: string | null;
   timestamp: string | null;
   unreadCount: number;
   avatarSeed: string;
   avatarUrl?: string | null;
+  muted?: boolean;
+  selectable?: boolean;
+  selectMode?: boolean;
+  selected?: boolean;
   onPress: () => void;
+  onLongPress?: () => void;
+  onToggleSelect?: () => void;
 }
 
 function ConversationRow({
@@ -125,21 +140,73 @@ function ConversationRow({
   unreadCount,
   avatarSeed,
   avatarUrl,
+  muted,
+  selectable = true,
+  selectMode = false,
+  selected = false,
   onPress,
+  onLongPress,
+  onToggleSelect,
 }: ConversationRowProps) {
-  const isUnread = unreadCount > 0;
+  const isUnread = unreadCount > 0 && !muted;
+  const isUnreadMuted = unreadCount > 0 && muted;
   const color = pupilAvatarColor(avatarSeed);
   const initial = pupilAvatarInitial(name);
   const previewText = preview || "No messages yet";
   const isEmpty = !preview;
 
+  // Long-press handling
+  const lpTimer = useRef<number | null>(null);
+  const lpFired = useRef(false);
+
+  const startLongPress = () => {
+    if (!onLongPress || !selectable || selectMode) return;
+    lpFired.current = false;
+    lpTimer.current = window.setTimeout(() => {
+      lpFired.current = true;
+      onLongPress();
+    }, 450);
+  };
+  const cancelLongPress = () => {
+    if (lpTimer.current !== null) {
+      window.clearTimeout(lpTimer.current);
+      lpTimer.current = null;
+    }
+  };
+
+  const handleClick = () => {
+    if (lpFired.current) {
+      lpFired.current = false;
+      return;
+    }
+    if (selectMode && selectable) {
+      onToggleSelect?.();
+      return;
+    }
+    onPress();
+  };
+
+  const rowBg = selected
+    ? "#DCEBFA"
+    : isUnread
+    ? UNREAD_TINT
+    : "transparent";
+
   return (
     <button
       type="button"
-      onClick={onPress}
+      onClick={handleClick}
+      onPointerDown={startLongPress}
+      onPointerUp={cancelLongPress}
+      onPointerLeave={cancelLongPress}
+      onPointerCancel={cancelLongPress}
+      onContextMenu={(e) => {
+        // Suppress native context menu on long-press
+        if (selectable && onLongPress) e.preventDefault();
+      }}
       style={{
-        background: isUnread ? UNREAD_TINT : "transparent",
-        border: "none",
+        background: rowBg,
+        border: selected ? `1px solid ${BLUE}` : "1px solid transparent",
         padding: "10px 4px",
         borderRadius: 8,
         display: "flex",
@@ -149,6 +216,9 @@ function ConversationRow({
         textAlign: "left",
         width: "100%",
         fontFamily: FONT_STACK,
+        WebkitUserSelect: "none",
+        userSelect: "none",
+        WebkitTouchCallout: "none",
       }}
     >
       <div style={{ position: "relative", flexShrink: 0 }}>
@@ -165,6 +235,7 @@ function ConversationRow({
             fontSize: 13,
             fontWeight: 500,
             overflow: "hidden",
+            opacity: selectMode && !selected ? 0.55 : 1,
           }}
         >
           {avatarUrl ? (
@@ -177,7 +248,32 @@ function ConversationRow({
             initial
           )}
         </div>
-        <UnreadBadge count={unreadCount} onTinted={isUnread} />
+        {selectMode && selectable ? (
+          <span
+            style={{
+              position: "absolute",
+              bottom: -2,
+              right: -2,
+              width: 18,
+              height: 18,
+              borderRadius: "50%",
+              background: selected ? BLUE : "#FFFFFF",
+              border: `1.5px solid ${selected ? BLUE : "#C7C7CC"}`,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#FFFFFF",
+            }}
+          >
+            {selected && <Check size={11} strokeWidth={3} />}
+          </span>
+        ) : (
+          <UnreadBadge
+            count={unreadCount}
+            onTinted={isUnread}
+            muted={isUnreadMuted}
+          />
+        )}
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -205,18 +301,34 @@ function ConversationRow({
           >
             {name}
           </span>
-          {timestamp && (
-            <span
-              style={{
-                fontSize: 11,
-                color: isUnread ? BLUE : MUTED,
-                fontWeight: isUnread ? 500 : 400,
-                flexShrink: 0,
-              }}
-            >
-              {formatCompactTime(timestamp)}
-            </span>
-          )}
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              flexShrink: 0,
+            }}
+          >
+            {muted && (
+              <BellOff
+                size={11}
+                strokeWidth={1.8}
+                color={MUTED}
+                aria-label="Muted"
+              />
+            )}
+            {timestamp && (
+              <span
+                style={{
+                  fontSize: 11,
+                  color: isUnread ? BLUE : MUTED,
+                  fontWeight: isUnread ? 500 : 400,
+                }}
+              >
+                {formatCompactTime(timestamp)}
+              </span>
+            )}
+          </span>
         </div>
         <p
           style={{
