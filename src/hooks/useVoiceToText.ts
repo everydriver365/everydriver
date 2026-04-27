@@ -36,7 +36,7 @@ export function useVoiceToText(): UseVoiceToTextReturn {
 
     let finalTranscript = "";
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: any) => {
       let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const t = event.results[i][0].transcript;
