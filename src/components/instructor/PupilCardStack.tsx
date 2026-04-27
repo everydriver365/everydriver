@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
 import { pupilAvatarColor } from "@/lib/pupilAvatarColor";
+import { titleCaseName } from "@/lib/titleCase";
+import { formatPhoneNumber } from "@/lib/formatPhoneNumber";
+import { useNavigate } from "react-router-dom";
+import { ChevronLeft, MoreHorizontal } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -183,6 +187,7 @@ export function PupilCardStack({
   commissionPayer,
 }: PupilCardStackProps) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [changingStatus, setChangingStatus] = useState(false);
   const currentStatus = (pupil.status || 'active') as PupilStatus;
@@ -876,163 +881,364 @@ export function PupilCardStack({
         
       </motion.div>
 
-      {/* Mobile: Full-screen pupil profile sheet */}
-      {isMobile && (
-        <Sheet open={isExpanded} onOpenChange={setIsExpanded}>
-          <SheetContent side="bottom" className="h-[95vh] rounded-2xl p-0 overflow-y-auto">
-            {/* Close button */}
-            <button
-              onClick={() => setIsExpanded(false)}
-              className="absolute top-4 right-4 z-50 h-8 w-8 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center active:scale-95 transition-transform"
+      {/* Mobile: Full-screen pupil workspace */}
+      {isMobile && (() => {
+        const displayName = titleCaseName(pupil.name) || pupil.name;
+        const hasEmail = !!pupil.email;
+        const hasPhone = !!pupil.phone;
+        const formattedPhone = formatPhoneNumber(pupil.phone);
+        const lessonsCount = pupil.lessons_completed || 0;
+        // Empty-state aware: zero/null hours & progress render as "—"
+        const hoursDisplay = pupil.prepaid_hours && pupil.prepaid_hours > 0 ? `${pupil.prepaid_hours}h` : "—";
+        const progressDisplay = pupil.progress && pupil.progress > 0 ? `${pupil.progress}%` : "—";
+        const balanceAbs = Math.abs(balance);
+        const balanceDisplay = `£${balanceAbs.toFixed(0)}`;
+        const balanceLabel = hasDebt ? "Owed" : hasCredit ? "Credit" : "Balance";
+
+        return (
+          <Sheet open={isExpanded} onOpenChange={setIsExpanded}>
+            <SheetContent
+              side="bottom"
+              className="h-[95vh] rounded-t-3xl p-0 overflow-y-auto border-0"
+              style={{ background: "#F2F4F7" }}
             >
-              <X className="h-4 w-4 text-white" />
-            </button>
-            <div className="pb-6">
-              {/* ── iOS Contact Hero ── */}
-              <div className="bg-gradient-to-b from-[#1C2A3A] to-[#2C3E50] px-6 pt-8 pb-6 flex flex-col items-center">
-                <Avatar className={cn("h-24 w-24 mb-3 ring-4 ring-white/20 ring-offset-2 ring-offset-[#1C2A3A]", isTracking && "ring-primary")}>
-                  <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
-                  <AvatarFallback className="text-white text-2xl font-bold" style={{ backgroundColor: avatarBg }}>
-                    {getInitials(pupil.name)}
-                  </AvatarFallback>
-                </Avatar>
-                {isTracking && (
-                  <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px] px-2 py-0.5 mb-1 -mt-1">
-                    <span className="relative flex h-1.5 w-1.5 mr-1"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" /></span>
-                    LIVE TRACKING
-                  </Badge>
-                )}
-                <h2 className="text-xl font-bold text-white mt-1">{pupil.name}</h2>
-                <p className="text-sm text-white/60 mt-0.5">
-                  Pupil since {format(parseISO(pupil.created_at), "MMM yyyy")}
-                  {pupil.course_type && ` · ${courseTypeLabels[pupil.course_type] || pupil.course_type}`}
-                </p>
-
-                {/* Circular Action Buttons */}
-                <div className="flex items-center gap-5 mt-5">
-                  {[
-                    { icon: Phone, label: "Call", action: () => pupil.phone && window.open(`tel:${pupil.phone}`), disabled: !pupil.phone },
-                    { icon: MessageSquare, label: "Message", action: () => onStartChat?.(pupil) },
-                    { icon: Mail, label: "Email", action: () => pupil.email && window.open(`mailto:${pupil.email}`), disabled: !pupil.email },
-                    { icon: Navigation, label: "Navigate", action: handleNavigate },
-                  ].map(({ icon: Icon, label, action, disabled }) => (
+              <div className="pb-8" style={{ fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif" }}>
+                {/* ── Top bar: back / favourite / more ── */}
+                <div className="flex items-center justify-between px-4 pt-4 pb-2">
+                  <button
+                    onClick={() => setIsExpanded(false)}
+                    aria-label="Back"
+                    className="flex items-center justify-center h-9 w-9 rounded-full active:scale-95 transition-transform"
+                  >
+                    <ChevronLeft size={22} strokeWidth={2.2} color="#2B7BC8" />
+                  </button>
+                  <div className="flex items-center gap-2">
                     <button
-                      key={label}
-                      onClick={(e) => { e.stopPropagation(); action?.(); }}
-                      disabled={disabled}
-                      className="flex flex-col items-center gap-1.5 disabled:opacity-30"
+                      aria-label="Favourite"
+                      className="flex items-center justify-center h-9 w-9 rounded-full active:scale-95 transition-transform"
+                      style={{ background: "#E9ECF1" }}
                     >
-                      <div className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/10 active:scale-95 transition-transform">
-                        <Icon className="h-5 w-5 text-white" />
-                      </div>
-                      <span className="text-[10px] font-medium text-white/70">{label}</span>
+                      <Star size={16} strokeWidth={1.8} color="#6E6E73" />
                     </button>
-                  ))}
+                    <button
+                      aria-label="More"
+                      onClick={() => onEdit(pupil)}
+                      className="flex items-center justify-center h-9 w-9 rounded-full active:scale-95 transition-transform"
+                      style={{ background: "#E9ECF1" }}
+                    >
+                      <MoreHorizontal size={16} strokeWidth={1.8} color="#6E6E73" />
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              {/* ── Stats Strip ── */}
-              <div className="mx-4 -mt-4 bg-card rounded-2xl shadow-lift border border-border shadow-md">
-                <div className="grid grid-cols-4 divide-x divide-border py-4">
-                  {[
-                    { value: pupil.lessons_completed || 0, label: "Lessons" },
-                    { value: `${pupil.prepaid_hours || 0}h`, label: "Hours" },
-                    { value: `${pupil.progress || 0}%`, label: "Progress" },
-                    { value: pupil.account_balance ? `£${Math.abs(Number(pupil.account_balance)).toFixed(0)}` : "£0", label: hasDebt ? "Owed" : hasCredit ? "Credit" : "Balance", highlight: hasDebt },
-                  ].map(({ value, label, highlight }) => (
-                    <div key={label} className="text-center">
-                      <div className={cn("text-lg font-bold", highlight ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>{value}</div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5">{label}</div>
-                    </div>
-                  ))}
+                {/* ── Identity card ── */}
+                <div className="mx-4 mt-2 rounded-2xl bg-white border border-[#E9ECF1] p-5 flex flex-col items-center">
+                  <div className="relative">
+                    <Avatar className="h-[72px] w-[72px]">
+                      <AvatarImage src={pupil.profile_image_url || undefined} alt={displayName} />
+                      <AvatarFallback
+                        className="text-white font-semibold"
+                        style={{ backgroundColor: avatarBg, fontSize: 26 }}
+                      >
+                        {getInitials(pupil.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    {isTracking && (
+                      <span
+                        className="absolute -bottom-1 -right-1 flex items-center gap-1 px-1.5 py-0.5 rounded-full"
+                        style={{ background: "#C8434F", boxShadow: "0 0 0 2px #FFFFFF" }}
+                        aria-label="Live tracking"
+                      >
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
+                        </span>
+                        <span className="text-white" style={{ fontSize: 9, fontWeight: 600, letterSpacing: 0.4 }}>
+                          LIVE
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                  <h2 className="mt-3" style={{ fontSize: 20, fontWeight: 600, color: "#0F1B2D", letterSpacing: -0.2 }}>
+                    {displayName}
+                  </h2>
+                  <p className="mt-1" style={{ fontSize: 13, color: "#6E6E73" }}>
+                    Pupil since {format(parseISO(pupil.created_at), "MMMM yyyy")}
+                  </p>
+
+                  {/* Communication actions */}
+                  <div className="flex items-center justify-center gap-3 mt-5 w-full">
+                    {[
+                      { icon: Phone, label: "Call", action: () => hasPhone && window.open(`tel:${pupil.phone}`), disabled: !hasPhone },
+                      { icon: MessageSquare, label: "Message", action: () => onStartChat?.(pupil), disabled: false },
+                      { icon: Mail, label: "Email", action: () => hasEmail ? window.open(`mailto:${pupil.email}`) : onEdit(pupil), disabled: !hasEmail },
+                      { icon: Navigation, label: "Navigate", action: handleNavigate, disabled: false },
+                    ].map(({ icon: Icon, label, action, disabled }) => (
+                      <button
+                        key={label}
+                        onClick={(e) => { e.stopPropagation(); action?.(); }}
+                        className="flex flex-col items-center gap-1.5 flex-1 active:scale-95 transition-transform"
+                        style={{ opacity: disabled ? 0.5 : 1 }}
+                      >
+                        <div
+                          className="h-12 w-12 rounded-2xl flex items-center justify-center"
+                          style={{ background: "#E9ECF1" }}
+                        >
+                          <Icon size={20} strokeWidth={1.8} color={disabled ? "#9AA3B0" : "#0F1B2D"} />
+                        </div>
+                        <span style={{ fontSize: 11, fontWeight: 500, color: disabled ? "#9AA3B0" : "#6E6E73" }}>
+                          {label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* ── Test Date Banner ── */}
-              {pupil.test_date && (() => {
-                const testDate = new Date(pupil.test_date);
-                const daysUntilTest = Math.ceil((testDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                const isUrgent = daysUntilTest <= 7 && daysUntilTest >= 0;
-                return (
-                  <div className={cn(
-                    "mx-4 mt-3 rounded-2xl p-4 flex items-center gap-3",
-                    isUrgent
-                      ? "bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-300/30 dark:border-amber-600/30"
-                      : "bg-card border border-border"
-                  )}>
-                    <div className={cn("h-11 w-11 rounded-2xl flex items-center justify-center shrink-0", isUrgent ? "bg-amber-500/20" : "bg-muted")}>
-                      <Calendar className={cn("h-5 w-5", isUrgent ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")} />
+                {/* ── At a glance ── */}
+                <div className="mx-4 mt-3">
+                  <p
+                    className="px-1 mb-2"
+                    style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.6, color: "#6E6E73", textTransform: "uppercase" }}
+                  >
+                    At a glance
+                  </p>
+                  <div className="rounded-2xl bg-white border border-[#E9ECF1] grid grid-cols-4 divide-x divide-[#E9ECF1] py-4">
+                    {[
+                      { value: String(lessonsCount), label: "Lessons", muted: lessonsCount === 0 },
+                      { value: hoursDisplay, label: "Hours", muted: hoursDisplay === "—" },
+                      { value: progressDisplay, label: "Progress", muted: progressDisplay === "—" },
+                      { value: balanceDisplay, label: balanceLabel, debt: hasDebt },
+                    ].map(({ value, label, muted, debt }) => (
+                      <div key={label} className="text-center px-1">
+                        <div
+                          style={{
+                            fontSize: 18,
+                            fontWeight: 600,
+                            color: debt ? "#C8434F" : muted ? "#9AA3B0" : "#0F1B2D",
+                            letterSpacing: -0.2,
+                          }}
+                        >
+                          {value}
+                        </div>
+                        <div style={{ fontSize: 10, color: "#6E6E73", marginTop: 2, letterSpacing: 0.2 }}>
+                          {label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── Next lesson ── */}
+                <div className="mx-4 mt-3">
+                  <p
+                    className="px-1 mb-2"
+                    style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.6, color: "#6E6E73", textTransform: "uppercase" }}
+                  >
+                    Next lesson
+                  </p>
+                  <div className="rounded-2xl bg-white border border-[#E9ECF1] p-4 flex items-center gap-3">
+                    <div
+                      className="h-11 w-11 rounded-2xl flex items-center justify-center shrink-0"
+                      style={{ background: "#E6F1FB" }}
+                    >
+                      <Calendar size={20} strokeWidth={1.8} color="#2B7BC8" />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-foreground">{format(new Date(pupil.test_date), "EEE, d MMM yyyy")}</p>
-                      <p className={cn("text-xs font-medium", isUrgent ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")}>
-                        {daysUntilTest === 0 ? "Test is today!" : daysUntilTest === 1 ? "Test is tomorrow" : `${daysUntilTest} days until test`}
-                      </p>
+                    <div className="flex-1 min-w-0">
+                      {lessonSummary?.type === "next" ? (
+                        <>
+                          <p style={{ fontSize: 14, fontWeight: 600, color: "#0F1B2D" }}>
+                            {format(parseISO(lessonSummary.date), "EEE d MMM")}
+                          </p>
+                          <p style={{ fontSize: 12, color: "#6E6E73", marginTop: 2 }}>Scheduled</p>
+                        </>
+                      ) : (
+                        <>
+                          <p style={{ fontSize: 14, fontWeight: 600, color: "#0F1B2D" }}>Not yet booked</p>
+                          <p style={{ fontSize: 12, color: "#6E6E73", marginTop: 2 }}>
+                            Schedule the {lessonsCount === 0 ? "first" : "next"} lesson
+                          </p>
+                        </>
+                      )}
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/instructor/course-planner?pupilId=${pupil.id}`);
+                      }}
+                      className="active:scale-95 transition-transform"
+                      style={{
+                        background: "#2B7BC8",
+                        color: "#FFFFFF",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        padding: "8px 16px",
+                        borderRadius: 12,
+                      }}
+                    >
+                      Book
+                    </button>
+                  </div>
+                </div>
+
+                {/* ── Test date banner (preserved) ── */}
+                {pupil.test_date && (() => {
+                  const testDate = new Date(pupil.test_date);
+                  const daysUntilTest = Math.ceil((testDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                  const isUrgent = daysUntilTest <= 7 && daysUntilTest >= 0;
+                  return (
+                    <div
+                      className="mx-4 mt-3 rounded-2xl p-4 flex items-center gap-3 border"
+                      style={{
+                        background: isUrgent ? "#FBF1DE" : "#FFFFFF",
+                        borderColor: isUrgent ? "#EBD9B2" : "#E9ECF1",
+                      }}
+                    >
+                      <div
+                        className="h-11 w-11 rounded-2xl flex items-center justify-center shrink-0"
+                        style={{ background: isUrgent ? "#F4E4BF" : "#F2F4F7" }}
+                      >
+                        <Calendar size={20} strokeWidth={1.8} color={isUrgent ? "#B8801F" : "#6E6E73"} />
+                      </div>
+                      <div className="flex-1">
+                        <p style={{ fontSize: 14, fontWeight: 600, color: "#0F1B2D" }}>
+                          {format(testDate, "EEE, d MMM yyyy")}
+                        </p>
+                        <p style={{ fontSize: 12, color: isUrgent ? "#B8801F" : "#6E6E73", fontWeight: 500, marginTop: 2 }}>
+                          {daysUntilTest === 0 ? "Test is today" : daysUntilTest === 1 ? "Test is tomorrow" : `${daysUntilTest} days until test`}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* ── More actions (list with tinted icon containers) ── */}
+                <div className="mx-4 mt-3">
+                  <p
+                    className="px-1 mb-2"
+                    style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.6, color: "#6E6E73", textTransform: "uppercase" }}
+                  >
+                    More actions
+                  </p>
+                  <div className="rounded-2xl bg-white border border-[#E9ECF1] overflow-hidden">
+                    {[
+                      { icon: ClipboardList, label: "Syllabus", tintBg: "#E6F1FB", tintFg: "#2B7BC8", action: () => setShowSyllabusSheet(true) },
+                      { icon: Gauge, label: "Progress report", tintBg: "#E8F3E8", tintFg: "#3B8B3B", action: () => onViewReport(pupil) },
+                      {
+                        icon: PoundSterling,
+                        label: "Payment",
+                        tintBg: "#FBF1DE",
+                        tintFg: "#B8801F",
+                        action: () => setShowRecordPaymentModal(true),
+                        meta: hasDebt ? `£${balanceAbs.toFixed(0)} due` : hasCredit ? `£${balanceAbs.toFixed(0)} credit` : "£0 due",
+                        metaDebt: hasDebt,
+                      },
+                      { icon: Award, label: "Test result", tintBg: "#FBF1DE", tintFg: "#B8801F", action: () => onRecordTestResult?.(pupil, false) },
+                      { icon: Share2, label: "Share progress", tintBg: "#F1ECFA", tintFg: "#8A5BC9", action: () => {} },
+                    ].map(({ icon: Icon, label, tintBg, tintFg, action, meta, metaDebt }, idx, arr) => (
+                      <button
+                        key={label}
+                        onClick={(e) => { e.stopPropagation(); action?.(); }}
+                        className="w-full flex items-center gap-3 px-4 py-3 active:bg-[#F2F4F7] transition-colors"
+                        style={{
+                          borderBottom: idx < arr.length - 1 ? "1px solid #F0F2F5" : "none",
+                        }}
+                      >
+                        <div
+                          className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
+                          style={{ background: tintBg }}
+                        >
+                          <Icon size={18} strokeWidth={1.8} color={tintFg} />
+                        </div>
+                        <span className="flex-1 text-left" style={{ fontSize: 14, fontWeight: 500, color: "#0F1B2D" }}>
+                          {label}
+                        </span>
+                        {meta && (
+                          <span style={{ fontSize: 12, fontWeight: 500, color: metaDebt ? "#C8434F" : "#6E6E73" }}>
+                            {meta}
+                          </span>
+                        )}
+                        <ChevronRight size={14} strokeWidth={1.6} color="#9AA3B0" className="shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── Details ── */}
+                {(hasPhone || hasEmail || pupil.postcode) && (
+                  <div className="mx-4 mt-3">
+                    <p
+                      className="px-1 mb-2"
+                      style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.6, color: "#6E6E73", textTransform: "uppercase" }}
+                    >
+                      Details
+                    </p>
+                    <div className="rounded-2xl bg-white border border-[#E9ECF1] overflow-hidden">
+                      {hasPhone && (
+                        <div
+                          className="flex items-center gap-3 px-4 py-3"
+                          style={{ borderBottom: (hasEmail || pupil.postcode) ? "1px solid #F0F2F5" : "none" }}
+                        >
+                          <Phone size={16} strokeWidth={1.8} color="#6E6E73" className="shrink-0" />
+                          <span style={{ fontSize: 14, color: "#0F1B2D" }}>{formattedPhone}</span>
+                        </div>
+                      )}
+                      {hasEmail && (
+                        <div
+                          className="flex items-center gap-3 px-4 py-3"
+                          style={{ borderBottom: pupil.postcode ? "1px solid #F0F2F5" : "none" }}
+                        >
+                          <Mail size={16} strokeWidth={1.8} color="#6E6E73" className="shrink-0" />
+                          <span style={{ fontSize: 14, color: "#0F1B2D" }} className="truncate">
+                            {pupil.email}
+                          </span>
+                        </div>
+                      )}
+                      {pupil.postcode && (
+                        <div className="flex items-center gap-3 px-4 py-3">
+                          <MapPin size={16} strokeWidth={1.8} color="#6E6E73" className="shrink-0" />
+                          <span style={{ fontSize: 14, color: "#0F1B2D" }}>{pupil.postcode}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
-                );
-              })()}
-
-              {/* ── Quick Actions ── */}
-              <div className="mx-4 mt-3 space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Quick Actions</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { icon: ClipboardList, label: "Syllabus", color: "bg-blue-500/10 text-blue-600", action: () => setShowSyllabusSheet(true) },
-                    { icon: History, label: "History", color: "bg-violet-500/10 text-violet-600", action: () => onViewHistory(pupil) },
-                    { icon: Gauge, label: "Report", color: "bg-emerald-500/10 text-emerald-600", action: () => onViewReport(pupil) },
-                    { icon: Award, label: "Test Result", color: "bg-amber-500/10 text-amber-600", action: () => onRecordTestResult?.(pupil, false) },
-                    { icon: PoundSterling, label: "Payment", color: "bg-rose-500/10 text-rose-600", action: () => setShowRecordPaymentModal(true) },
-                    { icon: Share2, label: "Share", color: "bg-sky-500/10 text-sky-600", action: () => {} },
-                  ].map(({ icon: Icon, label, color, action }) => (
-                    <button key={label} onClick={action} className={`${color} rounded-2xl p-3 flex flex-col items-center gap-1.5 active:scale-95 transition-transform`}>
-                      <Icon className="h-5 w-5" />
-                      <span className="text-[11px] font-medium">{label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* ── Contact Info ── */}
-              <div className="mx-4 mt-3">
-                <SectionPanel title="Details">
-                  <div className="space-y-3">
-                    {pupil.phone && (
-                      <div className="flex items-center gap-3">
-                        <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="text-sm text-foreground">{pupil.phone}</span>
-                      </div>
-                    )}
-                    {pupil.email && (
-                      <div className="flex items-center gap-3">
-                        <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="text-sm text-foreground truncate">{pupil.email}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-3">
-                      <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="text-sm text-foreground">{pupil.postcode}</span>
-                    </div>
-                  </div>
-                </SectionPanel>
-              </div>
-
-              {/* ── Action buttons ── */}
-              <div className="mx-4 mt-3 space-y-2 pb-4">
-                {onViewTerms && (
-                  <Button variant={hasSignedTerms ? "outline" : "default"} size="sm" className={cn("w-full rounded-2xl", hasSignedTerms && "border-emerald-500 text-emerald-600")} onClick={(e) => { e.stopPropagation(); onViewTerms(pupil); }}>
-                    {hasSignedTerms ? (<><CheckCircle2 className="h-4 w-4 mr-2" />T&Cs Signed</>) : (<><FileSignature className="h-4 w-4 mr-2" />Sign T&Cs</>)}
-                  </Button>
                 )}
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
-                  <Button variant="ghost" size="sm" className="rounded-2xl" onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}><Edit className="h-4 w-4 mr-1" /> Edit</Button>
-                  <Button variant="ghost" size="sm" className="rounded-2xl text-destructive hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); onDelete(pupil); }}><Trash2 className="h-4 w-4 mr-1" /> Delete</Button>
+
+                {/* ── Footer actions (T&Cs / Edit / Delete) ── */}
+                <div className="mx-4 mt-4 space-y-2">
+                  {onViewTerms && (
+                    <Button
+                      variant={hasSignedTerms ? "outline" : "default"}
+                      size="sm"
+                      className={cn("w-full rounded-2xl h-11", hasSignedTerms && "border-emerald-500 text-emerald-600")}
+                      onClick={(e) => { e.stopPropagation(); onViewTerms(pupil); }}
+                    >
+                      {hasSignedTerms ? (<><CheckCircle2 className="h-4 w-4 mr-2" />T&Cs signed</>) : (<><FileSignature className="h-4 w-4 mr-2" />Sign T&Cs</>)}
+                    </Button>
+                  )}
+                  <div className="grid grid-cols-2 gap-2 pt-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-2xl h-11"
+                      onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}
+                    >
+                      <Edit className="h-4 w-4 mr-1" /> Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-2xl h-11 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={(e) => { e.stopPropagation(); onDelete(pupil); }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" /> Delete
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </SheetContent>
-        </Sheet>
-      )}
+            </SheetContent>
+          </Sheet>
+        );
+      })()}
 
       {/* Modals */}
       {instructorId && (
