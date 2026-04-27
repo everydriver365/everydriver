@@ -1,0 +1,307 @@
+{
+  "generated_at": "2026-04-27T18:30:35.004Z",
+  "total_files_with_supabase_calls": 187,
+  "total_call_sites": 475,
+  "top_50": [
+    {
+      "file": "src/components/admin/CMSManager.tsx",
+      "from_calls": 18,
+      "rpc_calls": 0,
+      "total": 18
+    },
+    {
+      "file": "src/hooks/useInstructorAppContent.ts",
+      "from_calls": 16,
+      "rpc_calls": 0,
+      "total": 16
+    },
+    {
+      "file": "src/components/admin/AdminCommandCenter.tsx",
+      "from_calls": 15,
+      "rpc_calls": 0,
+      "total": 15
+    },
+    {
+      "file": "src/components/admin/AdminInstructorProfile.tsx",
+      "from_calls": 15,
+      "rpc_calls": 0,
+      "total": 15
+    },
+    {
+      "file": "src/components/instructor/DesktopPupilDetailPanel.tsx",
+      "from_calls": 11,
+      "rpc_calls": 0,
+      "total": 11
+    },
+    {
+      "file": "src/components/admin/AdminBookingsManager.tsx",
+      "from_calls": 10,
+      "rpc_calls": 0,
+      "total": 10
+    },
+    {
+      "file": "src/components/admin/RevenueAnalytics.tsx",
+      "from_calls": 9,
+      "rpc_calls": 0,
+      "total": 9
+    },
+    {
+      "file": "src/pages/InstructorMenu.tsx",
+      "from_calls": 9,
+      "rpc_calls": 0,
+      "total": 9
+    },
+    {
+      "file": "src/hooks/useAdminTabCounts.ts",
+      "from_calls": 8,
+      "rpc_calls": 0,
+      "total": 8
+    },
+    {
+      "file": "src/components/admin/AdminBookingPagesManager.tsx",
+      "from_calls": 7,
+      "rpc_calls": 0,
+      "total": 7
+    },
+    {
+      "file": "src/components/instructor/EndLessonWizard.tsx",
+      "from_calls": 5,
+      "rpc_calls": 1,
+      "total": 6
+    },
+    {
+      "file": "src/components/school/SchoolCoursesSection.tsx",
+      "from_calls": 6,
+      "rpc_calls": 0,
+      "total": 6
+    },
+    {
+      "file": "src/components/whatsapp/WhatsAppChatWidget.tsx",
+      "from_calls": 6,
+      "rpc_calls": 0,
+      "total": 6
+    },
+    {
+      "file": "src/hooks/useCourseDiscovery.ts",
+      "from_calls": 6,
+      "rpc_calls": 0,
+      "total": 6
+    },
+    {
+      "file": "src/components/admin/InstructorManager.tsx",
+      "from_calls": 5,
+      "rpc_calls": 0,
+      "total": 5
+    },
+    {
+      "file": "src/components/admin/SiteSettingsManager.tsx",
+      "from_calls": 5,
+      "rpc_calls": 0,
+      "total": 5
+    },
+    {
+      "file": "src/components/instructor/AddLessonSheet.tsx",
+      "from_calls": 5,
+      "rpc_calls": 0,
+      "total": 5
+    },
+    {
+      "file": "src/components/instructor/EnhancedEODReport.tsx",
+      "from_calls": 5,
+      "rpc_calls": 0,
+      "total": 5
+    },
+    {
+      "file": "src/components/instructor/PupilCardStack.tsx",
+      "from_calls": 5,
+      "rpc_calls": 0,
+      "total": 5
+    },
+    {
+      "file": "src/components/school/SchoolInstructorDetailView.tsx",
+      "from_calls": 5,
+      "rpc_calls": 0,
+      "total": 5
+    },
+    {
+      "file": "src/hooks/useFeaturedCourses.ts",
+      "from_calls": 5,
+      "rpc_calls": 0,
+      "total": 5
+    },
+    {
+      "file": "src/pages/Courses.tsx",
+      "from_calls": 5,
+      "rpc_calls": 0,
+      "total": 5
+    },
+    {
+      "file": "src/pages/ParentPortal.tsx",
+      "from_calls": 5,
+      "rpc_calls": 0,
+      "total": 5
+    },
+    {
+      "file": "src/components/admin/AdminNotificationBell.tsx",
+      "from_calls": 4,
+      "rpc_calls": 0,
+      "total": 4
+    },
+    {
+      "file": "src/components/admin/AdminSchoolFranchiseFees.tsx",
+      "from_calls": 4,
+      "rpc_calls": 0,
+      "total": 4
+    },
+    {
+      "file": "src/components/admin/SiteVideoManager.tsx",
+      "from_calls": 4,
+      "rpc_calls": 0,
+      "total": 4
+    },
+    {
+      "file": "src/components/instructor/GeofenceEditor.tsx",
+      "from_calls": 4,
+      "rpc_calls": 0,
+      "total": 4
+    },
+    {
+      "file": "src/components/instructor/InstructorDiscountCodesManager.tsx",
+      "from_calls": 4,
+      "rpc_calls": 0,
+      "total": 4
+    },
+    {
+      "file": "src/components/instructor/IntakeQuestionsSettings.tsx",
+      "from_calls": 4,
+      "rpc_calls": 0,
+      "total": 4
+    },
+    {
+      "file": "src/components/instructor/MultiDayScheduleView.tsx",
+      "from_calls": 4,
+      "rpc_calls": 0,
+      "total": 4
+    },
+    {
+      "file": "src/components/pupil-portal/TheoryStreakTracker.tsx",
+      "from_calls": 4,
+      "rpc_calls": 0,
+      "total": 4
+    },
+    {
+      "file": "src/components/school/SchoolDashboardSection.tsx",
+      "from_calls": 4,
+      "rpc_calls": 0,
+      "total": 4
+    },
+    {
+      "file": "src/components/school/SchoolPupilDetailPanel.tsx",
+      "from_calls": 4,
+      "rpc_calls": 0,
+      "total": 4
+    },
+    {
+      "file": "src/hooks/useComparisonData.ts",
+      "from_calls": 4,
+      "rpc_calls": 0,
+      "total": 4
+    },
+    {
+      "file": "src/pages/BookingSummary.tsx",
+      "from_calls": 4,
+      "rpc_calls": 0,
+      "total": 4
+    },
+    {
+      "file": "src/components/admin/AdminEventsManager.tsx",
+      "from_calls": 3,
+      "rpc_calls": 0,
+      "total": 3
+    },
+    {
+      "file": "src/components/admin/ChurnAnalyticsDashboard.tsx",
+      "from_calls": 3,
+      "rpc_calls": 0,
+      "total": 3
+    },
+    {
+      "file": "src/components/admin/InstructorForm.tsx",
+      "from_calls": 3,
+      "rpc_calls": 0,
+      "total": 3
+    },
+    {
+      "file": "src/components/admin/WaitingRoomManager.tsx",
+      "from_calls": 3,
+      "rpc_calls": 0,
+      "total": 3
+    },
+    {
+      "file": "src/components/course-planner/CoursePlannerForm.tsx",
+      "from_calls": 3,
+      "rpc_calls": 0,
+      "total": 3
+    },
+    {
+      "file": "src/components/instructor/AvailabilityRulesManager.tsx",
+      "from_calls": 3,
+      "rpc_calls": 0,
+      "total": 3
+    },
+    {
+      "file": "src/components/instructor/AvailabilityWindowsManager.tsx",
+      "from_calls": 3,
+      "rpc_calls": 0,
+      "total": 3
+    },
+    {
+      "file": "src/components/instructor/DigitalChecklistManager.tsx",
+      "from_calls": 3,
+      "rpc_calls": 0,
+      "total": 3
+    },
+    {
+      "file": "src/components/instructor/FleetManager.tsx",
+      "from_calls": 3,
+      "rpc_calls": 0,
+      "total": 3
+    },
+    {
+      "file": "src/components/instructor/NewMobileScheduleView.tsx",
+      "from_calls": 3,
+      "rpc_calls": 0,
+      "total": 3
+    },
+    {
+      "file": "src/components/instructor/NextUpTile.tsx",
+      "from_calls": 3,
+      "rpc_calls": 0,
+      "total": 3
+    },
+    {
+      "file": "src/components/instructor/PricingRulesSettings.tsx",
+      "from_calls": 3,
+      "rpc_calls": 0,
+      "total": 3
+    },
+    {
+      "file": "src/components/instructor/ScheduledReportsSettings.tsx",
+      "from_calls": 3,
+      "rpc_calls": 0,
+      "total": 3
+    },
+    {
+      "file": "src/components/instructor/TeamMessagingChannels.tsx",
+      "from_calls": 3,
+      "rpc_calls": 0,
+      "total": 3
+    },
+    {
+      "file": "src/components/instructor/WorkflowBuilder.tsx",
+      "from_calls": 3,
+      "rpc_calls": 0,
+      "total": 3
+    }
+  ]
+}

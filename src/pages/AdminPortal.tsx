@@ -5,7 +5,7 @@ import {
   UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin, Search, StickyNote, PoundSterling, CheckSquare, Satellite, ArrowUpDown, CalendarDays, CalendarSearch
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,6 +44,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { NotificationTiles } from "@/components/admin/NotificationTiles";
 import { SystemAlertsCard } from "@/components/admin/SystemAlertsCard";
+import { EdgeErrorsTile } from "@/components/admin/EdgeErrorsTile";
+
 import { ComplianceDashboard } from "@/components/admin/ComplianceDashboard";
 import { AdminBookingsManager } from "@/components/admin/AdminBookingsManager";
 import { AdminPaymentsManager } from "@/components/admin/AdminPaymentsManager";
@@ -329,6 +331,25 @@ export default function AdminPortal() {
               onCreateBespoke={() => setIsBespokeOpen(true)}
               onSendAlert={() => setIsUrgentAlertOpen(true)}
             />
+            <div className="grid gap-3 md:grid-cols-3 mt-4">
+              <EdgeErrorsTile />
+              <Link to="/admin/query-budget" className="block">
+                <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
+                  <CardContent className="pt-6">
+                    <div className="text-sm font-medium">Query Budget</div>
+                    <div className="text-xs text-muted-foreground">N+1 hotspot scanner</div>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link to="/admin/realtime-audit" className="block">
+                <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
+                  <CardContent className="pt-6">
+                    <div className="text-sm font-medium">Realtime Audit</div>
+                    <div className="text-xs text-muted-foreground">Channel consolidation check</div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
             <BespokeBookingModal open={isBespokeOpen} onOpenChange={setIsBespokeOpen} />
             <SendUrgentAlertDialog open={isUrgentAlertOpen} onOpenChange={setIsUrgentAlertOpen} />
           </>

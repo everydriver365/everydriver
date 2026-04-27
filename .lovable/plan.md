@@ -1,78 +1,96 @@
-## Three growth instruments
+# Observability Trio: Errors, Queries, Realtime
 
-All three are high-leverage at the 4k-instructor scale target. Each is independently shippable, but they share one new event table so they're best built together.
-
-Note on real plan prices (the chat mentioned £34.99 → £7.99; the live `subscription_plans` table is **GPS + Health £29.99 → All-In £4.99**). Plan uses the real values.
+Three lightweight admin tools to surface operational issues that are currently invisible. All live under `/admin` and reuse existing patterns (manifest + audit page, similar to the Edge Function Audit shipped earlier).
 
 ---
 
-### 1. Onboarding completion funnel telemetry
+## 1. Edge Function Error Monitor
 
-**Goal:** Know exactly where signups die — signup started → personal details → location → vehicle → plan selection → payment → first pupil added → first lesson scheduled → first payment received.
+A small admin tile + dedicated page showing edge functions with elevated error rates over the last 24h.
 
-**Build:**
-- New table `funnel_events` (instructor_id, event_name, event_data jsonb, occurred_at) — single append-only event log, RLS so instructors only see their own, admins see all.
-- Helper hook `useFunnelTracker()` — fires `funnel.track(name, data)` from each onboarding step (`StepPersonalDetails`, `StepLocation`, `StepVehicle`, `StepPlanSelection`, `StepPayment`, `StepComplete`) and from three lifecycle moments: first pupil insert, first scheduled_lesson insert, first successful payment_history row.
-- DB trigger on `pupils`, `scheduled_lessons`, `payment_history` that inserts a one-shot `first_*` event per instructor (idempotent via partial unique index on `(instructor_id, event_name) where event_name like 'first_%'`).
-- Admin page `/admin/funnel` — cohort table (signup week × stage) showing absolute counts and conversion %, plus a "median time to next stage" column. Built with existing admin layout + recharts.
+**Data source:** Supabase analytics database (`function_edge_logs`) — same source the `supabase--analytics_query` tool uses. Aggregates `response.status_code` per `m.function_id`.
 
-**Why now:** Without this you're guessing where to invest. With 4k-user ambition, a 2pp lift at any stage is worth real money.
+**New edge function:** `edge-function-error-stats`
+- Admin-only (verifies `has_role(auth.uid(), 'admin')`).
+- Runs an analytics query grouping by function name, counting total invocations, 4xx, and 5xx in the last 24h.
+- Returns sorted list where `(4xx + 5xx) / total > 5%` AND total ≥ 10 (avoids noise from rarely-called functions).
+- Joins against the existing `src/data/edge-functions.json` manifest to flag functions that are **deployed but missing from the manifest** (drift indicator).
 
----
+**Admin UI:**
+- New tile on `/admin` dashboard ("Edge Errors (24h)") showing count of unhealthy functions + worst offender. Red badge if any 5xx > 0.
+- Click-through to `/admin/edge-function-errors` with a sortable table: function name, total calls, 4xx %, 5xx %, last error timestamp, last error message snippet.
+- Direct link to the existing `EdgeFunctionAudit` page for retirement decisions.
 
-### 2. Dormant pupil auto re-engagement (SMS + WhatsApp)
-
-**Goal:** Auto-recover pupils who haven't booked in 21 days — currently `DormantPupilsCard` shows them but action is manual.
-
-**Build:**
-- Reuse existing `dormant_outreach_log` pattern via new table `pupil_reengagement_log` (pupil_id, channel, sent_at, message_template) — prevents re-sending within 30 days.
-- Edge function `dormant-pupil-reengage` (scheduled daily 10:00 UK via pg_cron):
-  1. For every active pupil with no non-cancelled lesson in 21+ days AND no entry in `pupil_reengagement_log` in last 30 days,
-  2. Pick channel: WhatsApp if `pupil.whatsapp_opt_in` and `phone` E.164, else SMS via Twilio (uses existing `TWILIO_*` secrets and existing WhatsApp config).
-  3. Template: "Hi {name}, it's {instructor_name} — been a while! Reply BOOK to grab a slot, or tap {short_link} to view my diary." Short link goes to existing pupil portal booking page.
-  4. Log to `pupil_reengagement_log`; insert `funnel_events` row `reengagement.sent`.
-- Instructor toggle in Settings → Communication: "Auto re-engage dormant pupils after 21 days" (default OFF — opt-in for compliance). Per-instructor frequency cap of 5/day.
-- New `DormantPupilsCard` gets a status badge: "Auto-message sent 3 days ago" instead of just "X days dormant".
-- Admin dashboard tile: total messages sent / replies / bookings attributed (joined via `funnel_events`).
-
-**Compliance:** Twilio SMS Pumping Protection + Geo Permissions (UK only) — call out to user to enable in Twilio console after first deploy.
+**Why it matters:** Catches issues like the geotab-poller 404 within minutes instead of days.
 
 ---
 
-### 3. Subscription downgrade save flow
+## 2. Database Query Budget Tracker
 
-**Goal:** When an instructor switches GPS + Health (£29.99) → All-In (£4.99), intercept with retention offers before the change commits.
+A dev-only diagnostic that instruments the Supabase client to count queries per page mount, so N+1 patterns surface during development.
 
-**Build:**
-- New table `subscription_save_offers` (instructor_id, from_plan, to_plan, offer_type, offer_value, accepted_at, declined_at, expires_at). Offer types: `discount_50_3mo`, `pause_30d`, `pause_60d`, `keep_addon_only`.
-- Modify `UpgradePlanSheet.tsx` (and `InstructorPlans.tsx` plan-change handler): when `newPlan.price_monthly < currentPlan.price_monthly`, route through new `<DowngradeSaveSheet>` instead of immediate change.
-- `<DowngradeSaveSheet>` shows three options:
-  1. **50% off for 3 months** — keeps GPS + Health at £14.99/mo for 3 cycles, then reverts to full £29.99. (Lifetime cap: one save offer per instructor per 12 months.)
-  2. **Pause for 30 / 60 days** — sets `instructor_subscriptions.status='paused'` with `resume_at` date; suppresses GoCardless billing via existing pause flow in `gocardless-webhook` ignore logic.
-  3. **Continue downgrade** — proceeds with original plan change.
-- Backend edge function `subscription-save-apply` validates eligibility (no prior offer in 12mo), applies offer, updates GoCardless subscription via existing patterns, and writes `funnel_events` rows (`save_offer.shown`, `save_offer.accepted`, `save_offer.declined`).
-- Admin analytics: new section on `/admin/subscriptions` showing save-offer acceptance rate and revenue retained.
+**Approach:** Wrap `supabase.from()` in a thin proxy in dev mode only (gated by `import.meta.env.DEV`). Each call increments a counter keyed by the current route + a stack-trace-derived component hint.
 
-**Why these offers:** A 50% discount for 3 months on £29.99 = £45 retained vs £0 if they downgrade and £0 if they churn entirely. Pause is even cheaper (zero discount cost, just deferred revenue) and high-acceptance for seasonal instructors.
+**New file:** `src/lib/queryBudget.ts`
+- Exports `installQueryBudget()` called once from `main.tsx` in dev.
+- Maintains an in-memory ring buffer of the last 50 page loads with `{ route, queryCount, queries: [{ table, op, ts, stack }] }`.
+- Logs a `console.warn` when a single route mount exceeds the budget (default: 8 queries in 2 seconds).
+- Exposes `window.__queryBudget` for ad-hoc inspection.
 
----
+**Admin UI (production-safe read):** `/admin/query-budget`
+- Shows the live in-memory log when run locally (dev only — empty in prod).
+- Plus a static "hot pages report" generated by a one-off script (`scripts/scan-supabase-calls.ts`) that greps for `supabase.from(` per file and ranks components by call count. Output saved to `src/data/query-hotspots.json` and rendered as a table.
+- Flags top 10 components with the highest static call count as N+1 candidates for manual review.
 
-## Build order
-
-1. `funnel_events` table + tracker hook + DB triggers (foundation for all three).
-2. Onboarding step instrumentation + admin funnel page.
-3. Dormant re-engagement edge function + cron + opt-in toggle.
-4. Downgrade save sheet + edge function + admin save-offer analytics.
-
-Steps 3 and 4 can ship independently after step 1.
+**Why it matters:** With 249 components calling Supabase directly, a static scan + dev-mode runtime tracker reveals the 10 worst offenders without instrumenting prod.
 
 ---
 
-## Technical notes
+## 3. Realtime Subscription Audit
 
-- All new tables: RLS scoped via `public.get_instructor_id_for_user(auth.uid())` per project Core rule.
-- Cron for dormant: `pg_cron` daily at 10:00 Europe/London; uses `net.http_post` per existing pattern.
-- Twilio + WhatsApp: reuses existing connector configuration; no new secrets needed.
-- GoCardless pause: writes a flag to `instructor_subscriptions` and short-circuits the next charge in `process-recurring-subscriptions`; no new GoCardless API surface.
-- Save-offer eligibility check is server-side in the edge function (never trust the client) — prevents repeated discount abuse.
-- All 3 features write to a single `funnel_events` stream so the admin funnel and the save-offer analytics share one query path.
+A static analysis report verifying that all realtime subscriptions go through `useRealtimeHub` rather than creating per-component channels.
+
+**Approach:** Build-time script `scripts/audit-realtime-channels.ts` that:
+- Greps for `supabase.channel(` across `src/`.
+- Cross-references against an allowlist of files that are *expected* to call it directly (the hub itself + a few presence/typing hooks already known).
+- Outputs `src/data/realtime-audit.json` with violators (file, line, channel name).
+
+**Current state from quick scan:** 5 files call `supabase.channel(` directly:
+- `src/hooks/useRealtimeHub.tsx` (expected)
+- `src/hooks/useCombinedNotificationCount.ts` (review)
+- `src/hooks/useInstructorOnlineStatus.ts` (presence — likely OK)
+- `src/hooks/useInstructorPresence.ts` (presence — likely OK)
+- `src/hooks/useTypingIndicator.ts` (typing — likely OK)
+
+**Admin UI:** `/admin/realtime-audit`
+- Renders the JSON report as a table with status badges (allowlisted vs. violator).
+- Shows total active channel-creation sites and recommends consolidation for any violators.
+- Includes a one-click "regenerate report" button that calls a small admin edge function `regenerate-realtime-audit` (writes a fresh scan via a manifest endpoint — same pattern as the existing edge function manifest).
+
+**Why it matters:** Per-component channels don't scale to 4k users (per memory). Audit makes drift visible.
+
+---
+
+## Files to create
+
+- `supabase/functions/edge-function-error-stats/index.ts`
+- `src/pages/admin/EdgeFunctionErrors.tsx`
+- `src/components/admin/EdgeErrorsTile.tsx` (the dashboard tile)
+- `src/lib/queryBudget.ts`
+- `src/pages/admin/QueryBudget.tsx`
+- `scripts/scan-supabase-calls.ts` + `src/data/query-hotspots.json`
+- `scripts/audit-realtime-channels.ts` + `src/data/realtime-audit.json`
+- `src/pages/admin/RealtimeAudit.tsx`
+
+## Files to edit
+
+- `src/main.tsx` — install query budget in dev
+- `src/routes/adminRoutes.tsx` — three new routes
+- `src/pages/admin/AdminDashboard.tsx` (or equivalent) — add the EdgeErrorsTile
+- `.lovable/plan.md` — log decisions
+
+## Out of scope
+
+- No prod query interception (perf cost not worth it; static scan + dev tracker covers it).
+- No automatic remediation — these are diagnostic surfaces, not auto-fixers.
+- No alerting/email yet — admin tile + dashboard is sufficient v1.

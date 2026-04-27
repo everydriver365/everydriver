@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-04-27T18:30:35.523Z",
+  "allowlist": [
+    "src/hooks/useRealtimeHub.tsx",
+    "src/hooks/useInstructorOnlineStatus.ts",
+    "src/hooks/useInstructorPresence.ts",
+    "src/hooks/useTypingIndicator.ts"
+  ],
+  "total_sites": 8,
+  "allowed_count": 5,
+  "violator_count": 3,
+  "allowed": [
+    {
+      "file": "src/hooks/useInstructorOnlineStatus.ts",
+      "line": 35,
+      "snippet": "const channel = supabase.channel(`instructor-presence:${instructorId}`, {"
+    },
+    {
+      "file": "src/hooks/useInstructorPresence.ts",
+      "line": 14,
+      "snippet": "const channel = supabase.channel(`instructor-presence:${instructorId}`, {"
+    },
+    {
+      "file": "src/hooks/useRealtimeHub.tsx",
+      "line": 58,
+      "snippet": "let ch = supabase.channel(\"realtime-hub\");"
+    },
+    {
+      "file": "src/hooks/useTypingIndicator.ts",
+      "line": 25,
+      "snippet": "const channel = supabase.channel(`typing-${conversationId}`);"
+    },
+    {
+      "file": "src/hooks/useTypingIndicator.ts",
+      "line": 41,
+      "snippet": "const channel = supabase.channel(`typing-${conversationId}`);"
+    }
+  ],
+  "violators": [
+    {
+      "file": "src/hooks/useCombinedNotificationCount.ts",
+      "line": 52,
+      "snippet": "const ch1 = supabase.channel(\"combined-notif-messages\")"
+    },
+    {
+      "file": "src/hooks/useCombinedNotificationCount.ts",
+      "line": 55,
+      "snippet": "const ch2 = supabase.channel(\"combined-notif-chat\")"
+    },
+    {
+      "file": "src/hooks/useCombinedNotificationCount.ts",
+      "line": 58,
+      "snippet": "const ch3 = supabase.channel(\"combined-notif-jobs\")"
+    }
+  ]
+}

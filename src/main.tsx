@@ -8,6 +8,11 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { InstructorThemeProvider } from "./context/InstructorThemeContext";
 import { AppErrorBoundary } from "@/components/common/AppErrorBoundary";
 import { detectNativeWrapper } from "@/hooks/useIsNativeWrapper";
+import { installQueryBudget } from "@/lib/queryBudget";
+
+if (import.meta.env.DEV) {
+  installQueryBudget();
+}
 
 // When the app is loaded inside a native wrapper (Despia / Capacitor / WebView)
 // unregister any service workers so cached assets and Web Push handlers from a
