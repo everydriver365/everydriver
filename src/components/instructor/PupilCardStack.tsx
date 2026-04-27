@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
 import { pupilAvatarColor } from "@/lib/pupilAvatarColor";
+import { titleCaseName } from "@/lib/titleCase";
+import { formatPhoneNumber } from "@/lib/formatPhoneNumber";
+import { useNavigate } from "react-router-dom";
+import { ChevronLeft, MoreHorizontal } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
