@@ -557,6 +557,19 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
           </div>
         ))
       )}
+
+      <PupilPaymentReceiptSheet
+        open={!!receiptId}
+        onOpenChange={(o) => !o && setReceiptId(null)}
+        paymentId={receiptId}
+        pupilId={pupilId}
+      />
+      <PupilPaymentDisputeSheet
+        open={!!disputeId}
+        onOpenChange={(o) => !o && setDisputeId(null)}
+        paymentId={disputeId}
+        pupilId={pupilId}
+      />
     </div>
   );
 }
