@@ -9,6 +9,7 @@ import {
   ArrowLeftRight,
   ChevronRight,
   Check,
+  Clock,
 } from "lucide-react";
 import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -17,6 +18,9 @@ import {
   InstructorNotification,
 } from "@/hooks/useInstructorNotifications";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { useLongPress } from "@/hooks/useLongPress";
+import RowActionSheet from "@/components/instructor/notifications/RowActionSheet";
+import SnoozeSheet from "@/components/instructor/notifications/SnoozeSheet";
 import { cn } from "@/lib/utils";
 
 // ─── Category palette ─────────────────────────────────────────────
@@ -224,19 +228,50 @@ const EYEBROW = "#6E6E73";
 export default function InstructorNotifications() {
   const navigate = useNavigate();
   const { instructor } = useInstructorAuth();
-  const { notifications, unreadCount, markAsRead, markAllAsRead, loading } =
-    useInstructorNotifications(instructor?.id);
+  const {
+    notifications,
+    snoozed,
+    unreadCount,
+    snoozedCount,
+    markAsRead,
+    markAsUnread,
+    markAllAsRead,
+    snoozeNotification,
+    unsnoozeNotification,
+    loading,
+  } = useInstructorNotifications(instructor?.id);
   const { pendingJobsCount, messageCount, swapCount } = useCombinedNotificationCount(
     instructor?.id,
   );
-  const [filter, setFilter] = useState<"all" | "unread">("all");
 
-  const filtered = useMemo(
-    () => (filter === "unread" ? notifications.filter(n => !n.is_read) : notifications),
-    [notifications, filter],
-  );
+  type FilterKey = "all" | "unread" | "test_swap" | "message" | "job" | "default" | "snoozed";
+  const [filter, setFilter] = useState<FilterKey>("all");
+
+  // Action sheets
+  const [actionFor, setActionFor] = useState<InstructorNotification | null>(null);
+  const [snoozeFor, setSnoozeFor] = useState<InstructorNotification | null>(null);
+
+  const sourceList = filter === "snoozed" ? snoozed : notifications;
+  const filtered = useMemo(() => {
+    if (filter === "snoozed" || filter === "all") return sourceList;
+    if (filter === "unread") return sourceList.filter(n => !n.is_read);
+    return sourceList.filter(n => categoryFor(n.type) === filter);
+  }, [sourceList, filter]);
 
   const list = useMemo(() => groupNotifications(filtered), [filtered]);
+
+  // Mark-all-read respects current filter (visible rows only).
+  const visibleUnreadIds = useMemo(
+    () => filtered.filter(n => !n.is_read).map(n => n.id),
+    [filtered],
+  );
+  const handleMarkAllRead = () => {
+    if (filter === "all") {
+      markAllAsRead();
+    } else {
+      visibleUnreadIds.forEach(id => markAsRead(id));
+    }
+  };
 
   const handleTapItem = (item: ListItem) => {
     if (item.kind === "single") {
@@ -373,41 +408,53 @@ export default function InstructorNotifications() {
     </div>
   );
 
-  const SegFilter = (
+  const filterPills: { key: FilterKey; label: string; show?: boolean }[] = [
+    { key: "all", label: "All" },
+    { key: "unread", label: `Unread · ${unreadCount}` },
+    { key: "test_swap", label: "Test swaps" },
+    { key: "message", label: "Messages" },
+    { key: "job", label: "Job offers" },
+    { key: "default", label: "System" },
+    { key: "snoozed", label: `Snoozed · ${snoozedCount}`, show: snoozedCount > 0 },
+  ];
+
+  const PillFilter = (
     <div
-      className="grid grid-cols-2"
-      style={{ gap: 4, background: PAGE_BG, borderRadius: 8, padding: 3, flex: 1, maxWidth: 180 }}
+      className="flex items-center overflow-x-auto no-scrollbar"
+      style={{ gap: 6, marginRight: 8, paddingBottom: 2 }}
     >
-      {(["all", "unread"] as const).map(key => {
-        const active = filter === key;
-        const label = key === "all" ? "All" : `Unread · ${unreadCount}`;
+      {filterPills.filter(p => p.show !== false).map(p => {
+        const active = filter === p.key;
         return (
           <button
-            key={key}
+            key={p.key}
             type="button"
-            onClick={() => setFilter(key)}
+            onClick={() => setFilter(p.key)}
+            className="flex-shrink-0"
             style={{
-              borderRadius: 6,
-              padding: "6px 0",
-              background: active ? CARD_BG : "transparent",
+              padding: "6px 10px",
+              borderRadius: 999,
               fontSize: 12,
-              fontWeight: active ? 500 : 400,
-              color: active ? TEXT : MUTED,
+              fontWeight: 500,
+              background: active ? TEXT : PAGE_BG,
+              color: active ? "#FFF" : MUTED,
+              whiteSpace: "nowrap",
             }}
           >
-            {label}
+            {p.label}
           </button>
         );
       })}
     </div>
   );
 
+  const visibleUnreadCount = visibleUnreadIds.length;
   const MarkAllLink = (
     <button
       type="button"
-      onClick={() => unreadCount > 0 && markAllAsRead()}
-      disabled={unreadCount === 0}
-      className="flex items-center"
+      onClick={handleMarkAllRead}
+      disabled={visibleUnreadCount === 0}
+      className="flex items-center flex-shrink-0"
       style={{
         background: "transparent",
         border: "none",
@@ -416,8 +463,8 @@ export default function InstructorNotifications() {
         fontWeight: 500,
         color: LINK,
         gap: 4,
-        opacity: unreadCount === 0 ? 0.4 : 1,
-        cursor: unreadCount === 0 ? "not-allowed" : "pointer",
+        opacity: visibleUnreadCount === 0 ? 0.4 : 1,
+        cursor: visibleUnreadCount === 0 ? "not-allowed" : "pointer",
       }}
     >
       <CheckCheck style={{ width: 12, height: 12, strokeWidth: 1.6, color: LINK }} />
@@ -461,64 +508,31 @@ export default function InstructorNotifications() {
     const ts = isGroup ? item.latest_at : n.created_at;
 
     return (
-      <button
+      <NotificationRow
         key={isGroup ? item.key : n.id}
-        type="button"
-        onClick={() => handleTapItem(item)}
-        className="w-full text-left flex items-start"
-        style={{
-          padding: 12,
-          borderRadius: 10,
-          gap: 10,
-          background: isUnread ? palette.tintBg : CARD_BG,
-          border: isUnread ? "none" : `0.5px solid ${HAIRLINE}`,
-          marginBottom: 6,
-        }}
-      >
-        <div
-          className="flex items-center justify-center"
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 8,
-            flexShrink: 0,
-            marginTop: 1,
-            background: isUnread ? CARD_BG : palette.tintBg,
-          }}
-        >
-          <Icon style={{ width: 16, height: 16, color: palette.tintFg, strokeWidth: 2 }} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between" style={{ gap: 8, marginBottom: 2 }}>
-            <p
-              className="m-0 truncate"
-              style={{ fontSize: 13, fontWeight: 500, color: TEXT, letterSpacing: "-0.1px" }}
-            >
-              {title}
-            </p>
-            <span
-              className="flex-shrink-0"
-              style={{
-                fontSize: 11,
-                color: isUnread ? LINK : MUTED,
-                fontWeight: isUnread ? 500 : 400,
-              }}
-            >
-              {compactRelative(ts)}
-            </span>
-          </div>
-          <p
-            className="m-0 truncate"
-            style={{ fontSize: 12, color: MUTED, lineHeight: 1.4 }}
-          >
-            {subtitle}
-          </p>
-        </div>
-      </button>
+        item={item}
+        n={n}
+        title={title}
+        subtitle={subtitle}
+        ts={ts}
+        isUnread={isUnread}
+        palette={palette}
+        Icon={Icon}
+        onTap={() => handleTapItem(item)}
+        onLongPress={() => setActionFor(n)}
+      />
     );
   };
 
   const isListEmpty = filtered.length === 0;
+  const isSnoozedView = filter === "snoozed";
+
+  // Resolve action sheet target
+  const actionTypeLabel =
+    actionFor && categoryFor(actionFor.type) === "test_swap" ? "test swaps"
+    : actionFor && categoryFor(actionFor.type) === "message" ? "messages"
+    : actionFor && categoryFor(actionFor.type) === "job" ? "job offers"
+    : "this type";
 
   return (
     <div className="min-h-screen" style={{ background: PAGE_BG }}>
@@ -527,56 +541,49 @@ export default function InstructorNotifications() {
         {HeroCard}
         {CategoriesCard}
 
-        {/* Filter + list combined card (only when there's data or list is loading) */}
+        {/* Filter + list combined card */}
         <div style={{ background: CARD_BG, borderRadius: 12, padding: 12 }}>
-          {!isListEmpty && (
-            <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
-              {SegFilter}
-              {MarkAllLink}
-            </div>
-          )}
+          <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
+            {PillFilter}
+            {MarkAllLink}
+          </div>
 
           {loading ? (
             <div className="text-center" style={{ padding: "32px 16px", color: MUTED, fontSize: 13 }}>
               Loading…
             </div>
           ) : isListEmpty ? (
-            // Empty state
-            notifications.length === 0 ? (
-              <div
-                className="flex flex-col items-center text-center"
-                style={{ padding: "32px 16px", gap: 12 }}
-              >
-                <div
-                  className="flex items-center justify-center"
-                  style={{ width: 48, height: 48, borderRadius: 12, background: CATEGORY.default.tintBg }}
-                >
+            isSnoozedView ? (
+              <div className="flex flex-col items-center text-center" style={{ padding: "32px 16px", gap: 12 }}>
+                <div className="flex items-center justify-center" style={{ width: 48, height: 48, borderRadius: 12, background: "#E6F1FB" }}>
+                  <Clock style={{ width: 24, height: 24, color: "#2B7BC8", strokeWidth: 2 }} />
+                </div>
+                <div>
+                  <p className="m-0" style={{ fontSize: 15, fontWeight: 500, color: TEXT }}>Nothing snoozed</p>
+                  <p className="m-0" style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>
+                    Snoozed alerts will appear here until they resurface
+                  </p>
+                </div>
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="flex flex-col items-center text-center" style={{ padding: "32px 16px", gap: 12 }}>
+                <div className="flex items-center justify-center" style={{ width: 48, height: 48, borderRadius: 12, background: CATEGORY.default.tintBg }}>
                   <Bell style={{ width: 24, height: 24, color: CATEGORY.default.tintFg, strokeWidth: 2 }} />
                 </div>
                 <div>
-                  <p className="m-0" style={{ fontSize: 15, fontWeight: 500, color: TEXT }}>
-                    All caught up
-                  </p>
+                  <p className="m-0" style={{ fontSize: 15, fontWeight: 500, color: TEXT }}>All caught up</p>
                   <p className="m-0" style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>
                     You'll see new alerts here as they arrive
                   </p>
                 </div>
               </div>
             ) : (
-              <div
-                className="flex flex-col items-center text-center"
-                style={{ padding: "32px 16px", gap: 12 }}
-              >
-                <div
-                  className="flex items-center justify-center"
-                  style={{ width: 48, height: 48, borderRadius: 12, background: "#E8F3E8" }}
-                >
+              <div className="flex flex-col items-center text-center" style={{ padding: "32px 16px", gap: 12 }}>
+                <div className="flex items-center justify-center" style={{ width: 48, height: 48, borderRadius: 12, background: "#E8F3E8" }}>
                   <Check style={{ width: 24, height: 24, color: "#3B8B3B", strokeWidth: 2 }} />
                 </div>
                 <div>
-                  <p className="m-0" style={{ fontSize: 15, fontWeight: 500, color: TEXT }}>
-                    All caught up
-                  </p>
+                  <p className="m-0" style={{ fontSize: 15, fontWeight: 500, color: TEXT }}>Nothing here</p>
                   <p className="m-0" style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>
                     Switch to All to see your full notification history
                   </p>
@@ -584,10 +591,147 @@ export default function InstructorNotifications() {
               </div>
             )
           ) : (
-            <div className={cn("flex flex-col")}>{list.map(renderRow)}</div>
+            <div className={cn("flex flex-col")}>
+              {list.map(item => {
+                if (isSnoozedView && item.kind === "single") {
+                  return (
+                    <SnoozedRow
+                      key={item.notification.id}
+                      n={item.notification}
+                      onUnsnooze={() => unsnoozeNotification(item.notification.id)}
+                    />
+                  );
+                }
+                return renderRow(item);
+              })}
+            </div>
           )}
         </div>
       </div>
+
+      {/* Action sheet */}
+      <RowActionSheet
+        open={!!actionFor}
+        onOpenChange={v => { if (!v) setActionFor(null); }}
+        isUnread={!!actionFor && !actionFor.is_read}
+        typeLabel={actionTypeLabel}
+        onMarkRead={() => actionFor && markAsRead(actionFor.id)}
+        onMarkUnread={() => actionFor && markAsUnread(actionFor.id)}
+        onSnooze={() => {
+          if (!actionFor) return;
+          const target = actionFor;
+          setActionFor(null);
+          setSnoozeFor(target);
+        }}
+        onMuteType={() => navigate("/instructor/menu?open=notifications")}
+      />
+
+      {/* Snooze sheet */}
+      <SnoozeSheet
+        open={!!snoozeFor}
+        onOpenChange={v => { if (!v) setSnoozeFor(null); }}
+        onPick={(until) => {
+          if (snoozeFor) snoozeNotification(snoozeFor.id, until);
+          setSnoozeFor(null);
+        }}
+      />
+    </div>
+  );
+}
+
+// ─── Row sub-components ────────────────────────────────────────────
+
+interface RowProps {
+  item: ListItem;
+  n: InstructorNotification;
+  title: string;
+  subtitle: string;
+  ts: string;
+  isUnread: boolean;
+  palette: typeof CATEGORY[CategoryKey];
+  Icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  onTap: () => void;
+  onLongPress: () => void;
+}
+
+function NotificationRow({ n, title, subtitle, ts, isUnread, palette, Icon, onTap, onLongPress }: RowProps) {
+  const handlers = useLongPress({ onLongPress, onClick: onTap });
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      {...handlers}
+      className="w-full text-left flex items-start cursor-pointer select-none"
+      style={{
+        padding: 12,
+        borderRadius: 10,
+        gap: 10,
+        background: isUnread ? palette.tintBg : CARD_BG,
+        border: isUnread ? "none" : `0.5px solid ${HAIRLINE}`,
+        marginBottom: 6,
+      }}
+    >
+      <div
+        className="flex items-center justify-center"
+        style={{
+          width: 32, height: 32, borderRadius: 8, flexShrink: 0, marginTop: 1,
+          background: isUnread ? CARD_BG : palette.tintBg,
+        }}
+      >
+        <Icon style={{ width: 16, height: 16, color: palette.tintFg, strokeWidth: 2 }} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between" style={{ gap: 8, marginBottom: 2 }}>
+          <p className="m-0 truncate" style={{ fontSize: 13, fontWeight: 500, color: TEXT, letterSpacing: "-0.1px" }}>
+            {title}
+          </p>
+          <span className="flex-shrink-0" style={{ fontSize: 11, color: isUnread ? LINK : MUTED, fontWeight: isUnread ? 500 : 400 }}>
+            {compactRelative(ts)}
+          </span>
+        </div>
+        <p className="m-0 truncate" style={{ fontSize: 12, color: MUTED, lineHeight: 1.4 }}>
+          {subtitle}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SnoozedRow({ n, onUnsnooze }: { n: InstructorNotification; onUnsnooze: () => void }) {
+  const cat = categoryFor(n.type);
+  const palette = CATEGORY[cat];
+  const Icon = palette.icon;
+  const until = n.snoozed_until ? new Date(n.snoozed_until) : null;
+  const untilLabel = until ? format(until, "d MMM 'at' HH:mm") : "";
+  return (
+    <div
+      className="w-full text-left flex items-start"
+      style={{
+        padding: 12, borderRadius: 10, gap: 10,
+        background: CARD_BG, border: `0.5px solid ${HAIRLINE}`, marginBottom: 6,
+      }}
+    >
+      <div className="flex items-center justify-center" style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, marginTop: 1, background: palette.tintBg }}>
+        <Icon style={{ width: 16, height: 16, color: palette.tintFg, strokeWidth: 2 }} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="m-0 truncate" style={{ fontSize: 13, fontWeight: 500, color: TEXT, letterSpacing: "-0.1px" }}>
+          {sentenceCase(n.title)}
+        </p>
+        <p className="m-0 truncate" style={{ fontSize: 12, color: MUTED, lineHeight: 1.4 }}>
+          Snoozed until {untilLabel}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={onUnsnooze}
+        style={{
+          fontSize: 12, fontWeight: 500, color: LINK, background: "transparent", border: "none",
+          padding: "4px 8px", flexShrink: 0,
+        }}
+      >
+        Unsnooze
+      </button>
     </div>
   );
 }

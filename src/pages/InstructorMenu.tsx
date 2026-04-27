@@ -44,6 +44,7 @@ import { CancellationPolicyEditor } from "@/components/instructor/CancellationPo
 import { NoShowPolicySettings } from "@/components/instructor/NoShowPolicySettings";
 import { ReferralSettingsCard } from "@/components/instructor/ReferralSettingsCard";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
+import NotificationPreferencesPanel from "@/components/instructor/notifications/NotificationPreferencesPanel";
 import { PupilAppBrandingEditor } from "@/components/instructor/PupilAppBrandingEditor";
 import { PupilBookingSettingsEditor } from "@/components/instructor/PupilBookingSettingsEditor";
 import { GoogleServiceAccountSetup } from "@/components/instructor/GoogleServiceAccountSetup";
@@ -164,7 +165,7 @@ const allTiles: TileDef[] = [
   { id: "daily-briefing", title: "Daily Briefing", description: "Show the morning AI briefing on home", icon: Sparkles, tintBg: "#FEF3C7", tintColor: "#92400E", category: "preferences" },
   { id: "appearance", title: "Appearance", description: "Layout, hero image & wallpaper", icon: Paintbrush, tintBg: "#FFE4E6", tintColor: "#BE123C", category: "preferences" },
   { id: "dashboard-layout", title: "Dashboard Layout", description: "Customize your home screen tiles", icon: LayoutGrid, tintBg: "#E8ECF1", tintColor: "#2A394F", category: "preferences" },
-  { id: "notifications", title: "Push Notifications", description: "Manage notification preferences", icon: Bell, tintBg: "#FEF3C7", tintColor: "#92400E", category: "preferences" },
+  { id: "notifications", title: "Notifications", description: "Cadence, quiet hours, and smart filters", icon: Bell, tintBg: "#FEF3C7", tintColor: "#92400E", category: "preferences" },
   { id: "gdpr", title: "GDPR Data Retention", description: "Auto-flag stale pupil records", icon: Shield, tintBg: "#DBEAFE", tintColor: "#1E40AF", category: "preferences" },
   { id: "data-backup", title: "Data Export & Backup", description: "Download your data for backup", icon: Database, tintBg: "#F4F4F5", tintColor: "#52525B", category: "preferences" },
   { id: "reset-stats", title: "Reset Statistics", description: "Clear lesson history, payments, or progress", icon: Trash2, tintBg: "#FEF2F2", tintColor: "#DC2626", category: "preferences" },
@@ -588,7 +589,12 @@ export default function InstructorMenu() {
       case "dashboard-layout":
         return <DashboardLayoutManager instructorId={instructorId} />;
       case "notifications":
-        return <PushNotificationSettings instructorId={instructorId} />;
+        return (
+          <div className="flex flex-col gap-4">
+            <PushNotificationSettings instructorId={instructorId} />
+            <NotificationPreferencesPanel instructorId={instructorId} />
+          </div>
+        );
       case "gdpr":
         return <GDPRRetentionWidget instructorId={instructorId} />;
       case "data-backup":
