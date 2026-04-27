@@ -282,9 +282,25 @@ export function CoursePlannerForm({
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4">
+      <div
+        className="flex-1 overflow-y-auto overscroll-contain"
+        style={
+          step === "form" && !showHeader
+            ? { padding: 0, background: "transparent" }
+            : { padding: "16px 20px" }
+        }
+      >
         {step === "form" ? (
-          <div className="space-y-5">
+          <div
+            style={{
+              background: "#FFFFFF",
+              borderRadius: 12,
+              padding: 16,
+              display: "flex",
+              flexDirection: "column",
+              gap: 18,
+            }}
+          >
             {mode === "public" && (
               <section className="space-y-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Your Details</p>
