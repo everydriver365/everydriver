@@ -1,25 +1,42 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { ArrowLeft, Check, CheckCheck, Send, User, Paperclip, X, File, Trash2, MoreVertical, AlertTriangle, MessageSquare } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  ChevronLeft,
+  Send,
+  Paperclip,
+  X,
+  File as FileIcon,
+  Trash2,
+  MoreVertical,
+  AlertTriangle,
+  MessageSquare,
+  Mic,
+} from "lucide-react";
 import { useConversationMessages, Conversation, Message } from "@/hooks/useMessaging";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
-import { TypingIndicator } from "@/components/ui/typing-indicator";
-import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { AnimatePresence } from "framer-motion";
 import { useSendViaWhatsApp } from "@/hooks/useSendViaWhatsApp";
 import { Switch } from "@/components/ui/switch";
+import { pupilAvatarColor, pupilAvatarInitial } from "@/lib/pupilAvatarColor";
+import { titleCaseName } from "@/lib/titleCase";
+import { ReadReceipt, ReadReceiptStatus } from "@/components/instructor/chat/ReadReceipt";
+import { TypingDots } from "@/components/instructor/chat/TypingDots";
+import {
+  QuickReplyStrip,
+  DEFAULT_QUICK_REPLIES,
+} from "@/components/instructor/chat/QuickReplyStrip";
+import {
+  DateSeparator,
+  formatChatDate,
+} from "@/components/instructor/chat/DateSeparator";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -41,11 +58,42 @@ interface ChatWindowProps {
   pupilPhone?: string | null;
 }
 
-export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupilPhone }: ChatWindowProps) {
-  const { messages, loading, sendMessage, markAsRead, softDeleteMessage, softDeleteAllMessages, toggleUrgent } = useConversationMessages(
-    conversation.id,
-    "instructor"
-  );
+const TEXT = "#000000";
+const MUTED = "#6E6E73";
+const BLUE = "#2B7BC8";
+const PAGE_BG = "#F2F2F4";
+const CARD_BG = "#FFFFFF";
+const HAIRLINE = "0.5px solid #E5E5EA";
+const FONT_STACK =
+  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
+
+function getReceiptStatus(m: Message): ReadReceiptStatus {
+  // Optimistic local sends may have id starting with "tmp_" — degrade gracefully.
+  if ((m as any).failed) return "failed";
+  if ((m as any).pending) return "sending";
+  if (m.read_at) return "read";
+  if (m.delivered_at) return "delivered";
+  return "sent";
+}
+
+export function ChatWindow({
+  conversation,
+  instructorId,
+  onBack,
+  onDelete,
+  pupilPhone,
+}: ChatWindowProps) {
+  const navigate = useNavigate();
+  const {
+    messages,
+    loading,
+    sendMessage,
+    markAsRead,
+    softDeleteMessage,
+    softDeleteAllMessages,
+    toggleUrgent,
+  } = useConversationMessages(conversation.id, "instructor");
+
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sendAsUrgent, setSendAsUrgent] = useState(false);
@@ -59,6 +107,7 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
   const [deleting, setDeleting] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
   const [deletingMessage, setDeletingMessage] = useState(false);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -70,11 +119,10 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
     userType: "instructor",
   });
 
-  // Scroll to bottom on new messages or typing indicator
+  // Auto-scroll on new messages or typing indicator
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages, isOtherTyping]);
 
   // Mark messages as read when viewing
@@ -85,9 +133,7 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
   // Cleanup preview URL
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
 
@@ -107,9 +153,7 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
         setPreviewUrl(URL.createObjectURL(file));
       }
     }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const clearSelectedFile = () => {
@@ -120,21 +164,19 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
     }
   };
 
-  const uploadFile = async (file: File): Promise<{ url: string; type: string } | null> => {
+  const uploadFile = async (
+    file: File,
+  ): Promise<{ url: string; type: string } | null> => {
     try {
       const fileExt = file.name.split(".").pop();
       const fileName = `${instructorId}/${Date.now()}.${fileExt}`;
-      
       const { error: uploadError } = await supabase.storage
         .from("chat-attachments")
         .upload(fileName, file);
-
       if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("chat-attachments")
-        .getPublicUrl(fileName);
-
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("chat-attachments").getPublicUrl(fileName);
       const attachmentType = file.type.startsWith("image/") ? "image" : "file";
       return { url: publicUrl, type: attachmentType };
     } catch (error) {
@@ -156,7 +198,6 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
     broadcastStopTyping();
 
     let attachmentData: { url: string; type: string } | null = null;
-    
     if (selectedFile) {
       attachmentData = await uploadFile(selectedFile);
       if (!attachmentData && !newMessage.trim()) {
@@ -165,10 +206,8 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
         return;
       }
     }
-
     setUploading(false);
 
-    // Also send via WhatsApp/SMS if toggled on and phone available
     if (sendViaWhatsApp && pupilPhone && newMessage.trim()) {
       const waResult = await sendWhatsApp(pupilPhone, newMessage);
       if (waResult.success) {
@@ -206,52 +245,61 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
     handleTyping();
   };
 
-  const groupMessagesByDate = (msgs: Message[]) => {
-    const groups: { date: string; messages: Message[] }[] = [];
-    
-    msgs.forEach((msg) => {
-      const dateStr = format(new Date(msg.created_at), "yyyy-MM-dd");
-      const existingGroup = groups.find((g) => g.date === dateStr);
-      
-      if (existingGroup) {
-        existingGroup.messages.push(msg);
-      } else {
-        groups.push({ date: dateStr, messages: [msg] });
-      }
+  // Group messages by date
+  const messageGroups = useMemo(() => {
+    const groups: { dateKey: string; date: Date; messages: Message[] }[] = [];
+    messages.forEach((msg) => {
+      const d = new Date(msg.created_at);
+      const dateStr = format(d, "yyyy-MM-dd");
+      const existing = groups.find((g) => g.dateKey === dateStr);
+      if (existing) existing.messages.push(msg);
+      else groups.push({ dateKey: dateStr, date: d, messages: [msg] });
     });
-    
     return groups;
-  };
+  }, [messages]);
 
-  const renderAttachment = (message: Message) => {
+  const renderAttachment = (message: Message, isInstructor: boolean) => {
     if (!message.attachment_url) return null;
-
     if (message.attachment_type === "image") {
       return (
         <img
           src={message.attachment_url}
           alt="Attachment"
-          className="max-w-full rounded-2xl mt-2 cursor-pointer hover:opacity-90 transition-opacity"
-          style={{ maxHeight: "200px" }}
+          style={{
+            maxWidth: "100%",
+            maxHeight: 200,
+            borderRadius: 10,
+            marginTop: 6,
+            cursor: "pointer",
+            display: "block",
+          }}
           onClick={() => window.open(message.attachment_url!, "_blank")}
         />
       );
     }
-
     return (
       <a
         href={message.attachment_url}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-2 mt-2 p-2 bg-background/20 rounded-2xl hover:bg-background/30 transition-colors"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          marginTop: 6,
+          padding: "6px 8px",
+          background: isInstructor ? "rgba(255,255,255,0.18)" : "#F2F2F4",
+          borderRadius: 10,
+          color: "inherit",
+          textDecoration: "none",
+          fontSize: 12,
+        }}
       >
-        <File className="h-4 w-4" />
-        <span className="text-sm underline">View attachment</span>
+        <FileIcon size={14} strokeWidth={1.8} />
+        <span>View attachment</span>
       </a>
     );
   };
-
-  const messageGroups = groupMessagesByDate(messages);
 
   const handleClearMessages = async () => {
     setDeleting(true);
@@ -287,10 +335,7 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
   const handleDeleteConversation = async () => {
     setDeleting(true);
     try {
-      // Soft delete all messages first
       await softDeleteAllMessages();
-
-      // Then soft-mark the conversation (we keep it but clear it)
       toast({ title: "Conversation cleared" });
       setShowDeleteDialog(false);
       onDelete?.();
@@ -303,183 +348,355 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
     }
   };
 
+  const handleVoiceNote = () => {
+    // Reuse the existing attachment picker for voice notes (audio/* will be filtered)
+    fileInputRef.current?.click();
+  };
+
+  const pupilName = titleCaseName(conversation.pupil?.name) || "Unknown";
+  const pupilId = conversation.pupil?.id || conversation.pupil_id;
+  const avatarColor = pupilAvatarColor(pupilId);
+  const avatarInitial = pupilAvatarInitial(conversation.pupil?.name);
+  const showQuickReplies = !newMessage.trim() && !selectedFile && !keyboardOpen;
+  const canSend = !!(newMessage.trim() || selectedFile) && !sending;
+
   return (
     <>
-    <Card className="h-[calc(100vh-14rem)] md:h-[calc(100vh-16rem)] flex flex-col">
-      <CardHeader className="pb-2 border-b shrink-0">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 touch-manipulation">
-            <ArrowLeft className="h-5 w-5 pointer-events-none" />
-          </Button>
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={conversation.pupil?.profile_image_url || undefined} alt={conversation.pupil?.name} />
-            <AvatarFallback className="bg-primary text-primary-foreground">
-              {conversation.pupil?.name?.charAt(0) || <User className="h-4 w-4" />}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold truncate">{conversation.pupil?.name || "Unknown"}</h3>
-            {isOtherTyping ? (
-              <p className="text-sm text-primary animate-pulse">typing...</p>
-            ) : conversation.pupil?.phone ? (
-              <p className="text-sm text-muted-foreground">{conversation.pupil.phone}</p>
-            ) : null}
-          </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={onBack} 
-            className="shrink-0 touch-manipulation md:hidden"
-            aria-label="Close chat"
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          height: "calc(100vh - 64px)",
+          background: PAGE_BG,
+          fontFamily: FONT_STACK,
+        }}
+      >
+        {/* Header */}
+        <header
+          style={{
+            padding: "10px 12px",
+            background: CARD_BG,
+            borderBottom: HAIRLINE,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
+            flexShrink: 0,
+          }}
+        >
+          <button
+            type="button"
+            onClick={onBack}
+            aria-label="Back to inbox"
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: 6,
+              flexShrink: 0,
+              cursor: "pointer",
+              display: "inline-flex",
+            }}
           >
-            <X className="h-5 w-5 pointer-events-none" />
-          </Button>
+            <ChevronLeft size={22} strokeWidth={2} color={BLUE} />
+          </button>
+
+          {/* Identity (tappable → pupil detail) */}
+          <button
+            type="button"
+            onClick={() => pupilId && navigate(`/instructor/pupils/${pupilId}`)}
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: 0,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              flex: 1,
+              minWidth: 0,
+              cursor: "pointer",
+              textAlign: "left",
+            }}
+          >
+            {conversation.pupil?.profile_image_url ? (
+              <img
+                src={conversation.pupil.profile_image_url}
+                alt=""
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  flexShrink: 0,
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  background: avatarColor,
+                  color: "#FFFFFF",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 11,
+                  fontWeight: 500,
+                  flexShrink: 0,
+                }}
+              >
+                {avatarInitial}
+              </div>
+            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: TEXT,
+                  letterSpacing: "-0.1px",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {pupilName}
+              </p>
+              {isOtherTyping && (
+                <p style={{ margin: 0, fontSize: 11, color: BLUE }}>typing…</p>
+              )}
+            </div>
+          </button>
+
+          {/* More menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="shrink-0">
-                <MoreVertical className="h-5 w-5" />
-              </Button>
+              <button
+                type="button"
+                aria-label="More options"
+                style={{
+                  background: "#F2F2F4",
+                  border: "none",
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                  padding: 0,
+                }}
+              >
+                <MoreVertical size={16} strokeWidth={1.8} color={MUTED} />
+              </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => pupilId && navigate(`/instructor/pupils/${pupilId}`)}
+              >
+                View pupil details
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setSendAsUrgent((v) => !v)}
+              >
+                <AlertTriangle
+                  className="h-4 w-4 mr-2"
+                  color={sendAsUrgent ? "#C8434F" : undefined}
+                />
+                {sendAsUrgent ? "Don't mark next as urgent" : "Mark next message urgent"}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setShowClearDialog(true)}>
                 <Trash2 className="h-4 w-4 mr-2" />
-                Clear Messages
+                Clear messages
               </DropdownMenuItem>
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={() => setShowDeleteDialog(true)}
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete Chat
+                Delete chat
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
-      </CardHeader>
+        </header>
 
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-        {loading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
-          </div>
-        ) : messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-muted-foreground">
-            <p>No messages yet. Start the conversation!</p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {messageGroups.map((group) => (
-              <div key={group.date}>
-                <div className="flex items-center justify-center mb-4">
-                  <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">
-                    {format(new Date(group.date), "EEEE, d MMMM yyyy")}
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  {group.messages.map((message) => {
+        {/* Messages */}
+        <div
+          ref={scrollRef}
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            padding: "16px 12px",
+            background: PAGE_BG,
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+          }}
+        >
+          {loading ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 32,
+              }}
+            >
+              <div
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: "50%",
+                  border: `2px solid ${MUTED}`,
+                  borderTopColor: "transparent",
+                  animation: "chat-spin 0.8s linear infinite",
+                }}
+              />
+              <style>{`@keyframes chat-spin { to { transform: rotate(360deg); } }`}</style>
+            </div>
+          ) : messages.length === 0 ? (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+                padding: "32px 16px",
+                gap: 10,
+                margin: "auto",
+              }}
+            >
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 12,
+                  background: "#FBF1DE",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <MessageSquare size={24} strokeWidth={2} color="#B8801F" />
+              </div>
+              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 500, color: TEXT }}>
+                Start chatting with {pupilName.split(" ")[0] || "this pupil"}
+              </h3>
+              <p style={{ margin: 0, fontSize: 12, color: MUTED, lineHeight: 1.4 }}>
+                Say hello, schedule a lesson, or check in
+              </p>
+            </div>
+          ) : (
+            messageGroups.map((group, gi) => (
+              <div key={group.dateKey}>
+                <DateSeparator date={group.date} />
+                {!formatChatDate(group.date) && gi !== 0 && (
+                  <div style={{ height: 4 }} />
+                )}
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  {group.messages.map((message, mi) => {
                     const isInstructor = message.sender_type === "instructor";
                     const isUrgent = message.is_urgent;
+                    const prev = group.messages[mi - 1];
+                    const consecutive =
+                      prev &&
+                      prev.sender_type === message.sender_type &&
+                      new Date(message.created_at).getTime() -
+                        new Date(prev.created_at).getTime() <
+                        60_000;
+                    const status: ReadReceiptStatus = getReceiptStatus(message);
+                    const wrapperGap = consecutive ? 2 : 8;
+
                     return (
                       <div
                         key={message.id}
-                        className={cn(
-                          "flex group",
-                          isInstructor ? "justify-end" : "justify-start"
-                        )}
+                        style={{
+                          marginTop: wrapperGap,
+                          display: "flex",
+                          justifyContent: isInstructor ? "flex-end" : "flex-start",
+                        }}
                       >
-                        {/* Actions for instructor's own messages */}
-                        {isInstructor && (
-                          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity mr-1 shrink-0 self-center">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6"
-                              onClick={() => toggleUrgent(message.id, { instructorId, pupilId: conversation.pupil_id })}
-                              title={isUrgent ? "Remove urgent" : "Mark urgent"}
-                            >
-                              <AlertTriangle className={cn("h-3 w-3", isUrgent ? "text-destructive" : "text-muted-foreground")} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6"
-                              onClick={() => setMessageToDelete(message.id)}
-                            >
-                              <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
-                            </Button>
-                          </div>
-                        )}
-                        {/* Urgent toggle for received messages */}
-                        {!isInstructor && (
-                          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity mr-1 shrink-0 self-center order-last ml-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6"
-                              onClick={() => toggleUrgent(message.id, { instructorId, pupilId: conversation.pupil_id })}
-                              title={isUrgent ? "Remove urgent" : "Mark urgent"}
-                            >
-                              <AlertTriangle className={cn("h-3 w-3", isUrgent ? "text-destructive" : "text-muted-foreground")} />
-                            </Button>
-                          </div>
-                        )}
                         <div
-                          className={cn(
-                            "max-w-[70%] rounded-2xl px-3 py-2",
-                            isInstructor
-                              ? "bg-primary text-primary-foreground rounded-br-md"
-                              : "bg-muted rounded-bl-md",
-                            isUrgent && "ring-2 ring-destructive/60"
-                          )}
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            if (isInstructor) setMessageToDelete(message.id);
+                            else
+                              toggleUrgent(message.id, {
+                                instructorId,
+                                pupilId: conversation.pupil_id,
+                              });
+                          }}
+                          style={{
+                            maxWidth: "75%",
+                            background: isInstructor ? BLUE : CARD_BG,
+                            color: isInstructor ? "#FFFFFF" : TEXT,
+                            borderRadius: isInstructor
+                              ? "14px 14px 4px 14px"
+                              : "14px 14px 14px 4px",
+                            padding: "8px 12px",
+                            outline: isUrgent
+                              ? `2px solid rgba(200,67,79,0.65)`
+                              : "none",
+                          }}
                         >
                           {isUrgent && (
-                            <div className={cn(
-                              "flex items-center gap-1 mb-1 text-[10px] font-semibold",
-                              isInstructor ? "text-primary-foreground/90" : "text-destructive"
-                            )}>
-                              <AlertTriangle className="h-3 w-3" />
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 4,
+                                fontSize: 10,
+                                fontWeight: 500,
+                                marginBottom: 3,
+                                color: isInstructor
+                                  ? "rgba(255,255,255,0.95)"
+                                  : "#C8434F",
+                                letterSpacing: "0.4px",
+                              }}
+                            >
+                              <AlertTriangle size={11} strokeWidth={2} />
                               URGENT
                             </div>
                           )}
                           {message.content && (
-                            <p className="text-sm whitespace-pre-wrap break-words">
+                            <p
+                              style={{
+                                margin: "0 0 3px",
+                                fontSize: 14,
+                                lineHeight: 1.3,
+                                whiteSpace: "pre-wrap",
+                                wordBreak: "break-word",
+                              }}
+                            >
                               {message.content}
                             </p>
                           )}
-                          {renderAttachment(message)}
+                          {renderAttachment(message, isInstructor)}
                           <div
-                            className={cn(
-                              "flex items-center gap-1 mt-1",
-                              isInstructor ? "justify-end" : "justify-start"
-                            )}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "flex-end",
+                              gap: 4,
+                              marginTop: 2,
+                            }}
                           >
                             <span
-                              className={cn(
-                                "text-[10px]",
-                                isInstructor
-                                  ? "text-primary-foreground/70"
-                                  : "text-muted-foreground"
-                              )}
+                              style={{
+                                fontSize: 10,
+                                color: isInstructor
+                                  ? "rgba(255,255,255,0.75)"
+                                  : MUTED,
+                              }}
                             >
                               {format(new Date(message.created_at), "HH:mm")}
                             </span>
-                            {isInstructor && (
-                              <span className="inline-flex items-center" title={
-                                message.read_at
-                                  ? `Delivered ${message.delivered_at ? format(new Date(message.delivered_at), "HH:mm") : ""} · Read ${format(new Date(message.read_at), "HH:mm")}`
-                                  : message.delivered_at
-                                    ? `Delivered ${format(new Date(message.delivered_at), "HH:mm")}`
-                                    : "Sent"
-                              }>
-                                {message.read_at ? (
-                                  <CheckCheck className="h-3 w-3 text-sky-400" />
-                                ) : message.delivered_at ? (
-                                  <CheckCheck className="h-3 w-3 text-primary-foreground/50" />
-                                ) : (
-                                  <Check className="h-3 w-3 text-primary-foreground/50" />
-                                )}
-                              </span>
-                            )}
+                            {isInstructor && <ReadReceipt status={status} />}
                           </div>
                         </div>
                       </div>
@@ -487,169 +704,321 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete, pupil
                   })}
                 </div>
               </div>
-            ))}
-            
-            {/* Typing indicator */}
-            <AnimatePresence>
-              {isOtherTyping && (
-                <TypingIndicator name={conversation.pupil?.name} />
-              )}
-            </AnimatePresence>
-          </div>
-        )}
-      </ScrollArea>
-
-      <CardContent className="p-2 border-t shrink-0 space-y-1.5">
-        {/* WhatsApp toggle */}
-        {pupilPhone && (
-          <div className="flex items-center gap-2 px-1">
-            <MessageSquare className="h-3.5 w-3.5 text-emerald-500" />
-            <span className="text-xs text-muted-foreground">Also send via WhatsApp</span>
-            <Switch
-              checked={sendViaWhatsApp}
-              onCheckedChange={setSendViaWhatsApp}
-              className="h-4 w-8 [&>span]:h-3 [&>span]:w-3 data-[state=checked]:bg-emerald-500"
-            />
-          </div>
-        )}
-        {/* File preview */}
-        {selectedFile && (
-          <div className="flex items-center gap-2 p-1.5 bg-muted rounded-2xl">
-            {previewUrl ? (
-              <img src={previewUrl} alt="Preview" className="h-8 w-8 object-cover rounded" />
-            ) : (
-              <div className="h-8 w-8 bg-background rounded flex items-center justify-center">
-                <File className="h-4 w-4 text-muted-foreground" />
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium truncate">{selectedFile.name}</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="shrink-0 h-6 w-6"
-              onClick={clearSelectedFile}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          </div>
-        )}
-
-        <div className="flex items-center gap-2">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,.pdf,.doc,.docx,.txt"
-            className="hidden"
-            onChange={handleFileSelect}
-          />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={sending}
-          >
-            <Paperclip className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={sendAsUrgent ? "destructive" : "ghost"}
-            size="icon"
-            onClick={() => setSendAsUrgent(!sendAsUrgent)}
-            title={sendAsUrgent ? "Sending as urgent" : "Mark as urgent"}
-            className="shrink-0"
-          >
-            <AlertTriangle className="h-4 w-4" />
-          </Button>
-          <Input
-            ref={inputRef}
-            placeholder="Type a message..."
-            value={newMessage}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            disabled={sending}
-            className="flex-1 h-9 text-sm"
-          />
-          <Button
-            size="icon"
-            onClick={handleSend}
-            disabled={(!newMessage.trim() && !selectedFile) || sending}
-          >
-            {uploading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground border-t-transparent" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
+            ))
+          )}
+          {isOtherTyping && messages.length > 0 && <TypingDots />}
         </div>
-      </CardContent>
-    </Card>
 
-    {/* Clear Messages Dialog */}
-    <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Clear all messages?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Messages will be hidden from view but retained in the system.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-          <AlertDialogAction 
-            onClick={handleClearMessages}
-            disabled={deleting}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {deleting ? "Clearing..." : "Clear Messages"}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        {/* Composer area */}
+        <div style={{ background: CARD_BG, flexShrink: 0 }}>
+          {/* WhatsApp toggle (preserved) */}
+          {pupilPhone && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "6px 14px 0",
+              }}
+            >
+              <MessageSquare size={13} strokeWidth={1.8} color="#3B8B3B" />
+              <span style={{ fontSize: 11, color: MUTED }}>
+                Also send via WhatsApp
+              </span>
+              <Switch
+                checked={sendViaWhatsApp}
+                onCheckedChange={setSendViaWhatsApp}
+                className="h-4 w-8 [&>span]:h-3 [&>span]:w-3 data-[state=checked]:bg-emerald-500"
+              />
+            </div>
+          )}
 
-    {/* Delete Conversation Dialog */}
-    <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Clear this conversation?</AlertDialogTitle>
-          <AlertDialogDescription>
-            All messages will be hidden from view but retained in the system.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-          <AlertDialogAction 
-            onClick={handleDeleteConversation}
-            disabled={deleting}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {deleting ? "Deleting..." : "Delete Chat"}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          {/* File preview (preserved) */}
+          {selectedFile && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "6px 12px 0",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  background: PAGE_BG,
+                  borderRadius: 12,
+                  padding: 6,
+                  flex: 1,
+                  minWidth: 0,
+                }}
+              >
+                {previewUrl ? (
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 6,
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: 32,
+                      height: 32,
+                      background: CARD_BG,
+                      borderRadius: 6,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <FileIcon size={16} strokeWidth={1.8} color={MUTED} />
+                  </div>
+                )}
+                <p
+                  style={{
+                    flex: 1,
+                    margin: 0,
+                    fontSize: 12,
+                    fontWeight: 500,
+                    color: TEXT,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {selectedFile.name}
+                </p>
+                <button
+                  type="button"
+                  onClick={clearSelectedFile}
+                  aria-label="Remove attachment"
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    padding: 4,
+                    cursor: "pointer",
+                  }}
+                >
+                  <X size={14} strokeWidth={1.8} color={MUTED} />
+                </button>
+              </div>
+            </div>
+          )}
 
-    {/* Delete Single Message Dialog */}
-    <AlertDialog open={!!messageToDelete} onOpenChange={(open) => !open && setMessageToDelete(null)}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete this message?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This message will be hidden from view but retained in the system.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={deletingMessage}>Cancel</AlertDialogCancel>
-          <AlertDialogAction 
-            onClick={handleDeleteMessage}
-            disabled={deletingMessage}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          {/* Quick replies */}
+          {showQuickReplies && (
+            <QuickReplyStrip
+              replies={DEFAULT_QUICK_REPLIES}
+              onSelect={(text) => {
+                setNewMessage((cur) => (cur ? `${cur} ${text}` : text));
+                inputRef.current?.focus();
+              }}
+            />
+          )}
+
+          {/* Composer row */}
+          <div
+            style={{
+              padding: "8px 12px 12px",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
           >
-            {deletingMessage ? "Deleting..." : "Delete"}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,.pdf,.doc,.docx,.txt,audio/*"
+              style={{ display: "none" }}
+              onChange={handleFileSelect}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={sending}
+              aria-label="Attach file"
+              style={{
+                background: PAGE_BG,
+                border: "none",
+                width: 36,
+                height: 36,
+                borderRadius: "50%",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: sending ? "not-allowed" : "pointer",
+                flexShrink: 0,
+                padding: 0,
+              }}
+            >
+              <Paperclip size={16} strokeWidth={2} color={MUTED} />
+            </button>
+
+            <div
+              style={{
+                background: PAGE_BG,
+                borderRadius: 18,
+                padding: "8px 12px",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
+              <input
+                ref={inputRef}
+                placeholder="Type a message"
+                value={newMessage}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                onFocus={() => setKeyboardOpen(true)}
+                onBlur={() => setKeyboardOpen(false)}
+                disabled={sending}
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  fontSize: 14,
+                  color: TEXT,
+                  fontFamily: FONT_STACK,
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleVoiceNote}
+                aria-label="Voice note"
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  flexShrink: 0,
+                }}
+              >
+                <Mic size={18} strokeWidth={1.8} color={MUTED} />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={!canSend}
+              aria-label="Send message"
+              style={{
+                background: BLUE,
+                border: "none",
+                width: 36,
+                height: 36,
+                borderRadius: "50%",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: canSend ? "pointer" : "not-allowed",
+                opacity: canSend ? 1 : 0.4,
+                flexShrink: 0,
+                padding: 0,
+              }}
+            >
+              {uploading ? (
+                <div
+                  style={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: "50%",
+                    border: "2px solid #FFFFFF",
+                    borderTopColor: "transparent",
+                    animation: "chat-spin 0.8s linear infinite",
+                  }}
+                />
+              ) : (
+                <Send size={16} strokeWidth={2} color="#FFFFFF" />
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Clear Messages Dialog */}
+      <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear all messages?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Messages will be hidden from view but retained in the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleClearMessages}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Clearing..." : "Clear Messages"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Conversation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear this conversation?</AlertDialogTitle>
+            <AlertDialogDescription>
+              All messages will be hidden from view but retained in the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConversation}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting..." : "Delete Chat"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Single Message Dialog */}
+      <AlertDialog
+        open={!!messageToDelete}
+        onOpenChange={(open) => !open && setMessageToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this message?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This message will be hidden from view but retained in the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingMessage}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteMessage}
+              disabled={deletingMessage}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingMessage ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
