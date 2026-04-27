@@ -1122,18 +1122,20 @@ export default function InstructorPupils() {
 
       {/* Driving Report Sheet */}
       <Sheet open={isDrivingReportOpen} onOpenChange={setIsDrivingReportOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Driving Report</SheetTitle>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-2xl p-0 h-[100dvh] rounded-none overflow-y-auto"
+          style={{ background: '#F2F2F4' }}
+        >
+          <SheetHeader className="sr-only">
+            <SheetTitle>Driving report</SheetTitle>
             <SheetDescription>
-              {selectedPupil?.name}'s driving performance
+              {selectedPupil?.name} driving performance
             </SheetDescription>
           </SheetHeader>
-          <div className="mt-4">
-            {selectedPupil && instructorId && (
-              <PupilDrivingReport pupilId={selectedPupil.id} instructorId={instructorId} pupilName={selectedPupil.name} />
-            )}
-          </div>
+          {selectedPupil && instructorId && (
+            <PupilDrivingReport pupilId={selectedPupil.id} instructorId={instructorId} pupilName={selectedPupil.name} />
+          )}
         </SheetContent>
       </Sheet>
 
