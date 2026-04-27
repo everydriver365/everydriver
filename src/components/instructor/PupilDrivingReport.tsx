@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   AlertTriangle,
   CheckCircle,
@@ -11,13 +11,27 @@ import {
   Download,
   TrendingUp,
   Send,
+  CheckCheck,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  startOfYear,
+  subDays,
+  isWithinInterval,
+} from 'date-fns';
 import RouteMapView from './RouteMapView';
 import DrivingSkillsHeatmap from './DrivingSkillsHeatmap';
 import PupilBrakeGearAnalysis from './PupilBrakeGearAnalysis';
 import { SegmentedControl } from '@/components/instructor/ui/SegmentedControl';
+import {
+  PeriodSelector,
+  type PeriodKey,
+} from '@/components/instructor/ui/PeriodSelector';
+import { TrendPill } from '@/components/instructor/ui/TrendPill';
+import { ScoreBadge } from '@/components/instructor/ui/ScoreBadge';
 import { titleCaseName } from '@/lib/titleCase';
 import { Badge } from '@/components/ui/badge';
 
@@ -40,6 +54,7 @@ interface GPSPoint {
 
 interface DrivingEvent {
   id: string;
+  telematics_id: string | null;
   event_type: string;
   severity: string;
   latitude: number | null;
@@ -96,6 +111,88 @@ function ratingPalette(rating: string): { bg: string; fg: string } {
   return { bg: '#E6F1FB', fg: '#2B7BC8' };
 }
 
+/* ---------------- Period helpers ---------------- */
+
+interface DateInterval {
+  start: Date;
+  end: Date;
+}
+
+/** Resolve a PeriodKey into the current and previous comparable interval. */
+function resolvePeriod(period: PeriodKey, now: Date = new Date()): {
+  current: DateInterval | null;
+  previous: DateInterval | null;
+} {
+  switch (period) {
+    case 'this_week': {
+      const start = startOfWeek(now, { weekStartsOn: 1 });
+      const end = endOfWeek(now, { weekStartsOn: 1 });
+      return {
+        current: { start, end },
+        previous: { start: subDays(start, 7), end: subDays(end, 7) },
+      };
+    }
+    case 'last_7_days': {
+      const end = now;
+      const start = subDays(now, 7);
+      return {
+        current: { start, end },
+        previous: { start: subDays(start, 7), end: start },
+      };
+    }
+    case 'last_30_days': {
+      const end = now;
+      const start = subDays(now, 30);
+      return {
+        current: { start, end },
+        previous: { start: subDays(start, 30), end: start },
+      };
+    }
+    case 'this_year': {
+      const start = startOfYear(now);
+      return { current: { start, end: now }, previous: null };
+    }
+    case 'all_time':
+    default:
+      return { current: null, previous: null };
+  }
+}
+
+function formatRangeLabel(period: PeriodKey, now: Date = new Date()): string {
+  const { current } = resolvePeriod(period, now);
+  if (!current) return 'All time';
+  if (period === 'this_week') {
+    return `${format(current.start, 'EEE d')} – ${format(current.end, 'EEE d')}`;
+  }
+  return `${format(current.start, 'd MMM')} – ${format(current.end, 'd MMM')}`;
+}
+
+/* ---------------- Score helpers ---------------- */
+
+function scoreForEvents(good: number, bad: number): number {
+  return Math.max(0, Math.min(100, 100 - bad * 5 + good * 2));
+}
+
+/** Derive a per-session score from its events. Returns null when no events at all. */
+function perSessionScore(
+  sessionId: string,
+  events: Array<{ telematics_id?: string | null; event_type: string }>,
+): number | null {
+  const own = events.filter((e) => e.telematics_id === sessionId);
+  if (own.length === 0) return null;
+  const good = own.filter(
+    (e) => e.event_type === 'smooth_stop' || e.event_type === 'good_acceleration',
+  ).length;
+  const bad = own.filter(
+    (e) =>
+      e.event_type === 'harsh_brake' ||
+      e.event_type === 'harsh_acceleration' ||
+      e.event_type === 'speeding' ||
+      e.event_type === 'sharp_turn',
+  ).length;
+  return scoreForEvents(good, bad);
+}
+
 const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
   pupilId,
   pupilName,
@@ -108,6 +205,7 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
   const [allEvents, setAllEvents] = useState<DrivingEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabKey>('sessions');
+  const [period, setPeriod] = useState<PeriodKey>('last_30_days');
 
   const { unit, toUnit } = useLocaleUnit();
 
@@ -169,17 +267,54 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
     setEvents(eventsData || []);
   };
 
-  // Aggregates (preserved)
-  const totalDistanceKm = sessions.reduce(
+  // Period-aware filtering. Falls back to "all sessions" when interval is null
+  // (i.e. period === 'all_time'). Trend compares same-shape previous interval.
+  const periodNow = useMemo(() => new Date(), []);
+  const { current: currentInterval, previous: previousInterval } = useMemo(
+    () => resolvePeriod(period, periodNow),
+    [period, periodNow],
+  );
+
+  const filterSessionsBy = (interval: DateInterval | null) => {
+    if (!interval) return sessions;
+    return sessions.filter((s) =>
+      isWithinInterval(new Date(s.started_at), {
+        start: interval.start,
+        end: interval.end,
+      }),
+    );
+  };
+  const filterEventsBy = (interval: DateInterval | null) => {
+    if (!interval) return allEvents;
+    return allEvents.filter((e) =>
+      isWithinInterval(new Date(e.recorded_at), {
+        start: interval.start,
+        end: interval.end,
+      }),
+    );
+  };
+
+  const periodSessions = useMemo(
+    () => filterSessionsBy(currentInterval),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sessions, currentInterval],
+  );
+  const periodEvents = useMemo(
+    () => filterEventsBy(currentInterval),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allEvents, currentInterval],
+  );
+
+  const totalDistanceKm = periodSessions.reduce(
     (acc, s) => acc + (Number(s.total_distance_km) || 0),
     0,
   );
-  const totalSessions = sessions.length;
+  const totalSessions = periodSessions.length;
 
-  const goodEvents = allEvents.filter(
+  const goodEvents = periodEvents.filter(
     (e) => e.event_type === 'smooth_stop' || e.event_type === 'good_acceleration',
   );
-  const badEvents = allEvents.filter(
+  const badEvents = periodEvents.filter(
     (e) =>
       e.event_type === 'harsh_brake' ||
       e.event_type === 'harsh_acceleration' ||
@@ -187,30 +322,60 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
       e.event_type === 'sharp_turn',
   );
 
-  const overallScore = Math.max(
-    0,
-    Math.min(100, 100 - badEvents.length * 5 + goodEvents.length * 2),
-  );
+  const overallScore = scoreForEvents(goodEvents.length, badEvents.length);
 
-  const rating =
-    totalSessions === 0 ? '—' : ratingFromScore(overallScore);
+  // Threshold-aware display tier:
+  //   none        → 0 lessons in period (hide score, show "Not enough data")
+  //   provisional → 1-4 lessons (grey pill, no rating colour)
+  //   full        → 5+ lessons (Phase 1 default)
+  const scoreTier: 'none' | 'provisional' | 'full' =
+    totalSessions === 0
+      ? 'none'
+      : totalSessions < 5
+        ? 'provisional'
+        : 'full';
+
+  const rating = scoreTier === 'full' ? ratingFromScore(overallScore) : '—';
   const palette = ratingPalette(rating);
+
+  // Week-on-week trend — only when both periods have ≥5 lessons and the period
+  // exposes a meaningful previous interval (i.e. not 'this_year' / 'all_time').
+  const trendDelta: number | null = useMemo(() => {
+    if (!previousInterval) return null;
+    if (totalSessions < 5) return null;
+    const prevSessions = filterSessionsBy(previousInterval);
+    if (prevSessions.length < 5) return null;
+    const prevEvents = filterEventsBy(previousInterval);
+    const prevGood = prevEvents.filter(
+      (e) =>
+        e.event_type === 'smooth_stop' || e.event_type === 'good_acceleration',
+    ).length;
+    const prevBad = prevEvents.filter(
+      (e) =>
+        e.event_type === 'harsh_brake' ||
+        e.event_type === 'harsh_acceleration' ||
+        e.event_type === 'speeding' ||
+        e.event_type === 'sharp_turn',
+    ).length;
+    const prevScore = scoreForEvents(prevGood, prevBad);
+    return overallScore - prevScore;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [previousInterval, sessions, allEvents, totalSessions, overallScore]);
 
   const niceName = titleCaseName(pupilName) || pupilName;
 
   const distanceLabel = formatDistance(totalDistanceKm, unit, toUnit);
 
   const caveat = (() => {
-    if (totalSessions === 0)
-      return 'No GPS data yet · score appears after the first tracked lesson';
-    if (totalSessions <= 2)
-      return `Based on ${totalSessions} lesson${totalSessions === 1 ? '' : 's'} · scores stabilise after 5+ lessons`;
-    if (totalSessions <= 4)
-      return `Based on ${totalSessions} lessons · score is provisional`;
+    if (scoreTier === 'none') return null; // hero shows ProvisionalScoreState
+    if (scoreTier === 'provisional')
+      return 'Score becomes reliable after 5 lessons in this period';
     return distanceLabel
       ? `Based on ${totalSessions} lessons across ${distanceLabel}`
       : `Based on ${totalSessions} lessons`;
   })();
+
+  const rangeLabel = formatRangeLabel(period, periodNow);
 
   const getEventIcon = (eventType: string) => {
     switch (eventType) {
@@ -283,162 +448,200 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
         style={{
           background: '#FFFFFF',
           borderRadius: 12,
-          padding: '12px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          borderBottom: '0.5px solid #E5E5EA',
+          overflow: 'hidden',
         }}
       >
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p
-            style={{
-              fontSize: 11,
-              fontWeight: 500,
-              color: '#6E6E73',
-              letterSpacing: '0.3px',
-              textTransform: 'uppercase',
-              margin: '0 0 1px',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {niceName}
-          </p>
-          <h1
-            style={{
-              fontSize: 15,
-              fontWeight: 500,
-              color: '#000000',
-              letterSpacing: '-0.2px',
-              margin: 0,
-            }}
-          >
-            Driving report
-          </h1>
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            // Existing PDF export flow — preserved as a no-op placeholder
-            // matching prior in-card "Export PDF" button behaviour.
-          }}
+        <div
           style={{
-            background: '#F2F2F4',
-            border: 0,
-            borderRadius: 8,
-            padding: '6px 10px',
-            display: 'inline-flex',
+            padding: '12px 16px',
+            display: 'flex',
             alignItems: 'center',
-            gap: 5,
-            cursor: 'pointer',
-            flexShrink: 0,
+            gap: 12,
           }}
-          aria-label="Export PDF"
         >
-          <Download size={13} strokeWidth={2} color="#000000" />
-          <span style={{ fontSize: 12, fontWeight: 500, color: '#000000' }}>PDF</span>
-        </button>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: '#6E6E73',
+                letterSpacing: '0.3px',
+                textTransform: 'uppercase',
+                margin: '0 0 1px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {niceName}
+            </p>
+            <h1
+              style={{
+                fontSize: 15,
+                fontWeight: 500,
+                color: '#000000',
+                letterSpacing: '-0.2px',
+                margin: 0,
+              }}
+            >
+              Driving report
+            </h1>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              // Existing PDF export flow — preserved as a no-op placeholder
+              // matching prior in-card "Export PDF" button behaviour.
+              // Generates the report for the currently-selected period.
+            }}
+            style={{
+              background: '#F2F2F4',
+              border: 0,
+              borderRadius: 8,
+              padding: '6px 10px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+            aria-label="Export PDF"
+          >
+            <Download size={13} strokeWidth={2} color="#000000" />
+            <span style={{ fontSize: 12, fontWeight: 500, color: '#000000' }}>PDF</span>
+          </button>
+        </div>
+        {/* Period selector row */}
+        <div
+          style={{
+            padding: '8px 16px',
+            borderTop: '0.5px solid #E5E5EA',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          <PeriodSelector
+            value={period}
+            rangeLabel={rangeLabel}
+            onChange={setPeriod}
+          />
+        </div>
       </div>
 
       {/* Performance score hero card */}
-      <div
-        style={{
-          background: '#FFFFFF',
-          borderRadius: 12,
-          padding: 16,
-        }}
-      >
+      {scoreTier === 'none' ? (
+        <ProvisionalScoreState />
+      ) : (
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 14,
-          }}
-        >
-          <div>
-            <p
-              style={{
-                fontSize: 11,
-                fontWeight: 500,
-                color: '#6E6E73',
-                letterSpacing: '0.3px',
-                textTransform: 'uppercase',
-                margin: '0 0 2px',
-              }}
-            >
-              Performance score
-            </p>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              <span
-                style={{
-                  fontSize: 30,
-                  fontWeight: 500,
-                  color: '#000000',
-                  letterSpacing: '-0.5px',
-                }}
-              >
-                {noSessions ? '—' : overallScore}
-              </span>
-              <span style={{ fontSize: 13, color: '#6E6E73', fontWeight: 500 }}>
-                / 100
-              </span>
-            </div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <p
-              style={{
-                fontSize: 11,
-                fontWeight: 500,
-                color: '#6E6E73',
-                letterSpacing: '0.3px',
-                textTransform: 'uppercase',
-                margin: '0 0 2px',
-              }}
-            >
-              Rating
-            </p>
-            <span
-              style={{
-                display: 'inline-block',
-                borderRadius: 999,
-                padding: '4px 10px',
-                fontSize: 12,
-                fontWeight: 500,
-                background: noSessions ? '#F2F2F4' : palette.bg,
-                color: noSessions ? '#6E6E73' : palette.fg,
-              }}
-            >
-              {noSessions ? 'No data' : rating}
-            </span>
-          </div>
-        </div>
-
-        {/* Progress bar */}
-        <div
-          style={{
-            height: 4,
-            background: '#F2F2F4',
-            borderRadius: 2,
-            overflow: 'hidden',
-            marginBottom: 8,
+            background: '#FFFFFF',
+            borderRadius: 12,
+            padding: 16,
           }}
         >
           <div
             style={{
-              height: '100%',
-              width: `${noSessions ? 0 : overallScore}%`,
-              background: noSessions ? '#C7C7CC' : palette.fg,
-              transition: 'width 200ms ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 14,
+              gap: 12,
             }}
-          />
+          >
+            <div style={{ minWidth: 0 }}>
+              <p
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: '#6E6E73',
+                  letterSpacing: '0.3px',
+                  textTransform: 'uppercase',
+                  margin: '0 0 2px',
+                }}
+              >
+                Performance score
+              </p>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                <span
+                  style={{
+                    fontSize: 30,
+                    fontWeight: 500,
+                    color: '#000000',
+                    letterSpacing: '-0.5px',
+                  }}
+                >
+                  {overallScore}
+                </span>
+                <span style={{ fontSize: 13, color: '#6E6E73', fontWeight: 500 }}>
+                  / 100
+                </span>
+              </div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: '#6E6E73',
+                  letterSpacing: '0.3px',
+                  textTransform: 'uppercase',
+                  margin: '0 0 2px',
+                }}
+              >
+                Rating
+              </p>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                <span
+                  style={{
+                    display: 'inline-block',
+                    borderRadius: 999,
+                    padding: '4px 10px',
+                    fontSize: 12,
+                    fontWeight: 500,
+                    background: scoreTier === 'full' ? palette.bg : '#F2F2F4',
+                    color: scoreTier === 'full' ? palette.fg : '#6E6E73',
+                  }}
+                >
+                  {scoreTier === 'full' ? rating : 'Provisional'}
+                </span>
+                {scoreTier === 'full' && <TrendPill delta={trendDelta} />}
+              </div>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div
+            style={{
+              height: 4,
+              background: '#F2F2F4',
+              borderRadius: 2,
+              overflow: 'hidden',
+              marginBottom: 8,
+            }}
+          >
+            <div
+              style={{
+                height: '100%',
+                width: `${overallScore}%`,
+                background: scoreTier === 'full' ? palette.fg : '#C7C7CC',
+                transition: 'width 200ms ease',
+              }}
+            />
+          </div>
+          {caveat && (
+            <p style={{ fontSize: 11, color: '#6E6E73', margin: 0, lineHeight: 1.4 }}>
+              {caveat}
+            </p>
+          )}
         </div>
-        <p style={{ fontSize: 11, color: '#6E6E73', margin: 0, lineHeight: 1.4 }}>
-          {caveat}
-        </p>
-      </div>
+      )}
 
       {/* Stats grid 2x2 */}
       <div
@@ -493,7 +696,7 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
             { value: 'heatmap', label: 'Heatmap' },
             {
               value: 'events',
-              label: allEvents.length > 0 ? `Events (${allEvents.length})` : 'Events',
+              label: periodEvents.length > 0 ? `Events (${periodEvents.length})` : 'Events',
             },
           ]}
         />
@@ -502,7 +705,8 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
       {/* Tab content */}
       {activeTab === 'sessions' && (
         <SessionsTab
-          sessions={sessions}
+          sessions={periodSessions}
+          allEvents={periodEvents}
           selectedSession={selectedSession}
           gpsPoints={gpsPoints}
           events={events}
@@ -516,38 +720,56 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
 
       {activeTab === 'brake' && (
         <CardWrap eyebrow="Brake & gear analysis">
-          {selectedSession ? (
+          {selectedSession && periodSessions.length > 0 ? (
             <PupilBrakeGearAnalysis
               telematicsId={selectedSession.id}
               sessionDate={selectedSession.started_at}
             />
           ) : (
-            <p style={{ fontSize: 13, color: '#6E6E73', margin: 0 }}>
-              Select a session from the Sessions tab to view brake &amp; gear analysis.
-            </p>
+            <TabEmptyState
+              iconBg="#FBF1DE"
+              iconFg="#B8801F"
+              icon={<Gauge size={24} strokeWidth={2} color="#B8801F" />}
+              title="No braking data yet"
+              subtitle="Track lessons to see braking and gear-change patterns"
+            />
           )}
         </CardWrap>
       )}
 
       {activeTab === 'heatmap' && (
         <CardWrap eyebrow="Skills heatmap">
-          <DrivingSkillsHeatmap
-            instructorId={instructorId}
-            pupilId={pupilId}
-            height="450px"
-          />
+          {periodSessions.length > 0 ? (
+            <DrivingSkillsHeatmap
+              instructorId={instructorId}
+              pupilId={pupilId}
+              height="450px"
+            />
+          ) : (
+            <TabEmptyState
+              iconBg="#FBEAEC"
+              iconFg="#C8434F"
+              icon={<MapPin size={24} strokeWidth={2} color="#C8434F" />}
+              title="No route data yet"
+              subtitle="Tracked lessons appear here as a route heatmap"
+            />
+          )}
         </CardWrap>
       )}
 
       {activeTab === 'events' && (
-        <CardWrap eyebrow={`All driving events · ${allEvents.length}`}>
-          {allEvents.length === 0 ? (
-            <p style={{ fontSize: 13, color: '#6E6E73', margin: 0 }}>
-              No events recorded yet.
-            </p>
+        <CardWrap eyebrow={`All driving events · ${periodEvents.length}`}>
+          {periodEvents.length === 0 ? (
+            <TabEmptyState
+              iconBg="#E8F3E8"
+              iconFg="#3B8B3B"
+              icon={<CheckCheck size={24} strokeWidth={2} color="#3B8B3B" />}
+              title="No events flagged"
+              subtitle="Driving has been smooth — no notable events"
+            />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {allEvents.map((event) => (
+              {periodEvents.map((event) => (
                 <div
                   key={event.id}
                   style={{
@@ -722,6 +944,7 @@ function CardWrap({
 
 function SessionsTab({
   sessions,
+  allEvents,
   selectedSession,
   gpsPoints,
   events,
@@ -732,6 +955,7 @@ function SessionsTab({
   formatEventType,
 }: {
   sessions: TelematicsSession[];
+  allEvents: DrivingEvent[];
   selectedSession: TelematicsSession | null;
   gpsPoints: GPSPoint[];
   events: DrivingEvent[];
@@ -776,7 +1000,7 @@ function SessionsTab({
                 margin: 0,
               }}
             >
-              No recorded sessions yet
+              No sessions in this period
             </p>
             <p
               style={{
@@ -786,7 +1010,7 @@ function SessionsTab({
                 lineHeight: 1.4,
               }}
             >
-              Sessions appear here once you start tracking lessons.
+              Sessions appear here once you start tracking lessons. Try a wider date range above.
             </p>
           </div>
         </div>
@@ -805,6 +1029,7 @@ function SessionsTab({
             const km = Number(session.total_distance_km) || 0;
             const distLabel = formatDistance(km, unit, toUnit) ?? 'Distance unavailable';
             const isActive = selectedSession?.id === session.id;
+            const sessionScore = perSessionScore(session.id, allEvents);
             return (
               <button
                 key={session.id}
@@ -874,6 +1099,7 @@ function SessionsTab({
                     <span>{distLabel}</span>
                   </div>
                 </div>
+                {sessionScore !== null && <ScoreBadge score={sessionScore} />}
                 <ChevronRight size={12} strokeWidth={1.6} color="#6E6E73" />
               </button>
             );
@@ -1014,6 +1240,122 @@ function SessionsTab({
         </CardWrap>
       )}
     </>
+  );
+}
+
+function ProvisionalScoreState() {
+  return (
+    <div
+      style={{
+        background: '#FFFFFF',
+        borderRadius: 12,
+        padding: '24px 16px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        textAlign: 'center',
+        gap: 12,
+      }}
+    >
+      <p
+        style={{
+          fontSize: 11,
+          fontWeight: 500,
+          color: '#6E6E73',
+          letterSpacing: '0.3px',
+          textTransform: 'uppercase',
+          margin: 0,
+        }}
+      >
+        Performance score
+      </p>
+      <p
+        style={{
+          fontSize: 17,
+          fontWeight: 500,
+          color: '#000000',
+          margin: 0,
+          letterSpacing: '-0.2px',
+        }}
+      >
+        Not enough data
+      </p>
+      <p
+        style={{
+          fontSize: 12,
+          color: '#6E6E73',
+          margin: 0,
+          lineHeight: 1.4,
+          maxWidth: 260,
+        }}
+      >
+        Track at least one lesson in this period to see a score.
+      </p>
+    </div>
+  );
+}
+
+function TabEmptyState({
+  icon,
+  iconBg,
+  iconFg: _iconFg,
+  title,
+  subtitle,
+}: {
+  icon: React.ReactNode;
+  iconBg: string;
+  iconFg: string;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        textAlign: 'center',
+        padding: '32px 16px',
+        gap: 12,
+      }}
+    >
+      <div
+        style={{
+          width: 48,
+          height: 48,
+          borderRadius: 12,
+          background: iconBg,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {icon}
+      </div>
+      <div>
+        <p
+          style={{
+            fontSize: 15,
+            fontWeight: 500,
+            color: '#000000',
+            margin: 0,
+          }}
+        >
+          {title}
+        </p>
+        <p
+          style={{
+            fontSize: 12,
+            color: '#6E6E73',
+            margin: '4px 0 0',
+            lineHeight: 1.4,
+            maxWidth: 280,
+          }}
+        >
+          {subtitle}
+        </p>
+      </div>
+    </div>
   );
 }
 
