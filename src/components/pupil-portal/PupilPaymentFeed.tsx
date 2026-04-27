@@ -132,6 +132,8 @@ export function PupilPaymentFeed({ pupilId, brandColour, currentBalance }: Pupil
                       <p className="text-[11px] text-muted-foreground">
                         {format(date, "d MMM, HH:mm")}
                         {entry.payment_method && ` · ${entry.payment_method}`}
+                        {entry.scheduled_lessons?.lesson_date &&
+                          ` · For ${format(parseISO(entry.scheduled_lessons.lesson_date), "d MMM")} lesson`}
                       </p>
                     </div>
 
