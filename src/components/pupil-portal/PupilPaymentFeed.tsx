@@ -168,6 +168,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
       "Payment Method",
       "Notes",
       "Linked Lesson Date",
+      "Lesson Pickup Postcode",
     ];
     const rows = filtered.map((p) => [
       format(parseISO(p.recorded_at), "yyyy-MM-dd HH:mm"),
@@ -178,6 +179,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
       p.scheduled_lessons?.lesson_date
         ? format(parseISO(p.scheduled_lessons.lesson_date), "yyyy-MM-dd")
         : "",
+      p.scheduled_lessons?.pickup_postcode ?? "",
     ]);
     const csv = [headers, ...rows]
       .map((r) => r.map(escape).join(","))
