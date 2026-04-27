@@ -1,0 +1,1 @@
+ALTER VIEW public.pupil_weekly_streaks SET (security_invoker = on);
