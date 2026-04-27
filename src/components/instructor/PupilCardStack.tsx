@@ -187,6 +187,7 @@ export function PupilCardStack({
   commissionPayer,
 }: PupilCardStackProps) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [changingStatus, setChangingStatus] = useState(false);
   const currentStatus = (pupil.status || 'active') as PupilStatus;
