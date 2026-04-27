@@ -24,6 +24,7 @@ export interface Conversation {
   last_message_at: string;
   last_message_preview: string | null;
   created_at: string;
+  muted_at?: string | null;
   pupil?: {
     id: string;
     name: string;
@@ -146,12 +147,51 @@ export function useMessaging(instructorId: string | undefined) {
     return conversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
   }, [conversations]);
 
+  const bulkMarkConversationsRead = useCallback(
+    async (ids: string[]) => {
+      if (!ids.length) return;
+      try {
+        const { error } = await supabase
+          .from("messages")
+          .update({ read_at: new Date().toISOString() })
+          .in("conversation_id", ids)
+          .eq("sender_type", "pupil")
+          .is("read_at", null)
+          .is("deleted_at", null);
+        if (error) throw error;
+        await fetchConversations();
+      } catch (error) {
+        console.error("Error bulk marking as read:", error);
+      }
+    },
+    [fetchConversations]
+  );
+
+  const bulkSetMute = useCallback(
+    async (ids: string[], muted: boolean) => {
+      if (!ids.length) return;
+      try {
+        const { error } = await supabase
+          .from("conversations")
+          .update({ muted_at: muted ? new Date().toISOString() : null } as any)
+          .in("id", ids);
+        if (error) throw error;
+        await fetchConversations();
+      } catch (error) {
+        console.error("Error bulk muting:", error);
+      }
+    },
+    [fetchConversations]
+  );
+
   return {
     conversations,
     loading,
     fetchConversations,
     getOrCreateConversation,
     getTotalUnreadCount,
+    bulkMarkConversationsRead,
+    bulkSetMute,
   };
 }
 
