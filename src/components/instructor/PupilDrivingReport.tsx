@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   AlertTriangle,
   CheckCircle,
@@ -11,13 +11,27 @@ import {
   Download,
   TrendingUp,
   Send,
+  CheckCheck,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  startOfYear,
+  subDays,
+  isWithinInterval,
+} from 'date-fns';
 import RouteMapView from './RouteMapView';
 import DrivingSkillsHeatmap from './DrivingSkillsHeatmap';
 import PupilBrakeGearAnalysis from './PupilBrakeGearAnalysis';
 import { SegmentedControl } from '@/components/instructor/ui/SegmentedControl';
+import {
+  PeriodSelector,
+  type PeriodKey,
+} from '@/components/instructor/ui/PeriodSelector';
+import { TrendPill } from '@/components/instructor/ui/TrendPill';
+import { ScoreBadge } from '@/components/instructor/ui/ScoreBadge';
 import { titleCaseName } from '@/lib/titleCase';
 import { Badge } from '@/components/ui/badge';
 
