@@ -1,23 +1,22 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SignaturePad } from "./SignaturePad";
+import { UserAvatar } from "./UserAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, FileText, CheckCircle2, Download, AlertTriangle, Users } from "lucide-react";
+import { Loader2, CheckCircle2, Download, AlertTriangle, Users, Check, FileText } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { differenceInYears } from "date-fns";
+import { titleCaseName } from "@/lib/titleCase";
 import jsPDF from "jspdf";
 
 interface TermsSignatureModalProps {
