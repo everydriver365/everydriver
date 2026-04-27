@@ -1031,7 +1031,7 @@ export function PupilCardStack({
                 <div className="mx-4 mt-3">
                   <p
                     className="px-1 mb-2"
-                    style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.6, color: "#6E6E73", textTransform: "uppercase" }}
+                    style={{ fontSize: 11, fontWeight: 500, letterSpacing: 0.3, color: "#6E6E73", textTransform: "uppercase" }}
                   >
                     At a glance
                   </p>
@@ -1065,7 +1065,7 @@ export function PupilCardStack({
                 <div className="mx-4 mt-3">
                   <p
                     className="px-1 mb-2"
-                    style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.6, color: "#6E6E73", textTransform: "uppercase" }}
+                    style={{ fontSize: 11, fontWeight: 500, letterSpacing: 0.3, color: "#6E6E73", textTransform: "uppercase" }}
                   >
                     Next lesson
                   </p>
@@ -1148,7 +1148,7 @@ export function PupilCardStack({
                 <div className="mx-4 mt-3">
                   <p
                     className="px-1 mb-2"
-                    style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.6, color: "#6E6E73", textTransform: "uppercase" }}
+                    style={{ fontSize: 11, fontWeight: 500, letterSpacing: 0.3, color: "#6E6E73", textTransform: "uppercase" }}
                   >
                     More actions
                   </p>
@@ -1201,7 +1201,7 @@ export function PupilCardStack({
                   <div className="mx-4 mt-3">
                     <p
                       className="px-1 mb-2"
-                      style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.6, color: "#6E6E73", textTransform: "uppercase" }}
+                      style={{ fontSize: 11, fontWeight: 500, letterSpacing: 0.3, color: "#6E6E73", textTransform: "uppercase" }}
                     >
                       Details
                     </p>
