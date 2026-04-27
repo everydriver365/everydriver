@@ -147,11 +147,6 @@ export function VoiceAssistantButton({ instructorId }: VoiceAssistantProps) {
   return (
     <>
       <motion.div className="fixed bottom-20 right-4 z-50 sm:bottom-6 flex flex-col items-center gap-1" whileTap={{ scale: 0.9 }}>
-        {state === "idle" && (
-          <span className="text-[10px] font-semibold text-primary bg-background/90 backdrop-blur-sm px-2 py-0.5 rounded-full shadow-sm border">
-            Hey ED
-          </span>
-        )}
         <Button
           onClick={state === "idle" ? startListening : state === "listening" ? stopListening : cancel}
           className={cn("h-14 w-14 rounded-full shadow-lg transition-colors duration-300", config.color, "text-white hover:opacity-90")}
