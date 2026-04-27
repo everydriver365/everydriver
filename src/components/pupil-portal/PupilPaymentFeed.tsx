@@ -191,7 +191,12 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
     datePreset !== "all" ||
     linkFilter !== "all" ||
     weekday !== "all";
-  const grouped = groupByMonth(filtered);
+
+  const filteredWithBalances = useMemo(
+    () => computeRunningBalances(filtered),
+    [filtered]
+  );
+  const grouped = groupByMonth(filteredWithBalances);
 
   const handleExportCsv = () => {
     if (filtered.length === 0) return;
