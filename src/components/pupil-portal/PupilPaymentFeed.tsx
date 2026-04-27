@@ -46,6 +46,7 @@ interface PaymentEntry {
     pickup_postcode: string | null;
     pickup_location: string | null;
     lesson_type: string | null;
+    notes: string | null;
   } | null;
 }
 
