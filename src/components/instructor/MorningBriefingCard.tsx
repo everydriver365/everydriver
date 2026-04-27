@@ -187,19 +187,33 @@ export function MorningBriefingCard({ instructorId, onNavigate }: MorningBriefin
     if (!instructorId) return;
     try {
       const today = new Date().toISOString().split("T")[0];
-      const { data: lessons } = await supabase
-        .from("scheduled_lessons")
-        .select("id, amount_due")
-        .eq("instructor_id", instructorId)
-        .eq("lesson_date", today)
-        .is("deleted_at", null);
+      const [{ data: lessons }, { data: instructor }] = await Promise.all([
+        supabase
+          .from("scheduled_lessons")
+          .select("id, amount_due, duration_minutes, status")
+          .eq("instructor_id", instructorId)
+          .eq("lesson_date", today)
+          .is("deleted_at", null),
+        supabase
+          .from("instructors")
+          .select("hourly_rate")
+          .eq("id", instructorId)
+          .maybeSingle(),
+      ]);
 
-      if (lessons) {
-        setTodayStats({
-          lessons: lessons.length,
-          earnings: lessons.reduce((sum, l) => sum + (l.amount_due || 0), 0),
-        });
-      }
+      const active = (lessons || []).filter((l: any) => l.status !== "cancelled");
+      const rate = Number(instructor?.hourly_rate) || 35;
+      const earnings = active.reduce((sum: number, l: any) => {
+        const due = Number(l.amount_due) || 0;
+        if (due > 0) return sum + due;
+        const mins = Number(l.duration_minutes) || 0;
+        return sum + (mins / 60) * rate;
+      }, 0);
+
+      setTodayStats({
+        lessons: active.length,
+        earnings: Math.round(earnings),
+      });
     } catch {
       /* silent */
     }
