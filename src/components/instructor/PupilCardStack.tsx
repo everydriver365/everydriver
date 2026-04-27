@@ -925,7 +925,7 @@ export function PupilCardStack({
         const balanceLabel = hasDebt ? "Owed" : hasCredit ? "Credit" : "Balance";
 
         const hasRecentLessons = recentLessons.length > 0;
-        const hasNotes = !!(pupil.notes && pupil.notes.trim());
+        const hasNotes = !!(effectiveNotes && effectiveNotes.trim());
         const hasTestJourney = !!pupil.test_date;
         const SECTION_LABEL_STYLE: React.CSSProperties = {
           fontSize: 11,
