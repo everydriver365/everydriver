@@ -1,37 +1,19 @@
-## Save architectural decision to memory
+## Drop orphaned `geotab-poller` cron job
 
-Persist the decision so future sessions don't re-suggest swapping to the Lovable Google Calendar connector.
+The cron job `jobid: 26` (`invoke-geotab-poller-5s`) is hitting a deleted edge function every 5 seconds, generating ~17,280 failed requests/day. Telemetry continues to work via `radius-poller` (jobid: 28).
 
-### 1. Create new memory file `mem://constraints/google-calendar-service-account-architecture.md`
+### Action
 
-```
----
-name: Google Calendar uses service account, not connector
-description: Calendar sync uses GOOGLE_SERVICE_ACCOUNT_EMAIL with domain-wide delegation; do not switch to the Lovable Google Calendar connector
-type: constraint
----
-Google Calendar integration uses a Google Cloud service account
-(`GOOGLE_SERVICE_ACCOUNT_EMAIL` + private key) with domain-wide
-delegation to impersonate each instructor's calendar.
+Run a single SQL migration:
 
-Implemented in:
-- supabase/functions/google-calendar-service/index.ts
-- supabase/functions/process-calendar-queue/index.ts
-
-**Do NOT switch to the Lovable Google Calendar connector.** The
-connector is OAuth-based and authenticates only one Google account
-(the workspace owner's) — it cannot impersonate per-instructor
-calendars and would be a regression at 4,000-user scale.
-
-The connector may only be considered as an additive feature for a
-single shared admin/HQ calendar (e.g. "Drive365 HQ" internal
-scheduling), never as a replacement for the per-instructor sync.
+```sql
+SELECT cron.unschedule(26);
 ```
 
-### 2. Update `mem://index.md` Memories list
+### Result
 
-Add this line under the existing `Google Calendar Sync` entry:
+- Stops the 404 spam in edge logs
+- Frees ~17k/day of wasted edge function invocations
+- No impact on live telemetry (radius-poller remains active)
 
-`- [GCal architecture](mem://constraints/google-calendar-service-account-architecture) — Service account + DWD; do not swap to Lovable connector`
-
-No code changes. Memory only.
+Approve to switch to build mode and execute.
