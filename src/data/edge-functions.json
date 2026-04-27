@@ -1,0 +1,538 @@
+{
+  "generated_at": "2026-04-27T18:12:55.247Z",
+  "total": 133,
+  "functions": [
+    {
+      "name": "accounting-oauth",
+      "has_config_block": true
+    },
+    {
+      "name": "accounting-sync",
+      "has_config_block": true
+    },
+    {
+      "name": "address-lookup",
+      "has_config_block": true
+    },
+    {
+      "name": "admin-email",
+      "has_config_block": false
+    },
+    {
+      "name": "ai-admin-receptionist",
+      "has_config_block": true
+    },
+    {
+      "name": "ai-command-center",
+      "has_config_block": false
+    },
+    {
+      "name": "ai-receptionist",
+      "has_config_block": false
+    },
+    {
+      "name": "assign-job",
+      "has_config_block": false
+    },
+    {
+      "name": "auto-payment-reminders",
+      "has_config_block": true
+    },
+    {
+      "name": "auto-start-lesson-tracker",
+      "has_config_block": true
+    },
+    {
+      "name": "auto-stop-lesson-tracker",
+      "has_config_block": true
+    },
+    {
+      "name": "award-achievement",
+      "has_config_block": false
+    },
+    {
+      "name": "calculate-route-distance",
+      "has_config_block": false
+    },
+    {
+      "name": "calculate-traffic-eta",
+      "has_config_block": false
+    },
+    {
+      "name": "check-compliance-reminders",
+      "has_config_block": false
+    },
+    {
+      "name": "check-deposit-reminders",
+      "has_config_block": false
+    },
+    {
+      "name": "check-subscription-payments",
+      "has_config_block": false
+    },
+    {
+      "name": "check-travel-buffer",
+      "has_config_block": false
+    },
+    {
+      "name": "clearpay-capture",
+      "has_config_block": true
+    },
+    {
+      "name": "clearpay-checkout",
+      "has_config_block": true
+    },
+    {
+      "name": "compliance-reminders",
+      "has_config_block": true
+    },
+    {
+      "name": "confirm-booking",
+      "has_config_block": true
+    },
+    {
+      "name": "convert-from-what3words",
+      "has_config_block": true
+    },
+    {
+      "name": "convert-to-what3words",
+      "has_config_block": true
+    },
+    {
+      "name": "course-planner",
+      "has_config_block": false
+    },
+    {
+      "name": "create-booking",
+      "has_config_block": false
+    },
+    {
+      "name": "create-enquiry",
+      "has_config_block": false
+    },
+    {
+      "name": "eod-notification",
+      "has_config_block": false
+    },
+    {
+      "name": "extract-invoice-data",
+      "has_config_block": true
+    },
+    {
+      "name": "fetch-dvsa-news",
+      "has_config_block": true
+    },
+    {
+      "name": "generate-business-insights",
+      "has_config_block": false
+    },
+    {
+      "name": "generate-coaching-message",
+      "has_config_block": false
+    },
+    {
+      "name": "generate-daily-manifest",
+      "has_config_block": false
+    },
+    {
+      "name": "generate-driving-insights",
+      "has_config_block": false
+    },
+    {
+      "name": "generate-driving-report",
+      "has_config_block": false
+    },
+    {
+      "name": "generate-eod-summary",
+      "has_config_block": true
+    },
+    {
+      "name": "generate-lesson-plan",
+      "has_config_block": true
+    },
+    {
+      "name": "generate-lesson-prep",
+      "has_config_block": true
+    },
+    {
+      "name": "generate-morning-briefing",
+      "has_config_block": true
+    },
+    {
+      "name": "generate-nudges",
+      "has_config_block": true
+    },
+    {
+      "name": "generate-pdf",
+      "has_config_block": false
+    },
+    {
+      "name": "generate-quick-replies",
+      "has_config_block": true
+    },
+    {
+      "name": "generate-route-report",
+      "has_config_block": true
+    },
+    {
+      "name": "generate-weekly-report",
+      "has_config_block": true
+    },
+    {
+      "name": "geocode-postcode",
+      "has_config_block": false
+    },
+    {
+      "name": "get-driving-alerts",
+      "has_config_block": true
+    },
+    {
+      "name": "get-fuel-prices",
+      "has_config_block": true
+    },
+    {
+      "name": "get-google-maps-key",
+      "has_config_block": false
+    },
+    {
+      "name": "get-instructor-location",
+      "has_config_block": false
+    },
+    {
+      "name": "get-nearby-instructors",
+      "has_config_block": false
+    },
+    {
+      "name": "get-vapid-key",
+      "has_config_block": false
+    },
+    {
+      "name": "gocardless-create-billing-request",
+      "has_config_block": false
+    },
+    {
+      "name": "gocardless-instant-bank-pay",
+      "has_config_block": false
+    },
+    {
+      "name": "gocardless-pupil-mandate",
+      "has_config_block": false
+    },
+    {
+      "name": "gocardless-webhook",
+      "has_config_block": false
+    },
+    {
+      "name": "google-calendar-service",
+      "has_config_block": true
+    },
+    {
+      "name": "google-places-autocomplete",
+      "has_config_block": true
+    },
+    {
+      "name": "google-places-details",
+      "has_config_block": true
+    },
+    {
+      "name": "google-places-nearby",
+      "has_config_block": true
+    },
+    {
+      "name": "klarna-checkout",
+      "has_config_block": true
+    },
+    {
+      "name": "klarna-order",
+      "has_config_block": true
+    },
+    {
+      "name": "klarna-session",
+      "has_config_block": true
+    },
+    {
+      "name": "meta-data-deletion",
+      "has_config_block": true
+    },
+    {
+      "name": "mini-website-sitemap",
+      "has_config_block": true
+    },
+    {
+      "name": "mini-website-ssr",
+      "has_config_block": true
+    },
+    {
+      "name": "morning-briefing",
+      "has_config_block": false
+    },
+    {
+      "name": "notify-instructor",
+      "has_config_block": true
+    },
+    {
+      "name": "notify-lessons-scheduled",
+      "has_config_block": false
+    },
+    {
+      "name": "notify-parent",
+      "has_config_block": false
+    },
+    {
+      "name": "notify-pupil",
+      "has_config_block": false
+    },
+    {
+      "name": "notify-upsell-purchase",
+      "has_config_block": false
+    },
+    {
+      "name": "parent-weekly-summary",
+      "has_config_block": false
+    },
+    {
+      "name": "parse-lesson-voice",
+      "has_config_block": false
+    },
+    {
+      "name": "payment-callback",
+      "has_config_block": true
+    },
+    {
+      "name": "payment-health",
+      "has_config_block": true
+    },
+    {
+      "name": "postcode-address-lookup",
+      "has_config_block": true
+    },
+    {
+      "name": "postcode-autocomplete",
+      "has_config_block": true
+    },
+    {
+      "name": "process-abandoned-checkouts",
+      "has_config_block": false
+    },
+    {
+      "name": "process-automations",
+      "has_config_block": false
+    },
+    {
+      "name": "process-calendar-queue",
+      "has_config_block": true
+    },
+    {
+      "name": "process-cancellation-waitlist",
+      "has_config_block": true
+    },
+    {
+      "name": "process-lesson-reminders",
+      "has_config_block": false
+    },
+    {
+      "name": "process-recurring-subscriptions",
+      "has_config_block": false
+    },
+    {
+      "name": "process-workflows",
+      "has_config_block": false
+    },
+    {
+      "name": "public-courses",
+      "has_config_block": true
+    },
+    {
+      "name": "pupil-driver-api",
+      "has_config_block": false
+    },
+    {
+      "name": "pupil-email-auth",
+      "has_config_block": false
+    },
+    {
+      "name": "pupil-notes",
+      "has_config_block": false
+    },
+    {
+      "name": "pupil-payment-checkout",
+      "has_config_block": true
+    },
+    {
+      "name": "radius-poller",
+      "has_config_block": false
+    },
+    {
+      "name": "schedule-lesson-reminders",
+      "has_config_block": false
+    },
+    {
+      "name": "scrape-test-slots",
+      "has_config_block": false
+    },
+    {
+      "name": "send-campaign",
+      "has_config_block": true
+    },
+    {
+      "name": "send-gap-sms",
+      "has_config_block": true
+    },
+    {
+      "name": "send-lesson-checkin",
+      "has_config_block": false
+    },
+    {
+      "name": "send-lesson-reminders",
+      "has_config_block": true
+    },
+    {
+      "name": "send-parent-otp",
+      "has_config_block": false
+    },
+    {
+      "name": "send-payment-confirmation",
+      "has_config_block": true
+    },
+    {
+      "name": "send-payment-receipt",
+      "has_config_block": true
+    },
+    {
+      "name": "send-payment-reminder",
+      "has_config_block": true
+    },
+    {
+      "name": "send-pupil-otp",
+      "has_config_block": false
+    },
+    {
+      "name": "send-pupil-welcome",
+      "has_config_block": true
+    },
+    {
+      "name": "send-push-notification",
+      "has_config_block": false
+    },
+    {
+      "name": "send-reengagement-sms",
+      "has_config_block": false
+    },
+    {
+      "name": "send-signing-link",
+      "has_config_block": true
+    },
+    {
+      "name": "send-subscription-receipt",
+      "has_config_block": false
+    },
+    {
+      "name": "send-whatsapp",
+      "has_config_block": false
+    },
+    {
+      "name": "smart-schedule-suggestions",
+      "has_config_block": false
+    },
+    {
+      "name": "snap-to-road",
+      "has_config_block": false
+    },
+    {
+      "name": "square-booking-wallet-payment",
+      "has_config_block": true
+    },
+    {
+      "name": "square-checkout",
+      "has_config_block": true
+    },
+    {
+      "name": "square-create-subscription",
+      "has_config_block": true
+    },
+    {
+      "name": "square-oauth",
+      "has_config_block": false
+    },
+    {
+      "name": "square-payment",
+      "has_config_block": true
+    },
+    {
+      "name": "square-wallet-config",
+      "has_config_block": true
+    },
+    {
+      "name": "square-wallet-payment",
+      "has_config_block": true
+    },
+    {
+      "name": "square-webhook",
+      "has_config_block": true
+    },
+    {
+      "name": "submit-payment-dispute",
+      "has_config_block": false
+    },
+    {
+      "name": "tile-health-check",
+      "has_config_block": false
+    },
+    {
+      "name": "track-payment-link",
+      "has_config_block": true
+    },
+    {
+      "name": "twentyi-api",
+      "has_config_block": true
+    },
+    {
+      "name": "twilio-webhook",
+      "has_config_block": true
+    },
+    {
+      "name": "verify-parent-otp",
+      "has_config_block": false
+    },
+    {
+      "name": "verify-pupil-otp",
+      "has_config_block": false
+    },
+    {
+      "name": "voice-execute",
+      "has_config_block": true
+    },
+    {
+      "name": "voice-parse-intent",
+      "has_config_block": true
+    },
+    {
+      "name": "voice-stt",
+      "has_config_block": false
+    },
+    {
+      "name": "voice-tts",
+      "has_config_block": true
+    },
+    {
+      "name": "weekly-backup-email",
+      "has_config_block": true
+    },
+    {
+      "name": "whatsapp-embedded-signup-callback",
+      "has_config_block": false
+    },
+    {
+      "name": "whatsapp-health-check",
+      "has_config_block": false
+    },
+    {
+      "name": "whatsapp-templates",
+      "has_config_block": false
+    },
+    {
+      "name": "whatsapp-webhook",
+      "has_config_block": false
+    }
+  ]
+}
