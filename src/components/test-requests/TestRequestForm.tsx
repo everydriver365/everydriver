@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { format, parseISO } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-
-import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
+import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
+import { SectionLabel } from "@/components/instructor/ui/SectionLabel";
+import { FormInputCard } from "@/components/instructor/ui/FormInputCard";
+import { TestCentrePicker } from "@/components/instructor/ui/TestCentrePicker";
+import { formatShortDate, formatShortTime } from "./shared/formatSwap";
 
 export interface TestRequestData {
   id: string;
@@ -33,12 +33,8 @@ interface TestRequestFormProps {
   pupilId?: string;
   mode: "instructor" | "pupil";
   onSuccess?: () => void;
+  onCancel?: () => void;
   editData?: TestRequestData;
-}
-
-interface TestCentre {
-  id: string;
-  name: string;
 }
 
 interface PupilOption {
@@ -46,35 +42,75 @@ interface PupilOption {
   name: string;
 }
 
-export function TestRequestForm({ instructorId, pupilId, mode, onSuccess, editData }: TestRequestFormProps) {
+const FONT_STACK =
+  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
+
+const HEADER_LINK = "#2B7BC8";
+
+const DEFAULT_EARLIEST = "09:00";
+const DEFAULT_LATEST = "17:00";
+
+export function TestRequestForm({
+  instructorId,
+  pupilId,
+  mode,
+  onSuccess,
+  onCancel,
+  editData,
+}: TestRequestFormProps) {
   const queryClient = useQueryClient();
-  const [requestType, setRequestType] = useState<"have_test" | "want_test">(editData?.request_type || "have_test");
-  const [testCentreSearch, setTestCentreSearch] = useState(editData?.test_centre_name || "");
-  const [testCentres, setTestCentres] = useState<TestCentre[]>([]);
-  const [selectedCentreId, setSelectedCentreId] = useState<string | null>(editData?.test_centre_id || null);
-  const [manualCentreName, setManualCentreName] = useState(editData?.test_centre_name || "");
-  const [testDate, setTestDate] = useState<Date | undefined>(editData?.test_date ? parseISO(editData.test_date) : undefined);
-  const [testTime, setTestTime] = useState(editData?.test_time?.slice(0, 5) || "");
-  const [dateRangeEnd, setDateRangeEnd] = useState<Date | undefined>(editData?.date_range_end ? parseISO(editData.date_range_end) : undefined);
-  const [timeRangeEnd, setTimeRangeEnd] = useState(editData?.time_range_end?.slice(0, 5) || "");
-  
+  const isEdit = !!editData;
+
+  const [requestType, setRequestType] = useState<"have_test" | "want_test">(
+    editData?.request_type || "have_test",
+  );
+  const [selectedCentreId, setSelectedCentreId] = useState<string | null>(
+    editData?.test_centre_id || null,
+  );
+  const [centreName, setCentreName] = useState<string>(editData?.test_centre_name || "");
+  const [testDate, setTestDate] = useState<Date | undefined>(
+    editData?.test_date ? parseISO(editData.test_date) : undefined,
+  );
+  const [testTime, setTestTime] = useState<string>(
+    editData?.test_time?.slice(0, 5) || (isEdit ? "" : DEFAULT_EARLIEST),
+  );
+  const [dateRangeEnd, setDateRangeEnd] = useState<Date | undefined>(
+    editData?.date_range_end ? parseISO(editData.date_range_end) : undefined,
+  );
+  const [timeRangeEnd, setTimeRangeEnd] = useState<string>(
+    editData?.time_range_end?.slice(0, 5) || (isEdit ? "" : DEFAULT_LATEST),
+  );
   const [notes, setNotes] = useState(editData?.notes || "");
   const [selectedPupilId, setSelectedPupilId] = useState<string>(editData?.pupil_id || "");
   const [pupils, setPupils] = useState<PupilOption[]>([]);
   const [submitting, setSubmitting] = useState(false);
-  const [showCentreDropdown, setShowCentreDropdown] = useState(false);
 
-  // Fetch test centres
-  useEffect(() => {
-    const fetchCentres = async () => {
-      const { data } = await supabase
-        .from("test_centres")
-        .select("id, name")
-        .order("name");
-      if (data) setTestCentres(data);
-    };
-    fetchCentres();
-  }, []);
+  // Snapshot initial state to detect dirty changes for cancel confirm
+  const initialSnapshot = useMemo(() => JSON.stringify({
+    requestType: editData?.request_type || "have_test",
+    selectedCentreId: editData?.test_centre_id || null,
+    centreName: editData?.test_centre_name || "",
+    testDate: editData?.test_date || null,
+    testTime: editData?.test_time?.slice(0, 5) || (isEdit ? "" : DEFAULT_EARLIEST),
+    dateRangeEnd: editData?.date_range_end || null,
+    timeRangeEnd: editData?.time_range_end?.slice(0, 5) || (isEdit ? "" : DEFAULT_LATEST),
+    notes: editData?.notes || "",
+    selectedPupilId: editData?.pupil_id || "",
+  }), []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const currentSnapshot = JSON.stringify({
+    requestType,
+    selectedCentreId,
+    centreName,
+    testDate: testDate ? format(testDate, "yyyy-MM-dd") : null,
+    testTime,
+    dateRangeEnd: dateRangeEnd ? format(dateRangeEnd, "yyyy-MM-dd") : null,
+    timeRangeEnd,
+    notes,
+    selectedPupilId,
+  });
+
+  const isDirty = currentSnapshot !== initialSnapshot;
 
   // Fetch pupils for instructor mode
   useEffect(() => {
@@ -91,35 +127,46 @@ export function TestRequestForm({ instructorId, pupilId, mode, onSuccess, editDa
     fetchPupils();
   }, [instructorId, mode]);
 
-  const filteredCentres = testCentres.filter(c =>
-    c.name.toLowerCase().includes(testCentreSearch.toLowerCase())
+  // Validation
+  const dateInvalid = !!(dateRangeEnd && testDate && dateRangeEnd < testDate);
+  const timeInvalid = !!(
+    requestType === "want_test" &&
+    timeRangeEnd &&
+    testTime &&
+    timeRangeEnd <= testTime
   );
 
-  const handleSelectCentre = (centre: TestCentre) => {
-    setSelectedCentreId(centre.id);
-    setTestCentreSearch(centre.name);
-    setManualCentreName(centre.name);
-    setShowCentreDropdown(false);
+  const isValid = (() => {
+    if (!centreName) return false;
+    if (!testDate) return false;
+    if (!testTime) return false;
+    if (requestType === "want_test") {
+      if (!dateRangeEnd) return false;
+      if (!timeRangeEnd) return false;
+    }
+    if (dateInvalid || timeInvalid) return false;
+    return true;
+  })();
+
+  const saveDisabled = !isValid || submitting;
+
+  const handleCancel = () => {
+    if (isDirty) {
+      const ok = window.confirm("Discard changes?");
+      if (!ok) return;
+    }
+    onCancel?.();
   };
 
   const handleSubmit = async () => {
-    if (!testDate || !testTime) {
-      toast({ title: "Please enter a date and time", variant: "destructive" });
-      return;
-    }
-    if (!selectedCentreId && !manualCentreName && !testCentreSearch) {
-      toast({ title: "Please enter a test centre", variant: "destructive" });
-      return;
-    }
-
+    if (saveDisabled) return;
     setSubmitting(true);
     try {
-      const centreName = manualCentreName || testCentreSearch;
       const payload = {
         request_type: requestType,
         test_centre_id: selectedCentreId,
         test_centre_name: centreName,
-        test_date: format(testDate, "yyyy-MM-dd"),
+        test_date: format(testDate!, "yyyy-MM-dd"),
         test_time: testTime,
         date_range_end: dateRangeEnd ? format(dateRangeEnd, "yyyy-MM-dd") : null,
         time_range_end: timeRangeEnd || null,
@@ -138,7 +185,7 @@ export function TestRequestForm({ instructorId, pupilId, mode, onSuccess, editDa
         const { error } = await supabase.from("test_requests").insert({
           ...payload,
           instructor_id: instructorId!,
-          pupil_id: mode === "pupil" ? pupilId : (selectedPupilId || null),
+          pupil_id: mode === "pupil" ? pupilId : selectedPupilId || null,
           created_by_type: mode,
         });
         if (error) throw error;
@@ -156,144 +203,304 @@ export function TestRequestForm({ instructorId, pupilId, mode, onSuccess, editDa
     }
   };
 
+  const fromDateLabel = testDate
+    ? formatShortDate(testDate, dateRangeEnd?.getFullYear())
+    : null;
+  const toDateLabel = dateRangeEnd
+    ? formatShortDate(dateRangeEnd, testDate?.getFullYear())
+    : null;
+
   return (
-    <div className="space-y-4">
-      {/* Request Type */}
-      <div className="space-y-2">
-        <Label>What do you need?</Label>
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            type="button"
-            variant={requestType === "have_test" ? "default" : "outline"}
-            onClick={() => setRequestType("have_test")}
-            className="text-sm"
-          >
-            I have a test booked
-          </Button>
-          <Button
-            type="button"
-            variant={requestType === "want_test" ? "default" : "outline"}
-            onClick={() => setRequestType("want_test")}
-            className="text-sm"
-          >
-            I need a test
-          </Button>
-        </div>
+    <div style={{ display: "flex", flexDirection: "column", maxHeight: "85vh", fontFamily: FONT_STACK }}>
+      {/* Sticky header bar */}
+      <div
+        style={{
+          padding: "12px 16px",
+          borderBottom: "0.5px solid #E5E5EA",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          background: "#FFFFFF",
+          flexShrink: 0,
+        }}
+      >
+        <button
+          type="button"
+          onClick={handleCancel}
+          style={{
+            background: "transparent",
+            border: "none",
+            padding: 4,
+            flexShrink: 0,
+            fontSize: 14,
+            fontWeight: 500,
+            color: HEADER_LINK,
+            cursor: "pointer",
+            fontFamily: FONT_STACK,
+          }}
+        >
+          Cancel
+        </button>
+        <h2
+          style={{
+            flex: 1,
+            textAlign: "center",
+            fontSize: 15,
+            fontWeight: 500,
+            color: "#000000",
+            letterSpacing: -0.2,
+            margin: 0,
+          }}
+        >
+          {isEdit ? "Edit test request" : "New test request"}
+        </h2>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={saveDisabled}
+          aria-disabled={saveDisabled}
+          style={{
+            background: "transparent",
+            border: "none",
+            padding: 4,
+            flexShrink: 0,
+            fontSize: 14,
+            fontWeight: 500,
+            color: HEADER_LINK,
+            cursor: saveDisabled ? (submitting ? "wait" : "not-allowed") : "pointer",
+            opacity: saveDisabled ? (submitting ? 0.6 : 0.4) : 1,
+            fontFamily: FONT_STACK,
+          }}
+        >
+          {submitting ? "Saving…" : "Save"}
+        </button>
       </div>
 
-      {/* Pupil Selector (instructor mode, only for new requests) */}
-      {mode === "instructor" && pupils.length > 0 && !editData && (
-        <div className="space-y-2">
-          <Label>Pupil (optional)</Label>
-          <Select value={selectedPupilId} onValueChange={setSelectedPupilId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a pupil..." />
-            </SelectTrigger>
-            <SelectContent>
-              {pupils.map(p => (
-                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
-      {/* Test Centre Search */}
-      <div className="space-y-2">
-        <Label>Test Centre</Label>
-        <div className="relative">
-          <Input
-            placeholder="Search test centres..."
-            value={testCentreSearch}
-            onChange={(e) => {
-              setTestCentreSearch(e.target.value);
-              setSelectedCentreId(null);
-              setShowCentreDropdown(true);
-            }}
-            onFocus={() => setShowCentreDropdown(true)}
+      {/* Body */}
+      <div style={{ padding: 16, overflowY: "auto", display: "flex", flexDirection: "column", gap: 18 }}>
+        {/* Type toggle */}
+        <section>
+          <SectionLabel>What do you need?</SectionLabel>
+          <SegmentedControl
+            value={requestType}
+            onChange={(v) => setRequestType(v as "have_test" | "want_test")}
+            options={[
+              { value: "have_test", label: "Have one" },
+              { value: "want_test", label: "Need one" },
+            ]}
+            ariaLabel="Request type"
           />
-          {showCentreDropdown && testCentreSearch && filteredCentres.length > 0 && (
-            <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-40 overflow-y-auto">
-              {filteredCentres.slice(0, 8).map(c => (
-                <button
-                  key={c.id}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
-                  onClick={() => handleSelectCentre(c)}
-                >
-                  {c.name}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        {!selectedCentreId && testCentreSearch && (
-          <p className="text-xs text-muted-foreground">
-            Can't find it? The name you typed will be used.
-          </p>
+        </section>
+
+        {/* Pupil selector – instructor mode, new requests only */}
+        {mode === "instructor" && pupils.length > 0 && !editData && (
+          <section>
+            <SectionLabel>Pupil (optional)</SectionLabel>
+            <Select value={selectedPupilId} onValueChange={setSelectedPupilId}>
+              <SelectTrigger
+                style={{
+                  background: "#FFFFFF",
+                  border: "0.5px solid #E5E5EA",
+                  borderRadius: 10,
+                  padding: "12px 14px",
+                  height: "auto",
+                  fontSize: 15,
+                }}
+              >
+                <SelectValue placeholder="Select a pupil…" />
+              </SelectTrigger>
+              <SelectContent>
+                {pupils.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </section>
         )}
-      </div>
 
-      {/* Date & Time */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label>{requestType === "have_test" ? "Test Date" : "From Date"}</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !testDate && "text-muted-foreground")}>
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {testDate ? format(testDate, "dd/MM/yyyy") : "Pick date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar mode="single" selected={testDate} onSelect={setTestDate} className="p-3 pointer-events-auto" />
-            </PopoverContent>
-          </Popover>
-        </div>
-        <div className="space-y-2">
-          <Label>{requestType === "have_test" ? "Test Time" : "From Time"}</Label>
-          <Input type="time" value={testTime} onChange={e => setTestTime(e.target.value)} />
-        </div>
-      </div>
+        {/* Test centre */}
+        <section>
+          <SectionLabel>Test centre</SectionLabel>
+          <TestCentrePicker
+            selectedId={selectedCentreId}
+            selectedName={centreName || null}
+            onSelect={(c) => {
+              setSelectedCentreId(c.id);
+              setCentreName(c.name);
+            }}
+            invalid={!centreName && submitting}
+          />
+        </section>
 
-      {/* Date/Time range end (for want_test) */}
-      {requestType === "want_test" && (
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label>To Date</Label>
+        {/* Date range */}
+        <section>
+          <SectionLabel>Date range</SectionLabel>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !dateRangeEnd && "text-muted-foreground")}>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateRangeEnd ? format(dateRangeEnd, "dd/MM/yyyy") : "Pick date"}
-                </Button>
+                <div>
+                  <FormInputCard
+                    asDiv
+                    topLabel="From"
+                    icon={<CalendarIcon size={16} strokeWidth={1.8} />}
+                    placeholder="Pick date"
+                    value={fromDateLabel ?? ""}
+                  />
+                </div>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={dateRangeEnd} onSelect={setDateRangeEnd} className="p-3 pointer-events-auto" />
+                <Calendar
+                  mode="single"
+                  selected={testDate}
+                  onSelect={setTestDate}
+                  className="p-3 pointer-events-auto"
+                />
               </PopoverContent>
             </Popover>
-          </div>
-          <div className="space-y-2">
-            <Label>To Time</Label>
-            <Input type="time" value={timeRangeEnd} onChange={e => setTimeRangeEnd(e.target.value)} />
-          </div>
-        </div>
-      )}
 
+            {requestType === "want_test" && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <div>
+                    <FormInputCard
+                      asDiv
+                      topLabel="To"
+                      icon={<CalendarIcon size={16} strokeWidth={1.8} />}
+                      placeholder="Pick date"
+                      value={toDateLabel ?? ""}
+                      invalid={dateInvalid}
+                    />
+                  </div>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={dateRangeEnd}
+                    onSelect={setDateRangeEnd}
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+          </div>
+        </section>
 
-      {/* Notes */}
-      <div className="space-y-2">
-        <Label>Notes (optional)</Label>
-        <Textarea
-          placeholder="Any additional details..."
-          value={notes}
-          onChange={e => setNotes(e.target.value)}
-          rows={2}
-        />
+        {/* Time window */}
+        <section>
+          <SectionLabel>Time window</SectionLabel>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
+            <TimeInputCard
+              label={requestType === "want_test" ? "Earliest" : "Time"}
+              value={testTime}
+              onChange={setTestTime}
+            />
+            {requestType === "want_test" && (
+              <TimeInputCard
+                label="Latest"
+                value={timeRangeEnd}
+                onChange={setTimeRangeEnd}
+                invalid={timeInvalid}
+              />
+            )}
+          </div>
+        </section>
+
+        {/* Notes */}
+        <section>
+          <SectionLabel>Notes (optional)</SectionLabel>
+          <Textarea
+            placeholder="Any additional details…"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            style={{
+              background: "#FFFFFF",
+              border: "0.5px solid #E5E5EA",
+              borderRadius: 10,
+              padding: "12px 14px",
+              fontSize: 15,
+              fontFamily: FONT_STACK,
+              resize: "none",
+            }}
+          />
+        </section>
       </div>
+    </div>
+  );
+}
 
-      <Button onClick={handleSubmit} disabled={submitting} className="w-full">
-        {submitting ? "Saving..." : editData ? "Update Request" : "Submit Request"}
-      </Button>
+/**
+ * Time input wrapping the native picker inside the premium card chrome.
+ * Keeps the existing `<input type="time">` UX (taps open the native picker)
+ * but renders the formatted display value on top.
+ */
+function TimeInputCard({
+  label,
+  value,
+  onChange,
+  invalid,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  invalid?: boolean;
+}) {
+  const display = value ? formatShortTime(value) : null;
+  return (
+    <div>
+      <div
+        style={{
+          fontSize: 11,
+          color: "#6E6E73",
+          margin: "0 0 4px",
+          paddingLeft: 2,
+          fontFamily: FONT_STACK,
+        }}
+      >
+        {label}
+      </div>
+      <label
+        style={{
+          background: "#FFFFFF",
+          border: `0.5px solid ${invalid ? "#C8434F" : "#E5E5EA"}`,
+          borderRadius: 10,
+          padding: "12px 14px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          width: "100%",
+          cursor: "pointer",
+          position: "relative",
+          fontFamily: FONT_STACK,
+        }}
+      >
+        <Clock size={16} strokeWidth={1.8} color="#6E6E73" />
+        <span
+          style={{
+            flex: 1,
+            fontSize: 14,
+            fontWeight: display ? 500 : 400,
+            color: display ? "#000000" : "#6E6E73",
+          }}
+        >
+          {display ?? "Set time"}
+        </span>
+        <input
+          type="time"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          style={{
+            position: "absolute",
+            inset: 0,
+            opacity: 0,
+            border: "none",
+            background: "transparent",
+            cursor: "pointer",
+          }}
+        />
+      </label>
     </div>
   );
 }
