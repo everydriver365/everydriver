@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Calendar, Clock, MapPin, Pencil, Trash2, ArrowLeftRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { TestRequestForm, type TestRequestData } from "./TestRequestForm";
 import { TypeBadge, StatusIndicator, IconActionButton, MetaRow } from "./shared/swapPills";
@@ -217,10 +217,8 @@ export function TestRequestList({ instructorId, pupilId, onNewRequest }: TestReq
       </div>
 
       <Dialog open={!!editingRequest} onOpenChange={(open) => !open && setEditingRequest(null)}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit test request</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden gap-0 border-none [&>button.absolute]:hidden">
+          <DialogTitle className="sr-only">Edit test request</DialogTitle>
           {editingRequest && (
             <TestRequestForm
               instructorId={instructorId}
@@ -228,6 +226,7 @@ export function TestRequestList({ instructorId, pupilId, onNewRequest }: TestReq
               mode={pupilId ? "pupil" : "instructor"}
               editData={editingRequest}
               onSuccess={() => setEditingRequest(null)}
+              onCancel={() => setEditingRequest(null)}
             />
           )}
         </DialogContent>

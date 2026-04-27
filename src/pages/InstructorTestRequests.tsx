@@ -7,7 +7,7 @@ import { TestRequestList } from "@/components/test-requests/TestRequestList";
 import { SwapBoard } from "@/components/test-requests/SwapBoard";
 import { AvailableTestSlots } from "@/components/test-requests/AvailableTestSlots";
 import { MatchedSlotsList } from "@/components/test-requests/MatchedSlotsList";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
 
 type Tab = "my-requests" | "swap-board" | "available-slots";
@@ -101,14 +101,13 @@ export default function InstructorTestRequests() {
         </div>
 
         <Dialog open={formOpen} onOpenChange={setFormOpen}>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>New test request</DialogTitle>
-            </DialogHeader>
+          <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden gap-0 border-none [&>button.absolute]:hidden">
+            <DialogTitle className="sr-only">New test request</DialogTitle>
             <TestRequestForm
               instructorId={instructor?.id}
               mode="instructor"
               onSuccess={() => setFormOpen(false)}
+              onCancel={() => setFormOpen(false)}
             />
           </DialogContent>
         </Dialog>

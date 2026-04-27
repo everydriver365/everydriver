@@ -1,83 +1,76 @@
-## Goal
+# Redesign Test Request form (premium tile system)
 
-Redesign `src/pages/InstructorJobs.tsx` (Available Jobs) to a calm, premium tile-style mobile layout with **inline Accept / Decline buttons** on each card. The whole card body remains tappable to open the existing detail sheet — only the action buttons short-circuit propagation and route into confirmation dialogs.
+## Scope
+Restyle `TestRequestForm.tsx` and its host dialogs in `InstructorTestRequests.tsx`, `TestRequestList.tsx`, and `PupilTestRequests.tsx` to match the premium tile system. Behaviour, validation, save API, query invalidations, pupil selector, notes field, and all data fields stay exactly as today — only chrome and a test-centre picker upgrade.
 
-All current behaviour is preserved: same Supabase fetch (`course_enquiries` where status=pending), same accept logic (update enquiry + insert pupil), same decline logic, same toast feedback, same distance computation via `geocode-postcode`, same detail Sheet.
+## What changes (visual + UX)
 
-## Page chrome
+**Form container chrome** — replace `DialogHeader`/`DialogTitle` in all three host sites with a sticky in-form header bar:
+- 12/16 padding, 0.5px `#E5E5EA` bottom border
+- Left `Cancel` (#2B7BC8, 14/500) — closes dialog; if any field is dirty vs. initial state, show a small native confirm "Discard changes?" before closing
+- Centre dynamic title — sentence case "New test request" / "Edit test request"
+- Right `Save` (#2B7BC8, 14/500) — disabled (opacity 0.4, cursor not-allowed) when validation fails or `submitting`; label flips to "Saving…" while in flight
+- The dialog's own X close button is hidden via custom DialogContent (or replaced by rendering the bar inside and removing default header)
 
-- Background `#F2F2F4`, padding `16px`, vertical section gap `12px`.
-- Keep `InstructorPortalLayout` wrapper.
+**Section 1 – Type toggle** — replace the two outline buttons with the shared `<SegmentedControl>` from `src/components/instructor/ui/SegmentedControl.tsx`. Two segments: `Have one` (have_test) and `Need one` (want_test). Eyebrow label "What do you need?" using existing `<SectionLabel>`. State binding to `requestType` unchanged.
 
-## Header card (replaces current heavy header)
+**Section 2 – Test centre picker** (data-integrity upgrade):
+- New shared component `src/components/instructor/ui/TestCentrePicker.tsx`
+- Trigger: white card row, 0.5px hairline border, 10px radius, MapPin icon left, value/placeholder middle, ChevronDown right
+- Tap opens a `vaul` bottom sheet (`IOSSheet`) with `<SearchInput>` at top and a scrollable list of `test_centres` (already fetched from Supabase as today)
+- Selecting a row writes both `selectedCentreId` and `manualCentreName` (preserves current backend contract — both columns continue to be saved)
+- Backwards-compat: if `editData.test_centre_name` does not match any picker row by id, the trigger displays the existing free-text value as-is with a small grey "Update" hint chip; tapping opens the picker. Save still works without re-selecting (existing `test_centre_id` and `test_centre_name` are preserved).
+- Free-text typing path is removed in favour of picker (per prompt's preferred option). The underlying string field is unchanged.
 
-White card, radius 12, padding 16, horizontal flex:
-- 40×40 rounded-10 tile in `#F1ECFA` with line-style `Briefcase` icon (22px, `#8A5BC9`).
-- Eyebrow "OPPORTUNITIES" (11px, `#6E6E73`, uppercase, 0.3px tracking) + title "Available jobs" (17px, weight 500, `#000`, sentence case).
-- Right pill `#F1ECFA` with `#8A5BC9` text — `"{n} new"`. Hidden when `jobs.length === 0`.
+**Section 3 – Date range** — two-column grid (`From` / `To`):
+- Eyebrow label "Date range"
+- Each input: white card with calendar icon left, formatted date middle. Tap opens existing `<Calendar>` Popover (picker UI itself unchanged).
+- Format helper applied on render only:
+  - both dates in current year → "18 Feb"
+  - same future year → omit year on From, show on To
+  - cross-year → show year on both
+  - Always short month names
+- For `have_test` (single date), only the From column renders — preserves current behaviour where `dateRangeEnd` is only used for `want_test`.
+- Invalid (To < From) → To input gets `border-color: #C8434F` and Save disables.
 
-## Offer card — `JobOfferCard`
+**Section 4 – Time window** — two-column grid (`Earliest` / `Latest`):
+- Eyebrow label "Time window"
+- Same card pattern with Clock icon left; tap opens native `<input type="time">` (existing picker reused, just wrapped)
+- Default times for new requests only: Earliest 09:00, Latest 17:00. Edit mode uses stored values verbatim (no overwrite).
+- For `have_test`, only Earliest renders (maps to current `testTime` single-value behaviour).
+- Invalid (Latest ≤ Earliest) → Latest gets red border and Save disables.
 
-New component `src/components/instructor/JobOfferCard.tsx`. Container: white, 0.5px `#E5E5EA` border, radius 12, overflow hidden. Stacked with 10px gap.
+**Notes field** — keep as today, restyled with the same white hairline card pattern. Eyebrow label "Notes (optional)".
 
-**Top section (tappable body)** — `padding: 14px 14px 12px`, click handler opens existing detail Sheet.
-- Top row:
-  - Pupil avatar (36px circle, deterministic colour from new `<UserAvatar>` based on `name` hash, white initials, weight 500).
-  - Name (15px, weight 500, `#000`) + lesson type (12px, `#6E6E73`, sentence case via `toSentenceCase` helper).
-  - Right hours pill `{n}h` in `#F1ECFA` / `#8A5BC9`.
-- Meta row: top-border 0.5px `#E5E5EA`, padding-top 10, three `<MetaItem>` separated by 3px grey bullets:
-  1. Location pin → formatted UK postcode (`formatUkPostcode("SO302TD") → "SO30 2TD"`).
-  2. Distance → `"2.3 mi"` if ≥ 0.5; **hide entirely** when distance is null/undefined/zero/<0.5 (no "0.0 mi", no "—"). (Same-town "Nearby" path requires data we don't currently have, so we omit rather than fake it.)
-  3. Clock → human timing via `formatTiming()`: `"this-week"→"This week"`, `"next-week"→"Next week"`, `"asap"/"urgent"→"Starts ASAP"` (rendered in `#C8434F`), specific date strings → `"From 5 May"`. Falls back to a Title-cased version of the raw value.
+**Pupil selector** (instructor mode, new requests only) — keep as today, restyled to match the card pattern.
 
-**Action row (new)** — top border 0.5px `#E5E5EA`, grid `1fr auto 1fr` with a 0.5px vertical divider in the middle column:
-- Decline (left): X icon + "Decline" in `#6E6E73`, padding 12, transparent.
-- Accept (right): Check icon + "Accept" in `#2B7BC8`, padding 12, transparent.
-- Both handlers call `e.stopPropagation()` then open a shadcn `AlertDialog`:
-  - Decline dialog: title "Decline this offer?" + Cancel / Decline (red destructive button) → routes into existing `handleDeclineJob`.
-  - Accept dialog: title "Accept this offer?" + summary line (pupil · `{n}h` · lesson type · postcode · timing) + Cancel / Accept → routes into existing `handleAcceptJob`.
-- After confirmation, the card animates out (Framer Motion `AnimatePresence` with a 180ms fade+slide), reusing existing state mutation (`setJobs(filter ...)`).
+## Validation rules (unchanged logic, surfaced visually)
+Save disabled when:
+- Missing: type, test centre (id OR name), From date, From/Earliest time
+- For `want_test`: missing To date or Latest time
+- To < From, or Latest ≤ Earliest
+- `submitting` true
 
-## Empty state — `EmptyState`
+All current toast errors and the existing `handleSubmit` Supabase update/insert + `queryClient.invalidateQueries` calls are kept verbatim.
 
-New `src/components/instructor/EmptyState.tsx` (generic, reusable). 32px vertical padding, 48×48 `#F1ECFA` rounded square with purple briefcase icon, title "No new opportunities", subtitle "Check back soon — new offers come in regularly". Accepts `icon`, `title`, `subtitle` props.
+## Components created/reused
+- Reuse: `SegmentedControl`, `SectionLabel`, `SearchInput`, `IOSSheet`, existing `Calendar`/`Popover`, existing `Input type="time"`
+- New: `TestCentrePicker.tsx` (shared, also reusable in future job-offer/lesson flows)
+- New small helpers: `formatDateRange(from, to)` co-located in `src/components/test-requests/shared/formatSwap.ts` (file already exists)
+- New: `FormInputCard` primitive in `src/components/instructor/ui/FormInputCard.tsx` for the white hairline tappable rows (date, time, test centre)
 
-## Shared helpers (new)
+## Files touched
+- `src/components/test-requests/TestRequestForm.tsx` — full restyle, behaviour preserved
+- `src/pages/InstructorTestRequests.tsx` — drop `DialogHeader/Title`; let form render its own Cancel/Save header; pass `onCancel`
+- `src/components/test-requests/TestRequestList.tsx` — same drop of DialogHeader for edit dialog
+- `src/components/test-requests/PupilTestRequests.tsx` — same
+- New: `src/components/instructor/ui/TestCentrePicker.tsx`
+- New: `src/components/instructor/ui/FormInputCard.tsx`
+- Update: `src/components/test-requests/shared/formatSwap.ts` (add `formatDateShort`, `formatDateRangeLabels`)
 
-- `src/components/instructor/UserAvatar.tsx` — 36px (configurable) avatar; deterministic HSL from `djb2` string hash → palette of system-friendly colours; renders white initials. Optional `photoUrl` override.
-- `src/lib/formatJobOffer.ts` — exports `formatUkPostcode`, `formatTiming` (returns `{ label, urgent }`), `toSentenceCase`, `formatDistanceMiles`.
-- `src/components/instructor/MetaItem.tsx` — small icon + label pair, gap 5, label `#6E6E73`, accepts an `urgent` prop to switch label colour to `#C8434F`.
-
-## Preserved behaviour
-
-- Tap card → opens existing `Sheet` detail view (unchanged content/layout).
-- Accept and Decline use existing Supabase calls, toasts, list mutation.
-- Distance still computed via `geocode-postcode`, same Haversine logic.
-- `InstructorPortalLayout`, auth guard, loading state preserved.
-- No data shape, schema or API change.
-- Detail Sheet content untouched (separate scope as you noted).
-
-## Removed / fixed
-
-- "Available Jobs" Title Case → "Available jobs".
-- Decorative grey briefcase header block → replaced with purple-tinted card.
-- ChevronRight expand affordance.
-- Bold weights (`font-semibold` → 500), drop shadows, non-system colours.
-- "0.0 mi" fallback — now hidden.
-- Postcode without spaces — formatted on render.
-- Kebab-case timing strings — formatted on render.
-
-## Out of scope
-
-- Detail Sheet redesign.
-- Adding push/realtime if absent today (current page just refetches once on mount; we keep that).
-- Swipe gestures, Maybe / Counter-offer states.
-
-## Files
-
-- Edit: `src/pages/InstructorJobs.tsx`
-- Add:  `src/components/instructor/JobOfferCard.tsx`
-- Add:  `src/components/instructor/UserAvatar.tsx`
-- Add:  `src/components/instructor/MetaItem.tsx`
-- Add:  `src/components/instructor/EmptyState.tsx`
-- Add:  `src/lib/formatJobOffer.ts`
+## Out of scope (explicitly NOT doing)
+- No data model changes, no new fields
+- No changes to date/time picker components themselves
+- No auto-correction of legacy free-text test centre values
+- No changes to save API contract, analytics events, or post-save navigation
+- No reordering of sections; no new flexibility/preferred-instructor fields
