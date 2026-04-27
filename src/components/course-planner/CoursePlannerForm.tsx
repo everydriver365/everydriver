@@ -314,28 +314,65 @@ export function CoursePlannerForm({
             )}
 
             {mode === "instructor" && (
-              <section className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Pupil</p>
+              <section>
+                <SectionLabel>Pupil</SectionLabel>
                 {defaultPupilId ? (
-                  <div className="rounded-lg bg-muted/50 px-3 py-2 text-sm">
-                    <span className="text-muted-foreground">Pupil: </span>
-                    <span className="font-medium">{defaultPupilName || effectivePupilName}</span>
-                  </div>
+                  <FormInputCard
+                    asDiv
+                    icon={
+                      <UserAvatar
+                        name={defaultPupilName || effectivePupilName || "?"}
+                        size={28}
+                      />
+                    }
+                    value={defaultPupilName || effectivePupilName || ""}
+                  />
                 ) : (
                   <Popover open={pupilPickerOpen} onOpenChange={setPupilPickerOpen}>
                     <PopoverTrigger asChild>
-                      <Button
+                      <button
                         type="button"
-                        variant="outline"
-                        role="combobox"
-                        className={cn("w-full justify-between font-normal", !effectivePupilName && "text-muted-foreground")}
+                        style={{
+                          width: "100%",
+                          background: "#FFFFFF",
+                          border: "0.5px solid #E5E5EA",
+                          borderRadius: 10,
+                          padding: "12px 14px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          cursor: "pointer",
+                          textAlign: "left",
+                        }}
                       >
-                        <span className="truncate text-left flex items-center gap-2">
-                          <User className="h-4 w-4" />
-                          {effectivePupilName || "Pick a pupil (optional)"}
-                        </span>
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
+                        {effectivePupilName ? (
+                          <>
+                            <UserAvatar name={effectivePupilName} size={28} />
+                            <span
+                              style={{
+                                flex: 1,
+                                minWidth: 0,
+                                fontSize: 15,
+                                fontWeight: 500,
+                                color: "#000000",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              {effectivePupilName}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <User size={18} strokeWidth={1.8} color="#6E6E73" style={{ flexShrink: 0 }} />
+                            <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 400, color: "#6E6E73" }}>
+                              Pick a pupil <span style={{ color: "#C7C7CC" }}>— optional</span>
+                            </span>
+                          </>
+                        )}
+                        <ChevronDown size={12} strokeWidth={1.6} color="#6E6E73" style={{ flexShrink: 0 }} />
+                      </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
                       <Command>
@@ -362,101 +399,169 @@ export function CoursePlannerForm({
                     </PopoverContent>
                   </Popover>
                 )}
-                {!effectivePupilId && (
-                  <p className="text-[11px] text-muted-foreground">Pick a pupil to enable direct booking into the diary.</p>
-                )}
+                <p style={{ fontSize: 11, color: "#6E6E73", margin: "6px 0 0", paddingLeft: 2 }}>
+                  Add a pupil now to book directly into your diary, or plan ahead without one.
+                </p>
               </section>
             )}
 
-            <section className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Driving Test</p>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className={cn("w-full justify-start font-normal", !testDate && "text-muted-foreground")}>
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {testDate ? format(testDate, "d MMM yyyy") : "Pick date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar mode="single" selected={testDate} onSelect={setTestDate} disabled={(d) => d < new Date()} initialFocus className={cn("p-3 pointer-events-auto")} />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">Time</Label>
-                  <Input type="time" value={testTime} onChange={(e) => setTestTime(e.target.value)} />
-                </div>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">Test centre</Label>
-                <Popover open={centrePickerOpen} onOpenChange={setCentrePickerOpen}>
+            <section>
+              <SectionLabel>Driving test</SectionLabel>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8, marginBottom: 8 }}>
+                <Popover>
                   <PopoverTrigger asChild>
-                    <Button type="button" variant="outline" role="combobox" className={cn("w-full justify-between font-normal", !testCentreName && "text-muted-foreground")}>
-                      <span className="truncate text-left">{testCentreName || "Search 314 UK test centres…"}</span>
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
+                    <button type="button" style={{ all: "unset", display: "block", width: "100%" }}>
+                      <FormInputCard
+                        asDiv
+                        topLabel="Date"
+                        icon={<CalendarIcon size={16} strokeWidth={1.8} />}
+                        placeholder="Pick date"
+                        value={testDate ? format(testDate, "d MMM") : ""}
+                      />
+                    </button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                    <Command>
-                      <CommandInput placeholder="Search by name or postcode…" />
-                      <CommandList>
-                        <CommandEmpty>No test centre found.</CommandEmpty>
-                        <CommandGroup>
-                          {testCentres.map((c) => (
-                            <CommandItem key={c.id} value={`${c.name} ${c.postcode || ""}`} onSelect={() => {
-                              setTestCentreId(c.id); setTestCentreName(c.name); setCentrePickerOpen(false);
-                            }}>
-                              <Check className={cn("mr-2 h-4 w-4", testCentreId === c.id ? "opacity-100" : "opacity-0")} />
-                              <div className="flex-1 min-w-0">
-                                <div className="text-sm truncate">{c.name}</div>
-                                {c.postcode && (<div className="text-[11px] text-muted-foreground">{c.postcode}</div>)}
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={testDate} onSelect={setTestDate} disabled={(d) => d < new Date()} initialFocus className={cn("p-3 pointer-events-auto")} />
                   </PopoverContent>
                 </Popover>
+                <div>
+                  <div style={{ fontSize: 11, color: "#6E6E73", margin: "0 0 4px", paddingLeft: 2 }}>Time</div>
+                  <div
+                    style={{
+                      background: "#FFFFFF",
+                      border: "0.5px solid #E5E5EA",
+                      borderRadius: 10,
+                      padding: "12px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      width: "100%",
+                    }}
+                  >
+                    <Clock size={16} strokeWidth={1.8} color="#6E6E73" style={{ flexShrink: 0 }} />
+                    <input
+                      type="time"
+                      value={testTime}
+                      onChange={(e) => setTestTime(e.target.value)}
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        border: "none",
+                        outline: "none",
+                        background: "transparent",
+                        fontSize: 14,
+                        fontWeight: 500,
+                        color: "#000000",
+                        padding: 0,
+                        fontFamily: "inherit",
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
+              <TestCentrePicker
+                selectedId={testCentreId || null}
+                selectedName={testCentreName || null}
+                onSelect={(c) => { setTestCentreId(c.id); setTestCentreName(c.name); }}
+              />
+              {!testCentreName && testCentres.length > 0 && (
+                <div style={{ height: 0, overflow: "hidden" }} aria-hidden>{testCentres.length}</div>
+              )}
             </section>
 
-            <section className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Course Details</p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <section>
+              <SectionLabel>Course details</SectionLabel>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">Hours left</Label>
-                  <Input type="number" min={1} value={hoursRemaining} onChange={(e) => setHoursRemaining(e.target.value)} />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">Lesson length</Label>
-                  <Select value={lessonLength} onValueChange={setLessonLength}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <div style={{ fontSize: 11, color: "#6E6E73", margin: "0 0 4px", paddingLeft: 2 }}>Total hours</div>
+                  <Select value={hoursRemaining} onValueChange={setHoursRemaining}>
+                    <SelectTrigger
+                      style={{
+                        background: "#FFFFFF",
+                        border: "0.5px solid #E5E5EA",
+                        borderRadius: 10,
+                        padding: "12px",
+                        height: "auto",
+                        fontSize: 14,
+                        fontWeight: 500,
+                        color: "#000000",
+                      }}
+                    >
+                      <span>{hoursRemaining}h</span>
+                    </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="60">1 hr</SelectItem>
-                      <SelectItem value="90">1.5 hr</SelectItem>
-                      <SelectItem value="120">2 hr</SelectItem>
-                      <SelectItem value="150">2.5 hr</SelectItem>
-                      <SelectItem value="180">3 hr</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">Per week</Label>
-                  <Select value={lessonsPerWeek} onValueChange={setLessonsPerWeek}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {[1, 2, 3, 4, 5, 6].map((n) => (
-                        <SelectItem key={n} value={String(n)}>{n}×</SelectItem>
+                      {[5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80].map((n) => (
+                        <SelectItem key={n} value={String(n)}>{n}h</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <div style={{ fontSize: 11, color: "#6E6E73", margin: "0 0 4px", paddingLeft: 2 }}>Lesson length</div>
+                  <Select value={lessonLength} onValueChange={setLessonLength}>
+                    <SelectTrigger
+                      style={{
+                        background: "#FFFFFF",
+                        border: "0.5px solid #E5E5EA",
+                        borderRadius: 10,
+                        padding: "12px",
+                        height: "auto",
+                        fontSize: 14,
+                        fontWeight: 500,
+                        color: "#000000",
+                      }}
+                    >
+                      <span>
+                        {lessonLength === "60" && "1h"}
+                        {lessonLength === "90" && "1h 30m"}
+                        {lessonLength === "120" && "2h"}
+                        {lessonLength === "150" && "2h 30m"}
+                        {lessonLength === "180" && "3h"}
+                      </span>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="60">1h</SelectItem>
+                      <SelectItem value="90">1h 30m</SelectItem>
+                      <SelectItem value="120">2h</SelectItem>
+                      <SelectItem value="150">2h 30m</SelectItem>
+                      <SelectItem value="180">3h</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div style={{ marginTop: 8 }}>
+                <div style={{ fontSize: 11, color: "#6E6E73", margin: "0 0 4px", paddingLeft: 2 }}>Lessons per week</div>
+                <Select value={lessonsPerWeek} onValueChange={setLessonsPerWeek}>
+                  <SelectTrigger
+                    style={{
+                      background: "#FFFFFF",
+                      border: "0.5px solid #E5E5EA",
+                      borderRadius: 10,
+                      padding: "12px",
+                      height: "auto",
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: "#000000",
+                    }}
+                  >
+                    <span>{lessonsPerWeek}× per week</span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5, 6].map((n) => (
+                      <SelectItem key={n} value={String(n)}>{n}× per week</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </section>
+
+            <CoursePreviewCard
+              totalHours={Number(hoursRemaining) || null}
+              lessonLengthMinutes={Number(lessonLength) || null}
+              testDate={testDate || null}
+              testCentreName={testCentreName || null}
+              pupilName={effectivePupilName}
+            />
 
             <section className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">When You Can Have Lessons</p>
