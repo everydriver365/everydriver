@@ -2075,6 +2075,239 @@ export type Database = {
         }
         Relationships: []
       }
+      cover_offer_recipients: {
+        Row: {
+          cover_offer_id: string
+          created_at: string
+          declined_at: string | null
+          distance_miles: number | null
+          id: string
+          instructor_id: string
+          notified_at: string | null
+          viewed_at: string | null
+        }
+        Insert: {
+          cover_offer_id: string
+          created_at?: string
+          declined_at?: string | null
+          distance_miles?: number | null
+          id?: string
+          instructor_id: string
+          notified_at?: string | null
+          viewed_at?: string | null
+        }
+        Update: {
+          cover_offer_id?: string
+          created_at?: string
+          declined_at?: string | null
+          distance_miles?: number | null
+          id?: string
+          instructor_id?: string
+          notified_at?: string | null
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cover_offer_recipients_cover_offer_id_fkey"
+            columns: ["cover_offer_id"]
+            isOneToOne: false
+            referencedRelation: "cover_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cover_offer_recipients_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cover_offer_recipients_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cover_offers: {
+        Row: {
+          claimed_at: string | null
+          claimed_by_instructor_id: string | null
+          created_at: string
+          expires_at: string
+          finders_fee_pct: number
+          id: string
+          lesson_duration_minutes: number
+          lesson_id: string
+          lesson_price: number | null
+          lesson_start: string
+          notes: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          pickup_postcode: string | null
+          pupil_id: string
+          requesting_instructor_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          claimed_by_instructor_id?: string | null
+          created_at?: string
+          expires_at?: string
+          finders_fee_pct?: number
+          id?: string
+          lesson_duration_minutes: number
+          lesson_id: string
+          lesson_price?: number | null
+          lesson_start: string
+          notes?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          pickup_postcode?: string | null
+          pupil_id: string
+          requesting_instructor_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          claimed_at?: string | null
+          claimed_by_instructor_id?: string | null
+          created_at?: string
+          expires_at?: string
+          finders_fee_pct?: number
+          id?: string
+          lesson_duration_minutes?: number
+          lesson_id?: string
+          lesson_price?: number | null
+          lesson_start?: string
+          notes?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          pickup_postcode?: string | null
+          pupil_id?: string
+          requesting_instructor_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cover_offers_claimed_by_instructor_id_fkey"
+            columns: ["claimed_by_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cover_offers_claimed_by_instructor_id_fkey"
+            columns: ["claimed_by_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cover_offers_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cover_offers_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cover_offers_requesting_instructor_id_fkey"
+            columns: ["requesting_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cover_offers_requesting_instructor_id_fkey"
+            columns: ["requesting_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cover_settlements: {
+        Row: {
+          amount: number
+          cover_offer_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          payee_instructor_id: string
+          payer_instructor_id: string
+          settled_at: string | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          cover_offer_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payee_instructor_id: string
+          payer_instructor_id: string
+          settled_at?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          cover_offer_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payee_instructor_id?: string
+          payer_instructor_id?: string
+          settled_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cover_settlements_cover_offer_id_fkey"
+            columns: ["cover_offer_id"]
+            isOneToOne: false
+            referencedRelation: "cover_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cover_settlements_payee_instructor_id_fkey"
+            columns: ["payee_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cover_settlements_payee_instructor_id_fkey"
+            columns: ["payee_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cover_settlements_payer_instructor_id_fkey"
+            columns: ["payer_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cover_settlements_payer_instructor_id_fkey"
+            columns: ["payer_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cpd_log_entries: {
         Row: {
           activity_type: string
@@ -7813,6 +8046,7 @@ export type Database = {
       }
       instructors: {
         Row: {
+          accepts_cover_lessons: boolean
           accessibility_bio: string | null
           accessibility_enabled: boolean
           adaptations: string[]
@@ -7864,6 +8098,9 @@ export type Database = {
           clearpay_enabled: boolean | null
           commission_payer: string | null
           commission_split_percent: number
+          cover_finders_fee_pct: number
+          cover_max_distance_miles: number
+          cover_min_notice_hours: number
           cpd_certified: boolean | null
           cpd_hours_logged: number | null
           cpd_year_target: number | null
@@ -7974,6 +8211,7 @@ export type Database = {
           xero_tenant_id: string | null
         }
         Insert: {
+          accepts_cover_lessons?: boolean
           accessibility_bio?: string | null
           accessibility_enabled?: boolean
           adaptations?: string[]
@@ -8025,6 +8263,9 @@ export type Database = {
           clearpay_enabled?: boolean | null
           commission_payer?: string | null
           commission_split_percent?: number
+          cover_finders_fee_pct?: number
+          cover_max_distance_miles?: number
+          cover_min_notice_hours?: number
           cpd_certified?: boolean | null
           cpd_hours_logged?: number | null
           cpd_year_target?: number | null
@@ -8135,6 +8376,7 @@ export type Database = {
           xero_tenant_id?: string | null
         }
         Update: {
+          accepts_cover_lessons?: boolean
           accessibility_bio?: string | null
           accessibility_enabled?: boolean
           adaptations?: string[]
@@ -8186,6 +8428,9 @@ export type Database = {
           clearpay_enabled?: boolean | null
           commission_payer?: string | null
           commission_split_percent?: number
+          cover_finders_fee_pct?: number
+          cover_max_distance_miles?: number
+          cover_min_notice_hours?: number
           cpd_certified?: boolean | null
           cpd_hours_logged?: number | null
           cpd_year_target?: number | null
@@ -10840,6 +11085,44 @@ export type Database = {
         }
         Relationships: []
       }
+      pass_report_queue: {
+        Row: {
+          attempts: number
+          created_at: string
+          error: string | null
+          id: string
+          processed_at: string | null
+          pupil_id: string
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          error?: string | null
+          id?: string
+          processed_at?: string | null
+          pupil_id: string
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          error?: string | null
+          id?: string
+          processed_at?: string | null
+          pupil_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pass_report_queue_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_disputes: {
         Row: {
           created_at: string
@@ -12345,10 +12628,13 @@ export type Database = {
           bonus_points_awarded: number | null
           completed_at: string | null
           created_at: string
+          credit_awarded_at: string | null
           id: string
           instructor_id: string
           referral_code: string
+          referred_credit_amount: number
           referred_pupil_id: string
+          referrer_credit_amount: number
           referrer_pupil_id: string
           status: string | null
         }
@@ -12356,10 +12642,13 @@ export type Database = {
           bonus_points_awarded?: number | null
           completed_at?: string | null
           created_at?: string
+          credit_awarded_at?: string | null
           id?: string
           instructor_id: string
           referral_code: string
+          referred_credit_amount?: number
           referred_pupil_id: string
+          referrer_credit_amount?: number
           referrer_pupil_id: string
           status?: string | null
         }
@@ -12367,10 +12656,13 @@ export type Database = {
           bonus_points_awarded?: number | null
           completed_at?: string | null
           created_at?: string
+          credit_awarded_at?: string | null
           id?: string
           instructor_id?: string
           referral_code?: string
+          referred_credit_amount?: number
           referred_pupil_id?: string
+          referrer_credit_amount?: number
           referrer_pupil_id?: string
           status?: string | null
         }
@@ -12847,6 +13139,8 @@ export type Database = {
           parent_name: string | null
           parent_phone: string | null
           parent_portal_enabled: boolean
+          pass_report_generated_at: string | null
+          pass_report_url: string | null
           payment_method: string
           payment_type: string | null
           phone: string | null
@@ -12937,6 +13231,8 @@ export type Database = {
           parent_name?: string | null
           parent_phone?: string | null
           parent_portal_enabled?: boolean
+          pass_report_generated_at?: string | null
+          pass_report_url?: string | null
           payment_method?: string
           payment_type?: string | null
           phone?: string | null
@@ -13027,6 +13323,8 @@ export type Database = {
           parent_name?: string | null
           parent_phone?: string | null
           parent_portal_enabled?: boolean
+          pass_report_generated_at?: string | null
+          pass_report_url?: string | null
           payment_method?: string
           payment_type?: string | null
           phone?: string | null
@@ -17060,6 +17358,7 @@ export type Database = {
         Args: { p_instructor_id: string }
         Returns: boolean
       }
+      claim_cover_offer: { Args: { p_offer_id: string }; Returns: Json }
       cleanup_expired_otp_codes: { Args: never; Returns: undefined }
       cleanup_expired_parent_otp_codes: { Args: never; Returns: undefined }
       generate_calendar_share_token: { Args: never; Returns: string }
