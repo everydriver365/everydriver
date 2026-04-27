@@ -518,7 +518,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
                           transition={{ duration: 0.2, ease: "easeInOut" }}
                           className="overflow-hidden"
                         >
-                          <div className="ml-[3.25rem] mr-4 mb-3 mt-0.5 rounded-xl border border-border/60 bg-muted/30 p-3 space-y-1.5">
+                          <div className="ml-[3.25rem] mr-3 sm:mr-4 mb-3 mt-0.5 rounded-xl border border-border/60 bg-muted/30 p-3 space-y-2">
                             {hasLesson && (
                               <>
                                 <div className="flex items-center gap-2 text-[11px] text-foreground/80">
