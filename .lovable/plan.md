@@ -1,76 +1,83 @@
-# Redesign Test Request form (premium tile system)
+## Bulk select, mark-as-read, and mute on the Inbox
 
-## Scope
-Restyle `TestRequestForm.tsx` and its host dialogs in `InstructorTestRequests.tsx`, `TestRequestList.tsx`, and `PupilTestRequests.tsx` to match the premium tile system. Behaviour, validation, save API, query invalidations, pupil selector, notes field, and all data fields stay exactly as today — only chrome and a test-centre picker upgrade.
+Add a multi-select mode to the instructor inbox so multiple conversations can be marked as read and/or muted in one go. Works across all three sources (In-app, WhatsApp, Support) and persists mute state per conversation.
 
-## What changes (visual + UX)
+### How it looks and behaves
 
-**Form container chrome** — replace `DialogHeader`/`DialogTitle` in all three host sites with a sticky in-form header bar:
-- 12/16 padding, 0.5px `#E5E5EA` bottom border
-- Left `Cancel` (#2B7BC8, 14/500) — closes dialog; if any field is dirty vs. initial state, show a small native confirm "Discard changes?" before closing
-- Centre dynamic title — sentence case "New test request" / "Edit test request"
-- Right `Save` (#2B7BC8, 14/500) — disabled (opacity 0.4, cursor not-allowed) when validation fails or `submitting`; label flips to "Saving…" while in flight
-- The dialog's own X close button is hidden via custom DialogContent (or replaced by rendering the bar inside and removing default header)
+Entering select mode (two routes):
+- **Long-press** any conversation row (~450 ms hold) — that row enters selected state and the header swaps to action mode.
+- **Select** text button added next to the existing Broadcast link in the list header.
 
-**Section 1 – Type toggle** — replace the two outline buttons with the shared `<SegmentedControl>` from `src/components/instructor/ui/SegmentedControl.tsx`. Two segments: `Have one` (have_test) and `Need one` (want_test). Eyebrow label "What do you need?" using existing `<SectionLabel>`. State binding to `requestType` unchanged.
+Selected mode UI (replaces the hero card while active):
+- Left: Cancel button (exits select mode, clears selection)
+- Center: "N selected" count
+- Right: two icon buttons — `CheckCheck` (mark read) and `BellOff` / `Bell` (mute / unmute, label flips when all selected are already muted)
+- Rows show a circular checkbox on the left (replacing the avatar position visually with a small overlay tick); tap toggles selection. Selected rows get a subtle blue outline.
+- Tapping a row in select mode toggles selection — it does NOT open the chat.
 
-**Section 2 – Test centre picker** (data-integrity upgrade):
-- New shared component `src/components/instructor/ui/TestCentrePicker.tsx`
-- Trigger: white card row, 0.5px hairline border, 10px radius, MapPin icon left, value/placeholder middle, ChevronDown right
-- Tap opens a `vaul` bottom sheet (`IOSSheet`) with `<SearchInput>` at top and a scrollable list of `test_centres` (already fetched from Supabase as today)
-- Selecting a row writes both `selectedCentreId` and `manualCentreName` (preserves current backend contract — both columns continue to be saved)
-- Backwards-compat: if `editData.test_centre_name` does not match any picker row by id, the trigger displays the existing free-text value as-is with a small grey "Update" hint chip; tapping opens the picker. Save still works without re-selecting (existing `test_centre_id` and `test_centre_name` are preserved).
-- Free-text typing path is removed in favour of picker (per prompt's preferred option). The underlying string field is unchanged.
+Muted conversations (in normal mode):
+- Small `BellOff` glyph appears next to the timestamp on the row.
+- Unread badge still shows the count, but rendered grey instead of red so muted threads don't visually shout.
 
-**Section 3 – Date range** — two-column grid (`From` / `To`):
-- Eyebrow label "Date range"
-- Each input: white card with calendar icon left, formatted date middle. Tap opens existing `<Calendar>` Popover (picker UI itself unchanged).
-- Format helper applied on render only:
-  - both dates in current year → "18 Feb"
-  - same future year → omit year on From, show on To
-  - cross-year → show year on both
-  - Always short month names
-- For `have_test` (single date), only the From column renders — preserves current behaviour where `dateRangeEnd` is only used for `want_test`.
-- Invalid (To < From) → To input gets `border-color: #C8434F` and Save disables.
+Empty selection action: buttons disabled (50% opacity) when 0 selected.
 
-**Section 4 – Time window** — two-column grid (`Earliest` / `Latest`):
-- Eyebrow label "Time window"
-- Same card pattern with Clock icon left; tap opens native `<input type="time">` (existing picker reused, just wrapped)
-- Default times for new requests only: Earliest 09:00, Latest 17:00. Edit mode uses stored values verbatim (no overwrite).
-- For `have_test`, only Earliest renders (maps to current `testTime` single-value behaviour).
-- Invalid (Latest ≤ Earliest) → Latest gets red border and Save disables.
+### Database changes (one migration)
 
-**Notes field** — keep as today, restyled with the same white hairline card pattern. Eyebrow label "Notes (optional)".
+Add persistent mute state to both conversation tables (Support uses an instructor-level setting since it's a single thread):
 
-**Pupil selector** (instructor mode, new requests only) — keep as today, restyled to match the card pattern.
+```sql
+ALTER TABLE public.conversations
+  ADD COLUMN muted_at timestamptz;
 
-## Validation rules (unchanged logic, surfaced visually)
-Save disabled when:
-- Missing: type, test centre (id OR name), From date, From/Earliest time
-- For `want_test`: missing To date or Latest time
-- To < From, or Latest ≤ Earliest
-- `submitting` true
+ALTER TABLE public.whatsapp_conversations
+  ADD COLUMN muted_at timestamptz;
 
-All current toast errors and the existing `handleSubmit` Supabase update/insert + `queryClient.invalidateQueries` calls are kept verbatim.
+ALTER TABLE public.instructors
+  ADD COLUMN support_chat_muted_at timestamptz;
+```
 
-## Components created/reused
-- Reuse: `SegmentedControl`, `SectionLabel`, `SearchInput`, `IOSSheet`, existing `Calendar`/`Popover`, existing `Input type="time"`
-- New: `TestCentrePicker.tsx` (shared, also reusable in future job-offer/lesson flows)
-- New small helpers: `formatDateRange(from, to)` co-located in `src/components/test-requests/shared/formatSwap.ts` (file already exists)
-- New: `FormInputCard` primitive in `src/components/instructor/ui/FormInputCard.tsx` for the white hairline tappable rows (date, time, test centre)
+Also add a `read_at` column to `whatsapp_messages` so WhatsApp unread tracking is symmetrical with in-app messages (it currently has none — `unread_count` on the hook is computed from `delivery_status` heuristics and there's no way to mark read):
 
-## Files touched
-- `src/components/test-requests/TestRequestForm.tsx` — full restyle, behaviour preserved
-- `src/pages/InstructorTestRequests.tsx` — drop `DialogHeader/Title`; let form render its own Cancel/Save header; pass `onCancel`
-- `src/components/test-requests/TestRequestList.tsx` — same drop of DialogHeader for edit dialog
-- `src/components/test-requests/PupilTestRequests.tsx` — same
-- New: `src/components/instructor/ui/TestCentrePicker.tsx`
-- New: `src/components/instructor/ui/FormInputCard.tsx`
-- Update: `src/components/test-requests/shared/formatSwap.ts` (add `formatDateShort`, `formatDateRangeLabels`)
+```sql
+ALTER TABLE public.whatsapp_messages
+  ADD COLUMN read_at timestamptz;
+CREATE INDEX idx_wa_messages_unread
+  ON public.whatsapp_messages (conversation_id)
+  WHERE read_at IS NULL AND direction = 'inbound';
+```
 
-## Out of scope (explicitly NOT doing)
-- No data model changes, no new fields
-- No changes to date/time picker components themselves
-- No auto-correction of legacy free-text test centre values
-- No changes to save API contract, analytics events, or post-save navigation
-- No reordering of sections; no new flexibility/preferred-instructor fields
+No new RLS policies needed — existing instructor-scoped policies on `conversations` and `whatsapp_conversations` already cover updates to the new column. `instructors` already has owner-scoped update policies.
+
+### Code changes
+
+**`src/pages/InstructorUnifiedInbox.tsx`** — bulk of the work:
+- New state: `selectMode: boolean`, `selectedIds: Set<string>`.
+- New handlers: `enterSelectMode(initialId?)`, `toggleSelected(id)`, `exitSelectMode()`, `bulkMarkRead()`, `bulkToggleMute()`.
+- `ConversationRow` gains `selectMode`, `selected`, `muted`, `onLongPress` props. Click behaviour switches to `toggleSelected` while in select mode.
+- Long-press: simple `onPointerDown` + `setTimeout(450ms)` + `onPointerUp/Leave` cancel pattern (no extra dep).
+- Hero card swaps to a "selection action bar" when `selectMode === true`.
+- "Select" text link added next to "Broadcast" in the list header (visible whenever the list has ≥1 row).
+- Muted indicator + grey-vs-red badge tint passed down to `UnreadBadge`.
+
+**`src/hooks/useMessaging.ts`**:
+- Extend `Conversation` type with `muted_at: string | null`.
+- Include `muted_at` in the conversations select.
+- Add `bulkMarkConversationsRead(ids: string[])` — bulk update `messages.read_at` where `conversation_id IN (ids)` AND `sender_type = 'pupil'` AND `read_at IS NULL`.
+- Add `bulkSetMute(ids: string[], muted: boolean)` — update `conversations.muted_at`.
+- After each bulk action, call existing `fetchConversations()` to refresh local state.
+
+**`src/hooks/useWhatsAppConversations.ts`**:
+- Add `muted_at` to type and select.
+- Recompute `unread_count` using the new `read_at` column instead of the current heuristic.
+- Add `bulkMarkWaRead(ids)` and `bulkSetWaMute(ids, muted)`.
+
+**`src/hooks/useUnreadMessagesCount.ts`** — already aggregates across sources. Add a "skip muted" filter so muted conversations don't contribute to the global tab badge (the bell icon in nav). Counts still display per-row for transparency.
+
+**Push notification suppression** — check `supabase/functions/send-push-notification` (or equivalent) for the path that fires on new in-app/WhatsApp messages. If found, add a guard: skip push when the target conversation has `muted_at IS NOT NULL`. If the function doesn't exist or doesn't pull from these tables, this becomes a no-op for v1 and only the in-app badge dimming applies — I'll confirm during build and note it back.
+
+### Out of scope (kept as-is)
+
+- Bulk archive / delete (separate prompt if wanted).
+- Timed mute (e.g. "mute for 8 hours"). `muted_at` is a simple on/off; we can layer a `muted_until` later without breaking anything.
+- Changing the chat detail screen.
+- Auto-mark-read when scrolling past a row (still requires opening the thread).

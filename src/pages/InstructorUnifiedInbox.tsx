@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { format, formatDistanceToNowStrict, isThisWeek, isYesterday, isToday, differenceInDays } from "date-fns";
 import {
@@ -8,6 +8,10 @@ import {
   Loader2,
   Mic,
   Search as SearchIcon,
+  CheckCheck,
+  Bell,
+  BellOff,
+  Check,
 } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -75,7 +79,15 @@ function formatCompactTime(iso: string | null | undefined): string {
   return format(d, "d MMM");
 }
 
-function UnreadBadge({ count, onTinted }: { count: number; onTinted?: boolean }) {
+function UnreadBadge({
+  count,
+  onTinted,
+  muted,
+}: {
+  count: number;
+  onTinted?: boolean;
+  muted?: boolean;
+}) {
   if (!count || count <= 0) return null;
   const display = count >= 10 ? "9+" : String(count);
   return (
@@ -88,7 +100,7 @@ function UnreadBadge({ count, onTinted }: { count: number; onTinted?: boolean })
         height: 18,
         padding: "0 5px",
         borderRadius: 999,
-        background: RED,
+        background: muted ? "#A0A0A6" : RED,
         border: `2px solid ${onTinted ? UNREAD_TINT : CARD_BG}`,
         color: "#FFFFFF",
         fontSize: 10,
@@ -105,13 +117,20 @@ function UnreadBadge({ count, onTinted }: { count: number; onTinted?: boolean })
 }
 
 interface ConversationRowProps {
+  id: string;
   name: string;
   preview: string | null;
   timestamp: string | null;
   unreadCount: number;
   avatarSeed: string;
   avatarUrl?: string | null;
+  muted?: boolean;
+  selectable?: boolean;
+  selectMode?: boolean;
+  selected?: boolean;
   onPress: () => void;
+  onLongPress?: () => void;
+  onToggleSelect?: () => void;
 }
 
 function ConversationRow({
@@ -121,21 +140,73 @@ function ConversationRow({
   unreadCount,
   avatarSeed,
   avatarUrl,
+  muted,
+  selectable = true,
+  selectMode = false,
+  selected = false,
   onPress,
+  onLongPress,
+  onToggleSelect,
 }: ConversationRowProps) {
-  const isUnread = unreadCount > 0;
+  const isUnread = unreadCount > 0 && !muted;
+  const isUnreadMuted = unreadCount > 0 && muted;
   const color = pupilAvatarColor(avatarSeed);
   const initial = pupilAvatarInitial(name);
   const previewText = preview || "No messages yet";
   const isEmpty = !preview;
 
+  // Long-press handling
+  const lpTimer = useRef<number | null>(null);
+  const lpFired = useRef(false);
+
+  const startLongPress = () => {
+    if (!onLongPress || !selectable || selectMode) return;
+    lpFired.current = false;
+    lpTimer.current = window.setTimeout(() => {
+      lpFired.current = true;
+      onLongPress();
+    }, 450);
+  };
+  const cancelLongPress = () => {
+    if (lpTimer.current !== null) {
+      window.clearTimeout(lpTimer.current);
+      lpTimer.current = null;
+    }
+  };
+
+  const handleClick = () => {
+    if (lpFired.current) {
+      lpFired.current = false;
+      return;
+    }
+    if (selectMode && selectable) {
+      onToggleSelect?.();
+      return;
+    }
+    onPress();
+  };
+
+  const rowBg = selected
+    ? "#DCEBFA"
+    : isUnread
+    ? UNREAD_TINT
+    : "transparent";
+
   return (
     <button
       type="button"
-      onClick={onPress}
+      onClick={handleClick}
+      onPointerDown={startLongPress}
+      onPointerUp={cancelLongPress}
+      onPointerLeave={cancelLongPress}
+      onPointerCancel={cancelLongPress}
+      onContextMenu={(e) => {
+        // Suppress native context menu on long-press
+        if (selectable && onLongPress) e.preventDefault();
+      }}
       style={{
-        background: isUnread ? UNREAD_TINT : "transparent",
-        border: "none",
+        background: rowBg,
+        border: selected ? `1px solid ${BLUE}` : "1px solid transparent",
         padding: "10px 4px",
         borderRadius: 8,
         display: "flex",
@@ -145,6 +216,9 @@ function ConversationRow({
         textAlign: "left",
         width: "100%",
         fontFamily: FONT_STACK,
+        WebkitUserSelect: "none",
+        userSelect: "none",
+        WebkitTouchCallout: "none",
       }}
     >
       <div style={{ position: "relative", flexShrink: 0 }}>
@@ -161,6 +235,7 @@ function ConversationRow({
             fontSize: 13,
             fontWeight: 500,
             overflow: "hidden",
+            opacity: selectMode && !selected ? 0.55 : 1,
           }}
         >
           {avatarUrl ? (
@@ -173,7 +248,32 @@ function ConversationRow({
             initial
           )}
         </div>
-        <UnreadBadge count={unreadCount} onTinted={isUnread} />
+        {selectMode && selectable ? (
+          <span
+            style={{
+              position: "absolute",
+              bottom: -2,
+              right: -2,
+              width: 18,
+              height: 18,
+              borderRadius: "50%",
+              background: selected ? BLUE : "#FFFFFF",
+              border: `1.5px solid ${selected ? BLUE : "#C7C7CC"}`,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#FFFFFF",
+            }}
+          >
+            {selected && <Check size={11} strokeWidth={3} />}
+          </span>
+        ) : (
+          <UnreadBadge
+            count={unreadCount}
+            onTinted={isUnread}
+            muted={isUnreadMuted}
+          />
+        )}
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -201,18 +301,34 @@ function ConversationRow({
           >
             {name}
           </span>
-          {timestamp && (
-            <span
-              style={{
-                fontSize: 11,
-                color: isUnread ? BLUE : MUTED,
-                fontWeight: isUnread ? 500 : 400,
-                flexShrink: 0,
-              }}
-            >
-              {formatCompactTime(timestamp)}
-            </span>
-          )}
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              flexShrink: 0,
+            }}
+          >
+            {muted && (
+              <BellOff
+                size={11}
+                strokeWidth={1.8}
+                color={MUTED}
+                aria-label="Muted"
+              />
+            )}
+            {timestamp && (
+              <span
+                style={{
+                  fontSize: 11,
+                  color: isUnread ? BLUE : MUTED,
+                  fontWeight: isUnread ? 500 : 400,
+                }}
+              >
+                {formatCompactTime(timestamp)}
+              </span>
+            )}
+          </span>
         </div>
         <p
           style={{
@@ -312,16 +428,82 @@ export default function InstructorUnifiedInbox() {
     loading: convLoading,
     getOrCreateConversation,
     fetchConversations,
+    bulkMarkConversationsRead,
+    bulkSetMute,
   } = useMessaging(instructorId);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
 
   // WhatsApp
-  const { conversations: waConversations, isLoading: waLoading } =
-    useWhatsAppConversations(instructorId);
+  const {
+    conversations: waConversations,
+    isLoading: waLoading,
+    bulkMarkWaRead,
+    bulkSetWaMute,
+  } = useWhatsAppConversations(instructorId);
   const [selectedWa, setSelectedWa] = useState<string | null>(null);
 
   // Support / Admin
   const [showSupport, setShowSupport] = useState(false);
+
+  // Bulk select state
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const enterSelectMode = (initialId?: string) => {
+    setSelectMode(true);
+    setSelectedIds(initialId ? new Set([initialId]) : new Set());
+  };
+  const exitSelectMode = () => {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  };
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  // Reset selection when source/audience changes
+  useEffect(() => {
+    if (selectMode) exitSelectMode();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source, audience]);
+
+  // Compute whether all selected are currently muted (controls Bell vs BellOff)
+  const allSelectedMuted = useMemo(() => {
+    if (selectedIds.size === 0) return false;
+    const list =
+      source === "whatsapp"
+        ? waConversations.filter((c) => selectedIds.has(c.id))
+        : conversations.filter((c) => selectedIds.has(c.id));
+    return list.length > 0 && list.every((c) => !!(c as any).muted_at);
+  }, [selectedIds, source, conversations, waConversations]);
+
+  const handleBulkMarkRead = async () => {
+    const ids = Array.from(selectedIds);
+    if (!ids.length) return;
+    if (source === "whatsapp") await bulkMarkWaRead(ids);
+    else await bulkMarkConversationsRead(ids);
+    toast.success(`Marked ${ids.length} as read`);
+    exitSelectMode();
+  };
+
+  const handleBulkToggleMute = async () => {
+    const ids = Array.from(selectedIds);
+    if (!ids.length) return;
+    const willMute = !allSelectedMuted;
+    if (source === "whatsapp") await bulkSetWaMute(ids, willMute);
+    else await bulkSetMute(ids, willMute);
+    toast.success(
+      willMute
+        ? `Muted ${ids.length} conversation${ids.length === 1 ? "" : "s"}`
+        : `Unmuted ${ids.length} conversation${ids.length === 1 ? "" : "s"}`
+    );
+    exitSelectMode();
+  };
 
   // Auto-open conversation when ?pupil=<id> in URL
   const autoOpenPupilId = searchParams.get("pupil");
@@ -502,11 +684,14 @@ export default function InstructorUnifiedInbox() {
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <ConversationRow
+            id="__support__"
             name="EveryDriver Support"
             preview="Contact the admin team for help"
             timestamp={null}
             unreadCount={0}
             avatarSeed="EveryDriver Support"
+            selectable={false}
+            selectMode={selectMode}
             onPress={() => setShowSupport(true)}
           />
         </div>
@@ -517,11 +702,14 @@ export default function InstructorUnifiedInbox() {
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <ConversationRow
+            id="__support__"
             name="EveryDriver Support"
             preview="Tap to open admin chat"
             timestamp={null}
             unreadCount={0}
             avatarSeed="EveryDriver Support"
+            selectable={false}
+            selectMode={selectMode}
             onPress={() => setShowSupport(true)}
           />
         </div>
@@ -554,12 +742,18 @@ export default function InstructorUnifiedInbox() {
           {filteredWa.map((c) => (
             <ConversationRow
               key={c.id}
+              id={c.id}
               name={c.visitor_name || c.phone_number}
               preview={c.last_message || null}
               timestamp={c.last_message_at}
               unreadCount={c.unread_count || 0}
               avatarSeed={c.id}
+              muted={!!c.muted_at}
+              selectMode={selectMode}
+              selected={selectedIds.has(c.id)}
               onPress={() => setSelectedWa(c.id)}
+              onLongPress={() => enterSelectMode(c.id)}
+              onToggleSelect={() => toggleSelected(c.id)}
             />
           ))}
         </div>
@@ -595,13 +789,19 @@ export default function InstructorUnifiedInbox() {
         {filteredInApp.map((c) => (
           <ConversationRow
             key={c.id}
+            id={c.id}
             name={c.pupil?.name || "Unknown"}
             preview={c.last_message_preview}
             timestamp={c.last_message_at}
             unreadCount={c.unread_count || 0}
             avatarSeed={c.pupil_id || c.id}
             avatarUrl={c.pupil?.profile_image_url}
+            muted={!!c.muted_at}
+            selectMode={selectMode}
+            selected={selectedIds.has(c.id)}
             onPress={() => setSelectedConversation(c)}
+            onLongPress={() => enterSelectMode(c.id)}
+            onToggleSelect={() => toggleSelected(c.id)}
           />
         ))}
       </div>
@@ -611,6 +811,14 @@ export default function InstructorUnifiedInbox() {
   const showAudienceToggle = source === "in-app";
   const showBroadcastLink =
     source === "in-app" && audience === "pupils" && broadcastEnabled;
+  // "Select" link visible when there are selectable rows in the current view
+  const selectableCount =
+    source === "whatsapp"
+      ? filteredWa.length
+      : source === "in-app" && audience === "pupils"
+      ? filteredInApp.length
+      : 0;
+  const showSelectLink = !selectMode && selectableCount > 0;
 
   return (
     <InstructorPortalLayout>
@@ -625,76 +833,160 @@ export default function InstructorUnifiedInbox() {
           fontFamily: FONT_STACK,
         }}
       >
-        {/* Hero card */}
-        <div
-          style={{
-            background: CARD_BG,
-            borderRadius: 12,
-            padding: 16,
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-          }}
-        >
+        {/* Hero card / Bulk action bar */}
+        {selectMode ? (
           <div
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: 10,
-              background: AMBER_TINT,
+              background: CARD_BG,
+              borderRadius: 12,
+              padding: "10px 12px",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
+              gap: 8,
             }}
           >
-            <MessageSquare size={22} strokeWidth={2} color={AMBER} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p
+            <button
+              type="button"
+              onClick={exitSelectMode}
               style={{
-                fontSize: 11,
-                fontWeight: 500,
-                color: MUTED,
-                letterSpacing: "0.3px",
-                textTransform: "uppercase",
-                margin: "0 0 1px",
+                background: "transparent",
+                border: "none",
+                padding: "6px 8px",
+                color: BLUE,
+                fontSize: 14,
+                fontWeight: 400,
+                cursor: "pointer",
               }}
             >
-              Messages
-            </p>
-            <h1
+              Cancel
+            </button>
+            <span
               style={{
-                fontSize: 17,
+                flex: 1,
+                textAlign: "center",
+                fontSize: 14,
                 fontWeight: 500,
                 color: TEXT,
-                letterSpacing: "-0.3px",
-                margin: 0,
               }}
             >
-              Inbox
-            </h1>
+              {selectedIds.size} selected
+            </span>
+            <button
+              type="button"
+              onClick={handleBulkMarkRead}
+              disabled={selectedIds.size === 0}
+              aria-label="Mark as read"
+              title="Mark as read"
+              style={{
+                background: "transparent",
+                border: "none",
+                padding: 8,
+                cursor: selectedIds.size === 0 ? "not-allowed" : "pointer",
+                opacity: selectedIds.size === 0 ? 0.4 : 1,
+                color: BLUE,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <CheckCheck size={20} strokeWidth={1.8} />
+            </button>
+            <button
+              type="button"
+              onClick={handleBulkToggleMute}
+              disabled={selectedIds.size === 0}
+              aria-label={allSelectedMuted ? "Unmute" : "Mute"}
+              title={allSelectedMuted ? "Unmute" : "Mute"}
+              style={{
+                background: "transparent",
+                border: "none",
+                padding: 8,
+                cursor: selectedIds.size === 0 ? "not-allowed" : "pointer",
+                opacity: selectedIds.size === 0 ? 0.4 : 1,
+                color: BLUE,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {allSelectedMuted ? (
+                <Bell size={20} strokeWidth={1.8} />
+              ) : (
+                <BellOff size={20} strokeWidth={1.8} />
+              )}
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowNewChat(true)}
+        ) : (
+          <div
             style={{
-              background: BLUE,
-              border: "none",
-              borderRadius: 10,
-              padding: "8px 12px",
+              background: CARD_BG,
+              borderRadius: 12,
+              padding: 16,
               display: "flex",
               alignItems: "center",
-              gap: 5,
-              cursor: "pointer",
-              flexShrink: 0,
-              color: "#FFFFFF",
+              gap: 12,
             }}
           >
-            <Plus size={13} strokeWidth={2} strokeLinecap="round" />
-            <span style={{ fontSize: 13, fontWeight: 500 }}>New</span>
-          </button>
-        </div>
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 10,
+                background: AMBER_TINT,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <MessageSquare size={22} strokeWidth={2} color={AMBER} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: MUTED,
+                  letterSpacing: "0.3px",
+                  textTransform: "uppercase",
+                  margin: "0 0 1px",
+                }}
+              >
+                Messages
+              </p>
+              <h1
+                style={{
+                  fontSize: 17,
+                  fontWeight: 500,
+                  color: TEXT,
+                  letterSpacing: "-0.3px",
+                  margin: 0,
+                }}
+              >
+                Inbox
+              </h1>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowNewChat(true)}
+              style={{
+                background: BLUE,
+                border: "none",
+                borderRadius: 10,
+                padding: "8px 12px",
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                cursor: "pointer",
+                flexShrink: 0,
+                color: "#FFFFFF",
+              }}
+            >
+              <Plus size={13} strokeWidth={2} strokeLinecap="round" />
+              <span style={{ fontSize: 13, fontWeight: 500 }}>New</span>
+            </button>
+          </div>
+        )}
 
         {/* Main content card */}
         <div
@@ -824,25 +1116,44 @@ export default function InstructorUnifiedInbox() {
             }}
           >
             <EyebrowLabel className="!m-0">Conversations</EyebrowLabel>
-            {showBroadcastLink && (
-              <button
-                type="button"
-                onClick={() => setShowBroadcast(true)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  padding: 0,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 4,
-                  cursor: "pointer",
-                  color: BLUE,
-                }}
-              >
-                <Megaphone size={12} strokeWidth={1.8} />
-                <span style={{ fontSize: 12, fontWeight: 500 }}>Broadcast</span>
-              </button>
-            )}
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 14 }}>
+              {showBroadcastLink && (
+                <button
+                  type="button"
+                  onClick={() => setShowBroadcast(true)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    padding: 0,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    cursor: "pointer",
+                    color: BLUE,
+                  }}
+                >
+                  <Megaphone size={12} strokeWidth={1.8} />
+                  <span style={{ fontSize: 12, fontWeight: 500 }}>Broadcast</span>
+                </button>
+              )}
+              {showSelectLink && (
+                <button
+                  type="button"
+                  onClick={() => enterSelectMode()}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    color: BLUE,
+                    fontSize: 12,
+                    fontWeight: 500,
+                  }}
+                >
+                  Select
+                </button>
+              )}
+            </span>
           </div>
 
           {/* List */}

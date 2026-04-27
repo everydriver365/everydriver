@@ -1726,6 +1726,7 @@ export type Database = {
           instructor_id: string
           last_message_at: string | null
           last_message_preview: string | null
+          muted_at: string | null
           pupil_id: string
         }
         Insert: {
@@ -1734,6 +1735,7 @@ export type Database = {
           instructor_id: string
           last_message_at?: string | null
           last_message_preview?: string | null
+          muted_at?: string | null
           pupil_id: string
         }
         Update: {
@@ -1742,6 +1744,7 @@ export type Database = {
           instructor_id?: string
           last_message_at?: string | null
           last_message_preview?: string | null
+          muted_at?: string | null
           pupil_id?: string
         }
         Relationships: [
@@ -7843,6 +7846,7 @@ export type Database = {
           square_refresh_token_encrypted: string | null
           square_token_expires_at: string | null
           stripe_account_id: string | null
+          support_chat_muted_at: string | null
           tax_code: string | null
           tracking_mode: string
           truelayer_enabled: boolean | null
@@ -8002,6 +8006,7 @@ export type Database = {
           square_refresh_token_encrypted?: string | null
           square_token_expires_at?: string | null
           stripe_account_id?: string | null
+          support_chat_muted_at?: string | null
           tax_code?: string | null
           tracking_mode?: string
           truelayer_enabled?: boolean | null
@@ -8161,6 +8166,7 @@ export type Database = {
           square_refresh_token_encrypted?: string | null
           square_token_expires_at?: string | null
           stripe_account_id?: string | null
+          support_chat_muted_at?: string | null
           tax_code?: string | null
           tracking_mode?: string
           truelayer_enabled?: boolean | null
@@ -16342,6 +16348,7 @@ export type Database = {
           id: string
           instructor_id: string | null
           last_message_at: string | null
+          muted_at: string | null
           phone_number: string
           pupil_id: string | null
           visitor_name: string | null
@@ -16352,6 +16359,7 @@ export type Database = {
           id?: string
           instructor_id?: string | null
           last_message_at?: string | null
+          muted_at?: string | null
           phone_number: string
           pupil_id?: string | null
           visitor_name?: string | null
@@ -16362,6 +16370,7 @@ export type Database = {
           id?: string
           instructor_id?: string | null
           last_message_at?: string | null
+          muted_at?: string | null
           phone_number?: string
           pupil_id?: string | null
           visitor_name?: string | null
@@ -16401,6 +16410,7 @@ export type Database = {
           media_mime: string | null
           media_type: string | null
           media_url: string | null
+          read_at: string | null
           sender_type: string
         }
         Insert: {
@@ -16413,6 +16423,7 @@ export type Database = {
           media_mime?: string | null
           media_type?: string | null
           media_url?: string | null
+          read_at?: string | null
           sender_type?: string
         }
         Update: {
@@ -16425,6 +16436,7 @@ export type Database = {
           media_mime?: string | null
           media_type?: string | null
           media_url?: string | null
+          read_at?: string | null
           sender_type?: string
         }
         Relationships: [
