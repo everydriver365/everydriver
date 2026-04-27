@@ -428,16 +428,82 @@ export default function InstructorUnifiedInbox() {
     loading: convLoading,
     getOrCreateConversation,
     fetchConversations,
+    bulkMarkConversationsRead,
+    bulkSetMute,
   } = useMessaging(instructorId);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
 
   // WhatsApp
-  const { conversations: waConversations, isLoading: waLoading } =
-    useWhatsAppConversations(instructorId);
+  const {
+    conversations: waConversations,
+    isLoading: waLoading,
+    bulkMarkWaRead,
+    bulkSetWaMute,
+  } = useWhatsAppConversations(instructorId);
   const [selectedWa, setSelectedWa] = useState<string | null>(null);
 
   // Support / Admin
   const [showSupport, setShowSupport] = useState(false);
+
+  // Bulk select state
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const enterSelectMode = (initialId?: string) => {
+    setSelectMode(true);
+    setSelectedIds(initialId ? new Set([initialId]) : new Set());
+  };
+  const exitSelectMode = () => {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  };
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  // Reset selection when source/audience changes
+  useEffect(() => {
+    if (selectMode) exitSelectMode();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source, audience]);
+
+  // Compute whether all selected are currently muted (controls Bell vs BellOff)
+  const allSelectedMuted = useMemo(() => {
+    if (selectedIds.size === 0) return false;
+    const list =
+      source === "whatsapp"
+        ? waConversations.filter((c) => selectedIds.has(c.id))
+        : conversations.filter((c) => selectedIds.has(c.id));
+    return list.length > 0 && list.every((c) => !!(c as any).muted_at);
+  }, [selectedIds, source, conversations, waConversations]);
+
+  const handleBulkMarkRead = async () => {
+    const ids = Array.from(selectedIds);
+    if (!ids.length) return;
+    if (source === "whatsapp") await bulkMarkWaRead(ids);
+    else await bulkMarkConversationsRead(ids);
+    toast.success(`Marked ${ids.length} as read`);
+    exitSelectMode();
+  };
+
+  const handleBulkToggleMute = async () => {
+    const ids = Array.from(selectedIds);
+    if (!ids.length) return;
+    const willMute = !allSelectedMuted;
+    if (source === "whatsapp") await bulkSetWaMute(ids, willMute);
+    else await bulkSetMute(ids, willMute);
+    toast.success(
+      willMute
+        ? `Muted ${ids.length} conversation${ids.length === 1 ? "" : "s"}`
+        : `Unmuted ${ids.length} conversation${ids.length === 1 ? "" : "s"}`
+    );
+    exitSelectMode();
+  };
 
   // Auto-open conversation when ?pupil=<id> in URL
   const autoOpenPupilId = searchParams.get("pupil");
