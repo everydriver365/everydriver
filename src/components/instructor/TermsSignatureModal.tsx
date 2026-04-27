@@ -477,9 +477,18 @@ export function TermsSignatureModal({
     && terms.content.trim().toLowerCase() !== "terms and conds";
 
   const handleCancel = () => {
-    if (signatureDataUrl || parentSignatureDataUrl) {
-      if (!window.confirm("Discard signed agreement?")) return;
+    const hadSignature = !!(signatureDataUrl || parentSignatureDataUrl);
+    if (hadSignature) {
+      if (!window.confirm("Discard signed agreement?")) {
+        logLegal("cancel_aborted", { had_signature: true });
+        return;
+      }
     }
+    logLegal("cancelled", {
+      had_signature: hadSignature,
+      had_agreement: agreed,
+      had_parent_agreement: parentAgreed,
+    });
     onOpenChange(false);
   };
 
