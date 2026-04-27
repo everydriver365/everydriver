@@ -34,11 +34,18 @@ interface PaymentEntry {
   payment_method: string | null;
   notes: string | null;
   lesson_id?: string | null;
-  scheduled_lessons?: { lesson_date: string; start_time: string | null } | null;
+  scheduled_lessons?: {
+    lesson_date: string;
+    start_time: string | null;
+    pickup_postcode: string | null;
+    pickup_location: string | null;
+    lesson_type: string | null;
+  } | null;
 }
 
 type DatePreset = "all" | "7d" | "30d" | "90d" | "year";
 type LinkFilter = "all" | "linked" | "unlinked";
+type WeekdayFilter = "all" | "0" | "1" | "2" | "3" | "4" | "5" | "6";
 
 function getPaymentIcon(_method: string | null, amount: number) {
   if (amount > 0) return ArrowDownCircle;
