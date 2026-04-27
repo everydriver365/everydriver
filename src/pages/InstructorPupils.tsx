@@ -72,6 +72,7 @@ import { TestResultsHistory, DrivingTestReportForm } from "@/components/instruct
 import { useActiveTrackingPupils } from "@/hooks/useActiveTrackingPupils";
 import { NextLessonTile } from "@/components/instructor/NextLessonTile";
 import { PupilAvatarUpload } from "@/components/instructor/PupilAvatarUpload";
+import { EditPupilSheet } from "@/components/instructor/EditPupilSheet";
 import { PupilProgressReportGenerator } from "@/components/instructor/PupilProgressReportGenerator";
 import { PupilPackageCard } from "@/components/instructor/PupilPackageCard";
 import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
