@@ -1099,6 +1099,7 @@ function SessionsTab({
                     <span>{distLabel}</span>
                   </div>
                 </div>
+                {sessionScore !== null && <ScoreBadge score={sessionScore} />}
                 <ChevronRight size={12} strokeWidth={1.6} color="#6E6E73" />
               </button>
             );
