@@ -992,10 +992,10 @@ export function PupilCardStack({
                       </span>
                     )}
                   </div>
-                  <h2 className="mt-3" style={{ fontSize: 20, fontWeight: 600, color: "#0F1B2D", letterSpacing: -0.2 }}>
+                  <h2 className="mt-3" style={{ fontSize: 18, fontWeight: 500, color: "#000000", letterSpacing: -0.3 }}>
                     {displayName}
                   </h2>
-                  <p className="mt-1" style={{ fontSize: 13, color: "#6E6E73" }}>
+                  <p className="mt-1" style={{ fontSize: 12, color: "#6E6E73" }}>
                     Pupil since {format(parseISO(pupil.created_at), "MMMM yyyy")}
                   </p>
 
