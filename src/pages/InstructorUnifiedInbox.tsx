@@ -684,11 +684,14 @@ export default function InstructorUnifiedInbox() {
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <ConversationRow
+            id="__support__"
             name="EveryDriver Support"
             preview="Contact the admin team for help"
             timestamp={null}
             unreadCount={0}
             avatarSeed="EveryDriver Support"
+            selectable={false}
+            selectMode={selectMode}
             onPress={() => setShowSupport(true)}
           />
         </div>
@@ -699,11 +702,14 @@ export default function InstructorUnifiedInbox() {
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <ConversationRow
+            id="__support__"
             name="EveryDriver Support"
             preview="Tap to open admin chat"
             timestamp={null}
             unreadCount={0}
             avatarSeed="EveryDriver Support"
+            selectable={false}
+            selectMode={selectMode}
             onPress={() => setShowSupport(true)}
           />
         </div>
@@ -736,12 +742,18 @@ export default function InstructorUnifiedInbox() {
           {filteredWa.map((c) => (
             <ConversationRow
               key={c.id}
+              id={c.id}
               name={c.visitor_name || c.phone_number}
               preview={c.last_message || null}
               timestamp={c.last_message_at}
               unreadCount={c.unread_count || 0}
               avatarSeed={c.id}
+              muted={!!c.muted_at}
+              selectMode={selectMode}
+              selected={selectedIds.has(c.id)}
               onPress={() => setSelectedWa(c.id)}
+              onLongPress={() => enterSelectMode(c.id)}
+              onToggleSelect={() => toggleSelected(c.id)}
             />
           ))}
         </div>
@@ -777,13 +789,19 @@ export default function InstructorUnifiedInbox() {
         {filteredInApp.map((c) => (
           <ConversationRow
             key={c.id}
+            id={c.id}
             name={c.pupil?.name || "Unknown"}
             preview={c.last_message_preview}
             timestamp={c.last_message_at}
             unreadCount={c.unread_count || 0}
             avatarSeed={c.pupil_id || c.id}
             avatarUrl={c.pupil?.profile_image_url}
+            muted={!!c.muted_at}
+            selectMode={selectMode}
+            selected={selectedIds.has(c.id)}
             onPress={() => setSelectedConversation(c)}
+            onLongPress={() => enterSelectMode(c.id)}
+            onToggleSelect={() => toggleSelected(c.id)}
           />
         ))}
       </div>
