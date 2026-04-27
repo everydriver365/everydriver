@@ -50,9 +50,11 @@ export function PupilPaymentFeed({ pupilId, brandColour, currentBalance }: Pupil
 
   const fetchPayments = async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from("payment_history")
-      .select("id, amount, recorded_at, payment_method, notes")
+      .select(
+        "id, amount, recorded_at, payment_method, notes, lesson_id, scheduled_lessons:lesson_id(lesson_date, start_time)"
+      )
       .eq("pupil_id", pupilId)
       .order("recorded_at", { ascending: false })
       .limit(100);
