@@ -54,6 +54,7 @@ interface GPSPoint {
 
 interface DrivingEvent {
   id: string;
+  telematics_id: string | null;
   event_type: string;
   severity: string;
   latitude: number | null;
