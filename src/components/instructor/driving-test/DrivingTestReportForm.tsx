@@ -359,116 +359,336 @@ export function DrivingTestReportForm({
     }
   };
 
+  const requiredMissing =
+    !testDate || !testCentreId || !catType || (!isMock && (!testTime || !examinerId));
+  const headerSaveDisabled = saving || loading || requiredMissing;
+
+  const formattedDate = (() => {
+    try {
+      return testDate ? format(parseISO(testDate), "d MMM yyyy") : null;
+    } catch {
+      return testDate || null;
+    }
+  })();
+
+  const handleModeChange = (next: "real" | "mock") => {
+    const wantMock = next === "mock";
+    if (wantMock === isMock) return;
+    // Preserve any entered data; just confirm the switch when there is data.
+    const hasEntries =
+      !!testTime ||
+      !!testCentreId ||
+      !!examinerId ||
+      !!applicationRef ||
+      !!notes ||
+      !!adiCertNo ||
+      !!etaCode ||
+      !!debriefCode;
+    if (hasEntries) {
+      const ok = window.confirm(
+        wantMock
+          ? "Switch to Mock test? Your entries will be kept."
+          : "Switch to Real test? Your entries will be kept.",
+      );
+      if (!ok) return;
+    }
+    setIsMock(wantMock);
+  };
+
+  const centreName =
+    testCentres.find((c) => c.id === testCentreId)?.name ?? null;
+
+  const titlePupilName = titleCaseName(pupilName);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl w-[calc(100vw-1rem)] max-h-[90vh] overflow-y-auto overflow-x-hidden p-3 sm:p-6">
-        <DialogHeader>
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <DialogTitle className="flex items-center gap-2">
-                {isMock ? (
-                  <ClipboardList className="h-5 w-5 text-primary" />
-                ) : (
-                  <FileText className="h-5 w-5 text-primary" />
-                )}
-                Driving Test Report (DL25A)
-              </DialogTitle>
-              <DialogDescription className="truncate">{pupilName}</DialogDescription>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <Label htmlFor="mock" className="text-sm">
-                Mock
-              </Label>
-              <Switch id="mock" checked={isMock} onCheckedChange={setIsMock} />
-            </div>
+      <DialogContent className="max-w-6xl w-[calc(100vw-1rem)] max-h-[90vh] overflow-y-auto overflow-x-hidden p-0 gap-0 bg-white rounded-2xl">
+        {/* Header bar — Cancel / Title block / Save */}
+        <div
+          style={{
+            padding: "12px 16px",
+            borderBottom: "0.5px solid #E5E5EA",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            background: "#FFFFFF",
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            style={{
+              background: "transparent",
+              border: 0,
+              padding: 4,
+              flexShrink: 0,
+              fontSize: 14,
+              fontWeight: 500,
+              color: "#2B7BC8",
+              cursor: "pointer",
+            }}
+          >
+            Cancel
+          </button>
+          <div style={{ flex: 1, minWidth: 0, textAlign: "center" }}>
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: "#6E6E73",
+                letterSpacing: "0.3px",
+                textTransform: "uppercase",
+                margin: "0 0 1px",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {titlePupilName}
+            </p>
+            <p
+              style={{
+                fontSize: 15,
+                fontWeight: 500,
+                color: "#000000",
+                letterSpacing: "-0.2px",
+                margin: 0,
+              }}
+            >
+              Test report (DL25A)
+            </p>
           </div>
-        </DialogHeader>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={headerSaveDisabled}
+            style={{
+              background: "transparent",
+              border: 0,
+              padding: 4,
+              flexShrink: 0,
+              fontSize: 14,
+              fontWeight: 500,
+              color: "#2B7BC8",
+              cursor: headerSaveDisabled ? "not-allowed" : "pointer",
+              opacity: headerSaveDisabled ? 0.4 : 1,
+            }}
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
+
+        {/* Mock vs Real banner */}
+        <ModeBanner
+          mode={isMock ? "mock" : "real"}
+          onChange={handleModeChange}
+        />
 
         {loading ? (
           <div className="flex items-center justify-center py-10">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-6 p-4">
             {/* Meta */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>Test date</Label>
-                <Input type="date" value={testDate} onChange={(e) => setTestDate(e.target.value)} />
+            <div className="flex flex-col gap-[14px]">
+              {/* Test date + Time row */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="relative">
+                  <FormInputCard
+                    icon={<CalendarDays size={16} strokeWidth={1.8} />}
+                    topLabel="Test date"
+                    value={formattedDate}
+                    placeholder="Pick date"
+                    asDiv
+                  />
+                  <input
+                    type="date"
+                    value={testDate}
+                    onChange={(e) => setTestDate(e.target.value)}
+                    aria-label="Test date"
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      top: 18,
+                      width: "100%",
+                      height: "calc(100% - 18px)",
+                      opacity: 0,
+                      cursor: "pointer",
+                      border: 0,
+                      padding: 0,
+                      background: "transparent",
+                    }}
+                  />
+                </div>
+                <div className="relative">
+                  <FormInputCard
+                    icon={<Clock size={16} strokeWidth={1.8} />}
+                    topLabel="Time"
+                    value={testTime || null}
+                    placeholder="Pick time"
+                    asDiv
+                  />
+                  <input
+                    type="time"
+                    value={testTime}
+                    onChange={(e) => setTestTime(e.target.value)}
+                    aria-label="Time"
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      top: 18,
+                      width: "100%",
+                      height: "calc(100% - 18px)",
+                      opacity: 0,
+                      cursor: "pointer",
+                      border: 0,
+                      padding: 0,
+                      background: "transparent",
+                    }}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label>Time</Label>
-                <Input type="time" value={testTime} onChange={(e) => setTestTime(e.target.value)} />
+
+              {/* Test centre */}
+              <div>
+                <EyebrowLabel>Test centre</EyebrowLabel>
+                <TestCentrePicker
+                  selectedId={testCentreId || null}
+                  selectedName={centreName}
+                  onSelect={(c) => {
+                    if (c.id !== testCentreId && examinerId) {
+                      // Cascading reset — examiner may not belong to the new centre.
+                      setExaminerId("");
+                      toast({
+                        title: "Examiner cleared",
+                        description: `Pick again for ${c.name}.`,
+                      });
+                    }
+                    setTestCentreId(c.id);
+                    setTestCentres((prev) =>
+                      prev.some((p) => p.id === c.id)
+                        ? prev
+                        : [...prev, { id: c.id, name: c.name }],
+                    );
+                  }}
+                />
               </div>
+
+              {/* Examiner — cascades from Test centre */}
+              <div>
+                <EyebrowLabel>Examiner</EyebrowLabel>
+                <ExaminerPicker
+                  value={examinerId}
+                  onChange={setExaminerId}
+                  instructorId={instructor?.id || ""}
+                  testCentreId={testCentreId || null}
+                />
+              </div>
+
+              {/* Application ref */}
               {!isMock && (
-                <div className="space-y-2">
-                  <Label>Test centre</Label>
-                  <Select value={testCentreId} onValueChange={setTestCentreId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select test centre" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {testCentres.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div>
+                  <EyebrowLabel>
+                    Application ref
+                    <span style={{ color: "#C7C7CC", textTransform: "none", letterSpacing: 0 }}>
+                      {" "}— optional
+                    </span>
+                  </EyebrowLabel>
+                  <div
+                    style={{
+                      background: "#FFFFFF",
+                      border: "0.5px solid #E5E5EA",
+                      borderRadius: 10,
+                      padding: "11px 14px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <input
+                      value={applicationRef}
+                      onChange={(e) => setApplicationRef(e.target.value)}
+                      placeholder="XXXXXX-XX-XXXXXX"
+                      aria-label="Application reference"
+                      style={{
+                        flex: 1,
+                        background: "transparent",
+                        border: 0,
+                        outline: "none",
+                        padding: 0,
+                        fontSize: 14,
+                        fontFamily:
+                          'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
+                        color: "#000000",
+                        letterSpacing: 1,
+                      }}
+                    />
+                  </div>
+                  <p
+                    style={{
+                      fontSize: 11,
+                      color: "#6E6E73",
+                      margin: "6px 0 0",
+                      paddingLeft: 2,
+                    }}
+                  >
+                    Find this on the booking confirmation
+                  </p>
                 </div>
               )}
+
+              {/* Vehicle category — segmented control */}
+              <div>
+                <EyebrowLabel>Vehicle category</EyebrowLabel>
+                <SegmentedControl
+                  value={catType}
+                  onChange={(v) => setCatType(v)}
+                  options={[
+                    { value: "Manual", label: "Manual" },
+                    { value: "Auto", label: "Automatic" },
+                  ]}
+                  ariaLabel="Vehicle category"
+                />
+              </div>
+
               {!isMock && (
-                <div className="space-y-2 md:col-span-2">
-                  <Label>Examiner</Label>
-                  <ExaminerSelector
-                    value={examinerId}
-                    onChange={setExaminerId}
-                    instructorId={instructor?.id || ""}
+                <div>
+                  <EyebrowLabel>ADI cert no.</EyebrowLabel>
+                  <Input
+                    value={adiCertNo}
+                    onChange={(e) => setAdiCertNo(e.target.value)}
                   />
                 </div>
               )}
               {!isMock && (
-                <div className="space-y-2">
-                  <Label>Application ref</Label>
-                  <Input value={applicationRef} onChange={(e) => setApplicationRef(e.target.value)} />
-                </div>
-              )}
-              <div className="space-y-2">
-                <Label>Category</Label>
-                <Select value={catType} onValueChange={setCatType}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Manual">Manual</SelectItem>
-                    <SelectItem value="Auto">Auto</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {!isMock && (
-                <div className="space-y-2">
-                  <Label>ADI cert no.</Label>
-                  <Input value={adiCertNo} onChange={(e) => setAdiCertNo(e.target.value)} />
+                <div>
+                  <EyebrowLabel>ETA code</EyebrowLabel>
+                  <Input
+                    value={etaCode}
+                    onChange={(e) => setEtaCode(e.target.value)}
+                  />
                 </div>
               )}
               {!isMock && (
-                <div className="space-y-2">
-                  <Label>ETA code</Label>
-                  <Input value={etaCode} onChange={(e) => setEtaCode(e.target.value)} />
+                <div>
+                  <EyebrowLabel>Debrief / activity code</EyebrowLabel>
+                  <Input
+                    value={debriefCode}
+                    onChange={(e) => setDebriefCode(e.target.value)}
+                  />
                 </div>
               )}
-              {!isMock && (
-                <div className="space-y-2">
-                  <Label>Debrief / activity code</Label>
-                  <Input value={debriefCode} onChange={(e) => setDebriefCode(e.target.value)} />
-                </div>
-              )}
-              <div className="space-y-2 md:col-span-3">
-                <Label>Notes</Label>
-                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
+              <div>
+                <EyebrowLabel>Notes</EyebrowLabel>
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                />
               </div>
             </div>
+
 
             <Separator />
 
