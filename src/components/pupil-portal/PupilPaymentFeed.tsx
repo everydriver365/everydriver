@@ -263,6 +263,25 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
           </Select>
         </div>
 
+        <Select
+          value={weekday}
+          onValueChange={(v) => setWeekday(v as WeekdayFilter)}
+        >
+          <SelectTrigger className="h-9 text-xs w-full" aria-label="Lesson day">
+            <SelectValue placeholder="Lesson day" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Any lesson day</SelectItem>
+            <SelectItem value="1">Monday lessons</SelectItem>
+            <SelectItem value="2">Tuesday lessons</SelectItem>
+            <SelectItem value="3">Wednesday lessons</SelectItem>
+            <SelectItem value="4">Thursday lessons</SelectItem>
+            <SelectItem value="5">Friday lessons</SelectItem>
+            <SelectItem value="6">Saturday lessons</SelectItem>
+            <SelectItem value="0">Sunday lessons</SelectItem>
+          </SelectContent>
+        </Select>
+
         <div className="flex items-center justify-between gap-2">
           {filtersActive ? (
             <button
@@ -271,6 +290,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
                 setSearch("");
                 setDatePreset("all");
                 setLinkFilter("all");
+                setWeekday("all");
               }}
               className="text-[11px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
             >
