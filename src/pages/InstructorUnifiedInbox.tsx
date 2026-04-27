@@ -407,6 +407,33 @@ function WhatsAppGlyph({ size = 13, color }: { size?: number; color: string }) {
   );
 }
 
+// Compact unread pill shown next to a source-tab label
+function TabCountPill({ count, active }: { count: number; active: boolean }) {
+  if (!count || count <= 0) return null;
+  const display = count >= 10 ? "9+" : String(count);
+  return (
+    <span
+      style={{
+        marginLeft: 4,
+        minWidth: 16,
+        height: 16,
+        padding: "0 5px",
+        borderRadius: 999,
+        background: active ? "#FFFFFF" : RED,
+        color: active ? BLUE : "#FFFFFF",
+        fontSize: 10,
+        fontWeight: 600,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        lineHeight: 1,
+      }}
+    >
+      {display}
+    </span>
+  );
+}
+
 export default function InstructorUnifiedInbox() {
   const navigate = useNavigate();
   const { instructor, loading: authLoading } = useInstructorAuth();
