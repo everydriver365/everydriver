@@ -63,15 +63,42 @@ function getPaymentColor(amount: number) {
   return amount > 0 ? "text-emerald-500" : "text-red-500";
 }
 
-function groupByMonth(entries: PaymentEntry[]) {
-  const groups: Record<string, PaymentEntry[]> = {};
-  entries.forEach((e) => {
-    const date = parseISO(e.recorded_at);
-    const key = format(date, "MMMM yyyy");
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(e);
+type EntryWithBalance = PaymentEntry & { runningBalance: number };
+
+function computeRunningBalances(entries: PaymentEntry[]): EntryWithBalance[] {
+  // entries are newest-first. Walk oldest→newest to accumulate, then preserve original order.
+  const oldestFirst = [...entries].sort(
+    (a, b) => parseISO(a.recorded_at).getTime() - parseISO(b.recorded_at).getTime()
+  );
+  let bal = 0;
+  const balanceById = new Map<string, number>();
+  oldestFirst.forEach((e) => {
+    bal += e.amount;
+    balanceById.set(e.id, bal);
   });
-  return groups;
+  return entries.map((e) => ({ ...e, runningBalance: balanceById.get(e.id) ?? 0 }));
+}
+
+interface MonthGroup {
+  key: string;
+  entries: EntryWithBalance[];
+  paidTotal: number;
+  lessonCount: number;
+}
+
+function groupByMonth(entries: EntryWithBalance[]): MonthGroup[] {
+  const map = new Map<string, EntryWithBalance[]>();
+  entries.forEach((e) => {
+    const key = format(parseISO(e.recorded_at), "MMMM yyyy");
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(e);
+  });
+  return Array.from(map.entries()).map(([key, items]) => ({
+    key,
+    entries: items,
+    paidTotal: items.filter((i) => i.amount > 0).reduce((s, i) => s + i.amount, 0),
+    lessonCount: items.filter((i) => !!i.lesson_id).length,
+  }));
 }
 
 function presetToInterval(preset: DatePreset): { start: Date; end: Date } | null {
