@@ -197,7 +197,9 @@ export function TermsSignatureModal({
         parentSigUrl = await uploadSignature(parentSignatureDataUrl, "parent");
       }
 
-      // Create signature record
+      // Create signature record — snapshot the exact terms text/version/title
+      // signed at this moment so future edits to the source T&Cs never
+      // retroactively change what the pupil agreed to.
       const { error: insertError } = await supabase
         .from("pupil_signatures")
         .insert({
@@ -210,6 +212,9 @@ export function TermsSignatureModal({
           parent_name: isUnder18 ? parentName.trim() : null,
           parent_signature_url: parentSigUrl,
           parent_signed_at: isUnder18 && parentSigUrl ? new Date().toISOString() : null,
+          terms_content_snapshot: terms.content,
+          terms_version_snapshot: terms.version,
+          terms_title_snapshot: terms.title,
         });
 
       if (insertError) throw insertError;
