@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { format, formatDistanceToNowStrict, isThisWeek, isYesterday, isToday, differenceInDays } from "date-fns";
 import {
@@ -8,6 +8,10 @@ import {
   Loader2,
   Mic,
   Search as SearchIcon,
+  CheckCheck,
+  Bell,
+  BellOff,
+  Check,
 } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
