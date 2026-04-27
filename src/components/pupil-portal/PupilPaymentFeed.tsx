@@ -16,6 +16,8 @@ interface PaymentEntry {
   recorded_at: string;
   payment_method: string | null;
   notes: string | null;
+  lesson_id?: string | null;
+  scheduled_lessons?: { lesson_date: string; start_time: string | null } | null;
 }
 
 function getPaymentIcon(method: string | null, amount: number) {
