@@ -12305,7 +12305,10 @@ export type Database = {
           requires_parent_signature: boolean | null
           signature_url: string
           signed_at: string
+          terms_content_snapshot: string | null
           terms_id: string
+          terms_title_snapshot: string | null
+          terms_version_snapshot: number | null
           user_agent: string | null
         }
         Insert: {
@@ -12320,7 +12323,10 @@ export type Database = {
           requires_parent_signature?: boolean | null
           signature_url: string
           signed_at?: string
+          terms_content_snapshot?: string | null
           terms_id: string
+          terms_title_snapshot?: string | null
+          terms_version_snapshot?: number | null
           user_agent?: string | null
         }
         Update: {
@@ -12335,7 +12341,10 @@ export type Database = {
           requires_parent_signature?: boolean | null
           signature_url?: string
           signed_at?: string
+          terms_content_snapshot?: string | null
           terms_id?: string
+          terms_title_snapshot?: string | null
+          terms_version_snapshot?: number | null
           user_agent?: string | null
         }
         Relationships: [
