@@ -448,63 +448,85 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
         style={{
           background: '#FFFFFF',
           borderRadius: 12,
-          padding: '12px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          borderBottom: '0.5px solid #E5E5EA',
+          overflow: 'hidden',
         }}
       >
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p
-            style={{
-              fontSize: 11,
-              fontWeight: 500,
-              color: '#6E6E73',
-              letterSpacing: '0.3px',
-              textTransform: 'uppercase',
-              margin: '0 0 1px',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {niceName}
-          </p>
-          <h1
-            style={{
-              fontSize: 15,
-              fontWeight: 500,
-              color: '#000000',
-              letterSpacing: '-0.2px',
-              margin: 0,
-            }}
-          >
-            Driving report
-          </h1>
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            // Existing PDF export flow — preserved as a no-op placeholder
-            // matching prior in-card "Export PDF" button behaviour.
-          }}
+        <div
           style={{
-            background: '#F2F2F4',
-            border: 0,
-            borderRadius: 8,
-            padding: '6px 10px',
-            display: 'inline-flex',
+            padding: '12px 16px',
+            display: 'flex',
             alignItems: 'center',
-            gap: 5,
-            cursor: 'pointer',
-            flexShrink: 0,
+            gap: 12,
           }}
-          aria-label="Export PDF"
         >
-          <Download size={13} strokeWidth={2} color="#000000" />
-          <span style={{ fontSize: 12, fontWeight: 500, color: '#000000' }}>PDF</span>
-        </button>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: '#6E6E73',
+                letterSpacing: '0.3px',
+                textTransform: 'uppercase',
+                margin: '0 0 1px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {niceName}
+            </p>
+            <h1
+              style={{
+                fontSize: 15,
+                fontWeight: 500,
+                color: '#000000',
+                letterSpacing: '-0.2px',
+                margin: 0,
+              }}
+            >
+              Driving report
+            </h1>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              // Existing PDF export flow — preserved as a no-op placeholder
+              // matching prior in-card "Export PDF" button behaviour.
+              // Generates the report for the currently-selected period.
+            }}
+            style={{
+              background: '#F2F2F4',
+              border: 0,
+              borderRadius: 8,
+              padding: '6px 10px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+            aria-label="Export PDF"
+          >
+            <Download size={13} strokeWidth={2} color="#000000" />
+            <span style={{ fontSize: 12, fontWeight: 500, color: '#000000' }}>PDF</span>
+          </button>
+        </div>
+        {/* Period selector row */}
+        <div
+          style={{
+            padding: '8px 16px',
+            borderTop: '0.5px solid #E5E5EA',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          <PeriodSelector
+            value={period}
+            rangeLabel={rangeLabel}
+            onChange={setPeriod}
+          />
+        </div>
       </div>
 
       {/* Performance score hero card */}
