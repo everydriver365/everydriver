@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { z } from "zod";
 import {
   AlertTriangle,
+  CalendarDays,
   CheckCircle2,
-  ClipboardList,
-  FileText,
+  Clock,
   Loader2,
   Save,
   XCircle,
@@ -18,19 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
@@ -38,11 +26,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { triggerAutomations } from "@/utils/triggerAutomations";
+import { titleCaseName } from "@/lib/titleCase";
 
 import { CompetencySection, SectionHeader } from "./CompetencySection";
 import { FaultRow } from "./FaultRow";
-import { ExaminerSelector } from "./ExaminerSelector";
+import { ExaminerPicker } from "./ExaminerPicker";
 import { createDefaultFaults, DrivingTestFaults, FaultEntry } from "./types";
+import { EyebrowLabel } from "@/components/instructor/EyebrowLabel";
+import { FormInputCard } from "@/components/instructor/ui/FormInputCard";
+import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
+import { TestCentrePicker } from "@/components/instructor/ui/TestCentrePicker";
+import { ModeBanner } from "@/components/instructor/ui/ModeBanner";
 
 const textSchema = z
   .string()
