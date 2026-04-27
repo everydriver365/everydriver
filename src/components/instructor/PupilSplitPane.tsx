@@ -447,7 +447,7 @@ function BulkWhatsAppDialog({
   recipients: Pupil[];
   onComplete: () => void;
 }) {
-  const { data: templates = [], sendTemplate } = useWhatsAppTemplates(instructorId);
+  const { templates = [], sendTemplate } = useWhatsAppTemplates(instructorId);
   const [mode, setMode] = useState<"template" | "freeform">("template");
   const [templateName, setTemplateName] = useState<string>("");
   const [freeformBody, setFreeformBody] = useState("");
