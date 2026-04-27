@@ -1029,6 +1029,7 @@ function SessionsTab({
             const km = Number(session.total_distance_km) || 0;
             const distLabel = formatDistance(km, unit, toUnit) ?? 'Distance unavailable';
             const isActive = selectedSession?.id === session.id;
+            const sessionScore = perSessionScore(session.id, allEvents);
             return (
               <button
                 key={session.id}
