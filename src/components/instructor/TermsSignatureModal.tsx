@@ -76,6 +76,26 @@ export function TermsSignatureModal({
     ? differenceInYears(new Date(), new Date(pupilDateOfBirth)) < 18
     : false;
 
+  // Audit-trail helper — every legal step writes to data_audit_log so the
+  // signing flow is reconstructable from open → cancel/confirm.
+  const logLegal = (action: string, extra?: Record<string, unknown>) => {
+    void logAudit({
+      instructorId,
+      tableName: "pupil_signatures",
+      recordId: pupilId,
+      action: `terms_${action}`,
+      newValues: {
+        pupil_id: pupilId,
+        pupil_name: pupilName,
+        terms_id: terms?.id ?? null,
+        terms_version: terms?.version ?? null,
+        timestamp: new Date().toISOString(),
+        user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+        ...(extra ?? {}),
+      },
+    });
+  };
+
   useEffect(() => {
     if (open) {
       fetchTermsAndSignature();
@@ -87,6 +107,15 @@ export function TermsSignatureModal({
       setParentName(initialParentName || "");
     }
   }, [open, instructorId, pupilId, initialParentName]);
+
+  // Log form open once terms are loaded (so the version is included).
+  useEffect(() => {
+    if (open && !loading && terms) {
+      logLegal("opened", { has_existing_signature: !!existingSignature });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, loading, terms?.id]);
+
 
   // If the terms content doesn't overflow (no scrolling possible), auto-enable the agree checkbox.
   useEffect(() => {
