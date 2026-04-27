@@ -696,7 +696,7 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
             { value: 'heatmap', label: 'Heatmap' },
             {
               value: 'events',
-              label: allEvents.length > 0 ? `Events (${allEvents.length})` : 'Events',
+              label: periodEvents.length > 0 ? `Events (${periodEvents.length})` : 'Events',
             },
           ]}
         />
@@ -705,7 +705,8 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
       {/* Tab content */}
       {activeTab === 'sessions' && (
         <SessionsTab
-          sessions={sessions}
+          sessions={periodSessions}
+          allEvents={periodEvents}
           selectedSession={selectedSession}
           gpsPoints={gpsPoints}
           events={events}
@@ -719,36 +720,53 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
 
       {activeTab === 'brake' && (
         <CardWrap eyebrow="Brake & gear analysis">
-          {selectedSession ? (
+          {selectedSession && periodSessions.length > 0 ? (
             <PupilBrakeGearAnalysis
               telematicsId={selectedSession.id}
               sessionDate={selectedSession.started_at}
             />
           ) : (
-            <p style={{ fontSize: 13, color: '#6E6E73', margin: 0 }}>
-              Select a session from the Sessions tab to view brake &amp; gear analysis.
-            </p>
+            <TabEmptyState
+              iconBg="#FBF1DE"
+              iconFg="#B8801F"
+              icon={<Gauge size={24} strokeWidth={2} color="#B8801F" />}
+              title="No braking data yet"
+              subtitle="Track lessons to see braking and gear-change patterns"
+            />
           )}
         </CardWrap>
       )}
 
       {activeTab === 'heatmap' && (
         <CardWrap eyebrow="Skills heatmap">
-          <DrivingSkillsHeatmap
-            instructorId={instructorId}
-            pupilId={pupilId}
-            height="450px"
-          />
+          {periodSessions.length > 0 ? (
+            <DrivingSkillsHeatmap
+              instructorId={instructorId}
+              pupilId={pupilId}
+              height="450px"
+            />
+          ) : (
+            <TabEmptyState
+              iconBg="#FBEAEC"
+              iconFg="#C8434F"
+              icon={<MapPin size={24} strokeWidth={2} color="#C8434F" />}
+              title="No route data yet"
+              subtitle="Tracked lessons appear here as a route heatmap"
+            />
+          )}
         </CardWrap>
       )}
 
       {activeTab === 'events' && (
-        <CardWrap eyebrow={`All driving events · ${allEvents.length}`}>
-          {allEvents.length === 0 ? (
-            <p style={{ fontSize: 13, color: '#6E6E73', margin: 0 }}>
-              No events recorded yet.
-            </p>
-          ) : (
+        <CardWrap eyebrow={`All driving events · ${periodEvents.length}`}>
+          {periodEvents.length === 0 ? (
+            <TabEmptyState
+              iconBg="#E8F3E8"
+              iconFg="#3B8B3B"
+              icon={<CheckCheck size={24} strokeWidth={2} color="#3B8B3B" />}
+              title="No events flagged"
+              subtitle="Driving has been smooth — no notable events"
+            />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {allEvents.map((event) => (
                 <div
