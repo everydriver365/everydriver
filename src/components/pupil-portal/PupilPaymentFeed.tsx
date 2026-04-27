@@ -215,7 +215,7 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by date, lesson date, amount, notes…"
+            placeholder="Search postcode, lesson date, notes, amount…"
             className="pl-9 pr-9 h-9 text-sm"
             aria-label="Search payments"
           />
