@@ -581,11 +581,7 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
           </div>
           <button
             type="button"
-            onClick={() => {
-              // Existing PDF export flow — preserved as a no-op placeholder
-              // matching prior in-card "Export PDF" button behaviour.
-              // Generates the report for the currently-selected period.
-            }}
+            onClick={handleExportPdf}
             style={{
               background: '#F2F2F4',
               border: 0,
