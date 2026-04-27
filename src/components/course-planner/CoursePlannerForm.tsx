@@ -657,9 +657,29 @@ export function CoursePlannerForm({
         footerSticky && "pb-[calc(0.75rem+env(safe-area-inset-bottom))]",
       )}>
         {step === "form" ? (
-          <Button className="w-full bg-[#2A394F] hover:bg-[#1F2B3D] text-white" onClick={handleGenerate} disabled={generating}>
-            {generating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating…</> : <><Sparkles className="mr-2 h-4 w-4" /> Generate plan</>}
-          </Button>
+          <button
+            type="button"
+            onClick={handleGenerate}
+            disabled={generating || !testDate}
+            style={{
+              width: "100%",
+              background: "#2B7BC8",
+              border: "none",
+              borderRadius: 10,
+              padding: 14,
+              color: "#FFFFFF",
+              fontSize: 14,
+              fontWeight: 500,
+              cursor: generating || !testDate ? "not-allowed" : "pointer",
+              opacity: generating || !testDate ? 0.4 : 1,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+            }}
+          >
+            {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</> : <>Generate schedule</>}
+          </button>
         ) : result ? (
           <div className="space-y-2">
             {mode === "instructor" && instructorId && (
