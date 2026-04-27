@@ -217,6 +217,11 @@ export function PupilCardStack({
   // Syllabus sheet state
   const [showSyllabusSheet, setShowSyllabusSheet] = useState(false);
 
+  // Note sheet state
+  const [showNoteSheet, setShowNoteSheet] = useState(false);
+  const [noteOverride, setNoteOverride] = useState<string | null>(null);
+  const effectiveNotes = noteOverride !== null ? noteOverride : (pupil.notes ?? "");
+
   // Notes with lesson linking
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [noteText, setNoteText] = useState("");
