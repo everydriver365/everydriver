@@ -25,6 +25,7 @@ import { ChatWindow } from "@/components/instructor/ChatWindow";
 import { AdminChatWindow } from "@/components/instructor/AdminChatWindow";
 import { WhatsAppChat } from "@/components/instructor/WhatsAppChat";
 import { BroadcastMessageSheet } from "@/components/instructor/BroadcastMessageSheet";
+import { PupilPickerSheet } from "@/components/instructor/PupilPickerSheet";
 import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
 import { SearchInput } from "@/components/instructor/ui/SearchInput";
 import { EyebrowLabel } from "@/components/instructor/EyebrowLabel";
