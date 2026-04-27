@@ -228,19 +228,50 @@ const EYEBROW = "#6E6E73";
 export default function InstructorNotifications() {
   const navigate = useNavigate();
   const { instructor } = useInstructorAuth();
-  const { notifications, unreadCount, markAsRead, markAllAsRead, loading } =
-    useInstructorNotifications(instructor?.id);
+  const {
+    notifications,
+    snoozed,
+    unreadCount,
+    snoozedCount,
+    markAsRead,
+    markAsUnread,
+    markAllAsRead,
+    snoozeNotification,
+    unsnoozeNotification,
+    loading,
+  } = useInstructorNotifications(instructor?.id);
   const { pendingJobsCount, messageCount, swapCount } = useCombinedNotificationCount(
     instructor?.id,
   );
-  const [filter, setFilter] = useState<"all" | "unread">("all");
 
-  const filtered = useMemo(
-    () => (filter === "unread" ? notifications.filter(n => !n.is_read) : notifications),
-    [notifications, filter],
-  );
+  type FilterKey = "all" | "unread" | "test_swap" | "message" | "job" | "default" | "snoozed";
+  const [filter, setFilter] = useState<FilterKey>("all");
+
+  // Action sheets
+  const [actionFor, setActionFor] = useState<InstructorNotification | null>(null);
+  const [snoozeFor, setSnoozeFor] = useState<InstructorNotification | null>(null);
+
+  const sourceList = filter === "snoozed" ? snoozed : notifications;
+  const filtered = useMemo(() => {
+    if (filter === "snoozed" || filter === "all") return sourceList;
+    if (filter === "unread") return sourceList.filter(n => !n.is_read);
+    return sourceList.filter(n => categoryFor(n.type) === filter);
+  }, [sourceList, filter]);
 
   const list = useMemo(() => groupNotifications(filtered), [filtered]);
+
+  // Mark-all-read respects current filter (visible rows only).
+  const visibleUnreadIds = useMemo(
+    () => filtered.filter(n => !n.is_read).map(n => n.id),
+    [filtered],
+  );
+  const handleMarkAllRead = () => {
+    if (filter === "all") {
+      markAllAsRead();
+    } else {
+      visibleUnreadIds.forEach(id => markAsRead(id));
+    }
+  };
 
   const handleTapItem = (item: ListItem) => {
     if (item.kind === "single") {
