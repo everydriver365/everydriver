@@ -10739,6 +10739,7 @@ export type Database = {
           deleted_at: string | null
           id: string
           instructor_id: string
+          lesson_id: string | null
           notes: string | null
           payment_method: string | null
           payout_id: string | null
@@ -10753,6 +10754,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           instructor_id: string
+          lesson_id?: string | null
           notes?: string | null
           payment_method?: string | null
           payout_id?: string | null
@@ -10767,6 +10769,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           instructor_id?: string
+          lesson_id?: string | null
           notes?: string | null
           payment_method?: string | null
           payout_id?: string | null
@@ -10788,6 +10791,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_history_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
             referencedColumns: ["id"]
           },
           {
