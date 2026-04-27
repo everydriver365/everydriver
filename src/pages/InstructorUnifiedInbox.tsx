@@ -545,10 +545,62 @@ export default function InstructorUnifiedInbox() {
     );
   }, [waConversations, search]);
 
-  const totalUnread = conversations.reduce(
-    (sum, c) => sum + (c.unread_count || 0),
-    0
+  // Per-source unread totals (muted threads excluded so the badge reflects
+  // what the instructor actually needs to act on).
+  const inAppUnread = useMemo(
+    () =>
+      conversations.reduce(
+        (sum, c) => sum + (c.muted_at ? 0 : c.unread_count || 0),
+        0
+      ),
+    [conversations]
   );
+  const waUnread = useMemo(
+    () =>
+      waConversations.reduce(
+        (sum, c) => sum + (c.muted_at ? 0 : c.unread_count || 0),
+        0
+      ),
+    [waConversations]
+  );
+
+  // Support unread (admin -> instructor messages not yet read)
+  const [supportUnread, setSupportUnread] = useState(0);
+  useEffect(() => {
+    if (!instructorId) return;
+    let cancelled = false;
+    const fetchSupportUnread = async () => {
+      const { data: conv } = await supabase
+        .from("admin_conversations")
+        .select("id")
+        .eq("instructor_id", instructorId)
+        .maybeSingle();
+      if (!conv?.id) {
+        if (!cancelled) setSupportUnread(0);
+        return;
+      }
+      const { count } = await supabase
+        .from("admin_messages")
+        .select("*", { count: "exact", head: true })
+        .eq("conversation_id", conv.id)
+        .eq("sender_type", "admin")
+        .is("read_at", null);
+      if (!cancelled) setSupportUnread(count || 0);
+    };
+    void fetchSupportUnread();
+    const channel = supabase
+      .channel(`support-unread-${instructorId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "admin_messages" },
+        () => void fetchSupportUnread()
+      )
+      .subscribe();
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [instructorId, showSupport]);
 
   // Voice search (uses Web Speech API if available)
   const handleVoiceSearch = () => {

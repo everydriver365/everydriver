@@ -1,83 +1,38 @@
-## Bulk select, mark-as-read, and mute on the Inbox
+## Per-tab unread count pills on the inbox source tabs
 
-Add a multi-select mode to the instructor inbox so multiple conversations can be marked as read and/or muted in one go. Works across all three sources (In-app, WhatsApp, Support) and persists mute state per conversation.
+Add a small count pill next to each of the three source tab labels (In-app · WhatsApp · Support) showing how many unread items live in that tab — so the instructor can see at a glance where the new activity is without having to switch tabs.
 
-### How it looks and behaves
+### How it looks
 
-Entering select mode (two routes):
-- **Long-press** any conversation row (~450 ms hold) — that row enters selected state and the header swaps to action mode.
-- **Select** text button added next to the existing Broadcast link in the list header.
+Each segment in the existing source `SegmentedControl` keeps its icon + text label and gains a compact count pill on the right when unread > 0:
 
-Selected mode UI (replaces the hero card while active):
-- Left: Cancel button (exits select mode, clears selection)
-- Center: "N selected" count
-- Right: two icon buttons — `CheckCheck` (mark read) and `BellOff` / `Bell` (mute / unmute, label flips when all selected are already muted)
-- Rows show a circular checkbox on the left (replacing the avatar position visually with a small overlay tick); tap toggles selection. Selected rows get a subtle blue outline.
-- Tapping a row in select mode toggles selection — it does NOT open the chat.
-
-Muted conversations (in normal mode):
-- Small `BellOff` glyph appears next to the timestamp on the row.
-- Unread badge still shows the count, but rendered grey instead of red so muted threads don't visually shout.
-
-Empty selection action: buttons disabled (50% opacity) when 0 selected.
-
-### Database changes (one migration)
-
-Add persistent mute state to both conversation tables (Support uses an instructor-level setting since it's a single thread):
-
-```sql
-ALTER TABLE public.conversations
-  ADD COLUMN muted_at timestamptz;
-
-ALTER TABLE public.whatsapp_conversations
-  ADD COLUMN muted_at timestamptz;
-
-ALTER TABLE public.instructors
-  ADD COLUMN support_chat_muted_at timestamptz;
+```text
+[ 💬 In-app  3 ]  [ 🟢 WhatsApp ]  [ ❓ Support  1 ]
 ```
 
-Also add a `read_at` column to `whatsapp_messages` so WhatsApp unread tracking is symmetrical with in-app messages (it currently has none — `unread_count` on the hook is computed from `delivery_status` heuristics and there's no way to mark read):
+Pill styling:
+- Active tab: white pill with system-blue text (`#2B7BC8`), so it reads on the dark active background.
+- Inactive tab: red dot pill (`#C8434F` bg, white text) — same red as the row badges, ~16px tall, 5px horizontal padding.
+- Counts ≥ 10 clamp to `9+`.
+- No pill rendered when the count is 0.
+- Muted conversations are **excluded** from the totals (consistent with the new mute behaviour — muted threads shouldn't shout from the tab).
 
-```sql
-ALTER TABLE public.whatsapp_messages
-  ADD COLUMN read_at timestamptz;
-CREATE INDEX idx_wa_messages_unread
-  ON public.whatsapp_messages (conversation_id)
-  WHERE read_at IS NULL AND direction = 'inbound';
-```
+### How the counts are computed
 
-No new RLS policies needed — existing instructor-scoped policies on `conversations` and `whatsapp_conversations` already cover updates to the new column. `instructors` already has owner-scoped update policies.
+- **In-app** = sum of `unread_count` across `conversations` where `muted_at IS NULL` (already loaded by `useMessaging`).
+- **WhatsApp** = sum of `unread_count` across `waConversations` where `muted_at IS NULL` (already loaded by `useWhatsAppConversations` after the recent `read_at` change).
+- **Support** = count of `admin_messages` where `sender_type='admin'` AND `read_at IS NULL` AND `conversation_id` belongs to this instructor's `admin_conversations` row. Fetched via a small `useEffect` on mount + a realtime channel on `admin_messages` so it updates live. Cleared when the user opens and exits the support thread.
 
-### Code changes
+The totals are realtime: in-app and WhatsApp already refresh via the existing realtime subscriptions in their hooks; the support count subscribes to `admin_messages` for live updates.
 
-**`src/pages/InstructorUnifiedInbox.tsx`** — bulk of the work:
-- New state: `selectMode: boolean`, `selectedIds: Set<string>`.
-- New handlers: `enterSelectMode(initialId?)`, `toggleSelected(id)`, `exitSelectMode()`, `bulkMarkRead()`, `bulkToggleMute()`.
-- `ConversationRow` gains `selectMode`, `selected`, `muted`, `onLongPress` props. Click behaviour switches to `toggleSelected` while in select mode.
-- Long-press: simple `onPointerDown` + `setTimeout(450ms)` + `onPointerUp/Leave` cancel pattern (no extra dep).
-- Hero card swaps to a "selection action bar" when `selectMode === true`.
-- "Select" text link added next to "Broadcast" in the list header (visible whenever the list has ≥1 row).
-- Muted indicator + grey-vs-red badge tint passed down to `UnreadBadge`.
+### Code changes (single file)
 
-**`src/hooks/useMessaging.ts`**:
-- Extend `Conversation` type with `muted_at: string | null`.
-- Include `muted_at` in the conversations select.
-- Add `bulkMarkConversationsRead(ids: string[])` — bulk update `messages.read_at` where `conversation_id IN (ids)` AND `sender_type = 'pupil'` AND `read_at IS NULL`.
-- Add `bulkSetMute(ids: string[], muted: boolean)` — update `conversations.muted_at`.
-- After each bulk action, call existing `fetchConversations()` to refresh local state.
+**`src/pages/InstructorUnifiedInbox.tsx`**:
+1. Replace the existing `totalUnread` block with three `useMemo`s (`inAppUnread`, `waUnread`) that exclude muted threads, plus a `supportUnread` state + `useEffect` that queries `admin_conversations` → `admin_messages` and subscribes to changes.
+2. Add a small `<TabCountPill count active />` helper component inside the file.
+3. Inject `<TabCountPill>` into each of the three `SegmentedControl` option labels, immediately after the existing text.
 
-**`src/hooks/useWhatsAppConversations.ts`**:
-- Add `muted_at` to type and select.
-- Recompute `unread_count` using the new `read_at` column instead of the current heuristic.
-- Add `bulkMarkWaRead(ids)` and `bulkSetWaMute(ids, muted)`.
+### Out of scope
 
-**`src/hooks/useUnreadMessagesCount.ts`** — already aggregates across sources. Add a "skip muted" filter so muted conversations don't contribute to the global tab badge (the bell icon in nav). Counts still display per-row for transparency.
-
-**Push notification suppression** — check `supabase/functions/send-push-notification` (or equivalent) for the path that fires on new in-app/WhatsApp messages. If found, add a guard: skip push when the target conversation has `muted_at IS NOT NULL`. If the function doesn't exist or doesn't pull from these tables, this becomes a no-op for v1 and only the in-app badge dimming applies — I'll confirm during build and note it back.
-
-### Out of scope (kept as-is)
-
-- Bulk archive / delete (separate prompt if wanted).
-- Timed mute (e.g. "mute for 8 hours"). `muted_at` is a simple on/off; we can layer a `muted_until` later without breaking anything.
-- Changing the chat detail screen.
-- Auto-mark-read when scrolling past a row (still requires opening the thread).
+- The global bottom-nav inbox bell badge (lives in `useUnreadMessagesCount` / nav layout) — separate prompt if you also want that to dim for muted threads.
+- Per-audience (Pupils vs Admin) sub-toggle counts — In-app pupils unread already reflected on the parent In-app pill, so adding a second layer would be noisy. Easy follow-up if wanted.
