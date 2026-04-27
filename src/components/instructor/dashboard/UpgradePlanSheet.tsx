@@ -112,6 +112,7 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
   };
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
         <SheetHeader className="mb-4">
@@ -203,5 +204,15 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
         )}
       </SheetContent>
     </Sheet>
+    {saveOffer && (
+      <DowngradeSaveSheet
+        open={!!saveOffer}
+        onOpenChange={(o) => { if (!o) setSaveOffer(null); }}
+        fromPlan={saveOffer.from}
+        toPlan={saveOffer.to}
+        onProceedDowngrade={async () => { await performPlanSwitch(saveOffer.to); setSaveOffer(null); }}
+      />
+    )}
+    </>
   );
 }
