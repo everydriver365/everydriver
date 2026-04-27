@@ -378,6 +378,96 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
   })();
 
   const rangeLabel = formatRangeLabel(period, periodNow);
+  const periodPresetLabel =
+    DEFAULT_PERIOD_OPTIONS.find((o) => o.value === period)?.label ?? 'All time';
+  const periodTitle =
+    period === 'all_time' ? 'All time' : `${periodPresetLabel} · ${rangeLabel}`;
+
+  const handleExportPdf = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Header band
+    doc.setFillColor(43, 123, 200); // #2B7BC8
+    doc.rect(0, 0, pageWidth, 38, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.text('Driving report', 15, 22);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(
+      `Generated ${format(new Date(), 'd MMM yyyy')}`,
+      pageWidth - 15,
+      22,
+      { align: 'right' },
+    );
+
+    // Cover content
+    let y = 56;
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text(niceName, 15, y);
+
+    y += 8;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(110, 110, 115);
+    doc.text('Period', 15, y);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(13);
+    y += 7;
+    doc.text(periodTitle, 15, y);
+
+    // Summary stats
+    y += 14;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(110, 110, 115);
+    doc.text('Summary', 15, y);
+    y += 6;
+    doc.setDrawColor(229, 229, 234);
+    doc.line(15, y, pageWidth - 15, y);
+    y += 8;
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
+    const lines: Array<[string, string]> = [
+      ['Lessons', String(totalSessions)],
+      ['Distance', distanceLabel || '—'],
+      ['Good events', String(goodEvents)],
+      ['Needs work', String(badEvents)],
+      [
+        'Score',
+        scoreTier === 'none'
+          ? 'Not enough data'
+          : scoreTier === 'provisional'
+            ? `${overallScore} (provisional)`
+            : `${overallScore}`,
+      ],
+    ];
+    lines.forEach(([label, value]) => {
+      doc.setTextColor(110, 110, 115);
+      doc.text(label, 15, y);
+      doc.setTextColor(0, 0, 0);
+      doc.text(value, pageWidth - 15, y, { align: 'right' });
+      y += 8;
+    });
+
+    if (caveat) {
+      y += 4;
+      doc.setFontSize(10);
+      doc.setTextColor(110, 110, 115);
+      doc.text(caveat, 15, y);
+    }
+
+    // File name includes period for clarity
+    const safePeriod = periodTitle.replace(/[^\w\d]+/g, '-').replace(/^-|-$/g, '');
+    const safeName = niceName.replace(/[^\w\d]+/g, '-').replace(/^-|-$/g, '');
+    doc.save(`driving-report_${safeName}_${safePeriod}.pdf`);
+  };
 
   const getEventIcon = (eventType: string) => {
     switch (eventType) {
