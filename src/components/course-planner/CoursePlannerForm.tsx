@@ -101,7 +101,7 @@ export function CoursePlannerForm({
   const [lessonsPerWeek, setLessonsPerWeek] = useState("2");
   const [availability, setAvailability] = useState<Record<DayKey, DayWindow>>(DEFAULT_AVAILABILITY);
 
-  const [pupils, setPupils] = useState<Array<{ id: string; name: string }>>([]);
+  const [pupils, setPupils] = useState<Array<{ id: string; name: string; phone: string | null; email: string | null; profile_image_url: string | null }>>([]);
   const [selectedPupilId, setSelectedPupilId] = useState<string | null>(defaultPupilId || null);
   const [selectedPupilName, setSelectedPupilName] = useState<string | null>(defaultPupilName || null);
   const [pupilPickerOpen, setPupilPickerOpen] = useState(false);
