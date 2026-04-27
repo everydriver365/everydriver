@@ -459,10 +459,23 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
                       </div>
 
                       <div className="text-right shrink-0 flex items-center gap-2">
-                        <p className={`text-sm font-bold ${colorClass}`}>
-                          {entry.amount > 0 ? "+" : ""}£
-                          {Math.abs(entry.amount).toFixed(2)}
-                        </p>
+                        <div className="flex flex-col items-end leading-tight">
+                          <p className={`text-sm font-bold ${colorClass}`}>
+                            {entry.amount > 0 ? "+" : ""}£
+                            {Math.abs(entry.amount).toFixed(2)}
+                          </p>
+                          <p
+                            className={`text-[10px] tabular-nums ${
+                              entry.runningBalance < 0
+                                ? "text-destructive/80"
+                                : "text-muted-foreground/70"
+                            }`}
+                            title="Balance after this transaction"
+                          >
+                            Bal {entry.runningBalance < 0 ? "-" : ""}£
+                            {Math.abs(entry.runningBalance).toFixed(2)}
+                          </p>
+                        </div>
                         {hasLesson && (
                           <ExpandChevron isExpanded={isExpanded} size={14} />
                         )}
