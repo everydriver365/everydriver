@@ -117,6 +117,8 @@ export function PupilPaymentFeed({ pupilId, currentBalance }: PupilPaymentFeedPr
   const [linkFilter, setLinkFilter] = useState<LinkFilter>("all");
   const [weekday, setWeekday] = useState<WeekdayFilter>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [receiptId, setReceiptId] = useState<string | null>(null);
+  const [disputeId, setDisputeId] = useState<string | null>(null);
 
   const toggleExpanded = (id: string) =>
     setExpandedId((prev) => (prev === id ? null : id));
