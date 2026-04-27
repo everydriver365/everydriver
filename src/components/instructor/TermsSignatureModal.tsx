@@ -749,7 +749,11 @@ export function TermsSignatureModal({
                 type="button"
                 onClick={() => {
                   if (!scrolledToBottom || !parentName.trim()) return;
-                  setParentAgreed(!parentAgreed);
+                  const next = !parentAgreed;
+                  setParentAgreed(next);
+                  logLegal(next ? "parent_agreement_checked" : "parent_agreement_unchecked", {
+                    parent_name: parentName.trim(),
+                  });
                 }}
                 disabled={!scrolledToBottom || !parentName.trim()}
                 style={{
