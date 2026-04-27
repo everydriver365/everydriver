@@ -101,14 +101,12 @@ export default function InstructorTestRequests() {
         </div>
 
         <Dialog open={formOpen} onOpenChange={setFormOpen}>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>New test request</DialogTitle>
-            </DialogHeader>
+          <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden gap-0" hideClose>
             <TestRequestForm
               instructorId={instructor?.id}
               mode="instructor"
               onSuccess={() => setFormOpen(false)}
+              onCancel={() => setFormOpen(false)}
             />
           </DialogContent>
         </Dialog>
