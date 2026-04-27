@@ -712,7 +712,14 @@ export function TermsSignatureModal({
               minHeight: 100,
             }}
           >
-            <SignaturePad onSignatureChange={setSignatureDataUrl} />
+            <SignaturePad
+              onSignatureChange={(dataUrl) => {
+                const previouslyHad = !!signatureDataUrl;
+                setSignatureDataUrl(dataUrl);
+                if (dataUrl && !previouslyHad) logLegal("signature_captured", { signer: "pupil" });
+                if (!dataUrl && previouslyHad) logLegal("signature_cleared", { signer: "pupil" });
+              }}
+            />
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isUnder18 ? 20 : 0 }}>
             <p style={{ fontSize: 11, color: COLOR_MUTED, margin: 0 }}>Will be timestamped on confirm</p>
