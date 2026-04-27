@@ -825,76 +825,160 @@ export default function InstructorUnifiedInbox() {
           fontFamily: FONT_STACK,
         }}
       >
-        {/* Hero card */}
-        <div
-          style={{
-            background: CARD_BG,
-            borderRadius: 12,
-            padding: 16,
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-          }}
-        >
+        {/* Hero card / Bulk action bar */}
+        {selectMode ? (
           <div
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: 10,
-              background: AMBER_TINT,
+              background: CARD_BG,
+              borderRadius: 12,
+              padding: "10px 12px",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
+              gap: 8,
             }}
           >
-            <MessageSquare size={22} strokeWidth={2} color={AMBER} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p
+            <button
+              type="button"
+              onClick={exitSelectMode}
               style={{
-                fontSize: 11,
-                fontWeight: 500,
-                color: MUTED,
-                letterSpacing: "0.3px",
-                textTransform: "uppercase",
-                margin: "0 0 1px",
+                background: "transparent",
+                border: "none",
+                padding: "6px 8px",
+                color: BLUE,
+                fontSize: 14,
+                fontWeight: 400,
+                cursor: "pointer",
               }}
             >
-              Messages
-            </p>
-            <h1
+              Cancel
+            </button>
+            <span
               style={{
-                fontSize: 17,
+                flex: 1,
+                textAlign: "center",
+                fontSize: 14,
                 fontWeight: 500,
                 color: TEXT,
-                letterSpacing: "-0.3px",
-                margin: 0,
               }}
             >
-              Inbox
-            </h1>
+              {selectedIds.size} selected
+            </span>
+            <button
+              type="button"
+              onClick={handleBulkMarkRead}
+              disabled={selectedIds.size === 0}
+              aria-label="Mark as read"
+              title="Mark as read"
+              style={{
+                background: "transparent",
+                border: "none",
+                padding: 8,
+                cursor: selectedIds.size === 0 ? "not-allowed" : "pointer",
+                opacity: selectedIds.size === 0 ? 0.4 : 1,
+                color: BLUE,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <CheckCheck size={20} strokeWidth={1.8} />
+            </button>
+            <button
+              type="button"
+              onClick={handleBulkToggleMute}
+              disabled={selectedIds.size === 0}
+              aria-label={allSelectedMuted ? "Unmute" : "Mute"}
+              title={allSelectedMuted ? "Unmute" : "Mute"}
+              style={{
+                background: "transparent",
+                border: "none",
+                padding: 8,
+                cursor: selectedIds.size === 0 ? "not-allowed" : "pointer",
+                opacity: selectedIds.size === 0 ? 0.4 : 1,
+                color: BLUE,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {allSelectedMuted ? (
+                <Bell size={20} strokeWidth={1.8} />
+              ) : (
+                <BellOff size={20} strokeWidth={1.8} />
+              )}
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowNewChat(true)}
+        ) : (
+          <div
             style={{
-              background: BLUE,
-              border: "none",
-              borderRadius: 10,
-              padding: "8px 12px",
+              background: CARD_BG,
+              borderRadius: 12,
+              padding: 16,
               display: "flex",
               alignItems: "center",
-              gap: 5,
-              cursor: "pointer",
-              flexShrink: 0,
-              color: "#FFFFFF",
+              gap: 12,
             }}
           >
-            <Plus size={13} strokeWidth={2} strokeLinecap="round" />
-            <span style={{ fontSize: 13, fontWeight: 500 }}>New</span>
-          </button>
-        </div>
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 10,
+                background: AMBER_TINT,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <MessageSquare size={22} strokeWidth={2} color={AMBER} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: MUTED,
+                  letterSpacing: "0.3px",
+                  textTransform: "uppercase",
+                  margin: "0 0 1px",
+                }}
+              >
+                Messages
+              </p>
+              <h1
+                style={{
+                  fontSize: 17,
+                  fontWeight: 500,
+                  color: TEXT,
+                  letterSpacing: "-0.3px",
+                  margin: 0,
+                }}
+              >
+                Inbox
+              </h1>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowNewChat(true)}
+              style={{
+                background: BLUE,
+                border: "none",
+                borderRadius: 10,
+                padding: "8px 12px",
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                cursor: "pointer",
+                flexShrink: 0,
+                color: "#FFFFFF",
+              }}
+            >
+              <Plus size={13} strokeWidth={2} strokeLinecap="round" />
+              <span style={{ fontSize: 13, fontWeight: 500 }}>New</span>
+            </button>
+          </div>
+        )}
 
         {/* Main content card */}
         <div
