@@ -188,6 +188,7 @@ export function RecordPaymentModal({
       setNotes("");
       setAmountFocused(false);
       setNotesFocused(false);
+      setLessonId(null);
     }
     onOpenChange(next);
   };
@@ -199,7 +200,8 @@ export function RecordPaymentModal({
     }
     setSaving(true);
     try {
-      const { error: historyError } = await supabase
+      // 1. Insert payment_history row (with optional lesson link)
+      const { error: historyError } = await (supabase as any)
         .from("payment_history")
         .insert({
           pupil_id: pupilId,
@@ -207,15 +209,18 @@ export function RecordPaymentModal({
           amount: parsedAmount,
           payment_method: paymentMethod,
           notes: notes.trim() || null,
+          lesson_id: lessonId,
         });
       if (historyError) throw historyError;
 
-      const newBalance = currentBalance + parsedAmount;
-      const { error: updateError } = await supabase
-        .from("pupils")
-        .update({ account_balance: newBalance })
-        .eq("id", pupilId);
-      if (updateError) throw updateError;
+      // 2. Atomically credit the pupil balance via the existing RPC.
+      // Using the RPC (instead of read-modify-write) prevents lost updates
+      // when two payments land in the same second.
+      const { error: balErr } = await supabase.rpc("increment_pupil_balance", {
+        p_pupil_id: pupilId,
+        p_amount: parsedAmount,
+      });
+      if (balErr) throw balErr;
 
       toast.success(`${formatCurrency(parsedAmount)} payment recorded for ${displayName}`);
       invalidatePaymentQueries({ pupilId, instructorId });
