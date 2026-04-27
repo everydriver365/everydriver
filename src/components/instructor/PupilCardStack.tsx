@@ -918,14 +918,24 @@ export function PupilCardStack({
         const balanceDisplay = `£${balanceAbs.toFixed(0)}`;
         const balanceLabel = hasDebt ? "Owed" : hasCredit ? "Credit" : "Balance";
 
+        const hasRecentLessons = recentLessons.length > 0;
+        const hasNotes = !!(pupil.notes && pupil.notes.trim());
+        const hasTestJourney = !!pupil.test_date;
+        const SECTION_LABEL_STYLE: React.CSSProperties = {
+          fontSize: 11,
+          fontWeight: 500,
+          letterSpacing: 0.3,
+          color: "#6E6E73",
+          textTransform: "uppercase",
+        };
         return (
           <Sheet open={isExpanded} onOpenChange={setIsExpanded}>
             <SheetContent
               side="bottom"
-              className="h-[95vh] rounded-t-3xl p-0 overflow-y-auto border-0"
-              style={{ background: "#F2F4F7" }}
+              className="h-[100dvh] max-h-[100dvh] rounded-none p-0 overflow-y-auto border-0"
+              style={{ background: "#F2F2F4" }}
             >
-              <div className="pb-8" style={{ fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif" }}>
+              <div className="pb-10" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, sans-serif" }}>
                 {/* ── Top bar: back / favourite / more ── */}
                 <div className="flex items-center justify-between px-4 pt-4 pb-2">
                   <button
@@ -982,10 +992,10 @@ export function PupilCardStack({
                       </span>
                     )}
                   </div>
-                  <h2 className="mt-3" style={{ fontSize: 20, fontWeight: 600, color: "#0F1B2D", letterSpacing: -0.2 }}>
+                  <h2 className="mt-3" style={{ fontSize: 18, fontWeight: 500, color: "#000000", letterSpacing: -0.3 }}>
                     {displayName}
                   </h2>
-                  <p className="mt-1" style={{ fontSize: 13, color: "#6E6E73" }}>
+                  <p className="mt-1" style={{ fontSize: 12, color: "#6E6E73" }}>
                     Pupil since {format(parseISO(pupil.created_at), "MMMM yyyy")}
                   </p>
 
@@ -1021,29 +1031,29 @@ export function PupilCardStack({
                 <div className="mx-4 mt-3">
                   <p
                     className="px-1 mb-2"
-                    style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.6, color: "#6E6E73", textTransform: "uppercase" }}
+                    style={{ fontSize: 11, fontWeight: 500, letterSpacing: 0.3, color: "#6E6E73", textTransform: "uppercase" }}
                   >
                     At a glance
                   </p>
-                  <div className="rounded-2xl bg-white border border-[#E9ECF1] grid grid-cols-4 divide-x divide-[#E9ECF1] py-4">
+                  <div className="rounded-2xl bg-white border border-[#E9ECF1] grid grid-cols-4 gap-2 p-3">
                     {[
-                      { value: String(lessonsCount), label: "Lessons", muted: lessonsCount === 0 },
+                      { value: lessonsCount > 0 ? String(lessonsCount) : "—", label: "Lessons", muted: lessonsCount === 0 },
                       { value: hoursDisplay, label: "Hours", muted: hoursDisplay === "—" },
                       { value: progressDisplay, label: "Progress", muted: progressDisplay === "—" },
                       { value: balanceDisplay, label: balanceLabel, debt: hasDebt },
                     ].map(({ value, label, muted, debt }) => (
-                      <div key={label} className="text-center px-1">
+                      <div key={label} className="text-center">
                         <div
                           style={{
                             fontSize: 18,
-                            fontWeight: 600,
-                            color: debt ? "#C8434F" : muted ? "#9AA3B0" : "#0F1B2D",
-                            letterSpacing: -0.2,
+                            fontWeight: 500,
+                            color: debt ? "#C8434F" : muted ? "#6E6E73" : "#000000",
+                            letterSpacing: -0.3,
                           }}
                         >
                           {value}
                         </div>
-                        <div style={{ fontSize: 10, color: "#6E6E73", marginTop: 2, letterSpacing: 0.2 }}>
+                        <div style={{ fontSize: 11, color: "#6E6E73", marginTop: 2 }}>
                           {label}
                         </div>
                       </div>
@@ -1055,7 +1065,7 @@ export function PupilCardStack({
                 <div className="mx-4 mt-3">
                   <p
                     className="px-1 mb-2"
-                    style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.6, color: "#6E6E73", textTransform: "uppercase" }}
+                    style={{ fontSize: 11, fontWeight: 500, letterSpacing: 0.3, color: "#6E6E73", textTransform: "uppercase" }}
                   >
                     Next lesson
                   </p>
@@ -1069,14 +1079,14 @@ export function PupilCardStack({
                     <div className="flex-1 min-w-0">
                       {lessonSummary?.type === "next" ? (
                         <>
-                          <p style={{ fontSize: 14, fontWeight: 600, color: "#0F1B2D" }}>
+                          <p style={{ fontSize: 14, fontWeight: 600, color: "#000000" }}>
                             {format(parseISO(lessonSummary.date), "EEE d MMM")}
                           </p>
                           <p style={{ fontSize: 12, color: "#6E6E73", marginTop: 2 }}>Scheduled</p>
                         </>
                       ) : (
                         <>
-                          <p style={{ fontSize: 14, fontWeight: 600, color: "#0F1B2D" }}>Not yet booked</p>
+                          <p style={{ fontSize: 14, fontWeight: 600, color: "#000000" }}>Not yet booked</p>
                           <p style={{ fontSize: 12, color: "#6E6E73", marginTop: 2 }}>
                             Schedule the {lessonsCount === 0 ? "first" : "next"} lesson
                           </p>
@@ -1123,7 +1133,7 @@ export function PupilCardStack({
                         <Calendar size={20} strokeWidth={1.8} color={isUrgent ? "#B8801F" : "#6E6E73"} />
                       </div>
                       <div className="flex-1">
-                        <p style={{ fontSize: 14, fontWeight: 600, color: "#0F1B2D" }}>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: "#000000" }}>
                           {format(testDate, "EEE, d MMM yyyy")}
                         </p>
                         <p style={{ fontSize: 12, color: isUrgent ? "#B8801F" : "#6E6E73", fontWeight: 500, marginTop: 2 }}>
@@ -1134,14 +1144,142 @@ export function PupilCardStack({
                   );
                 })()}
 
+                {/* ── Recent lessons (only when there's history) ── */}
+                {hasRecentLessons && (
+                  <div className="mx-4 mt-3">
+                    <div className="flex items-center justify-between px-1 mb-2">
+                      <p style={SECTION_LABEL_STYLE}>Recent lessons</p>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onViewHistory(pupil); }}
+                        style={{ fontSize: 12, fontWeight: 500, color: "#2B7BC8" }}
+                      >
+                        View all
+                      </button>
+                    </div>
+                    <div className="rounded-2xl bg-white border border-[#E9ECF1] p-3 flex flex-col gap-2">
+                      {recentLessons.slice(0, 3).map((l) => {
+                        const firstSentence = (l.notes || "").split(/(?<=[.!?])\s/)[0]?.trim() || "";
+                        const durationLabel = `${Math.round((l.duration_minutes || 60) / 60 * 10) / 10}h`;
+                        const meta = [durationLabel, firstSentence].filter(Boolean).join(" · ");
+                        return (
+                          <div key={l.id} className="rounded-xl px-3 py-2.5" style={{ background: "#E6F1FB" }}>
+                            <div className="flex items-center justify-between gap-2">
+                              <span style={{ fontSize: 13, fontWeight: 500, color: "#000000" }} className="truncate">
+                                {(l.lesson_type || "Lesson").replace(/_/g, " ")}
+                              </span>
+                              <span style={{ fontSize: 11, color: "#6E6E73" }} className="shrink-0 tabular-nums">
+                                {format(parseISO(l.lesson_date), "d MMM")}
+                              </span>
+                            </div>
+                            {meta && (
+                              <p style={{ fontSize: 11, color: "#6E6E73", marginTop: 2 }} className="truncate">
+                                {meta}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Notes (full card when present, inline row when empty) ── */}
+                {hasNotes ? (
+                  <div className="mx-4 mt-3">
+                    <div className="flex items-center justify-between px-1 mb-2">
+                      <p style={SECTION_LABEL_STYLE}>Notes</p>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}
+                        style={{ fontSize: 12, fontWeight: 500, color: "#2B7BC8" }}
+                      >
+                        Edit
+                      </button>
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}
+                      className="w-full text-left rounded-2xl bg-white border border-[#E9ECF1] p-3"
+                    >
+                      <div className="rounded-xl px-3 py-2.5" style={{ background: "#F2F2F4" }}>
+                        <p style={{ fontSize: 13, color: "#000000", lineHeight: 1.4, whiteSpace: "pre-wrap" }}>
+                          {pupil.notes}
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}
+                    className="mx-4 mt-3 rounded-2xl bg-white border border-[#E9ECF1] px-4 py-3 flex items-center gap-3 active:bg-[#F2F4F7] transition-colors"
+                    style={{ width: "calc(100% - 2rem)" }}
+                  >
+                    <div
+                      className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: "#F2F2F4" }}
+                    >
+                      <FileText size={14} strokeWidth={1.8} color="#6E6E73" />
+                    </div>
+                    <span className="flex-1 text-left" style={{ fontSize: 14, color: "#6E6E73" }}>
+                      Add note about {(displayName.split(" ")[0] || displayName)}
+                    </span>
+                    <span style={{ fontSize: 18, color: "#6E6E73", lineHeight: 1 }}>+</span>
+                  </button>
+                )}
+
+                {/* ── Test journey (only when test data exists) ── */}
+                {hasTestJourney && (
+                  <div className="mx-4 mt-3">
+                    <p className="px-1 mb-2" style={SECTION_LABEL_STYLE}>Test journey</p>
+                    <div className="rounded-2xl bg-white border border-[#E9ECF1] p-4">
+                      {(() => {
+                        const testDate = new Date(pupil.test_date as string);
+                        const daysUntil = Math.ceil((testDate.getTime() - Date.now()) / 86400000);
+                        const milestones = [
+                          { title: "Theory test", subtitle: "Status not recorded", status: "pending" as const },
+                          {
+                            title: "Practical test",
+                            subtitle: `${format(testDate, "EEE d MMM yyyy")}${daysUntil >= 0 ? ` · ${daysUntil} day${daysUntil === 1 ? "" : "s"} away` : " · past"}`,
+                            status: "active" as const,
+                          },
+                          { title: "Test readiness", subtitle: "Track via syllabus progress", status: "pending" as const },
+                        ];
+                        return (
+                          <div className="flex flex-col gap-3">
+                            {milestones.map((m) => (
+                              <div key={m.title} className="flex items-start gap-3">
+                                <div
+                                  className="mt-0.5 flex items-center justify-center shrink-0"
+                                  style={{
+                                    width: 18, height: 18, borderRadius: "50%",
+                                    border: `1.5px solid ${m.status === "active" ? "#B8801F" : "#D6D9DE"}`,
+                                  }}
+                                >
+                                  {m.status === "active" && (
+                                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#B8801F" }} />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p style={{ fontSize: 13, fontWeight: 500, color: "#000000" }}>{m.title}</p>
+                                  <p style={{ fontSize: 11, color: "#6E6E73", marginTop: 2 }}>{m.subtitle}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onRecordTestResult?.(pupil, false); }}
+                        className="mt-3 w-full rounded-xl py-2.5 active:scale-95 transition-transform"
+                        style={{ background: "#F2F2F4", fontSize: 13, fontWeight: 500, color: "#2B7BC8" }}
+                      >
+                        Record test result
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* ── More actions (list with tinted icon containers) ── */}
                 <div className="mx-4 mt-3">
-                  <p
-                    className="px-1 mb-2"
-                    style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.6, color: "#6E6E73", textTransform: "uppercase" }}
-                  >
-                    More actions
-                  </p>
+                  <p className="px-1 mb-2" style={SECTION_LABEL_STYLE}>More actions</p>
                   <div className="rounded-2xl bg-white border border-[#E9ECF1] overflow-hidden">
                     {[
                       { icon: ClipboardList, label: "Syllabus", tintBg: "#E6F1FB", tintFg: "#2B7BC8", action: () => setShowSyllabusSheet(true) },
@@ -1155,24 +1293,21 @@ export function PupilCardStack({
                         meta: hasDebt ? `£${balanceAbs.toFixed(0)} due` : hasCredit ? `£${balanceAbs.toFixed(0)} credit` : "£0 due",
                         metaDebt: hasDebt,
                       },
-                      { icon: Award, label: "Test result", tintBg: "#FBF1DE", tintFg: "#B8801F", action: () => onRecordTestResult?.(pupil, false) },
+                      ...(!hasTestJourney
+                        ? [{ icon: Award, label: "Record test result", tintBg: "#FBF1DE", tintFg: "#B8801F", action: () => onRecordTestResult?.(pupil, false) }]
+                        : []),
                       { icon: Share2, label: "Share progress", tintBg: "#F1ECFA", tintFg: "#8A5BC9", action: () => {} },
                     ].map(({ icon: Icon, label, tintBg, tintFg, action, meta, metaDebt }, idx, arr) => (
                       <button
                         key={label}
                         onClick={(e) => { e.stopPropagation(); action?.(); }}
                         className="w-full flex items-center gap-3 px-4 py-3 active:bg-[#F2F4F7] transition-colors"
-                        style={{
-                          borderBottom: idx < arr.length - 1 ? "1px solid #F0F2F5" : "none",
-                        }}
+                        style={{ borderBottom: idx < arr.length - 1 ? "1px solid #F0F2F5" : "none" }}
                       >
-                        <div
-                          className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
-                          style={{ background: tintBg }}
-                        >
+                        <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: tintBg }}>
                           <Icon size={18} strokeWidth={1.8} color={tintFg} />
                         </div>
-                        <span className="flex-1 text-left" style={{ fontSize: 14, fontWeight: 500, color: "#0F1B2D" }}>
+                        <span className="flex-1 text-left" style={{ fontSize: 14, fontWeight: 500, color: "#000000" }}>
                           {label}
                         </span>
                         {meta && (
@@ -1186,49 +1321,36 @@ export function PupilCardStack({
                   </div>
                 </div>
 
-                {/* ── Details ── */}
+                {/* ── Details (contact info — preserved) ── */}
                 {(hasPhone || hasEmail || pupil.postcode) && (
                   <div className="mx-4 mt-3">
-                    <p
-                      className="px-1 mb-2"
-                      style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.6, color: "#6E6E73", textTransform: "uppercase" }}
-                    >
-                      Details
-                    </p>
+                    <p className="px-1 mb-2" style={SECTION_LABEL_STYLE}>Details</p>
                     <div className="rounded-2xl bg-white border border-[#E9ECF1] overflow-hidden">
                       {hasPhone && (
-                        <div
-                          className="flex items-center gap-3 px-4 py-3"
-                          style={{ borderBottom: (hasEmail || pupil.postcode) ? "1px solid #F0F2F5" : "none" }}
-                        >
+                        <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: (hasEmail || pupil.postcode) ? "1px solid #F0F2F5" : "none" }}>
                           <Phone size={16} strokeWidth={1.8} color="#6E6E73" className="shrink-0" />
-                          <span style={{ fontSize: 14, color: "#0F1B2D" }}>{formattedPhone}</span>
+                          <span style={{ fontSize: 14, color: "#000000" }}>{formattedPhone}</span>
                         </div>
                       )}
                       {hasEmail && (
-                        <div
-                          className="flex items-center gap-3 px-4 py-3"
-                          style={{ borderBottom: pupil.postcode ? "1px solid #F0F2F5" : "none" }}
-                        >
+                        <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: pupil.postcode ? "1px solid #F0F2F5" : "none" }}>
                           <Mail size={16} strokeWidth={1.8} color="#6E6E73" className="shrink-0" />
-                          <span style={{ fontSize: 14, color: "#0F1B2D" }} className="truncate">
-                            {pupil.email}
-                          </span>
+                          <span style={{ fontSize: 14, color: "#000000" }} className="truncate">{pupil.email}</span>
                         </div>
                       )}
                       {pupil.postcode && (
                         <div className="flex items-center gap-3 px-4 py-3">
                           <MapPin size={16} strokeWidth={1.8} color="#6E6E73" className="shrink-0" />
-                          <span style={{ fontSize: 14, color: "#0F1B2D" }}>{pupil.postcode}</span>
+                          <span style={{ fontSize: 14, color: "#000000" }}>{pupil.postcode}</span>
                         </div>
                       )}
                     </div>
                   </div>
                 )}
 
-                {/* ── Footer actions (T&Cs / Edit / Delete) ── */}
-                <div className="mx-4 mt-4 space-y-2">
-                  {onViewTerms && (
+                {/* ── T&Cs (preserved) ── */}
+                {onViewTerms && (
+                  <div className="mx-4 mt-3">
                     <Button
                       variant={hasSignedTerms ? "outline" : "default"}
                       size="sm"
@@ -1237,25 +1359,25 @@ export function PupilCardStack({
                     >
                       {hasSignedTerms ? (<><CheckCircle2 className="h-4 w-4 mr-2" />T&Cs signed</>) : (<><FileSignature className="h-4 w-4 mr-2" />Sign T&Cs</>)}
                     </Button>
-                  )}
-                  <div className="grid grid-cols-2 gap-2 pt-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="rounded-2xl h-11"
-                      onClick={(e) => { e.stopPropagation(); onEdit(pupil); }}
-                    >
-                      <Edit className="h-4 w-4 mr-1" /> Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="rounded-2xl h-11 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={(e) => { e.stopPropagation(); onDelete(pupil); }}
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" /> Delete
-                    </Button>
                   </div>
+                )}
+
+                {/* ── Archive (destructive, separated) ── */}
+                <div className="mx-4 mt-3 rounded-2xl bg-white border border-[#E9ECF1] p-3">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onDelete(pupil); }}
+                    className="w-full flex items-center gap-3 px-1 py-1 active:opacity-70 transition-opacity"
+                  >
+                    <div
+                      className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: "#FBEAEC" }}
+                    >
+                      <Trash2 size={18} strokeWidth={1.8} color="#C8434F" />
+                    </div>
+                    <span className="flex-1 text-left" style={{ fontSize: 14, fontWeight: 500, color: "#C8434F" }}>
+                      Archive pupil
+                    </span>
+                  </button>
                 </div>
               </div>
             </SheetContent>
