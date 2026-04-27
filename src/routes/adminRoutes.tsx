@@ -7,6 +7,9 @@ const AdminPortal = lazy(() => import("@/pages/AdminPortal"));
 const TileHealthDashboard = lazy(() => import("@/pages/admin/TileHealthDashboard"));
 const EdgeFunctionAudit = lazy(() => import("@/pages/admin/EdgeFunctionAudit"));
 const OnboardingFunnel = lazy(() => import("@/pages/admin/OnboardingFunnel"));
+const EdgeFunctionErrors = lazy(() => import("@/pages/admin/EdgeFunctionErrors"));
+const QueryBudget = lazy(() => import("@/pages/admin/QueryBudget"));
+const RealtimeAudit = lazy(() => import("@/pages/admin/RealtimeAudit"));
 
 export const adminRoutes = (
   <>
@@ -42,6 +45,18 @@ export const adminRoutes = (
           <OnboardingFunnel />
         </ProtectedAdminRoute>
       }
+    />
+    <Route
+      path="/admin/edge-function-errors"
+      element={<ProtectedAdminRoute><EdgeFunctionErrors /></ProtectedAdminRoute>}
+    />
+    <Route
+      path="/admin/query-budget"
+      element={<ProtectedAdminRoute><QueryBudget /></ProtectedAdminRoute>}
+    />
+    <Route
+      path="/admin/realtime-audit"
+      element={<ProtectedAdminRoute><RealtimeAudit /></ProtectedAdminRoute>}
     />
   </>
 );
