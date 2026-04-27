@@ -73,8 +73,10 @@ const getQuickActions = (onAddLesson: () => void): QuickAction[] => [
 export function QuickActionsFAB({ className, position = "bottom-right" }: QuickActionsFABProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [addLessonOpen, setAddLessonOpen] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const navigate = useNavigate();
   const { instructor } = useInstructorAuth();
+  const { isSupported: voiceSupported } = useVoiceToText();
 
   const handleOpenAddLesson = useCallback(() => {
     setAddLessonOpen(true);
