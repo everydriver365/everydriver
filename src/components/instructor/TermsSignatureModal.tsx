@@ -83,7 +83,7 @@ export function TermsSignatureModal({
       instructorId,
       tableName: "pupil_signatures",
       recordId: pupilId,
-      action: `terms_${action}`,
+      action: `terms_${action}` as never,
       newValues: {
         pupil_id: pupilId,
         pupil_name: pupilName,
