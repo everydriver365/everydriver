@@ -640,7 +640,7 @@ export function InstructorMobileHome({
         {/* Insights Tiles */}
         <div className="mt-5">
           <div className="px-4">
-            <SectionHeader title="Insights" category="navigation" />
+            <SectionHeader title="Insights" variant="eyebrow" />
           </div>
           <InsightTilesGrid instructorId={instructorId} gapCount={gapSuggestions?.length || 0} />
         </div>
