@@ -132,8 +132,8 @@
   /* Light mode (default when present without .dsm-dark) */
   .instructor-portal,
   .dsm-instructor {
-    --dsm-bg: 214 18% 93%;          /* #E8ECF1 */
-    --background: 214 18% 93%;      /* match for bg-background pages */
+    --dsm-bg: 0 0% 97%;             /* #F7F7F7 */
+    --background: 0 0% 97%;         /* match for bg-background pages */
     --dsm-card: 0 0% 100%;          /* #FFFFFF */
     --dsm-text: 217 51% 12%;        /* #0F1B2D */
     --dsm-text-secondary: 213 22% 57%; /* #7A8FAA */
