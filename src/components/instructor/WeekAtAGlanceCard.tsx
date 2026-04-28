@@ -484,6 +484,18 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
   const [goals, setGoals] = useState<AllGoals>(() => loadGoals(instructorId));
   const [editorOpen, setEditorOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!expanded) return;
+    const handlePointerDown = (e: PointerEvent) => {
+      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
+        setExpanded(false);
+      }
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [expanded]);
   const customised = useMemo(() => hasCustomGoals(instructorId), [instructorId]);
 
   useEffect(() => {
