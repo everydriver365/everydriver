@@ -61,19 +61,19 @@ const PERIOD_META: Record<
 > = {
   today: {
     label: "Today",
-    eyebrow: "Today · goals",
+    eyebrow: "Today · your stats",
     centerLabel: "Today",
     resetCadence: "Day resets at midnight",
   },
   week: {
     label: "This week",
-    eyebrow: "This week · goals",
+    eyebrow: "This week · your stats",
     centerLabel: "Week",
     resetCadence: "Week resets every Monday",
   },
   month: {
     label: "This month",
-    eyebrow: "This month · goals",
+    eyebrow: "This month · your stats",
     centerLabel: "Month",
     resetCadence: "Month resets on the 1st",
   },
@@ -621,7 +621,7 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
             {meta.eyebrow}
           </p>
           <p style={{ fontSize: 15, fontWeight: 500, color: TXT.primary, margin: 0, letterSpacing: "-0.2px" }}>
-            {overall}% of goals
+            {lessons} {lessons === 1 ? "Lesson" : "Lessons"} Booked
           </p>
           <p style={{ fontSize: 12, color: TXT.secondary, margin: "2px 0 0" }}>
             Tap to view rings
