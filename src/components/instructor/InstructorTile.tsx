@@ -252,7 +252,7 @@ export function InstructorTileGrid({
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          gap: 16,
+          gap: 24,
         }}
       >
         {children}
