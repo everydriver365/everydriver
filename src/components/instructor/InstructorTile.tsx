@@ -35,13 +35,13 @@ interface CategoryColor {
 }
 
 export const TILE_CATEGORY_COLORS: Record<TileCategory, CategoryColor> = {
-  education: { accent: "#7C3AED", tint: "rgba(139,92,246,0.15)" },
-  schedule:  { accent: "#2563EB", tint: "rgba(59,130,246,0.15)" },
-  people:    { accent: "#16A34A", tint: "rgba(34,197,94,0.15)" },
-  location:  { accent: "#DC2626", tint: "rgba(239,68,68,0.15)" },
-  settings:  { accent: "#4B5563", tint: "rgba(107,114,128,0.15)" },
-  insights:  { accent: "#7C3AED", tint: "rgba(139,92,246,0.15)" },
-  money:     { accent: "#D97706", tint: "rgba(245,158,11,0.15)" },
+  education: { accent: "#7C3AED", tint: "rgba(139,92,246,0.18)" },
+  schedule:  { accent: "#2563EB", tint: "rgba(59,130,246,0.18)" },
+  people:    { accent: "#16A34A", tint: "rgba(34,197,94,0.18)" },
+  location:  { accent: "#DC2626", tint: "rgba(239,68,68,0.18)" },
+  settings:  { accent: "#4B5563", tint: "rgba(107,114,128,0.18)" },
+  insights:  { accent: "#7C3AED", tint: "rgba(139,92,246,0.18)" },
+  money:     { accent: "#D97706", tint: "rgba(245,158,11,0.18)" },
 };
 
 // ---- Tile ------------------------------------------------------------------
