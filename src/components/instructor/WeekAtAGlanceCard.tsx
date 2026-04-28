@@ -61,7 +61,7 @@ const PERIOD_META: Record<
 > = {
   today: {
     label: "Today",
-    eyebrow: "Today · goals",
+    eyebrow: "Today · your stats",
     centerLabel: "Today",
     resetCadence: "Day resets at midnight",
   },
