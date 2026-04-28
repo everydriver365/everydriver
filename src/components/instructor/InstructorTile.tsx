@@ -219,7 +219,7 @@ export function InstructorTileGrid({
     <div
       className={className}
       style={{
-        padding: padded ? "16px 14px 20px" : undefined,
+        padding: padded ? "16px 16px 20px" : undefined,
         fontFamily: FONT_STACK,
       }}
     >
@@ -233,11 +233,11 @@ export function InstructorTileGrid({
         }
         @media (hover: hover) {
           .instructor-tile:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(20,30,60,0.06), 0 14px 28px rgba(20,30,60,0.12);
+            transform: translateY(-2px);
+            box-shadow: 8px 8px 16px rgba(0,0,0,0.08), -8px -8px 16px rgba(255,255,255,1);
           }
         }
-        .instructor-tile:active { transform: scale(0.97); }
+        .instructor-tile:active { transform: scale(0.98); }
         .instructor-tile-dot { animation: instructor-tile-pulse 1.6s ease-out infinite; }
         @media (prefers-reduced-motion: reduce) {
           .instructor-tile-dot { animation: none; }
@@ -250,7 +250,7 @@ export function InstructorTileGrid({
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          gap: 12,
+          gap: 16,
         }}
       >
         {children}
