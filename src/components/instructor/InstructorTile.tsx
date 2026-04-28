@@ -92,11 +92,12 @@ export function InstructorTile({
       className={`instructor-tile ${className ?? ""}`}
       style={{
         gridColumn: fullWidth ? "1 / span 2" : undefined,
-        background: "#FFFFFF",
-        border: "0.5px solid #EEF0F4",
-        boxShadow: "0 1px 2px rgba(20,30,60,0.04), 0 8px 20px rgba(20,30,60,0.08)",
-        borderRadius: 14,
-        padding: 16,
+        background: "#F8FAFC",
+        border: "none",
+        boxShadow:
+          "6px 6px 12px rgba(0,0,0,0.06), -6px -6px 12px rgba(255,255,255,0.9)",
+        borderRadius: 18,
+        padding: 20,
         minHeight: 110,
         display: "flex",
         flexDirection: "column",
