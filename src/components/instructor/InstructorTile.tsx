@@ -162,7 +162,7 @@ export function InstructorTile({
               lineHeight: "20px",
               textAlign: "center",
               fontVariantNumeric: "tabular-nums",
-              boxShadow: "0 0 0 2px #FFFFFF",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
             }}
           >
             {count}
