@@ -347,11 +347,15 @@ export default function InstructorOnboarding() {
     
     setSaving(true);
     try {
-      // Generate the drive365 subdomain from the slug
+      // Generate the drive365 subdomain from the slug — only when we're publishing a mini-site
       const slug = data.slug || data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      const drive365Subdomain = `${slug}.drive365.co.uk`;
+      const hasOwnSite = data.website_choice === "booknow";
+      const normalizedExternal = hasOwnSite && data.personal_website_url
+        ? (data.personal_website_url.startsWith("http") ? data.personal_website_url : `https://${data.personal_website_url}`)
+        : null;
+      const drive365Subdomain = hasOwnSite ? null : `${slug}.drive365.co.uk`;
 
-      // Final save with onboarding complete timestamp + auto-generated subdomain
+      // Final save with onboarding complete timestamp + auto-generated subdomain (skipped if they have their own site)
       const { error } = await supabase
         .from("instructors")
         .update({
@@ -368,7 +372,8 @@ export default function InstructorOnboarding() {
           app_slug: slug,
           custom_domain: drive365Subdomain,
           custom_domain_verified: false,
-        })
+          personal_website_url: normalizedExternal,
+        } as any)
         .eq("id", instructorId);
 
       if (error) throw error;
