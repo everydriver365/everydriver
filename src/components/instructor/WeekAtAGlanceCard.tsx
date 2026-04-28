@@ -634,6 +634,7 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
   return (
     <>
       <div
+        ref={cardRef}
         style={{
           background: "#FFFFFF",
           border: `0.5px solid ${TXT.hairline}`,
