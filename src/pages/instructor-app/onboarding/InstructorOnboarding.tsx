@@ -284,15 +284,11 @@ export default function InstructorOnboarding() {
 
   const isPDI = data.adi_grade === "Trainee";
 
-  const skipsMiniSite = data.website_choice === "booknow" || data.website_choice === "custom";
-
   const getNextStep = (current: number): number => {
     if (data.wantsFeatured) {
       // PDI trainees skip plan (7) and payment (9)
       if (isPDI && current === 6) return 8; // Skip Plan, go to Website
       if (isPDI && current === 8) return 10; // Skip Payment, go to Complete
-      // If they already have a website (or want a custom one), skip Domain & Hosting (9)
-      if (current === 8 && skipsMiniSite) return 10;
       return current + 1;
     } else {
       // Diary-only flow - skip location (3), website (8), domain (9)
@@ -308,7 +304,6 @@ export default function InstructorOnboarding() {
     if (data.wantsFeatured) {
       if (isPDI && current === 8) return 6; // Skip Plan going back
       if (isPDI && current === 10) return 8; // Skip Payment going back
-      if (current === 10 && skipsMiniSite) return 8; // Skip Domain going back
       return current - 1;
     } else {
       if (current === 4) return 2;
