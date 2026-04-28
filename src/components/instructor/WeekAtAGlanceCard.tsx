@@ -1,316 +1,478 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, Calendar, Clock } from "lucide-react";
 import {
   format,
   startOfWeek,
   endOfWeek,
   startOfMonth,
   endOfMonth,
-  subWeeks,
-  subMonths,
 } from "date-fns";
-import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, Calendar, MessageCircle, ArrowUp, ArrowDown } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { a11yPx } from "@/lib/a11yScale";
+import { haptics } from "@/lib/haptics";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  useInstructorPeriodStats,
+  type RingsPeriod,
+} from "@/hooks/useInstructorPeriodStats";
+import {
+  loadGoals,
+  saveGoals,
+  getDefaultGoals,
+  hasCustomGoals,
+  type AllGoals,
+  type PeriodGoals,
+} from "@/lib/instructorGoals";
+import { IOSSheet, IOSSheetBody, IOSSheetHeader, IOSSheetTitle } from "@/components/ui/IOSSheet";
 
-type PeriodKey = "this-week" | "last-week" | "two-weeks" | "this-month" | "last-month";
-
-interface PeriodOption {
-  key: PeriodKey;
-  label: string;
-  range: () => { start: Date; end: Date };
-  previousRange: () => { start: Date; end: Date };
-}
-
-const PERIODS: PeriodOption[] = [
-  {
-    key: "this-week",
-    label: "This week",
-    range: () => {
-      const now = new Date();
-      return { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) };
-    },
-    previousRange: () => {
-      const ref = subWeeks(new Date(), 1);
-      return { start: startOfWeek(ref, { weekStartsOn: 1 }), end: endOfWeek(ref, { weekStartsOn: 1 }) };
-    },
-  },
-  {
-    key: "last-week",
-    label: "Last week",
-    range: () => {
-      const ref = subWeeks(new Date(), 1);
-      return { start: startOfWeek(ref, { weekStartsOn: 1 }), end: endOfWeek(ref, { weekStartsOn: 1 }) };
-    },
-    previousRange: () => {
-      const ref = subWeeks(new Date(), 2);
-      return { start: startOfWeek(ref, { weekStartsOn: 1 }), end: endOfWeek(ref, { weekStartsOn: 1 }) };
-    },
-  },
-  {
-    key: "two-weeks",
-    label: "2 weeks ago",
-    range: () => {
-      const ref = subWeeks(new Date(), 2);
-      return { start: startOfWeek(ref, { weekStartsOn: 1 }), end: endOfWeek(ref, { weekStartsOn: 1 }) };
-    },
-    previousRange: () => {
-      const ref = subWeeks(new Date(), 3);
-      return { start: startOfWeek(ref, { weekStartsOn: 1 }), end: endOfWeek(ref, { weekStartsOn: 1 }) };
-    },
-  },
-  {
-    key: "this-month",
-    label: "This month",
-    range: () => {
-      const now = new Date();
-      return { start: startOfMonth(now), end: endOfMonth(now) };
-    },
-    previousRange: () => {
-      const ref = subMonths(new Date(), 1);
-      return { start: startOfMonth(ref), end: endOfMonth(ref) };
-    },
-  },
-  {
-    key: "last-month",
-    label: "Last month",
-    range: () => {
-      const ref = subMonths(new Date(), 1);
-      return { start: startOfMonth(ref), end: endOfMonth(ref) };
-    },
-    previousRange: () => {
-      const ref = subMonths(new Date(), 2);
-      return { start: startOfMonth(ref), end: endOfMonth(ref) };
-    },
-  },
-];
+/* -------------------------------------------------------------------------- */
+/*                               Design tokens                                */
+/* -------------------------------------------------------------------------- */
 
 const TXT = {
   primary: "#000000",
   secondary: "#6E6E73",
   hairline: "#E5E5EA",
   blue: "#2B7BC8",
+  blueTint: "#E6F1FB",
+  red: "#C8434F",
+  redTint: "#FBEAEC",
+  green: "#3B8B3B",
+  greenTint: "#E8F3E8",
 };
 
-function formatRange(start: Date, end: Date) {
-  const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
-  const sameYear = start.getFullYear() === end.getFullYear();
-  if (sameMonth) {
-    return `${format(start, "EEE d")} – ${format(end, "EEE d")}`;
+const FONT_STACK =
+  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
+
+/* -------------------------------------------------------------------------- */
+/*                                Period meta                                 */
+/* -------------------------------------------------------------------------- */
+
+const PERIOD_ORDER: RingsPeriod[] = ["today", "week", "month"];
+
+const PERIOD_META: Record<
+  RingsPeriod,
+  {
+    label: string;
+    eyebrow: string;
+    centerLabel: string;
+    resetCadence: string;
   }
-  if (sameYear) {
-    return `${format(start, "EEE d MMM")} – ${format(end, "EEE d MMM")}`;
+> = {
+  today: {
+    label: "Today",
+    eyebrow: "Today · goals",
+    centerLabel: "Today",
+    resetCadence: "Day resets at midnight",
+  },
+  week: {
+    label: "This week",
+    eyebrow: "This week · goals",
+    centerLabel: "Week",
+    resetCadence: "Week resets every Monday",
+  },
+  month: {
+    label: "This month",
+    eyebrow: "This month · goals",
+    centerLabel: "Month",
+    resetCadence: "Month resets on the 1st",
+  },
+};
+
+function formatRangeLabel(period: RingsPeriod): string {
+  const now = new Date();
+  if (period === "today") return format(now, "EEE d MMM");
+  if (period === "week") {
+    const s = startOfWeek(now, { weekStartsOn: 1 });
+    const e = endOfWeek(now, { weekStartsOn: 1 });
+    return `${format(s, "EEE d")} – ${format(e, "EEE d")}`;
   }
-  return `${format(start, "EEE d MMM")} – ${format(end, "EEE d MMM yyyy")}`;
+  return format(now, "MMMM yyyy");
 }
 
-interface PeriodTotals {
-  lessons: number;
-  earnings: number;
-  messages: number;
+/* -------------------------------------------------------------------------- */
+/*                              Ring composition                              */
+/* -------------------------------------------------------------------------- */
+
+interface RingDef {
+  key: "lessons" | "earnings" | "hours";
+  radius: number;
+  color: string;
+  track: string;
 }
 
-async function fetchPeriodTotals(
-  instructorId: string,
-  start: Date,
-  end: Date
-): Promise<PeriodTotals> {
-  const startStr = format(start, "yyyy-MM-dd");
-  const endStr = format(end, "yyyy-MM-dd");
+const RINGS: RingDef[] = [
+  { key: "lessons", radius: 68, color: TXT.red, track: TXT.redTint },
+  { key: "earnings", radius: 54, color: TXT.blue, track: TXT.blueTint },
+  { key: "hours", radius: 40, color: TXT.green, track: TXT.greenTint },
+];
 
-  const [lessonsRes, instructorRes, conversationsRes] = await Promise.all([
-    supabase
-      .from("scheduled_lessons")
-      .select("duration_minutes, amount_due")
-      .eq("instructor_id", instructorId)
-      .gte("lesson_date", startStr)
-      .lte("lesson_date", endStr)
-      .neq("status", "cancelled"),
-    supabase.from("instructors").select("hourly_rate").eq("id", instructorId).maybeSingle(),
-    supabase.from("conversations").select("id").eq("instructor_id", instructorId),
-  ]);
+const STROKE_WIDTH = 8;
 
-  const lessons = lessonsRes.data ?? [];
-  const hourlyRate = instructorRes.data?.hourly_rate ?? 35;
-  const minutes = lessons.reduce((sum, l) => sum + (l.duration_minutes || 0), 0);
-  const earnings = Math.round((minutes / 60) * hourlyRate);
-
-  let messages = 0;
-  const convIds = (conversationsRes.data ?? []).map((c) => c.id);
-  if (convIds.length > 0) {
-    const startIso = new Date(start).toISOString();
-    const endIso = new Date(end.getTime() + 24 * 60 * 60 * 1000 - 1).toISOString();
-    const { data: msgs } = await supabase
-      .from("messages")
-      .select("conversation_id")
-      .in("conversation_id", convIds)
-      .gte("created_at", startIso)
-      .lte("created_at", endIso);
-    const distinct = new Set((msgs ?? []).map((m) => m.conversation_id));
-    messages = distinct.size;
-  }
-
-  return { lessons: lessons.length, earnings, messages };
+function clampPct(value: number, goal: number): number {
+  if (!goal || goal <= 0) return 0;
+  return Math.max(0, Math.min(1, value / goal));
 }
 
-function usePeriodStats(instructorId: string | undefined, period: PeriodOption) {
-  const current = period.range();
-  const previous = period.previousRange();
-
-  const currentQuery = useQuery({
-    queryKey: ["week-glance-totals", instructorId, period.key, "current"],
-    queryFn: () => fetchPeriodTotals(instructorId!, current.start, current.end),
-    enabled: !!instructorId,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const previousQuery = useQuery({
-    queryKey: ["week-glance-totals", instructorId, period.key, "previous"],
-    queryFn: () => fetchPeriodTotals(instructorId!, previous.start, previous.end),
-    enabled: !!instructorId,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  return {
-    current: currentQuery.data,
-    previous: previousQuery.data,
-    isLoading: currentQuery.isLoading || previousQuery.isLoading,
-    range: current,
-  };
+interface ProgressRingsProps {
+  progress: { lessons: number; earnings: number; hours: number }; // 0..1
 }
 
-type TrendVariant = "up" | "down" | "flat" | "new";
-
-interface TrendInfo {
-  variant: TrendVariant;
-  pct: number | null;
-}
-
-function computeTrend(current: number, previous: number | undefined): TrendInfo {
-  if (previous === undefined) return { variant: "flat", pct: null };
-  if (previous === 0 && current === 0) return { variant: "flat", pct: null };
-  if (previous === 0 && current > 0) return { variant: "new", pct: null };
-  const pct = Math.round(((current - previous) / previous) * 100);
-  if (pct === 0) return { variant: "flat", pct: 0 };
-  return { variant: pct > 0 ? "up" : "down", pct: Math.abs(pct) };
-}
-
-function TrendPill({ trend }: { trend: TrendInfo }) {
-  let bg = "#F2F2F4";
-  let color = TXT.secondary;
-  let icon: React.ReactNode = <span style={{ fontSize: 10, lineHeight: 1, color }}>—</span>;
-  let label: React.ReactNode = null;
-
-  if (trend.variant === "up") {
-    bg = "#E8F3E8";
-    color = "#3B8B3B";
-    icon = <ArrowUp size={8} strokeWidth={1.6} color={color} />;
-    label = trend.pct;
-  } else if (trend.variant === "down") {
-    bg = "#FBEAEC";
-    color = "#C8434F";
-    icon = <ArrowDown size={8} strokeWidth={1.6} color={color} />;
-    label = trend.pct;
-  } else if (trend.variant === "new") {
-    bg = "#E8F3E8";
-    color = "#3B8B3B";
-    icon = null;
-    label = "New";
-  }
-
+function ProgressRings({ progress }: ProgressRingsProps) {
   return (
-    <span
-      style={{
-        background: bg,
-        borderRadius: 4,
-        padding: "1px 5px",
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 2,
-        color,
-        fontSize: 9,
-        fontWeight: 500,
-        lineHeight: 1.2,
-      }}
-    >
-      {icon}
-      {label !== null && <span>{label}</span>}
-    </span>
+    <svg width={160} height={160} viewBox="0 0 160 160">
+      <g transform="rotate(-90 80 80)">
+        {RINGS.map((ring) => {
+          const c = 2 * Math.PI * ring.radius;
+          const pct = progress[ring.key];
+          return (
+            <g key={ring.key}>
+              <circle
+                cx={80}
+                cy={80}
+                r={ring.radius}
+                fill="none"
+                stroke={ring.track}
+                strokeWidth={STROKE_WIDTH}
+              />
+              <motion.circle
+                cx={80}
+                cy={80}
+                r={ring.radius}
+                fill="none"
+                stroke={ring.color}
+                strokeWidth={STROKE_WIDTH}
+                strokeLinecap="round"
+                strokeDasharray={c}
+                initial={false}
+                animate={{ strokeDashoffset: c * (1 - pct) }}
+                transition={{ duration: 0.45, ease: [0.2, 0.7, 0.2, 1] }}
+              />
+            </g>
+          );
+        })}
+      </g>
+    </svg>
   );
 }
 
-interface MiniStatProps {
-  iconBg: string;
-  icon: React.ReactNode;
-  value: string;
-  label: string;
-  trend: TrendInfo;
-  onClick: () => void;
+/* -------------------------------------------------------------------------- */
+/*                            Animated count number                           */
+/* -------------------------------------------------------------------------- */
+
+function AnimatedPercent({ value }: { value: number }) {
+  const [display, setDisplay] = useState(value);
+  const fromRef = useRef(value);
+  useEffect(() => {
+    const from = fromRef.current;
+    const to = value;
+    if (from === to) return;
+    const start = performance.now();
+    const dur = 350;
+    let raf = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDisplay(Math.round(from + (to - from) * eased));
+      if (t < 1) raf = requestAnimationFrame(tick);
+      else fromRef.current = to;
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
+  return <>{display}%</>;
 }
 
-function MiniStat({ iconBg, icon, value, label, trend, onClick }: MiniStatProps) {
+/* -------------------------------------------------------------------------- */
+/*                              Goals editor sheet                            */
+/* -------------------------------------------------------------------------- */
+
+interface GoalsEditorProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  initial: AllGoals;
+  initialPeriod: RingsPeriod;
+  onSave: (goals: AllGoals) => void;
+}
+
+function GoalsEditor({
+  open,
+  onOpenChange,
+  initial,
+  initialPeriod,
+  onSave,
+}: GoalsEditorProps) {
+  const [draft, setDraft] = useState<AllGoals>(initial);
+  const [period, setPeriod] = useState<RingsPeriod>(initialPeriod);
+
+  useEffect(() => {
+    if (open) {
+      setDraft(initial);
+      setPeriod(initialPeriod);
+    }
+  }, [open, initial, initialPeriod]);
+
+  const dirty = JSON.stringify(draft) !== JSON.stringify(initial);
+  const current = draft[period];
+
+  const update = (key: keyof PeriodGoals, raw: string) => {
+    const num = Math.max(0, Math.round(Number(raw) || 0));
+    setDraft((d) => ({ ...d, [period]: { ...d[period], [key]: num } }));
+  };
+
+  const reset = () => {
+    setDraft({
+      today: getDefaultGoals("today"),
+      week: getDefaultGoals("week"),
+      month: getDefaultGoals("month"),
+    });
+  };
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        background: "#FFFFFF",
-        border: `0.5px solid ${TXT.hairline}`,
-        borderRadius: 10,
-        padding: 12,
-        textAlign: "left",
-        width: "100%",
-        cursor: "pointer",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <IOSSheet open={open} onOpenChange={onOpenChange} snapPoints={[0.7, 0.95]}>
+      <IOSSheetHeader>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr auto 1fr",
+            alignItems: "center",
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: 0,
+              fontSize: 15,
+              color: TXT.blue,
+              fontFamily: FONT_STACK,
+              textAlign: "left",
+              cursor: "pointer",
+            }}
+          >
+            Cancel
+          </button>
+          <IOSSheetTitle>Goals</IOSSheetTitle>
+          <button
+            type="button"
+            disabled={!dirty}
+            onClick={() => {
+              haptics.selection();
+              onSave(draft);
+              onOpenChange(false);
+            }}
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: 0,
+              fontSize: 15,
+              fontWeight: 600,
+              color: dirty ? TXT.blue : "#C7C7CC",
+              fontFamily: FONT_STACK,
+              textAlign: "right",
+              cursor: dirty ? "pointer" : "default",
+            }}
+          >
+            Save
+          </button>
+        </div>
+      </IOSSheetHeader>
+      <IOSSheetBody>
+        <div style={{ display: "flex", flexDirection: "column", gap: 18, paddingTop: 12 }}>
+          {/* Period selector */}
+          <div
+            role="tablist"
+            style={{
+              padding: 4,
+              background: "#F2F2F4",
+              borderRadius: 10,
+              display: "grid",
+              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+              gap: 4,
+            }}
+          >
+            {PERIOD_ORDER.map((p) => {
+              const active = p === period;
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setPeriod(p)}
+                  style={{
+                    padding: "8px 0",
+                    borderRadius: 8,
+                    fontSize: 13,
+                    fontWeight: active ? 500 : 400,
+                    color: active ? "#000000" : TXT.secondary,
+                    background: active ? "#FFFFFF" : "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    fontFamily: FONT_STACK,
+                  }}
+                >
+                  {PERIOD_META[p].label}
+                </button>
+              );
+            })}
+          </div>
+
+          <GoalField
+            label="Lessons"
+            iconBg={TXT.redTint}
+            iconColor={TXT.red}
+            icon={<Calendar size={14} strokeWidth={1.8} color={TXT.red} />}
+            value={current.lessons}
+            onChange={(v) => update("lessons", v)}
+            suffix=""
+          />
+          <GoalField
+            label="Earnings"
+            iconBg={TXT.blueTint}
+            iconColor={TXT.blue}
+            icon={
+              <span style={{ fontSize: 13, fontWeight: 500, color: TXT.blue, lineHeight: 1 }}>
+                £
+              </span>
+            }
+            value={current.earnings}
+            onChange={(v) => update("earnings", v)}
+            prefix="£"
+          />
+          <GoalField
+            label="Hours taught"
+            iconBg={TXT.greenTint}
+            iconColor={TXT.green}
+            icon={<Clock size={14} strokeWidth={1.8} color={TXT.green} />}
+            value={current.hours}
+            onChange={(v) => update("hours", v)}
+            suffix="h"
+          />
+
+          <button
+            type="button"
+            onClick={reset}
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: "8px 0",
+              fontSize: 13,
+              fontWeight: 500,
+              color: TXT.blue,
+              cursor: "pointer",
+              alignSelf: "center",
+              fontFamily: FONT_STACK,
+            }}
+          >
+            Reset to defaults
+          </button>
+        </div>
+      </IOSSheetBody>
+    </IOSSheet>
+  );
+}
+
+interface GoalFieldProps {
+  label: string;
+  icon: React.ReactNode;
+  iconBg: string;
+  iconColor: string;
+  value: number;
+  onChange: (raw: string) => void;
+  prefix?: string;
+  suffix?: string;
+}
+
+function GoalField({
+  label,
+  icon,
+  iconBg,
+  value,
+  onChange,
+  prefix,
+  suffix,
+}: GoalFieldProps) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 500,
+          color: TXT.secondary,
+          letterSpacing: 0.3,
+          textTransform: "uppercase",
+          fontFamily: FONT_STACK,
+        }}
+      >
+        {label}
+      </span>
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 8,
+          gap: 10,
+          background: "#F7F7F8",
+          border: `0.5px solid ${TXT.hairline}`,
+          borderRadius: 10,
+          padding: "10px 12px",
         }}
       >
         <span
           style={{
-            width: 26,
-            height: 26,
-            borderRadius: 7,
+            width: 28,
+            height: 28,
+            borderRadius: 8,
             background: iconBg,
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
+            flexShrink: 0,
           }}
         >
           {icon}
         </span>
-        <TrendPill trend={trend} />
+        <div style={{ display: "flex", alignItems: "center", gap: 4, flex: 1 }}>
+          {prefix && (
+            <span style={{ fontSize: 17, color: TXT.primary, fontFamily: FONT_STACK }}>
+              {prefix}
+            </span>
+          )}
+          <input
+            inputMode="numeric"
+            type="number"
+            min={0}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            style={{
+              flex: 1,
+              border: "none",
+              outline: "none",
+              background: "transparent",
+              fontSize: 17,
+              fontWeight: 500,
+              color: TXT.primary,
+              fontFamily: FONT_STACK,
+              padding: 0,
+              minWidth: 0,
+            }}
+          />
+          {suffix && (
+            <span style={{ fontSize: 13, color: TXT.secondary, fontFamily: FONT_STACK }}>
+              {suffix}
+            </span>
+          )}
+        </div>
       </div>
-      <div
-        style={{
-          fontSize: 18,
-          fontWeight: 500,
-          color: TXT.primary,
-          letterSpacing: "-0.3px",
-          margin: 0,
-          lineHeight: 1.1,
-        }}
-      >
-        {value}
-      </div>
-      <div style={{ fontSize: 11, color: TXT.secondary, margin: "1px 0 0" }}>{label}</div>
-    </button>
+    </div>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/*                                 Main card                                  */
+/* -------------------------------------------------------------------------- */
 
 interface WeekAtAGlanceCardProps {
   instructorId: string | undefined;
@@ -318,23 +480,50 @@ interface WeekAtAGlanceCardProps {
 
 export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
   const navigate = useNavigate();
-  const [periodKey, setPeriodKey] = useState<PeriodKey>("this-week");
-  const period = PERIODS.find((p) => p.key === periodKey) ?? PERIODS[0];
-  const { current, previous, range } = usePeriodStats(instructorId, period);
+  const [period, setPeriod] = useState<RingsPeriod>("today");
+  const [goals, setGoals] = useState<AllGoals>(() => loadGoals(instructorId));
+  const [editorOpen, setEditorOpen] = useState(false);
+  const customised = useMemo(() => hasCustomGoals(instructorId), [instructorId]);
 
-  const lessons = current?.lessons ?? 0;
-  const earnings = current?.earnings ?? 0;
-  const messages = current?.messages ?? 0;
+  useEffect(() => {
+    setGoals(loadGoals(instructorId));
+  }, [instructorId]);
 
-  const lessonTrend = useMemo(() => computeTrend(lessons, previous?.lessons), [lessons, previous]);
-  const earningsTrend = useMemo(
-    () => computeTrend(earnings, previous?.earnings),
-    [earnings, previous]
-  );
-  const messagesTrend = useMemo(
-    () => computeTrend(messages, previous?.messages),
-    [messages, previous]
-  );
+  const { data: stats } = useInstructorPeriodStats(instructorId, period);
+  const lessons = stats?.lessons ?? 0;
+  const earnings = stats?.earnings ?? 0;
+  const hours = stats?.hours ?? 0;
+
+  const goal = goals[period];
+  const lessonsPct = clampPct(lessons, goal.lessons);
+  const earningsPct = clampPct(earnings, goal.earnings);
+  const hoursPct = clampPct(hours, goal.hours);
+  const overall = Math.round(((lessonsPct + earningsPct + hoursPct) / 3) * 100);
+
+  /* swipe handling */
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current == null || touchStartY.current == null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+    touchStartX.current = null;
+    touchStartY.current = null;
+    if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
+    const idx = PERIOD_ORDER.indexOf(period);
+    const nextIdx =
+      dx < 0 ? Math.min(PERIOD_ORDER.length - 1, idx + 1) : Math.max(0, idx - 1);
+    if (nextIdx !== idx) {
+      haptics.selection();
+      setPeriod(PERIOD_ORDER[nextIdx]);
+    }
+  };
+
+  const meta = PERIOD_META[period];
 
   const currencyFormatter = new Intl.NumberFormat("en-GB", {
     style: "currency",
@@ -342,110 +531,365 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
     maximumFractionDigits: 0,
   });
 
+  const goEarnings = () => navigate("/instructor/pay");
+  const goLessons = () => navigate("/instructor/schedule");
+  const goHours = () => navigate("/instructor/schedule");
+
+  const handleSaveGoals = (next: AllGoals) => {
+    setGoals(next);
+    saveGoals(instructorId, next);
+  };
+
   return (
-    <div
-      style={{
-        background: "#FFFFFF",
-        border: `0.5px solid ${TXT.hairline}`,
-        borderRadius: a11yPx(12),
-        padding: 16,
-      }}
-    >
+    <>
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 12,
+          background: "#FFFFFF",
+          border: `0.5px solid ${TXT.hairline}`,
+          borderRadius: a11yPx(12),
+          padding: 16,
         }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
-        <p
+        {/* Header */}
+        <div
           style={{
-            fontSize: 11,
-            fontWeight: 500,
-            color: TXT.secondary,
-            letterSpacing: "0.3px",
-            textTransform: "uppercase",
-            margin: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
           }}
         >
-          {period.label}
-        </p>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
+          <p
+            style={{
+              fontSize: 11,
+              fontWeight: 500,
+              color: TXT.secondary,
+              letterSpacing: "0.3px",
+              textTransform: "uppercase",
+              margin: 0,
+              fontFamily: FONT_STACK,
+            }}
+          >
+            {meta.eyebrow}
+          </p>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              color: TXT.blue,
+              fontSize: 12,
+              fontWeight: 500,
+              fontFamily: FONT_STACK,
+            }}
+          >
+            <span>{formatRangeLabel(period)}</span>
+            <ChevronDown size={10} strokeWidth={1.6} color={TXT.blue} />
+          </div>
+        </div>
+
+        {/* Segmented control */}
+        <div
+          role="tablist"
+          aria-label="Period"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+            gap: 4,
+            background: "#F2F2F4",
+            borderRadius: 8,
+            padding: 3,
+            marginBottom: 16,
+          }}
+        >
+          {PERIOD_ORDER.map((p) => {
+            const active = p === period;
+            return (
+              <button
+                key={p}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => {
+                  if (p !== period) {
+                    haptics.selection();
+                    setPeriod(p);
+                  }
+                }}
+                style={{
+                  padding: "6px 0",
+                  borderRadius: 6,
+                  background: active ? "#FFFFFF" : "transparent",
+                  border: "none",
+                  fontSize: 12,
+                  fontWeight: active ? 500 : 400,
+                  color: active ? "#000000" : TXT.secondary,
+                  cursor: "pointer",
+                  fontFamily: FONT_STACK,
+                }}
+              >
+                {PERIOD_META[p].label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Ring composition */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ position: "relative", width: 160, height: 160 }}>
+            <ProgressRings
+              progress={{
+                lessons: lessonsPct,
+                earnings: earningsPct,
+                hours: hoursPct,
+              }}
+            />
+            <div
               style={{
-                background: "transparent",
-                border: "none",
-                padding: 0,
-                display: "inline-flex",
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
-                gap: 4,
-                cursor: "pointer",
-                color: TXT.blue,
-                fontSize: 12,
-                fontWeight: 500,
+                pointerEvents: "none",
               }}
             >
-              <span>{formatRange(range.start, range.end)}</span>
-              <ChevronDown size={10} strokeWidth={1.6} color={TXT.blue} />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {PERIODS.map((opt) => (
-              <DropdownMenuItem key={opt.key} onSelect={() => setPeriodKey(opt.key)}>
-                {opt.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: TXT.secondary,
+                  letterSpacing: "0.3px",
+                  textTransform: "uppercase",
+                  margin: 0,
+                  fontFamily: FONT_STACK,
+                }}
+              >
+                {meta.centerLabel}
+              </span>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={period}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.2 }}
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 500,
+                    color: TXT.primary,
+                    letterSpacing: "-0.3px",
+                    lineHeight: 1.1,
+                    margin: 0,
+                    fontFamily: FONT_STACK,
+                  }}
+                >
+                  <AnimatedPercent value={overall} />
+                </motion.span>
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+
+        {/* Page indicator dots */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 6,
+            marginBottom: 14,
+          }}
+        >
+          {PERIOD_ORDER.map((p) => (
+            <span
+              key={p}
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: p === period ? "#000000" : "#C7C7CC",
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Legend */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <LegendRow
+            color={TXT.red}
+            name="Lessons"
+            value={`${lessons} of ${goal.lessons}`}
+            pct={Math.round(lessonsPct * 100)}
+            onClick={goLessons}
+          />
+          <LegendRow
+            color={TXT.blue}
+            name="Earned"
+            value={`${currencyFormatter.format(earnings)} of ${currencyFormatter.format(goal.earnings)}`}
+            pct={Math.round(earningsPct * 100)}
+            onClick={goEarnings}
+          />
+          <LegendRow
+            color={TXT.green}
+            name="Hours taught"
+            value={`${hours} of ${goal.hours}`}
+            pct={Math.round(hoursPct * 100)}
+            onClick={goHours}
+          />
+        </div>
+
+        {/* Footer */}
+        <div
+          style={{
+            marginTop: 14,
+            paddingTop: 12,
+            borderTop: `0.5px solid ${TXT.hairline}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <p
+            style={{
+              fontSize: 11,
+              color: TXT.secondary,
+              margin: 0,
+              fontFamily: FONT_STACK,
+            }}
+          >
+            {meta.resetCadence}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              haptics.selection();
+              setEditorOpen(true);
+            }}
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: 0,
+              fontSize: 11,
+              fontWeight: 500,
+              color: TXT.blue,
+              cursor: "pointer",
+              fontFamily: FONT_STACK,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            {customised ? "Edit goals" : "Set goals"}
+            {!customised && (
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: TXT.blue,
+                }}
+              />
+            )}
+          </button>
+        </div>
       </div>
 
-      <div
+      <GoalsEditor
+        open={editorOpen}
+        onOpenChange={setEditorOpen}
+        initial={goals}
+        initialPeriod={period}
+        onSave={handleSaveGoals}
+      />
+    </>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                Legend row                                  */
+/* -------------------------------------------------------------------------- */
+
+interface LegendRowProps {
+  color: string;
+  name: string;
+  value: string;
+  pct: number;
+  onClick: () => void;
+}
+
+function LegendRow({ color, name, value, pct, onClick }: LegendRowProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        background: "transparent",
+        border: "none",
+        padding: "6px 4px",
+        borderRadius: 8,
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        width: "100%",
+        textAlign: "left",
+        cursor: "pointer",
+        fontFamily: FONT_STACK,
+      }}
+    >
+      <span
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-          gap: 8,
+          width: 10,
+          height: 10,
+          borderRadius: "50%",
+          background: color,
+          flexShrink: 0,
+        }}
+      />
+      <span
+        style={{
+          fontSize: 13,
+          fontWeight: 500,
+          color: TXT.primary,
+          letterSpacing: "-0.1px",
+          flexShrink: 0,
         }}
       >
-        <MiniStat
-          iconBg="#E6F1FB"
-          icon={<Calendar size={14} strokeWidth={2} color="#2B7BC8" />}
-          value={lessons.toLocaleString("en-GB")}
-          label="Lessons"
-          trend={lessonTrend}
-          onClick={() => navigate("/instructor/schedule")}
-        />
-        <MiniStat
-          iconBg="#E8F3E8"
-          icon={
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 500,
-                color: "#3B8B3B",
-                lineHeight: 1,
-                fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-              }}
-            >
-              £
-            </span>
-          }
-          value={currencyFormatter.format(earnings)}
-          label="Earned"
-          trend={earningsTrend}
-          onClick={() => navigate("/instructor/pay")}
-        />
-        <MiniStat
-          iconBg="#FBF1DE"
-          icon={<MessageCircle size={14} strokeWidth={2} color="#B8801F" />}
-          value={messages.toLocaleString("en-GB")}
-          label="Messages"
-          trend={messagesTrend}
-          onClick={() => navigate("/instructor/messages")}
-        />
-      </div>
-    </div>
+        {name}
+      </span>
+      <span
+        style={{
+          fontSize: 13,
+          color: TXT.secondary,
+          flex: 1,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {value}
+      </span>
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 500,
+          color,
+          minWidth: 32,
+          textAlign: "right",
+        }}
+      >
+        {pct}%
+      </span>
+    </button>
   );
 }
