@@ -35,13 +35,13 @@ interface CategoryColor {
 }
 
 export const TILE_CATEGORY_COLORS: Record<TileCategory, CategoryColor> = {
-  education: { accent: "#7C3AED", tint: "rgba(139,92,246,0.18)" },
-  schedule:  { accent: "#2563EB", tint: "rgba(59,130,246,0.18)" },
-  people:    { accent: "#16A34A", tint: "rgba(34,197,94,0.18)" },
-  location:  { accent: "#DC2626", tint: "rgba(239,68,68,0.18)" },
-  settings:  { accent: "#4B5563", tint: "rgba(107,114,128,0.18)" },
-  insights:  { accent: "#7C3AED", tint: "rgba(139,92,246,0.18)" },
-  money:     { accent: "#D97706", tint: "rgba(245,158,11,0.18)" },
+  education: { accent: "#7C3AED", tint: "rgba(139,92,246,0.15)" },
+  schedule:  { accent: "#2563EB", tint: "rgba(59,130,246,0.15)" },
+  people:    { accent: "#16A34A", tint: "rgba(34,197,94,0.15)" },
+  location:  { accent: "#DC2626", tint: "rgba(239,68,68,0.15)" },
+  settings:  { accent: "#4B5563", tint: "rgba(107,114,128,0.15)" },
+  insights:  { accent: "#7C3AED", tint: "rgba(139,92,246,0.15)" },
+  money:     { accent: "#D97706", tint: "rgba(245,158,11,0.15)" },
 };
 
 // ---- Tile ------------------------------------------------------------------
@@ -95,14 +95,14 @@ export function InstructorTile({
         background: "#F8FAFC",
         border: "none",
         boxShadow:
-          "8px 8px 16px rgba(0,0,0,0.06), -8px -8px 16px rgba(255,255,255,0.9)",
-        borderRadius: 20,
-        padding: 24,
-        minHeight: 124,
+          "6px 6px 12px rgba(0,0,0,0.06), -6px -6px 12px rgba(255,255,255,0.9)",
+        borderRadius: 18,
+        padding: 20,
+        minHeight: 110,
         display: "flex",
         flexDirection: "column",
         alignItems: "flex-start",
-        gap: 16,
+        gap: 12,
         textAlign: "left",
         cursor: onPress ? "pointer" : "default",
         fontFamily: FONT_STACK,
@@ -112,20 +112,18 @@ export function InstructorTile({
       <div
         style={{
           position: "relative",
-          width: 52,
-          height: 52,
-          borderRadius: 14,
+          width: 40,
+          height: 40,
+          borderRadius: 12,
           background: colors.tint,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           flexShrink: 0,
-          boxShadow:
-            "2px 2px 5px rgba(0,0,0,0.05), inset 1px 1px 2px rgba(255,255,255,0.6)",
         }}
       >
         <Icon
-          size={24}
+          size={22}
           color={colors.accent}
           strokeWidth={2}
           strokeLinecap="round"
@@ -153,18 +151,18 @@ export function InstructorTile({
               position: "absolute",
               top: -6,
               right: -6,
-              minWidth: 22,
-              height: 22,
+              minWidth: 20,
+              height: 20,
               padding: "0 6px",
-              borderRadius: 11,
+              borderRadius: 10,
               background: colors.accent,
               color: "#FFFFFF",
               fontSize: 11,
               fontWeight: 600,
-              lineHeight: "22px",
+              lineHeight: "20px",
               textAlign: "center",
               fontVariantNumeric: "tabular-nums",
-              boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
             }}
           >
             {count}
@@ -176,11 +174,11 @@ export function InstructorTile({
         <p
           style={{
             fontSize: "0.9375em", /* 15px @ default */
-            fontWeight: 600,
+            fontWeight: 500,
             color: "#111827",
             letterSpacing: "-0.2px",
             lineHeight: 1.25,
-            margin: "0 0 4px",
+            margin: "0 0 3px",
           }}
         >
           {title}
@@ -235,8 +233,8 @@ export function InstructorTileGrid({
         }
         @media (hover: hover) {
           .instructor-tile:hover {
-            transform: translateY(-3px);
-            box-shadow: 10px 10px 20px rgba(0,0,0,0.08), -10px -10px 20px rgba(255,255,255,1);
+            transform: translateY(-2px);
+            box-shadow: 8px 8px 16px rgba(0,0,0,0.08), -8px -8px 16px rgba(255,255,255,1);
           }
         }
         .instructor-tile:active { transform: scale(0.98); }
@@ -252,7 +250,7 @@ export function InstructorTileGrid({
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          gap: 24,
+          gap: 16,
         }}
       >
         {children}

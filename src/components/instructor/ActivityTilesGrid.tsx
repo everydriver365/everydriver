@@ -69,84 +69,48 @@ export function ActivityTilesGrid(props: ActivityTilesGridProps) {
   const navigate = useNavigate();
   const allZero = TILES.every((t) => props[t.countKey] === 0);
 
-  const Header = (
-    <div style={{ padding: "0 16px", marginBottom: 12 }}>
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: "#6B7280",
-          letterSpacing: 0.4,
-          textTransform: "uppercase",
-          fontFamily:
-            '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
-        }}
-      >
-        Overview
-      </div>
-      <div
-        style={{
-          marginTop: 2,
-          fontSize: 13,
-          fontWeight: 400,
-          color: "#6B7280",
-          fontFamily:
-            '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
-        }}
-      >
-        Your activity at a glance
-      </div>
-    </div>
-  );
-
   if (allZero) {
     return (
-      <div style={{ paddingTop: 16 }}>
-        {Header}
-        <div style={{ padding: "0 16px" }}>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              padding: "10px 14px",
-              background: "#FFFFFF",
-              border: "0.5px solid #E5E5EA",
-              borderRadius: 12,
-            }}
-          >
-            <CheckCircle2 size={16} strokeWidth={2} color="#3B8B3B" />
-            <span style={{ fontSize: 13, fontWeight: 500, color: "#000000", fontFamily: "Inter, sans-serif" }}>
-              All clear — no actions needed
-            </span>
-          </motion.div>
-        </div>
+      <div style={{ padding: "0 16px", marginTop: 12 }}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            padding: "10px 14px",
+            background: "#FFFFFF",
+            border: "0.5px solid #E5E5EA",
+            borderRadius: 12,
+          }}
+        >
+          <CheckCircle2 size={16} strokeWidth={2} color="#3B8B3B" />
+          <span style={{ fontSize: 13, fontWeight: 500, color: "#000000", fontFamily: "Inter, sans-serif" }}>
+            All clear — no actions needed
+          </span>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div style={{ paddingTop: 16 }}>
-      {Header}
-      <InstructorTileGrid>
-        {TILES.map((t) => {
-          const count = props[t.countKey];
-          return (
-            <InstructorTile
-              key={t.id}
-              icon={t.icon}
-              title={t.title}
-              category={t.category}
-              onPress={() => navigate(t.route)}
-              count={count > 0 ? count : undefined}
-              subtitle={count > 0 ? t.filledSubtitle(count) : t.emptySubtitle}
-            />
-          );
-        })}
-      </InstructorTileGrid>
-    </div>
+    <InstructorTileGrid>
+      {TILES.map((t) => {
+        const count = props[t.countKey];
+        return (
+          <InstructorTile
+            key={t.id}
+            icon={t.icon}
+            title={t.title}
+            category={t.category}
+            onPress={() => navigate(t.route)}
+            count={count > 0 ? count : undefined}
+            subtitle={count > 0 ? t.filledSubtitle(count) : t.emptySubtitle}
+          />
+        );
+      })}
+    </InstructorTileGrid>
   );
 }
