@@ -132,8 +132,8 @@
   /* Light mode (default when present without .dsm-dark) */
   .instructor-portal,
   .dsm-instructor {
-    --dsm-bg: 0 0% 100%;          /* white — image provides texture */
-    --background: 216 92% 95%;      /* override global token so bg-background pages match */
+    --dsm-bg: 0 0% 96%;             /* plain grey #F4F4F4 */
+    --background: 0 0% 96%;         /* match for bg-background pages */
     --dsm-card: 0 0% 100%;          /* #FFFFFF */
     --dsm-text: 217 51% 12%;        /* #0F1B2D */
     --dsm-text-secondary: 213 22% 57%; /* #7A8FAA */
@@ -211,24 +211,12 @@
 
   .instructor-shell-bg {
     background-color: hsl(var(--dsm-bg, 35 17% 96%));
-    background-image: url('/src/assets/instructor-app-bg.png');
-    background-repeat: repeat;
-    background-size: 480px auto;
-    background-attachment: fixed;
     min-height: 100dvh;
     position: relative;
   }
   .instructor-shell-bg > * {
     position: relative;
     z-index: 1;
-  }
-
-  .instructor-portal,
-  .dsm-instructor {
-    background-image: url('/src/assets/instructor-app-bg.png');
-    background-repeat: repeat;
-    background-size: 480px auto;
-    background-attachment: fixed;
   }
 
   .dark {
