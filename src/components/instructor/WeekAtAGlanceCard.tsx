@@ -621,7 +621,7 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
             {meta.eyebrow}
           </p>
           <p style={{ fontSize: 15, fontWeight: 500, color: TXT.primary, margin: 0, letterSpacing: "-0.2px" }}>
-            {overall}% of goals
+            {lessons} {lessons === 1 ? "Lesson" : "Lessons"} Booked
           </p>
           <p style={{ fontSize: 12, color: TXT.secondary, margin: "2px 0 0" }}>
             Tap to view rings
