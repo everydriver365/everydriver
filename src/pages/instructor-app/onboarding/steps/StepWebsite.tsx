@@ -291,7 +291,7 @@ export function StepWebsite({
       <StepNavigation
         onBack={onBack}
         onNext={onNext}
-        canProceed={true}
+        canProceed={websiteChoice !== "booknow" || isValidUrl(data.personal_website_url || "")}
         nextLabel="Continue"
       />
     </OnboardingLayout>
