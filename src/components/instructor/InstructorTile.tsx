@@ -35,13 +35,13 @@ interface CategoryColor {
 }
 
 export const TILE_CATEGORY_COLORS: Record<TileCategory, CategoryColor> = {
-  education: { accent: "#7C3AED", tint: "rgba(139,92,246,0.15)" },
-  schedule:  { accent: "#2563EB", tint: "rgba(59,130,246,0.15)" },
-  people:    { accent: "#16A34A", tint: "rgba(34,197,94,0.15)" },
-  location:  { accent: "#DC2626", tint: "rgba(239,68,68,0.15)" },
-  settings:  { accent: "#4B5563", tint: "rgba(107,114,128,0.15)" },
-  insights:  { accent: "#7C3AED", tint: "rgba(139,92,246,0.15)" },
-  money:     { accent: "#D97706", tint: "rgba(245,158,11,0.15)" },
+  education: { accent: "#5B6BC9", tint: "#EEF0FB" },
+  schedule:  { accent: "#2B7BC8", tint: "#E6F1FB" },
+  people:    { accent: "#3B8B3B", tint: "#E8F3E8" },
+  location:  { accent: "#C8434F", tint: "#FBEAEC" },
+  settings:  { accent: "#6E6E73", tint: "#F2F2F4" },
+  insights:  { accent: "#8A5BC9", tint: "#F1ECFA" },
+  money:     { accent: "#B8801F", tint: "#FBF1DE" },
 };
 
 // ---- Tile ------------------------------------------------------------------
@@ -92,12 +92,11 @@ export function InstructorTile({
       className={`instructor-tile ${className ?? ""}`}
       style={{
         gridColumn: fullWidth ? "1 / span 2" : undefined,
-        background: "#F8FAFC",
-        border: "none",
-        boxShadow:
-          "6px 6px 12px rgba(0,0,0,0.06), -6px -6px 12px rgba(255,255,255,0.9)",
-        borderRadius: 18,
-        padding: 20,
+        background: "#FFFFFF",
+        border: "0.5px solid #EEF0F4",
+        boxShadow: "0 1px 2px rgba(20,30,60,0.04), 0 8px 20px rgba(20,30,60,0.08)",
+        borderRadius: 14,
+        padding: 16,
         minHeight: 110,
         display: "flex",
         flexDirection: "column",
@@ -114,7 +113,7 @@ export function InstructorTile({
           position: "relative",
           width: 40,
           height: 40,
-          borderRadius: 12,
+          borderRadius: 10,
           background: colors.tint,
           display: "flex",
           alignItems: "center",
@@ -162,7 +161,7 @@ export function InstructorTile({
               lineHeight: "20px",
               textAlign: "center",
               fontVariantNumeric: "tabular-nums",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+              boxShadow: "0 0 0 2px #FFFFFF",
             }}
           >
             {count}
@@ -175,7 +174,7 @@ export function InstructorTile({
           style={{
             fontSize: "0.9375em", /* 15px @ default */
             fontWeight: 500,
-            color: "#111827",
+            color: "#000000",
             letterSpacing: "-0.2px",
             lineHeight: 1.25,
             margin: "0 0 3px",
@@ -188,7 +187,7 @@ export function InstructorTile({
             style={{
               fontSize: "0.75em", /* 12px @ default */
               fontWeight: 400,
-              color: "#6B7280",
+              color: "#6E6E73",
               lineHeight: 1.35,
               margin: 0,
             }}
@@ -219,7 +218,7 @@ export function InstructorTileGrid({
     <div
       className={className}
       style={{
-        padding: padded ? "16px 16px 20px" : undefined,
+        padding: padded ? "16px 14px 20px" : undefined,
         fontFamily: FONT_STACK,
       }}
     >
@@ -233,11 +232,11 @@ export function InstructorTileGrid({
         }
         @media (hover: hover) {
           .instructor-tile:hover {
-            transform: translateY(-2px);
-            box-shadow: 8px 8px 16px rgba(0,0,0,0.08), -8px -8px 16px rgba(255,255,255,1);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(20,30,60,0.06), 0 14px 28px rgba(20,30,60,0.12);
           }
         }
-        .instructor-tile:active { transform: scale(0.98); }
+        .instructor-tile:active { transform: scale(0.97); }
         .instructor-tile-dot { animation: instructor-tile-pulse 1.6s ease-out infinite; }
         @media (prefers-reduced-motion: reduce) {
           .instructor-tile-dot { animation: none; }
@@ -250,7 +249,7 @@ export function InstructorTileGrid({
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          gap: 16,
+          gap: 12,
         }}
       >
         {children}
