@@ -648,7 +648,7 @@ export function InstructorMobileHome({
         {/* Telematics */}
         <div className="mt-5">
           <div className="px-4">
-            <SectionHeader title="Telematics" category="navigation" />
+            <SectionHeader title="Telematics" variant="eyebrow" />
           </div>
           <div className="mb-2">
             <TelematicsTile />
