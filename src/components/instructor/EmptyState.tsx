@@ -4,48 +4,44 @@ interface EmptyStateProps {
   icon: LucideIcon;
   title: string;
   subtitle?: string;
-  iconBg?: string;
+  /** Optional CTA button shown beneath the body copy. */
+  ctaLabel?: string;
+  onCtaPress?: () => void;
   iconColor?: string;
 }
+
+const FONT_STACK =
+  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
 
 export function EmptyState({
   icon: Icon,
   title,
   subtitle,
-  iconBg = "#F1ECFA",
-  iconColor = "#8A5BC9",
+  ctaLabel,
+  onCtaPress,
+  iconColor = "#C7C7CC",
 }: EmptyStateProps) {
   return (
     <div
-      className="flex flex-col items-center text-center"
+      className="flex flex-col items-center text-center shadow-premium"
       style={{
         background: "#FFFFFF",
-        border: "0.5px solid #E5E5EA",
-        borderRadius: 12,
-        padding: "32px 16px",
-        gap: 12,
+        borderRadius: 14,
+        padding: "36px 20px",
+        gap: 14,
+        fontFamily: FONT_STACK,
       }}
     >
-      <div
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: 12,
-          background: iconBg,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Icon size={24} strokeWidth={2} color={iconColor} />
-      </div>
+      <Icon size={64} strokeWidth={1.4} color={iconColor} aria-hidden />
       <div>
         <div
           style={{
-            fontSize: 15,
+            fontSize: 11,
             fontWeight: 500,
-            color: "#000000",
-            letterSpacing: "-0.2px",
+            color: "#6E6E73",
+            letterSpacing: "0.3px",
+            textTransform: "uppercase",
+            marginBottom: 6,
           }}
         >
           {title}
@@ -53,16 +49,36 @@ export function EmptyState({
         {subtitle && (
           <div
             style={{
-              fontSize: 12,
+              fontSize: 13,
               color: "#6E6E73",
-              lineHeight: 1.4,
-              marginTop: 4,
+              lineHeight: 1.45,
+              maxWidth: 280,
             }}
           >
             {subtitle}
           </div>
         )}
       </div>
+      {ctaLabel && onCtaPress && (
+        <button
+          type="button"
+          onClick={onCtaPress}
+          style={{
+            marginTop: 4,
+            background: "#2B7BC8",
+            color: "#FFFFFF",
+            border: "none",
+            borderRadius: 10,
+            padding: "10px 18px",
+            fontSize: 14,
+            fontWeight: 500,
+            cursor: "pointer",
+            fontFamily: FONT_STACK,
+          }}
+        >
+          {ctaLabel}
+        </button>
+      )}
     </div>
   );
 }
