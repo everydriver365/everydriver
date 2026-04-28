@@ -522,7 +522,7 @@ export function InstructorMobileHome({
       {/* 2. Activity Tiles Grid */}
       <ActivityTilesGrid
         pendingJobsCount={pendingJobsCount}
-        unreadMessagesCount={pupilMsgCount}
+        unreadMessagesCount={pupilMsgCount + visitorChatCount}
         testRequestsCount={testSwapCount}
         gapSlotsCount={gapSuggestions?.length || 0}
       />
