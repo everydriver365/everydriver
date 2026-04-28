@@ -89,12 +89,10 @@ export function InstructorTile({
       type="button"
       onClick={onPress}
       aria-label={ariaLabel ?? title}
-      className={`instructor-tile ${className ?? ""}`}
+      className={`instructor-tile shadow-premium ${className ?? ""}`}
       style={{
         gridColumn: fullWidth ? "1 / span 2" : undefined,
         background: "#FFFFFF",
-        border: "0.5px solid #EEF0F4",
-        boxShadow: "0 1px 2px rgba(20,30,60,0.04), 0 8px 20px rgba(20,30,60,0.08)",
         borderRadius: 14,
         padding: 16,
         minHeight: 110,
