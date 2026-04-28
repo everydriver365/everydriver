@@ -73,7 +73,7 @@ const PERIOD_META: Record<
   },
   month: {
     label: "This month",
-    eyebrow: "This month · goals",
+    eyebrow: "This month · your stats",
     centerLabel: "Month",
     resetCadence: "Month resets on the 1st",
   },
