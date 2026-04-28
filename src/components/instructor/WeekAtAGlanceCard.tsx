@@ -67,7 +67,7 @@ const PERIOD_META: Record<
   },
   week: {
     label: "This week",
-    eyebrow: "This week · goals",
+    eyebrow: "This week · your stats",
     centerLabel: "Week",
     resetCadence: "Week resets every Monday",
   },
