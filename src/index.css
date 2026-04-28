@@ -133,6 +133,7 @@
   .instructor-portal,
   .dsm-instructor {
     --dsm-bg: 216 92% 95%;          /* #E8F1FE */
+    --background: 216 92% 95%;      /* override global token so bg-background pages match */
     --dsm-card: 0 0% 100%;          /* #FFFFFF */
     --dsm-text: 217 51% 12%;        /* #0F1B2D */
     --dsm-text-secondary: 213 22% 57%; /* #7A8FAA */
