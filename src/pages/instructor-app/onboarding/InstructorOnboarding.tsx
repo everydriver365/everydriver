@@ -106,6 +106,7 @@ const initialData: OnboardingData = {
   slug: "",
   welcome_video_url: null,
   website_choice: "free",
+  personal_website_url: "",
   wantsDomain: false,
   wantsHosting: false,
   selectedDomain: null,
