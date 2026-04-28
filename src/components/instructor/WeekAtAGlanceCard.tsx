@@ -794,7 +794,7 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
                     letterSpacing: "-0.3px",
                     lineHeight: 1.1,
                     margin: 0,
-                    fontTabularNums: "tabular-nums",
+                    fontVariantNumeric: "tabular-nums",
                     fontFamily: FONT_STACK,
                   }}
                 >
