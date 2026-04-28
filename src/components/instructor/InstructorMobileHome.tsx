@@ -605,7 +605,7 @@ export function InstructorMobileHome({
           <div className="px-4">
             <SectionHeader
               title="Quick actions"
-              category="navigation"
+              variant="eyebrow"
               rightSlot={
                 <button
                   type="button"
