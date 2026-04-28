@@ -636,9 +636,9 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
     <>
       <div
         ref={cardRef}
+        className="shadow-premium"
         style={{
           background: "#FFFFFF",
-          border: `0.5px solid ${TXT.hairline}`,
           borderRadius: a11yPx(12),
           padding: 16,
         }}
