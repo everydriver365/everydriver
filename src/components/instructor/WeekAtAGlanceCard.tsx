@@ -677,20 +677,6 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
             <span>{formatRangeLabel(period)}</span>
             <ChevronDown size={10} strokeWidth={1.6} color={TXT.blue} style={{ transform: "rotate(180deg)" }} />
           </button>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              color: TXT.blue,
-              fontSize: 12,
-              fontWeight: 500,
-              fontFamily: FONT_STACK,
-            }}
-          >
-            <span>{formatRangeLabel(period)}</span>
-            <ChevronDown size={10} strokeWidth={1.6} color={TXT.blue} />
-          </div>
         </div>
 
         {/* Segmented control */}
