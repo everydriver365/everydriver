@@ -211,12 +211,24 @@
 
   .instructor-shell-bg {
     background-color: hsl(var(--dsm-bg, 35 17% 96%));
+    background-image: url('/src/assets/instructor-app-bg.png');
+    background-repeat: repeat;
+    background-size: 480px auto;
+    background-attachment: fixed;
     min-height: 100dvh;
     position: relative;
   }
   .instructor-shell-bg > * {
     position: relative;
     z-index: 1;
+  }
+
+  .instructor-portal,
+  .dsm-instructor {
+    background-image: url('/src/assets/instructor-app-bg.png');
+    background-repeat: repeat;
+    background-size: 480px auto;
+    background-attachment: fixed;
   }
 
   .dark {
