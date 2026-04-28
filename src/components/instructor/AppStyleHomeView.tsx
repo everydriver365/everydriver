@@ -119,7 +119,7 @@ export function AppStyleHomeView({
   };
 
   return (
-    <div className="flex-1 flex flex-col" style={{ backgroundColor: wallpaperColor || "#EEF1F5" }}>
+    <div className="flex-1 flex flex-col" style={{ backgroundColor: wallpaperColor || "#F3F5F9" }}>
 
       <div className="flex-1 overflow-y-auto px-5 pt-8 pb-20">
         <div className="grid grid-cols-4 gap-x-4 gap-y-5">
@@ -166,7 +166,7 @@ export function AppStyleHomeView({
 
                 <span
                   className="text-[11px] font-medium leading-tight text-center line-clamp-1 max-w-[64px]"
-                  style={{ color: getContrastTextColor(wallpaperColor || "#EEF1F5") }}
+                  style={{ color: getContrastTextColor(wallpaperColor || "#F3F5F9") }}
                 >
                   {action.title}
                 </span>

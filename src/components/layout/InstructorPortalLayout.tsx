@@ -275,7 +275,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const { layoutStyle, wallpaperColor } = useInstructorAppearance(instructor?.id);
   const isHomePage = location.pathname === "/instructor";
   const isAppStyle = isHomePage && layoutStyle === "schedule";
-  const mobileBg = wallpaperColor || "#EEF1F5";
+  const mobileBg = wallpaperColor || "#F3F5F9";
   const appStyleBg = isAppStyle ? mobileBg : undefined;
   const headerContrast = getContrastColor(mobileBg);
 
