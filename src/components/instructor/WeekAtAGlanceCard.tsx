@@ -483,6 +483,7 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
   const [period, setPeriod] = useState<RingsPeriod>("today");
   const [goals, setGoals] = useState<AllGoals>(() => loadGoals(instructorId));
   const [editorOpen, setEditorOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const customised = useMemo(() => hasCustomGoals(instructorId), [instructorId]);
 
   useEffect(() => {
