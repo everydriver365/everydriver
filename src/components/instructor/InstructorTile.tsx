@@ -114,7 +114,7 @@ export function InstructorTile({
           position: "relative",
           width: 40,
           height: 40,
-          borderRadius: 10,
+          borderRadius: 12,
           background: colors.tint,
           display: "flex",
           alignItems: "center",
