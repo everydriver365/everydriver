@@ -63,11 +63,21 @@ const websiteOptions = [
   },
   {
     id: "booknow" as const,
-    label: "Book Now Button",
+    label: "I already have my own website",
     icon: Code2,
-    description: "Already have your own website? We'll give you a 'Book Now' button you can add to your existing site to accept online bookings.",
+    description: "Skip the mini-website. We'll send you a 'Book Now' button you can drop into your existing site to take online bookings.",
   },
 ];
+
+function isValidUrl(value: string): boolean {
+  if (!value) return false;
+  try {
+    const url = new URL(value.startsWith("http") ? value : `https://${value}`);
+    return !!url.hostname && url.hostname.includes(".");
+  } catch {
+    return false;
+  }
+}
 
 export function StepWebsite({
   data,
