@@ -153,17 +153,37 @@ export function StepWebsite({
           })}
         </div>
 
-        {/* Post-signup message for custom / booknow */}
-        {websiteChoice !== "free" && (
+        {/* Booknow: capture existing website URL */}
+        {websiteChoice === "booknow" && (
+          <div className="space-y-3 bg-muted/40 border border-border rounded-xl p-5">
+            <Label htmlFor="existing-website-url" className="flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              Your existing website URL
+            </Label>
+            <Input
+              id="existing-website-url"
+              type="url"
+              inputMode="url"
+              autoComplete="url"
+              placeholder="https://www.yourdrivingschool.co.uk"
+              value={data.personal_website_url || ""}
+              onChange={(e) => onUpdate({ personal_website_url: e.target.value })}
+            />
+            <p className="text-xs text-muted-foreground">
+              We'll skip building you a mini-site and email you a Book Now button to embed on this site after sign-up.
+            </p>
+          </div>
+        )}
+
+        {/* Post-signup confirmation for custom */}
+        {websiteChoice === "custom" && (
           <div className="bg-success/5 border border-success/20 rounded-xl p-5 text-center space-y-2">
             <div className="flex items-center justify-center gap-2 text-success">
               <Check className="h-5 w-5" />
               <span className="font-medium">Great choice!</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              {websiteChoice === "custom"
-                ? "We'll arrange your custom website and domain with you after sign-up is complete."
-                : "We'll send you the Book Now button code and help you set it up after sign-up."}
+              We'll arrange your custom website and domain with you after sign-up is complete.
             </p>
           </div>
         )}
