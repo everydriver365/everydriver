@@ -175,7 +175,7 @@ export function InstructorTile({
           style={{
             fontSize: "0.9375em", /* 15px @ default */
             fontWeight: 500,
-            color: "#000000",
+            color: "#111827",
             letterSpacing: "-0.2px",
             lineHeight: 1.25,
             margin: "0 0 3px",
