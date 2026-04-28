@@ -235,8 +235,8 @@ export function InstructorTileGrid({
         }
         @media (hover: hover) {
           .instructor-tile:hover {
-            transform: translateY(-2px);
-            box-shadow: 8px 8px 16px rgba(0,0,0,0.08), -8px -8px 16px rgba(255,255,255,1);
+            transform: translateY(-3px);
+            box-shadow: 10px 10px 20px rgba(0,0,0,0.08), -10px -10px 20px rgba(255,255,255,1);
           }
         }
         .instructor-tile:active { transform: scale(0.98); }
