@@ -129,21 +129,24 @@ export function ActivityTilesGrid(props: ActivityTilesGridProps) {
   }
 
   return (
-    <InstructorTileGrid>
-      {TILES.map((t) => {
-        const count = props[t.countKey];
-        return (
-          <InstructorTile
-            key={t.id}
-            icon={t.icon}
-            title={t.title}
-            category={t.category}
-            onPress={() => navigate(t.route)}
-            count={count > 0 ? count : undefined}
-            subtitle={count > 0 ? t.filledSubtitle(count) : t.emptySubtitle}
-          />
-        );
-      })}
-    </InstructorTileGrid>
+    <div style={{ paddingTop: 16 }}>
+      {Header}
+      <InstructorTileGrid>
+        {TILES.map((t) => {
+          const count = props[t.countKey];
+          return (
+            <InstructorTile
+              key={t.id}
+              icon={t.icon}
+              title={t.title}
+              category={t.category}
+              onPress={() => navigate(t.route)}
+              count={count > 0 ? count : undefined}
+              subtitle={count > 0 ? t.filledSubtitle(count) : t.emptySubtitle}
+            />
+          );
+        })}
+      </InstructorTileGrid>
+    </div>
   );
 }
