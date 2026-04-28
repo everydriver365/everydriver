@@ -568,8 +568,10 @@ export function InstructorMobileHome({
                 <div className="px-4">
                   <SectionHeader
                     title="Next lesson"
-                    variant="eyebrow"
+                    category="navigation"
+                    titleColor="#042C53"
                     meta={nextLesson.pupilName}
+                    metaColor="#185FA5"
                   />
                 </div>
                 <NextUpTile
@@ -605,7 +607,7 @@ export function InstructorMobileHome({
           <div className="px-4">
             <SectionHeader
               title="Quick actions"
-              variant="eyebrow"
+              category="navigation"
               rightSlot={
                 <button
                   type="button"
@@ -640,7 +642,7 @@ export function InstructorMobileHome({
         {/* Insights Tiles */}
         <div className="mt-5">
           <div className="px-4">
-            <SectionHeader title="Insights" variant="eyebrow" />
+            <SectionHeader title="Insights" category="navigation" />
           </div>
           <InsightTilesGrid instructorId={instructorId} gapCount={gapSuggestions?.length || 0} />
         </div>
@@ -648,7 +650,7 @@ export function InstructorMobileHome({
         {/* Telematics */}
         <div className="mt-5">
           <div className="px-4">
-            <SectionHeader title="Telematics" variant="eyebrow" />
+            <SectionHeader title="Telematics" category="navigation" />
           </div>
           <div className="mb-2">
             <TelematicsTile />

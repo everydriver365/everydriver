@@ -557,13 +557,13 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
     return (
       <button
         type="button"
-        className="shadow-premium"
         onClick={() => {
           haptics.selection();
           setExpanded(true);
         }}
         style={{
           background: "#FFFFFF",
+          border: `0.5px solid ${TXT.hairline}`,
           borderRadius: a11yPx(12),
           padding: 16,
           width: "100%",
@@ -573,7 +573,6 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
           display: "flex",
           alignItems: "center",
           gap: 14,
-          border: "none",
         }}
         aria-label="Show progress rings"
       >
@@ -636,9 +635,9 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
     <>
       <div
         ref={cardRef}
-        className="shadow-premium"
         style={{
           background: "#FFFFFF",
+          border: `0.5px solid ${TXT.hairline}`,
           borderRadius: a11yPx(12),
           padding: 16,
         }}

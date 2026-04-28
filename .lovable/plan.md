@@ -1,52 +1,38 @@
-## Instructor Mobile UI Polish Pass
+## Make instructor tiles pop
 
-Four coordinated improvements scoped to the instructor portal only (`.instructor-portal` / `.dsm-instructor`). Mobile layouts are unchanged structurally — only visual styling, skeletons, and section headers.
+The current `InstructorTile` is intentionally flat (white card, 0.5px #E5E5EA border, `boxShadow: none`) on a near-white `#F4F7F6` background — that's why everything blends. Here are 4 levers, ranked by impact. We can apply 1, 2, or all of them.
 
-### 1. Unified tile elevation
+### Option A — Add lift via layered shadow (smallest change, biggest payoff)
+Replace `boxShadow: "none"` on `InstructorTile` with a soft 2-layer shadow (matches the existing `shadow-lift` token already used elsewhere in the app):
+```
+boxShadow: "0 1px 2px rgba(20,30,60,0.04), 0 8px 20px rgba(20,30,60,0.08)"
+```
+Drop the hairline border (or fade it to `#EEF0F4`) so the shadow does the separation work instead of the line. Result: tiles float off the page like the `BestMateTile` / `Card` components already do.
 
-Pick a single shadow system for all white tiles sitting on the new `#ECEEF1` background.
+### Option B — Warm up the background canvas
+The `#F4F7F6` page bg is too close to white. Two choices for the dashboard wrapper:
+1. Subtle vertical gradient `linear-gradient(180deg, #EEF2F7 0%, #E6ECF3 100%)` — cool slate, matches DSM brand.
+2. Flat `#EEF1F5` (already the DSM light theme surface token).
 
-- Standardise on `shadow-premium` (already defined in `index.css`).
-- Update `InstructorTile.tsx` to drop its custom inline `boxShadow` and use the shared class.
-- Update `InstructorCard.tsx` to use the same shadow tokens (already does — verify).
-- Result: every white tile (Quick actions, rings card, Next up, etc.) has identical elevation.
+Either gives white tiles real contrast without touching tile code.
 
-### 2. Soften / strengthen hairline borders
+### Option C — Tinted icon block becomes the full top edge
+Currently the coloured tint sits in a 40×40 rounded square. Instead, paint a **soft category-tinted top stripe** (or a 4px coloured top border) so each tile carries its category colour even at a glance. Keeps the white body but adds personality. Example for the "money" tile: 3px top border `#B8801F`, or a top-left radial wash from `colors.tint` fading to white.
 
-With the darker bg, `0.5px solid #EEF0F4` is invisible. Two paths chosen per component:
+### Option D — Press + hover micro-depth
+Add `:hover` shadow boost and keep the existing `:active scale(0.97)`:
+```
+.instructor-tile:hover { box-shadow: 0 2px 4px rgba(20,30,60,0.06), 0 14px 28px rgba(20,30,60,0.12); transform: translateY(-1px); }
+```
+Makes the grid feel alive when scrolled past.
 
-- **Tiles with shadow** (`InstructorTile`, `InstructorCard`, `WeekAtAGlanceCard`): remove the border entirely — let the unified shadow define the edge.
-- **Borderless surfaces inside tiles** (segmented controls, legend rows): keep `#E5E7EB` for clarity.
-
-### 3. Empty-state polish
-
-Upgrade the existing `EmptyState.tsx` component with:
-
-- A small monochrome line illustration slot (SVG, 64px, `#C7C7CC`).
-- Uppercase tracked title, body copy, and an optional CTA button styled like iOS.
-- Apply across "No lessons today", "No pupils yet", and "No outstanding tasks".
-
-No new illustrations created from scratch — use existing Lucide icons sized 64px with reduced opacity as the placeholder graphic.
-
-### 4. Consistent uppercase section headers
-
-Adopt the rings-card eyebrow style (`11px / 500 / #6E6E73 / 0.3px tracking / uppercase`) as the standard section header on the home screen.
-
-- Refactor `SectionHeader.tsx` to this exact style.
-- Apply above each home section: "UP NEXT", "QUICK ACTIONS", "TODAY", "QUICK SEARCHES".
-- Adds a strong iOS Settings-app rhythm to the home view.
+### Recommendation
+Ship **A + B + D** together — that's the standard "iOS widget" recipe and is fully consistent with your `BestMateTile` and `Card` aesthetic already in the codebase. Skip C unless you want the tiles to read as more colourful/playful (it's a brand shift).
 
 ### Files touched
+- `src/components/instructor/InstructorTile.tsx` — shadow, border, hover styles in the inline `<style>` block (lines 95–98 + 230–239).
+- `src/pages/InstructorPortal.tsx` (or whichever wrapper sets the `#F4F7F6` bg) — swap to `#EEF1F5` or the gradient.
 
-- `src/components/instructor/InstructorTile.tsx` — drop custom shadow + border, use `shadow-premium`.
-- `src/components/instructor/InstructorCard.tsx` — verify shadow token, drop any redundant border.
-- `src/components/instructor/WeekAtAGlanceCard.tsx` — remove the `0.5px hairline` border on collapsed + expanded card.
-- `src/components/instructor/EmptyState.tsx` — add icon prop, restyle.
-- `src/components/instructor/SectionHeader.tsx` — restyle to uppercase eyebrow.
-- `src/components/instructor/InstructorMobileHome.tsx` — wrap each section in `SectionHeader` for consistency (no layout/structural changes).
+No schema, no new components, no memory changes. ~15 lines edited total.
 
-### Out of scope (intentionally)
-
-- Any change to tile order, grid columns, or spacing rhythm beyond what `SectionHeader` provides.
-- Pull-to-refresh, sticky compact header, reorder mode, colour palette reduction — deferred to future passes.
-- Dark mode: tokens already scoped via `.dsm-dark`; visual changes here will inherit correctly.
+Reply with **A+B+D** (recommended), or pick any combination, and I'll implement.
