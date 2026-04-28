@@ -603,7 +603,7 @@ export function InstructorMobileHome({
         )}
 
         {/* Quick Access — Swipeable Grid */}
-        <div className="mt-5 py-4" style={{ backgroundColor: "#E8F1FE" }}>
+        <div className="mt-5 py-4">
           <div className="px-4">
             <SectionHeader
               title="Quick actions"
