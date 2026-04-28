@@ -653,6 +653,30 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
           >
             {meta.eyebrow}
           </p>
+          <button
+            type="button"
+            onClick={() => {
+              haptics.selection();
+              setExpanded(false);
+            }}
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: 0,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              color: TXT.blue,
+              fontSize: 12,
+              fontWeight: 500,
+              fontFamily: FONT_STACK,
+              cursor: "pointer",
+            }}
+            aria-label="Hide rings"
+          >
+            <span>{formatRangeLabel(period)}</span>
+            <ChevronDown size={10} strokeWidth={1.6} color={TXT.blue} style={{ transform: "rotate(180deg)" }} />
+          </button>
           <div
             style={{
               display: "inline-flex",
