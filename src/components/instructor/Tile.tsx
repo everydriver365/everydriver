@@ -238,13 +238,12 @@ export function Tile({
         type="button"
         onClick={onClick}
         aria-label={ariaLabel ?? title}
-        className="tile-press"
+        className="tile-press shadow-premium"
         style={{
           gridColumn: fullWidth ? "1 / span 2" : undefined,
           background: "#FFFFFF",
-          border: "0.5px solid #E5E5EA",
-          boxShadow: "none",
-          borderRadius: 12,
+          border: "none",
+          borderRadius: 14,
           padding: 16,
           minHeight: 110,
           display: "flex",
