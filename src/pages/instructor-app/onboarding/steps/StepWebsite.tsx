@@ -25,6 +25,7 @@ interface StepWebsiteProps {
     name: string;
     welcome_video_url?: string | null;
     website_choice?: "free" | "custom" | "booknow";
+    personal_website_url?: string;
   };
   instructorId: string;
   onUpdate: (data: Partial<StepWebsiteProps["data"]>) => void;
