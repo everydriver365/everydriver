@@ -51,6 +51,12 @@ export interface SectionHeaderProps {
   titleColor?: string;
   /** Optional override for the meta text colour (default #888780). */
   metaColor?: string;
+  /**
+   * Visual variant.
+   * - "bar" (default): coloured accent bar + sentence-case title.
+   * - "eyebrow": iOS Settings-style uppercase tracked label, no bar.
+   */
+  variant?: "bar" | "eyebrow";
 }
 
 export function SectionHeader({
@@ -63,8 +69,55 @@ export function SectionHeader({
   paddingX = 16,
   titleColor = "#2C2C2A",
   metaColor = "#888780",
+  variant = "bar",
 }: SectionHeaderProps) {
   const accent = ACCENT_BY_CATEGORY[category];
+
+  if (variant === "eyebrow") {
+    return (
+      <div
+        className={className}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: `0 ${paddingX + 4}px`,
+          marginBottom: 8,
+        }}
+      >
+        <h2
+          style={{
+            fontSize: 11,
+            fontWeight: 500,
+            color: "#6E6E73",
+            letterSpacing: "0.3px",
+            textTransform: "uppercase",
+            margin: 0,
+            fontFamily:
+              '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+          }}
+        >
+          {title}
+        </h2>
+        {(rightSlot || meta) && (
+          <span
+            style={{
+              marginLeft: "auto",
+              fontSize: 11,
+              color: metaColor,
+              fontFamily:
+                '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {rightSlot ?? meta}
+          </span>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
