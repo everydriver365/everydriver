@@ -95,14 +95,14 @@ export function InstructorTile({
         background: "#F8FAFC",
         border: "none",
         boxShadow:
-          "6px 6px 12px rgba(0,0,0,0.06), -6px -6px 12px rgba(255,255,255,0.9)",
-        borderRadius: 18,
-        padding: 20,
-        minHeight: 110,
+          "8px 8px 16px rgba(0,0,0,0.06), -8px -8px 16px rgba(255,255,255,0.9)",
+        borderRadius: 20,
+        padding: 24,
+        minHeight: 124,
         display: "flex",
         flexDirection: "column",
         alignItems: "flex-start",
-        gap: 12,
+        gap: 16,
         textAlign: "left",
         cursor: onPress ? "pointer" : "default",
         fontFamily: FONT_STACK,
@@ -112,18 +112,20 @@ export function InstructorTile({
       <div
         style={{
           position: "relative",
-          width: 40,
-          height: 40,
-          borderRadius: 12,
+          width: 52,
+          height: 52,
+          borderRadius: 14,
           background: colors.tint,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           flexShrink: 0,
+          boxShadow:
+            "2px 2px 5px rgba(0,0,0,0.05), inset 1px 1px 2px rgba(255,255,255,0.6)",
         }}
       >
         <Icon
-          size={22}
+          size={24}
           color={colors.accent}
           strokeWidth={2}
           strokeLinecap="round"
@@ -151,18 +153,18 @@ export function InstructorTile({
               position: "absolute",
               top: -6,
               right: -6,
-              minWidth: 20,
-              height: 20,
+              minWidth: 22,
+              height: 22,
               padding: "0 6px",
-              borderRadius: 10,
+              borderRadius: 11,
               background: colors.accent,
               color: "#FFFFFF",
               fontSize: 11,
               fontWeight: 600,
-              lineHeight: "20px",
+              lineHeight: "22px",
               textAlign: "center",
               fontVariantNumeric: "tabular-nums",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
             }}
           >
             {count}
@@ -174,11 +176,11 @@ export function InstructorTile({
         <p
           style={{
             fontSize: "0.9375em", /* 15px @ default */
-            fontWeight: 500,
+            fontWeight: 600,
             color: "#111827",
             letterSpacing: "-0.2px",
             lineHeight: 1.25,
-            margin: "0 0 3px",
+            margin: "0 0 4px",
           }}
         >
           {title}
