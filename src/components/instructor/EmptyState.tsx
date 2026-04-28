@@ -8,6 +8,8 @@ interface EmptyStateProps {
   ctaLabel?: string;
   onCtaPress?: () => void;
   iconColor?: string;
+  /** @deprecated retained for backward compatibility, no longer used. */
+  iconBg?: string;
 }
 
 const FONT_STACK =
