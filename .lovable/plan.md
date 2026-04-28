@@ -1,164 +1,56 @@
-# Three Growth Engines: Cover Marketplace, Pupil Referrals, Pass Report
+# Add "Already have a website?" question to instructor onboarding
 
-Three high-leverage features that compound: cover keeps revenue when an instructor is sick, referrals turn pass moments into new pupils, and the pass report PDF generates social proof.
+## Goal
 
----
+During instructor signup, ask whether they already have their own website. If yes, capture the URL and skip the mini-website + domain/hosting steps. The instructor still gets a profile (so pupils can find them on Drive365 search), but no auto-generated mini-site is published.
 
-## 1. Instructor Cover/Swap Marketplace
+## Where this fits
 
-When an instructor marks themselves unavailable, their lessons in that window are auto-offered to nearby instructors with capacity.
+The onboarding flow lives in `src/pages/instructor-app/onboarding/InstructorOnboarding.tsx` with steps in `./steps/`. There's already a `StepListingPreference` (Featured vs Diary-only). We'll add a new question at the top of `StepWebsite` (the existing "build your mini-site" step), since it only matters for Featured users — Diary-only already skips Website.
 
-### Database
+Schema already has `instructors.personal_website_url`, so no migration needed.
 
-New tables:
+## Changes
 
-- **`cover_offers`** — one per lesson being offered
-  - `lesson_id`, `requesting_instructor_id`, `pupil_id`, `lesson_start`, `lesson_duration`, `pickup_lat/lng`, `pickup_postcode`, `status` (`open` | `claimed` | `expired` | `cancelled`), `claimed_by_instructor_id`, `claimed_at`, `expires_at`, `commission_pct` (default 15)
-- **`cover_offer_recipients`** — fan-out per nearby instructor (for notifications + RLS read access)
-  - `cover_offer_id`, `instructor_id`, `distance_miles`, `notified_at`, `viewed_at`, `declined_at`
-- **`cover_preferences`** on `instructors` (extend existing table)
-  - `accepts_cover_lessons` boolean (default false — opt-in)
-  - `cover_max_distance_miles` (default 10)
-  - `cover_min_notice_hours` (default 2)
-  - `cover_commission_share_pct` (default 15) — what they pay back to the original instructor
+### 1. `OnboardingData` (InstructorOnboarding.tsx)
+Add two fields:
+- `hasExistingWebsite: boolean` (default `false`)
+- `existing_website_url: string` (default `""`)
 
-### Logic
+### 2. `StepWebsite.tsx` — add a leading question card
+Before the theme/colour/slug pickers, show:
 
-- New page `/instructor/availability` gets an **"Offer for cover"** action on lessons that fall during a marked-unavailable window.
-- Edge function `cover-offer-broadcast`:
-  - Finds instructors within `cover_max_distance_miles` of pickup using haversine on `instructors.lat/lng`.
-  - Filters: `accepts_cover_lessons = true`, no scheduling conflict, `cover_min_notice_hours` respected.
-  - Inserts `cover_offer_recipients` rows + sends WhatsApp/SMS via existing Twilio integration ("Cover available: 1hr lesson, £35, 2.3 miles away. Tap to claim.").
-- Edge function `cover-offer-claim`:
-  - First-come wins (advisory lock on `cover_offer_id`).
-  - Reassigns the `scheduled_lessons.instructor_id` to the claimer.
-  - Triggers Google Calendar sync for both instructors.
-  - Records commission (`commission_pct` of lesson price) as an instructor-to-instructor settlement entry.
-- Auto-expire: cron job (every 5 min) marks `status='expired'` after `expires_at`.
+> Do you already have your own website?
+> - **Yes, I have a website** → reveals URL input (`https://...`), hides the mini-site builder below, sets `website_choice = "external"`.
+> - **No, build me a free Drive365 mini-site** → current behaviour (theme + slug + colours).
 
-### UI
+When "Yes" is selected:
+- Hide the theme/slug/colour controls.
+- Require a valid URL before "Continue" enables.
+- Skip `StepDomainHosting` (step 9) on next.
 
-- Instructor portal: new tile **"Cover Marketplace"** showing open offers within range (badge count).
-- Pupil sees: notification "Your lesson on [date] is now with [new instructor]. Same time, same pickup."
-- Settings page (Instructor): toggle + radius slider (5–25 miles) + commission share slider (10–25%).
+### 3. Skip-step logic in `getNextStep` / `getPrevStep`
+For featured + `hasExistingWebsite === true`:
+- From step 8 (Website) → go to step 10 (Payment) directly, skipping 9 (Domain & Hosting).
+- Mirror the back navigation.
 
----
+### 4. `handleComplete` save logic
+When `hasExistingWebsite` is true:
+- Save `personal_website_url = data.existing_website_url` on the instructors row.
+- **Do not** generate the `slug.drive365.co.uk` `custom_domain`. Leave `custom_domain` null and `custom_domain_verified` false so no mini-site is published at that subdomain.
+- Still save `app_slug` (needed internally for profile URLs and admin search) but don't surface it as a public mini-site.
 
-## 2. Pupil Referral Loop (£10 credit each)
+When false: existing behaviour unchanged.
 
-Extend the existing `pupil_referrals` infrastructure (currently awards 50 points) to deliver **£10 account credit** to both parties on first paid lesson.
-
-### Database
-
-- Extend `pupil_referrals`:
-  - Add `referrer_credit_amount` (default `10.00`), `referred_credit_amount` (default `10.00`)
-  - Add `credit_awarded_at` timestamp
-- Update `award_referral_bonus()` trigger:
-  - Instead of (or in addition to) reward_points, call `increment_pupil_balance(referrer_id, 10)` and `increment_pupil_balance(referred_id, 10)` when status flips to `completed`.
-  - Mark `credit_awarded_at = now()`.
-- New trigger on `pupils` rows where `test_passed` flips to `true`:
-  - Send WhatsApp/email: "Congrats on passing! Share your instructor with friends — you both get £10 off lessons."
-  - Includes pre-built shareable link `https://drive365.co.uk/r/{referral_code}`.
-
-### Edge Function
-
-- `referral-share-prompt`: triggered post-pass (or manually). Generates personalised share copy + WhatsApp click-to-chat link + SMS link.
-
-### UI
-
-- New `/pupil/referrals` page: hero ("Earn £10. Give £10."), referral code, copy/share buttons (WhatsApp, SMS, Email, link), list of pending + completed referrals with credit earned.
-- Add **PassCelebrationSheet** that pops on first login after `test_passed=true`: "You passed! Share with friends and you both get £10."
-- Instructor dashboard: new widget **"Referrals This Month"** (count + £ revenue from referred pupils).
-
-### Public referral landing
-
-- `/r/:code` route — shows instructor card (photo, area, pass rate), pre-fills the referral_code in signup, sends the £10 to both on first paid lesson.
-
----
-
-## 3. Annual Pass Report PDF
-
-When a pupil's `test_passed` flips to `true`, generate a celebratory PDF: progress chart, total mileage, hours, manoeuvres mastered, instructor signature.
-
-### Edge Function
-
-- `generate-pass-report` (Deno + jsPDF or `pdf-lib`):
-  - Inputs: `pupil_id` (verified via RLS).
-  - Aggregates from existing tables:
-    - `scheduled_lessons` → total hours, lesson count, date range
-    - `mileage_logs` → total miles driven
-    - `lesson_telematics` → safety score average, harsh events count
-    - `pupil_competency_progress` (DVSA syllabus) → list of competencies marked complete
-    - `payment_history` → total invested
-  - Uses Drive365 brand (logo, colours per memory).
-  - Layout:
-    1. Cover: "[Pupil Name] — Driver Since [pass date]" with instructor name + photo
-    2. Stats grid: Hours, Miles, Lessons, Manoeuvres mastered, Safety score
-    3. Progress chart (bar/radar) of 27 DVSA competencies
-    4. Mileage map sketch (route summary if telematics data exists, else skip)
-    5. Instructor message + signature line + Drive365 footer
-  - Saves to `pupil-avatars` bucket (existing, public) at `pass-reports/{pupil_id}.pdf` and returns signed URL (or marks public for sharing).
-
-### Triggering
-
-- Trigger when `pupils.test_passed` flips `false → true`:
-  - Calls `generate-pass-report` via `pg_net`.
-  - Records URL in new column `pupils.pass_report_url`.
-  - Sends WhatsApp/email to pupil with download link + share copy.
-  - Surfaces in the pass celebration sheet (#2 above) with a "Download your Driver Report" button.
-
-### UI
-
-- `/pupil/pass-report` page renders an inline preview (iframe of the PDF) plus social share buttons (Instagram story template, WhatsApp, Twitter/X).
-- Instructor portal: new tab on pupil profile **"Pass Report"** to re-generate or share.
-
----
-
-## Files to create
-
-**Edge functions:**
-- `supabase/functions/cover-offer-broadcast/index.ts`
-- `supabase/functions/cover-offer-claim/index.ts`
-- `supabase/functions/cover-offer-expire/index.ts` (cron)
-- `supabase/functions/referral-share-prompt/index.ts`
-- `supabase/functions/generate-pass-report/index.ts`
-
-**Components/pages:**
-- `src/pages/instructor/CoverMarketplace.tsx`
-- `src/components/instructor/CoverPreferencesCard.tsx`
-- `src/components/instructor/OfferLessonForCoverDialog.tsx`
-- `src/pages/pupil/PupilReferrals.tsx`
-- `src/components/pupil/PassCelebrationSheet.tsx`
-- `src/components/instructor/dashboard/CoverInboxTile.tsx`
-- `src/components/instructor/dashboard/ReferralsThisMonthWidget.tsx`
-- `src/pages/pupil/PassReport.tsx`
-- `src/pages/public/ReferralLanding.tsx` (route `/r/:code`)
-
-**Migrations:**
-- New tables `cover_offers`, `cover_offer_recipients` with RLS via `get_instructor_id_for_user`.
-- Extend `instructors` with cover preferences columns.
-- Extend `pupil_referrals` with credit columns + amend trigger.
-- Add `pupils.pass_report_url` column + trigger calling `generate-pass-report`.
-- Schedule `cover-offer-expire` cron every 5 min (insert tool, not migration).
+### 5. Mini-website rendering guard
+In `src/components/ConditionalHome.tsx` and `MiniWebsiteHome` lookups, when an instructor's `personal_website_url` is set and they opted out, redirect visitors of their `*.drive365.co.uk` / `/i/:slug` mini-site to their external URL instead of rendering the auto site. Lightweight — just an early `window.location.replace(personal_website_url)` inside `MiniWebsiteHome` if the loaded instructor row has `personal_website_url` set and no published mini-site content. (Optional polish — flag for confirmation below.)
 
 ## Files to edit
 
-- `src/routes/pupilRoutes.tsx` + instructor/public routes — three new pages.
-- `src/pages/AdminPortal.tsx` — admin view of cover offers + referral stats.
-- `src/components/instructor/dashboard/ReferralStatsWidget.tsx` — show £ instead of points.
-- Memory: add `mem://features/marketplace/cover-and-referrals` capturing the rules.
-
-## Out of scope (v1)
-
-- Inter-instructor settlement automation (the commission is recorded but admin reconciles manually for v1).
-- Multi-instructor cover bidding (first-come-first-served only).
-- PDF localisation (English only).
-- Editable PDF templates per instructor (single Drive365 template).
+- `src/pages/instructor-app/onboarding/InstructorOnboarding.tsx` — add fields, update next/prev, update `handleComplete`.
+- `src/pages/instructor-app/onboarding/steps/StepWebsite.tsx` — add the Yes/No question + URL input, conditional rendering.
+- *(optional)* `src/pages/mini-website/MiniWebsiteHome.tsx` — redirect to `personal_website_url` if set.
 
 ## Open question
 
-**Cover commission flow:** When Instructor B covers Instructor A's lesson, the pupil already paid Instructor A. Two options:
-1. **Credit transfer** — A transfers full lesson amount to B (minus 15% admin fee that stays with A as "finder's fee").
-2. **B keeps full payment + pays A 15% finders fee** — simpler reconciliation.
-
-I recommend option 2 (simpler, B has more incentive to accept). Confirm before I build the commission RPC.
+Should an instructor who opts out still have their mini-site URL (e.g. `jane.drive365.co.uk`) **redirect** to their personal website, or should it just 404? I'd recommend redirect — keeps SEO juice flowing back to them and avoids dead links from Drive365 search results. Confirm before I implement step 5.
