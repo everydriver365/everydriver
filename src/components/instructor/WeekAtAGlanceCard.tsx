@@ -541,6 +541,84 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
     saveGoals(instructorId, next);
   };
 
+  if (!expanded) {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          haptics.selection();
+          setExpanded(true);
+        }}
+        style={{
+          background: "#FFFFFF",
+          border: `0.5px solid ${TXT.hairline}`,
+          borderRadius: a11yPx(12),
+          padding: 16,
+          width: "100%",
+          textAlign: "left",
+          cursor: "pointer",
+          fontFamily: FONT_STACK,
+          display: "flex",
+          alignItems: "center",
+          gap: 14,
+        }}
+        aria-label="Show progress rings"
+      >
+        <div style={{ position: "relative", width: 56, height: 56, flexShrink: 0 }}>
+          <svg width={56} height={56} viewBox="0 0 160 160">
+            <g transform="rotate(-90 80 80)">
+              {RINGS.map((ring) => {
+                const c = 2 * Math.PI * ring.radius;
+                const pct =
+                  ring.key === "lessons"
+                    ? lessonsPct
+                    : ring.key === "earnings"
+                    ? earningsPct
+                    : hoursPct;
+                return (
+                  <g key={ring.key}>
+                    <circle cx={80} cy={80} r={ring.radius} fill="none" stroke={ring.track} strokeWidth={STROKE_WIDTH} />
+                    <circle
+                      cx={80}
+                      cy={80}
+                      r={ring.radius}
+                      fill="none"
+                      stroke={ring.color}
+                      strokeWidth={STROKE_WIDTH}
+                      strokeLinecap="round"
+                      strokeDasharray={c}
+                      strokeDashoffset={c * (1 - pct)}
+                    />
+                  </g>
+                );
+              })}
+            </g>
+          </svg>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p
+            style={{
+              fontSize: 11,
+              fontWeight: 500,
+              color: TXT.secondary,
+              letterSpacing: "0.3px",
+              textTransform: "uppercase",
+              margin: "0 0 4px",
+            }}
+          >
+            {meta.eyebrow}
+          </p>
+          <p style={{ fontSize: 15, fontWeight: 500, color: TXT.primary, margin: 0, letterSpacing: "-0.2px" }}>
+            {overall}% of goals
+          </p>
+          <p style={{ fontSize: 12, color: TXT.secondary, margin: "2px 0 0" }}>
+            Tap to view rings
+          </p>
+        </div>
+      </button>
+    );
+  }
+
   return (
     <>
       <div
