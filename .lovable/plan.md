@@ -1,56 +1,38 @@
-# Add "Already have a website?" question to instructor onboarding
+## Make instructor tiles pop
 
-## Goal
+The current `InstructorTile` is intentionally flat (white card, 0.5px #E5E5EA border, `boxShadow: none`) on a near-white `#F4F7F6` background — that's why everything blends. Here are 4 levers, ranked by impact. We can apply 1, 2, or all of them.
 
-During instructor signup, ask whether they already have their own website. If yes, capture the URL and skip the mini-website + domain/hosting steps. The instructor still gets a profile (so pupils can find them on Drive365 search), but no auto-generated mini-site is published.
+### Option A — Add lift via layered shadow (smallest change, biggest payoff)
+Replace `boxShadow: "none"` on `InstructorTile` with a soft 2-layer shadow (matches the existing `shadow-lift` token already used elsewhere in the app):
+```
+boxShadow: "0 1px 2px rgba(20,30,60,0.04), 0 8px 20px rgba(20,30,60,0.08)"
+```
+Drop the hairline border (or fade it to `#EEF0F4`) so the shadow does the separation work instead of the line. Result: tiles float off the page like the `BestMateTile` / `Card` components already do.
 
-## Where this fits
+### Option B — Warm up the background canvas
+The `#F4F7F6` page bg is too close to white. Two choices for the dashboard wrapper:
+1. Subtle vertical gradient `linear-gradient(180deg, #EEF2F7 0%, #E6ECF3 100%)` — cool slate, matches DSM brand.
+2. Flat `#EEF1F5` (already the DSM light theme surface token).
 
-The onboarding flow lives in `src/pages/instructor-app/onboarding/InstructorOnboarding.tsx` with steps in `./steps/`. There's already a `StepListingPreference` (Featured vs Diary-only). We'll add a new question at the top of `StepWebsite` (the existing "build your mini-site" step), since it only matters for Featured users — Diary-only already skips Website.
+Either gives white tiles real contrast without touching tile code.
 
-Schema already has `instructors.personal_website_url`, so no migration needed.
+### Option C — Tinted icon block becomes the full top edge
+Currently the coloured tint sits in a 40×40 rounded square. Instead, paint a **soft category-tinted top stripe** (or a 4px coloured top border) so each tile carries its category colour even at a glance. Keeps the white body but adds personality. Example for the "money" tile: 3px top border `#B8801F`, or a top-left radial wash from `colors.tint` fading to white.
 
-## Changes
+### Option D — Press + hover micro-depth
+Add `:hover` shadow boost and keep the existing `:active scale(0.97)`:
+```
+.instructor-tile:hover { box-shadow: 0 2px 4px rgba(20,30,60,0.06), 0 14px 28px rgba(20,30,60,0.12); transform: translateY(-1px); }
+```
+Makes the grid feel alive when scrolled past.
 
-### 1. `OnboardingData` (InstructorOnboarding.tsx)
-Add two fields:
-- `hasExistingWebsite: boolean` (default `false`)
-- `existing_website_url: string` (default `""`)
+### Recommendation
+Ship **A + B + D** together — that's the standard "iOS widget" recipe and is fully consistent with your `BestMateTile` and `Card` aesthetic already in the codebase. Skip C unless you want the tiles to read as more colourful/playful (it's a brand shift).
 
-### 2. `StepWebsite.tsx` — add a leading question card
-Before the theme/colour/slug pickers, show:
+### Files touched
+- `src/components/instructor/InstructorTile.tsx` — shadow, border, hover styles in the inline `<style>` block (lines 95–98 + 230–239).
+- `src/pages/InstructorPortal.tsx` (or whichever wrapper sets the `#F4F7F6` bg) — swap to `#EEF1F5` or the gradient.
 
-> Do you already have your own website?
-> - **Yes, I have a website** → reveals URL input (`https://...`), hides the mini-site builder below, sets `website_choice = "external"`.
-> - **No, build me a free Drive365 mini-site** → current behaviour (theme + slug + colours).
+No schema, no new components, no memory changes. ~15 lines edited total.
 
-When "Yes" is selected:
-- Hide the theme/slug/colour controls.
-- Require a valid URL before "Continue" enables.
-- Skip `StepDomainHosting` (step 9) on next.
-
-### 3. Skip-step logic in `getNextStep` / `getPrevStep`
-For featured + `hasExistingWebsite === true`:
-- From step 8 (Website) → go to step 10 (Payment) directly, skipping 9 (Domain & Hosting).
-- Mirror the back navigation.
-
-### 4. `handleComplete` save logic
-When `hasExistingWebsite` is true:
-- Save `personal_website_url = data.existing_website_url` on the instructors row.
-- **Do not** generate the `slug.drive365.co.uk` `custom_domain`. Leave `custom_domain` null and `custom_domain_verified` false so no mini-site is published at that subdomain.
-- Still save `app_slug` (needed internally for profile URLs and admin search) but don't surface it as a public mini-site.
-
-When false: existing behaviour unchanged.
-
-### 5. Mini-website rendering guard
-In `src/components/ConditionalHome.tsx` and `MiniWebsiteHome` lookups, when an instructor's `personal_website_url` is set and they opted out, redirect visitors of their `*.drive365.co.uk` / `/i/:slug` mini-site to their external URL instead of rendering the auto site. Lightweight — just an early `window.location.replace(personal_website_url)` inside `MiniWebsiteHome` if the loaded instructor row has `personal_website_url` set and no published mini-site content. (Optional polish — flag for confirmation below.)
-
-## Files to edit
-
-- `src/pages/instructor-app/onboarding/InstructorOnboarding.tsx` — add fields, update next/prev, update `handleComplete`.
-- `src/pages/instructor-app/onboarding/steps/StepWebsite.tsx` — add the Yes/No question + URL input, conditional rendering.
-- *(optional)* `src/pages/mini-website/MiniWebsiteHome.tsx` — redirect to `personal_website_url` if set.
-
-## Open question
-
-Should an instructor who opts out still have their mini-site URL (e.g. `jane.drive365.co.uk`) **redirect** to their personal website, or should it just 404? I'd recommend redirect — keeps SEO juice flowing back to them and avoids dead links from Drive365 search results. Confirm before I implement step 5.
+Reply with **A+B+D** (recommended), or pick any combination, and I'll implement.
