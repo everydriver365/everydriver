@@ -778,7 +778,7 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
                   fontFamily: FONT_STACK,
                 }}
               >
-                {meta.centerLabel}
+                {lessons === 1 ? "Lesson" : "Lessons"}
               </span>
               <AnimatePresence mode="wait">
                 <motion.span
@@ -794,10 +794,11 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
                     letterSpacing: "-0.3px",
                     lineHeight: 1.1,
                     margin: 0,
+                    fontTabularNums: "tabular-nums",
                     fontFamily: FONT_STACK,
                   }}
                 >
-                  <AnimatedPercent value={overall} />
+                  {lessons}
                 </motion.span>
               </AnimatePresence>
             </div>
