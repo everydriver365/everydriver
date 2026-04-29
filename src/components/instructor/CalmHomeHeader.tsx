@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Menu, Bell, ChevronRight, Clock,
+  ChevronRight, Clock,
   Briefcase, MessageSquare, ClipboardCheck, CalendarPlus,
-  CheckCircle2, ArrowRight,
+  CheckCircle2,
 } from "lucide-react";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
