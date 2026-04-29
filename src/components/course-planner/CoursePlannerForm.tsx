@@ -237,6 +237,7 @@ export function CoursePlannerForm({
 
       const { error: lessonError } = await supabase.from("scheduled_lessons").insert(lessons);
       if (lessonError) throw lessonError;
+      invalidateLessonQueries(queryClient);
 
       await supabase.from("course_proposals").insert({
         instructor_id: instructorId,
