@@ -409,8 +409,8 @@ export function NextUpTile({
             </div>
           </button>
 
-          {/* ── MAP PREVIEW (live map preserved) ── */}
-          {pickupPostcode && (
+          {/* ── MAP PREVIEW (only when within 4h) ── */}
+          {isWithin4h && pickupPostcode && (
             <div
               style={{
                 position: "relative",
@@ -443,46 +443,70 @@ export function NextUpTile({
             </div>
           )}
 
-          {/* ── ROUTE LIST (origin → destination) ── */}
-          {(pickupLocation || pickupPostcode) && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {/* Origin */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{
-                  width: 18, height: 18, borderRadius: "50%", background: "#FFFFFF",
-                  border: "2px solid #6E6E73",
-                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#6E6E73" }} />
+          {/* ── TRAVEL-TIME BAR (only when within 30 min and ETA known) ── */}
+          {isImminent && etaMinutes > 0 && (
+            <div
+              style={{
+                display: "flex", alignItems: "center", gap: 10,
+                padding: "12px 14px",
+                background: travelBarBg,
+                borderRadius: 10,
+                border: "0.5px solid #E5E5EA",
+              }}
+            >
+              <div style={{
+                width: 32, height: 32, borderRadius: 8, background: "#FFFFFF",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <Car style={{ width: 16, height: 16, color: travelBarIconColor }} strokeWidth={2} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", marginBottom: 1 }}>
+                  {travelBarSeverity === "red"
+                    ? `Running ${minsLateIfLeaveNow} min late`
+                    : `${etaMinutes} min drive${etaText && /·/.test(etaText) ? ` · ${etaText.split("·").slice(-1)[0].trim()}` : ""}`}
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: a11yPx(14), fontWeight: 500, color: "#000000" }}>Your location</div>
-                  <div style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>Current position</div>
-                </div>
-                <div style={{ fontSize: a11yPx(12), color: "#6E6E73", fontVariantNumeric: "tabular-nums" }}>
-                  {etaText || "—"}
+                <div style={{ fontSize: a11yPx(11), color: "#6E6E73" }}>
+                  {leaveByText
+                    ? `Leave by ${leaveByText} to arrive on time`
+                    : "Calculating leave-by time…"}
                 </div>
               </div>
+            </div>
+          )}
 
-              {/* Destination */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {/* ── ROUTE LIST (origin → destination) ── */}
+          {(pickupLocation || pickupPostcode) && (
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+              {/* Timeline column */}
+              <div style={{
+                flexShrink: 0, width: 14, display: "flex", flexDirection: "column",
+                alignItems: "center", paddingTop: 4,
+              }}>
                 <div style={{
-                  width: 18, height: 18, borderRadius: "50%", background: "#FFFFFF",
-                  border: "2px solid #C8434F",
-                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#C8434F" }} />
+                  width: 10, height: 10, borderRadius: "50%", background: "#FFFFFF",
+                  border: "2px solid #2B7BC8",
+                }} />
+                <div style={{ width: 1.5, height: 20, background: "#E5E5EA", margin: "2px 0" }} />
+                <div style={{
+                  width: 10, height: 10, borderRadius: "50%", background: "#C8434F",
+                }} />
+              </div>
+
+              {/* Content column */}
+              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+                {/* Origin */}
+                <div style={{ fontSize: a11yPx(12), color: "#6E6E73", lineHeight: 1.3 }}>
+                  Your location
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: a11yPx(14), fontWeight: 500, color: "#000000" }}>
-                    Pick up {firstName}
+                {/* Destination */}
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", letterSpacing: -0.1, marginBottom: 1 }}>
+                    Pick up {toSentenceName(firstName)}
                   </div>
-                  <div style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>
-                    {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
+                  <div style={{ fontSize: a11yPx(11), color: "#6E6E73", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {formattedPickupAddress || "—"}
                   </div>
-                </div>
-                <div style={{ fontSize: a11yPx(12), color: "#6E6E73", fontVariantNumeric: "tabular-nums" }}>
-                  {formatTime24(startTime)}
                 </div>
               </div>
             </div>
