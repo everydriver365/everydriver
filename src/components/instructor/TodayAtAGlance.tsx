@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { Clock, Calendar, PoundSterling, Timer } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { format, differenceInMinutes } from "date-fns";
+import { format, isToday, differenceInMinutes } from "date-fns";
 
 interface TodayAtAGlanceProps {
   instructorId: string | undefined;
@@ -11,8 +13,6 @@ interface TodayData {
   lessonsRemaining: number;
   hoursToday: number;
   earningsToday: number;
-  remainingPostcode: string | null;
-  scheduledPostcode: string | null;
   loading: boolean;
 }
 
@@ -22,8 +22,6 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
     lessonsRemaining: 0,
     hoursToday: 0,
     earningsToday: 0,
-    remainingPostcode: null,
-    scheduledPostcode: null,
     loading: true,
   });
 
@@ -35,12 +33,10 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
       const now = new Date();
 
       try {
-        // Fetch today's lessons with pupil info + postcodes
+        // Fetch today's lessons with pupil info
         const { data: lessons } = await supabase
           .from("scheduled_lessons")
-          .select(
-            "lesson_date, start_time, duration_minutes, status, pickup_postcode, pupils(name, pickup_postcode, postcode)"
-          )
+          .select("lesson_date, start_time, duration_minutes, status, pupils(name)")
           .eq("instructor_id", instructorId)
           .eq("lesson_date", today)
           .neq("status", "cancelled")
@@ -49,23 +45,8 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
         const todayLessons = lessons || [];
         const totalMinutes = todayLessons.reduce((sum, l) => sum + (l.duration_minutes || 0), 0);
 
-        // Outward postcode helper (e.g. "SO22 6QR" -> "SO22")
-        const outward = (pc: string | null | undefined): string | null => {
-          if (!pc) return null;
-          const trimmed = pc.trim().toUpperCase();
-          if (!trimmed) return null;
-          const space = trimmed.indexOf(" ");
-          return space > 0 ? trimmed.slice(0, space) : trimmed.slice(0, 4);
-        };
-
-        const lessonPostcode = (l: any): string | null => {
-          const p = l?.pupils as any;
-          return outward(l?.pickup_postcode || p?.pickup_postcode || p?.postcode);
-        };
-
         // Find next upcoming lesson
         let nextLesson: TodayData["nextLesson"] = null;
-        let remainingPostcode: string | null = null;
         for (const lesson of todayLessons) {
           if (lesson.start_time && lesson.status !== "completed") {
             const [h, m] = lesson.start_time.split(":").map(Number);
@@ -78,7 +59,6 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
                 time: lesson.start_time.slice(0, 5),
                 minutesUntil: differenceInMinutes(lessonTime, now),
               };
-              remainingPostcode = lessonPostcode(lesson);
               break;
             }
           }
@@ -86,9 +66,6 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
 
         // Remaining lessons (not completed)
         const remaining = todayLessons.filter(l => l.status !== "completed").length;
-
-        // Postcode of the first scheduled lesson of the day (overall)
-        const scheduledPostcode = todayLessons.length > 0 ? lessonPostcode(todayLessons[0]) : null;
 
         // Today's earnings
         const { data: payments } = await supabase
@@ -105,8 +82,6 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
           lessonsRemaining: remaining,
           hoursToday: Math.round(totalMinutes / 60 * 10) / 10,
           earningsToday: earnings,
-          remainingPostcode,
-          scheduledPostcode,
           loading: false,
         });
       } catch (err) {
@@ -118,24 +93,13 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
     fetchToday();
   }, [instructorId]);
 
-  const dateLabel = format(new Date(), "EEE d").toUpperCase();
-
   if (data.loading) {
     return (
-      <div
-        className="bg-white rounded-[24px] overflow-hidden ring-1 ring-black/5"
-        style={{ boxShadow: "0 2px 12px -4px rgba(0,0,0,0.04)" }}
-      >
-        <div className="px-5 pt-5 pb-2 flex justify-between items-baseline">
-          <h2 className="text-[15px] font-semibold text-gray-900 tracking-tight">Today's Pulse</h2>
-          <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest tabular-nums">{dateLabel}</span>
-        </div>
-        <div className="flex gap-3 px-5 pb-6 pt-2">
-          {[156, 124, 124, 124].map((w, i) => (
-            <div key={i} className="shrink-0 h-[108px] rounded-[16px] bg-gray-100 animate-pulse" style={{ width: w }} />
-          ))}
-        </div>
-      </div>
+      <Card className="bg-gradient-to-r from-primary/5 to-primary/[0.02] border-primary/20">
+        <CardContent className="p-4">
+          <div className="h-16 animate-pulse bg-muted rounded" />
+        </CardContent>
+      </Card>
     );
   }
 
@@ -146,137 +110,57 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
     return m > 0 ? `${h}h ${m}m` : `${h}h`;
   };
 
-  const nextLessonChip = data.nextLesson
-    ? {
-        time: data.nextLesson.time,
-        name: data.nextLesson.pupilName,
-        subtitle: `Starts in ${formatMinutes(data.nextLesson.minutesUntil)}`,
-      }
-    : { time: "—", name: "No upcoming", subtitle: "Nothing scheduled" };
+  const stats = [
+    {
+      icon: Clock,
+      label: "Next Lesson",
+      value: data.nextLesson
+        ? `${data.nextLesson.time}`
+        : "None",
+      sub: data.nextLesson
+        ? `${data.nextLesson.pupilName} · in ${formatMinutes(data.nextLesson.minutesUntil)}`
+        : "No more lessons today",
+    },
+    {
+      icon: Calendar,
+      label: "Remaining",
+      value: `${data.lessonsRemaining}`,
+      sub: `lesson${data.lessonsRemaining !== 1 ? "s" : ""} left`,
+    },
+    {
+      icon: Timer,
+      label: "Hours",
+      value: `${data.hoursToday}h`,
+      sub: "scheduled today",
+    },
+    {
+      icon: PoundSterling,
+      label: "Earnings",
+      value: `£${data.earningsToday.toFixed(0)}`,
+      sub: "received today",
+    },
+  ];
 
   return (
-    <div
-      className="bg-white rounded-[24px] overflow-hidden ring-1 ring-black/5"
-      style={{ boxShadow: "0 2px 12px -4px rgba(0,0,0,0.04)" }}
-    >
-      {/* Header */}
-      <div className="px-5 pt-5 pb-2 flex justify-between items-baseline">
-        <h2 className="text-[15px] font-semibold text-gray-900 tracking-tight">Today's Pulse</h2>
-        <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest tabular-nums">{dateLabel}</span>
-      </div>
-
-      {/* Scrollable chip strip */}
-      <div
-        className="flex overflow-x-auto snap-x snap-mandatory gap-3 px-5 pb-6 pt-2"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-      >
-        <style>{`.tag-pulse-strip::-webkit-scrollbar{display:none}`}</style>
-
-        {/* Next Up — wider for hierarchy */}
-        <div
-          className="snap-start shrink-0 w-[156px] rounded-[16px] p-4 flex flex-col justify-between ring-1"
-          style={{ backgroundColor: "#F0F6FF", borderColor: "transparent", boxShadow: "inset 0 0 0 1px rgba(0,86,214,0.10)" }}
-        >
-          <div className="flex items-center justify-between mb-5">
-            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#0056D6" }}>
-              Next Up
-            </span>
-            {data.nextLesson && (
-              <div className="size-2 rounded-full animate-pulse" style={{ backgroundColor: "rgba(0,86,214,0.6)" }} />
-            )}
-          </div>
-          <div>
-            <div className="text-2xl font-bold tracking-tighter text-gray-900 tabular-nums leading-none mb-1.5">
-              {nextLessonChip.time}
-            </div>
-            <div className="text-[13px] font-medium text-gray-700 leading-tight truncate">{nextLessonChip.name}</div>
-            <div className="text-[11px] font-medium text-gray-500 mt-0.5 truncate">{nextLessonChip.subtitle}</div>
-          </div>
+    <Card className="shadow-premium bg-gradient-to-r from-primary/5 to-primary/[0.02] border-0">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-xs font-bold uppercase tracking-widest text-primary/70">Today at a Glance</span>
         </div>
-
-        {/* Remaining */}
-        <div
-          className="snap-start shrink-0 w-[124px] rounded-[16px] p-4 flex flex-col justify-between"
-          style={{ backgroundColor: "#FFF5EC", boxShadow: "inset 0 0 0 1px rgba(185,74,0,0.10)" }}
-        >
-          <div className="flex items-center justify-between mb-5">
-            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#B94A00" }}>
-              Remaining
-            </span>
-            {data.remainingPostcode && (
-              <span
-                className="text-[9px] font-bold tabular-nums px-1.5 py-0.5 rounded"
-                style={{ color: "#B94A00", backgroundColor: "rgba(185,74,0,0.10)" }}
-                title="Next remaining lesson postcode"
-              >
-                {data.remainingPostcode}
-              </span>
-            )}
-          </div>
-          <div>
-            <div className="text-2xl font-bold tracking-tighter text-gray-900 tabular-nums leading-none mb-1.5">
-              {data.lessonsRemaining}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {stats.map((stat) => (
+            <div key={stat.label} className="flex items-start gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-primary/10 shrink-0">
+                <stat.icon className="h-4 w-4 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-bold leading-tight">{stat.value}</p>
+                <p className="text-[11px] text-muted-foreground truncate">{stat.sub}</p>
+              </div>
             </div>
-            <div className="text-[12px] font-medium text-gray-500 leading-snug">
-              Lesson{data.lessonsRemaining !== 1 ? "s" : ""}
-              <br />left today
-            </div>
-          </div>
+          ))}
         </div>
-
-        {/* Hours */}
-        <div
-          className="snap-start shrink-0 w-[124px] rounded-[16px] p-4 flex flex-col justify-between"
-          style={{ backgroundColor: "#F0FDF8", boxShadow: "inset 0 0 0 1px rgba(13,122,92,0.10)" }}
-        >
-          <div className="flex items-center justify-between mb-5">
-            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#0D7A5C" }}>
-              Scheduled
-            </span>
-            {data.scheduledPostcode && (
-              <span
-                className="text-[9px] font-bold tabular-nums px-1.5 py-0.5 rounded"
-                style={{ color: "#0D7A5C", backgroundColor: "rgba(13,122,92,0.10)" }}
-                title="First scheduled lesson postcode"
-              >
-                {data.scheduledPostcode}
-              </span>
-            )}
-          </div>
-          <div>
-            <div className="text-2xl font-bold tracking-tighter text-gray-900 tabular-nums leading-none mb-1.5">
-              {data.hoursToday}
-              <span className="text-base font-medium text-gray-500 ml-0.5">h</span>
-            </div>
-            <div className="text-[12px] font-medium text-gray-500 leading-snug">
-              Total time
-              <br />on platform
-            </div>
-          </div>
-        </div>
-
-        {/* Earnings */}
-        <div
-          className="snap-start shrink-0 w-[124px] rounded-[16px] p-4 flex flex-col justify-between"
-          style={{ backgroundColor: "#F8F5FF", boxShadow: "inset 0 0 0 1px rgba(96,56,208,0.10)" }}
-        >
-          <div className="text-[10px] font-bold uppercase tracking-widest mb-5" style={{ color: "#6038D0" }}>
-            Earnings
-          </div>
-          <div>
-            <div className="text-2xl font-bold tracking-tighter text-gray-900 tabular-nums leading-none mb-1.5">
-              £{data.earningsToday.toFixed(0)}
-            </div>
-            <div className="text-[12px] font-medium text-gray-500 leading-snug">
-              Received
-              <br />today
-            </div>
-          </div>
-        </div>
-
-        {/* End spacer */}
-        <div className="snap-end shrink-0 w-1" aria-hidden />
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
