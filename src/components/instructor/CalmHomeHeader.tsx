@@ -255,7 +255,7 @@ export function CalmHomeHeader({ instructorId, instructorName }: CalmHomeHeaderP
           pillText={gapsCount > 0 ? `${gapsCount} open` : undefined} pillColor="#3B8B3B" pillBackground="#E8F3E8"
           onPress={() => navigate("/instructor/gaps")} />
       </div>
-      <TipOfDayCard tip={tip} onPress={() => navigate(tip.path)} />
+      
     </div>
   );
 }
