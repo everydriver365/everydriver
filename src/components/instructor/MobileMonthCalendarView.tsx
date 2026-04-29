@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameDay, isSameMonth, isToday, parseISO, isWeekend } from "date-fns";
-import { ChevronLeft, ChevronRight, Loader2, Calendar } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Calendar, ChevronRight as ChevronRightIcon } from "lucide-react";
+import { titleCaseName } from "@/lib/titleCase";
 import { supabase } from "@/integrations/supabase/client";
 import {
   CATEGORY_STYLES,
@@ -485,121 +486,219 @@ export function MobileMonthCalendarView({ instructorId }: MobileMonthCalendarVie
             <span style={{ fontSize: 12, color: "#6E6E73" }}>Tap a different date or add a lesson</span>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {/* All-day external events */}
-            {allDayEvents.map((evt) => {
-              const style = externalStyle(evt.title, evt.color, true);
-              return (
-                <div
-                  key={evt.id}
-                  style={{
-                    backgroundColor: style.bg,
-                    borderRadius: 10,
-                    padding: "10px 12px",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 500,
-                      color: "#000000",
-                      letterSpacing: "-0.1px",
-                      marginBottom: 3,
-                    }}
-                  >
-                    {evt.title}
-                  </div>
-                  <div style={{ fontSize: 11, color: "#6E6E73" }}>All day</div>
-                </div>
-              );
-            })}
+          (() => {
+            // Build a unified ordered list of rows matching the Schedule list view.
+            type Row = {
+              key: string;
+              timeText: string;
+              durationText: string | null;
+              accentColor: string;
+              title: string;
+              subtitle: string | null;
+              showChevron: boolean;
+            };
 
-            {/* Lessons */}
-            {timedLessons.map((lesson) => {
-              const paid = lesson.payment_status === "paid";
-              return (
-                <div
-                  key={lesson.id}
-                  style={{
-                    backgroundColor: CATEGORY_STYLES.lesson.bg,
-                    borderRadius: 10,
-                    padding: "10px 12px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginBottom: 3,
-                    }}
-                  >
-                    <span
+            const rows: Row[] = [];
+
+            allDayEvents.forEach((evt) => {
+              const style = externalStyle(evt.title, evt.color, true);
+              rows.push({
+                key: `ad-${evt.id}`,
+                timeText: "All day",
+                durationText: null,
+                accentColor: style.border,
+                title: evt.title,
+                subtitle: "Google Calendar",
+                showChevron: false,
+              });
+            });
+
+            // Merge timed lessons + externals, sorted by start time
+            type Timed =
+              | { kind: "lesson"; t: string; data: typeof timedLessons[number] }
+              | { kind: "external"; t: string; data: typeof timedExternal[number] };
+
+            const timed: Timed[] = [
+              ...timedLessons.map((l) => ({ kind: "lesson" as const, t: l.start_time.slice(0, 5), data: l })),
+              ...timedExternal.map((e) => ({
+                kind: "external" as const,
+                t: format(parseISO(e.start_time), "HH:mm"),
+                data: e,
+              })),
+            ].sort((a, b) => a.t.localeCompare(b.t));
+
+            timed.forEach((item) => {
+              if (item.kind === "lesson") {
+                const lesson = item.data;
+                const isDrivingTest = (lesson.lesson_type || "").toLowerCase().includes("driving_test")
+                  || (lesson.lesson_type || "").toLowerCase().includes("driving test");
+                const accent = isDrivingTest ? "#C8434F" : "#2B7BC8";
+                const durMin = lesson.duration_minutes;
+                const durationText =
+                  durMin >= 60
+                    ? durMin % 60 === 0
+                      ? `${Math.floor(durMin / 60)}h`
+                      : `${Math.floor(durMin / 60)}h ${durMin % 60}m`
+                    : `${durMin}m`;
+                const pupilName = titleCaseName(lesson.pupil?.name || "Lesson");
+                const lessonLabel = courseTypeLabels[lesson.lesson_type] || lesson.lesson_type || "Standard";
+                const subtitleParts = [
+                  isDrivingTest ? "Driving test" : `${lessonLabel} lesson`,
+                  lesson.pickup_location || lesson.pupil?.address || undefined,
+                ].filter(Boolean) as string[];
+                rows.push({
+                  key: `l-${lesson.id}`,
+                  timeText: formatTime(lesson.start_time),
+                  durationText,
+                  accentColor: accent,
+                  title: isDrivingTest ? `${pupilName} · driving test` : pupilName,
+                  subtitle: subtitleParts.join(" · "),
+                  showChevron: true,
+                });
+              } else {
+                const evt = item.data;
+                const startDt = parseISO(evt.start_time);
+                const endDt = parseISO(evt.end_time);
+                const style = externalStyle(evt.title, evt.color, false);
+                const durMin = Math.max(0, Math.round((endDt.getTime() - startDt.getTime()) / 60000));
+                const durationText =
+                  durMin >= 60
+                    ? durMin % 60 === 0
+                      ? `${Math.floor(durMin / 60)}h`
+                      : `${Math.floor(durMin / 60)}h ${durMin % 60}m`
+                    : `${durMin}m`;
+                rows.push({
+                  key: `x-${evt.id}`,
+                  timeText: format(startDt, "HH:mm"),
+                  durationText,
+                  accentColor: style.border,
+                  title: evt.title,
+                  subtitle: "Google Calendar",
+                  showChevron: false,
+                });
+              }
+            });
+
+            return (
+              <div
+                style={{
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: 12,
+                  border: "0.5px solid #E5E5EA",
+                  overflow: "hidden",
+                  padding: "0 8px",
+                }}
+              >
+                {rows.map((row, idx) => (
+                  <div key={row.key}>
+                    <div
                       style={{
-                        fontSize: 13,
-                        fontWeight: 500,
-                        color: "#000000",
-                        letterSpacing: "-0.1px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        width: "100%",
+                        padding: "12px 8px",
+                        fontFamily,
                       }}
                     >
-                      {lesson.pupil?.name || "Unknown"}
-                    </span>
-                    {!paid && (
-                      <span
+                      {/* Time column */}
+                      <div
                         style={{
-                          fontSize: 10,
-                          fontWeight: 500,
-                          color: "#6E6E73",
-                          background: "rgba(0,0,0,0.06)",
-                          borderRadius: 4,
-                          padding: "1px 6px",
+                          flexShrink: 0,
+                          minWidth: 50,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "flex-end",
                         }}
                       >
-                        Unpaid
-                      </span>
+                        <span
+                          style={{
+                            fontSize: 14,
+                            fontWeight: 500,
+                            color: "#000000",
+                            letterSpacing: "-0.1px",
+                            fontVariantNumeric: "tabular-nums",
+                          }}
+                        >
+                          {row.timeText}
+                        </span>
+                        {row.durationText && (
+                          <span
+                            style={{
+                              fontSize: 11,
+                              color: "#6E6E73",
+                              marginTop: 1,
+                              fontVariantNumeric: "tabular-nums",
+                            }}
+                          >
+                            {row.durationText}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Source colour bar */}
+                      <div
+                        style={{
+                          flexShrink: 0,
+                          width: 3,
+                          height: 36,
+                          borderRadius: 2,
+                          backgroundColor: row.accentColor,
+                        }}
+                      />
+
+                      {/* Title + subtitle */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontSize: 14,
+                            fontWeight: 500,
+                            color: "#000000",
+                            letterSpacing: "-0.1px",
+                            margin: "0 0 1px",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {row.title}
+                        </div>
+                        {row.subtitle && (
+                          <div
+                            style={{
+                              fontSize: 12,
+                              color: "#6E6E73",
+                              margin: 0,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {row.subtitle}
+                          </div>
+                        )}
+                      </div>
+
+                      {row.showChevron && (
+                        <ChevronRightIcon
+                          style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0, strokeWidth: 1.6 }}
+                        />
+                      )}
+                    </div>
+                    {idx < rows.length - 1 && (
+                      <div
+                        style={{
+                          height: 0.5,
+                          backgroundColor: "#E5E5EA",
+                          margin: "0 8px",
+                        }}
+                      />
                     )}
                   </div>
-                  <div style={{ fontSize: 11, color: "#6E6E73" }}>
-                    {formatTime(lesson.start_time)} – {getEndTime(lesson.start_time, lesson.duration_minutes)}
-                    {" · "}
-                    {courseTypeLabels[lesson.lesson_type] || lesson.lesson_type}
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* Timed external events */}
-            {timedExternal.map((evt) => {
-              const style = externalStyle(evt.title, evt.color, false);
-              const startDt = parseISO(evt.start_time);
-              const endDt = parseISO(evt.end_time);
-              return (
-                <div
-                  key={evt.id}
-                  style={{
-                    backgroundColor: style.bg,
-                    borderRadius: 10,
-                    padding: "10px 12px",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 500,
-                      color: "#000000",
-                      letterSpacing: "-0.1px",
-                      marginBottom: 3,
-                    }}
-                  >
-                    {evt.title}
-                  </div>
-                  <div style={{ fontSize: 11, color: "#6E6E73" }}>
-                    {format(startDt, "HH:mm")} – {format(endDt, "HH:mm")}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                ))}
+              </div>
+            );
+          })()
         )}
       </div>
     </div>
