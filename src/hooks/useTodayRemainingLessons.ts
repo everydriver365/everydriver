@@ -17,7 +17,6 @@ export interface TodayLesson {
   amountDue: number | null;
   status: string;
   googleEventId?: string | null;
-  notes?: string | null;
 }
 
 export function useTodayRemainingLessons(instructorId: string | undefined) {
