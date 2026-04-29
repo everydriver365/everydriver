@@ -201,8 +201,6 @@ export function CalmHomeHeader({ instructorId, instructorName }: CalmHomeHeaderP
   const navigate = useNavigate();
 
   const { data: nextLesson } = useNextLessonDetails(instructorId);
-  const { data: weeklyGoals } = useWeeklyGoals(instructorId);
-  const { monthEarnings } = useInstructorLiveStats(instructorId);
   const { data: unreadMessages = 0 } = useUnreadMessagesCount(instructorId);
   const pendingJobsCount = usePendingJobsCount();
   const { data: todayLessons } = useTodayRemainingLessons(instructorId);
