@@ -12,6 +12,7 @@ import { VoiceAssistantHeaderButton, VoiceAssistantOverlay } from "@/components/
 import { useVoiceAssistant } from "@/hooks/useVoiceAssistant";
 import { useInstructorPresence } from "@/hooks/useInstructorPresence";
 import { usePaymentReceivedAlert } from "@/hooks/usePaymentReceivedAlert";
+import { useInstructorNotificationSettings } from "@/hooks/useInstructorNotificationSettings";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
