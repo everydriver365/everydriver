@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Menu, Bell, ChevronRight, Clock,
+  ChevronRight, Clock,
   Briefcase, MessageSquare, ClipboardCheck, CalendarPlus,
-  CheckCircle2, ArrowRight,
+  CheckCircle2,
 } from "lucide-react";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
@@ -41,31 +41,6 @@ function getStatusLine(args: { remainingToday: number; totalToday: number; nextS
   return "No lessons today — perfect for catching up on admin";
 }
 
-// ─── Header ──────────────────────────────────────
-function AppHeader({ unreadNotifs, onMenu, onNotifications }: { unreadNotifs: number; onMenu: () => void; onNotifications: () => void; }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
-      <button type="button" onClick={onMenu} aria-label="Open menu" style={{ background: "transparent", border: "none", padding: 4, cursor: "pointer" }}>
-        <Menu style={{ width: 22, height: 22, color: "#000000" }} strokeWidth={2} />
-      </button>
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <div aria-hidden style={{ width: 18, height: 18, display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 1.5 }}>
-          <div style={{ background: "#C8434F", borderRadius: 2 }} />
-          <div style={{ background: "#2B7BC8", borderRadius: 2 }} />
-          <div style={{ background: "#1F1F1F", borderRadius: 2 }} />
-          <div style={{ background: "#1F1F1F", borderRadius: 2 }} />
-        </div>
-        <span style={{ fontSize: 13, fontWeight: 500, color: "#000000", letterSpacing: "-0.1px" }}>DSM</span>
-      </div>
-      <button type="button" onClick={onNotifications} aria-label="Notifications" style={{ background: "transparent", border: "none", padding: 4, cursor: "pointer", position: "relative" }}>
-        <Bell style={{ width: 20, height: 20, color: "#000000" }} strokeWidth={2} />
-        {unreadNotifs > 0 && (
-          <span aria-hidden style={{ position: "absolute", top: 2, right: 2, width: 7, height: 7, borderRadius: "50%", background: "#C8434F", border: "1.5px solid #FFFFFF" }} />
-        )}
-      </button>
-    </div>
-  );
-}
 
 // ─── Greeting ────────────────────────────────────
 function HomeGreeting({ firstName, statusText }: { firstName: string; statusText: string }) {
@@ -202,31 +177,6 @@ function DashboardTile({ icon: Icon, iconColor, iconBackground, title, subtitle,
   );
 }
 
-// ─── Tip ─────────────────────────────────────────
-interface Tip { eyebrow: string; title: string; subtitle: string; cta: string; path: string; }
-const TIPS: Tip[] = [
-  { eyebrow: "Tip of the day", title: "Use voice notes after lessons", subtitle: "Saves about 5 minutes per pupil and keeps progress notes consistent.", cta: "Try it", path: "/instructor/pupils" },
-  { eyebrow: "Did you know", title: "Drag and drop in Calendar to reschedule", subtitle: "Move lessons in seconds — pupils get notified automatically.", cta: "Open diary", path: "/instructor/diary" },
-  { eyebrow: "Heads up", title: "Set weekly goals on your home rings", subtitle: "Track lessons taught, hours and earnings against a target.", cta: "Set goals", path: "/instructor/earnings" },
-  { eyebrow: "New feature", title: "Fill empty slots automatically", subtitle: "Open Fill gaps and offer your free time to pupils on the waitlist.", cta: "See more", path: "/instructor/gaps" },
-  { eyebrow: "Tip of the day", title: "Add a payment QR to your dashboard", subtitle: "Pupils scan and pay in seconds — no card details to read out.", cta: "Learn more", path: "/instructor/pay" },
-];
-
-function TipOfDayCard({ tip, onPress }: { tip: Tip; onPress: () => void }) {
-  return (
-    <div style={{ background: "linear-gradient(135deg, #FBEAEC 0%, #FFE8DC 100%)", borderRadius: 14, padding: 16, marginBottom: 14, display: "flex", alignItems: "center", gap: 14 }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 11, fontWeight: 500, color: "#C8434F", letterSpacing: "0.3px", textTransform: "uppercase", margin: "0 0 4px" }}>{tip.eyebrow}</p>
-        <p style={{ fontSize: 14, fontWeight: 500, color: "#000000", letterSpacing: "-0.1px", margin: "0 0 2px", lineHeight: 1.3 }}>{tip.title}</p>
-        <p style={{ fontSize: 12, color: "#6E6E73", margin: 0, lineHeight: 1.4 }}>{tip.subtitle}</p>
-      </div>
-      <button type="button" onClick={onPress} style={{ flexShrink: 0, background: "#FFFFFF", border: "0.5px solid #E5E5EA", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 500, color: "#2B7BC8", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}>
-        {tip.cta}
-        <ArrowRight style={{ width: 12, height: 12 }} strokeWidth={2} />
-      </button>
-    </div>
-  );
-}
 
 // ─── Main ────────────────────────────────────────
 interface CalmHomeHeaderProps {
@@ -267,11 +217,6 @@ export function CalmHomeHeader({ instructorId, instructorName }: CalmHomeHeaderP
     return getStatusLine({ remainingToday, totalToday, nextStartTime, nextDayLabel });
   }, [remainingToday, totalToday, nextLesson]);
 
-  const tip = useMemo(() => {
-    const day = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
-    return TIPS[day % TIPS.length];
-  }, []);
-
   const jobsSubtitle = pendingJobsCount > 0 ? `${pendingJobsCount} ${pendingJobsCount === 1 ? "course" : "courses"} available` : "Up to date";
   const messagesSubtitle = unreadMessages > 0 ? `${unreadMessages} unread` : "All caught up";
   const testsSubtitle = testSwapCount > 0 ? `${testSwapCount} this week` : "No new matches";
@@ -310,7 +255,7 @@ export function CalmHomeHeader({ instructorId, instructorName }: CalmHomeHeaderP
           pillText={gapsCount > 0 ? `${gapsCount} open` : undefined} pillColor="#3B8B3B" pillBackground="#E8F3E8"
           onPress={() => navigate("/instructor/gaps")} />
       </div>
-      <TipOfDayCard tip={tip} onPress={() => navigate(tip.path)} />
+      
     </div>
   );
 }

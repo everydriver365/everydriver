@@ -1,25 +1,11 @@
-# Match "On track today" to "Today · your stats"
+# Remove the Tip of the day card
 
-The "Today · your stats" tile lower on the page is `WeekAtAGlanceCard` (`src/components/instructor/WeekAtAGlanceCard.tsx`), rendered by `WarmHomeTiles`. It already has everything you'd want: animated lessons / earnings / hours rings, today / week / month segmented control with swipe, expand-collapse, editable goals sheet, and tap targets that route to the right pages.
+Drop the rotating tip/"Heads up" card at the bottom of the calm hero on the instructor mobile home page.
 
-The "On track today" tile in `CalmHomeHeader` is a separate, simpler component (`ProgressRingsCompact`) wired to a different data source and just navigates to `/instructor/earnings` on tap. Layout, behaviour and data don't match.
+## Changes — `src/components/instructor/CalmHomeHeader.tsx`
 
-The clean way to make them identical is to drop the bespoke component and reuse `WeekAtAGlanceCard` in the calm header.
+- Remove the `<TipOfDayCard tip={tip} … />` render at the end of the hero.
+- Remove the now-unused `TipOfDayCard` component, `Tip` interface, `TIPS` array and the `tip = useMemo(...)` lookup.
+- Remove the `ArrowRight` import (only used by the tip card).
 
-## Changes
-
-**`src/components/instructor/CalmHomeHeader.tsx`**
-- Replace the `<ProgressRingsCompact …/>` block with `<WeekAtAGlanceCard instructorId={instructorId} />`.
-- Remove the now-unused helpers and hooks: `ProgressRingsCompact`, `ConcentricRings`, `LegendRow`, plus `useWeeklyGoals`, `useInstructorLiveStats`, `hoursTaught` / `earnedToday` calculations.
-- Keep `useTodayRemainingLessons` / `useTodayOverview` only for the greeting status line.
-
-After this, the rings tile in the hero is the exact same component, layout and behaviour as the "Today · your stats" tile below.
-
-## Heads-up: duplication
-
-Once the swap is in, the same `WeekAtAGlanceCard` will appear twice on the home page — once in the calm hero and once again inside `WarmHomeTiles` lower down. Two options, please pick one when you approve:
-
-1. **Keep both** (literal "exactly the same … as the tile below"). Simplest, but visually repetitive.
-2. **Replace in hero, remove from `WarmHomeTiles`** so it only shows in the new hero position. Recommended.
-
-Default if you just approve: **option 2** (remove the duplicate render in `WarmHomeTiles.tsx` line 382 so the tile only appears in the hero).
+No other surfaces reference these tips, and no data hooks need to change. The 2×2 dashboard grid becomes the last element in the hero.
