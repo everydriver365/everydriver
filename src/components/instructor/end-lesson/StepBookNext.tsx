@@ -658,39 +658,9 @@ export function StepBookNext({
   const displayName = useMemo(() => titleCaseName(pupilName) || pupilName, [pupilName]);
   const showReview = needsNameReview(pupilName);
 
-  const subtitle = useMemo(() => {
-    const { courseName, courseHoursTotal, courseHoursRemaining, testDate, lessonType } = pupilCtx;
-    // Course context wins (active package with hours)
-    if (
-      courseName &&
-      typeof courseHoursTotal === "number" &&
-      typeof courseHoursRemaining === "number"
-    ) {
-      return `${courseName} · ${courseHoursRemaining}h of ${courseHoursTotal}h remaining`;
-    }
-    // Test prep within 6 weeks
-    if (testDate) {
-      try {
-        const td = parse(testDate, "yyyy-MM-dd", new Date());
-        const days = differenceInCalendarDays(td, new Date());
-        if (days >= 0 && days <= 42) {
-          return `Test prep · test on ${format(td, "d MMM")}`;
-        }
-      } catch {
-        /* ignore */
-      }
-    }
-    // Otherwise: the type of lesson that just ended — formatted as sentence case + "lesson"
-    const raw = (lessonType || "standard").trim();
-    // Title-case each word, normalise underscores/hyphens
-    const titled = raw
-      .replace(/[_-]+/g, " ")
-      .toLowerCase()
-      .replace(/\b\w/g, (c) => c.toUpperCase());
-    // Append " lesson" only if the label doesn't already include lesson/test/prep/mock
-    const alreadyDescriptive = /\b(lesson|test|prep|mock|assessment|drive)\b/i.test(titled);
-    return alreadyDescriptive ? titled : `${titled} lesson`;
-  }, [pupilCtx]);
+  // Note: the old `subtitle` memo (course / test prep / lesson type) is no
+  // longer rendered — the conversational headline + supporting line carry the
+  // context. Course hours, when present, are appended to the supporting line.
 
   const formatDurationLabel = (mins: number): string => {
     const h = Math.floor(mins / 60);
