@@ -770,7 +770,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                           {subtitleText}
                         </div>
                       )}
-                      {eolMissing && <EOLPrompt onTap={() => openEOLWizard(lesson)} />}
+                      {showEOL && <EOLPrompt onTap={() => openEOLWizard(lesson)} done={eolDone} />}
                     </div>
                   </Link>
                 ) : (
