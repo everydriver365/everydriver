@@ -1,64 +1,89 @@
-# Apply all instructor-app UI improvements
+# Instructor Home — Depth Starter Set
 
-This is a sizable multi-file change. I'll do it in 5 sequential batches so each lands cleanly and can be reviewed in the preview before the next one.
+Four targeted edits to break the flatness of `InstructorMobileHome.tsx` without restructuring layout. All scoped to the default DSM home view (no other layout styles touched). No new components, no new dependencies.
 
----
+## 1. Hero greeting card (replaces lines 451–478)
 
-## Batch 1 — Today's Pulse polish
-File: `src/components/instructor/TodayAtAGlance.tsx`
+Replace the plain "Hi Tom · Wednesday" text block with a single coloured anchor card:
 
-- Make every chip tappable (buttons, not divs) with these targets:
-  - **Next Up** → opens lesson detail sheet (uses existing nextLessonId)
-  - **Remaining** → scrolls to the Today's Schedule tile on the home page
-  - **Scheduled** → navigates to `/instructor/schedule?view=schedule&date=today`
-  - **Earnings** → navigates to `/instructor/payments?range=today`
-- Hide the Next Up chip entirely when there's no upcoming lesson (rather than showing "—") so the strip starts on Remaining.
-- Add a postcode badge to the Next Up chip (same outward-code helper already in this file, fed from the `nextLesson`'s pickup_postcode/pupil postcode).
-- End-of-day state: when no remaining lessons and at least one was completed today, replace the chip strip with a single hero summary card: "Day complete · {hours}h taught · £{earnings} collected · Review day →". Tapping opens the EOD summary route.
-- Apply `tabular-nums` to every number that ticks (countdown, time, totals).
+- Background: `linear-gradient(135deg, #2B7BC8 0%, #1E5A94 55%, #163F69 100%)`
+- 20px radius, soft brand-tinted shadow (`0 10px 28px -10px rgba(43,123,200,0.45)`)
+- Left side: uppercase weekday label, "Hi {firstName}" headline, then a tabular-nums summary line — `{n} lessons · First {time} · £{earnings}` (each segment hidden when not applicable)
+- Right side (52px): next pupil's avatar (or initials chip on white-translucent bg)
+- Empty-day fallback: "No lessons today" with no avatar
 
-## Batch 2 — Today's Schedule tile (home)
-File: `src/components/instructor/HomeTodaySchedule.tsx`
+This is the only coloured surface above the fold — it owns the screen.
 
-- Group rows into Morning (<12:00), Afternoon (12:00–17:00), Evening (≥17:00) sections, separated by thin uppercase tracked dividers ("MORNING", etc.) — only render sections that have rows.
-- Insert a travel-time chip between consecutive rows when:
-  - both have postcodes, AND
-  - estimated drive distance is >2 miles (use existing buffer/travel-time util if present; otherwise haversine on cached postcode coords).
-  - Render as a full-width inset chip: `↳ 8 min drive · 3.1 mi`, muted text, no border.
+## 2. Elevate `NextUpTile` (lines 567–595)
 
-## Batch 3 — Schedule page
-Files: `src/components/instructor/MultiDayScheduleView.tsx`, `src/components/instructor/MobileMonthCalendarView.tsx`
+Wrap the existing `<NextUpTile />` in a container that adds depth without modifying the component itself:
 
-- **Schedule view** (MultiDayScheduleView):
-  - Sticky floating "Today · {EEE d}" pill, bottom-right above the bottom nav, visible only when today's section is scrolled out of view; tap scrolls back to today's anchor with smooth behaviour.
-  - Empty-day inline state: keep the day header, replace the empty body with a single muted row: "No lessons · {free hours}h free · Offer to fill →" linking to Gap Filler.
-  - Conflict rows: 2px left bar in red + small "Overlap" tag in the row's metadata line. Remove the separate banner if currently rendered above conflicting rows.
-- **Calendar (month) view** (MobileMonthCalendarView):
-  - Add a 1px primary-coloured "now" line across the current time on the day-detail timed list when today is the active day. Position computed from current minutes-from-midnight against the rendered hour scale.
+```text
+<div style={{
+  margin: "0 16px",
+  borderRadius: 20,
+  borderLeft: "3px solid #2B7BC8",
+  boxShadow: "0 8px 24px -8px rgba(43,123,200,0.18), 0 2px 6px rgba(0,0,0,0.04)",
+  overflow: "hidden",
+  background: "#FFFFFF",
+}}>
+  <NextUpTile ... />
+</div>
+```
 
-## Batch 4 — Gap Filler card
-File: `src/components/instructor/GapFillCard.tsx`
+Matches the colour-coded left-accent convention already used on the gap-fill card. The "Next lesson" `SectionHeader` above it stays as-is.
 
-- Surface the top candidate inline: under the existing "{n} Pupils May Fit · {duration}" title, show a single row with avatar, pupil name, and distance ("Sarah J · 2.1 mi") when `totalCount ≥ 1`. Tapping the card still opens the full sheet.
-- Colour-code the card's left accent bar by gap length:
-  - <60 min → amber (`#B94A00`)
-  - 60–89 min → blue (current default)
-  - ≥90 min → green (`#0D7A5C`)
+## 3. Tint the "quiet" cards
 
-## Batch 5 — Global polish & quick wins
-- **Card chrome standardisation**: introduce a tiny shared util `src/components/instructor/ui/cardChrome.ts` exporting one className constant `INSTRUCTOR_CARD = "rounded-2xl bg-white ring-1 ring-black/5"` plus an inline `boxShadow: "0 2px 12px -4px rgba(0,0,0,0.04)"` style. Apply to: `TodayAtAGlance`, `HomeTodaySchedule`, `GapFillCard`, top-level wrappers in `MultiDayScheduleView` day cards. Leave other portals untouched.
-- **Section headers**: standardise the home-page section headers ("Today's Schedule", "Gap Filler", etc.) to uppercase tracked treatment per the iOS consistency memory.
-- **Tabular numerals**: add `font-variant-numeric: tabular-nums` to all home/schedule numbers (countdowns, times, durations, money) — done at component level inline.
-- **Pull-to-refresh**: wrap `InstructorPortal` home and schedule routes in a lightweight pull-to-refresh component (use existing if one is in the codebase; otherwise add a small custom one using touch events + `react-query` `refetch`).
-- **Haptic tap**: add a thin `useHaptic()` hook calling `Capacitor Haptics.impact({style:'Light'})` when running native; no-op on web. Wire to chips, schedule rows, and gap-filler card.
-- **Swipe actions on lesson rows** (Today's Schedule + Schedule view): left swipe reveals "End lesson" (primary) and "Reschedule" (neutral); right swipe reveals "Message pupil" (blue). Use a small custom `SwipeRow` component (transform on touchmove + snap thresholds).
-- **Skeletons**: replace generic grey blocks in the four touched components with shimmer skeletons matching final layout (already partly done in TodayAtAGlance — extend pattern).
+Wrap these five tertiary blocks so they recede into the page instead of competing with primary content:
 
-## Out of scope
-- Other home layouts (lockscreen, ios-native, compact, mission-control, bestmate, widgets) — only the default/`schedule` layout is updated.
-- Desktop schedule view.
-- Any data model or RLS changes — purely UI/UX.
-- Gap Filler internals (matching logic, sheet content) — only the card surface.
+- `InsightTilesGrid` (line 647)
+- `TelematicsTile` (line 656)
+- `VehicleHealthCard` (line 663)
+- `IdleTimeCostCard` (line 664)
+- `UpcomingEventsCard` (line 670)
 
-## Sequencing
-Each batch is a discrete commit-sized chunk. After Batch 1 lands, I'll continue straight through Batches 2–5 unless you stop me. Total expected change: ~6 files edited, 1–2 small new files (cardChrome util, useHaptic hook, SwipeRow component).
+Each gets a wrapper `<div>` with:
+- `background: #F8FAFB`
+- `border-radius: 14px`
+- `border: none` (overrides any internal border via wrapper inset)
+- `padding: 2px` so the existing card's own border collapses visually
+
+Where the inner card already paints a white background, we'll add a subtle `box-shadow: inset 0 0 0 0.5px rgba(0,0,0,0.04)` on the wrapper instead so the tint shows through the surrounding margin.
+
+The `SectionHeader`s ("Insights", "Telematics") stay outside the wrapper so the hierarchy reads top-to-bottom.
+
+## 4. Translucent sticky next-up bar (lines 484–502)
+
+Update the `motion.div` className from:
+
+```text
+fixed top-2 left-3 right-3 z-50 bg-primary text-primary-foreground ...
+```
+
+to use a frosted surface:
+
+```text
+fixed top-2 left-3 right-3 z-50
+text-primary-foreground px-4 py-2 flex items-center justify-between
+shadow-lg rounded-2xl
+```
+
+with inline `style={{ background: "rgba(43,123,200,0.78)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}`. Keeps the brand colour but lets the page texture show through — adds the "something is floating above content" feeling.
+
+## Out of scope (deferred for the second pass)
+
+- Replacing the activity-tile PNG icons with chip+lucide icons
+- Converting `InsightTilesGrid` to a horizontal snap scroll
+- Bottom tab bar blur (lives in a separate nav component)
+- Streak/weekly-goal ring inside the hero card
+
+## Files changed
+
+- `src/components/instructor/InstructorMobileHome.tsx` (only)
+
+## Risks
+
+- Mobile layout policy: user explicitly requested these mobile improvements, so the mobile-update-policy memory is satisfied for this pass.
+- `backdrop-filter` is unsupported on older Android WebView; falls back gracefully to the solid blue tint.
+- `todayOverview.totalEarnings` field name will be verified against the hook's return type before the edit; if absent, that segment is dropped silently.
