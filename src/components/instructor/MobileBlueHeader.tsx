@@ -3,7 +3,6 @@ import { Bell, Plus, Menu, ChevronLeft } from "lucide-react";
 import dsmLogo from "@/assets/dsm-logo.png";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { DSMThemeToggle } from "@/components/instructor/DSMThemeToggle";
-import { useLongPress } from "@/hooks/useLongPress";
 
 interface Props {
   instructorId: string | undefined;
@@ -22,8 +21,6 @@ const ICON_COLOR = "hsl(var(--dsm-text-secondary))";
 
 export function MobileBlueHeader({
   instructorId,
-  firstName,
-  profileImageUrl,
   showBackButton = false,
   onBack,
   onPlus,
@@ -31,14 +28,6 @@ export function MobileBlueHeader({
 }: Props) {
   const navigate = useNavigate();
   const { total: notifCount } = useCombinedNotificationCount(instructorId);
-  const initial = (firstName || "I").trim().charAt(0).toUpperCase();
-
-  // Long-press the + → jump straight to the most-used action (Add lesson).
-  // Tap still opens the bottom-sheet quick actions.
-  const plusHandlers = useLongPress({
-    onClick: onPlus,
-    onLongPress: () => navigate("/instructor/schedule?action=add"),
-  });
 
   const bgStyle = { background: "hsl(var(--dsm-bg))" };
 
@@ -94,43 +83,21 @@ export function MobileBlueHeader({
             )}
           </button>
           <button
-            {...plusHandlers}
+            onClick={onPlus}
             className="flex items-center justify-center"
             style={{ width: 32, height: 32 }}
-            aria-label="Quick actions (long-press to add a lesson)"
+            aria-label="Quick actions"
           >
             <Plus size={18} strokeWidth={1.8} color={ICON_COLOR} />
           </button>
           <DSMThemeToggle size={18} className="!h-8 !w-8" />
           <button
             onClick={onMenu}
-            className="flex items-center justify-center overflow-hidden rounded-full"
-            style={{
-              width: 32,
-              height: 32,
-              border: "1px solid hsl(var(--dsm-border))",
-              background: "hsl(var(--dsm-tile-icon-bg))",
-            }}
+            className="flex items-center justify-center"
+            style={{ width: 32, height: 32 }}
             aria-label="Menu"
           >
-            {profileImageUrl ? (
-              <img
-                src={profileImageUrl}
-                alt={firstName || "Profile"}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            ) : (
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: "hsl(var(--dsm-text))",
-                  lineHeight: 1,
-                }}
-              >
-                {initial}
-              </span>
-            )}
+            <Menu size={18} strokeWidth={1.8} color={ICON_COLOR} />
           </button>
         </div>
       </div>

@@ -1,93 +1,89 @@
-## The problem with today's Quick Actions
+# Instructor Home — Depth Starter Set
 
-Tapping the **+** in the header opens a full-height **left-side drawer** (`QuickActionsPopoverMenu`) that:
+Four targeted edits to break the flatness of `InstructorMobileHome.tsx` without restructuring layout. All scoped to the default DSM home view (no other layout styles touched). No new components, no new dependencies.
 
-- Slides in from the **wrong edge** for a + that lives on the **right** of the header (eyes/finger have to cross the screen).
-- Reuses a **menu/drawer chrome** (logo, title, close button, "QUICK ACTIONS" caption) for what is really a 6-item launcher — high friction, lots of scaffolding for one tap.
-- Uses a **vertical list of rows**, which wastes space and makes each target a long horizontal strip rather than a thumb-friendly target.
-- Is **not contextual** — same 6 actions everywhere, even when 80% of taps from the home screen go to "Add lesson" or "Take payment".
-- Has **no keyboard shortcut, no long-press, no swipe** — only the one entry point.
+## 1. Hero greeting card (replaces lines 451–478)
 
-## Recommended approach (better, in priority order)
+Replace the plain "Hi Tom · Wednesday" text block with a single coloured anchor card:
 
-### 1. Bottom-sheet grid (primary fix — biggest UX win)
+- Background: `linear-gradient(135deg, #2B7BC8 0%, #1E5A94 55%, #163F69 100%)`
+- 20px radius, soft brand-tinted shadow (`0 10px 28px -10px rgba(43,123,200,0.45)`)
+- Left side: uppercase weekday label, "Hi {firstName}" headline, then a tabular-nums summary line — `{n} lessons · First {time} · £{earnings}` (each segment hidden when not applicable)
+- Right side (52px): next pupil's avatar (or initials chip on white-translucent bg)
+- Empty-day fallback: "No lessons today" with no avatar
 
-Replace the left drawer with a short **bottom sheet** opened from the +.
-Reasons it's better on mobile:
+This is the only coloured surface above the fold — it owns the screen.
 
-- Slides up from the **thumb zone** — reachable one-handed on a 6.7" phone.
-- Native iOS / Android pattern users already understand (Share sheet, Apple Wallet "+").
-- Renders 6 actions as a **3×2 icon grid** — each tile is a square ~96px tap target instead of a 56px row.
-- Auto-sizes to content (~280px tall) instead of consuming the full viewport, so the home screen stays partially visible behind it (context preserved).
-- Drag-to-dismiss + tap-outside, both already supported by `vaul`.
+## 2. Elevate `NextUpTile` (lines 567–595)
 
-Layout sketch:
+Wrap the existing `<NextUpTile />` in a container that adds depth without modifying the component itself:
 
 ```text
-┌─────────────────────────────┐
-│        ─── handle ───       │
-│  Quick actions              │
-│ ┌─────┐ ┌─────┐ ┌─────┐     │
-│ │ +📅 │ │ +👤 │ │ 📍  │     │
-│ │Less.│ │Pupil│ │Track│     │
-│ └─────┘ └─────┘ └─────┘     │
-│ ┌─────┐ ┌─────┐ ┌─────┐     │
-│ │ £   │ │ 💬  │ │ ⏰  │     │
-│ │Pay  │ │Msg  │ │Avail│     │
-│ └─────┘ └─────┘ └─────┘     │
-└─────────────────────────────┘
+<div style={{
+  margin: "0 16px",
+  borderRadius: 20,
+  borderLeft: "3px solid #2B7BC8",
+  boxShadow: "0 8px 24px -8px rgba(43,123,200,0.18), 0 2px 6px rgba(0,0,0,0.04)",
+  overflow: "hidden",
+  background: "#FFFFFF",
+}}>
+  <NextUpTile ... />
+</div>
 ```
 
-Keep the same 6 actions and colour tokens already defined — only the container and layout change.
+Matches the colour-coded left-accent convention already used on the gap-fill card. The "Next lesson" `SectionHeader` above it stays as-is.
 
-### 2. Contextual ordering
+## 3. Tint the "quiet" cards
 
-Re-order the grid based on **the page the user is on**:
+Wrap these five tertiary blocks so they recede into the page instead of competing with primary content:
 
-- On `/instructor` (home) → Add lesson, Take payment, Add pupil, Track live, Messages, Availability.
-- On `/instructor/pupils` → Add pupil first.
-- On `/instructor/schedule` → Add lesson + Availability first.
-- On `/instructor/messages` → Messages (new chat) first.
+- `InsightTilesGrid` (line 647)
+- `TelematicsTile` (line 656)
+- `VehicleHealthCard` (line 663)
+- `IdleTimeCostCard` (line 664)
+- `UpcomingEventsCard` (line 670)
 
-A tiny `getOrderedActions(pathname)` helper in the popover component, no new data plumbing.
+Each gets a wrapper `<div>` with:
+- `background: #F8FAFB`
+- `border-radius: 14px`
+- `border: none` (overrides any internal border via wrapper inset)
+- `padding: 2px` so the existing card's own border collapses visually
 
-### 3. Long-press the + for the #1 action
+Where the inner card already paints a white background, we'll add a subtle `box-shadow: inset 0 0 0 0.5px rgba(0,0,0,0.04)` on the wrapper instead so the tint shows through the surrounding margin.
 
-Long-press on the header **+** triggers the **most-used action** directly (default: Add lesson) without opening the sheet. Saves a tap for power users; surfaces via a one-time tooltip on first install.
+The `SectionHeader`s ("Insights", "Telematics") stay outside the wrapper so the hierarchy reads top-to-bottom.
 
-### 4. Pin user-chosen favourites (later, optional)
+## 4. Translucent sticky next-up bar (lines 484–502)
 
-Add a "Pin" affordance via long-press on a tile. Pinned actions move to the top row and persist via the existing `useInstructorTilePreferences` hook. Lets each instructor curate their own 3 most-used actions.
+Update the `motion.div` className from:
 
-### 5. Retire the left drawer entirely
+```text
+fixed top-2 left-3 right-3 z-50 bg-primary text-primary-foreground ...
+```
 
-Remove `QuickActionsPopoverMenu`'s left-drawer chrome (logo header, full-height layout, close button) — those belong to the main side menu, not a quick launcher. Avoids users confusing the two drawers.
+to use a frosted surface:
 
-## Technical changes
+```text
+fixed top-2 left-3 right-3 z-50
+text-primary-foreground px-4 py-2 flex items-center justify-between
+shadow-lg rounded-2xl
+```
 
-Files to touch:
+with inline `style={{ background: "rgba(43,123,200,0.78)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}`. Keeps the brand colour but lets the page texture show through — adds the "something is floating above content" feeling.
 
-- **`src/components/instructor/QuickActionsPopoverMenu.tsx`**
-  Switch `DrawerPrimitive` direction from `"left"` to `"bottom"`. Replace the rows with a grid of `QuickActionTile` cells (3 cols, ~96px square, icon-on-coloured-circle + label below). Drop the logo/title header — keep just a drag handle and the "Quick actions" caption. Add the `getOrderedActions(pathname)` re-sort.
+## Out of scope (deferred for the second pass)
 
-- **`src/components/instructor/ui/QuickActionTile.tsx`** (new, ~40 lines)
-  Square tile mirroring the existing `QuickActionRow` colour palette so nothing else needs restyling.
+- Replacing the activity-tile PNG icons with chip+lucide icons
+- Converting `InsightTilesGrid` to a horizontal snap scroll
+- Bottom tab bar blur (lives in a separate nav component)
+- Streak/weekly-goal ring inside the hero card
 
-- **`src/components/instructor/MobileBlueHeader.tsx`**
-  Add a `useLongPress` handler on the **+** button → navigates straight to `/instructor/schedule?action=add` and fires `haptics.medium()`. Tap behaviour unchanged.
+## Files changed
 
-- **`src/hooks/useLongPress.ts`** — already exists, just import it.
+- `src/components/instructor/InstructorMobileHome.tsx` (only)
 
-No database, no new routes, no new dependencies (vaul already supports `direction="bottom"`).
+## Risks
 
-## What stays the same
-
-- The same six actions, routes, colours, and icons.
-- The `+` icon position in the header.
-- The side **menu** drawer (different component, different purpose) is untouched.
-
-## Out of scope
-
-- Adding new quick actions (e.g. "Start lesson", "Log mileage") — happy to do in a follow-up.
-- Voice-triggered quick actions.
-- Desktop quick action bar (`DesktopQuickActionBar`) — already a different, working pattern.
+- Mobile layout policy: user explicitly requested these mobile improvements, so the mobile-update-policy memory is satisfied for this pass.
+- `backdrop-filter` is unsupported on older Android WebView; falls back gracefully to the solid blue tint.
+- `todayOverview.totalEarnings` field name will be verified against the hook's return type before the edit; if absent, that segment is dropped silently.
