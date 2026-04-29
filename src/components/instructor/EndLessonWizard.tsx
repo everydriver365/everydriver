@@ -582,6 +582,7 @@ export function EndLessonWizard({
                   instructorId={instructorId}
                   durationMinutes={durationMinutes}
                   todayStartTime={startTime}
+                  lessonId={lessonId}
                   onBooked={handleComplete}
                   onSkip={handleComplete}
                 />
