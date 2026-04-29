@@ -152,53 +152,59 @@ export default function InstructorSchedule() {
         >
           {isMobile ? (
             <>
-              {/* Mobile toggle: List / Month */}
+              {/* Mobile toggle: Calendar / Schedule */}
               <div
                 style={{
-                  display: "flex",
-                  backgroundColor: "#FFFFFF",
-                  border: "0.5px solid #E5E5EA",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: 4,
+                  backgroundColor: "#F2F2F4",
                   padding: 3,
-                  borderRadius: 10,
+                  borderRadius: 8,
+                  minWidth: 180,
                 }}
               >
-                <button
-                  onClick={() => setViewMode('list')}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    padding: "5px 10px",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontWeight: 500,
-                    transition: "all 0.2s",
-                    ...(viewMode === 'list'
-                      ? { backgroundColor: "#F2F2F4", color: "#000000" }
-                      : { backgroundColor: "transparent", color: "#6E6E73" }),
-                  }}
-                >
-                  <List style={{ width: 14, height: 14 }} />
-                  List
-                </button>
                 <button
                   onClick={() => setViewMode('month')}
                   style={{
                     display: "flex",
                     alignItems: "center",
+                    justifyContent: "center",
                     gap: 4,
-                    padding: "5px 10px",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontWeight: 500,
-                    transition: "all 0.2s",
+                    padding: "6px 10px",
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: viewMode === 'month' ? 500 : 400,
+                    border: "none",
+                    transition: "all 0.15s",
                     ...(viewMode === 'month'
-                      ? { backgroundColor: "#F2F2F4", color: "#000000" }
+                      ? { backgroundColor: "#FFFFFF", color: "#000000" }
                       : { backgroundColor: "transparent", color: "#6E6E73" }),
                   }}
                 >
-                  <CalendarRange style={{ width: 14, height: 14 }} />
-                  Month
+                  <CalendarRange style={{ width: 13, height: 13 }} />
+                  Calendar
+                </button>
+                <button
+                  onClick={() => setViewMode('compact')}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 4,
+                    padding: "6px 10px",
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: viewMode === 'compact' ? 500 : 400,
+                    border: "none",
+                    transition: "all 0.15s",
+                    ...(viewMode === 'compact'
+                      ? { backgroundColor: "#FFFFFF", color: "#000000" }
+                      : { backgroundColor: "transparent", color: "#6E6E73" }),
+                  }}
+                >
+                  <ListOrdered style={{ width: 13, height: 13 }} />
+                  Schedule
                 </button>
               </div>
 
