@@ -812,15 +812,15 @@ export function StepBookNext({
         </div>
       </div>
 
-      {/* Grey content backdrop — escapes parent's 24px horizontal padding */}
+      {/* Grey content backdrop */}
       <div
         style={{
           flex: 1,
           minHeight: 0,
           overflowY: "auto",
+          overflowX: "hidden",
           background: "#F2F2F4",
           padding: 16,
-          margin: "0 -24px",
         }}
       >
         {/* "When next?" eyebrow + Pick another time link */}
