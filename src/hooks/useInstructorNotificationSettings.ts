@@ -44,6 +44,11 @@ const DEFAULTS: NotificationSettings = {
     job_min_value_enabled: false,
     job_min_value_pounds: 0,
     dedupe_repeat_sender: true,
+    reminder_lesson_end: true,
+    reminder_daily_summary: true,
+    reminder_breaks: true,
+    reminder_payment_received: true,
+    reminder_running_late: true,
   },
 };
 
