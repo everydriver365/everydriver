@@ -260,19 +260,32 @@ export default function InstructorSchedule() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-1.5 h-8">
                       {viewMode === 'list' && <List className="h-3.5 w-3.5" />}
+                      {viewMode === 'compact' && <ListOrdered className="h-3.5 w-3.5" />}
                       {viewMode === 'schedule' && <CalendarDays className="h-3.5 w-3.5" />}
                       {viewMode === 'calendar' && <Calendar className="h-3.5 w-3.5" />}
-                      <span className="text-xs capitalize">{viewMode === 'calendar' ? 'Calendar' : viewMode === 'schedule' ? 'Schedule' : 'List'}</span>
+                      <span className="text-xs capitalize">
+                        {viewMode === 'calendar'
+                          ? 'Calendar'
+                          : viewMode === 'schedule'
+                          ? 'Day grid'
+                          : viewMode === 'compact'
+                          ? 'Schedule'
+                          : 'List'}
+                      </span>
                       <ChevronDown className="h-3 w-3 opacity-50" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40 bg-popover border shadow-lg z-50">
+                  <DropdownMenuContent align="end" className="w-44 bg-popover border shadow-lg z-50">
+                    <DropdownMenuItem onClick={() => setViewMode('compact')} className="cursor-pointer gap-2">
+                      <ListOrdered className="h-4 w-4" /> Schedule
+                      {viewMode === 'compact' && <Check className="ml-auto h-4 w-4" />}
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setViewMode('list')} className="cursor-pointer gap-2">
                       <List className="h-4 w-4" /> List
                       {viewMode === 'list' && <Check className="ml-auto h-4 w-4" />}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setViewMode('schedule')} className="cursor-pointer gap-2">
-                      <CalendarDays className="h-4 w-4" /> Schedule
+                      <CalendarDays className="h-4 w-4" /> Day grid
                       {viewMode === 'schedule' && <Check className="ml-auto h-4 w-4" />}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setViewMode('calendar')} className="cursor-pointer gap-2">
