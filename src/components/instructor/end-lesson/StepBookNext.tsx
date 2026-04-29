@@ -532,8 +532,16 @@ export function StepBookNext({
         /* ignore */
       }
     }
-    // Otherwise: the type of lesson that just ended
-    return lessonType || "Standard lesson";
+    // Otherwise: the type of lesson that just ended — formatted as sentence case + "lesson"
+    const raw = (lessonType || "standard").trim();
+    // Title-case each word, normalise underscores/hyphens
+    const titled = raw
+      .replace(/[_-]+/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+    // Append " lesson" only if the label doesn't already include lesson/test/prep/mock
+    const alreadyDescriptive = /\b(lesson|test|prep|mock|assessment|drive)\b/i.test(titled);
+    return alreadyDescriptive ? titled : `${titled} lesson`;
   }, [pupilCtx]);
 
   const formatDurationLabel = (mins: number): string => {
