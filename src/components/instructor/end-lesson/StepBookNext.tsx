@@ -762,65 +762,66 @@ export function StepBookNext({
         flexDirection: "column",
       }}
     >
-      {/* Pupil identity bar with course context */}
+      {/* Headline question — replaces the old pupil identity bar */}
       <div
         style={{
-          padding: "14px 16px",
-          borderBottom: `0.5px solid ${C.hairline}`,
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          margin: "-8px -24px 0",
+          padding: "4px 4px 16px",
           flexShrink: 0,
         }}
       >
-        <UserAvatar name={displayName} size={36} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 1 }}>
+        <h2
+          style={{
+            fontSize: 22,
+            fontWeight: 500,
+            color: C.text,
+            letterSpacing: -0.4,
+            lineHeight: 1.2,
+            margin: "0 0 4px",
+          }}
+        >
+          When shall we book {displayName}
+          {showReview && (
             <span
               style={{
-                fontSize: 14,
+                background: C.amberTint,
+                color: C.amber,
+                fontSize: 9,
                 fontWeight: 500,
-                color: C.text,
-                letterSpacing: -0.1,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
+                letterSpacing: 0.3,
+                padding: "2px 5px",
+                borderRadius: 3,
+                textTransform: "uppercase",
+                verticalAlign: "middle",
+                marginLeft: 6,
               }}
             >
-              {displayName}
+              Review
             </span>
-            {showReview && (
-              <span
-                style={{
-                  background: C.amberTint,
-                  color: C.amber,
-                  fontSize: 9,
-                  fontWeight: 500,
-                  letterSpacing: 0.3,
-                  padding: "2px 5px",
-                  borderRadius: 3,
-                  textTransform: "uppercase",
-                  flexShrink: 0,
-                }}
-              >
-                Review
-              </span>
-            )}
-          </div>
-          <div
-            style={{
-              fontSize: 11,
-              color: C.muted,
-              margin: 0,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {subtitle}
-          </div>
-        </div>
+          )}
+          {" "}in next?
+        </h2>
+        <p
+          style={{
+            fontSize: 13,
+            color: C.muted,
+            margin: 0,
+            lineHeight: 1.4,
+          }}
+        >
+          {(() => {
+            const wrapTime = todayStartTime
+              ? format(parse(todayStartTime, "HH:mm:ss", new Date()), "HH:mm")
+              : null;
+            const head = wrapTime
+              ? `Lesson wrapped at ${wrapTime}.`
+              : "Lesson just wrapped.";
+            const courseTail =
+              pupilCtx.courseHoursRemaining != null
+                ? ` · ${pupilCtx.courseHoursRemaining}h remaining on this course`
+                : "";
+            return `${head}${courseTail} Pick a time or skip if you'll book later.`;
+          })()}
+        </p>
       </div>
 
       {/* Body — scrollable */}
