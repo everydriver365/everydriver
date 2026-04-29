@@ -1,44 +1,38 @@
-## Problem
+# Apply the calm home design to the default mobile home
 
-When adding a lesson from the home schedule's "Add lesson" button, two identical rows are being inserted into `scheduled_lessons` ~1 ms apart (confirmed in the database — e.g. two rows at 12:17:08.428 and 12:17:08.429 for the same pupil/date/time).
+## Why this is needed
 
-The save button uses React state (`loading`) to disable itself, but `setLoading(true)` is asynchronous. A fast double-tap (common on iOS) fires the handler twice before React re-renders the disabled button, so two inserts go through.
+The previous redesign was applied to `IOSNativeHomeView.tsx`, which only renders when an instructor's appearance preference is `layoutStyle === "ios-native"`. Your account uses the default `"dashboard"` layout, so you never see it. This plan applies the same calm design to the default branch of `InstructorMobileHome.tsx`, on top of the existing extras.
 
-There are no DB triggers duplicating rows, and only one `AddLessonSheet` is mounted on the home screen — this is purely a client-side double-submit race.
+## What you'll see at the top of the home screen
 
-## Fix
+1. Calm app header — hamburger / DSM brand mark / notifications bell with subtle red dot when unread
+2. Personal greeting: "Morning / Afternoon / Evening / Working late, [First name]" + dynamic status line (lessons remaining, done for today, no lessons today, etc.)
+3. Compact horizontal progress rings card (80px concentric red/blue/green rings, side legend, "On track today" eyebrow) — taps through to the existing rings/goals view
+4. Lightweight Up Next tile — blue clock icon, eyebrow countdown ("Up next · in 1h 20m"), pupil name + duration/time/location, chevron — taps through to the existing diary
+5. 2×2 quick-access grid: Job offers (purple), Messages (amber), Test swaps (blue), Fill gaps (green) with category-tinted pills and contextual subtitles
+6. Tip of the day card (rotating from a 5-tip pool, soft red/amber gradient, white "Try it" CTA)
 
-In `src/components/instructor/AddLessonSheet.tsx`:
+Below this new block, **everything currently on the home page stays exactly as it is today** — Morning Briefing, Weather/Driving alerts, the existing ActivityTilesGrid, Pupil Milestone Feed, Next-lesson NextUpTile workspace card, Today schedule, SwipeableQuickAccess, Impact Alerts, Insights, Telematics, Vehicle Health, Idle Time Cost, Upcoming Events, Floating Session Bar.
 
-1. Add a `useRef` flag (`submittingRef`) that flips synchronously on entry to either save handler and resets in the `finally` block.
-2. At the top of `handleAddLessonExisting` and `handleAddLessonNew`, return immediately if `submittingRef.current` is already `true`.
-3. Reset `submittingRef.current = false` in `finally` (alongside `setLoading(false)`), and also reset it inside `resetForm` / when the sheet closes, so reopening works cleanly.
+## Files
 
-This blocks the second invocation immediately, regardless of React render timing.
+### New
 
-### Technical detail
+- `src/components/instructor/CalmHomeHeader.tsx` — self-contained component that renders the 6 new sections. Reads its own data (next lesson, today overview, weekly goals, jobs/messages/test-swaps/gaps counts, combined notifications), no props besides `instructorId` and `instructorName`. Routes to existing screens: `/instructor/menu`, `/instructor/notifications`, `/instructor/goals`, `/instructor/diary`, `/instructor/jobs`, `/instructor/messages`, `/instructor/test-requests`, `/instructor/gaps`.
 
-```text
-const submittingRef = useRef(false);
+### Edited
 
-const handleAddLessonExisting = async () => {
-  if (submittingRef.current) return;   // sync guard
-  submittingRef.current = true;
-  setLoading(true);
-  try { ...existing logic, single insert... }
-  finally {
-    setLoading(false);
-    submittingRef.current = false;
-  }
-};
-```
+- `src/components/instructor/InstructorMobileHome.tsx` — in the default `else` branch (currently lines 449-660), replace the existing greeting block (lines 451-478) with `<CalmHomeHeader instructorId={instructorId} instructorName={instructor?.name} />`. Everything else in that branch stays untouched (WarmHomeTiles, MorningBriefingCard, WeatherAlertBanner, ActivityTilesGrid, PupilMilestoneFeed, NextUpTile workspace card, HomeTodaySchedule, SwipeableQuickAccess, ImpactAlertCard, InsightTilesGrid, TelematicsTile, VehicleHealthCard, IdleTimeCostCard, UpcomingEventsCard, FloatingSessionBar).
 
-Same change applied to `handleAddLessonNew`.
+## Preserved behaviour
 
-## Out of scope
+- All data hooks, navigation handlers, analytics events, pull-to-refresh, urgent-alert overlay, bottom navigation, FAB
+- The existing detailed Up Next workspace card (with mini map, traffic/weather warnings, Start track) — untouched; the new lightweight tile sits above it and routes to `/instructor/diary`
+- The existing `ActivityTilesGrid`, Insights, Telematics, etc. — still render below the new block
+- The other layout styles (ios-native, schedule, lockscreen, clean, compact, bestmate, mission-control, widgets) — unchanged
 
-No DB-level unique constraint is added (would require deciding on the natural key and handling legitimate edits). The client guard is sufficient for this UX bug; we can revisit a DB constraint separately if duplicates ever appear from another entry point.
+## Notes
 
-## Files touched
-
-- `src/components/instructor/AddLessonSheet.tsx` — add ref guard to both save handlers.
+- Because the default layout has many existing sections, the new calm block will appear at the top and the rest will follow. This matches your "Keep extras below the new layout" choice. If you later want a strict, slimmed-down home, I can hide specific extras in a follow-up.
+- Tip of the day uses a hardcoded rotating pool of 5 tips (per earlier choice).
