@@ -573,6 +573,20 @@ export function EndLessonWizard({
                 onSaveAndNext={goNext}
               />
             )}
+
+            {step === "book" && (
+              <div style={{ padding: "8px 24px 0" }}>
+                <StepBookNext
+                  pupilId={pupilId}
+                  pupilName={pupilName}
+                  instructorId={instructorId}
+                  durationMinutes={durationMinutes}
+                  todayStartTime={startTime}
+                  onBooked={handleComplete}
+                  onSkip={handleComplete}
+                />
+              </div>
+            )}
           </>
         ) : (
         <div className="p-6">
