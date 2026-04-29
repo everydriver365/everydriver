@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 import { StepSummary } from "./end-lesson/StepSummary";
 import { StepPayment } from "./end-lesson/StepPayment";
-import { StepSkills } from "./end-lesson/StepSkills";
+import { InlineStepSkills } from "./end-lesson/StepSkills";
 import { StepBookNext } from "./end-lesson/StepBookNext";
 import { StepLessonSummary } from "./end-lesson/StepLessonSummary";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -354,18 +354,21 @@ export function EndLessonWizard({
 
   // Premium chrome shared by Step 1 (summary) and Step 2 (payment):
   // Back / centred title / spacer + thin progress bars.
-  const isPremiumChrome = step === "summary" || step === "payment";
+  const isPremiumChrome = step === "summary" || step === "payment" || step === "skills";
   const showStepChrome =
     step !== "completed" && step !== "completing" && step !== "course_complete";
 
   const premiumEyebrow =
     step === "summary"
       ? `Step 1 of ${totalSteps} · Quick summary`
-      : `Step 2 of ${totalSteps} · Take payment`;
+      : step === "payment"
+        ? `Step 2 of ${totalSteps} · Take payment`
+        : `Step ${stepNumber} of ${totalSteps} · Skills update`;
   const premiumLeftLabel = step === "summary" ? "Cancel" : "Back";
   const handlePremiumLeft = () => {
     if (step === "summary") onOpenChange(false);
     else if (step === "payment") setStep("summary");
+    else if (step === "skills") setStep(needsPayment ? "payment" : "summary");
   };
 
   // Refresh pupil balance after Record Payment (called from Step 1 "Due now" tile)
