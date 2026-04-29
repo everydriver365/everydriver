@@ -1067,7 +1067,7 @@ export function StepBookNext({
         style={{
           padding: "12px 16px",
           paddingBottom: "max(16px, env(safe-area-inset-bottom))",
-          background: C.bg,
+          background: C.surface,
           borderTop: `0.5px solid ${C.hairline}`,
           display: "flex",
           alignItems: "center",
