@@ -33,6 +33,13 @@ export function MobileBlueHeader({
   const { total: notifCount } = useCombinedNotificationCount(instructorId);
   const initial = (firstName || "I").trim().charAt(0).toUpperCase();
 
+  // Long-press the + → jump straight to the most-used action (Add lesson).
+  // Tap still opens the bottom-sheet quick actions.
+  const plusHandlers = useLongPress({
+    onClick: onPlus,
+    onLongPress: () => navigate("/instructor/schedule?action=add"),
+  });
+
   const bgStyle = { background: "hsl(var(--dsm-bg))" };
 
   return (
