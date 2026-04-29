@@ -475,7 +475,7 @@ export function StepBookNext({
           if (date.getDay() !== pattern.dow) continue;
           const hhmmss = `${pattern.hhmm}:00`;
           const dateStr = format(date, "yyyy-MM-dd");
-          if (!isAvailable(dateStr, hhmmss)) continue;
+          if (!(await isAvailable(dateStr, hhmmss))) continue;
           const dayName = format(date, "EEEE");
           const reasoning = `Pupil's usual ${dayName} slot`;
           const added = pushIfFresh({
@@ -498,7 +498,7 @@ export function StepBookNext({
           if (!cached || cached.existing.length < 2) continue;
           const candidateTimes = ["09:00:00", "10:30:00", "11:00:00", "13:00:00", "15:00:00"];
           for (const ct of candidateTimes) {
-            if (!isAvailable(dateStr, ct)) continue;
+            if (!(await isAvailable(dateStr, ct))) continue;
             const candidateStart = parse(ct, "HH:mm:ss", date).getTime();
             const candidateEnd = candidateStart + durationMinutes * 60000;
             const before = cached.existing.find((ex) => {
@@ -550,7 +550,7 @@ export function StepBookNext({
             const timeMatchesPref =
               preferredTimes.length === 0 || preferredTimes.includes(tod);
             if (!timeMatchesPref) continue;
-            if (!isAvailable(dateStr, ct)) continue;
+            if (!(await isAvailable(dateStr, ct))) continue;
             // Reasoning: prefer day-name when explicit, else time-of-day
             let reasoning: string;
             if (preferredDays.length > 0) {
@@ -579,7 +579,7 @@ export function StepBookNext({
             for (let d = 1; d <= 7 && candidates.length < 3; d++) {
               const date = addDays(today, d);
               const dateStr = format(date, "yyyy-MM-dd");
-              if (!isAvailable(dateStr, todayStartTime)) continue;
+              if (!(await isAvailable(dateStr, todayStartTime))) continue;
               const remaining = differenceInCalendarDays(testDate, date);
               const added = pushIfFresh({
                 date: dateStr,
@@ -600,7 +600,7 @@ export function StepBookNext({
       if (candidates.length < 3 && todayStartTime) {
         const date = addDays(today, 7);
         const dateStr = format(date, "yyyy-MM-dd");
-        if (isAvailable(dateStr, todayStartTime)) {
+        if (await isAvailable(dateStr, todayStartTime)) {
           pushIfFresh({
             date: dateStr,
             startTime: todayStartTime,
@@ -617,7 +617,7 @@ export function StepBookNext({
           ? ["09:00:00", "09:30:00", "10:00:00", "10:30:00", "11:00:00", "13:00:00", "15:00:00"]
           : ["09:00:00", "10:00:00", "11:00:00", "13:00:00", "15:00:00"];
         for (const ct of candidateTimes) {
-          if (isAvailable(tomorrowStr, ct)) {
+          if (await isAvailable(tomorrowStr, ct)) {
             pushIfFresh({
               date: tomorrowStr,
               startTime: ct,
@@ -632,7 +632,7 @@ export function StepBookNext({
       if (candidates.length < 3 && todayStartTime) {
         const date = addDays(today, 2);
         const dateStr = format(date, "yyyy-MM-dd");
-        if (isAvailable(dateStr, todayStartTime)) {
+        if (await isAvailable(dateStr, todayStartTime)) {
           pushIfFresh({
             date: dateStr,
             startTime: todayStartTime,
