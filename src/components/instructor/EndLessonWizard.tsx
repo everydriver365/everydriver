@@ -398,7 +398,7 @@ export function EndLessonWizard({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className={`max-h-[90vh] overflow-y-auto rounded-2xl p-0 ${isPremiumChrome ? "[&>button.absolute]:hidden" : ""}`}
+        className={`max-h-[90vh] rounded-2xl p-0 ${isPremiumChrome ? "[&>button.absolute]:hidden flex flex-col overflow-hidden" : "overflow-y-auto"}`}
       >
         {isPremiumChrome ? (
           <>
@@ -406,10 +406,12 @@ export function EndLessonWizard({
             <div
               style={{
                 padding: "12px 16px",
+                paddingTop: "max(12px, env(safe-area-inset-top))",
                 borderBottom: "0.5px solid #E5E5EA",
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
+                flexShrink: 0,
               }}
             >
               <button
