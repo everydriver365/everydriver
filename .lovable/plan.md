@@ -1,33 +1,38 @@
-## Goal
+## Make instructor tiles pop
 
-Remove the blue greeting hero card (the "WEDNESDAY / Hi Ken / 1 lesson · First 12:00:00 · £45" tile with the DH avatar) that sits directly under the DSM header on the instructor mobile home page (`/instructor`).
+The current `InstructorTile` is intentionally flat (white card, 0.5px #E5E5EA border, `boxShadow: none`) on a near-white `#F4F7F6` background — that's why everything blends. Here are 4 levers, ranked by impact. We can apply 1, 2, or all of them.
 
-## What I found
-
-I searched the codebase exhaustively for the strings "WEDNESDAY", "First 12:00:00", "Hi Ken" and the surrounding markup. The only matching greeting in code is the **plain-text** greeting in `src/components/instructor/InstructorMobileHome.tsx` (lines 451–478):
-
-```tsx
-{/* 1. Quiet greeting */}
-<div style={{ padding: "6px 20px 20px" }}>
-  <h1>
-    Hi {firstName}
-    · {format(new Date(), "EEEE")}
-  </h1>
-  <p>Here's what needs you today</p>
-</div>
+### Option A — Add lift via layered shadow (smallest change, biggest payoff)
+Replace `boxShadow: "none"` on `InstructorTile` with a soft 2-layer shadow (matches the existing `shadow-lift` token already used elsewhere in the app):
 ```
+boxShadow: "0 1px 2px rgba(20,30,60,0.04), 0 8px 20px rgba(20,30,60,0.08)"
+```
+Drop the hairline border (or fade it to `#EEF0F4`) so the shadow does the separation work instead of the line. Result: tiles float off the page like the `BestMateTile` / `Card` components already do.
 
-This is the only piece of code rendering "Hi {firstName}" on the instructor home. The full blue card with avatar + lesson stats shown in your screenshot does not match any committed component — it appears to be a styled wrapper or a recently-introduced variant I can't find from the screenshot alone.
+### Option B — Warm up the background canvas
+The `#F4F7F6` page bg is too close to white. Two choices for the dashboard wrapper:
+1. Subtle vertical gradient `linear-gradient(180deg, #EEF2F7 0%, #E6ECF3 100%)` — cool slate, matches DSM brand.
+2. Flat `#EEF1F5` (already the DSM light theme surface token).
 
-## Plan
+Either gives white tiles real contrast without touching tile code.
 
-1. **Remove the greeting block** at lines 451–478 of `src/components/instructor/InstructorMobileHome.tsx` entirely so nothing renders above the `WarmHomeTiles` "Action needed" tile.
-2. **Verify in preview** after removal — if the blue card with avatar/£45/First 12:00:00 is still visible, it's coming from a component I haven't identified yet. In that case I will:
-   - Inspect the live DOM via the browser tools to read the rendered class names / inline styles
-   - Trace those styles back to the component file and remove that as well
+### Option C — Tinted icon block becomes the full top edge
+Currently the coloured tint sits in a 40×40 rounded square. Instead, paint a **soft category-tinted top stripe** (or a 4px coloured top border) so each tile carries its category colour even at a glance. Keeps the white body but adds personality. Example for the "money" tile: 3px top border `#B8801F`, or a top-left radial wash from `colors.tint` fading to white.
 
-## Out of scope
+### Option D — Press + hover micro-depth
+Add `:hover` shadow boost and keep the existing `:active scale(0.97)`:
+```
+.instructor-tile:hover { box-shadow: 0 2px 4px rgba(20,30,60,0.06), 0 14px 28px rgba(20,30,60,0.12); transform: translateY(-1px); }
+```
+Makes the grid feel alive when scrolled past.
 
-- No changes to `WarmHomeTiles` (Action needed, Up next today, Week at a glance rings)
-- No changes to `MorningBriefingCard`, `ActivityTilesGrid`, or any tile below the greeting
-- No design-system token changes
+### Recommendation
+Ship **A + B + D** together — that's the standard "iOS widget" recipe and is fully consistent with your `BestMateTile` and `Card` aesthetic already in the codebase. Skip C unless you want the tiles to read as more colourful/playful (it's a brand shift).
+
+### Files touched
+- `src/components/instructor/InstructorTile.tsx` — shadow, border, hover styles in the inline `<style>` block (lines 95–98 + 230–239).
+- `src/pages/InstructorPortal.tsx` (or whichever wrapper sets the `#F4F7F6` bg) — swap to `#EEF1F5` or the gradient.
+
+No schema, no new components, no memory changes. ~15 lines edited total.
+
+Reply with **A+B+D** (recommended), or pick any combination, and I'll implement.
