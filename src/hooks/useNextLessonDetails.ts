@@ -28,18 +28,26 @@ export function useNextLessonDetails(instructorId: string | undefined) {
 
       const now = new Date();
       const today = format(now, "yyyy-MM-dd");
-      const currentTime = format(now, "HH:mm:ss");
 
-      const { data: todayLesson } = await supabase
+      // Pull all of today's non-cancelled, non-completed lessons and pick the
+      // earliest one that has not yet finished (start + duration is still in
+      // the future). This keeps an in-progress lesson surfaced as "next" until
+      // it actually ends, instead of jumping ahead to a lesson days away the
+      // moment its start time passes.
+      const { data: todayLessons } = await supabase
         .from("scheduled_lessons")
-        .select(`id, lesson_date, start_time, duration_minutes, pickup_location, pickup_postcode, check_in_status, pupils!inner (id, name, phone, profile_image_url, postcode, address, pickup_address, pickup_postcode, account_balance, prepaid_hours)`)
+        .select(`id, lesson_date, start_time, duration_minutes, pickup_location, pickup_postcode, check_in_status, status, pupils!inner (id, name, phone, profile_image_url, postcode, address, pickup_address, pickup_postcode, account_balance, prepaid_hours)`)
         .eq("instructor_id", instructorId)
         .eq("lesson_date", today)
-        .gt("start_time", currentTime)
         .neq("status", "cancelled")
-        .order("start_time", { ascending: true })
-        .limit(1)
-        .maybeSingle();
+        .neq("status", "completed")
+        .order("start_time", { ascending: true });
+
+      const todayLesson = (todayLessons || []).find((l: any) => {
+        const start = new Date(`${l.lesson_date}T${l.start_time}`);
+        const end = new Date(start.getTime() + (l.duration_minutes || 60) * 60000);
+        return end.getTime() > now.getTime();
+      }) || null;
 
       let lesson = todayLesson;
       if (!lesson) {
