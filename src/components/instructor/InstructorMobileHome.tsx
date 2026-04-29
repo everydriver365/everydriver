@@ -112,6 +112,12 @@ import { WidgetsHomeView } from "@/components/instructor/WidgetsHomeView";
 
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { HomeTodaySchedule } from "@/components/instructor/HomeTodaySchedule";
+import { HomeGreeting } from "@/components/instructor/HomeGreeting";
+import { useHomeActions } from "@/components/instructor/WarmHomeTiles";
+import {
+  composeStatusSubtitle,
+  getTimeOfDayGreeting,
+} from "@/lib/composeStatusSubtitle";
 import { useTomorrowLessons } from "@/hooks/useTomorrowLessons";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
 import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
