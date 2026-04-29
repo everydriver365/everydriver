@@ -82,4 +82,10 @@ export function useGlobalLessonSync(instructorId: string | undefined) {
     filter,
     enabled,
   });
+
+  // lesson_history drives the "Complete EOL" prompt on Today's schedule.
+  useRealtimeSubscription("lesson_history", "*", invalidateLessonQueries, {
+    filter,
+    enabled,
+  });
 }
