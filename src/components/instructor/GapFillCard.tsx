@@ -386,7 +386,7 @@ export function GapFillCard({
         <span style={{ fontWeight: 500, color: "#000000" }}>
           {totalCount}
         </span>{" "}
-        may fit · {durationLabel}
+        {totalCount === 1 ? "Pupil" : "Pupils"} May Fit · {durationLabel}
       </>
     );
 
