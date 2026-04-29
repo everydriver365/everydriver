@@ -725,7 +725,7 @@ export function StepBookNext({
       style={{
         fontFamily: FONT_STACK,
         color: C.text,
-        background: C.surface,
+        background: C.bg,
         flex: 1,
         minHeight: 0,
         display: "flex",
