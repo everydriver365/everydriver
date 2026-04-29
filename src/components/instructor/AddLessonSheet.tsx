@@ -633,6 +633,7 @@ export function AddLessonSheet({
       if (error) throw error;
       toast.success(isDrivingTest ? 'Test scheduled!' : isRecurring ? `${weeks} lessons scheduled` : 'Lesson scheduled');
       handlePostSavePayment(selectedPupil);
+      invalidateLessonQueries(queryClient);
       resetForm(); onOpenChange(false); onSuccess();
     } catch (error) { console.error(error); toast.error('Failed to schedule lesson'); }
     finally { setLoading(false); }
