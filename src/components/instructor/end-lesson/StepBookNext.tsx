@@ -3,7 +3,7 @@ import { Loader2, MapPin, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, parse, differenceInCalendarDays } from "date-fns";
 import { toast } from "sonner";
-import { UserAvatar } from "@/components/instructor/UserAvatar";
+
 import { titleCaseName } from "@/lib/titleCase";
 
 const FONT_STACK =
