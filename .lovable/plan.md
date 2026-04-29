@@ -1,38 +1,30 @@
-## Make instructor tiles pop
+## Goal
 
-The current `InstructorTile` is intentionally flat (white card, 0.5px #E5E5EA border, `boxShadow: none`) on a near-white `#F4F7F6` background — that's why everything blends. Here are 4 levers, ranked by impact. We can apply 1, 2, or all of them.
+Strip the remaining blue accent colour from the "Up next" card in the instructor mobile home (`NextUpTile.tsx`) so the card reads as fully neutral, matching the already-greyed "Up next" label.
 
-### Option A — Add lift via layered shadow (smallest change, biggest payoff)
-Replace `boxShadow: "none"` on `InstructorTile` with a soft 2-layer shadow (matches the existing `shadow-lift` token already used elsewhere in the app):
-```
-boxShadow: "0 1px 2px rgba(20,30,60,0.04), 0 8px 20px rgba(20,30,60,0.08)"
-```
-Drop the hairline border (or fade it to `#EEF0F4`) so the shadow does the separation work instead of the line. Result: tiles float off the page like the `BestMateTile` / `Card` components already do.
+## What still has blue today
 
-### Option B — Warm up the background canvas
-The `#F4F7F6` page bg is too close to white. Two choices for the dashboard wrapper:
-1. Subtle vertical gradient `linear-gradient(180deg, #EEF2F7 0%, #E6ECF3 100%)` — cool slate, matches DSM brand.
-2. Flat `#EEF1F5` (already the DSM light theme surface token).
+After the previous edit, the label is grey but three blue elements remain on the card:
 
-Either gives white tiles real contrast without touching tile code.
+1. The **Navigation icon** in the map's "open in maps" button — currently `#2B7BC8` (blue).
+2. The **origin pin** in the route list (the "Your location" row) — uses a blue ring + blue inner dot (`#2B7BC8`).
+3. None on the destination pin (it's intentionally red `#C8434F` to indicate the pupil pickup) — leave as-is since it's a semantic destination marker, not an accent.
 
-### Option C — Tinted icon block becomes the full top edge
-Currently the coloured tint sits in a 40×40 rounded square. Instead, paint a **soft category-tinted top stripe** (or a 4px coloured top border) so each tile carries its category colour even at a glance. Keeps the white body but adds personality. Example for the "money" tile: 3px top border `#B8801F`, or a top-left radial wash from `colors.tint` fading to white.
+## Changes
 
-### Option D — Press + hover micro-depth
-Add `:hover` shadow boost and keep the existing `:active scale(0.97)`:
-```
-.instructor-tile:hover { box-shadow: 0 2px 4px rgba(20,30,60,0.06), 0 14px 28px rgba(20,30,60,0.12); transform: translateY(-1px); }
-```
-Makes the grid feel alive when scrolled past.
+File: `src/components/instructor/NextUpTile.tsx`
 
-### Recommendation
-Ship **A + B + D** together — that's the standard "iOS widget" recipe and is fully consistent with your `BestMateTile` and `Card` aesthetic already in the codebase. Skip C unless you want the tiles to read as more colourful/playful (it's a brand shift).
+1. **Line 399** — change the Navigation icon colour from `#2B7BC8` to neutral `#6E6E73` (same grey as secondary text).
+2. **Lines 409–414** — change the origin pin's border + inner dot from `#2B7BC8` to neutral `#6E6E73`, so "Your location" is a simple grey marker.
 
-### Files touched
-- `src/components/instructor/InstructorTile.tsx` — shadow, border, hover styles in the inline `<style>` block (lines 95–98 + 230–239).
-- `src/pages/InstructorPortal.tsx` (or whichever wrapper sets the `#F4F7F6` bg) — swap to `#EEF1F5` or the gradient.
+Leave the destination (red) pin untouched — it's a functional marker for the pickup, not decorative accent.
 
-No schema, no new components, no memory changes. ~15 lines edited total.
+## Out of scope
 
-Reply with **A+B+D** (recommended), or pick any combination, and I'll implement.
+- Header label (already neutral).
+- Destination pin colour (semantic, not an accent).
+- Other home tiles / other home views (`CleanHomeView`, `BestMateHomeView`, `IOSNativeHomeView`, etc.) — only the active `NextUpTile` used by `InstructorMobileHome`.
+
+## Verification
+
+After applying, the "Up next" card should contain no blue: label grey, time/name black, origin pin grey, destination pin red, map icon grey.
