@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw, CalendarRange } from "lucide-react";
+import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw, CalendarRange, ListOrdered } from "lucide-react";
 import { ScheduleSkeleton } from "@/components/ui/skeletons/ScheduleSkeleton";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { MultiDayScheduleView } from "@/components/instructor/MultiDayScheduleView";
 import { MobileMonthCalendarView } from "@/components/instructor/MobileMonthCalendarView";
 import { InstructorCalendar } from "@/components/instructor/InstructorCalendar";
 import { GoogleStyleScheduleView } from "@/components/instructor/GoogleStyleScheduleView";
+import { CompactScheduleListView } from "@/components/instructor/CompactScheduleListView";
 import { CalendarColorSettings } from "@/components/instructor/CalendarColorSettings";
 import { AddCalendarEventDialog } from "@/components/instructor/AddCalendarEventDialog";
 import { CalendarEventSheet } from "@/components/instructor/CalendarEventSheet";
@@ -29,7 +30,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 
-type ViewMode = 'list' | 'month' | 'calendar' | 'schedule';
+type ViewMode = 'list' | 'month' | 'calendar' | 'schedule' | 'compact';
 
 export default function InstructorSchedule() {
   const { instructor } = useInstructorAuth();
@@ -39,8 +40,8 @@ export default function InstructorSchedule() {
   
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem('instructor-schedule-view');
-    if (saved && ['list', 'month', 'calendar', 'schedule'].includes(saved)) return saved as ViewMode;
-    return isMobile ? 'list' : 'calendar';
+    if (saved && ['list', 'month', 'calendar', 'schedule', 'compact'].includes(saved)) return saved as ViewMode;
+    return isMobile ? 'compact' : 'calendar';
   });
 
   const [colorSettingsOpen, setColorSettingsOpen] = useState(false);
@@ -71,7 +72,7 @@ export default function InstructorSchedule() {
   };
 
   useEffect(() => {
-    if (viewMode === 'schedule') {
+    if (viewMode === 'schedule' || viewMode === 'compact') {
       calendar.goToDate(new Date());
       calendar.setExtendedRange(true);
     } else {
@@ -151,53 +152,59 @@ export default function InstructorSchedule() {
         >
           {isMobile ? (
             <>
-              {/* Mobile toggle: List / Month */}
+              {/* Mobile toggle: Calendar / Schedule */}
               <div
                 style={{
-                  display: "flex",
-                  backgroundColor: "#FFFFFF",
-                  border: "0.5px solid #E5E5EA",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: 4,
+                  backgroundColor: "#F2F2F4",
                   padding: 3,
-                  borderRadius: 10,
+                  borderRadius: 8,
+                  minWidth: 180,
                 }}
               >
-                <button
-                  onClick={() => setViewMode('list')}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    padding: "5px 10px",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontWeight: 500,
-                    transition: "all 0.2s",
-                    ...(viewMode === 'list'
-                      ? { backgroundColor: "#F2F2F4", color: "#000000" }
-                      : { backgroundColor: "transparent", color: "#6E6E73" }),
-                  }}
-                >
-                  <List style={{ width: 14, height: 14 }} />
-                  List
-                </button>
                 <button
                   onClick={() => setViewMode('month')}
                   style={{
                     display: "flex",
                     alignItems: "center",
+                    justifyContent: "center",
                     gap: 4,
-                    padding: "5px 10px",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontWeight: 500,
-                    transition: "all 0.2s",
+                    padding: "6px 10px",
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: viewMode === 'month' ? 500 : 400,
+                    border: "none",
+                    transition: "all 0.15s",
                     ...(viewMode === 'month'
-                      ? { backgroundColor: "#F2F2F4", color: "#000000" }
+                      ? { backgroundColor: "#FFFFFF", color: "#000000" }
                       : { backgroundColor: "transparent", color: "#6E6E73" }),
                   }}
                 >
-                  <CalendarRange style={{ width: 14, height: 14 }} />
-                  Month
+                  <CalendarRange style={{ width: 13, height: 13 }} />
+                  Calendar
+                </button>
+                <button
+                  onClick={() => setViewMode('compact')}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 4,
+                    padding: "6px 10px",
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: viewMode === 'compact' ? 500 : 400,
+                    border: "none",
+                    transition: "all 0.15s",
+                    ...(viewMode === 'compact'
+                      ? { backgroundColor: "#FFFFFF", color: "#000000" }
+                      : { backgroundColor: "transparent", color: "#6E6E73" }),
+                  }}
+                >
+                  <ListOrdered style={{ width: 13, height: 13 }} />
+                  Schedule
                 </button>
               </div>
 
@@ -253,19 +260,32 @@ export default function InstructorSchedule() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-1.5 h-8">
                       {viewMode === 'list' && <List className="h-3.5 w-3.5" />}
+                      {viewMode === 'compact' && <ListOrdered className="h-3.5 w-3.5" />}
                       {viewMode === 'schedule' && <CalendarDays className="h-3.5 w-3.5" />}
                       {viewMode === 'calendar' && <Calendar className="h-3.5 w-3.5" />}
-                      <span className="text-xs capitalize">{viewMode === 'calendar' ? 'Calendar' : viewMode === 'schedule' ? 'Schedule' : 'List'}</span>
+                      <span className="text-xs capitalize">
+                        {viewMode === 'calendar'
+                          ? 'Calendar'
+                          : viewMode === 'schedule'
+                          ? 'Day grid'
+                          : viewMode === 'compact'
+                          ? 'Schedule'
+                          : 'List'}
+                      </span>
                       <ChevronDown className="h-3 w-3 opacity-50" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40 bg-popover border shadow-lg z-50">
+                  <DropdownMenuContent align="end" className="w-44 bg-popover border shadow-lg z-50">
+                    <DropdownMenuItem onClick={() => setViewMode('compact')} className="cursor-pointer gap-2">
+                      <ListOrdered className="h-4 w-4" /> Schedule
+                      {viewMode === 'compact' && <Check className="ml-auto h-4 w-4" />}
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setViewMode('list')} className="cursor-pointer gap-2">
                       <List className="h-4 w-4" /> List
                       {viewMode === 'list' && <Check className="ml-auto h-4 w-4" />}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setViewMode('schedule')} className="cursor-pointer gap-2">
-                      <CalendarDays className="h-4 w-4" /> Schedule
+                      <CalendarDays className="h-4 w-4" /> Day grid
                       {viewMode === 'schedule' && <Check className="ml-auto h-4 w-4" />}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setViewMode('calendar')} className="cursor-pointer gap-2">
@@ -282,7 +302,15 @@ export default function InstructorSchedule() {
 
         {/* Content */}
         <div className="flex-1 overflow-auto pb-4">
-          {viewMode === 'list' ? (
+          {viewMode === 'compact' ? (
+            <div style={{ padding: isMobile ? "0 12px 16px" : "0" }}>
+              <CompactScheduleListView
+                events={calendar.events}
+                loading={calendar.loading}
+                onEventClick={(event) => setSelectedEvent(event)}
+              />
+            </div>
+          ) : viewMode === 'list' ? (
             <MultiDayScheduleView key={mobileListRefreshKey} instructorId={instructorId} />
           ) : viewMode === 'month' ? (
             <MobileMonthCalendarView instructorId={instructorId} />
