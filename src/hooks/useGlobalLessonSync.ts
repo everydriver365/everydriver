@@ -21,6 +21,7 @@ const LESSON_QUERY_KEYS = [
   "gap-slots",
   "last-week-comparison",
   "day-lessons",
+  "day-lesson-history",
 ];
 
 const PUPIL_QUERY_KEYS = [
@@ -78,6 +79,12 @@ export function useGlobalLessonSync(instructorId: string | undefined) {
   });
 
   useRealtimeSubscription("payment_history", "*", invalidatePaymentQueries, {
+    filter,
+    enabled,
+  });
+
+  // lesson_history drives the "Complete EOL" prompt on Today's schedule.
+  useRealtimeSubscription("lesson_history", "*", invalidateLessonQueries, {
     filter,
     enabled,
   });

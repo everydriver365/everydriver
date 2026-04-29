@@ -3,7 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { format, parse, addDays } from "date-fns";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useDayLessons } from "@/hooks/useDayLessons";
+import { useDayLessonHistory, eolKey } from "@/hooks/useDayLessonHistory";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
+import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { a11yPx } from "@/lib/a11yScale";
 import type { TodayLesson } from "@/hooks/useTodayRemainingLessons";
@@ -79,10 +82,10 @@ function getLessonState(lesson: TodayLesson, nowSec: number, isTomorrow: boolean
   return "upcoming";
 }
 
-// EOL completeness derived from notes — no dedicated column today.
-// If/when an explicit `eol_completed_at` field is added, swap in here.
-function isEOLComplete(lesson: TodayLesson): boolean {
-  return !!(lesson.notes && lesson.notes.trim().length > 0);
+// EOL completeness is sourced from the lesson_history table via
+// useDayLessonHistory; helpers below take a Set<string> of completed keys.
+function isEOLComplete(lesson: TodayLesson, doneKeys: Set<string>): boolean {
+  return doneKeys.has(eolKey(lesson.pupilId, lesson.startTime));
 }
 
 function SkeletonBlock({ width, height = 12 }: { width: number | string; height?: number }) {
@@ -324,6 +327,8 @@ function ConflictBanner({ time }: { time: string }) {
 export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
   const [tab, setTab] = useState<"today" | "tomorrow">("today");
   const [addOpen, setAddOpen] = useState(false);
+  const [wizardLesson, setWizardLesson] = useState<TodayLesson | null>(null);
+  const [wizardBalance, setWizardBalance] = useState<number>(0);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -339,6 +344,23 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
 
   const { data: overview, isLoading: overviewLoading } = useTodayOverview(instructorId);
   const { data: lessons = [], isLoading: lessonsLoading } = useDayLessons(instructorId, targetDate);
+  const { data: eolDoneKeys = new Set<string>() } = useDayLessonHistory(instructorId, targetDate);
+
+  const openEOLWizard = async (lesson: TodayLesson) => {
+    let balance = 0;
+    try {
+      const { data } = await supabase
+        .from("pupils")
+        .select("account_balance")
+        .eq("id", lesson.pupilId)
+        .single();
+      balance = Number(data?.account_balance ?? 0);
+    } catch {
+      balance = 0;
+    }
+    setWizardBalance(balance);
+    setWizardLesson(lesson);
+  };
 
   const nowSec = tickNow.getHours() * 3600 + tickNow.getMinutes() * 60;
 
@@ -607,7 +629,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               const showReview = needsNameReview(lesson.pupilName);
               const isConflict = conflictIdSet.has(lesson.id);
               const showBannerAbove = lesson.id === firstConflictRowId;
-              const eolMissing = state === "completed" && !isEOLComplete(lesson) && lesson.status !== "cancelled";
+              const eolMissing = state === "completed" && !isEOLComplete(lesson, eolDoneKeys) && lesson.status !== "cancelled";
               const lessonHref = `/instructor/pupils/${lesson.pupilId}`;
               const accentColor = isDrivingTest ? IOS.systemRed : IOS.systemBlue;
 
@@ -729,7 +751,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                           {subtitleText}
                         </div>
                       )}
-                      {eolMissing && <EOLPrompt onTap={() => navigate(lessonHref)} />}
+                      {eolMissing && <EOLPrompt onTap={() => openEOLWizard(lesson)} />}
                     </div>
                   </Link>
                 ) : (
@@ -857,6 +879,30 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
             queryClient.invalidateQueries({ queryKey: ["today-overview"] });
             queryClient.invalidateQueries({ queryKey: ["day-lessons"] });
+          }}
+        />
+      )}
+
+      {instructorId && wizardLesson && (
+        <EndLessonWizard
+          open={!!wizardLesson}
+          onOpenChange={(open) => {
+            if (!open) setWizardLesson(null);
+          }}
+          lessonId={wizardLesson.id}
+          pupilId={wizardLesson.pupilId}
+          pupilName={wizardLesson.pupilName}
+          instructorId={instructorId}
+          durationMinutes={wizardLesson.durationMinutes}
+          lessonDate={format(targetDate, "yyyy-MM-dd")}
+          startTime={wizardLesson.startTime}
+          currentBalance={wizardBalance}
+          onCompleted={() => {
+            setWizardLesson(null);
+            queryClient.invalidateQueries({ queryKey: ["day-lessons"] });
+            queryClient.invalidateQueries({ queryKey: ["day-lesson-history"] });
+            queryClient.invalidateQueries({ queryKey: ["today-overview"] });
+            queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
           }}
         />
       )}

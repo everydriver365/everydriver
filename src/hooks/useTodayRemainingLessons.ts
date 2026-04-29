@@ -17,7 +17,6 @@ export interface TodayLesson {
   amountDue: number | null;
   status: string;
   googleEventId?: string | null;
-  notes?: string | null;
 }
 
 export function useTodayRemainingLessons(instructorId: string | undefined) {
@@ -31,7 +30,7 @@ export function useTodayRemainingLessons(instructorId: string | undefined) {
       const { data, error } = await supabase
         .from("scheduled_lessons")
         .select(`
-          id, pupil_id, start_time, duration_minutes, pickup_postcode, pickup_location, status, lesson_type, payment_status, amount_due, google_event_id, notes,
+          id, pupil_id, start_time, duration_minutes, pickup_postcode, pickup_location, status, lesson_type, payment_status, amount_due, google_event_id,
           pupils!inner (id, name, postcode, address, profile_image_url)
         `)
         .eq("instructor_id", instructorId)
@@ -64,7 +63,6 @@ export function useTodayRemainingLessons(instructorId: string | undefined) {
           amountDue: l.amount_due ?? null,
           status: l.status || "scheduled",
           googleEventId: (l as any).google_event_id ?? null,
-          notes: (l as any).notes ?? null,
         };
       });
     },
