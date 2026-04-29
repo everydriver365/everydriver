@@ -175,9 +175,11 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
 
   return (
     <div
-      className=""
+      id="home-today-schedule"
+      ref={anchorRef}
       style={{
         padding: "0 16px",
+        scrollMarginTop: 80,
         fontFamily: IOS_FONT,
         WebkitFontSmoothing: "antialiased",
         fontVariantNumeric: "tabular-nums",
