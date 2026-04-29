@@ -443,7 +443,10 @@ export function NextUpTile({
             </div>
           )}
 
-          {/* ── TRAVEL-TIME BAR (only when within 30 min and ETA known) ── */}
+          {/* ── TRAVEL-TIME BAR (only when within 30 min and ETA known) ──
+                When running late, this bar doubles as the late warning and
+                exposes a single inline "Send ETA" action so we don't render
+                two competing late banners. */}
           {isImminent && etaMinutes > 0 && (
             <div
               style={{
@@ -463,15 +466,32 @@ export function NextUpTile({
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", marginBottom: 1 }}>
                   {travelBarSeverity === "red"
-                    ? `Running ${minsLateIfLeaveNow} min late`
+                    ? `Running ${minsLateIfLeaveNow} min late${arrivalTimeText ? ` · ETA ${arrivalTimeText}` : ""}`
                     : `${etaMinutes} min drive${etaText && /·/.test(etaText) ? ` · ${etaText.split("·").slice(-1)[0].trim()}` : ""}`}
                 </div>
                 <div style={{ fontSize: a11yPx(11), color: "#6E6E73" }}>
-                  {leaveByText
-                    ? `Leave by ${leaveByText} to arrive on time`
-                    : "Calculating leave-by time…"}
+                  {travelBarSeverity === "red"
+                    ? "Let your pupil know you're on the way"
+                    : leaveByText
+                      ? `Leave by ${leaveByText} to arrive on time`
+                      : "Calculating leave-by time…"}
                 </div>
               </div>
+              {travelBarSeverity === "red" && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); sendLateETA(); }}
+                  className="active:opacity-80"
+                  style={{
+                    padding: "8px 14px", borderRadius: 999,
+                    background: travelBarIconColor, color: "#FFFFFF",
+                    fontSize: a11yPx(13), fontWeight: 600, border: "none",
+                    cursor: "pointer", flexShrink: 0,
+                    transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+                  }}
+                >
+                  Send ETA
+                </button>
+              )}
             </div>
           )}
 
@@ -527,30 +547,8 @@ export function NextUpTile({
             </div>
           )}
 
-          <AnimatePresence>
-            {isRunningLate && !lateDismissed && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
-                <div style={{ margin: "8px 16px 0 16px", display: "flex", alignItems: "center", gap: 10, padding: 12, borderRadius: 12, background: "rgba(255,149,0,0.10)", border: `1px solid rgba(255,149,0,0.25)` }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(255,149,0,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <AlertTriangle style={{ width: 18, height: 18, color: ios.orange }} strokeWidth={2.2} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: a11yPx(15), fontWeight: 600, color: ios.label, letterSpacing: -0.24 }}>~{lateByMinutes} min late</p>
-                    <p style={{ fontSize: a11yPx(13), color: ios.secondaryLabel, marginTop: 1 }}>ETA {arrivalTimeText}</p>
-                  </div>
-                  <button onClick={(e) => { e.stopPropagation(); sendLateETA(); }}
-                    className="active:opacity-80"
-                    style={{ padding: "8px 14px", borderRadius: 999, background: ios.orange, color: "#fff", fontSize: a11yPx(13), fontWeight: 600, border: "none", cursor: "pointer", transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)" }}>
-                    Send ETA
-                  </button>
-                  <button onClick={(e) => { e.stopPropagation(); setLateDismissed(true); }} style={{ padding: 4, background: "none", border: "none", cursor: "pointer" }}>
-                    <X style={{ width: 14, height: 14, color: ios.secondaryLabel }} />
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Running-late warning is now consolidated into the travel-time
+              bar above (single combined warning + Send ETA action). */}
 
           {/* ── ACTION ROW (4 columns) ── */}
           <div style={{ paddingTop: 4 }}>
