@@ -603,7 +603,17 @@ export function StepBookNext({
     : pupilCtx.homePostcode || null;
 
   return (
-    <div style={{ fontFamily: FONT_STACK, color: C.text, background: C.bg }}>
+    <div
+      style={{
+        fontFamily: FONT_STACK,
+        color: C.text,
+        background: C.bg,
+        flex: 1,
+        minHeight: 0,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       {/* Pupil identity bar with course context */}
       <div
         style={{
@@ -613,6 +623,7 @@ export function StepBookNext({
           alignItems: "center",
           gap: 12,
           margin: "-8px -24px 0",
+          flexShrink: 0,
         }}
       >
         <UserAvatar name={displayName} size={36} />
