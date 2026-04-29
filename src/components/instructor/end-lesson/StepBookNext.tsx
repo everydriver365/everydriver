@@ -176,18 +176,8 @@ export function StepBookNext({
       const homePostcode = (instructorData as any)?.home_postcode;
       const pupilPostcode = (pupil as any)?.postcode;
 
-      let travelMinutes = 0;
-      if (homePostcode && pupilPostcode) {
-        try {
-          const { data: travelData } = await supabase.functions.invoke("check-travel-buffer", {
-            body: { from_postcode: homePostcode, to_postcode: pupilPostcode },
-          });
-          if (travelData?.travel_minutes != null) travelMinutes = travelData.travel_minutes;
-        } catch {
-          /* fallback */
-        }
-      }
-      const effectiveFirstSlotBuffer = Math.max(travelMinutes, bufferMinutes);
+      // Travel-from-home is now resolved lazily via the pairwise travelCache
+      // inside isAvailable() (first-of-day check), so no upfront fetch needed.
       const bufferMs = bufferMinutes * 60000;
 
       // ---- Pupil's booking history (for genuine 3+ pattern detection) ----
