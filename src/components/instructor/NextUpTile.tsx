@@ -396,7 +396,7 @@ export function NextUpTile({
                   transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
                 }}
               >
-                <Navigation style={{ width: 16, height: 16, color: "#2B7BC8" }} strokeWidth={2} />
+                <Navigation style={{ width: 16, height: 16, color: "#6E6E73" }} strokeWidth={2} />
               </button>
             </div>
           )}
@@ -408,10 +408,10 @@ export function NextUpTile({
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{
                   width: 18, height: 18, borderRadius: "50%", background: "#FFFFFF",
-                  border: "2px solid #2B7BC8",
+                  border: "2px solid #6E6E73",
                   display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2B7BC8" }} />
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#6E6E73" }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: a11yPx(14), fontWeight: 500, color: "#000000" }}>Your location</div>
