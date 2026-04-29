@@ -1,8 +1,7 @@
-import { useMemo } from "react";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { CalendarPlus, ChevronRight, Loader2 } from "lucide-react";
 import {
   format,
-  isSameDay,
   isToday,
   isTomorrow,
   isYesterday,
@@ -13,6 +12,8 @@ import {
 } from "date-fns";
 import type { CalendarEvent } from "@/hooks/useInstructorCalendar";
 import { titleCaseName } from "@/lib/titleCase";
+import { supabase } from "@/integrations/supabase/client";
+import { GapFillSheet } from "./GapFillSheet";
 
 /* ---------- helpers (per spec) ---------- */
 
@@ -36,6 +37,13 @@ function formatLessonDuration(start: Date, end: Date): string {
   return m === 0 ? `${h}h` : `${h}h ${m}m`;
 }
 
+function formatGapDuration(mins: number): string {
+  if (mins < 60) return `${mins}m`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
+
 function isAllDay(start: Date, end: Date): boolean {
   // 24h+ block starting at 00:00
   const span = end.getTime() - start.getTime();
@@ -46,6 +54,17 @@ const DSM_LESSON_BLUE = "#2B7BC8";
 const DRIVING_TEST_RED = "#C8434F";
 const BLOCK_AMBER = "#B8801F";
 const EXTERNAL_DEFAULT = "#8A5BC9";
+
+/* Gap detection — mirrors MultiDayScheduleView. */
+const TRAVEL_FALLBACK_MIN = 10;
+const MIN_OFFERABLE_GAP_MIN = 60;
+
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+function fmtMins(mins: number): string {
+  return `${pad2(Math.floor(mins / 60))}:${pad2(mins % 60)}`;
+}
 
 function isDrivingTest(evt: CalendarEvent): boolean {
   if (evt.type !== "lesson") return false;
@@ -153,6 +172,110 @@ function DayGroupHeader({ date }: { date: Date }) {
       >
         {formatDayHeader(date)}
       </p>
+    </div>
+  );
+}
+
+interface GapRow {
+  kind: "gap";
+  id: string;
+  date: string; // yyyy-MM-dd
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  durationMin: number;
+}
+
+interface EventRow {
+  kind: "event";
+  id: string;
+  evt: CalendarEvent;
+}
+
+type DayRow = EventRow | GapRow;
+
+interface GapSuggestionRowProps {
+  row: GapRow;
+  onFill: (row: GapRow) => void;
+}
+
+function GapSuggestionRow({ row, onFill }: GapSuggestionRowProps) {
+  return (
+    <div
+      style={{
+        background: "#E8F3E8",
+        borderRadius: 10,
+        padding: "10px 12px",
+        margin: "4px 8px",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+      }}
+    >
+      {/* Icon tile */}
+      <div
+        style={{
+          flexShrink: 0,
+          width: 28,
+          height: 28,
+          borderRadius: 7,
+          background: "#FFFFFF",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <CalendarPlus style={{ width: 16, height: 16, color: "#3B8B3B", strokeWidth: 2 }} />
+      </div>
+
+      {/* Title + subtitle */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p
+          style={{
+            fontSize: 13,
+            fontWeight: 500,
+            color: "#000000",
+            letterSpacing: "-0.1px",
+            margin: "0 0 1px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          {`Open slot · ${row.startTime} – ${row.endTime}`}
+        </p>
+        <p
+          style={{
+            fontSize: 11,
+            color: "#6E6E73",
+            margin: 0,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {`${formatGapDuration(row.durationMin)} gap — offer to waitlist?`}
+        </p>
+      </div>
+
+      {/* Fill button */}
+      <button
+        type="button"
+        onClick={() => onFill(row)}
+        style={{
+          flexShrink: 0,
+          background: "#3B8B3B",
+          color: "#FFFFFF",
+          border: "none",
+          borderRadius: 8,
+          padding: "6px 12px",
+          fontSize: 12,
+          fontWeight: 500,
+          cursor: "pointer",
+        }}
+      >
+        Fill
+      </button>
     </div>
   );
 }
@@ -302,6 +425,11 @@ export interface CompactScheduleListViewProps {
   pastDays?: number;
   /** Number of forward days to show including today (default 14). */
   forwardDays?: number;
+  /** Required to surface inline Gap Filler suggestion rows. */
+  instructorId?: string;
+  instructorName?: string;
+  /** Called after a Gap Filler offer is sent so the parent can refetch. */
+  onGapFilled?: () => void;
 }
 
 export function CompactScheduleListView({
@@ -310,8 +438,38 @@ export function CompactScheduleListView({
   onEventClick,
   pastDays = 1,
   forwardDays = 14,
+  instructorId,
+  instructorName,
+  onGapFilled,
 }: CompactScheduleListViewProps) {
   const now = new Date();
+
+  // Fetch the instructor's lesson buffer (used by gap detection). Falls back to 0.
+  const [bufferMinutes, setBufferMinutes] = useState<number>(0);
+  useEffect(() => {
+    let cancelled = false;
+    if (!instructorId) return;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("instructors")
+          .select("lesson_buffer_minutes")
+          .eq("id", instructorId)
+          .maybeSingle();
+        if (!cancelled && data?.lesson_buffer_minutes != null) {
+          setBufferMinutes(Number(data.lesson_buffer_minutes) || 0);
+        }
+      } catch {
+        // keep default 0
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [instructorId]);
+
+  // Gap Fill sheet state
+  const [activeGap, setActiveGap] = useState<GapRow | null>(null);
 
   // Build range: yesterday → +14 days
   const days = useMemo(() => {
@@ -340,6 +498,61 @@ export function CompactScheduleListView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [events]);
 
+  /**
+   * Build the interleaved row list for a day: events plus gap suggestions
+   * inserted between adjacent events. Detection rule mirrors
+   * MultiDayScheduleView: side allowance = bufferMinutes + 10m travel,
+   * minimum effective gap = 60m. Only surface gaps when instructorId is
+   * present (the parent enables the feature).
+   */
+  function buildDayRows(date: Date, dayEvents: CalendarEvent[]): DayRow[] {
+    const out: DayRow[] = [];
+    const canSurfaceGaps = !!instructorId;
+    const dateStr = format(date, "yyyy-MM-dd");
+    const sideAllowance = bufferMinutes + TRAVEL_FALLBACK_MIN;
+    const isTodayView = isToday(date);
+    const nowMinOfDay = now.getHours() * 60 + now.getMinutes();
+
+    for (let i = 0; i < dayEvents.length; i++) {
+      const evt = dayEvents[i];
+      out.push({ kind: "event", id: evt.id, evt });
+
+      if (!canSurfaceGaps) continue;
+      if (i === dayEvents.length - 1) continue;
+
+      const next = dayEvents[i + 1];
+      // Only consider gaps where both ends are on the same calendar day
+      if (
+        format(startOfDay(evt.end), "yyyy-MM-dd") !== dateStr ||
+        format(startOfDay(next.start), "yyyy-MM-dd") !== dateStr
+      ) {
+        continue;
+      }
+
+      const endMin = evt.end.getHours() * 60 + evt.end.getMinutes();
+      const nextStartMin = next.start.getHours() * 60 + next.start.getMinutes();
+      const effectiveStartMin = endMin + sideAllowance;
+      const effectiveEndMin = nextStartMin - sideAllowance;
+      const effectiveGap = effectiveEndMin - effectiveStartMin;
+
+      if (effectiveGap < MIN_OFFERABLE_GAP_MIN) continue;
+
+      // Skip past gaps for today
+      if (isTodayView && effectiveEndMin <= nowMinOfDay) continue;
+
+      out.push({
+        kind: "gap",
+        id: `gap-${dateStr}-${effectiveStartMin}-${effectiveEndMin}`,
+        date: dateStr,
+        startTime: fmtMins(effectiveStartMin),
+        endTime: fmtMins(effectiveEndMin),
+        durationMin: effectiveGap,
+      });
+    }
+
+    return out;
+  }
+
   if (loading && events.length === 0) {
     return (
       <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
@@ -360,6 +573,7 @@ export function CompactScheduleListView({
         const key = format(day, "yyyy-MM-dd");
         const dayEvents = eventsByDay.get(key) || [];
         const isLastDay = dayIdx === days.length - 1;
+        const rows = buildDayRows(day, dayEvents);
 
         return (
           <div key={key}>
@@ -380,13 +594,28 @@ export function CompactScheduleListView({
               </div>
             ) : (
               <div style={{ padding: "0 8px" }}>
-                {dayEvents.map((evt, idx) => {
-                  const status = getRowStatus(evt, now, dayEvents);
-                  const isLastRow = idx === dayEvents.length - 1;
+                {rows.map((row, idx) => {
+                  const isLastRow = idx === rows.length - 1;
+                  const nextRow = rows[idx + 1];
+                  // Hairline divider between two consecutive event rows only.
+                  const showDivider =
+                    !isLastRow && row.kind === "event" && nextRow?.kind === "event";
+
+                  if (row.kind === "gap") {
+                    return (
+                      <GapSuggestionRow
+                        key={row.id}
+                        row={row}
+                        onFill={(g) => setActiveGap(g)}
+                      />
+                    );
+                  }
+
+                  const status = getRowStatus(row.evt, now, dayEvents);
                   return (
-                    <div key={evt.id}>
-                      <ScheduleListRow evt={evt} status={status} onPress={onEventClick} />
-                      {!isLastRow && (
+                    <div key={row.id}>
+                      <ScheduleListRow evt={row.evt} status={status} onPress={onEventClick} />
+                      {showDivider && (
                         <div
                           aria-hidden
                           style={{
@@ -411,6 +640,25 @@ export function CompactScheduleListView({
           </div>
         );
       })}
+
+      {/* Gap Filler bottom sheet — reuses the existing flow */}
+      {instructorId && activeGap && (
+        <GapFillSheet
+          open={!!activeGap}
+          onOpenChange={(open) => {
+            if (!open) setActiveGap(null);
+          }}
+          instructorId={instructorId}
+          instructorName={instructorName || "Your instructor"}
+          date={activeGap.date}
+          startTime={activeGap.startTime}
+          endTime={activeGap.endTime}
+          onSent={() => {
+            setActiveGap(null);
+            onGapFilled?.();
+          }}
+        />
+      )}
     </div>
   );
 }
