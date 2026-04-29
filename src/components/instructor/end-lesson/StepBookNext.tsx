@@ -46,12 +46,22 @@ interface SuggestedSlot {
   isGenuineBestMatch?: boolean;
 }
 
+// Heuristic for the existing "Review" flag — corrupted / suspicious pupil names.
+// Triggers on: known sentinel words, dangerous chars, all-consonant strings,
+// repeated-letter runs ("Daaf", "Aaaa"), or short non-name tokens.
 function needsNameReview(name: string): boolean {
   if (!name) return false;
   const t = name.trim();
   if (!t) return false;
-  if (/^(unknown|n\/a|none)$/i.test(t)) return true;
-  if (/[<>{}\\]/.test(t)) return true;
+  if (/^(unknown|n\/a|none|test|tbc|tba)$/i.test(t)) return true;
+  if (/[<>{}\\@#$%^*]/.test(t)) return true;
+  // First token only — surnames legitimately vary more
+  const first = t.split(/\s+/)[0];
+  if (!first) return false;
+  // Repeated-letter run of 2+ same chars in a row (e.g. "Daaf", "Aaaa", "Jooe")
+  if (/(.)\1{1,}/i.test(first) && first.length <= 5) return true;
+  // All consonants (no vowels and no 'y')
+  if (first.length >= 3 && !/[aeiouy]/i.test(first)) return true;
   return false;
 }
 
@@ -522,8 +532,16 @@ export function StepBookNext({
         /* ignore */
       }
     }
-    // Otherwise: the type of lesson that just ended
-    return lessonType || "Standard lesson";
+    // Otherwise: the type of lesson that just ended — formatted as sentence case + "lesson"
+    const raw = (lessonType || "standard").trim();
+    // Title-case each word, normalise underscores/hyphens
+    const titled = raw
+      .replace(/[_-]+/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+    // Append " lesson" only if the label doesn't already include lesson/test/prep/mock
+    const alreadyDescriptive = /\b(lesson|test|prep|mock|assessment|drive)\b/i.test(titled);
+    return alreadyDescriptive ? titled : `${titled} lesson`;
   }, [pupilCtx]);
 
   const formatDurationLabel = (mins: number): string => {
@@ -585,7 +603,17 @@ export function StepBookNext({
     : pupilCtx.homePostcode || null;
 
   return (
-    <div style={{ fontFamily: FONT_STACK, color: C.text, background: C.bg }}>
+    <div
+      style={{
+        fontFamily: FONT_STACK,
+        color: C.text,
+        background: C.bg,
+        flex: 1,
+        minHeight: 0,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       {/* Pupil identity bar with course context */}
       <div
         style={{
@@ -595,6 +623,7 @@ export function StepBookNext({
           alignItems: "center",
           gap: 12,
           margin: "-8px -24px 0",
+          flexShrink: 0,
         }}
       >
         <UserAvatar name={displayName} size={36} />
@@ -646,8 +675,8 @@ export function StepBookNext({
         </div>
       </div>
 
-      {/* Body */}
-      <div style={{ padding: "18px 0 16px" }}>
+      {/* Body — scrollable */}
+      <div style={{ padding: "18px 0 16px", flex: 1, minHeight: 0, overflowY: "auto" }}>
         {/* Suggested slots header */}
         <div
           style={{
@@ -897,10 +926,11 @@ export function StepBookNext({
         )}
       </div>
 
-      {/* Footer */}
+      {/* Footer — pinned */}
       <div
         style={{
-          padding: "12px 16px 16px",
+          padding: "12px 16px",
+          paddingBottom: "max(16px, env(safe-area-inset-bottom))",
           background: C.surface,
           borderTop: `0.5px solid ${C.hairline}`,
           display: "flex",
@@ -910,6 +940,7 @@ export function StepBookNext({
           margin: "0 -24px -8px",
           borderBottomLeftRadius: 16,
           borderBottomRightRadius: 16,
+          flexShrink: 0,
         }}
       >
         <button

@@ -199,8 +199,12 @@ function needsNameReview(name: string): boolean {
   if (!name) return false;
   const trimmed = name.trim();
   if (!trimmed) return false;
-  if (/^(unknown|n\/a|none)$/i.test(trimmed)) return true;
-  if (/[<>{}\\]/.test(trimmed)) return true;
+  if (/^(unknown|n\/a|none|test|tbc|tba)$/i.test(trimmed)) return true;
+  if (/[<>{}\\@#$%^*]/.test(trimmed)) return true;
+  const first = trimmed.split(/\s+/)[0];
+  if (!first) return false;
+  if (/(.)\1{1,}/i.test(first) && first.length <= 5) return true;
+  if (first.length >= 3 && !/[aeiouy]/i.test(first)) return true;
   return false;
 }
 
