@@ -149,6 +149,7 @@ export function VoiceQuickAddLessonSheet({
         status: "scheduled",
       });
       if (error) throw error;
+      invalidateLessonQueries(queryClient);
       toast.success("Lesson added");
       onCreated?.();
       onOpenChange(false);
