@@ -349,6 +349,14 @@ export default function AdminPortal() {
                   </CardContent>
                 </Card>
               </Link>
+              <Link to="/admin/eol-audit" className="block">
+                <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
+                  <CardContent className="pt-6">
+                    <div className="text-sm font-medium">EOL Audit Log</div>
+                    <div className="text-xs text-muted-foreground">Who tapped Done & when records were created</div>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
             <BespokeBookingModal open={isBespokeOpen} onOpenChange={setIsBespokeOpen} />
             <SendUrgentAlertDialog open={isUrgentAlertOpen} onOpenChange={setIsUrgentAlertOpen} />
