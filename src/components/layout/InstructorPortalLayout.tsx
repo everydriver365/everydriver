@@ -237,7 +237,10 @@ interface InstructorPortalLayoutProps {
 export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps) {
   const { instructor, subscription, signOut, loading } = useInstructorAuth();
   useInstructorPresence(instructor?.id);
-  usePaymentReceivedAlert(instructor?.id);
+  const { settings: notifSettings } = useInstructorNotificationSettings(instructor?.id);
+  const reminderRules = notifSettings.notification_rules;
+  const reminderPaymentEnabled = reminderRules.reminder_payment_received !== false;
+  const reminderLessonEndEnabled = reminderRules.reminder_lesson_end !== false;
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
