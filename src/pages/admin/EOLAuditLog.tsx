@@ -55,7 +55,7 @@ interface GroupedEntry {
 }
 
 export default function EOLAuditLog() {
-  const { adminUser, loading: authLoading } = useAdminAuth();
+  const { user, isAdmin, loading: authLoading } = useAdminAuth();
   const [rows, setRows] = useState<AuditRow[]>([]);
   const [instructors, setInstructors] = useState<Record<string, InstructorMini>>({});
   const [loading, setLoading] = useState(true);
