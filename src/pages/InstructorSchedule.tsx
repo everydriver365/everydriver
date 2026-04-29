@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw, CalendarRange } from "lucide-react";
+import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw, CalendarRange, ListOrdered } from "lucide-react";
 import { ScheduleSkeleton } from "@/components/ui/skeletons/ScheduleSkeleton";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { MultiDayScheduleView } from "@/components/instructor/MultiDayScheduleView";
 import { MobileMonthCalendarView } from "@/components/instructor/MobileMonthCalendarView";
 import { InstructorCalendar } from "@/components/instructor/InstructorCalendar";
 import { GoogleStyleScheduleView } from "@/components/instructor/GoogleStyleScheduleView";
+import { CompactScheduleListView } from "@/components/instructor/CompactScheduleListView";
 import { CalendarColorSettings } from "@/components/instructor/CalendarColorSettings";
 import { AddCalendarEventDialog } from "@/components/instructor/AddCalendarEventDialog";
 import { CalendarEventSheet } from "@/components/instructor/CalendarEventSheet";
