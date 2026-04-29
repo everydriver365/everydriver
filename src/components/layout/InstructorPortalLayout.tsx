@@ -12,7 +12,6 @@ import { VoiceAssistantHeaderButton, VoiceAssistantOverlay } from "@/components/
 import { useVoiceAssistant } from "@/hooks/useVoiceAssistant";
 import { useInstructorPresence } from "@/hooks/useInstructorPresence";
 import { usePaymentReceivedAlert } from "@/hooks/usePaymentReceivedAlert";
-import { useInstructorNotificationSettings } from "@/hooks/useInstructorNotificationSettings";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -224,11 +223,6 @@ function GlobalSyncBridge({ instructorId }: { instructorId: string | undefined }
   return null;
 }
 
-function PaymentReceivedAlertBridge({ instructorId }: { instructorId: string | undefined }) {
-  usePaymentReceivedAlert(instructorId);
-  return null;
-}
-
 
 interface InstructorPortalLayoutProps {
   children: ReactNode;
@@ -237,10 +231,7 @@ interface InstructorPortalLayoutProps {
 export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps) {
   const { instructor, subscription, signOut, loading } = useInstructorAuth();
   useInstructorPresence(instructor?.id);
-  const { settings: notifSettings } = useInstructorNotificationSettings(instructor?.id);
-  const reminderRules = notifSettings.notification_rules;
-  const reminderPaymentEnabled = reminderRules.reminder_payment_received !== false;
-  const reminderLessonEndEnabled = reminderRules.reminder_lesson_end !== false;
+  usePaymentReceivedAlert(instructor?.id);
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -471,9 +462,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     return (
       <RealtimeHubProvider instructorId={instructor?.id}>
       <GlobalSyncBridge instructorId={instructor?.id} />
-      {reminderPaymentEnabled && <PaymentReceivedAlertBridge instructorId={instructor?.id} />}
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
-      {reminderLessonEndEnabled && !endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
+      {!endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
       {endWizardLesson && instructor?.id && (
         <EndLessonWizard
           open={!!endWizardLesson}
@@ -761,9 +751,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   return (
     <RealtimeHubProvider instructorId={instructor?.id}>
       <GlobalSyncBridge instructorId={instructor?.id} />
-      {reminderPaymentEnabled && <PaymentReceivedAlertBridge instructorId={instructor?.id} />}
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
-      {reminderLessonEndEnabled && !endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
+      {!endWizardLesson && <LessonEndAlert lesson={overdueLesson} onComplete={handleCompleteLessonAlert} onDismiss={dismissLessonAlert} />}
       {endWizardLesson && instructor?.id && (
         <EndLessonWizard
           open={!!endWizardLesson}

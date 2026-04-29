@@ -128,31 +128,6 @@ export default function NotificationPreferencesPanel({ instructorId }: Props) {
         ))}
       </Section>
 
-      {/* Reminders */}
-      <Section title="Reminders">
-        {([
-          { key: "reminder_lesson_end", label: "Lesson end alerts", sub: "Banner when a lesson runs past its end time." },
-          { key: "reminder_breaks", label: "Break reminders", sub: "Suggested breaks between back-to-back lessons." },
-          { key: "reminder_payment_received", label: "Payment received", sub: "Toast when a pupil's payment lands." },
-          { key: "reminder_running_late", label: "Running-late suggestions", sub: "Auto-suggested ETA when you're behind schedule." },
-          { key: "reminder_daily_summary", label: "Daily summary", sub: "End-of-day digest of lessons, payments and admin." },
-        ] as const).map((r, i, arr) => (
-          <div key={r.key}>
-            <div className="flex items-center justify-between" style={{ padding: "6px 0" }}>
-              <div className="flex-1 min-w-0 pr-3">
-                <p className="m-0" style={{ fontSize: 14, fontWeight: 500, color: TEXT }}>{r.label}</p>
-                <p className="m-0" style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{r.sub}</p>
-              </div>
-              <Switch
-                checked={rules[r.key] !== false}
-                onCheckedChange={v => update({ notification_rules: { ...rules, [r.key]: v } })}
-              />
-            </div>
-            {i < arr.length - 1 && <div style={{ height: 0.5, background: HAIRLINE }} />}
-          </div>
-        ))}
-      </Section>
-
       {/* Smart filters */}
       <Section title="Smart filters">
         {/* Test horizon */}

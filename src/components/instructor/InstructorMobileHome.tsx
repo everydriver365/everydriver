@@ -109,7 +109,6 @@ import { CompactHomeView } from "@/components/instructor/CompactHomeView";
 import { BestMateHomeView } from "@/components/instructor/BestMateHomeView";
 import { MissionControlHomeView } from "@/components/instructor/MissionControlHomeView";
 import { WidgetsHomeView } from "@/components/instructor/WidgetsHomeView";
-import { CalmHomeHeader } from "@/components/instructor/CalmHomeHeader";
 
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { HomeTodaySchedule } from "@/components/instructor/HomeTodaySchedule";
@@ -449,10 +448,46 @@ export function InstructorMobileHome({
         />
       ) : (
       <>
-      {/* Calm home header (greeting / rings / Up Next / 2x2 grid / Tip) */}
-      <CalmHomeHeader instructorId={instructorId} instructorName={instructor?.name} />
+      {/* 1. Quiet greeting */}
+      <div style={{ padding: "6px 20px 20px" }}>
+        <h1
+          style={{
+            fontSize: 22,
+            fontWeight: 500,
+            color: "hsl(var(--dsm-text))",
+            lineHeight: 1.2,
+            margin: 0,
+          }}
+        >
+          Hi {firstName}
+          <span style={{ color: "hsl(var(--dsm-text-secondary))", margin: "0 8px", fontWeight: 400 }}>·</span>
+          <span style={{ color: "hsl(var(--dsm-text-secondary))", fontWeight: 400 }}>
+            {format(new Date(), "EEEE")}
+          </span>
+        </h1>
+        <p
+          style={{
+            fontSize: 13,
+            color: "hsl(var(--dsm-text-secondary))",
+            marginTop: 4,
+            fontWeight: 400,
+          }}
+        >
+          Here's what needs you today
+        </p>
+      </div>
 
-      {/* Safety: weather + traffic banner */}
+      {/* Warm priority tiles: action needed, up next, week at a glance */}
+      <WarmHomeTiles instructorId={instructorId} />
+
+      {/* Sticky next-up bar removed */}
+
+      {/* Morning Briefing — prominent position above activity tiles */}
+      <MorningBriefingCard instructorId={instructorId} />
+
+
+
+      {/* Alerts */}
       <div className="px-4 mt-3">
         <WeatherAlertBanner
           trafficAlerts={trafficAlerts}
@@ -464,6 +499,14 @@ export function InstructorMobileHome({
           nextLessonPupilPhone={nextLesson?.pupilPhone}
         />
       </div>
+
+      {/* 2. Activity Tiles Grid */}
+      <ActivityTilesGrid
+        pendingJobsCount={pendingJobsCount}
+        unreadMessagesCount={pupilMsgCount + visitorChatCount}
+        testRequestsCount={testSwapCount}
+        gapSlotsCount={gapSuggestions?.length || 0}
+      />
 
       <div className="px-4">
         <CelebrationConfetti
@@ -479,114 +522,140 @@ export function InstructorMobileHome({
             className="mt-4"
           />
         )}
+
+        
+
+
+
       </div>
 
-      {/* Road alerts (closures / incidents) */}
-      {alerts.filter(a => a.type === "traffic").length > 0 && (
-        <div className="px-4 mt-3">
-          <RoadAlertsRow alerts={alerts.filter(a => a.type === "traffic")} />
-        </div>
-      )}
+      {/* Pupil Milestone Feed */}
+      <div className="px-4">
+        <PupilMilestoneFeed instructorId={instructorId} />
+      </div>
 
-      {/* Today's remaining lessons */}
-      {instructorId && (
-        <div className="px-4 mt-4">
-          <HomeTodaySchedule instructorId={instructorId} />
-        </div>
-      )}
+      {/* 4. Your Day */}
+      <div>
 
-      {/* Tomorrow at a glance */}
-      {tomorrowPreview && tomorrowPreview.lessonCount > 0 && (
-        <div className="px-4 mt-4">
-          <TomorrowPeekCard
-            lessonCount={tomorrowPreview.lessonCount}
-            totalHours={tomorrowPreview.totalHours}
-            expectedEarnings={tomorrowPreview.expectedEarnings}
-            firstLessonTime={tomorrowPreview.firstLessonTime}
-            lessons={tomorrowLessons || []}
-            instructorId={instructorId}
+        {/* Empty state or lessons */}
+        {!nextLesson && (!todayLessons || todayLessons.length === 0) && (todayOverview?.lessonCount || 0) === 0 ? (
+          <div className="px-4">
+            <QuietDayEmpty className="mt-4" />
+          </div>
+        ) : (
+          <>
+            {nextLesson && (
+              <div className="mt-2 mb-6">
+                <div className="px-4">
+                  <SectionHeader
+                    title="Next lesson"
+                    category="navigation"
+                    titleColor="#042C53"
+                    meta={nextLesson.pupilName}
+                    metaColor="#185FA5"
+                  />
+                </div>
+                <NextUpTile
+                  lessonId={nextLesson.lessonId}
+                  pupilId={nextLesson.pupilId}
+                  pupilName={nextLesson.pupilName}
+                  pupilProfileImage={nextLesson.pupilProfileImage}
+                  pupilPhone={nextLesson.pupilPhone}
+                  lessonDate={nextLesson.lessonDate}
+                  pickupPostcode={nextLesson.pickupPostcode}
+                  pickupLocation={nextLesson.pickupLocation}
+                  startTime={nextLesson.startTime}
+                  minutesUntil={nextLesson.minutesUntil}
+                  accountBalance={nextLesson.accountBalance}
+                  prepaidHours={nextLesson.prepaidHours}
+                  durationMinutes={nextLesson.durationMinutes}
+                  instructorId={instructorId}
+                  checkInStatus={nextLesson.checkInStatus}
+                  lastLessonPlan={nextLesson.lastLessonPlan}
+                />
+              </div>
+            )}
+
+            <div className="mt-5">
+              <HomeTodaySchedule instructorId={instructorId} />
+            </div>
+
+          </>
+        )}
+
+        {/* Quick Access — Swipeable Grid */}
+        <div className="mt-5 py-4">
+          <div className="px-4">
+            <SectionHeader
+              title="Quick actions"
+              category="navigation"
+              rightSlot={
+                <button
+                  type="button"
+                  onClick={() => setQuickActionsSearchOpen((v) => !v)}
+                  aria-label="Search quick actions"
+                  className="h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground active:bg-muted"
+                >
+                  <Search className="h-4 w-4" />
+                </button>
+              }
+            />
+          </div>
+          <SwipeableQuickAccess
+            searchOpen={quickActionsSearchOpen}
+            query={quickActionsQuery}
+            onSearchOpenChange={(open) => {
+              setQuickActionsSearchOpen(open);
+              if (!open) setQuickActionsQuery("");
+            }}
+            onQueryChange={setQuickActionsQuery}
           />
         </div>
-      )}
 
-      {/* Quick action tiles */}
-      <div className="px-4 mt-4">
-        <QuickActionTiles
-          quickActions={content?.quick_actions || []}
-          pendingJobsCount={pendingJobsCount}
-          instructorId={instructorId}
-          loading={contentLoading}
-          isEditMode={isTileEditMode}
-          onEditModeChange={setIsTileEditMode}
-        />
-      </div>
+        <div className="px-4">
+          {/* Impact Alerts */}
+          <div className="mt-5">
+            <ImpactAlertCard instructorId={instructorId} />
+          </div>
 
-      {/* Activity tiles grid */}
-      <div className="px-4 mt-4">
-        <ActivityTilesGrid
-          pendingJobsCount={pendingJobsCount}
-          unreadMessagesCount={unreadCount || 0}
-          testRequestsCount={testSwapCount || 0}
-          gapSlotsCount={gapSuggestions?.length || 0}
-        />
-      </div>
-
-      {/* Test requests */}
-      {instructorId && (
-        <div className="px-4 mt-4">
-          <TestRequestsTile instructorId={instructorId} />
         </div>
-      )}
 
-      {/* Telematics summary */}
-      <div className="px-4 mt-4">
-        <TelematicsTile />
-      </div>
-
-      {/* Vehicle health */}
-      {instructorId && (
-        <div className="px-4 mt-4">
-          <VehicleHealthCard instructorId={instructorId} />
+        {/* Insights Tiles */}
+        <div className="mt-5">
+          <div className="px-4">
+            <SectionHeader title="Insights" category="navigation" />
+          </div>
+          <InsightTilesGrid instructorId={instructorId} gapCount={gapSuggestions?.length || 0} />
         </div>
-      )}
 
-      {/* Idle time cost insight */}
-      {instructorId && (
-        <div className="px-4 mt-4">
-          <IdleTimeCostCard instructorId={instructorId} />
+        {/* Telematics */}
+        <div className="mt-5">
+          <div className="px-4">
+            <SectionHeader title="Telematics" category="navigation" />
+          </div>
+          <div className="mb-2">
+            <TelematicsTile />
+          </div>
         </div>
-      )}
 
-      {/* Smart reminders */}
-      <div className="px-4 mt-4">
-        <SmartRemindersCard />
-      </div>
+        <div className="px-4">
 
-      {/* Pupil milestones */}
-      {instructorId && (
-        <div className="px-4 mt-4">
-          <PupilMilestoneFeed instructorId={instructorId} />
+          {/* Vehicle Health & Idle Time */}
+          <VehicleHealthCard instructorId={instructorId} className="mt-3" />
+          <IdleTimeCostCard instructorId={instructorId} className="mt-3" />
+
+
+
+
+          <div className="mt-5">
+            <UpcomingEventsCard className="mb-6" />
+          </div>
         </div>
-      )}
 
-      {/* Upcoming events (tests etc.) */}
-      <div className="px-4 mt-4">
-        <UpcomingEventsCard />
+
+        {/* 10. Floating Session Bar */}
+        <FloatingSessionBar instructorId={instructorId} />
       </div>
-
-      {/* Plan + Referrals */}
-      <div className="px-4 mt-4 space-y-4">
-        <PlanWidget />
-        <ReferralStatsWidget />
-      </div>
-
-      {/* Bottom promos */}
-      <div className="px-4 mt-4 mb-6">
-        <BottomPromoGroup />
-      </div>
-
-      {/* Floating active-session bar (critical: only shows when a lesson is in progress) */}
-      <FloatingSessionBar instructorId={instructorId} />
       </>
       )}
       </div>

@@ -24,7 +24,6 @@ import { LessonRouteRecorder } from "./LessonRouteRecorder";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
 import { useRunningLateDetection } from "@/hooks/useRunningLateDetection";
-import { useInstructorNotificationSettings } from "@/hooks/useInstructorNotificationSettings";
 import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { LessonCheckInBadge } from "./LessonCheckInBadge";
@@ -163,15 +162,12 @@ export function NextUpTile({
   const [lateDismissed, setLateDismissed] = useState(false);
   const lateAlertFiredRef = useRef(false);
 
-  const { settings: notifSettings } = useInstructorNotificationSettings(instructorId);
-  const reminderRunningLateEnabled = notifSettings.notification_rules.reminder_running_late !== false;
-  const { isRunningLate: isRunningLateRaw, lateByMinutes, arrivalTimeText, suggestedMessage, sendLateETA } = useRunningLateDetection({
+  const { isRunningLate, lateByMinutes, arrivalTimeText, suggestedMessage, sendLateETA } = useRunningLateDetection({
     etaMinutes,
     minutesUntil,
     pupilName,
     pupilPhone,
   });
-  const isRunningLate = isRunningLateRaw && reminderRunningLateEnabled;
 
   useEffect(() => {
     if (isRunningLate && !lateAlertFiredRef.current) {
@@ -492,27 +488,32 @@ export function NextUpTile({
 
           {/* ── ACTION ROW (4 columns) ── */}
           <div style={{ paddingTop: 4 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 6 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
               {[
                 { icon: Navigation, label: "Navigate", accent: "#2B7BC8", tint: "#E6F1FB", action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
                 { icon: Phone, label: "Call", accent: "#3B8B3B", tint: "#E8F3E8", action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
                 { icon: MessageSquare, label: "Message", accent: "#B8801F", tint: "#FBF1DE", action: (e: React.MouseEvent) => { e.stopPropagation(); handleMessage(); } },
-                { icon: MapPin, label: "Arrived", accent: "#8A5BC9", tint: "#F1ECFA", action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
+                { icon: MapPin, label: "I\u2019m here", accent: "#C8434F", tint: "#FBEAEC", action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
               ].map((btn) => (
                 <button
                   key={btn.label}
                   onClick={btn.action}
                   className="active:opacity-80"
                   style={{
-                    display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                    background: btn.tint, border: "none", cursor: "pointer",
-                    padding: "10px 4px", borderRadius: 10,
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+                    background: "transparent", border: "none", cursor: "pointer", padding: 0,
                     transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
                   }}
                   aria-label={btn.label}
                 >
-                  <btn.icon style={{ width: 18, height: 18, color: btn.accent }} strokeWidth={1.8} fill="none" />
-                  <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: btn.accent }}>{btn.label}</span>
+                  <span style={{
+                    width: "100%", maxWidth: 56, aspectRatio: "1 / 1",
+                    borderRadius: 10, background: btn.tint,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <btn.icon style={{ width: 20, height: 20, color: btn.accent }} strokeWidth={2} fill="none" />
+                  </span>
+                  <span style={{ fontSize: a11yPx(11), fontWeight: 400, color: "#000000" }}>{btn.label}</span>
                 </button>
               ))}
             </div>
