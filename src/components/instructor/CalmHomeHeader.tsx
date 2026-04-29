@@ -177,31 +177,6 @@ function DashboardTile({ icon: Icon, iconColor, iconBackground, title, subtitle,
   );
 }
 
-// ─── Tip ─────────────────────────────────────────
-interface Tip { eyebrow: string; title: string; subtitle: string; cta: string; path: string; }
-const TIPS: Tip[] = [
-  { eyebrow: "Tip of the day", title: "Use voice notes after lessons", subtitle: "Saves about 5 minutes per pupil and keeps progress notes consistent.", cta: "Try it", path: "/instructor/pupils" },
-  { eyebrow: "Did you know", title: "Drag and drop in Calendar to reschedule", subtitle: "Move lessons in seconds — pupils get notified automatically.", cta: "Open diary", path: "/instructor/diary" },
-  { eyebrow: "Heads up", title: "Set weekly goals on your home rings", subtitle: "Track lessons taught, hours and earnings against a target.", cta: "Set goals", path: "/instructor/earnings" },
-  { eyebrow: "New feature", title: "Fill empty slots automatically", subtitle: "Open Fill gaps and offer your free time to pupils on the waitlist.", cta: "See more", path: "/instructor/gaps" },
-  { eyebrow: "Tip of the day", title: "Add a payment QR to your dashboard", subtitle: "Pupils scan and pay in seconds — no card details to read out.", cta: "Learn more", path: "/instructor/pay" },
-];
-
-function TipOfDayCard({ tip, onPress }: { tip: Tip; onPress: () => void }) {
-  return (
-    <div style={{ background: "linear-gradient(135deg, #FBEAEC 0%, #FFE8DC 100%)", borderRadius: 14, padding: 16, marginBottom: 14, display: "flex", alignItems: "center", gap: 14 }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 11, fontWeight: 500, color: "#C8434F", letterSpacing: "0.3px", textTransform: "uppercase", margin: "0 0 4px" }}>{tip.eyebrow}</p>
-        <p style={{ fontSize: 14, fontWeight: 500, color: "#000000", letterSpacing: "-0.1px", margin: "0 0 2px", lineHeight: 1.3 }}>{tip.title}</p>
-        <p style={{ fontSize: 12, color: "#6E6E73", margin: 0, lineHeight: 1.4 }}>{tip.subtitle}</p>
-      </div>
-      <button type="button" onClick={onPress} style={{ flexShrink: 0, background: "#FFFFFF", border: "0.5px solid #E5E5EA", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 500, color: "#2B7BC8", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}>
-        {tip.cta}
-        <ArrowRight style={{ width: 12, height: 12 }} strokeWidth={2} />
-      </button>
-    </div>
-  );
-}
 
 // ─── Main ────────────────────────────────────────
 interface CalmHomeHeaderProps {
