@@ -14,7 +14,7 @@ export function useDayLessons(instructorId: string | undefined, date: Date) {
       const { data, error } = await supabase
         .from("scheduled_lessons")
         .select(`
-          id, pupil_id, start_time, duration_minutes, pickup_postcode, pickup_location, status, lesson_type, payment_status, amount_due, google_event_id,
+          id, pupil_id, start_time, duration_minutes, pickup_postcode, pickup_location, status, lesson_type, payment_status, amount_due, google_event_id, notes,
           pupils!inner (id, name, postcode, address, profile_image_url)
         `)
         .eq("instructor_id", instructorId)
