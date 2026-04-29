@@ -1,31 +1,34 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { format, parse, addDays } from "date-fns";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useDayLessons } from "@/hooks/useDayLessons";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { useQueryClient } from "@tanstack/react-query";
 import { a11yPx } from "@/lib/a11yScale";
+import type { TodayLesson } from "@/hooks/useTodayRemainingLessons";
 
 interface HomeTodayScheduleProps {
   instructorId: string | undefined;
 }
 
-// Premium tile tokens — scoped to this card via inline styles
 const IOS = {
   label: "#000000",
   secondaryLabel: "#6E6E73",
   tertiaryLabel: "rgba(60,60,67,.30)",
   opaqueSeparator: "#E5E5EA",
   fill: "#F2F2F4",
-  secondaryFill: "rgba(120,120,128,.08)",
-  tertiaryFill: "#F2F2F4",
   systemBlue: "#2B7BC8",
   systemGreen: "#3B8B3B",
+  systemRed: "#C8434F",
+  systemAmber: "#B8801F",
   card: "#FFFFFF",
-  secondaryBg: "#F2F2F4",
   blueTint: "#E6F1FB",
   greenTint: "#E8F3E8",
+  amberTint: "#FBF1DE",
+  redTint: "#FBEAEC",
+  doneBar: "#C7C7CC",
+  statBg: "#F8FAFB",
 };
 
 const IOS_FONT =
@@ -34,9 +37,9 @@ const IOS_FONT =
 function fmtTime(time: string) {
   try {
     const d = parse(time, "HH:mm:ss", new Date());
-    return { hour: format(d, "HH:mm"), period: "" };
+    return format(d, "HH:mm");
   } catch {
-    return { hour: time.slice(0, 5), period: "" };
+    return time.slice(0, 5);
   }
 }
 
@@ -59,6 +62,29 @@ function sentenceName(name: string): string {
     .join(" ");
 }
 
+function startSeconds(time: string): number {
+  const [h, m] = time.split(":").map(Number);
+  return (h || 0) * 3600 + (m || 0) * 60;
+}
+
+type LessonState = "completed" | "live" | "upcoming";
+
+function getLessonState(lesson: TodayLesson, nowSec: number, isTomorrow: boolean): LessonState {
+  if (isTomorrow) return "upcoming";
+  if (lesson.status === "completed") return "completed";
+  const startSec = startSeconds(lesson.startTime);
+  const endSec = startSec + (lesson.durationMinutes || 0) * 60;
+  if (nowSec >= endSec) return "completed";
+  if (nowSec >= startSec) return "live";
+  return "upcoming";
+}
+
+// EOL completeness derived from notes — no dedicated column today.
+// If/when an explicit `eol_completed_at` field is added, swap in here.
+function isEOLComplete(lesson: TodayLesson): boolean {
+  return !!(lesson.notes && lesson.notes.trim().length > 0);
+}
+
 function SkeletonBlock({ width, height = 12 }: { width: number | string; height?: number }) {
   return (
     <span
@@ -74,8 +100,8 @@ function SkeletonBlock({ width, height = 12 }: { width: number | string; height?
   );
 }
 
-// SF Symbol-style inline SVGs
-function CalendarIcon({ size = 16, color = "#fff", strokeWidth = 2.4 }: { size?: number; color?: string; strokeWidth?: number }) {
+// ----- Inline icon primitives -----
+function CalendarIcon({ size = 12, color = IOS.systemBlue, strokeWidth = 2 }: { size?: number; color?: string; strokeWidth?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="5" width="18" height="16" rx="2.5" />
@@ -85,7 +111,7 @@ function CalendarIcon({ size = 16, color = "#fff", strokeWidth = 2.4 }: { size?:
   );
 }
 
-function PoundIcon({ size = 16, color = "#fff", strokeWidth = 2.4 }: { size?: number; color?: string; strokeWidth?: number }) {
+function PoundIcon({ size = 12, color = IOS.systemGreen, strokeWidth = 2 }: { size?: number; color?: string; strokeWidth?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
       <path d="M16 6.5a4 4 0 0 0-7.5 1.9V13H6M6 13h8M16 19H6c1.5-1 2.5-2.5 2.5-5" />
@@ -93,19 +119,205 @@ function PoundIcon({ size = 16, color = "#fff", strokeWidth = 2.4 }: { size?: nu
   );
 }
 
-function ChevronIcon() {
+function AlertIcon({ size = 12, color = IOS.systemAmber }: { size?: number; color?: string }) {
   return (
-    <svg width={7} height={13} viewBox="0 0 7 13" fill="none" stroke={IOS.systemBlue} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M1 1.5 5.5 6.5 1 11.5" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v6M12 16v.5" />
     </svg>
   );
 }
 
-function PlusIcon() {
+function TriangleAlertIcon({ size = 16, color = IOS.systemRed }: { size?: number; color?: string }) {
   return (
-    <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 5v14M5 12h14" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <path d="M12 9v4M12 17v.5" />
     </svg>
+  );
+}
+
+function ChevronRight({ color = IOS.secondaryLabel, size = 12 }: { color?: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M9 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+// ----- Pills -----
+type PillKind = "done" | "live" | "conflict" | "review";
+
+function StatusPill({ kind, dimmed = false }: { kind: PillKind; dimmed?: boolean }) {
+  const map: Record<PillKind, { bg: string; fg: string; label: string }> = {
+    done: { bg: IOS.greenTint, fg: IOS.systemGreen, label: "Done" },
+    live: { bg: IOS.redTint, fg: IOS.systemRed, label: "Live" },
+    conflict: { bg: IOS.amberTint, fg: IOS.systemAmber, label: "Conflict" },
+    review: { bg: IOS.amberTint, fg: IOS.systemAmber, label: "Review" },
+  };
+  const { bg, fg, label } = map[kind];
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+        background: bg,
+        color: fg,
+        fontSize: 9,
+        fontWeight: 500,
+        letterSpacing: 0.3,
+        padding: "2px 5px",
+        borderRadius: 3,
+        textTransform: "uppercase",
+        opacity: dimmed ? 0.55 : 1,
+        flexShrink: 0,
+      }}
+    >
+      {kind === "live" && (
+        <span
+          className="hts-live-dot"
+          style={{
+            width: 5,
+            height: 5,
+            borderRadius: "50%",
+            background: IOS.systemRed,
+          }}
+        />
+      )}
+      {label}
+    </span>
+  );
+}
+
+// Heuristic for the existing "Review" flag — corrupted pupil names.
+// Kept conservative: only triggers on clearly-bad strings, defaults false.
+function needsNameReview(name: string): boolean {
+  if (!name) return false;
+  const trimmed = name.trim();
+  if (!trimmed) return false;
+  if (/^(unknown|n\/a|none)$/i.test(trimmed)) return true;
+  if (/[<>{}\\]/.test(trimmed)) return true;
+  return false;
+}
+
+// ----- Compact stat tile -----
+interface CompactStatTileProps {
+  icon: React.ReactNode;
+  iconBackground: string;
+  hero: React.ReactNode;
+  label: string;
+}
+
+function CompactStatTile({ icon, iconBackground, hero, label }: CompactStatTileProps) {
+  return (
+    <div
+      style={{
+        flex: 1,
+        minWidth: 0,
+        background: IOS.statBg,
+        border: `0.5px solid ${IOS.opaqueSeparator}`,
+        borderRadius: 8,
+        padding: "8px 10px",
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+      }}
+    >
+      <div
+        style={{
+          width: 22,
+          height: 22,
+          borderRadius: 6,
+          background: iconBackground,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        {icon}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 500,
+            color: IOS.label,
+            letterSpacing: -0.2,
+            lineHeight: 1.1,
+            margin: 0,
+            fontVariantNumeric: "tabular-nums",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {hero}
+        </div>
+        <div style={{ fontSize: 10, color: IOS.secondaryLabel, margin: "1px 0 0" }}>{label}</div>
+      </div>
+    </div>
+  );
+}
+
+// ----- EOL prompt -----
+function EOLPrompt({ onTap }: { onTap: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onTap();
+      }}
+      style={{
+        background: IOS.amberTint,
+        borderRadius: 6,
+        padding: "6px 10px",
+        marginTop: 8,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        cursor: "pointer",
+        border: "none",
+        opacity: 1,
+        fontFamily: IOS_FONT,
+      }}
+    >
+      <AlertIcon size={12} color={IOS.systemAmber} />
+      <span style={{ fontSize: 11, fontWeight: 500, color: IOS.systemAmber }}>Complete EOL</span>
+    </button>
+  );
+}
+
+// ----- Conflict banner -----
+function ConflictBanner({ time }: { time: string }) {
+  return (
+    <div
+      style={{
+        background: IOS.redTint,
+        borderRadius: 10,
+        padding: "10px 12px",
+        margin: "0 0 8px",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+      }}
+    >
+      <TriangleAlertIcon size={16} color={IOS.systemRed} />
+      <p
+        style={{
+          fontSize: 11,
+          color: IOS.systemRed,
+          fontWeight: 500,
+          margin: 0,
+          lineHeight: 1.4,
+        }}
+      >
+        Two lessons booked at {time} — review and resolve
+      </p>
+    </div>
   );
 }
 
@@ -113,36 +325,31 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
   const [tab, setTab] = useState<"today" | "tomorrow">("today");
   const [addOpen, setAddOpen] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-  const now = new Date();
-  const targetDate = tab === "today" ? now : addDays(now, 1);
+  // Re-tick every 30s so live/completed transitions render in real time.
+  const [tickNow, setTickNow] = useState<Date>(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setTickNow(new Date()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const targetDate = tab === "today" ? tickNow : addDays(tickNow, 1);
   const isTomorrow = tab === "tomorrow";
 
   const { data: overview, isLoading: overviewLoading } = useTodayOverview(instructorId);
   const { data: lessons = [], isLoading: lessonsLoading } = useDayLessons(instructorId, targetDate);
 
-  const nowSec = now.getHours() * 3600 + now.getMinutes() * 60;
+  const nowSec = tickNow.getHours() * 3600 + tickNow.getMinutes() * 60;
 
-  const nextUpcomingId = useMemo(() => {
-    if (isTomorrow) {
-      const first = lessons.find((l) => l.status !== "completed");
-      return first?.id || null;
-    }
-    const upcoming = lessons.find((l) => {
-      if (l.status === "completed") return false;
-      const [h, m] = l.startTime.split(":").map(Number);
-      return h * 3600 + m * 60 >= nowSec;
-    });
-    return upcoming?.id || null;
-  }, [lessons, nowSec, isTomorrow]);
-
+  // ---- Stats ----
   const dayLessonCount = lessons.length;
   const dayTotalHours = lessons.reduce((sum, l) => sum + (l.durationMinutes || 0), 0) / 60;
   const dayAmountDueSum = lessons.reduce((sum, l) => sum + (l.amountDue ?? 0), 0);
   const dayHasAnyAmount = lessons.some((l) => l.amountDue != null && l.amountDue > 0);
 
-  const lessonCount = isTomorrow ? dayLessonCount : (overview?.lessonCount ?? 0);
-  const totalHours = isTomorrow ? dayTotalHours : (overview?.totalHours ?? 0);
+  const lessonCount = isTomorrow ? dayLessonCount : (overview?.lessonCount ?? dayLessonCount);
+  const totalHours = isTomorrow ? dayTotalHours : (overview?.totalHours ?? dayTotalHours);
 
   const derivedHourlyRate =
     overview && overview.totalHours > 0 ? overview.expectedEarnings / overview.totalHours : 35;
@@ -152,6 +359,45 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
     ? Math.round(dayTotalHours * derivedHourlyRate)
     : Math.round(overview?.expectedEarnings ?? 0);
 
+  const doneCount = useMemo(
+    () => lessons.filter((l) => getLessonState(l, nowSec, isTomorrow) === "completed").length,
+    [lessons, nowSec, isTomorrow],
+  );
+
+  // ---- Conflicts ----
+  const { conflictIdSet, firstConflictRowId } = useMemo(() => {
+    const intervals = lessons.map((l) => {
+      const s = startSeconds(l.startTime);
+      return { id: l.id, start: s, end: s + (l.durationMinutes || 0) * 60 };
+    });
+    const conflicts = new Set<string>();
+    for (let i = 0; i < intervals.length; i++) {
+      for (let j = i + 1; j < intervals.length; j++) {
+        const a = intervals[i];
+        const b = intervals[j];
+        if (a.start < b.end && b.start < a.end) {
+          conflicts.add(a.id);
+          conflicts.add(b.id);
+        }
+      }
+    }
+    let first: string | null = null;
+    for (const l of lessons) {
+      if (conflicts.has(l.id)) {
+        first = l.id;
+        break;
+      }
+    }
+    return { conflictIdSet: conflicts, firstConflictRowId: first };
+  }, [lessons]);
+
+  const firstConflictTime = useMemo(() => {
+    if (!firstConflictRowId) return "";
+    const row = lessons.find((l) => l.id === firstConflictRowId);
+    return row ? fmtTime(row.startTime) : "";
+  }, [firstConflictRowId, lessons]);
+
+  // ---- Header strings ----
   const dayName = format(targetDate, "EEEE");
   const dateLabel = format(targetDate, "d MMMM");
   const isLoading = (tab === "today" && overviewLoading) || lessonsLoading;
@@ -160,12 +406,11 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
   const subtitle = isLoading
     ? ""
     : hasLessons
-    ? `${dateLabel} · ${lessonCount} lesson${lessonCount === 1 ? "" : "s"} · ${totalHoursLabel(totalHours)}`
-    : `${dateLabel} · No lessons yet`;
+    ? `${dateLabel} · ${doneCount} of ${dayLessonCount} done`
+    : `${dateLabel} · no lessons today`;
 
   return (
     <div
-      className=""
       style={{
         padding: "0 16px",
         fontFamily: IOS_FONT,
@@ -174,19 +419,15 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
       }}
     >
       <style>{`
-        @keyframes hts-pulse {
-          0%, 100% { box-shadow: 0 0 0 3px rgba(0,122,255,.18); }
-          50% { box-shadow: 0 0 0 6px rgba(0,122,255,.08); }
+        @keyframes hts-live-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.35; }
         }
-        .hts-row:hover { background: ${IOS.secondaryFill}; }
+        .hts-live-dot { animation: hts-live-pulse 1.4s ease-in-out infinite; }
         .hts-row:active, .hts-link:active, .hts-add:active { opacity: 0.8; }
         .hts-add:active { transform: scale(0.98); }
-        .hts-add:hover { background: #0071EB; }
         @media (prefers-reduced-motion: reduce) {
-          .hts-pulse { animation: none !important; }
-        }
-        @media (max-width: 320px) {
-          .hts-stats { grid-template-columns: 1fr !important; }
+          .hts-live-dot { animation: none !important; }
         }
       `}</style>
 
@@ -195,72 +436,65 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           maxWidth: 440,
           margin: "0 auto",
           background: IOS.card,
-          border: "0.5px solid #E5E5EA",
+          border: `0.5px solid ${IOS.opaqueSeparator}`,
           borderRadius: 12,
           padding: 16,
           display: "flex",
           flexDirection: "column",
-          gap: 16,
           color: IOS.label,
         }}
       >
-        {/* HEAD */}
+        {/* HEADER */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "flex-start",
             gap: 12,
+            marginBottom: 14,
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
             <span
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                fontSize: a11yPx(11),
+                fontSize: 11,
                 fontWeight: 500,
                 color: IOS.systemBlue,
-                letterSpacing: 0.2,
+                letterSpacing: 0.3,
                 textTransform: "uppercase",
-                marginBottom: 6,
+                margin: "0 0 4px",
               }}
             >
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: IOS.systemBlue }} />
               {isTomorrow ? "Tomorrow's schedule" : "Today's schedule"}
             </span>
-            <span style={{ fontSize: a11yPx(18), fontWeight: 500, letterSpacing: -0.3, lineHeight: 1.15, color: IOS.label }}>
+            <span
+              style={{
+                fontSize: a11yPx(22),
+                fontWeight: 500,
+                letterSpacing: -0.4,
+                lineHeight: 1.15,
+                color: IOS.label,
+                margin: "0 0 2px",
+              }}
+            >
               {dayName}
             </span>
-            <span style={{ fontSize: a11yPx(12), color: IOS.secondaryLabel, marginTop: 2 }}>
+            <span style={{ fontSize: 12, color: IOS.secondaryLabel, margin: 0 }}>
               {isLoading ? <SkeletonBlock width={160} height={12} /> : subtitle}
             </span>
           </div>
-          <span
-            style={{
-              flexShrink: 0,
-              background: IOS.fill,
-              padding: "4px 10px",
-              borderRadius: 999,
-              fontSize: a11yPx(11),
-              color: IOS.label,
-            }}
-          >
-            <span style={{ fontWeight: 500 }}>{lessonCount}</span>
-            <span style={{ color: IOS.secondaryLabel, fontWeight: 400, marginLeft: 3 }}>lessons</span>
-          </span>
         </div>
 
         {/* SEGMENTED CONTROL */}
         <div
           style={{
-            padding: 4,
-            background: IOS.tertiaryFill,
-            borderRadius: 10,
+            padding: 3,
+            background: IOS.fill,
+            borderRadius: 8,
             display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
             gap: 4,
+            marginBottom: 12,
           }}
         >
           {(["today", "tomorrow"] as const).map((t) => {
@@ -270,9 +504,9 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                 key={t}
                 onClick={() => setTab(t)}
                 style={{
-                  padding: "8px 12px",
-                  borderRadius: 8,
-                  fontSize: a11yPx(13),
+                  padding: "6px 12px",
+                  borderRadius: 6,
+                  fontSize: 12,
                   fontWeight: active ? 500 : 400,
                   color: active ? IOS.label : IOS.secondaryLabel,
                   background: active ? "#FFFFFF" : "transparent",
@@ -288,89 +522,38 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           })}
         </div>
 
-        {/* STATS ROW */}
-        <div
-          className="hts-stats"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
-            gap: 10,
-          }}
-        >
-          {/* Tile 1 — Lessons */}
-          <div
-            style={{
-              background: "#FFFFFF",
-              border: "0.5px solid #E5E5EA",
-              borderRadius: 12,
-              padding: 12,
-              display: "flex",
-              flexDirection: "column",
-              gap: 10,
-            }}
-          >
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 8,
-                background: IOS.blueTint,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <CalendarIcon size={18} color={IOS.systemBlue} strokeWidth={2} />
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: a11yPx(20), fontWeight: 500, color: IOS.label, lineHeight: 1.1, letterSpacing: -0.3, fontVariantNumeric: "tabular-nums" }}>
-                {isLoading ? <SkeletonBlock width={28} height={18} /> : lessonCount}
-              </div>
-              <div style={{ fontSize: a11yPx(11), color: IOS.secondaryLabel, marginTop: 2 }}>
-                {lessonCount > 0 ? `lessons · ${totalHoursLabel(totalHours)}` : "lessons"}
-              </div>
-            </div>
-          </div>
-
-          {/* Tile 2 — Earnings */}
-          <div
-            style={{
-              background: "#FFFFFF",
-              border: "0.5px solid #E5E5EA",
-              borderRadius: 12,
-              padding: 12,
-              display: "flex",
-              flexDirection: "column",
-              gap: 10,
-            }}
-          >
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 8,
-                background: IOS.greenTint,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <PoundIcon size={18} color={IOS.systemGreen} strokeWidth={2} />
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: a11yPx(20), fontWeight: 500, color: IOS.label, lineHeight: 1.1, letterSpacing: -0.3, fontVariantNumeric: "tabular-nums" }}>
-                {isLoading ? <SkeletonBlock width={42} height={18} /> : `£${earnings.toLocaleString("en-GB")}`}
-              </div>
-              <div style={{ fontSize: a11yPx(11), color: IOS.secondaryLabel, marginTop: 2 }}>earned today</div>
-            </div>
-          </div>
+        {/* COMPACT STAT TILES */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+          <CompactStatTile
+            icon={<CalendarIcon size={12} color={IOS.systemBlue} strokeWidth={2} />}
+            iconBackground={IOS.blueTint}
+            hero={
+              isLoading ? (
+                <SkeletonBlock width={36} height={12} />
+              ) : (
+                <>
+                  {lessonCount}
+                  <span style={{ fontSize: 10, fontWeight: 400, color: IOS.secondaryLabel, marginLeft: 4 }}>
+                    · {totalHoursLabel(totalHours)}
+                  </span>
+                </>
+              )
+            }
+            label="Lessons"
+          />
+          <CompactStatTile
+            icon={<PoundIcon size={12} color={IOS.systemGreen} strokeWidth={2} />}
+            iconBackground={IOS.greenTint}
+            hero={isLoading ? <SkeletonBlock width={36} height={12} /> : `£${earnings.toLocaleString("en-GB")}`}
+            label="Earned"
+          />
         </div>
 
         {/* BODY */}
         {isLoading ? (
-          <div style={{ borderTop: `0.5px solid ${IOS.opaqueSeparator}`, padding: "16px" }}>
+          <div style={{ borderTop: `0.5px solid ${IOS.opaqueSeparator}`, paddingTop: 12 }}>
             {[0, 1, 2].map((i) => (
-              <div key={i} style={{ display: "flex", gap: 14, padding: "10px 0" }}>
+              <div key={i} style={{ display: "flex", gap: 12, padding: "10px 0" }}>
                 <SkeletonBlock width={40} height={18} />
                 <div style={{ flex: 1 }}>
                   <SkeletonBlock width="55%" height={14} />
@@ -384,192 +567,239 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
         ) : !hasLessons ? (
           <div
             style={{
-              borderTop: `0.5px solid ${IOS.opaqueSeparator}`,
-              paddingTop: 20,
+              padding: "24px 16px",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 12,
+              gap: 8,
               textAlign: "center",
             }}
           >
             <div
               style={{
-                width: 44,
-                height: 44,
+                width: 40,
+                height: 40,
                 borderRadius: 10,
-                background: "#F2F2F4",
+                background: IOS.fill,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <CalendarIcon size={22} color="#6E6E73" strokeWidth={2} />
+              <CalendarIcon size={20} color={IOS.secondaryLabel} strokeWidth={2} />
             </div>
-            <div>
-              <div style={{ fontSize: a11yPx(15), fontWeight: 500, color: IOS.label, letterSpacing: -0.2, marginBottom: 4 }}>
-                No lessons scheduled
-              </div>
-              <div style={{ fontSize: a11yPx(12), color: IOS.secondaryLabel, maxWidth: 260, lineHeight: 1.5 }}>
-                Add a lesson to your calendar to start tracking your day
-              </div>
-            </div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: IOS.label }}>No lessons today</div>
+            <div style={{ fontSize: 12, color: IOS.secondaryLabel }}>Perfect time to catch up on admin</div>
           </div>
         ) : (
-          <div style={{ borderTop: `0.5px solid ${IOS.opaqueSeparator}` }}>
+          <div style={{ display: "flex", flexDirection: "column" }}>
             {lessons.map((lesson, idx) => {
-              const time = fmtTime(lesson.startTime);
-              const isDone = lesson.status === "completed";
-              const isNext = !isTomorrow && lesson.id === nextUpcomingId;
+              const state = getLessonState(lesson, nowSec, isTomorrow);
               const isDrivingTest = (lesson.lessonType || "").toLowerCase().includes("driving test")
                 || (lesson.lessonType || "").toLowerCase().includes("driving_test");
-
-              // Match Schedule view: red accent for driving tests, system blue for lessons.
-              const accentColor = isDone
-                ? IOS.tertiaryLabel
-                : isDrivingTest
-                ? "#C8434F"
-                : IOS.systemBlue;
-
-              const lessonLabel = isDrivingTest
-                ? "Driving test"
-                : `${lesson.lessonType || "Standard"} lesson`;
+              const lessonLabel = isDrivingTest ? "Driving test" : `${lesson.lessonType || "Standard"} lesson`;
               const location = lesson.pickupLocation || lesson.pickupPostcode || null;
-              const subtitle = [lessonLabel, location].filter(Boolean).join(" · ");
+              const subtitleText = [lessonLabel, location].filter(Boolean).join(" · ");
+              const time = fmtTime(lesson.startTime);
+              const startSec = startSeconds(lesson.startTime);
+              const endSec = startSec + (lesson.durationMinutes || 0) * 60;
+              const minutesRemaining = Math.max(0, Math.ceil((endSec - nowSec) / 60));
+              const showReview = needsNameReview(lesson.pupilName);
+              const isConflict = conflictIdSet.has(lesson.id);
+              const showBannerAbove = lesson.id === firstConflictRowId;
+              const eolMissing = state === "completed" && !isEOLComplete(lesson) && lesson.status !== "cancelled";
+              const lessonHref = `/instructor/pupils/${lesson.pupilId}`;
+              const accentColor = isDrivingTest ? IOS.systemRed : IOS.systemBlue;
 
-              const title = isDrivingTest
-                ? `${sentenceName(lesson.pupilName)} · driving test`
-                : sentenceName(lesson.pupilName);
+              // Hairline divider between adjacent non-live rows.
+              const prevState = idx > 0 ? getLessonState(lessons[idx - 1], nowSec, isTomorrow) : null;
+              const showDivider = idx > 0 && state !== "live" && prevState !== "live";
 
-              return (
-                <Link
-                  key={lesson.id}
-                  to={`/instructor/pupils/${lesson.pupilId}`}
-                  className="hts-row"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "12px 16px",
-                    cursor: "pointer",
-                    textDecoration: "none",
-                    color: "inherit",
-                    borderTop: idx === 0 ? "none" : `0.5px solid ${IOS.opaqueSeparator}`,
-                    transition: "background 0.15s cubic-bezier(0.2,0.7,0.2,1)",
-                    opacity: isDone ? 0.6 : 1,
-                    position: "relative",
-                  }}
-                >
-                  {/* Time column */}
-                  <div
+              const rowEl =
+                state === "live" ? (
+                  <Link
+                    key={lesson.id}
+                    to={lessonHref}
+                    className="hts-row"
                     style={{
-                      flexShrink: 0,
-                      minWidth: 50,
                       display: "flex",
-                      flexDirection: "column",
-                      alignItems: "flex-end",
+                      alignItems: "stretch",
+                      gap: 12,
+                      background: IOS.blueTint,
+                      borderRadius: 10,
+                      padding: 12,
+                      margin: "8px 0",
+                      textDecoration: "none",
+                      color: "inherit",
+                      cursor: "pointer",
                     }}
                   >
-                    <span
-                      style={{
-                        fontSize: a11yPx(14),
-                        fontWeight: 500,
-                        color: IOS.label,
-                        letterSpacing: -0.1,
-                        fontVariantNumeric: "tabular-nums",
-                        lineHeight: 1.1,
-                      }}
-                    >
-                      {time.hour}
-                    </span>
-                    {lesson.durationMinutes ? (
-                      <span
-                        style={{
-                          fontSize: a11yPx(11),
-                          color: IOS.secondaryLabel,
-                          marginTop: 1,
-                          fontVariantNumeric: "tabular-nums",
-                        }}
-                      >
-                        {durationLabel(lesson.durationMinutes)}
-                      </span>
-                    ) : null}
-                  </div>
-
-                  {/* Source colour bar (pulses for the next-upcoming lesson) */}
-                  <span
-                    className={isNext ? "hts-pulse" : ""}
-                    style={{
-                      flexShrink: 0,
-                      width: 3,
-                      height: 36,
-                      borderRadius: 2,
-                      background: accentColor,
-                      animation: isNext ? "hts-pulse 2s infinite" : "none",
-                    }}
-                  />
-
-                  {/* Title + subtitle */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: a11yPx(14),
-                        fontWeight: 500,
-                        color: IOS.label,
-                        letterSpacing: -0.1,
-                        margin: "0 0 1px",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        textDecoration: isDone ? "line-through" : "none",
+                        flexShrink: 0,
+                        minWidth: 50,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "flex-end",
+                        paddingTop: 1,
                       }}
                     >
-                      {title}
+                      <span style={{ fontSize: 13, fontWeight: 500, color: IOS.label, letterSpacing: -0.1 }}>{time}</span>
+                      {lesson.durationMinutes ? (
+                        <span style={{ fontSize: 11, color: IOS.secondaryLabel, marginTop: 1 }}>{durationLabel(lesson.durationMinutes)}</span>
+                      ) : null}
                     </div>
-                    {subtitle && (
-                      <div
-                        style={{
-                          fontSize: a11yPx(12),
-                          color: IOS.secondaryLabel,
-                          margin: 0,
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          textDecoration: isDone ? "line-through" : "none",
-                        }}
-                      >
-                        {subtitle}
+                    <span style={{ flexShrink: 0, width: 3, background: IOS.systemBlue, borderRadius: 2 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 1 }}>
+                        <span style={{ fontSize: 13, fontWeight: 500, color: IOS.label, letterSpacing: -0.1 }}>
+                          {sentenceName(lesson.pupilName)}
+                        </span>
+                        {showReview && <StatusPill kind="review" />}
+                        <StatusPill kind="live" />
                       </div>
-                    )}
-                  </div>
-
-                  {/* Chevron */}
-                  <svg
-                    width={12}
-                    height={12}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke={IOS.secondaryLabel}
-                    strokeWidth={1.6}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{ flexShrink: 0 }}
+                      {subtitleText && (
+                        <div style={{ fontSize: 11, color: IOS.secondaryLabel, margin: 0 }}>{subtitleText}</div>
+                      )}
+                      <div style={{ fontSize: 11, color: IOS.systemBlue, fontWeight: 500, margin: "6px 0 0" }}>
+                        In progress · {minutesRemaining} min remaining
+                      </div>
+                    </div>
+                    <ChevronRight color={IOS.systemBlue} size={12} />
+                  </Link>
+                ) : state === "completed" ? (
+                  <Link
+                    key={lesson.id}
+                    to={lessonHref}
+                    className="hts-row"
+                    style={{
+                      display: "flex",
+                      alignItems: "stretch",
+                      gap: 12,
+                      padding: "10px 0",
+                      textDecoration: "none",
+                      color: "inherit",
+                      cursor: "pointer",
+                    }}
                   >
-                    <path d="M9 6l6 6-6 6" />
-                  </svg>
-                </Link>
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        minWidth: 50,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "flex-end",
+                        paddingTop: 1,
+                        opacity: 0.55,
+                      }}
+                    >
+                      <span style={{ fontSize: 13, fontWeight: 500, color: IOS.label, letterSpacing: -0.1, textDecoration: "line-through" }}>{time}</span>
+                      {lesson.durationMinutes ? (
+                        <span style={{ fontSize: 11, color: IOS.secondaryLabel, marginTop: 1 }}>{durationLabel(lesson.durationMinutes)}</span>
+                      ) : null}
+                    </div>
+                    <span style={{ flexShrink: 0, width: 3, background: IOS.doneBar, borderRadius: 2 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 1 }}>
+                        <span
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 500,
+                            color: IOS.label,
+                            letterSpacing: -0.1,
+                            textDecoration: "line-through",
+                            opacity: 0.55,
+                          }}
+                        >
+                          {sentenceName(lesson.pupilName)}
+                        </span>
+                        {showReview && <StatusPill kind="review" dimmed />}
+                        <StatusPill kind="done" />
+                      </div>
+                      {subtitleText && (
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: IOS.secondaryLabel,
+                            margin: 0,
+                            textDecoration: "line-through",
+                            opacity: 0.55,
+                          }}
+                        >
+                          {subtitleText}
+                        </div>
+                      )}
+                      {eolMissing && <EOLPrompt onTap={() => navigate(lessonHref)} />}
+                    </div>
+                  </Link>
+                ) : (
+                  <Link
+                    key={lesson.id}
+                    to={lessonHref}
+                    className="hts-row"
+                    style={{
+                      display: "flex",
+                      alignItems: "stretch",
+                      gap: 12,
+                      padding: "10px 0",
+                      textDecoration: "none",
+                      color: "inherit",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        minWidth: 50,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "flex-end",
+                        paddingTop: 1,
+                      }}
+                    >
+                      <span style={{ fontSize: 13, fontWeight: 500, color: IOS.label, letterSpacing: -0.1 }}>{time}</span>
+                      {lesson.durationMinutes ? (
+                        <span style={{ fontSize: 11, color: IOS.secondaryLabel, marginTop: 1 }}>{durationLabel(lesson.durationMinutes)}</span>
+                      ) : null}
+                    </div>
+                    <span style={{ flexShrink: 0, width: 3, background: accentColor, borderRadius: 2 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 1 }}>
+                        <span style={{ fontSize: 13, fontWeight: 500, color: IOS.label, letterSpacing: -0.1 }}>
+                          {sentenceName(lesson.pupilName)}
+                        </span>
+                        {showReview && <StatusPill kind="review" />}
+                        {isConflict && <StatusPill kind="conflict" />}
+                      </div>
+                      {subtitleText && (
+                        <div style={{ fontSize: 11, color: IOS.secondaryLabel, margin: 0 }}>{subtitleText}</div>
+                      )}
+                    </div>
+                    <ChevronRight color={IOS.secondaryLabel} size={12} />
+                  </Link>
+                );
+
+              return (
+                <div key={lesson.id}>
+                  {showDivider && <div style={{ height: 0.5, background: IOS.opaqueSeparator }} />}
+                  {showBannerAbove && firstConflictTime && <ConflictBanner time={firstConflictTime} />}
+                  {rowEl}
+                </div>
               );
             })}
           </div>
         )}
 
+        {/* FOOTER */}
         <div
           style={{
-            paddingTop: 4,
+            borderTop: `0.5px solid ${IOS.opaqueSeparator}`,
+            paddingTop: 14,
+            marginTop: 8,
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            gap: 12,
+            gap: 8,
           }}
         >
           <Link
@@ -580,18 +810,15 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               alignItems: "center",
               gap: 4,
               background: "transparent",
-              padding: 0,
+              padding: "6px 0",
               color: IOS.systemBlue,
-              fontSize: a11yPx(13),
+              fontSize: 13,
               fontWeight: 500,
               textDecoration: "none",
-              transition: "opacity 0.15s",
             }}
           >
             View full calendar
-            <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke={IOS.systemBlue} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 6l6 6-6 6" />
-            </svg>
+            <ChevronRight color={IOS.systemBlue} size={12} />
           </Link>
           <button
             onClick={() => setAddOpen(true)}
@@ -599,20 +826,19 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: 6,
+              gap: 5,
               background: IOS.systemBlue,
               color: "#FFFFFF",
               border: "none",
-              borderRadius: 10,
-              padding: "10px 16px",
-              fontSize: a11yPx(13),
+              borderRadius: 8,
+              padding: "8px 14px",
+              fontSize: 13,
               fontWeight: 500,
               cursor: "pointer",
-              transition: "all 0.15s cubic-bezier(0.2,0.7,0.2,1)",
               fontFamily: IOS_FONT,
             }}
           >
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 5v14M5 12h14" />
             </svg>
             Add lesson
@@ -630,6 +856,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             setAddOpen(false);
             queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
             queryClient.invalidateQueries({ queryKey: ["today-overview"] });
+            queryClient.invalidateQueries({ queryKey: ["day-lessons"] });
           }}
         />
       )}
