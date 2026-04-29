@@ -733,35 +733,70 @@ export function InstructorMobileHome({
 
         </div>
 
-        {/* Insights Tiles */}
+        {/* Insights Tiles — quiet tier */}
         <div className="mt-5">
           <div className="px-4">
             <SectionHeader title="Insights" category="navigation" />
           </div>
-          <InsightTilesGrid instructorId={instructorId} gapCount={gapSuggestions?.length || 0} />
+          <div
+            style={{
+              margin: "0 16px",
+              background: "#F8FAFB",
+              borderRadius: 14,
+              padding: 4,
+              boxShadow: "inset 0 0 0 0.5px rgba(0,0,0,0.04)",
+            }}
+          >
+            <InsightTilesGrid instructorId={instructorId} gapCount={gapSuggestions?.length || 0} />
+          </div>
         </div>
 
-        {/* Telematics */}
+        {/* Telematics — quiet tier */}
         <div className="mt-5">
           <div className="px-4">
             <SectionHeader title="Telematics" category="navigation" />
           </div>
-          <div className="mb-2">
+          <div
+            style={{
+              margin: "0 16px",
+              background: "#F8FAFB",
+              borderRadius: 14,
+              padding: 4,
+              boxShadow: "inset 0 0 0 0.5px rgba(0,0,0,0.04)",
+            }}
+          >
             <TelematicsTile />
           </div>
         </div>
 
         <div className="px-4">
 
-          {/* Vehicle Health & Idle Time */}
-          <VehicleHealthCard instructorId={instructorId} className="mt-3" />
-          <IdleTimeCostCard instructorId={instructorId} className="mt-3" />
-
-
-
+          {/* Vehicle Health & Idle Time — quiet tier */}
+          <div
+            style={{
+              background: "#F8FAFB",
+              borderRadius: 14,
+              padding: 4,
+              boxShadow: "inset 0 0 0 0.5px rgba(0,0,0,0.04)",
+              marginTop: 12,
+            }}
+          >
+            <VehicleHealthCard instructorId={instructorId} />
+            <div style={{ height: 8 }} />
+            <IdleTimeCostCard instructorId={instructorId} />
+          </div>
 
           <div className="mt-5">
-            <UpcomingEventsCard className="mb-6" />
+            <div
+              style={{
+                background: "#F8FAFB",
+                borderRadius: 14,
+                padding: 4,
+                boxShadow: "inset 0 0 0 0.5px rgba(0,0,0,0.04)",
+              }}
+            >
+              <UpcomingEventsCard />
+            </div>
           </div>
         </div>
 
