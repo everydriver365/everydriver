@@ -11,6 +11,12 @@ export interface NotificationRules {
   job_min_value_enabled?: boolean;
   job_min_value_pounds?: number;
   dedupe_repeat_sender?: boolean;
+  // Reminder toggles (default true if undefined)
+  reminder_lesson_end?: boolean;
+  reminder_daily_summary?: boolean;
+  reminder_breaks?: boolean;
+  reminder_payment_received?: boolean;
+  reminder_running_late?: boolean;
 }
 
 export type CategoryKey = "test_swap" | "message" | "job" | "system";
