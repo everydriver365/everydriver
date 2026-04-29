@@ -873,9 +873,6 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
           );
         })}
       </div>
-          );
-        })}
-      </div>
 
       {/* Bottom spacer for FAB */}
       <div style={{ height: 96 }} />
