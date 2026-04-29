@@ -443,7 +443,10 @@ export function NextUpTile({
             </div>
           )}
 
-          {/* ── TRAVEL-TIME BAR (only when within 30 min and ETA known) ── */}
+          {/* ── TRAVEL-TIME BAR (only when within 30 min and ETA known) ──
+                When running late, this bar doubles as the late warning and
+                exposes a single inline "Send ETA" action so we don't render
+                two competing late banners. */}
           {isImminent && etaMinutes > 0 && (
             <div
               style={{
@@ -463,15 +466,32 @@ export function NextUpTile({
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", marginBottom: 1 }}>
                   {travelBarSeverity === "red"
-                    ? `Running ${minsLateIfLeaveNow} min late`
+                    ? `Running ${minsLateIfLeaveNow} min late${arrivalTimeText ? ` · ETA ${arrivalTimeText}` : ""}`
                     : `${etaMinutes} min drive${etaText && /·/.test(etaText) ? ` · ${etaText.split("·").slice(-1)[0].trim()}` : ""}`}
                 </div>
                 <div style={{ fontSize: a11yPx(11), color: "#6E6E73" }}>
-                  {leaveByText
-                    ? `Leave by ${leaveByText} to arrive on time`
-                    : "Calculating leave-by time…"}
+                  {travelBarSeverity === "red"
+                    ? "Let your pupil know you're on the way"
+                    : leaveByText
+                      ? `Leave by ${leaveByText} to arrive on time`
+                      : "Calculating leave-by time…"}
                 </div>
               </div>
+              {travelBarSeverity === "red" && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); sendLateETA(); }}
+                  className="active:opacity-80"
+                  style={{
+                    padding: "8px 14px", borderRadius: 999,
+                    background: travelBarIconColor, color: "#FFFFFF",
+                    fontSize: a11yPx(13), fontWeight: 600, border: "none",
+                    cursor: "pointer", flexShrink: 0,
+                    transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+                  }}
+                >
+                  Send ETA
+                </button>
+              )}
             </div>
           )}
 
