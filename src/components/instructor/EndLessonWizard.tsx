@@ -50,6 +50,7 @@ export function EndLessonWizard({
   const [completing, setCompleting] = useState(false);
   const [paymentQrUrl, setPaymentQrUrl] = useState<string | null>(null);
   const [historyId, setHistoryId] = useState<string | null>(null);
+  const [pendingVoiceNoteUrl, setPendingVoiceNoteUrl] = useState<string | null>(null);
   const [updatedCompetencies, setUpdatedCompetencies] = useState<string[]>([]);
   const [routeReportData, setRouteReportData] = useState<any>(null);
   const [isLastLesson, setIsLastLesson] = useState(false);
@@ -63,6 +64,7 @@ export function EndLessonWizard({
       setVoiceNoteBlob(null);
       setCompleting(false);
       setHistoryId(null);
+      setPendingVoiceNoteUrl(null);
       setUpdatedCompetencies([]);
       setRouteReportData(null);
       setIsLastLesson(false);
@@ -164,37 +166,14 @@ export function EndLessonWizard({
         }
       }
 
-      // 2. Log to lesson_history
-      const { data: historyData } = await supabase
-        .from("lesson_history")
-        .insert({
-          instructor_id: instructorId,
-          pupil_id: pupilId,
-          lesson_date: lessonDate,
-          start_time: startTime,
-          duration_minutes: durationMinutes,
-          notes: notes || null,
-          voice_note_url: voiceNoteUrl,
-        } as any)
-        .select("id")
-        .single();
-
-      if (historyData) {
-        setHistoryId(historyData.id);
-
-        // Auto-request feedback from pupil (if enabled)
-        if (authInstructor?.lesson_feedback_enabled !== false) {
-          try {
-            await supabase.from("lesson_feedback").insert({
-              lesson_history_id: historyData.id,
-              pupil_id: pupilId,
-              instructor_id: instructorId,
-            });
-          } catch (e) {
-            console.error("Feedback request error:", e);
-          }
-        }
-      }
+      // 2. lesson_history insert is intentionally deferred to handleDone()
+      // so the schedule's amber "Complete EOL" marker stays visible until the
+      // instructor actually finishes the wizard (taps Done on the Lesson
+      // Summary step). The marker is sourced from lesson_history rows via
+      // useDayLessonHistory; inserting here would clear the marker the moment
+      // the user reaches the summary, before they've truly wrapped up.
+      // Stash the voice note URL so handleDone can attach it to the row.
+      setPendingVoiceNoteUrl(voiceNoteUrl);
       // 3. Award points
       let pointsAwarded = 10;
       try {
@@ -334,7 +313,44 @@ export function EndLessonWizard({
     }
   };
 
-  const handleDone = () => {
+  const handleDone = async () => {
+    // Insert the lesson_history row now (deferred from handleComplete) so the
+    // schedule's "Complete EOL" amber marker stays visible until the wizard
+    // is truly finished. Also fire the optional feedback request that depends
+    // on the new history row id.
+    try {
+      const { data: historyData } = await supabase
+        .from("lesson_history")
+        .insert({
+          instructor_id: instructorId,
+          pupil_id: pupilId,
+          lesson_date: lessonDate,
+          start_time: startTime,
+          duration_minutes: durationMinutes,
+          notes: notes || null,
+          voice_note_url: pendingVoiceNoteUrl,
+        } as any)
+        .select("id")
+        .single();
+
+      if (historyData) {
+        setHistoryId(historyData.id);
+        if (authInstructor?.lesson_feedback_enabled !== false) {
+          try {
+            await supabase.from("lesson_feedback").insert({
+              lesson_history_id: historyData.id,
+              pupil_id: pupilId,
+              instructor_id: instructorId,
+            });
+          } catch (e) {
+            console.error("Feedback request error:", e);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Lesson history insert error:", e);
+    }
+
     onCompleted();
     onOpenChange(false);
   };
