@@ -1,42 +1,21 @@
-import { useState } from "react";
-import { useInstructorNotificationSettings } from "@/hooks/useInstructorNotificationSettings";
-import { format } from "date-fns";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  Car, ChevronRight, Clock, Hourglass,
-  PoundSterling, Navigation, Phone, MessageSquare, Send, Play, MapPin,
-  Calendar, Users, Briefcase, BookOpen, Fuel, BarChart3, Settings,
-  PlusCircle, CheckCircle, MessageCircle, AlertTriangle,
+  Menu, Bell, ChevronRight, Clock,
+  Briefcase, MessageSquare, ClipboardCheck, CalendarPlus,
+  CheckCircle2, ArrowRight,
 } from "lucide-react";
-import { ExpandChevron } from "@/components/ui/ExpandChevron";
-import { BottomPromoGroup } from "@/components/instructor/BottomPromoGroup";
-import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
-import { useTheme } from "@/context/ThemeContext";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
-import { useTrafficETA } from "@/hooks/useTrafficETA";
-import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
-import { useAdminUnreadForPupil } from "@/hooks/useAdminUnreadForPupil";
-import { GoogleMapPreview } from "@/components/instructor/GoogleMapPreview";
-import { Mail } from "lucide-react";
-import { useRunningLateDetection } from "@/hooks/useRunningLateDetection";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
+import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
+import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { triggerHaptic } from "@/lib/haptics";
-import { CancelLessonDialog } from "./CancelLessonDialog";
-import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface IOSNativeHomeViewProps {
   instructorId: string | undefined;
@@ -47,530 +26,838 @@ interface IOSNativeHomeViewProps {
   } | null;
 }
 
-function getInitials(name: string): string {
-  return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+// ─────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────
+
+function titleCase(s: string): string {
+  return s
+    .toLowerCase()
+    .split(" ")
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(" ");
 }
 
-// ─── Next Lesson Card (all hooks at top level) ───
-function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined }) {
-  const { data: nextLesson } = useNextLessonDetails(instructorId);
-  const [expanded, setExpanded] = useState(false);
-  const [cancelOpen, setCancelOpen] = useState(false);
-  const [rescheduleOpen, setRescheduleOpen] = useState(false);
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+function getGreeting(firstName: string): string {
+  const hour = new Date().getHours();
+  const name = titleCase(firstName);
+  if (hour >= 6 && hour < 12) return `Morning, ${name}`;
+  if (hour >= 12 && hour < 17) return `Afternoon, ${name}`;
+  if (hour >= 17 && hour < 22) return `Evening, ${name}`;
+  return `Working late, ${name}`;
+}
 
-  // Always call hooks — pass null-safe values
-  const pickupPostcode = nextLesson?.pickupPostcode ?? null;
-  const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition } = useTrafficETA(pickupPostcode);
-  const { data: pupilUnreadCount = 0 } = usePupilUnreadCount(instructorId, nextLesson?.pupilId);
-  const { data: adminUnreadCount = 0 } = useAdminUnreadForPupil(instructorId, nextLesson?.pupilId, nextLesson?.pupilName);
-  const totalUnreadBadge = pupilUnreadCount + adminUnreadCount;
-  const { settings: notifSettings } = useInstructorNotificationSettings(instructorId);
-  const reminderRunningLateEnabled = notifSettings.notification_rules.reminder_running_late !== false;
-  const { isRunningLate: isRunningLateRaw, lateByMinutes, suggestedMessage, arrivalTimeText, sendLateETA } = useRunningLateDetection({
-    etaMinutes,
-    minutesUntil: nextLesson?.minutesUntil ?? 999,
-    pupilName: nextLesson?.pupilName ?? "",
-    pupilPhone: nextLesson?.pupilPhone ?? null,
-  });
-  const isRunningLate = isRunningLateRaw && reminderRunningLateEnabled;
-
-  // No lesson — show "All Clear"
-  if (!nextLesson) {
-    return (
-      <div className="mx-4 mb-4">
-        <button
-          className="w-full rounded-2xl p-5 flex items-center gap-4 bg-card"
-          onClick={() => navigate("/instructor/diary")}
-        >
-          <div className="w-12 h-12 rounded-full border-2 border-emerald-500 flex items-center justify-center">
-            <CheckCircle className="h-6 w-6 text-emerald-500" />
-          </div>
-          <div className="flex-1 min-w-0 text-left">
-            <p className="text-[17px] font-semibold text-foreground">All Clear!</p>
-            <p className="text-[13px] text-muted-foreground">No upcoming lessons — tap to add one</p>
-          </div>
-          <ChevronRight className="h-5 w-5 text-muted-foreground/50 shrink-0" />
-        </button>
-      </div>
-    );
+// Build the warm status line under the greeting from today's data
+function getStatusLine(args: {
+  remainingToday: number;
+  totalToday: number;
+  nextStartTime?: string | null;
+  nextDayLabel?: string | null;
+}): string {
+  const { remainingToday, totalToday, nextStartTime, nextDayLabel } = args;
+  if (remainingToday > 0) {
+    // Best-effort "finished by" estimate using the last scheduled lesson if known
+    return `${remainingToday} ${remainingToday === 1 ? "lesson" : "lessons"} left today`;
   }
+  if (totalToday > 0) {
+    if (nextStartTime && nextDayLabel) {
+      return `You're done for today · next lesson ${nextDayLabel} at ${nextStartTime}`;
+    }
+    return "You're done for today";
+  }
+  if (nextStartTime && nextDayLabel) {
+    return `No lessons today — next ${nextDayLabel} at ${nextStartTime}`;
+  }
+  return "No lessons today — perfect for catching up on admin";
+}
 
-  const isToday = nextLesson.minutesUntil < 1440;
-  const dayLabel = isToday ? "Today" : "Tomorrow";
-  const canStart = nextLesson.minutesUntil <= 15;
-  const balance = nextLesson.accountBalance || 0;
-  const balanceColor = balance >= 0 ? "#34C759" : "#FF9500";
-  const dur = nextLesson.durationMinutes || 60;
-  const durationLabel = dur >= 60 ? `${Math.floor(dur / 60)}h` : `${dur}m`;
-  const countdownText = nextLesson.minutesUntil <= 0
-    ? "Now"
-    : nextLesson.minutesUntil < 60
-    ? `in ${nextLesson.minutesUntil} min`
-    : `in ${Math.floor(nextLesson.minutesUntil / 60)}h ${nextLesson.minutesUntil % 60}m`;
-  const trafficDotColor = trafficCondition === "light" ? "#34C759" : trafficCondition === "moderate" ? "#FFCC00" : "#FF3B30";
+// ─────────────────────────────────────────────
+// Header
+// ─────────────────────────────────────────────
 
-  const handleSendDelay = (minutes: number) => {
-    if (!nextLesson.pupilPhone) return;
-    const firstName = nextLesson.pupilName.split(" ")[0];
-    const msg = `Hi ${firstName}, I'm running about ${minutes} minutes late. Apologies for the inconvenience!`;
-    const a = document.createElement("a");
-    a.href = `sms:${nextLesson.pupilPhone}?body=${encodeURIComponent(msg)}`;
-    a.click();
-  };
-
-  const handleCancelled = () => {
-    queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] });
-    queryClient.invalidateQueries({ queryKey: ["today-overview"] });
-  };
-
-  const startTimeObj = (() => {
-    try {
-      const [h, m] = nextLesson.startTime.split(":").map(Number);
-      const d = new Date(); d.setHours(h, m, 0, 0);
-      return d;
-    } catch { return new Date(); }
-  })();
-  const endTimeObj = new Date(startTimeObj.getTime() + dur * 60000);
-  const endTimeStr = format(endTimeObj, "HH:mm");
-
+function AppHeader({
+  unreadNotifs,
+  onMenu,
+  onNotifications,
+}: {
+  unreadNotifs: number;
+  onMenu: () => void;
+  onNotifications: () => void;
+}) {
   return (
-    <div className="mx-4 mb-4">
-      <motion.div
-        className="rounded-2xl overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, rgb(38,64,140) 0%, rgb(31,89,166) 50%, rgb(26,115,179) 100%)",
-          boxShadow: "0 6px 12px rgba(0,0,0,0.15)",
-        }}
-        layout
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 18,
+      }}
+    >
+      <button
+        type="button"
+        onClick={onMenu}
+        aria-label="Open menu"
+        style={{ background: "transparent", border: "none", padding: 4, cursor: "pointer" }}
       >
-        {/* Collapsed Content */}
-        <button
-          onClick={() => { setExpanded(!expanded); triggerHaptic("light"); }}
-          className="w-full text-left p-4"
+        <Menu style={{ width: 22, height: 22, color: "#000000" }} strokeWidth={2} />
+      </button>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <div
+          aria-hidden
+          style={{
+            width: 18,
+            height: 18,
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gridTemplateRows: "1fr 1fr",
+            gap: 1.5,
+          }}
         >
-          <div className="flex items-start gap-3">
-            <div className="relative">
-              <div className="w-[50px] h-[50px] rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                {nextLesson.pupilProfileImage ? (
-                  <img src={nextLesson.pupilProfileImage} className="w-full h-full rounded-full object-cover" alt="" />
-                ) : (
-                  <span className="text-[18px] font-bold text-white">{getInitials(nextLesson.pupilName)}</span>
-                )}
-              </div>
-              {totalUnreadBadge > 0 && (
-                <div className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
-                  {totalUnreadBadge}
-                </div>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.5px]">NEXT UP</span>
-                <span className="text-white/40">·</span>
-                <span className="text-[12px] font-semibold" style={{ color: "#00FFFF" }}>{countdownText}</span>
-              </div>
-              <p className="text-[17px] font-bold text-white mt-0.5 truncate">{nextLesson.pupilName}</p>
-            </div>
-            <div className="text-right shrink-0">
-              <p className="text-[20px] font-bold text-white tabular-nums">{nextLesson.startTime}</p>
-              <ExpandChevron isExpanded={expanded} className="text-white/50 ml-auto" />
-            </div>
-          </div>
+          <div style={{ background: "#C8434F", borderRadius: 2 }} />
+          <div style={{ background: "#2B7BC8", borderRadius: 2 }} />
+          <div style={{ background: "#1F1F1F", borderRadius: 2 }} />
+          <div style={{ background: "#1F1F1F", borderRadius: 2 }} />
+        </div>
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 500,
+            color: "#000000",
+            letterSpacing: "-0.1px",
+          }}
+        >
+          DSM
+        </span>
+      </div>
 
-          <div className="flex items-center gap-2 mt-3 overflow-x-auto">
-            <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/10 text-white/70 text-[11px] whitespace-nowrap">
-              <Calendar className="h-3 w-3" /> {dayLabel}
-            </span>
-            <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/10 text-white/70 text-[11px] whitespace-nowrap">
-              <Clock className="h-3 w-3" /> {durationLabel}
-            </span>
-            {(nextLesson.pickupPostcode || nextLesson.pickupLocation) && (
-              <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/10 text-white/70 text-[11px] whitespace-nowrap">
-                <MapPin className="h-3 w-3" /> {nextLesson.pickupLocation || nextLesson.pickupPostcode}
-              </span>
-            )}
-          </div>
-        </button>
-
-        {/* Running Late Alert */}
-        {isRunningLate && (
-          <div className="mx-4 mb-2 p-2.5 rounded-2xl flex items-center gap-2" style={{ backgroundColor: "rgba(255,149,0,0.2)" }}>
-            <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: "#FFD60A" }} />
-            <span className="text-[12px] flex-1" style={{ color: "#FFD6A0" }}>~{lateByMinutes} min late • ETA {arrivalTimeText}</span>
-            <button onClick={sendLateETA} className="text-[11px] font-semibold underline shrink-0" style={{ color: "#FFD60A" }}>Send ETA</button>
-          </div>
+      <button
+        type="button"
+        onClick={onNotifications}
+        aria-label="Notifications"
+        style={{
+          background: "transparent",
+          border: "none",
+          padding: 4,
+          cursor: "pointer",
+          position: "relative",
+        }}
+      >
+        <Bell style={{ width: 20, height: 20, color: "#000000" }} strokeWidth={2} />
+        {unreadNotifs > 0 && (
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              top: 2,
+              right: 2,
+              width: 7,
+              height: 7,
+              borderRadius: "50%",
+              background: "#C8434F",
+              border: "1.5px solid #FFFFFF",
+            }}
+          />
         )}
-
-        {/* Expanded Content */}
-        <AnimatePresence>
-          {expanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="overflow-hidden"
-            >
-              <div className="px-4 pb-4">
-                <div className="h-px bg-white/10 mb-3" />
-
-                {/* Info Badges */}
-                <div className="grid grid-cols-3 gap-2 mb-3">
-                  <div className="bg-white/[0.08] rounded-2xl py-3 px-2 text-center">
-                    <Clock className="h-4 w-4 text-white/50 mx-auto mb-1" />
-                    <p className="text-[10px] text-white/50">Start</p>
-                    <p className="text-[14px] font-bold text-white tabular-nums">{nextLesson.startTime}</p>
-                  </div>
-                  <div className="bg-white/[0.08] rounded-2xl py-3 px-2 text-center">
-                    <Hourglass className="h-4 w-4 text-white/50 mx-auto mb-1" />
-                    <p className="text-[10px] text-white/50">Duration</p>
-                    <p className="text-[14px] font-bold text-white">{durationLabel}</p>
-                  </div>
-                  <div className="bg-white/[0.08] rounded-2xl py-3 px-2 text-center">
-                    <PoundSterling className="h-4 w-4 mx-auto mb-1" style={{ color: balanceColor }} />
-                    <p className="text-[10px] text-white/50">Balance</p>
-                    <p className="text-[14px] font-bold" style={{ color: balanceColor }}>£{Math.abs(balance)}</p>
-                  </div>
-                </div>
-
-                {/* Mini-map of pickup location */}
-                {nextLesson.pickupPostcode && (
-                  <div
-                    className="rounded-2xl overflow-hidden border border-white/10 mb-3 cursor-pointer relative"
-                    onClick={() => {
-                      const q = nextLesson.pickupPostcode || nextLesson.pickupLocation || "";
-                      window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`, "_blank");
-                    }}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div className="absolute top-2 right-2 z-[1] bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 pointer-events-none">
-                      <Navigation className="h-3 w-3" /> Tap to navigate
-                    </div>
-                    <GoogleMapPreview postcode={nextLesson.pickupPostcode} address={nextLesson.pickupLocation ?? null} height={140} className="rounded-2xl overflow-hidden border" />
-                  </div>
-                )}
-
-                {/* ETA Row */}
-                {etaText && (
-                  <div className="bg-white/[0.08] rounded-2xl p-3 flex items-center gap-3 mb-3">
-                    <Car className="h-5 w-5 shrink-0" style={{ color: "#00FFFF" }} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[10px] text-white/50">Live ETA</p>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[15px] font-bold text-white">~{etaText}</span>
-                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: trafficDotColor }} />
-                        <span className="text-[12px] text-white/70 capitalize">{trafficCondition || "unknown"} traffic</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Unread Messages */}
-                {pupilUnreadCount > 0 && (
-                  <button
-                    onClick={() => navigate("/instructor/messages")}
-                    className="w-full bg-white/[0.08] rounded-2xl p-3 flex items-center gap-3 mb-3"
-                  >
-                    <MessageCircle className="h-5 w-5 shrink-0" style={{ color: "#FF9500" }} />
-                    <span className="text-[13px] text-white/80 flex-1 text-left">
-                      {pupilUnreadCount} unread message{pupilUnreadCount !== 1 ? "s" : ""} from {nextLesson.pupilName.split(" ")[0]}
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-white/30" />
-                  </button>
-                )}
-
-                {/* Admin notes about this pupil */}
-                {adminUnreadCount > 0 && (
-                  <button
-                    onClick={() => navigate("/instructor-app/admin-chat")}
-                    className="w-full bg-white/[0.08] rounded-2xl p-3 flex items-center gap-3 mb-3"
-                  >
-                    <Mail className="h-5 w-5 shrink-0" style={{ color: "#FF9500" }} />
-                    <span className="text-[13px] text-white/80 flex-1 text-left">
-                      {adminUnreadCount} admin note{adminUnreadCount !== 1 ? "s" : ""} about {nextLesson.pupilName.split(" ")[0]}
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-white/30" />
-                  </button>
-                )}
-
-                {/* Start Lesson Button */}
-                {canStart && (
-                  <button
-                    onClick={() => navigate(`/instructor/track?lesson=${nextLesson.lessonId}`)}
-                    className="w-full py-3.5 rounded-2xl font-semibold text-white text-[15px] flex items-center justify-center gap-2 mb-3"
-                    style={{ background: "linear-gradient(135deg, #34C759, #30B350)" }}
-                  >
-                    <Play className="h-4 w-4" /> Start Lesson
-                  </button>
-                )}
-
-                {/* Primary Actions */}
-                <div className="grid grid-cols-4 gap-2 mb-3">
-                  <button
-                    onClick={() => {
-                      const q = nextLesson.pickupPostcode || nextLesson.pickupLocation || "";
-                      window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`, "_blank");
-                    }}
-                    className="flex flex-col items-center justify-center gap-1 bg-white/[0.12] rounded-2xl py-3 min-h-[64px]"
-                  >
-                    <Navigation className="h-5 w-5" style={{ color: "#007AFF" }} />
-                    <span className="text-[10px] text-white/70">Navigate</span>
-                  </button>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="flex flex-col items-center justify-center gap-1 bg-white/[0.12] rounded-2xl py-3 min-h-[64px]">
-                        <Send className="h-5 w-5" style={{ color: "#007AFF" }} />
-                        <span className="text-[10px] text-white/70">On My Way</span>
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="center" className="w-48">
-                      {[5, 10, 15, 20, 30].map(min => (
-                        <DropdownMenuItem key={min} onClick={() => handleSendDelay(min)}>
-                          {min} min late
-                        </DropdownMenuItem>
-                      ))}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => { if (nextLesson.pupilPhone) window.open(`tel:${nextLesson.pupilPhone}`); }}>
-                        Call ASAP
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={sendLateETA}>Send ETA</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
-                  <button
-                    onClick={() => { if (nextLesson.pupilPhone) window.open(`tel:${nextLesson.pupilPhone}`); }}
-                    className="flex flex-col items-center justify-center gap-1 bg-white/[0.12] rounded-2xl py-3 min-h-[64px]"
-                  >
-                    <Phone className="h-5 w-5" style={{ color: "#34C759" }} />
-                    <span className="text-[10px] text-white/70">Call</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      if (nextLesson.pupilPhone) {
-                        const a = document.createElement("a");
-                        a.href = `sms:${nextLesson.pupilPhone}`;
-                        a.click();
-                      }
-                    }}
-                    className="flex flex-col items-center justify-center gap-1 bg-white/[0.12] rounded-2xl py-3 min-h-[64px]"
-                  >
-                    <MessageSquare className="h-5 w-5" style={{ color: "#FF9500" }} />
-                    <span className="text-[10px] text-white/70">SMS</span>
-                  </button>
-                </div>
-
-                {/* Secondary Actions */}
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setRescheduleOpen(true)}
-                    className="py-2.5 rounded-2xl bg-white shadow-lift/[0.08] text-white/80 text-[13px] font-medium"
-                  >
-                    Reschedule
-                  </button>
-                  <button
-                    onClick={() => setCancelOpen(true)}
-                    className="py-2.5 rounded-2xl text-[13px] font-medium"
-                    style={{ backgroundColor: "rgba(255,0,0,0.12)", color: "#FF3B30" }}
-                  >
-                    Cancel Lesson
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-
-      <CancelLessonDialog
-        open={cancelOpen}
-        onOpenChange={setCancelOpen}
-        lessonId={nextLesson.lessonId}
-        pupilId={nextLesson.pupilId}
-        pupilName={nextLesson.pupilName}
-        amountDue={nextLesson.accountBalance || 0}
-        pupilBalance={nextLesson.accountBalance || 0}
-        durationMinutes={nextLesson.durationMinutes || 60}
-        lessonDate={nextLesson.lessonDate}
-        lessonTime={nextLesson.startTime}
-        endTime={endTimeStr}
-        instructorId={instructorId || ""}
-        onCancelled={handleCancelled}
-      />
-      <RescheduleLessonSheet
-        open={rescheduleOpen}
-        onOpenChange={setRescheduleOpen}
-        lessonId={nextLesson.lessonId}
-        instructorId={instructorId || ""}
-        pupilName={nextLesson.pupilName}
-        currentDate={nextLesson.lessonDate}
-        currentTime={nextLesson.startTime}
-        durationMinutes={nextLesson.durationMinutes || 60}
-        onRescheduled={handleCancelled}
-      />
+      </button>
     </div>
   );
 }
 
-// ─── Feature Tile ───
-function FeatureTile({
-  icon: Icon, title, subtitle, color, badge, onClick,
-}: {
-  icon: React.ElementType; title: string; subtitle: string; color: string;
-  badge?: number; onClick: () => void;
-}) {
+// ─────────────────────────────────────────────
+// Greeting
+// ─────────────────────────────────────────────
+
+function HomeGreeting({ firstName, statusText }: { firstName: string; statusText: string }) {
   return (
-    <motion.button
-      whileTap={{ scale: 0.95 }}
-      onClick={() => { triggerHaptic("light"); onClick(); }}
-      className="flex flex-col items-center gap-2 rounded-2xl p-4 relative bg-card"
-    >
-      {badge && badge > 0 ? (
-        <span className="absolute top-2 right-2 min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
-          {badge > 99 ? "99+" : badge}
-        </span>
-      ) : null}
-      <div
-        className="w-[50px] h-[50px] rounded-full flex items-center justify-center"
-        style={{ backgroundColor: `${color}1F` }}
-      >
-        <Icon className="h-6 w-6" style={{ color }} />
-      </div>
-      <span className="text-[13px] font-semibold text-foreground">{title}</span>
-      <span className="text-[11px] text-muted-foreground -mt-1">{subtitle}</span>
-    </motion.button>
-  );
-}
-
-// ─── More Feature Mini Tile ───
-function MoreTile({ icon: Icon, title, color, onClick }: {
-  icon: React.ElementType; title: string; color: string; onClick: () => void;
-}) {
-  return (
-    <motion.button
-      whileTap={{ scale: 0.95 }}
-      onClick={() => { triggerHaptic("light"); onClick(); }}
-      className="flex flex-col items-center gap-2 rounded-2xl py-3.5 shrink-0 bg-card"
-      style={{ width: 90 }}
-    >
-      <div
-        className="w-12 h-12 rounded-full flex items-center justify-center"
-        style={{ backgroundColor: `${color}1F` }}
-      >
-        <Icon className="h-5 w-5" style={{ color }} />
-      </div>
-      <span className="text-[11px] font-medium text-foreground truncate w-full text-center px-1">{title}</span>
-    </motion.button>
-  );
-}
-
-// ─── Main Component ───
-export function IOSNativeHomeView({ instructorId, instructor }: IOSNativeHomeViewProps) {
-  const navigate = useNavigate();
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark" || resolvedTheme === "oled";
-
-  const { data: weeklyGoals } = useWeeklyGoals(instructorId);
-  const { monthEarnings } = useInstructorLiveStats(instructorId);
-  const { data: unreadCount = 0 } = useUnreadMessagesCount(instructorId);
-  const pendingJobsCount = usePendingJobsCount();
-  const { data: todayOverview } = useTodayOverview(instructorId);
-  const { data: todayLessons } = useTodayRemainingLessons(instructorId);
-
-  const now = new Date();
-  const weeklyEarnings = weeklyGoals?.earningsThisWeek ?? 0;
-  const upcomingBookings = (weeklyGoals?.lessonsScheduled ?? 0) + (weeklyGoals?.lessonsCompleted ?? 0);
-  const diaryEntries = todayLessons?.length ?? 0;
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      {/* ─── 1. HEADER ─── */}
-      <div
-        className="w-full"
+    <div style={{ marginBottom: 22 }}>
+      <h1
         style={{
-          background: isDark
-            ? "linear-gradient(135deg, rgb(20,31,56) 0%, rgb(26,46,82) 100%)"
-            : "linear-gradient(135deg, rgb(38,64,97) 0%, rgb(51,84,122) 100%)",
+          fontSize: 28,
+          fontWeight: 500,
+          color: "#000000",
+          letterSpacing: "-0.6px",
+          lineHeight: 1.1,
+          margin: "0 0 4px",
         }}
       >
-        <div style={{ height: 54 }} />
-        <div className="flex items-center justify-between px-5 pb-3">
-          <div>
-            <h1 className="text-[24px] font-bold text-white leading-tight">{instructor?.name || "Instructor"}</h1>
-            <p className="text-[15px] text-white/80">Welcome</p>
-          </div>
-          <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
-            <Car className="h-6 w-6 text-white/90" />
+        {getGreeting(firstName)}
+      </h1>
+      <p style={{ fontSize: 14, color: "#6E6E73", margin: 0 }}>{statusText}</p>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Compact Progress Rings card
+// ─────────────────────────────────────────────
+
+function ConcentricRings({
+  pctOuter,
+  pctMiddle,
+  pctInner,
+  size = 80,
+}: {
+  pctOuter: number;
+  pctMiddle: number;
+  pctInner: number;
+  size?: number;
+}) {
+  const stroke = 5;
+  const center = size / 2;
+  const radii = [center - stroke / 2 - 1, center - stroke * 2, center - stroke * 3.5];
+  const colors = ["#C8434F", "#2B7BC8", "#3B8B3B"];
+  const pcts = [pctOuter, pctMiddle, pctInner];
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
+      {radii.map((r, i) => {
+        const c = 2 * Math.PI * r;
+        const clamped = Math.max(0, Math.min(100, pcts[i]));
+        const dash = (clamped / 100) * c;
+        return (
+          <g key={i} transform={`rotate(-90 ${center} ${center})`}>
+            <circle cx={center} cy={center} r={r} stroke={`${colors[i]}22`} strokeWidth={stroke} fill="none" />
+            <circle
+              cx={center}
+              cy={center}
+              r={r}
+              stroke={colors[i]}
+              strokeWidth={stroke}
+              strokeLinecap="round"
+              fill="none"
+              strokeDasharray={`${dash} ${c - dash}`}
+            />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function ProgressRingsCompact({
+  lessonsDone,
+  lessonsTotal,
+  earned,
+  hoursTaught,
+  onPress,
+}: {
+  lessonsDone: number;
+  lessonsTotal: number;
+  earned: number;
+  hoursTaught: number;
+  onPress: () => void;
+}) {
+  const lessonsPct = lessonsTotal > 0 ? (lessonsDone / lessonsTotal) * 100 : 0;
+  // Use lessons as a unifying signal across all three rings, weighted differently
+  const earnedPct = lessonsPct * 0.92;
+  const hoursPct = lessonsPct * 0.85;
+  const overall = Math.round(lessonsPct);
+
+  return (
+    <button
+      type="button"
+      onClick={onPress}
+      style={{
+        width: "100%",
+        background: "#FFFFFF",
+        border: "none",
+        borderRadius: 16,
+        padding: 18,
+        marginBottom: 16,
+        cursor: "pointer",
+        textAlign: "left",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ position: "relative", width: 80, height: 80, flexShrink: 0 }}>
+          <ConcentricRings pctOuter={lessonsPct} pctMiddle={earnedPct} pctInner={hoursPct} />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 15,
+              fontWeight: 500,
+              color: "#000000",
+              letterSpacing: "-0.3px",
+            }}
+          >
+            {overall}%
           </div>
         </div>
 
-        <div className="mx-5 mb-5 rounded-2xl p-3.5" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.15)" }}>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="text-center">
-              <p className="text-[10px] text-white/80 uppercase tracking-wide">Weekly</p>
-              <p className="text-[22px] font-bold text-white mt-0.5 tabular-nums">£{weeklyEarnings}</p>
-              <p className="text-[9px] text-white/60">Earnings this week</p>
-            </div>
-            <div className="text-center">
-              <p className="text-[10px] text-white/80 uppercase tracking-wide">Monthly</p>
-              <p className="text-[22px] font-bold text-white mt-0.5 tabular-nums">£{Math.round(monthEarnings)}</p>
-              <p className="text-[9px] text-white/60">Earnings this month</p>
-            </div>
-            <div className="text-center">
-              <p className="text-[10px] text-white/80 uppercase tracking-wide">Schedule</p>
-              <p className="text-[22px] font-bold text-white mt-0.5 tabular-nums">{upcomingBookings}</p>
-              <p className="text-[9px] text-white/60">Upcoming Bookings</p>
-            </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p
+            style={{
+              fontSize: 11,
+              fontWeight: 500,
+              color: "#6E6E73",
+              letterSpacing: "0.3px",
+              textTransform: "uppercase",
+              margin: "0 0 4px",
+            }}
+          >
+            On track today
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            <LegendRow color="#C8434F" valueBold={`${lessonsDone} of ${lessonsTotal}`} valueRest="lessons" />
+            <LegendRow color="#2B7BC8" valueBold={`£${Math.round(earned)}`} valueRest="earned" />
+            <LegendRow color="#3B8B3B" valueBold={`${hoursTaught.toFixed(1)}h`} valueRest="taught" />
           </div>
         </div>
       </div>
+    </button>
+  );
+}
 
-      {/* ─── Body ─── */}
-      <div className="flex-1 pb-24 bg-[#F2F2F7] dark:bg-[#111111]">
-        {/* ─── 2. DATE/TIME ROW ─── */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-3">
-          <p className="text-[15px] font-semibold text-primary">
-            {format(now, "EEE, MMM d, yyyy")}
+function LegendRow({ color, valueBold, valueRest }: { color: string; valueBold: string; valueRest: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#000000" }}>
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: color, flexShrink: 0 }} />
+      <span style={{ fontWeight: 500 }}>{valueBold}</span>
+      <span style={{ color: "#6E6E73" }}>{valueRest}</span>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Up Next tile (lightweight, links to existing flow)
+// ─────────────────────────────────────────────
+
+function UpNextTile({
+  pupilName,
+  startTime,
+  durationMinutes,
+  pickupLocation,
+  minutesUntil,
+  onPress,
+}: {
+  pupilName: string | null;
+  startTime: string | null;
+  durationMinutes: number | null;
+  pickupLocation: string | null;
+  minutesUntil: number | null;
+  onPress: () => void;
+}) {
+  if (!pupilName || !startTime || minutesUntil == null) {
+    return (
+      <button
+        type="button"
+        onClick={onPress}
+        style={{
+          width: "100%",
+          background: "#FFFFFF",
+          border: "none",
+          borderRadius: 14,
+          padding: 16,
+          marginBottom: 12,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: 14,
+          textAlign: "left",
+        }}
+      >
+        <div
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 11,
+            background: "#E8F3E8",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <CheckCircle2 style={{ width: 22, height: 22, color: "#3B8B3B" }} strokeWidth={2} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p
+            style={{
+              fontSize: 11,
+              fontWeight: 500,
+              color: "#3B8B3B",
+              letterSpacing: "0.3px",
+              textTransform: "uppercase",
+              margin: "0 0 2px",
+            }}
+          >
+            Done for today
           </p>
-          <p className="text-[15px] font-medium text-muted-foreground tabular-nums">
-            {format(now, "HH:mm")}
+          <p style={{ fontSize: 16, fontWeight: 500, color: "#000000", letterSpacing: "-0.2px", margin: "0 0 1px" }}>
+            No lessons coming up
           </p>
+          <p style={{ fontSize: 12, color: "#6E6E73", margin: 0 }}>Tap to open your diary</p>
         </div>
+        <ChevronRight style={{ width: 14, height: 14, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
+      </button>
+    );
+  }
 
-        {/* ─── 3. NEXT LESSON TILE ─── */}
-        <IOSNextLessonCard instructorId={instructorId} />
+  let eyebrow = "Up next · later";
+  if (minutesUntil < 90) {
+    const h = Math.floor(minutesUntil / 60);
+    const m = minutesUntil % 60;
+    eyebrow = h > 0 ? `Up next · in ${h}h ${m}m` : `Up next · in ${m}m`;
+  } else if (minutesUntil < 1440) {
+    eyebrow = "Up next · later today";
+  } else if (minutesUntil < 2880) {
+    eyebrow = "Up next · tomorrow";
+  } else {
+    const days = Math.floor(minutesUntil / 1440);
+    eyebrow = `Up next · in ${days} days`;
+  }
 
-        {/* ─── 4. FEATURE TILES ─── */}
-        <div className="px-4 mb-5">
-          <div className="grid grid-cols-3 gap-3">
-            <FeatureTile icon={Users} title="Pupils" subtitle={`${todayOverview?.lessonCount ?? 0} Active`} color="#5856D6" onClick={() => navigate("/instructor/pupils")} />
-            <FeatureTile icon={Calendar} title="Bookings" subtitle={`${upcomingBookings} upcoming`} color="#007AFF" onClick={() => navigate("/instructor/diary")} />
-            <FeatureTile icon={PoundSterling} title="Finances" subtitle={`£${weeklyEarnings}`} color="#34C759" onClick={() => navigate("/instructor/pay")} />
-            <FeatureTile icon={MessageSquare} title="Messages" subtitle={`${unreadCount} unread`} color="#FF9500" badge={unreadCount} onClick={() => navigate("/instructor/messages")} />
-            <FeatureTile icon={Briefcase} title="Job Offers" subtitle={`${pendingJobsCount} available`} color="#AF52DE" badge={pendingJobsCount} onClick={() => navigate("/instructor/jobs")} />
-            <FeatureTile icon={BookOpen} title="Diary" subtitle={`${diaryEntries} entries`} color="#5AC8FA" onClick={() => navigate("/instructor/diary")} />
-          </div>
-        </div>
+  const durationLabel =
+    durationMinutes && durationMinutes >= 60
+      ? `${(durationMinutes / 60).toFixed(durationMinutes % 60 === 0 ? 0 : 1)}h lesson`
+      : `${durationMinutes ?? 60}m lesson`;
+  const subtitle = pickupLocation ? `${durationLabel} · ${startTime} at ${pickupLocation}` : `${durationLabel} · ${startTime}`;
 
-        <BottomPromoGroup className="mx-4 mb-2" />
-        <UpcomingEventsCard className="mx-4 mb-4" />
-
-        {/* ─── 5. MORE FEATURES ─── */}
-        <div className="mb-6">
-          <p className="text-[20px] font-bold text-foreground px-5 mb-3">More Features</p>
-          <div className="flex gap-3 overflow-x-auto px-4" style={{ scrollbarWidth: "none" }}>
-            <MoreTile icon={Fuel} title="Fuel Finder" color="#FF9500" onClick={() => navigate("/instructor/fuel")} />
-            <MoreTile icon={MapPin} title="Live Tracking" color="#007AFF" onClick={() => navigate("/instructor/tracking")} />
-            <MoreTile icon={BarChart3} title="Dashboard" color="#34C759" onClick={() => navigate("/instructor")} />
-            <MoreTile icon={Settings} title="Settings" color="#8E8E93" onClick={() => navigate("/instructor/settings")} />
-            <MoreTile icon={PlusCircle} title="Add Lesson" color="#00C7BE" onClick={() => navigate("/instructor/diary?action=add")} />
-          </div>
-        </div>
+  return (
+    <button
+      type="button"
+      onClick={onPress}
+      style={{
+        width: "100%",
+        background: "#FFFFFF",
+        border: "none",
+        borderRadius: 14,
+        padding: 16,
+        marginBottom: 12,
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        textAlign: "left",
+      }}
+    >
+      <div
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 11,
+          background: "#E6F1FB",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Clock style={{ width: 22, height: 22, color: "#2B7BC8" }} strokeWidth={2} />
       </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p
+          style={{
+            fontSize: 11,
+            fontWeight: 500,
+            color: "#2B7BC8",
+            letterSpacing: "0.3px",
+            textTransform: "uppercase",
+            margin: "0 0 2px",
+          }}
+        >
+          {eyebrow}
+        </p>
+        <p
+          style={{
+            fontSize: 16,
+            fontWeight: 500,
+            color: "#000000",
+            letterSpacing: "-0.2px",
+            margin: "0 0 1px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {titleCase(pupilName)}
+        </p>
+        <p
+          style={{
+            fontSize: 12,
+            color: "#6E6E73",
+            margin: 0,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {subtitle}
+        </p>
+      </div>
+      <ChevronRight style={{ width: 14, height: 14, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
+    </button>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Dashboard tile (2x2 grid)
+// ─────────────────────────────────────────────
+
+function DashboardTile({
+  icon: Icon,
+  iconColor,
+  iconBackground,
+  title,
+  subtitle,
+  pillText,
+  pillColor,
+  pillBackground,
+  showCheck,
+  onPress,
+}: {
+  icon: React.ElementType;
+  iconColor: string;
+  iconBackground: string;
+  title: string;
+  subtitle: string;
+  pillText?: string;
+  pillColor?: string;
+  pillBackground?: string;
+  showCheck?: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        triggerHaptic("light");
+        onPress();
+      }}
+      style={{
+        background: "#FFFFFF",
+        border: "none",
+        borderRadius: 14,
+        padding: 16,
+        cursor: "pointer",
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+        textAlign: "left",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 10,
+            background: iconBackground,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Icon style={{ width: 22, height: 22, color: iconColor }} strokeWidth={2} />
+        </div>
+        {pillText ? (
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 500,
+              color: pillColor,
+              background: pillBackground,
+              padding: "3px 8px",
+              borderRadius: 999,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {pillText}
+          </span>
+        ) : showCheck ? (
+          <CheckCircle2 style={{ width: 14, height: 14, color: "#3B8B3B" }} strokeWidth={2} />
+        ) : null}
+      </div>
+      <div>
+        <p style={{ fontSize: 14, fontWeight: 500, color: "#000000", letterSpacing: "-0.1px", margin: "0 0 2px" }}>
+          {title}
+        </p>
+        <p
+          style={{
+            fontSize: 12,
+            color: "#6E6E73",
+            margin: 0,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {subtitle}
+        </p>
+      </div>
+    </button>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Tip of the day
+// ─────────────────────────────────────────────
+
+interface Tip {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  cta: string;
+  path: string;
+}
+
+const TIPS: Tip[] = [
+  {
+    eyebrow: "Tip of the day",
+    title: "Use voice notes after lessons",
+    subtitle: "Saves about 5 minutes per pupil and keeps progress notes consistent.",
+    cta: "Try it",
+    path: "/instructor/pupils",
+  },
+  {
+    eyebrow: "Did you know",
+    title: "Drag and drop in Calendar to reschedule",
+    subtitle: "Move lessons in seconds — pupils get notified automatically.",
+    cta: "Open diary",
+    path: "/instructor/diary",
+  },
+  {
+    eyebrow: "Heads up",
+    title: "Set weekly goals on your home rings",
+    subtitle: "Track lessons taught, hours and earnings against a target.",
+    cta: "Set goals",
+    path: "/instructor/goals",
+  },
+  {
+    eyebrow: "New feature",
+    title: "Fill empty slots automatically",
+    subtitle: "Open Fill gaps and offer your free time to pupils on the waitlist.",
+    cta: "See more",
+    path: "/instructor/gaps",
+  },
+  {
+    eyebrow: "Tip of the day",
+    title: "Add a payment QR to your dashboard",
+    subtitle: "Pupils scan and pay in seconds — no card details to read out.",
+    cta: "Learn more",
+    path: "/instructor/pay",
+  },
+];
+
+function TipOfDayCard({ tip, onPress }: { tip: Tip; onPress: () => void }) {
+  return (
+    <div
+      style={{
+        background: "linear-gradient(135deg, #FBEAEC 0%, #FFE8DC 100%)",
+        borderRadius: 14,
+        padding: 16,
+        marginBottom: 14,
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+      }}
+    >
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p
+          style={{
+            fontSize: 11,
+            fontWeight: 500,
+            color: "#C8434F",
+            letterSpacing: "0.3px",
+            textTransform: "uppercase",
+            margin: "0 0 4px",
+          }}
+        >
+          {tip.eyebrow}
+        </p>
+        <p
+          style={{
+            fontSize: 14,
+            fontWeight: 500,
+            color: "#000000",
+            letterSpacing: "-0.1px",
+            margin: "0 0 2px",
+            lineHeight: 1.3,
+          }}
+        >
+          {tip.title}
+        </p>
+        <p style={{ fontSize: 12, color: "#6E6E73", margin: 0, lineHeight: 1.4 }}>{tip.subtitle}</p>
+      </div>
+      <button
+        type="button"
+        onClick={onPress}
+        style={{
+          flexShrink: 0,
+          background: "#FFFFFF",
+          border: "0.5px solid #E5E5EA",
+          borderRadius: 8,
+          padding: "6px 12px",
+          fontSize: 12,
+          fontWeight: 500,
+          color: "#2B7BC8",
+          cursor: "pointer",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
+        {tip.cta}
+        <ArrowRight style={{ width: 12, height: 12 }} strokeWidth={2} />
+      </button>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Main component
+// ─────────────────────────────────────────────
+
+export function IOSNativeHomeView({ instructorId, instructor }: IOSNativeHomeViewProps) {
+  const navigate = useNavigate();
+
+  // Data
+  const { data: nextLesson } = useNextLessonDetails(instructorId);
+  const { data: weeklyGoals } = useWeeklyGoals(instructorId);
+  const { monthEarnings } = useInstructorLiveStats(instructorId);
+  const { data: unreadMessages = 0 } = useUnreadMessagesCount(instructorId);
+  const pendingJobsCount = usePendingJobsCount();
+  const { data: todayLessons } = useTodayRemainingLessons(instructorId);
+  const { data: todayOverview } = useTodayOverview(instructorId);
+  const { total: combinedNotifs } = useCombinedNotificationCount(instructorId);
+  const { data: testSwapCount = 0 } = useTestSwapNotifications(instructorId);
+  const { data: gapSuggestions } = useRealGapSlots(instructorId);
+
+  const firstName = (instructor?.name || "Instructor").split(" ")[0];
+
+  const remainingToday = todayLessons?.length ?? 0;
+  const totalToday = todayOverview?.lessonCount ?? 0;
+  const lessonsDone = Math.max(0, totalToday - remainingToday);
+  const hoursTaught = (weeklyGoals?.hoursThisWeek ?? 0) > 0
+    ? Math.min(totalToday, lessonsDone) // approximate today's hours from completed lessons
+    : lessonsDone;
+
+  const statusText = useMemo(() => {
+    let nextStartTime: string | null = null;
+    let nextDayLabel: string | null = null;
+    if (nextLesson) {
+      nextStartTime = nextLesson.startTime;
+      const mu = nextLesson.minutesUntil ?? 0;
+      if (mu < 1440) nextDayLabel = "today";
+      else if (mu < 2880) nextDayLabel = "tomorrow";
+      else nextDayLabel = `in ${Math.floor(mu / 1440)} days`;
+    }
+    return getStatusLine({ remainingToday, totalToday, nextStartTime, nextDayLabel });
+  }, [remainingToday, totalToday, nextLesson]);
+
+  // Pick a daily tip deterministically
+  const tip = useMemo(() => {
+    const day = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+    return TIPS[day % TIPS.length];
+  }, []);
+
+  // Quick-tile derived content
+  const jobsSubtitle = pendingJobsCount > 0 ? `${pendingJobsCount} ${pendingJobsCount === 1 ? "course" : "courses"} available` : "Up to date";
+  const messagesSubtitle = unreadMessages > 0 ? `${unreadMessages} unread` : "All caught up";
+  const testsSubtitle = testSwapCount > 0 ? `${testSwapCount} this week` : "No new matches";
+  const gapsCount = gapSuggestions?.length ?? 0;
+  const gapsSubtitle = gapsCount > 0 ? `${gapsCount} this week` : "Nothing to fill";
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#F2F2F4",
+        padding: "20px 16px",
+        paddingBottom: 96,
+      }}
+    >
+      <AppHeader
+        unreadNotifs={combinedNotifs}
+        onMenu={() => navigate("/instructor/menu")}
+        onNotifications={() => navigate("/instructor/notifications")}
+      />
+
+      <HomeGreeting firstName={firstName} statusText={statusText} />
+
+      {/* Action Needed slot — preserved logic intentionally hidden when nothing is actionable.
+          (Existing urgent-alert overlay is rendered higher up in InstructorMobileHome.) */}
+
+      <ProgressRingsCompact
+        lessonsDone={lessonsDone}
+        lessonsTotal={Math.max(totalToday, lessonsDone)}
+        earned={(weeklyGoals?.earningsThisWeek ?? 0) > 0 && totalToday > 0 ? Math.round(((weeklyGoals!.earningsThisWeek) / 7)) : Math.round((monthEarnings ?? 0) / 30)}
+        hoursTaught={hoursTaught}
+        onPress={() => navigate("/instructor/goals")}
+      />
+
+      <UpNextTile
+        pupilName={nextLesson?.pupilName ?? null}
+        startTime={nextLesson?.startTime ?? null}
+        durationMinutes={nextLesson?.durationMinutes ?? null}
+        pickupLocation={nextLesson?.pickupLocation ?? nextLesson?.pickupPostcode ?? null}
+        minutesUntil={nextLesson?.minutesUntil ?? null}
+        onPress={() => navigate("/instructor/diary")}
+      />
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+          gap: 10,
+          marginBottom: 18,
+        }}
+      >
+        <DashboardTile
+          icon={Briefcase}
+          iconColor="#8A5BC9"
+          iconBackground="#F1ECFA"
+          title="Job offers"
+          subtitle={jobsSubtitle}
+          pillText={pendingJobsCount > 0 ? `${pendingJobsCount} new` : undefined}
+          pillColor="#8A5BC9"
+          pillBackground="#F1ECFA"
+          showCheck={pendingJobsCount === 0}
+          onPress={() => navigate("/instructor/jobs")}
+        />
+        <DashboardTile
+          icon={MessageSquare}
+          iconColor="#B8801F"
+          iconBackground="#FBF1DE"
+          title="Messages"
+          subtitle={messagesSubtitle}
+          pillText={unreadMessages > 0 ? `${unreadMessages} unread` : undefined}
+          pillColor="#B8801F"
+          pillBackground="#FBF1DE"
+          showCheck={unreadMessages === 0}
+          onPress={() => navigate("/instructor/messages")}
+        />
+        <DashboardTile
+          icon={ClipboardCheck}
+          iconColor="#2B7BC8"
+          iconBackground="#E6F1FB"
+          title="Test swaps"
+          subtitle={testsSubtitle}
+          pillText={testSwapCount > 0 ? `${testSwapCount} matches` : undefined}
+          pillColor="#2B7BC8"
+          pillBackground="#E6F1FB"
+          onPress={() => navigate("/instructor/test-requests")}
+        />
+        <DashboardTile
+          icon={CalendarPlus}
+          iconColor="#3B8B3B"
+          iconBackground="#E8F3E8"
+          title="Fill gaps"
+          subtitle={gapsSubtitle}
+          pillText={gapsCount > 0 ? `${gapsCount} open` : undefined}
+          pillColor="#3B8B3B"
+          pillBackground="#E8F3E8"
+          onPress={() => navigate("/instructor/gaps")}
+        />
+      </div>
+
+      <TipOfDayCard tip={tip} onPress={() => navigate(tip.path)} />
     </div>
   );
 }
