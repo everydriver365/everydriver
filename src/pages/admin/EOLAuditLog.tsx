@@ -64,7 +64,7 @@ export default function EOLAuditLog() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    if (!adminUser) return;
+    if (!(user && isAdmin)) return;
     let cancelled = false;
     (async () => {
       setLoading(true);
@@ -116,7 +116,7 @@ export default function EOLAuditLog() {
     return () => {
       cancelled = true;
     };
-  }, [adminUser, range]);
+  }, [user, isAdmin, range]);
 
   // Group two-row pairs (lesson_history + lesson_feedback) by completion ts.
   const grouped: GroupedEntry[] = useMemo(() => {
@@ -187,7 +187,7 @@ export default function EOLAuditLog() {
       </div>
     );
   }
-  if (!adminUser) return <Navigate to="/admin/login" replace />;
+  if (!(user && isAdmin)) return <Navigate to="/admin/login" replace />;
 
   return (
     <div className="container mx-auto max-w-5xl space-y-4 p-4">
