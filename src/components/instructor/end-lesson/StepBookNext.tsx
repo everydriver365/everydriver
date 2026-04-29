@@ -926,13 +926,13 @@ export function StepBookNext({
                     ? `1.5px solid ${C.link}`
                     : `0.5px solid ${C.hairline}`,
                   borderRadius: 12,
-                  padding: 14,
+                  padding: "12px 14px",
                   cursor: booking ? "default" : "pointer",
                   textAlign: "left",
                   display: "flex",
                   alignItems: "center",
                   gap: 14,
-                  marginBottom: isLast ? 14 : 8,
+                  marginBottom: isLast ? 10 : 8,
                 }}
               >
                 {/* Date stack */}
@@ -961,7 +961,7 @@ export function StepBookNext({
                   </div>
                   <div
                     style={{
-                      fontSize: 22,
+                      fontSize: 19,
                       fontWeight: 500,
                       color: C.text,
                       letterSpacing: -0.4,
@@ -1035,8 +1035,8 @@ export function StepBookNext({
                 {showStrong ? (
                   <div
                     style={{
-                      width: 32,
-                      height: 32,
+                      width: 26,
+                      height: 26,
                       borderRadius: 9999,
                       background: C.link,
                       display: "flex",
