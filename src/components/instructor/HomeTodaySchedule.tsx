@@ -421,22 +421,25 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               const time = fmtTime(lesson.startTime);
               const isDone = lesson.status === "completed";
               const isNext = !isTomorrow && lesson.id === nextUpcomingId;
+              const isDrivingTest = (lesson.lessonType || "").toLowerCase().includes("driving test")
+                || (lesson.lessonType || "").toLowerCase().includes("driving_test");
 
-              const dotColor = isDone
+              // Match Schedule view: red accent for driving tests, system blue for lessons.
+              const accentColor = isDone
                 ? IOS.tertiaryLabel
-                : isNext
-                ? IOS.systemBlue
-                : IOS.systemGreen;
+                : isDrivingTest
+                ? "#C8434F"
+                : IOS.systemBlue;
 
-              const haloShadow = isDone
-                ? "none"
-                : isNext
-                ? "0 0 0 3px rgba(0,122,255,.18)"
-                : "0 0 0 3px rgba(52,199,89,.15)";
+              const lessonLabel = isDrivingTest
+                ? "Driving test"
+                : `${lesson.lessonType || "Standard"} lesson`;
+              const location = lesson.pickupLocation || lesson.pickupPostcode || null;
+              const subtitle = [lessonLabel, location].filter(Boolean).join(" · ");
 
-              const meta: string[] = [];
-              if ((lesson as any).transmission) meta.push((lesson as any).transmission);
-              if (lesson.pickupPostcode) meta.push(lesson.pickupPostcode);
+              const title = isDrivingTest
+                ? `${sentenceName(lesson.pupilName)} · driving test`
+                : sentenceName(lesson.pupilName);
 
               return (
                 <Link
@@ -444,10 +447,9 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                   to={`/instructor/pupils/${lesson.pupilId}`}
                   className="hts-row"
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "50px 1fr 16px",
+                    display: "flex",
                     alignItems: "center",
-                    gap: 0,
+                    gap: 12,
                     padding: "12px 16px",
                     cursor: "pointer",
                     textDecoration: "none",
@@ -458,101 +460,103 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                     position: "relative",
                   }}
                 >
-                  {idx > 0 && (
-                    <span
-                      style={{
-                        position: "absolute",
-                        top: -0.5,
-                        left: 80,
-                        right: 0,
-                        height: 0.5,
-                        background: IOS.opaqueSeparator,
-                      }}
-                    />
-                  )}
-
                   {/* Time column */}
                   <div
                     style={{
-                      paddingRight: 14,
-                      borderRight: `1px solid ${IOS.opaqueSeparator}`,
-                      minWidth: 0,
+                      flexShrink: 0,
+                      minWidth: 50,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-end",
                     }}
                   >
-                    <div
+                    <span
                       style={{
-                        fontSize: a11yPx(17),
-                        fontWeight: 600,
+                        fontSize: a11yPx(14),
+                        fontWeight: 500,
                         color: IOS.label,
-                        letterSpacing: -0.24,
+                        letterSpacing: -0.1,
                         fontVariantNumeric: "tabular-nums",
                         lineHeight: 1.1,
                       }}
                     >
                       {time.hour}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: a11yPx(11),
-                        color: IOS.secondaryLabel,
-                        fontWeight: 600,
-                        textTransform: "uppercase",
-                        letterSpacing: 0.3,
-                        marginTop: 2,
-                      }}
-                    >
-                      {time.period}
-                      {lesson.durationMinutes ? ` · ${durationLabel(lesson.durationMinutes)}` : ""}
-                    </div>
+                    </span>
+                    {lesson.durationMinutes ? (
+                      <span
+                        style={{
+                          fontSize: a11yPx(11),
+                          color: IOS.secondaryLabel,
+                          marginTop: 1,
+                          fontVariantNumeric: "tabular-nums",
+                        }}
+                      >
+                        {durationLabel(lesson.durationMinutes)}
+                      </span>
+                    ) : null}
                   </div>
 
-                  {/* Body */}
-                  <div style={{ minWidth: 0, paddingLeft: 14 }}>
+                  {/* Source colour bar (pulses for the next-upcoming lesson) */}
+                  <span
+                    className={isNext ? "hts-pulse" : ""}
+                    style={{
+                      flexShrink: 0,
+                      width: 3,
+                      height: 36,
+                      borderRadius: 2,
+                      background: accentColor,
+                      animation: isNext ? "hts-pulse 2s infinite" : "none",
+                    }}
+                  />
+
+                  {/* Title + subtitle */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: a11yPx(15),
-                        fontWeight: 600,
+                        fontSize: a11yPx(14),
+                        fontWeight: 500,
                         color: IOS.label,
-                        letterSpacing: -0.24,
+                        letterSpacing: -0.1,
+                        margin: "0 0 1px",
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         textDecoration: isDone ? "line-through" : "none",
                       }}
                     >
-                      {sentenceName(lesson.pupilName)}
+                      {title}
                     </div>
-                    {meta.length > 0 && (
+                    {subtitle && (
                       <div
                         style={{
-                          fontSize: a11yPx(13),
+                          fontSize: a11yPx(12),
                           color: IOS.secondaryLabel,
-                          marginTop: 2,
-                          letterSpacing: -0.08,
+                          margin: 0,
                           whiteSpace: "nowrap",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
+                          textDecoration: isDone ? "line-through" : "none",
                         }}
                       >
-                        {meta.join(" · ")}
+                        {subtitle}
                       </div>
                     )}
                   </div>
 
-                  {/* Status dot */}
-                  <span
-                    className={isNext ? "hts-pulse" : ""}
-                    style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: "50%",
-                      background: dotColor,
-                      boxShadow: haloShadow,
-                      flexShrink: 0,
-                      justifySelf: "center",
-                      animation: isNext ? "hts-pulse 2s infinite" : "none",
-                    }}
-                  />
+                  {/* Chevron */}
+                  <svg
+                    width={12}
+                    height={12}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke={IOS.secondaryLabel}
+                    strokeWidth={1.6}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ flexShrink: 0 }}
+                  >
+                    <path d="M9 6l6 6-6 6" />
+                  </svg>
                 </Link>
               );
             })}
