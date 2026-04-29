@@ -435,6 +435,29 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
     return () => clearInterval(id);
   }, []);
 
+  // Floating "Today" pill — show when the today header is scrolled out of view.
+  const [todayOffscreen, setTodayOffscreen] = useState<"above" | "below" | null>(null);
+  useEffect(() => {
+    const el = todayRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setTodayOffscreen(null);
+        else {
+          const rect = entry.boundingClientRect;
+          setTodayOffscreen(rect.top < 0 ? "above" : "below");
+        }
+      },
+      { threshold: 0, rootMargin: "-60px 0px -60% 0px" },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [loading]);
+
+  const jumpToToday = () => {
+    todayRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const startDate = useMemo(() => startOfDay(new Date()), []);
   const days = useMemo(
     () => Array.from({ length: DAYS_TO_LOAD }, (_, i) => addDays(startDate, i)),
@@ -1087,6 +1110,40 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
       >
         <GooglePlusIcon />
       </button>
+
+      {/* Floating "Today" jump pill */}
+      {todayOffscreen && (
+        <button
+          type="button"
+          onClick={jumpToToday}
+          aria-label="Jump to today"
+          style={{
+            position: "fixed",
+            left: "50%",
+            transform: "translateX(-50%)",
+            bottom: 96,
+            backgroundColor: "#1F1F1F",
+            color: "#FFFFFF",
+            fontFamily: FONT_STACK,
+            fontSize: 13,
+            fontWeight: 500,
+            padding: "8px 14px",
+            borderRadius: 999,
+            border: "none",
+            boxShadow: "0 6px 20px rgba(0,0,0,0.18)",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            cursor: "pointer",
+            zIndex: 60,
+          }}
+        >
+          <span aria-hidden style={{ fontSize: 11 }}>
+            {todayOffscreen === "above" ? "↑" : "↓"}
+          </span>
+          Today
+        </button>
+      )}
 
       {/* Cancel Dialog */}
       {selectedLesson && (
