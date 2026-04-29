@@ -1111,6 +1111,40 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
         <GooglePlusIcon />
       </button>
 
+      {/* Floating "Today" jump pill */}
+      {todayOffscreen && (
+        <button
+          type="button"
+          onClick={jumpToToday}
+          aria-label="Jump to today"
+          style={{
+            position: "fixed",
+            left: "50%",
+            transform: "translateX(-50%)",
+            bottom: 96,
+            backgroundColor: "#1F1F1F",
+            color: "#FFFFFF",
+            fontFamily: FONT_STACK,
+            fontSize: 13,
+            fontWeight: 500,
+            padding: "8px 14px",
+            borderRadius: 999,
+            border: "none",
+            boxShadow: "0 6px 20px rgba(0,0,0,0.18)",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            cursor: "pointer",
+            zIndex: 60,
+          }}
+        >
+          <span aria-hidden style={{ fontSize: 11 }}>
+            {todayOffscreen === "above" ? "↑" : "↓"}
+          </span>
+          Today
+        </button>
+      )}
+
       {/* Cancel Dialog */}
       {selectedLesson && (
         <CancelLessonDialog
