@@ -1,137 +1,28 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
-import { format, addHours, differenceInMinutes, isToday, isTomorrow } from "date-fns";
+import { addHours, differenceInMinutes } from "date-fns";
 import { useSoonestPendingOffer } from "@/hooks/useSoonestPendingOffer";
-import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
-// useWeeklyGoals/useUnreadMessagesCount now live inside WeekAtAGlanceCard
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useTileHealth } from "@/hooks/useTileHealth";
-import { a11yPx } from "@/lib/a11yScale";
 import { WeekAtAGlanceCard } from "@/components/instructor/WeekAtAGlanceCard";
+import { HomeActionCard } from "@/components/instructor/HomeActionCard";
+import type { PriorityAction } from "@/lib/composeStatusSubtitle";
 
 interface Props {
   instructorId: string | undefined;
 }
 
-const TXT = {
-  primary: "#000000",
-  secondary: "#6E6E73",
-  muted: "#8E8E93",
-  red: "#C8434F",
-  redBorder: "#E5E5EA",
-  blue: "#2B7BC8",
-  blueBorder: "#E5E5EA",
-  hairline: "#E5E5EA",
-};
-
 const RESPONSE_SLA_HOURS = 24;
 
-function Skeleton({ width, height = 14 }: { width: number | string; height?: number }) {
-  return (
-    <span
-      style={{
-        display: "inline-block",
-        width,
-        height: a11yPx(height),
-        borderRadius: a11yPx(4),
-        background: "#EFEDE6",
-      }}
-      className="animate-pulse"
-    />
-  );
-}
-
-function Spine({ color }: { color: string }) {
-  return (
-    <div
-      style={{
-        width: a11yPx(8),
-        alignSelf: "stretch",
-        borderRadius: a11yPx(4),
-        background: color,
-        flexShrink: 0,
-      }}
-    />
-  );
-}
-
-function HealthDot() {
-  return (
-    <span
-      style={{
-        position: "absolute",
-        top: a11yPx(8),
-        right: a11yPx(8),
-        width: a11yPx(6),
-        height: a11yPx(6),
-        borderRadius: 999,
-        background: "#C68B16",
-      }}
-      aria-label="Live data delayed"
-    />
-  );
-}
-
-function TileShell({
-  borderColor,
-  onClick,
-  children,
-  showHealthDot = false,
-}: {
-  borderColor: string;
-  onClick?: () => void;
-  children: React.ReactNode;
-  showHealthDot?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-full text-left flex items-stretch relative"
-      style={{
-        background: "#FFFFFF",
-        border: "0.5px solid #E5E5EA",
-        boxShadow: "none",
-        borderRadius: a11yPx(12),
-        padding: `${a11yPx(14)} ${a11yPx(16)}`,
-        gap: a11yPx(12),
-      }}
-    >
-      {showHealthDot && <HealthDot />}
-      {children}
-    </button>
-  );
-}
-
-function getInitial(name: string): string {
-  const parts = name.trim().split(" ");
-  if (parts.length < 2) return "";
-  return parts[parts.length - 1].charAt(0).toUpperCase() + ".";
-}
-
-function formatNextLessonDay(dateStr: string): string {
-  const d = new Date(dateStr);
-  if (isToday(d)) return "Today";
-  if (isTomorrow(d)) return "Tomorrow";
-  return format(d, "EEEE");
-}
-
-export function WarmHomeTiles({ instructorId }: Props) {
-  const navigate = useNavigate();
-  const { data: soonestOffer, isLoading: offerLoading } =
-    useSoonestPendingOffer(instructorId);
-  const { data: nextLesson, isLoading: lessonLoading } =
-    useNextLessonDetails(instructorId);
+/**
+ * Build the prioritised action list from current notification state.
+ * Priority order matches the original WarmHomeTiles "tile 1" resolver:
+ *   pendingJobsCount > swapCount > messageCount > visitorChatCount
+ */
+export function useHomeActions(instructorId: string | undefined) {
+  const { data: soonestOffer } = useSoonestPendingOffer(instructorId);
   const { messageCount, visitorChatCount, pendingJobsCount, swapCount } =
     useCombinedNotificationCount(instructorId);
-  const { hasOutageFor } = useTileHealth(instructorId);
 
-  // Map tile -> related health sources
-  const tile1Outage =
-    hasOutageFor("messages") ||
-    hasOutageFor("course_enquiries");
-  const tile2Outage = hasOutageFor("scheduled_lessons") || hasOutageFor("calendar_sync_queue");
-
-  // ---------- Tile 1: Action needed (priority resolver) ----------
   let respondText = "Tap to review";
   if (soonestOffer) {
     const deadline = addHours(new Date(soonestOffer.created_at), RESPONSE_SLA_HOURS);
@@ -144,242 +35,75 @@ export function WarmHomeTiles({ instructorId }: Props) {
     }
   }
 
-  type AlertView = { count: number; title: string; subtitle: string; route: string };
-  let alert: AlertView | null = null;
+  const actions: PriorityAction[] = [];
   if (pendingJobsCount > 0) {
-    alert = {
+    actions.push({
+      kind: "job_offer",
       count: pendingJobsCount,
+      eyebrow: "Needs response",
       title: `${pendingJobsCount} new job offer${pendingJobsCount === 1 ? "" : "s"}`,
       subtitle: respondText,
       route: "/instructor/jobs",
-    };
-  } else if (swapCount > 0) {
-    alert = {
+    });
+  }
+  if (swapCount > 0) {
+    actions.push({
+      kind: "test_swap",
       count: swapCount,
+      eyebrow: "Needs response",
       title: `${swapCount} test alert${swapCount === 1 ? "" : "s"}`,
       subtitle: "Tap to review",
       route: "/instructor/test-requests",
-    };
-  } else if (messageCount > 0) {
-    alert = {
+    });
+  }
+  if (messageCount > 0) {
+    actions.push({
+      kind: "message",
       count: messageCount,
+      eyebrow: "Needs response",
       title: `${messageCount} unread message${messageCount === 1 ? "" : "s"}`,
       subtitle: "Tap to reply",
       route: "/instructor/messages",
-    };
-  } else if (visitorChatCount > 0) {
-    alert = {
+    });
+  }
+  if (visitorChatCount > 0) {
+    actions.push({
+      kind: "visitor_chat",
       count: visitorChatCount,
+      eyebrow: "Needs response",
       title: `${visitorChatCount} visitor chat${visitorChatCount === 1 ? "" : "s"}`,
       subtitle: "Tap to reply",
       route: "/instructor/messages",
-    };
+    });
   }
 
-  const tile1Loading = offerLoading;
+  return actions;
+}
 
-  // ---------- Tile 2: Up next ----------
-  const isToday2 = nextLesson && isToday(new Date(nextLesson.lessonDate));
-  const hasNextToday = !!isToday2;
+/**
+ * Top-of-home card stack:
+ *   Action card (conditional) + Progress rings card (always)
+ */
+export function WarmHomeTiles({ instructorId }: Props) {
+  const navigate = useNavigate();
+  const actions = useHomeActions(instructorId);
+  // Health surface is preserved indirectly through child components.
+  useTileHealth(instructorId);
 
-  // ---------- Render ----------
+  const topAction = actions[0] ?? null;
+
   return (
-    <div
-      style={{
-        padding: `0 ${a11yPx(14)}`,
-        display: "flex",
-        flexDirection: "column",
-        gap: a11yPx(8),
-      }}
-    >
-      {/* Tile 1 — Action needed */}
-      {tile1Loading ? (
-        <TileShell borderColor={TXT.hairline}>
-          <Spine color={TXT.hairline} />
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
-            <Skeleton width={110} height={11} />
-            <Skeleton width="60%" height={14} />
-            <Skeleton width="40%" height={12} />
-          </div>
-        </TileShell>
-      ) : alert ? (
-        <TileShell
-          borderColor={TXT.redBorder}
-          onClick={() => navigate(alert!.route)}
-          showHealthDot={tile1Outage}
-        >
-          <Spine color={TXT.red} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div
-              style={{
-                fontSize: a11yPx(11),
-                fontWeight: 500,
-                color: TXT.red,
-                letterSpacing: 0,
-              }}
-            >
-              ACTION NEEDED
-            </div>
-            <div
-              style={{
-                fontSize: a11yPx(14),
-                fontWeight: 500,
-                color: TXT.primary,
-                marginTop: a11yPx(4),
-              }}
-            >
-              {alert.title}
-            </div>
-            <div style={{ fontSize: a11yPx(12), color: TXT.secondary, marginTop: a11yPx(2) }}>
-              {alert.subtitle}
-            </div>
-          </div>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <ChevronRight size={14} strokeWidth={2} color={TXT.red} />
-          </div>
-        </TileShell>
-      ) : (
-        <TileShell borderColor={TXT.hairline} showHealthDot={tile1Outage}>
-          <Spine color={TXT.hairline} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div
-              style={{
-                fontSize: a11yPx(11),
-                fontWeight: 500,
-                color: TXT.muted,
-                letterSpacing: 0,
-              }}
-            >
-              NO PENDING ACTIONS
-            </div>
-            <div
-              style={{
-                fontSize: a11yPx(14),
-                fontWeight: 500,
-                color: TXT.primary,
-                marginTop: a11yPx(4),
-              }}
-            >
-              You're all caught up
-            </div>
-          </div>
-        </TileShell>
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      {topAction && (
+        <HomeActionCard
+          action={topAction}
+          totalActions={actions.length}
+          onPress={() => navigate(topAction.route)}
+        />
       )}
-
-      {/* Tile 2 — Up next */}
-      {lessonLoading ? (
-        <TileShell borderColor={TXT.hairline}>
-          <Spine color={TXT.hairline} />
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
-            <Skeleton width={120} height={11} />
-            <Skeleton width="65%" height={14} />
-            <Skeleton width="50%" height={12} />
-          </div>
-        </TileShell>
-      ) : hasNextToday && nextLesson ? (
-        (() => {
-          const startTime = nextLesson.startTime.slice(0, 5); // HH:mm
-          const parts = nextLesson.pupilName.trim().split(" ");
-          const firstName = parts[0];
-          const lastInitial = getInitial(nextLesson.pupilName);
-          const displayName = lastInitial
-            ? `${firstName} ${lastInitial}`
-            : firstName;
-          const lessonType = "Driving lesson";
-          const pickup = nextLesson.pickupLocation || nextLesson.pickupPostcode;
-          return (
-            <TileShell
-              borderColor={TXT.blueBorder}
-              onClick={() =>
-                navigate(`/instructor/lessons/${nextLesson.lessonId}`)
-              }
-              showHealthDot={tile2Outage}
-            >
-              <Spine color={TXT.blue} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: a11yPx(11),
-                    fontWeight: 500,
-                    color: TXT.blue,
-                    letterSpacing: 0,
-                  }}
-                >
-                  UP NEXT · {startTime}
-                </div>
-                <div
-                  style={{
-                    fontSize: a11yPx(14),
-                    fontWeight: 500,
-                    color: TXT.primary,
-                    marginTop: a11yPx(4),
-                  }}
-                >
-                  {displayName} — {lessonType}
-                </div>
-                {pickup && (
-                  <div
-                    style={{
-                      fontSize: a11yPx(12),
-                      color: TXT.secondary,
-                      marginTop: a11yPx(2),
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    Pickup: {pickup}
-                  </div>
-                )}
-              </div>
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <ChevronRight size={14} strokeWidth={2} color={TXT.blue} />
-              </div>
-            </TileShell>
-          );
-        })()
-      ) : (
-        <TileShell
-          borderColor={TXT.hairline}
-          onClick={() => navigate("/instructor/schedule")}
-          showHealthDot={tile2Outage}
-        >
-          <Spine color={TXT.hairline} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div
-              style={{
-                fontSize: a11yPx(11),
-                fontWeight: 500,
-                color: TXT.muted,
-                letterSpacing: 0,
-              }}
-            >
-              NOTHING LEFT TODAY
-            </div>
-            <div
-              style={{
-                fontSize: a11yPx(14),
-                fontWeight: 500,
-                color: TXT.primary,
-                marginTop: a11yPx(4),
-              }}
-            >
-              You're done for today
-            </div>
-            {nextLesson && (
-              <div
-                style={{ fontSize: a11yPx(12), color: TXT.secondary, marginTop: a11yPx(2) }}
-              >
-                Next lesson: {formatNextLessonDay(nextLesson.lessonDate)} at{" "}
-                {nextLesson.startTime.slice(0, 5)}
-              </div>
-            )}
-          </div>
-        </TileShell>
-      )}
-
-      {/* Tile 3 — This week at a glance (premium tile system) */}
-      <WeekAtAGlanceCard instructorId={instructorId} />
+      <div style={{ padding: "0 14px" }}>
+        <WeekAtAGlanceCard instructorId={instructorId} />
+      </div>
     </div>
   );
 }

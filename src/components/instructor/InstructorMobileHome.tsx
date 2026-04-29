@@ -112,6 +112,12 @@ import { WidgetsHomeView } from "@/components/instructor/WidgetsHomeView";
 
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { HomeTodaySchedule } from "@/components/instructor/HomeTodaySchedule";
+import { HomeGreeting } from "@/components/instructor/HomeGreeting";
+import { useHomeActions } from "@/components/instructor/WarmHomeTiles";
+import {
+  composeStatusSubtitle,
+  getTimeOfDayGreeting,
+} from "@/lib/composeStatusSubtitle";
 import { useTomorrowLessons } from "@/hooks/useTomorrowLessons";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
 import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
@@ -290,6 +296,7 @@ export function InstructorMobileHome({
 
 
   const { devices: vehicleDevices } = useVehicleHealth();
+  const homeActions = useHomeActions(instructorId);
   const engineFaultCount = vehicleDevices.flatMap(d => d.last_fault_codes || []).length;
   const [engineFaultsDismissed, setEngineFaultsDismissed] = useState(() => {
     const ts = localStorage.getItem("engine_faults_dismissed_at");
@@ -448,34 +455,61 @@ export function InstructorMobileHome({
         />
       ) : (
       <>
-      {/* 1. Quiet greeting */}
-      <div style={{ padding: "6px 20px 20px" }}>
-        <h1
-          style={{
-            fontSize: 22,
-            fontWeight: 500,
-            color: "hsl(var(--dsm-text))",
-            lineHeight: 1.2,
-            margin: 0,
-          }}
-        >
-          Hi {firstName}
-          <span style={{ color: "hsl(var(--dsm-text-secondary))", margin: "0 8px", fontWeight: 400 }}>·</span>
-          <span style={{ color: "hsl(var(--dsm-text-secondary))", fontWeight: 400 }}>
-            {format(new Date(), "EEEE")}
-          </span>
-        </h1>
-        <p
-          style={{
-            fontSize: 13,
-            color: "hsl(var(--dsm-text-secondary))",
-            marginTop: 4,
-            fontWeight: 400,
-          }}
-        >
-          Here's what needs you today
-        </p>
-      </div>
+      {/* 1. Time-aware greeting + status-aware subtitle */}
+      {(() => {
+        const now = new Date();
+        const greeting = getTimeOfDayGreeting(now, firstName);
+
+        const allToday = todayLessons || [];
+        const upcomingTodayCount = allToday.filter(
+          (l) => l.status !== "completed"
+        ).length;
+        const hasLessonsToday = allToday.length > 0;
+
+        // Detect a live lesson: any lesson whose start time has passed and
+        // end time is in the future (and not yet completed/cancelled).
+        let liveLessonEndsInMinutes: number | null = null;
+        for (const l of allToday) {
+          if (l.status === "completed" || l.status === "cancelled") continue;
+          const [h, m] = (l.startTime || "00:00").split(":").map(Number);
+          const start = new Date(now);
+          start.setHours(h || 0, m || 0, 0, 0);
+          const end = new Date(start.getTime() + (l.durationMinutes || 60) * 60_000);
+          if (start <= now && end > now) {
+            liveLessonEndsInMinutes = Math.max(
+              1,
+              Math.round((end.getTime() - now.getTime()) / 60_000)
+            );
+            break;
+          }
+        }
+
+        // Last end time today (HH:mm) — used when lessons remain & no actions.
+        let lastEndTimeToday: string | null = null;
+        if (allToday.length) {
+          const last = allToday[allToday.length - 1];
+          const [h, m] = (last.startTime || "00:00").split(":").map(Number);
+          const end = new Date(now);
+          end.setHours(h || 0, m || 0, 0, 0);
+          end.setMinutes(end.getMinutes() + (last.durationMinutes || 60));
+          lastEndTimeToday = format(end, "HH:mm");
+        }
+
+        const statusSubtitle = composeStatusSubtitle(
+          {
+            upcomingTodayCount,
+            liveLessonEndsInMinutes,
+            hasLessonsToday,
+            lastEndTimeToday,
+            nextLesson: nextLesson
+              ? { date: nextLesson.lessonDate, startTime: nextLesson.startTime }
+              : null,
+          },
+          { totalActions: homeActions.length }
+        );
+
+        return <HomeGreeting greeting={greeting} statusSubtitle={statusSubtitle} />;
+      })()}
 
       {/* Warm priority tiles: action needed, up next, week at a glance */}
       <WarmHomeTiles instructorId={instructorId} />
