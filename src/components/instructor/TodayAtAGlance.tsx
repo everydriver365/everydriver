@@ -199,8 +199,19 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
           className="snap-start shrink-0 w-[124px] rounded-[16px] p-4 flex flex-col justify-between"
           style={{ backgroundColor: "#FFF5EC", boxShadow: "inset 0 0 0 1px rgba(185,74,0,0.10)" }}
         >
-          <div className="text-[10px] font-bold uppercase tracking-widest mb-5" style={{ color: "#B94A00" }}>
-            Remaining
+          <div className="flex items-center justify-between mb-5">
+            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#B94A00" }}>
+              Remaining
+            </span>
+            {data.remainingPostcode && (
+              <span
+                className="text-[9px] font-bold tabular-nums px-1.5 py-0.5 rounded"
+                style={{ color: "#B94A00", backgroundColor: "rgba(185,74,0,0.10)" }}
+                title="Next remaining lesson postcode"
+              >
+                {data.remainingPostcode}
+              </span>
+            )}
           </div>
           <div>
             <div className="text-2xl font-bold tracking-tighter text-gray-900 tabular-nums leading-none mb-1.5">
@@ -218,8 +229,19 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
           className="snap-start shrink-0 w-[124px] rounded-[16px] p-4 flex flex-col justify-between"
           style={{ backgroundColor: "#F0FDF8", boxShadow: "inset 0 0 0 1px rgba(13,122,92,0.10)" }}
         >
-          <div className="text-[10px] font-bold uppercase tracking-widest mb-5" style={{ color: "#0D7A5C" }}>
-            Scheduled
+          <div className="flex items-center justify-between mb-5">
+            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#0D7A5C" }}>
+              Scheduled
+            </span>
+            {data.scheduledPostcode && (
+              <span
+                className="text-[9px] font-bold tabular-nums px-1.5 py-0.5 rounded"
+                style={{ color: "#0D7A5C", backgroundColor: "rgba(13,122,92,0.10)" }}
+                title="First scheduled lesson postcode"
+              >
+                {data.scheduledPostcode}
+              </span>
+            )}
           </div>
           <div>
             <div className="text-2xl font-bold tracking-tighter text-gray-900 tabular-nums leading-none mb-1.5">
