@@ -313,7 +313,44 @@ export function EndLessonWizard({
     }
   };
 
-  const handleDone = () => {
+  const handleDone = async () => {
+    // Insert the lesson_history row now (deferred from handleComplete) so the
+    // schedule's "Complete EOL" amber marker stays visible until the wizard
+    // is truly finished. Also fire the optional feedback request that depends
+    // on the new history row id.
+    try {
+      const { data: historyData } = await supabase
+        .from("lesson_history")
+        .insert({
+          instructor_id: instructorId,
+          pupil_id: pupilId,
+          lesson_date: lessonDate,
+          start_time: startTime,
+          duration_minutes: durationMinutes,
+          notes: notes || null,
+          voice_note_url: pendingVoiceNoteUrl,
+        } as any)
+        .select("id")
+        .single();
+
+      if (historyData) {
+        setHistoryId(historyData.id);
+        if (authInstructor?.lesson_feedback_enabled !== false) {
+          try {
+            await supabase.from("lesson_feedback").insert({
+              lesson_history_id: historyData.id,
+              pupil_id: pupilId,
+              instructor_id: instructorId,
+            });
+          } catch (e) {
+            console.error("Feedback request error:", e);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Lesson history insert error:", e);
+    }
+
     onCompleted();
     onOpenChange(false);
   };
