@@ -221,6 +221,191 @@ function EventChip({
   );
 }
 
+/** Smart relative day-header label, e.g. "Mon 28 Apr · today". */
+function formatDayHeader(d: Date): string {
+  const base = format(d, "EEE d MMM");
+  const yearSuffix = isSameYear(d, new Date()) ? "" : ` ${format(d, "yyyy")}`;
+  let suffix = "";
+  if (isToday(d)) suffix = " · today";
+  else if (isTomorrow(d)) suffix = " · tomorrow";
+  else if (isYesterday(d)) suffix = " · yesterday";
+  return `${base}${yearSuffix}${suffix}`;
+}
+
+/** Hairline divider between rows within the same day. */
+function RowDivider() {
+  return (
+    <div
+      style={{
+        height: 0.5,
+        backgroundColor: "#E5E5EA",
+        margin: "0 8px",
+      }}
+    />
+  );
+}
+
+type RowStatus = "live" | "conflict" | "tentative" | null;
+
+function StatusPill({ status }: { status: RowStatus }) {
+  if (!status) return null;
+  const map: Record<Exclude<RowStatus, null>, { bg: string; fg: string; label: string }> = {
+    live: { bg: "#FBEAEC", fg: "#C8434F", label: "LIVE" },
+    conflict: { bg: "#FBF1DE", fg: "#B8801F", label: "CONFLICT" },
+    tentative: { bg: "#F2F2F4", fg: "#6E6E73", label: "TENTATIVE" },
+  };
+  const s = map[status];
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        background: s.bg,
+        color: s.fg,
+        borderRadius: 999,
+        padding: "2px 7px",
+        fontSize: 9,
+        fontWeight: 500,
+        letterSpacing: "0.3px",
+        flexShrink: 0,
+      }}
+    >
+      {s.label}
+    </span>
+  );
+}
+
+/** Compact tappable lesson/event row used in the new Schedule list view. */
+function ScheduleListRow({
+  timeText,
+  durationText,
+  accentColor,
+  title,
+  subtitle,
+  statusPill,
+  showChevron,
+  struck,
+  onClick,
+}: {
+  timeText: string;
+  durationText: string | null;
+  accentColor: string;
+  title: string;
+  subtitle?: string | null;
+  statusPill: RowStatus;
+  showChevron: boolean;
+  struck: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        width: "100%",
+        textAlign: "left",
+        background: "transparent",
+        border: "none",
+        padding: "12px 8px",
+        cursor: "pointer",
+        fontFamily: FONT_STACK,
+      }}
+    >
+      {/* Time column */}
+      <div
+        style={{
+          flexShrink: 0,
+          minWidth: 50,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-end",
+        }}
+      >
+        <span
+          style={{
+            fontSize: 14,
+            fontWeight: 500,
+            color: "#000000",
+            letterSpacing: "-0.1px",
+            fontVariantNumeric: "tabular-nums",
+            textDecoration: struck ? "line-through" : "none",
+          }}
+        >
+          {timeText}
+        </span>
+        {durationText && (
+          <span
+            style={{
+              fontSize: 11,
+              color: "#6E6E73",
+              marginTop: 1,
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {durationText}
+          </span>
+        )}
+      </div>
+
+      {/* Source colour bar */}
+      <div
+        style={{
+          flexShrink: 0,
+          width: 3,
+          height: 36,
+          borderRadius: 2,
+          backgroundColor: accentColor,
+        }}
+      />
+
+      {/* Title + subtitle */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: 14,
+            fontWeight: 500,
+            color: "#000000",
+            letterSpacing: "-0.1px",
+            margin: "0 0 1px",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            textDecoration: struck ? "line-through" : "none",
+          }}
+        >
+          {title}
+        </div>
+        {subtitle && (
+          <div
+            style={{
+              fontSize: 12,
+              color: "#6E6E73",
+              margin: 0,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              textDecoration: struck ? "line-through" : "none",
+            }}
+          >
+            {subtitle}
+          </div>
+        )}
+      </div>
+
+      <StatusPill status={statusPill} />
+
+      {showChevron && (
+        <ChevronRight
+          style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0, strokeWidth: 1.6 }}
+        />
+      )}
+    </button>
+  );
+}
+
 export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps) {
   const navigate = useNavigate();
   const todayRef = useRef<HTMLDivElement>(null);
