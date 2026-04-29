@@ -352,10 +352,21 @@ export function EndLessonWizard({
   const stepNumber = step === "summary" ? 1 : step === "payment" ? 2 : step === "skills" ? 3 : step === "book" ? 4 : 5;
   const totalSteps = needsPayment ? 4 : 3;
 
-  // Premium step-1 chrome (Cancel / centred title / spacer + thin progress bars).
-  const isSummaryChrome = step === "summary";
+  // Premium chrome shared by Step 1 (summary) and Step 2 (payment):
+  // Back / centred title / spacer + thin progress bars.
+  const isPremiumChrome = step === "summary" || step === "payment";
   const showStepChrome =
     step !== "completed" && step !== "completing" && step !== "course_complete";
+
+  const premiumEyebrow =
+    step === "summary"
+      ? `Step 1 of ${totalSteps} · Quick summary`
+      : `Step 2 of ${totalSteps} · Take payment`;
+  const premiumLeftLabel = step === "summary" ? "Cancel" : "Back";
+  const handlePremiumLeft = () => {
+    if (step === "summary") onOpenChange(false);
+    else if (step === "payment") setStep("summary");
+  };
 
   // Refresh pupil balance after Record Payment (called from Step 1 "Due now" tile)
   const [refreshedBalance, setRefreshedBalance] = useState<number | null>(null);
