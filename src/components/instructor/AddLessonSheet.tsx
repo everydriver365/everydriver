@@ -679,7 +679,7 @@ export function AddLessonSheet({
       handlePostSavePayment(newPupil.id);
       resetForm(); onOpenChange(false); onSuccess();
     } catch (error) { console.error(error); toast.error('Failed to schedule lesson'); }
-    finally { setLoading(false); }
+    finally { setLoading(false); submittingRef.current = false; }
   };
 
   const timeSlots = Array.from({ length: 28 }, (_, i) => {
