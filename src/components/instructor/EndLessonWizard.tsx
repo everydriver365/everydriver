@@ -50,6 +50,7 @@ export function EndLessonWizard({
   const [completing, setCompleting] = useState(false);
   const [paymentQrUrl, setPaymentQrUrl] = useState<string | null>(null);
   const [historyId, setHistoryId] = useState<string | null>(null);
+  const [pendingVoiceNoteUrl, setPendingVoiceNoteUrl] = useState<string | null>(null);
   const [updatedCompetencies, setUpdatedCompetencies] = useState<string[]>([]);
   const [routeReportData, setRouteReportData] = useState<any>(null);
   const [isLastLesson, setIsLastLesson] = useState(false);
