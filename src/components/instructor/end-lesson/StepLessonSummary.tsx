@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Car, Clock, Gauge, Route, Share2, Check } from "lucide-react";
+import { Clock, Gauge, Send, Share2, Check, Info, X } from "lucide-react";
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
-import { Button } from "@/components/ui/button";
-import { InstructorCard } from "@/components/instructor/InstructorCard";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { kmToMiles, kmhToMph } from "@/lib/utils";
 import { toast } from "sonner";
+import { UserAvatar } from "@/components/instructor/UserAvatar";
+import { titleCaseName } from "@/lib/titleCase";
+import { detectDataQualityIssues } from "@/lib/detectDataQualityIssues";
 
 interface RouteSegment {
   name: string;
@@ -50,7 +51,39 @@ interface StepLessonSummaryProps {
   reportData: RouteReportData | null;
   competencies?: string[];
   onDone: () => void;
+  onClose?: () => void;
+  pupilPhotoUrl?: string | null;
+  lessonTypeLabel?: string;
+  status?: "completed" | "in-progress" | "cancelled";
 }
+
+// Format minutes naturally: 60 → "1h", 75 → "1h 15m", 45 → "45m"
+function formatLessonDuration(minutes: number | null | undefined): string {
+  if (!minutes || minutes <= 0) return "—";
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
+
+const C = {
+  text: "#000000",
+  muted: "#6E6E73",
+  border: "#E5E5EA",
+  surface: "#F8FAFB",
+  blue: "#2B7BC8",
+  green: "#3B8B3B",
+  greenBg: "#E8F3E8",
+  amber: "#B8801F",
+  amberBg: "#FBF1DE",
+};
+
+const STATUS_PILL: Record<string, { bg: string; fg: string; label: string }> = {
+  completed: { bg: C.greenBg, fg: C.green, label: "Completed" },
+  "in-progress": { bg: "#E6F0FA", fg: C.blue, label: "In progress" },
+  cancelled: { bg: "#F2F2F4", fg: C.muted, label: "Cancelled" },
+};
 
 export function StepLessonSummary({
   pupilName,
@@ -60,6 +93,10 @@ export function StepLessonSummary({
   reportData,
   competencies = [],
   onDone,
+  onClose,
+  pupilPhotoUrl = null,
+  lessonTypeLabel = "Standard lesson",
+  status = "completed",
 }: StepLessonSummaryProps) {
   const [roadsOpen, setRoadsOpen] = useState(false);
   const [shared, setShared] = useState(false);
@@ -67,49 +104,93 @@ export function StepLessonSummary({
   const hasTelematics = !!reportData?.stats;
 
   const uniqueRoads = reportData?.segments
-    ? [...new Map(reportData.segments.map(s => [s.name, s])).values()]
-        .filter(s => s.name !== "Unknown Road")
+    ? [...new Map(reportData.segments.map((s) => [s.name, s])).values()].filter(
+        (s) => s.name !== "Unknown Road",
+      )
     : [];
 
   const formatTime = (t: string) => t?.slice(0, 5) || "";
 
   const endTime = (() => {
     if (reportData?.session?.endedAt) {
-      return new Date(reportData.session.endedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+      return new Date(reportData.session.endedAt).toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     }
     const [h, m] = startTime.split(":").map(Number);
     const end = new Date(2000, 0, 1, h, m + durationMinutes);
     return end.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
   })();
 
+  const dateLabel = new Date(lessonDate).toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+
+  // Stat values
+  const distanceVal =
+    hasTelematics && reportData!.stats.distance != null
+      ? kmToMiles(reportData!.stats.distance).toFixed(1)
+      : null;
+  const avgSpeedVal =
+    hasTelematics && reportData!.stats.avgSpeed != null
+      ? String(Math.round(kmhToMph(reportData!.stats.avgSpeed)))
+      : null;
+  const maxSpeedVal =
+    hasTelematics && reportData!.stats.maxSpeed != null
+      ? String(Math.round(kmhToMph(reportData!.stats.maxSpeed)))
+      : null;
+
+  const gpsMissingCount = [distanceVal, avgSpeedVal, maxSpeedVal].filter((v) => v === null).length;
+  const gpsMissingAny = gpsMissingCount > 0;
+  const gpsMissingAll = gpsMissingCount === 3;
+  const emptyStateMessage = gpsMissingAll
+    ? "No GPS tracking — only duration captured"
+    : "GPS lost partway through — distance may be incomplete";
+
   const manoeuvreIds = ["reverse_park_road", "reverse_park_bay", "pull_up_right", "emergency_stop"];
-  const manoeuvres = competencies.filter(c => manoeuvreIds.includes(c));
-  const coreCompetencies = competencies.filter(c => !manoeuvreIds.includes(c));
+  const manoeuvres = competencies.filter((c) => manoeuvreIds.includes(c));
+  const coreCompetencies = competencies.filter((c) => !manoeuvreIds.includes(c));
 
   const speedingCount = reportData?.stats?.speedingIncidents || 0;
   const brakingCount = reportData?.stats?.harshBrakingCount || 0;
   const accelCount = reportData?.stats?.harshAccelerationCount || 0;
   const totalSafetyEvents = speedingCount + brakingCount + accelCount;
 
+  // REVIEW pill: re-use existing detection (single-pupil mode)
+  const dataIssues = detectDataQualityIssues(
+    { id: "_summary", name: pupilName, phone: null },
+    [],
+  );
+  const showReview = dataIssues.includes("invalid-name");
+  const displayName = titleCaseName(pupilName) || pupilName;
+
   const buildShareText = () => {
-    const dateStr = new Date(lessonDate).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
     const lines = [
-      `🚗 Driving Lesson — ${pupilName}`,
-      `📅 ${dateStr} · ${formatTime(startTime)} – ${endTime}`,
+      `🚗 Driving Lesson — ${displayName}`,
+      `📅 ${dateLabel} · ${formatTime(startTime)} – ${endTime}`,
       "",
     ];
 
     if (hasTelematics) {
       const dur = reportData!.stats.duration || durationMinutes;
-      lines.push(`⏱ ${dur} min`);
-      if (reportData!.stats.distance) lines.push(`📏 ${kmToMiles(reportData!.stats.distance).toFixed(1)} mi`);
-      if (reportData!.stats.avgSpeed) lines.push(`🏎 Avg ${Math.round(kmhToMph(reportData!.stats.avgSpeed))} mph`);
-      if (reportData!.stats.maxSpeed) lines.push(`🔺 Max ${Math.round(kmhToMph(reportData!.stats.maxSpeed))} mph`);
+      lines.push(`⏱ ${formatLessonDuration(dur)}`);
+      if (reportData!.stats.distance)
+        lines.push(`📏 ${kmToMiles(reportData!.stats.distance).toFixed(1)} mi`);
+      if (reportData!.stats.avgSpeed)
+        lines.push(`🏎 Avg ${Math.round(kmhToMph(reportData!.stats.avgSpeed))} mph`);
+      if (reportData!.stats.maxSpeed)
+        lines.push(`🔺 Max ${Math.round(kmhToMph(reportData!.stats.maxSpeed))} mph`);
+      lines.push("");
+    } else {
+      lines.push(`⏱ ${formatLessonDuration(durationMinutes)}`);
       lines.push("");
     }
 
     if (uniqueRoads.length > 0) {
-      lines.push(`🛣 Roads: ${uniqueRoads.map(r => r.name).join(", ")}`);
+      lines.push(`🛣 Roads: ${uniqueRoads.map((r) => r.name).join(", ")}`);
       lines.push("");
     }
 
@@ -123,10 +204,10 @@ export function StepLessonSummary({
 
     if (coreCompetencies.length > 0) {
       lines.push("");
-      lines.push(`📋 Skills: ${coreCompetencies.map(c => c.replace(/_/g, " ")).join(", ")}`);
+      lines.push(`📋 Skills: ${coreCompetencies.map((c) => c.replace(/_/g, " ")).join(", ")}`);
     }
     if (manoeuvres.length > 0) {
-      lines.push(`🔄 Manoeuvres: ${manoeuvres.map(m => m.replace(/_/g, " ")).join(", ")}`);
+      lines.push(`🔄 Manoeuvres: ${manoeuvres.map((m) => m.replace(/_/g, " ")).join(", ")}`);
     }
 
     return lines.join("\n");
@@ -137,7 +218,7 @@ export function StepLessonSummary({
 
     if (navigator.share) {
       try {
-        await navigator.share({ title: `Driving Lesson — ${pupilName}`, text });
+        await navigator.share({ title: `Driving Lesson — ${displayName}`, text });
         setShared(true);
         setTimeout(() => setShared(false), 2000);
       } catch {
@@ -151,216 +232,612 @@ export function StepLessonSummary({
     }
   };
 
+  const handleWhyGps = () => {
+    toast.message("GPS tracking", {
+      description:
+        "Tap Start track at the start of a lesson, grant location permissions, and avoid battery saver mode. Tunnels, indoor parking and dense urban areas can block the signal.",
+    });
+  };
+
+  const statusPill = STATUS_PILL[status] ?? STATUS_PILL.completed;
+
   return (
-    <InstructorCard className="space-y-4">
+    <div
+      style={{
+        background: "#FFFFFF",
+        borderRadius: 16,
+        overflow: "hidden",
+        border: `0.5px solid ${C.border}`,
+      }}
+    >
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-full bg-[hsl(var(--success)/0.15)] flex items-center justify-center">
-          <Car className="h-5 w-5 text-[hsl(var(--success))]" />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "12px 16px",
+          borderBottom: `0.5px solid ${C.border}`,
+        }}
+      >
+        <div style={{ width: 50, flexShrink: 0 }} />
+        <div style={{ flex: 1, minWidth: 0, textAlign: "center" }}>
+          <p
+            style={{
+              fontSize: 11,
+              fontWeight: 500,
+              color: C.muted,
+              letterSpacing: "0.3px",
+              textTransform: "uppercase",
+              margin: "0 0 1px",
+            }}
+          >
+            {dateLabel}
+          </p>
+          <p
+            style={{
+              fontSize: 15,
+              fontWeight: 500,
+              color: C.text,
+              letterSpacing: "-0.2px",
+              margin: 0,
+            }}
+          >
+            Lesson summary
+          </p>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Driving Lesson</p>
-          <p className="text-sm font-semibold text-foreground truncate">{pupilName}</p>
-        </div>
-        <div className="text-right text-xs text-muted-foreground">
-          <p>{formatTime(startTime)} – {endTime}</p>
-          <p>{new Date(lessonDate).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}</p>
+        <div
+          style={{
+            width: 50,
+            flexShrink: 0,
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          {onClose ? (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              style={{
+                background: "transparent",
+                border: 0,
+                padding: 4,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <X size={20} strokeWidth={2} color={C.muted} />
+            </button>
+          ) : null}
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-3">
-        <StatCard
-          label="Duration"
-          value={hasTelematics && reportData.stats.duration ? `${reportData.stats.duration}` : `${durationMinutes}`}
-          unit="min"
-          variant="success"
-          icon={<Clock className="h-3.5 w-3.5" />}
-        />
-        <StatCard
-          label="Distance"
-          value={hasTelematics && reportData.stats.distance ? kmToMiles(reportData.stats.distance).toFixed(1) : "—"}
-          unit="mi"
-          variant="info"
-          icon={<Route className="h-3.5 w-3.5" />}
-        />
-        <StatCard
-          label="Avg Speed"
-          value={hasTelematics && reportData.stats.avgSpeed ? `${Math.round(kmhToMph(reportData.stats.avgSpeed))}` : "—"}
-          unit="mph"
-          variant="warning"
-          icon={<Gauge className="h-3.5 w-3.5" />}
-        />
-        <StatCard
-          label="Max Speed"
-          value={hasTelematics && reportData.stats.maxSpeed ? `${Math.round(kmhToMph(reportData.stats.maxSpeed))}` : "—"}
-          unit="mph"
-          variant="danger"
-          icon={<Gauge className="h-3.5 w-3.5" />}
-        />
+      {/* Pupil identity bar */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "14px 16px",
+          borderBottom: `0.5px solid ${C.border}`,
+        }}
+      >
+        <UserAvatar name={displayName} photoUrl={pupilPhotoUrl} size={36} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              flexWrap: "wrap",
+              marginBottom: 1,
+            }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                fontWeight: 500,
+                color: C.text,
+                letterSpacing: "-0.1px",
+                margin: 0,
+              }}
+            >
+              {displayName}
+            </p>
+            {showReview && (
+              <span
+                style={{
+                  background: C.amberBg,
+                  color: C.amber,
+                  fontSize: 9,
+                  fontWeight: 500,
+                  letterSpacing: "0.3px",
+                  padding: "2px 5px",
+                  borderRadius: 3,
+                  textTransform: "uppercase",
+                }}
+              >
+                Review
+              </span>
+            )}
+          </div>
+          <p style={{ fontSize: 11, color: C.muted, margin: 0 }}>
+            {lessonTypeLabel} · {formatTime(startTime)} – {endTime}
+          </p>
+        </div>
+        <span
+          style={{
+            background: statusPill.bg,
+            color: statusPill.fg,
+            fontSize: 9,
+            fontWeight: 500,
+            letterSpacing: "0.3px",
+            padding: "3px 7px",
+            borderRadius: 999,
+            textTransform: "uppercase",
+            flexShrink: 0,
+          }}
+        >
+          {statusPill.label}
+        </span>
       </div>
 
-      {/* Roads Travelled */}
-      {uniqueRoads.length > 0 && (
-        <div>
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Roads Travelled</p>
-          <Collapsible open={roadsOpen} onOpenChange={setRoadsOpen}>
-            <div className="space-y-1">
-              {uniqueRoads.slice(0, roadsOpen ? undefined : 5).map((road, i) => (
-                <div key={i} className="flex items-center justify-between text-xs py-1.5 px-2 rounded-2xl bg-muted/30 dark:bg-muted/20">
-                  <span className="truncate mr-2 text-foreground">{road.name}</span>
-                  <span className={`shrink-0 font-mono ${
-                    road.compliance === "over"
-                      ? "text-[hsl(var(--destructive))]"
-                      : road.compliance === "at"
-                        ? "text-[hsl(var(--warning))]"
-                        : "text-[hsl(var(--success))]"
-                  }`}>
-                    {road.speedLimit ? `${Math.round(kmhToMph(road.speedLimit))} mph` : "—"}
-                  </span>
-                </div>
+      {/* Form content */}
+      <div style={{ padding: 16 }}>
+        <p
+          style={{
+            fontSize: 11,
+            fontWeight: 500,
+            color: C.muted,
+            letterSpacing: "0.3px",
+            textTransform: "uppercase",
+            margin: "0 0 8px",
+          }}
+        >
+          Lesson stats
+        </p>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 8,
+            marginBottom: gpsMissingAny ? 10 : 14,
+          }}
+        >
+          <StatTile
+            icon={<Clock size={12} strokeWidth={2} color={C.muted} />}
+            label="Duration"
+            value={formatLessonDuration(
+              hasTelematics && reportData!.stats.duration
+                ? reportData!.stats.duration
+                : durationMinutes,
+            )}
+            unit=""
+            empty={false}
+          />
+          <StatTile
+            icon={<Send size={12} strokeWidth={2} color={C.muted} />}
+            label="Distance"
+            value={distanceVal ?? "—"}
+            unit="mi"
+            empty={distanceVal == null}
+          />
+          <StatTile
+            icon={<Gauge size={12} strokeWidth={2} color={C.muted} />}
+            label="Avg speed"
+            value={avgSpeedVal ?? "—"}
+            unit="mph"
+            empty={avgSpeedVal == null}
+          />
+          <StatTile
+            icon={<Gauge size={12} strokeWidth={2} color={C.muted} />}
+            label="Max speed"
+            value={maxSpeedVal ?? "—"}
+            unit="mph"
+            empty={maxSpeedVal == null}
+            peak
+          />
+        </div>
+
+        {/* Empty-state context bar */}
+        {gpsMissingAny && (
+          <div
+            style={{
+              background: C.surface,
+              border: `0.5px solid ${C.border}`,
+              borderRadius: 10,
+              padding: "10px 12px",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              marginBottom: 14,
+            }}
+          >
+            <Info size={14} strokeWidth={2} color={C.muted} style={{ flexShrink: 0 }} />
+            <p
+              style={{
+                flex: 1,
+                fontSize: 11,
+                color: C.muted,
+                margin: 0,
+                lineHeight: 1.4,
+              }}
+            >
+              {emptyStateMessage}
+            </p>
+            <button
+              type="button"
+              onClick={handleWhyGps}
+              style={{
+                background: "transparent",
+                border: 0,
+                padding: 0,
+                fontSize: 11,
+                fontWeight: 500,
+                color: C.blue,
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
+            >
+              Why?
+            </button>
+          </div>
+        )}
+
+        {/* Roads Travelled */}
+        {uniqueRoads.length > 0 && (
+          <div style={{ marginBottom: 14 }}>
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: C.muted,
+                letterSpacing: "0.3px",
+                textTransform: "uppercase",
+                margin: "0 0 8px",
+              }}
+            >
+              Roads travelled
+            </p>
+            <Collapsible open={roadsOpen} onOpenChange={setRoadsOpen}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {uniqueRoads.slice(0, roadsOpen ? undefined : 5).map((road, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      fontSize: 12,
+                      padding: "6px 10px",
+                      borderRadius: 8,
+                      background: C.surface,
+                      border: `0.5px solid ${C.border}`,
+                    }}
+                  >
+                    <span style={{ color: C.text, marginRight: 8, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {road.name}
+                    </span>
+                    <span
+                      style={{
+                        flexShrink: 0,
+                        fontFamily: "ui-monospace, monospace",
+                        color:
+                          road.compliance === "over"
+                            ? "#C8434F"
+                            : road.compliance === "at"
+                              ? C.amber
+                              : C.green,
+                      }}
+                    >
+                      {road.speedLimit ? `${Math.round(kmhToMph(road.speedLimit))} mph` : "—"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              {uniqueRoads.length > 5 && (
+                <CollapsibleTrigger asChild>
+                  <button
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                      fontSize: 11,
+                      color: C.muted,
+                      marginTop: 6,
+                      marginInline: "auto",
+                      background: "transparent",
+                      border: 0,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <ExpandChevron isExpanded={roadsOpen} size={12} />
+                    {roadsOpen ? "Show less" : `+ ${uniqueRoads.length - 5} more roads`}
+                  </button>
+                </CollapsibleTrigger>
+              )}
+              <CollapsibleContent />
+            </Collapsible>
+          </div>
+        )}
+
+        {/* Safety Events */}
+        {hasTelematics && totalSafetyEvents > 0 && (
+          <div style={{ marginBottom: 14 }}>
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: C.muted,
+                letterSpacing: "0.3px",
+                textTransform: "uppercase",
+                margin: "0 0 8px",
+              }}
+            >
+              Safety events
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
+              {speedingCount > 0 && (
+                <SafetyTile value={speedingCount} label="Over speed" color="#C8434F" />
+              )}
+              {brakingCount > 0 && (
+                <SafetyTile value={brakingCount} label="Harsh brake" color={C.amber} />
+              )}
+              {accelCount > 0 && (
+                <SafetyTile value={accelCount} label="Harsh accel" color={C.amber} />
+              )}
+            </div>
+          </div>
+        )}
+
+        {hasTelematics && totalSafetyEvents === 0 && (
+          <div
+            style={{
+              background: C.surface,
+              border: `0.5px solid ${C.border}`,
+              borderRadius: 10,
+              padding: "10px 12px",
+              textAlign: "center",
+              marginBottom: 14,
+            }}
+          >
+            <p style={{ fontSize: 12, color: C.green, fontWeight: 500, margin: 0 }}>
+              ✓ No safety events detected
+            </p>
+          </div>
+        )}
+
+        {/* Core Competencies */}
+        {coreCompetencies.length > 0 && (
+          <div style={{ marginBottom: 14 }}>
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: C.muted,
+                letterSpacing: "0.3px",
+                textTransform: "uppercase",
+                margin: "0 0 8px",
+              }}
+            >
+              Competencies covered
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {coreCompetencies.map((c) => (
+                <span
+                  key={c}
+                  style={{
+                    fontSize: 11,
+                    padding: "3px 8px",
+                    borderRadius: 999,
+                    background: C.surface,
+                    border: `0.5px solid ${C.border}`,
+                    color: C.text,
+                  }}
+                >
+                  {c.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                </span>
               ))}
             </div>
-            {uniqueRoads.length > 5 && (
-              <CollapsibleTrigger asChild>
-                <button className="flex items-center gap-1 text-[11px] text-muted-foreground mt-1.5 mx-auto hover:text-foreground transition-colors">
-                  <ExpandChevron isExpanded={roadsOpen} size={12} />
-                  {roadsOpen ? "Show less" : `+ ${uniqueRoads.length - 5} more roads`}
-                </button>
-              </CollapsibleTrigger>
-            )}
-            <CollapsibleContent />
-          </Collapsible>
-        </div>
-      )}
-
-      {/* Safety Events */}
-      {hasTelematics && totalSafetyEvents > 0 && (
-        <div>
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Safety Events</p>
-          <div className="grid grid-cols-3 gap-2">
-            {speedingCount > 0 && (
-              <div className="bg-[hsl(var(--destructive)/0.1)] rounded-2xl p-2 text-center">
-                <p className="text-lg font-bold text-[hsl(var(--destructive))]">{speedingCount}</p>
-                <p className="text-[10px] text-muted-foreground">Over Speed</p>
-              </div>
-            )}
-            {brakingCount > 0 && (
-              <div className="bg-[hsl(var(--warning)/0.1)] rounded-2xl p-2 text-center">
-                <p className="text-lg font-bold text-[hsl(var(--warning))]">{brakingCount}</p>
-                <p className="text-[10px] text-muted-foreground">Harsh Brake</p>
-              </div>
-            )}
-            {accelCount > 0 && (
-              <div className="bg-[hsl(var(--warning)/0.15)] rounded-2xl p-2 text-center">
-                <p className="text-lg font-bold text-[hsl(var(--warning))]">{accelCount}</p>
-                <p className="text-[10px] text-muted-foreground">Harsh Accel</p>
-              </div>
-            )}
           </div>
-        </div>
-      )}
+        )}
 
-      {hasTelematics && totalSafetyEvents === 0 && (
-        <div className="bg-[hsl(var(--success)/0.1)] rounded-2xl p-3 text-center">
-          <p className="text-sm text-[hsl(var(--success))] font-medium">✓ No safety events detected</p>
-        </div>
-      )}
-
-      {/* Core Competencies */}
-      {coreCompetencies.length > 0 && (
-        <div>
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Competencies Covered</p>
-          <div className="flex flex-wrap gap-1.5">
-            {coreCompetencies.map(c => (
-              <span key={c} className="text-[11px] px-2 py-1 rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground">
-                {c.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
-              </span>
-            ))}
+        {/* Manoeuvres */}
+        {manoeuvres.length > 0 && (
+          <div>
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: C.muted,
+                letterSpacing: "0.3px",
+                textTransform: "uppercase",
+                margin: "0 0 8px",
+              }}
+            >
+              Manoeuvres
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {manoeuvres.map((m) => (
+                <span
+                  key={m}
+                  style={{
+                    fontSize: 11,
+                    padding: "3px 8px",
+                    borderRadius: 999,
+                    background: C.surface,
+                    border: `0.5px solid ${C.border}`,
+                    color: C.text,
+                  }}
+                >
+                  {m.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Manoeuvres */}
-      {manoeuvres.length > 0 && (
-        <div>
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Manoeuvres</p>
-          <div className="flex flex-wrap gap-1.5">
-            {manoeuvres.map(m => (
-              <span key={m} className="text-[11px] px-2 py-1 rounded-full bg-secondary/15 text-secondary-foreground dark:bg-secondary/30">
-                {m.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Action buttons */}
-      <div className="flex gap-2">
-        <Button
+      {/* Footer */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "12px 16px",
+          background: C.surface,
+          borderTop: `0.5px solid ${C.border}`,
+        }}
+      >
+        <button
+          type="button"
           onClick={handleShare}
-          variant="outline"
-          size="lg"
-          className="flex-1"
+          style={{
+            flex: 1,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            background: "transparent",
+            border: `0.5px solid ${C.border}`,
+            borderRadius: 10,
+            padding: "10px 16px",
+            cursor: "pointer",
+            fontSize: 14,
+            fontWeight: 500,
+            color: C.blue,
+          }}
         >
-          {shared ? <Check className="h-4 w-4 mr-2" /> : <Share2 className="h-4 w-4 mr-2" />}
-          {shared ? "Shared!" : "Share"}
-        </Button>
-        <Button
+          {shared ? (
+            <Check size={14} strokeWidth={2} color={C.blue} />
+          ) : (
+            <Share2 size={14} strokeWidth={2} color={C.blue} />
+          )}
+          {shared ? "Shared" : "Share"}
+        </button>
+        <button
+          type="button"
           onClick={onDone}
-          size="lg"
-          className="flex-1"
+          style={{
+            flex: 1,
+            background: C.blue,
+            border: 0,
+            borderRadius: 10,
+            padding: "11px 22px",
+            cursor: "pointer",
+            fontSize: 14,
+            fontWeight: 500,
+            color: "#FFFFFF",
+            textAlign: "center",
+          }}
         >
           Done
-        </Button>
+        </button>
       </div>
-    </InstructorCard>
+    </div>
   );
 }
 
-const VARIANT_STYLES = {
-  success: {
-    text: "text-[hsl(var(--success))]",
-    bg: "bg-[hsl(var(--success)/0.08)]",
-  },
-  info: {
-    text: "text-[hsl(198,93%,59%)]",
-    bg: "bg-[hsl(198,93%,59%,0.08)]",
-  },
-  warning: {
-    text: "text-[hsl(var(--warning))]",
-    bg: "bg-[hsl(var(--warning)/0.08)]",
-  },
-  danger: {
-    text: "text-[hsl(var(--destructive))]",
-    bg: "bg-[hsl(var(--destructive)/0.08)]",
-  },
-};
-
-function StatCard({
+function StatTile({
+  icon,
   label,
   value,
   unit,
-  variant,
-  icon,
+  empty,
+  peak,
 }: {
+  icon: React.ReactNode;
   label: string;
   value: string;
   unit: string;
-  variant: keyof typeof VARIANT_STYLES;
-  icon: React.ReactNode;
+  empty: boolean;
+  peak?: boolean;
 }) {
-  const styles = VARIANT_STYLES[variant];
   return (
-    <div className={`rounded-2xl p-3 ${styles.bg}`}>
-      <div className={`flex items-center gap-1 ${styles.text} mb-1`}>
-        {icon}
-        <span className="text-[10px] uppercase tracking-wider">{label}</span>
+    <div
+      style={{
+        background: C.surface,
+        border: `0.5px solid ${C.border}`,
+        borderRadius: 10,
+        padding: 12,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          marginBottom: 4,
+          color: C.muted,
+        }}
+      >
+        <span style={{ position: "relative", display: "inline-flex" }}>
+          {icon}
+          {peak && (
+            <span
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                top: -1,
+                right: -2,
+                width: 4,
+                height: 4,
+                borderRadius: "50%",
+                background: "#C8434F",
+              }}
+            />
+          )}
+        </span>
+        <span
+          style={{
+            fontSize: 10,
+            color: C.muted,
+            letterSpacing: "0.2px",
+          }}
+        >
+          {label}
+        </span>
       </div>
-      <div className="flex items-baseline gap-1">
-        <span className={`text-2xl font-bold ${styles.text}`}>{value}</span>
-        <span className="text-xs text-muted-foreground">{unit}</span>
-      </div>
+      <p
+        style={{
+          fontSize: 18,
+          fontWeight: 500,
+          letterSpacing: "-0.3px",
+          margin: 0,
+          color: empty ? C.muted : C.text,
+          display: "flex",
+          alignItems: "baseline",
+          gap: 4,
+        }}
+      >
+        <span>{value}</span>
+        {unit && (
+          <span style={{ fontSize: 11, fontWeight: 400, color: C.muted }}>{unit}</span>
+        )}
+      </p>
+    </div>
+  );
+}
+
+function SafetyTile({ value, label, color }: { value: number; label: string; color: string }) {
+  return (
+    <div
+      style={{
+        background: C.surface,
+        border: `0.5px solid ${C.border}`,
+        borderRadius: 10,
+        padding: "10px 8px",
+        textAlign: "center",
+      }}
+    >
+      <p style={{ fontSize: 18, fontWeight: 500, color, margin: 0, letterSpacing: "-0.3px" }}>
+        {value}
+      </p>
+      <p style={{ fontSize: 10, color: C.muted, margin: "2px 0 0" }}>{label}</p>
     </div>
   );
 }
