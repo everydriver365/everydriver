@@ -647,7 +647,8 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               const showReview = needsNameReview(lesson.pupilName);
               const isConflict = conflictIdSet.has(lesson.id);
               const showBannerAbove = lesson.id === firstConflictRowId;
-              const eolMissing = state === "completed" && !isEOLComplete(lesson, eolDoneKeys) && lesson.status !== "cancelled";
+              const showEOL = state === "completed" && lesson.status !== "cancelled";
+              const eolDone = showEOL && isEOLComplete(lesson, eolDoneKeys);
               const lessonHref = `/instructor/pupils/${lesson.pupilId}`;
               const accentColor = isDrivingTest ? IOS.systemRed : IOS.systemBlue;
 
