@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameDay, isSameMonth, isToday, parseISO, isWeekend } from "date-fns";
-import { ChevronLeft, ChevronRight, Loader2, Calendar } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Calendar, ChevronRight as ChevronRightIcon } from "lucide-react";
+import { titleCaseName } from "@/lib/titleCase";
 import { supabase } from "@/integrations/supabase/client";
 import {
   CATEGORY_STYLES,
