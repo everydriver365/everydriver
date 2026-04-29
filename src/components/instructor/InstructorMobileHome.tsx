@@ -448,33 +448,110 @@ export function InstructorMobileHome({
         />
       ) : (
       <>
-      {/* 1. Quiet greeting */}
-      <div style={{ padding: "6px 20px 20px" }}>
-        <h1
+      {/* 1. Hero greeting card — single coloured anchor above the fold */}
+      <div style={{ padding: "8px 16px 4px" }}>
+        <div
           style={{
-            fontSize: 22,
-            fontWeight: 500,
-            color: "hsl(var(--dsm-text))",
-            lineHeight: 1.2,
-            margin: 0,
+            background:
+              "linear-gradient(135deg, #2B7BC8 0%, #1E5A94 55%, #163F69 100%)",
+            borderRadius: 20,
+            padding: "16px 18px",
+            color: "#FFFFFF",
+            boxShadow:
+              "0 10px 28px -10px rgba(43,123,200,0.45), 0 2px 6px rgba(0,0,0,0.06)",
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
           }}
         >
-          Hi {firstName}
-          <span style={{ color: "hsl(var(--dsm-text-secondary))", margin: "0 8px", fontWeight: 400 }}>·</span>
-          <span style={{ color: "hsl(var(--dsm-text-secondary))", fontWeight: 400 }}>
-            {format(new Date(), "EEEE")}
-          </span>
-        </h1>
-        <p
-          style={{
-            fontSize: 13,
-            color: "hsl(var(--dsm-text-secondary))",
-            marginTop: 4,
-            fontWeight: 400,
-          }}
-        >
-          Here's what needs you today
-        </p>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: 0.6,
+                textTransform: "uppercase",
+                opacity: 0.78,
+              }}
+            >
+              {format(new Date(), "EEEE")}
+            </div>
+            <h1
+              style={{
+                fontSize: 22,
+                fontWeight: 600,
+                lineHeight: 1.15,
+                margin: "2px 0 8px",
+              }}
+            >
+              Hi {firstName}
+            </h1>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 500,
+                opacity: 0.95,
+                fontVariantNumeric: "tabular-nums",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <span>
+                {currentLessons === 0
+                  ? "No lessons today"
+                  : `${currentLessons} ${currentLessons === 1 ? "lesson" : "lessons"}`}
+              </span>
+              {nextLesson && (
+                <>
+                  <span style={{ opacity: 0.4 }}>·</span>
+                  <span>First {nextLesson.startTime}</span>
+                </>
+              )}
+              {todayOverview?.expectedEarnings ? (
+                <>
+                  <span style={{ opacity: 0.4 }}>·</span>
+                  <span>£{todayOverview.expectedEarnings}</span>
+                </>
+              ) : null}
+            </div>
+          </div>
+          {nextLesson?.pupilProfileImage ? (
+            <img
+              src={nextLesson.pupilProfileImage}
+              alt={nextLesson.pupilName}
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: "50%",
+                objectFit: "cover",
+                border: "2px solid rgba(255,255,255,0.85)",
+                flexShrink: 0,
+              }}
+            />
+          ) : nextLesson ? (
+            <div
+              aria-hidden
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: "50%",
+                background: "rgba(255,255,255,0.18)",
+                color: "#FFFFFF",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 16,
+                fontWeight: 600,
+                border: "2px solid rgba(255,255,255,0.4)",
+                flexShrink: 0,
+              }}
+            >
+              {getInitials(nextLesson.pupilName || "")}
+            </div>
+          ) : null}
+        </div>
       </div>
 
       {/* Warm priority tiles: action needed, up next, week at a glance */}
