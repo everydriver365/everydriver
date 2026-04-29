@@ -47,6 +47,7 @@ export function useDayLessons(instructorId: string | undefined, date: Date) {
           amountDue: l.amount_due ?? null,
           status: l.status || "scheduled",
           googleEventId: (l as any).google_event_id ?? null,
+          notes: (l as any).notes ?? null,
         };
       });
     },
