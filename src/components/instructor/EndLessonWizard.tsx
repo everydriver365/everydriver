@@ -443,17 +443,17 @@ export function EndLessonWizard({
                 >
                   {premiumEyebrow}
                 </div>
-                <SheetTitle
-                  className="m-0"
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 500,
-                    color: "#000",
-                    letterSpacing: -0.2,
-                  }}
-                >
-                  End lesson
-                </SheetTitle>
+              <SheetTitle
+                className="m-0"
+                style={{
+                  fontSize: 15,
+                  fontWeight: 500,
+                  color: "#000",
+                  letterSpacing: -0.2,
+                }}
+              >
+                {stepLabels[step]}
+              </SheetTitle>
               </div>
               <div style={{ width: 50, flexShrink: 0 }} />
               <SheetDescription className="sr-only">End of lesson wizard</SheetDescription>
