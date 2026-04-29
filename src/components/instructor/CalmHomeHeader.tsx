@@ -16,6 +16,7 @@ import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCou
 import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { triggerHaptic } from "@/lib/haptics";
+import { WeekAtAGlanceCard } from "@/components/instructor/WeekAtAGlanceCard";
 
 // ─── Helpers ──────────────────────────────────────
 function titleCase(s: string): string {
