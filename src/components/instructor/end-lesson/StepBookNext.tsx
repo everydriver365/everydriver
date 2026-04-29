@@ -690,6 +690,7 @@ export function StepBookNext({
         lesson_type: "Standard",
       });
       if (error) throw error;
+      invalidateLessonQueries(queryClient);
       const dt = parse(slot.date, "yyyy-MM-dd", new Date());
       toast.success(
         `Lesson booked · ${format(dt, "d MMM")} ${format(parse(slot.startTime, "HH:mm:ss", dt), "HH:mm")}`,
