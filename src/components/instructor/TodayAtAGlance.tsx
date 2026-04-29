@@ -11,6 +11,8 @@ interface TodayData {
   lessonsRemaining: number;
   hoursToday: number;
   earningsToday: number;
+  remainingPostcode: string | null;
+  scheduledPostcode: string | null;
   loading: boolean;
 }
 
