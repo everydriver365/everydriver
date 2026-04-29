@@ -50,8 +50,12 @@ function needsNameReview(name: string): boolean {
   if (!name) return false;
   const t = name.trim();
   if (!t) return false;
-  if (/^(unknown|n\/a|none)$/i.test(t)) return true;
-  if (/[<>{}\\]/.test(t)) return true;
+  if (/^(unknown|n\/a|none|test|tbc|tba)$/i.test(t)) return true;
+  if (/[<>{}\\@#$%^*]/.test(t)) return true;
+  const first = t.split(/\s+/)[0];
+  if (!first) return false;
+  if (/(.)\1{1,}/i.test(first) && first.length <= 5) return true;
+  if (first.length >= 3 && !/[aeiouy]/i.test(first)) return true;
   return false;
 }
 
