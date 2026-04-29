@@ -5,6 +5,7 @@ import { format, addDays, parse, differenceInCalendarDays } from "date-fns";
 import { toast } from "sonner";
 
 import { titleCaseName } from "@/lib/titleCase";
+import { UserAvatar } from "@/components/instructor/UserAvatar";
 
 const FONT_STACK =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
@@ -725,86 +726,65 @@ export function StepBookNext({
       style={{
         fontFamily: FONT_STACK,
         color: C.text,
-        background: "#F2F2F4",
+        background: "#FFFFFF",
         flex: 1,
         minHeight: 0,
         display: "flex",
         flexDirection: "column",
       }}
     >
-      {/* Compact pupil context row — replaces the headline question */}
+      {/* Pupil identity bar — white, full-bleed, matches Lesson Summary */}
       <div
         style={{
-          padding: "4px 4px 10px",
+          padding: "14px 16px",
+          borderBottom: `0.5px solid ${C.hairline}`,
           display: "flex",
           alignItems: "center",
-          gap: 10,
+          gap: 12,
+          background: "#FFFFFF",
           flexShrink: 0,
         }}
       >
-        {/* Compact avatar */}
-        <div
-          aria-hidden
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: "50%",
-            background: C.link,
-            color: "#FFFFFF",
-            fontSize: 11,
-            fontWeight: 500,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          {(displayName || "?")
-            .split(/\s+/)
-            .map((p) => p[0])
-            .filter(Boolean)
-            .slice(0, 2)
-            .join("")
-            .toUpperCase()}
-        </div>
-        <div
-          style={{
-            flex: 1,
-            minWidth: 0,
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            flexWrap: "wrap",
-          }}
-        >
-          <span
+        <UserAvatar name={displayName} size={36} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
             style={{
-              fontSize: 14,
-              fontWeight: 500,
-              color: C.text,
-              letterSpacing: -0.1,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              flexWrap: "wrap",
+              marginBottom: 1,
             }}
           >
-            {displayName}
-          </span>
-          {showReview && (
             <span
               style={{
-                background: C.amberTint,
-                color: C.amber,
-                fontSize: 9,
+                fontSize: 14,
                 fontWeight: 500,
-                letterSpacing: 0.3,
-                padding: "2px 5px",
-                borderRadius: 3,
-                textTransform: "uppercase",
+                color: C.text,
+                letterSpacing: -0.1,
+                margin: 0,
               }}
             >
-              Review
+              {displayName}
             </span>
-          )}
-          <span style={{ fontSize: 12, color: C.muted }}>·</span>
-          <span style={{ fontSize: 12, color: C.muted }}>
+            {showReview && (
+              <span
+                style={{
+                  background: C.amberTint,
+                  color: C.amber,
+                  fontSize: 9,
+                  fontWeight: 500,
+                  letterSpacing: 0.3,
+                  padding: "2px 5px",
+                  borderRadius: 3,
+                  textTransform: "uppercase",
+                }}
+              >
+                Review
+              </span>
+            )}
+          </div>
+          <div style={{ fontSize: 11, color: C.muted, margin: 0 }}>
             {(() => {
               if (pupilCtx.testDate) {
                 try {
@@ -828,52 +808,60 @@ export function StepBookNext({
                 : null;
               return wrapTime ? `${lt} · ended ${wrapTime}` : lt;
             })()}
-          </span>
+          </div>
         </div>
       </div>
 
-      {/* "When next?" eyebrow + Pick another time link */}
+      {/* Grey content backdrop — escapes parent's 24px horizontal padding */}
       <div
         style={{
-          padding: "0 4px 8px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexShrink: 0,
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+          background: "#F2F2F4",
+          padding: 16,
+          margin: "0 -24px",
         }}
       >
+        {/* "When next?" eyebrow + Pick another time link */}
         <div
           style={{
-            fontSize: 11,
-            fontWeight: 500,
-            color: C.muted,
-            letterSpacing: 0.3,
-            textTransform: "uppercase",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 10,
           }}
         >
-          When next?
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 500,
+              color: C.muted,
+              letterSpacing: 0.3,
+              textTransform: "uppercase",
+            }}
+          >
+            When next?
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              toast.message("Open the calendar to pick another time");
+            }}
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: 0,
+              fontSize: 11,
+              fontWeight: 500,
+              color: C.link,
+              cursor: "pointer",
+            }}
+          >
+            Pick another time
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            toast.message("Open the calendar to pick another time");
-          }}
-          style={{
-            background: "transparent",
-            border: "none",
-            padding: 0,
-            fontSize: 11,
-            fontWeight: 500,
-            color: C.link,
-            cursor: "pointer",
-          }}
-        >
-          Pick another time
-        </button>
-      </div>
 
-      {/* Body — scrollable */}
-      <div style={{ padding: "0 0 12px", flex: 1, minHeight: 0, overflowY: "auto" }}>
         {loading ? (
           <div
             style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
@@ -887,6 +875,7 @@ export function StepBookNext({
               textAlign: "center",
               fontSize: 13,
               color: C.muted,
+              background: C.bg,
               border: `0.5px dashed ${C.hairline}`,
               borderRadius: 10,
             }}
@@ -1067,9 +1056,7 @@ export function StepBookNext({
           })
         )}
 
-        {/* Pick another time link is now rendered next to the "When next?" eyebrow above */}
-
-        {/* Pickup location — calm inline row */}
+        {/* Pickup location — calm inline row, no card background, sits on grey */}
         {pickupAddress && (
           <div
             style={{
@@ -1117,11 +1104,11 @@ export function StepBookNext({
         )}
       </div>
 
-      {/* Footer — pinned */}
+      {/* Footer — pinned, matches Lesson Summary chrome */}
       <div
         style={{
           padding: "12px 16px",
-          paddingBottom: "max(16px, env(safe-area-inset-bottom))",
+          paddingBottom: "max(12px, env(safe-area-inset-bottom))",
           background: C.surface,
           borderTop: `0.5px solid ${C.hairline}`,
           display: "flex",

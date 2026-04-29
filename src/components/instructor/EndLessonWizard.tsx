@@ -340,13 +340,13 @@ export function EndLessonWizard({
   };
 
   const stepLabels: Record<WizardStep, string> = {
-    summary: "Quick Summary",
-    payment: "Take Payment",
-    skills: "Skills Update",
-    book: "Book Next Lesson",
+    summary: "Quick summary",
+    payment: "Take payment",
+    skills: "Skills update",
+    book: "Book next lesson",
     completing: "Completing…",
-    course_complete: "Course Complete",
-    completed: "Lesson Summary",
+    course_complete: "Course complete",
+    completed: "Lesson summary",
   };
 
   const stepNumber = step === "summary" ? 1 : step === "payment" ? 2 : step === "skills" ? 3 : step === "book" ? 4 : 5;
@@ -359,14 +359,8 @@ export function EndLessonWizard({
   const showStepChrome =
     step !== "completed" && step !== "completing" && step !== "course_complete";
 
-  const premiumEyebrow =
-    step === "summary"
-      ? `Step 1 of ${totalSteps} · Quick summary`
-      : step === "payment"
-        ? `Step 2 of ${totalSteps} · Take payment`
-        : step === "skills"
-          ? `Step ${stepNumber} of ${totalSteps} · Skills update`
-          : `Step ${totalSteps} of ${totalSteps} · Book next lesson`;
+  const visibleStepNumber = Math.min(stepNumber, totalSteps);
+  const premiumEyebrow = `Step ${visibleStepNumber} of ${totalSteps}`;
   const premiumLeftLabel = step === "summary" ? "Cancel" : "Back";
   const handlePremiumLeft = () => {
     if (step === "summary") onOpenChange(false);
@@ -595,7 +589,6 @@ export function EndLessonWizard({
                   minHeight: 0,
                   display: "flex",
                   flexDirection: "column",
-                  padding: "8px 24px 0",
                   overflow: "hidden",
                 }}
               >
