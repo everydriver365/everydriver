@@ -711,7 +711,6 @@ export function StepBookNext({
         ) : (
           slots.map((slot, idx) => {
             const dt = parse(slot.date, "yyyy-MM-dd", new Date());
-            const isSelected = selectedIdx === idx;
             const isBest = !!slot.isGenuineBestMatch;
             const showBlueBorder = isBest;
             const r = reasoningColor(slot.category);
