@@ -395,6 +395,11 @@ export function GapFillCard({
       ? `Text pupils about ${durationLabel} gap from ${startTime} to ${endTime}`
       : `Text ${totalCount} ${totalCount === 1 ? "pupil" : "pupils"} about ${durationLabel} gap from ${startTime} to ${endTime}`;
 
+  // Color-code left accent by gap duration:
+  // < 75m amber (tight), 75-120m blue (sweet spot), > 120m green (great fill).
+  const accentColor =
+    gapMinutes < 75 ? "#F59E0B" : gapMinutes <= 120 ? "#2B7BC8" : "#22A06B";
+
   return (
     <div
       role="button"
@@ -415,8 +420,9 @@ export function GapFillCard({
         width: "100%",
         background: "#FFFFFF",
         border: "0.5px solid #E5E5EA",
+        borderLeft: `3px solid ${accentColor}`,
         borderRadius: 10,
-        padding: "10px 12px",
+        padding: "10px 12px 10px 10px",
         cursor: "pointer",
         textAlign: "left",
         fontFamily: FONT_STACK,
