@@ -10,6 +10,7 @@ const OnboardingFunnel = lazy(() => import("@/pages/admin/OnboardingFunnel"));
 const EdgeFunctionErrors = lazy(() => import("@/pages/admin/EdgeFunctionErrors"));
 const QueryBudget = lazy(() => import("@/pages/admin/QueryBudget"));
 const RealtimeAudit = lazy(() => import("@/pages/admin/RealtimeAudit"));
+const EOLAuditLog = lazy(() => import("@/pages/admin/EOLAuditLog"));
 
 export const adminRoutes = (
   <>
@@ -57,6 +58,10 @@ export const adminRoutes = (
     <Route
       path="/admin/realtime-audit"
       element={<ProtectedAdminRoute><RealtimeAudit /></ProtectedAdminRoute>}
+    />
+    <Route
+      path="/admin/eol-audit"
+      element={<ProtectedAdminRoute><EOLAuditLog /></ProtectedAdminRoute>}
     />
   </>
 );

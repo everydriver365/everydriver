@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { PostLessonReview } from "./PostLessonReview";
 import { format } from "date-fns";
+import { EOLAuditLog } from "./EOLAuditLog";
 
 interface LessonRecord {
   id: string;
@@ -590,6 +591,8 @@ export function LessonHistory({
           )}
         </DialogContent>
       </Dialog>
+
+      <EOLAuditLog instructorId={instructorId} />
     </div>
   );
 }
