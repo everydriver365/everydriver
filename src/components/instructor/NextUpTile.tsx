@@ -162,12 +162,15 @@ export function NextUpTile({
   const [lateDismissed, setLateDismissed] = useState(false);
   const lateAlertFiredRef = useRef(false);
 
-  const { isRunningLate, lateByMinutes, arrivalTimeText, suggestedMessage, sendLateETA } = useRunningLateDetection({
+  const { settings: notifSettings } = useInstructorNotificationSettings(instructorId);
+  const reminderRunningLateEnabled = notifSettings.notification_rules.reminder_running_late !== false;
+  const { isRunningLate: isRunningLateRaw, lateByMinutes, arrivalTimeText, suggestedMessage, sendLateETA } = useRunningLateDetection({
     etaMinutes,
     minutesUntil,
     pupilName,
     pupilPhone,
   });
+  const isRunningLate = isRunningLateRaw && reminderRunningLateEnabled;
 
   useEffect(() => {
     if (isRunningLate && !lateAlertFiredRef.current) {
