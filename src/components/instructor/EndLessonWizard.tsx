@@ -589,7 +589,6 @@ export function EndLessonWizard({
                   minHeight: 0,
                   display: "flex",
                   flexDirection: "column",
-                  padding: "8px 24px 0",
                   overflow: "hidden",
                 }}
               >
