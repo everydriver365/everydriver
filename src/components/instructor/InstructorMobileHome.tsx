@@ -296,6 +296,7 @@ export function InstructorMobileHome({
 
 
   const { devices: vehicleDevices } = useVehicleHealth();
+  const homeActions = useHomeActions(instructorId);
   const engineFaultCount = vehicleDevices.flatMap(d => d.last_fault_codes || []).length;
   const [engineFaultsDismissed, setEngineFaultsDismissed] = useState(() => {
     const ts = localStorage.getItem("engine_faults_dismissed_at");
