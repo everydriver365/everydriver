@@ -96,11 +96,33 @@ export function MobileBlueHeader({
           <DSMThemeToggle size={18} className="!h-8 !w-8" />
           <button
             onClick={onMenu}
-            className="flex items-center justify-center"
-            style={{ width: 32, height: 32 }}
+            className="flex items-center justify-center overflow-hidden rounded-full"
+            style={{
+              width: 32,
+              height: 32,
+              border: "1px solid hsl(var(--dsm-border))",
+              background: "hsl(var(--dsm-tile-icon-bg))",
+            }}
             aria-label="Menu"
           >
-            <Menu size={18} strokeWidth={1.8} color={ICON_COLOR} />
+            {profileImageUrl ? (
+              <img
+                src={profileImageUrl}
+                alt={firstName || "Profile"}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "hsl(var(--dsm-text))",
+                  lineHeight: 1,
+                }}
+              >
+                {initial}
+              </span>
+            )}
           </button>
         </div>
       </div>
