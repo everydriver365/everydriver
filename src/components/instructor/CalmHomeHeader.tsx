@@ -325,18 +325,16 @@ export function CalmHomeHeader({ instructorId, instructorName }: CalmHomeHeaderP
         onNotifications={() => navigate("/instructor/notifications")}
       />
       <HomeGreeting firstName={firstName} statusText={statusText} />
-      <TodayCard
-        lessonsDone={lessonsDone}
-        lessonsTotal={Math.max(totalToday, lessonsDone)}
-        earned={earnedToday}
-        hoursTaught={hoursTaught}
+      <div style={{ marginBottom: 16 }}>
+        <WeekAtAGlanceCard instructorId={instructorId} />
+      </div>
+      <UpNextStandaloneTile
         pupilName={nextLesson?.pupilName ?? null}
         startTime={nextLesson?.startTime ?? null}
         durationMinutes={nextLesson?.durationMinutes ?? null}
         pickupLocation={nextLesson?.pickupLocation ?? nextLesson?.pickupPostcode ?? null}
         minutesUntil={nextLesson?.minutesUntil ?? null}
-        onRingsPress={() => navigate("/instructor/goals")}
-        onNextPress={() => navigate("/instructor/diary")}
+        onPress={() => navigate("/instructor/diary")}
       />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10, marginBottom: 18 }}>
         <DashboardTile icon={Briefcase} iconColor="#8A5BC9" iconBackground="#F1ECFA" title="Job offers" subtitle={jobsSubtitle}
