@@ -452,17 +452,7 @@ export function InstructorMobileHome({
       {/* Calm home header (greeting / rings / Up Next / 2x2 grid / Tip) */}
       <CalmHomeHeader instructorId={instructorId} instructorName={instructor?.name} />
 
-      {/* Warm priority tiles: action needed, up next, week at a glance */}
-      <WarmHomeTiles instructorId={instructorId} />
-
-      {/* Sticky next-up bar removed */}
-
-      {/* Morning Briefing — prominent position above activity tiles */}
-      <MorningBriefingCard instructorId={instructorId} />
-
-
-
-      {/* Alerts */}
+      {/* Safety: weather + traffic banner (kept — not duplicated by calm header) */}
       <div className="px-4 mt-3">
         <WeatherAlertBanner
           trafficAlerts={trafficAlerts}
@@ -474,14 +464,6 @@ export function InstructorMobileHome({
           nextLessonPupilPhone={nextLesson?.pupilPhone}
         />
       </div>
-
-      {/* 2. Activity Tiles Grid */}
-      <ActivityTilesGrid
-        pendingJobsCount={pendingJobsCount}
-        unreadMessagesCount={pupilMsgCount + visitorChatCount}
-        testRequestsCount={testSwapCount}
-        gapSlotsCount={gapSuggestions?.length || 0}
-      />
 
       <div className="px-4">
         <CelebrationConfetti
@@ -497,140 +479,10 @@ export function InstructorMobileHome({
             className="mt-4"
           />
         )}
-
-        
-
-
-
       </div>
 
-      {/* Pupil Milestone Feed */}
-      <div className="px-4">
-        <PupilMilestoneFeed instructorId={instructorId} />
-      </div>
-
-      {/* 4. Your Day */}
-      <div>
-
-        {/* Empty state or lessons */}
-        {!nextLesson && (!todayLessons || todayLessons.length === 0) && (todayOverview?.lessonCount || 0) === 0 ? (
-          <div className="px-4">
-            <QuietDayEmpty className="mt-4" />
-          </div>
-        ) : (
-          <>
-            {nextLesson && (
-              <div className="mt-2 mb-6">
-                <div className="px-4">
-                  <SectionHeader
-                    title="Next lesson"
-                    category="navigation"
-                    titleColor="#042C53"
-                    meta={nextLesson.pupilName}
-                    metaColor="#185FA5"
-                  />
-                </div>
-                <NextUpTile
-                  lessonId={nextLesson.lessonId}
-                  pupilId={nextLesson.pupilId}
-                  pupilName={nextLesson.pupilName}
-                  pupilProfileImage={nextLesson.pupilProfileImage}
-                  pupilPhone={nextLesson.pupilPhone}
-                  lessonDate={nextLesson.lessonDate}
-                  pickupPostcode={nextLesson.pickupPostcode}
-                  pickupLocation={nextLesson.pickupLocation}
-                  startTime={nextLesson.startTime}
-                  minutesUntil={nextLesson.minutesUntil}
-                  accountBalance={nextLesson.accountBalance}
-                  prepaidHours={nextLesson.prepaidHours}
-                  durationMinutes={nextLesson.durationMinutes}
-                  instructorId={instructorId}
-                  checkInStatus={nextLesson.checkInStatus}
-                  lastLessonPlan={nextLesson.lastLessonPlan}
-                />
-              </div>
-            )}
-
-            <div className="mt-5">
-              <HomeTodaySchedule instructorId={instructorId} />
-            </div>
-
-          </>
-        )}
-
-        {/* Quick Access — Swipeable Grid */}
-        <div className="mt-5 py-4">
-          <div className="px-4">
-            <SectionHeader
-              title="Quick actions"
-              category="navigation"
-              rightSlot={
-                <button
-                  type="button"
-                  onClick={() => setQuickActionsSearchOpen((v) => !v)}
-                  aria-label="Search quick actions"
-                  className="h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground active:bg-muted"
-                >
-                  <Search className="h-4 w-4" />
-                </button>
-              }
-            />
-          </div>
-          <SwipeableQuickAccess
-            searchOpen={quickActionsSearchOpen}
-            query={quickActionsQuery}
-            onSearchOpenChange={(open) => {
-              setQuickActionsSearchOpen(open);
-              if (!open) setQuickActionsQuery("");
-            }}
-            onQueryChange={setQuickActionsQuery}
-          />
-        </div>
-
-        <div className="px-4">
-          {/* Impact Alerts */}
-          <div className="mt-5">
-            <ImpactAlertCard instructorId={instructorId} />
-          </div>
-
-        </div>
-
-        {/* Insights Tiles */}
-        <div className="mt-5">
-          <div className="px-4">
-            <SectionHeader title="Insights" category="navigation" />
-          </div>
-          <InsightTilesGrid instructorId={instructorId} gapCount={gapSuggestions?.length || 0} />
-        </div>
-
-        {/* Telematics */}
-        <div className="mt-5">
-          <div className="px-4">
-            <SectionHeader title="Telematics" category="navigation" />
-          </div>
-          <div className="mb-2">
-            <TelematicsTile />
-          </div>
-        </div>
-
-        <div className="px-4">
-
-          {/* Vehicle Health & Idle Time */}
-          <VehicleHealthCard instructorId={instructorId} className="mt-3" />
-          <IdleTimeCostCard instructorId={instructorId} className="mt-3" />
-
-
-
-
-          <div className="mt-5">
-            <UpcomingEventsCard className="mb-6" />
-          </div>
-        </div>
-
-
-        {/* 10. Floating Session Bar */}
-        <FloatingSessionBar instructorId={instructorId} />
-      </div>
+      {/* Floating active-session bar (critical: only shows when a lesson is in progress) */}
+      <FloatingSessionBar instructorId={instructorId} />
       </>
       )}
       </div>
