@@ -194,6 +194,7 @@ export function AddLessonSheet({
   defaultDate,
   onSuccess 
 }: AddLessonSheetProps) {
+  const queryClient = useQueryClient();
   const [tab, setTab] = useState<'existing' | 'new'>('existing');
   const [loading, setLoading] = useState(false);
   const [pupils, setPupils] = useState<Pupil[]>([]);
