@@ -308,6 +308,9 @@ export default function InstructorSchedule() {
                 events={calendar.events}
                 loading={calendar.loading}
                 onEventClick={(event) => setSelectedEvent(event)}
+                instructorId={instructorId}
+                instructorName={instructor?.name ?? "Your instructor"}
+                onGapFilled={() => calendar.refetch()}
               />
             </div>
           ) : viewMode === 'list' ? (
