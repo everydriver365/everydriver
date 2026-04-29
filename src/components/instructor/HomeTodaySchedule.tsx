@@ -113,6 +113,16 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
   const [tab, setTab] = useState<"today" | "tomorrow">("today");
   const [addOpen, setAddOpen] = useState(false);
   const queryClient = useQueryClient();
+  const anchorRef = useRef<HTMLDivElement | null>(null);
+
+  // Allow other home tiles (e.g. Today's Pulse "Remaining" chip) to scroll us into view
+  useEffect(() => {
+    const handler = () => {
+      anchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    window.addEventListener("home:scroll-to-today-schedule", handler);
+    return () => window.removeEventListener("home:scroll-to-today-schedule", handler);
+  }, []);
 
   const now = new Date();
   const targetDate = tab === "today" ? now : addDays(now, 1);
