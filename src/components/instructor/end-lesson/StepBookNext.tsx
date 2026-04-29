@@ -1114,44 +1114,55 @@ export function StepBookNext({
           onClick={onSkip}
           disabled={booking}
           style={{
-            background: "#FFFFFF",
-            border: `0.5px solid ${C.hairline}`,
-            borderRadius: 10,
-            padding: "10px 16px",
+            background: "transparent",
+            border: "none",
+            padding: "8px 14px",
             fontSize: 14,
             fontWeight: 500,
-            color: C.text,
+            color: C.muted,
             cursor: booking ? "default" : "pointer",
           }}
         >
           Skip — finish
         </button>
-        <button
-          type="button"
-          onClick={handleBook}
-          disabled={booking || selectedIdx == null || slots.length === 0}
-          style={{
-            background: C.link,
-            border: "none",
-            borderRadius: 10,
-            padding: "10px 20px",
-            cursor: booking || selectedIdx == null ? "default" : "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            fontSize: 14,
-            fontWeight: 500,
-            color: "#FFFFFF",
-            opacity: selectedIdx == null || slots.length === 0 ? 0.4 : 1,
-          }}
-        >
-          {booking ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Check size={14} strokeWidth={2} />
-          )}
-          Book &amp; finish
-        </button>
+        {(() => {
+          const selSlot = selectedIdx != null ? slots[selectedIdx] : null;
+          const bookLabel = (() => {
+            if (!selSlot) return "Pick a slot";
+            const dt = parse(selSlot.date, "yyyy-MM-dd", new Date());
+            const t = format(parse(selSlot.startTime, "HH:mm:ss", dt), "HH:mm");
+            return `Book ${format(dt, "EEE")} ${t}`;
+          })();
+          const disabled = booking || selectedIdx == null || slots.length === 0;
+          return (
+            <button
+              type="button"
+              onClick={handleBook}
+              disabled={disabled}
+              style={{
+                background: C.link,
+                border: "none",
+                borderRadius: 10,
+                padding: "11px 22px",
+                cursor: disabled ? "not-allowed" : "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 14,
+                fontWeight: 500,
+                color: "#FFFFFF",
+                opacity: selectedIdx == null || slots.length === 0 ? 0.4 : 1,
+              }}
+            >
+              {booking ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Check size={14} strokeWidth={2} />
+              )}
+              {bookLabel}
+            </button>
+          );
+        })()}
       </div>
     </div>
   );
