@@ -176,18 +176,8 @@ export function StepBookNext({
       const homePostcode = (instructorData as any)?.home_postcode;
       const pupilPostcode = (pupil as any)?.postcode;
 
-      let travelMinutes = 0;
-      if (homePostcode && pupilPostcode) {
-        try {
-          const { data: travelData } = await supabase.functions.invoke("check-travel-buffer", {
-            body: { from_postcode: homePostcode, to_postcode: pupilPostcode },
-          });
-          if (travelData?.travel_minutes != null) travelMinutes = travelData.travel_minutes;
-        } catch {
-          /* fallback */
-        }
-      }
-      const effectiveFirstSlotBuffer = Math.max(travelMinutes, bufferMinutes);
+      // Travel-from-home is now resolved lazily via the pairwise travelCache
+      // inside isAvailable() (first-of-day check), so no upfront fetch needed.
       const bufferMs = bufferMinutes * 60000;
 
       // ---- Pupil's booking history (for genuine 3+ pattern detection) ----
@@ -215,85 +205,241 @@ export function StepBookNext({
           return { dow: parseInt(dow, 10), hhmm };
         });
 
-      // ---- Conflict data for next 7 days ----
+      // ---- Conflict / availability data for next 7 days ----
       const today = new Date();
       const todayStr = format(today, "yyyy-MM-dd");
       const weekLaterStr = format(addDays(today, 7), "yyyy-MM-dd");
+      const todayISO = today.toISOString();
+      const weekLaterISO = addDays(today, 7).toISOString();
 
-      const { data: calendarEvents } = await supabase
-        .from("instructor_calendar_events")
-        .select("start_time, end_time")
-        .eq("instructor_id", instructorId)
-        .eq("is_busy", true)
-        .gte("end_time", `${todayStr}T00:00:00`)
-        .lte("start_time", `${weekLaterStr}T23:59:59`);
+      const [
+        { data: calendarEvents },
+        { data: workingHours },
+        { data: dateOverrides },
+        { data: manualBlocks },
+      ] = await Promise.all([
+        supabase
+          .from("instructor_calendar_events")
+          .select("start_time, end_time")
+          .eq("instructor_id", instructorId)
+          .eq("is_busy", true)
+          .gte("end_time", `${todayStr}T00:00:00`)
+          .lte("start_time", `${weekLaterStr}T23:59:59`),
+        supabase
+          .from("instructor_working_hours")
+          .select("day_of_week, start_time, end_time, is_active")
+          .eq("instructor_id", instructorId)
+          .eq("is_active", true),
+        supabase
+          .from("instructor_date_overrides")
+          .select("override_date, is_available, start_time, end_time")
+          .eq("instructor_id", instructorId)
+          .gte("override_date", todayStr)
+          .lte("override_date", weekLaterStr),
+        supabase
+          .from("instructor_manual_blocks")
+          .select("start_datetime, end_datetime")
+          .eq("instructor_id", instructorId)
+          .gte("end_datetime", todayISO)
+          .lte("start_datetime", weekLaterISO),
+      ]);
 
-      // Cache day's existing lessons + cal-busy windows
-      const dayCache = new Map<
-        string,
-        {
-          existing: Array<{ start_time: string; duration_minutes: number | null }>;
-          cal: Array<{ start: Date; end: Date }>;
+      // Pairwise travel cache (postcode→postcode→minutes) to avoid duplicate edge calls
+      const travelCache = new Map<string, number>();
+      const TRAVEL_FALLBACK_MIN = 10;
+      const lookupTravelMinutes = async (
+        from: string | null | undefined,
+        to: string | null | undefined,
+      ): Promise<number> => {
+        if (!from || !to) return 0;
+        const key = `${from.toUpperCase()}→${to.toUpperCase()}`;
+        if (travelCache.has(key)) return travelCache.get(key)!;
+        try {
+          const { data } = await supabase.functions.invoke("check-travel-buffer", {
+            body: { from_postcode: from, to_postcode: to },
+          });
+          const mins =
+            typeof (data as any)?.travel_minutes === "number"
+              ? (data as any).travel_minutes
+              : TRAVEL_FALLBACK_MIN;
+          travelCache.set(key, mins);
+          return mins;
+        } catch {
+          travelCache.set(key, TRAVEL_FALLBACK_MIN);
+          return TRAVEL_FALLBACK_MIN;
         }
-      >();
+      };
+
+      // Cache day's existing lessons (with pupil postcode for travel),
+      // cal-busy windows, manual blocks, and the day's working window.
+      type DayLesson = {
+        start_time: string;
+        duration_minutes: number | null;
+        pupil_id: string | null;
+        pupil_postcode: string | null;
+      };
+      type DayCacheEntry = {
+        existing: DayLesson[];
+        cal: Array<{ start: Date; end: Date }>;
+        blocks: Array<{ start: Date; end: Date }>;
+        /** Working window on this day (epoch ms). null => instructor not working. */
+        window: { start: number; end: number } | null;
+      };
+      const dayCache = new Map<string, DayCacheEntry>();
+
+      const normTime = (t: string) => (t.length === 5 ? `${t}:00` : t);
+
       for (let d = 1; d <= 7; d++) {
         const date = addDays(today, d);
         const dateStr = format(date, "yyyy-MM-dd");
+
+        // Day window from override or working hours
+        const override = (dateOverrides || []).find(
+          (o: any) => o.override_date === dateStr,
+        );
+        let window: { start: number; end: number } | null = null;
+        if (override) {
+          if ((override as any).is_available !== false) {
+            const ws = (override as any).start_time || "09:00:00";
+            const we = (override as any).end_time || "17:00:00";
+            window = {
+              start: parse(normTime(ws), "HH:mm:ss", date).getTime(),
+              end: parse(normTime(we), "HH:mm:ss", date).getTime(),
+            };
+          }
+        } else {
+          const wh = (workingHours || []).find(
+            (h: any) => h.day_of_week === date.getDay(),
+          );
+          if (wh) {
+            window = {
+              start: parse(normTime((wh as any).start_time), "HH:mm:ss", date).getTime(),
+              end: parse(normTime((wh as any).end_time), "HH:mm:ss", date).getTime(),
+            };
+          }
+        }
+
+        // Existing lessons on this day, with pupil postcode for travel calc
         const { data: existing } = await supabase
           .from("scheduled_lessons")
-          .select("start_time, duration_minutes")
+          .select("start_time, duration_minutes, pupil_id, pupils(postcode)")
           .eq("instructor_id", instructorId)
           .eq("lesson_date", dateStr)
           .neq("status", "cancelled")
           .order("start_time");
+
+        const dayLessons: DayLesson[] = (existing || []).map((row: any) => ({
+          start_time: row.start_time,
+          duration_minutes: row.duration_minutes,
+          pupil_id: row.pupil_id ?? null,
+          pupil_postcode: row.pupils?.postcode ?? null,
+        }));
+
         const dayCalBusy = (calendarEvents || [])
-          .map((ev) => ({ start: new Date(ev.start_time), end: new Date(ev.end_time) }))
+          .map((ev: any) => ({ start: new Date(ev.start_time), end: new Date(ev.end_time) }))
           .filter((ev) => {
             if (ev.end.getTime() - ev.start.getTime() >= 24 * 60 * 60 * 1000) return false;
             return format(ev.start, "yyyy-MM-dd") === dateStr;
           });
+
+        const dayStartMs = parse("00:00:00", "HH:mm:ss", date).getTime();
+        const dayEndMs = dayStartMs + 24 * 60 * 60 * 1000;
+        const dayBlocks = (manualBlocks || [])
+          .map((b: any) => ({ start: new Date(b.start_datetime), end: new Date(b.end_datetime) }))
+          .filter((b) => b.start.getTime() < dayEndMs && b.end.getTime() > dayStartMs);
+
         dayCache.set(dateStr, {
-          existing: (existing || []) as Array<{
-            start_time: string;
-            duration_minutes: number | null;
-          }>,
+          existing: dayLessons,
           cal: dayCalBusy,
+          blocks: dayBlocks,
+          window,
         });
       }
 
-      // ---- Slot availability check (shared) ----
-      const isAvailable = (dateStr: string, hhmmss: string): boolean => {
+      // ---- Slot availability check (shared, async for travel lookups) ----
+      // Respects: working hours, date overrides, manual blocks, calendar busy,
+      // existing lessons, instructor buffer, and per-pupil travel between
+      // adjacent lessons (not just first-of-day).
+      const isAvailable = async (dateStr: string, hhmmss: string): Promise<boolean> => {
         const date = parse(dateStr, "yyyy-MM-dd", new Date());
         const cached = dayCache.get(dateStr);
         if (!cached) return false;
+
+        // Hard gate: instructor not working this day
+        if (!cached.window) return false;
+
         const candidateStart = parse(hhmmss, "HH:mm:ss", date).getTime();
         const candidateEnd = candidateStart + durationMinutes * 60000;
 
-        const hasExistingOnDay = cached.existing.length > 0 || cached.cal.length > 0;
-        const isFirstOfDay =
-          !hasExistingOnDay ||
-          (cached.existing.every(
-            (ex) => parse(ex.start_time, "HH:mm:ss", date).getTime() >= candidateStart,
-          ) &&
-            cached.cal.every((ev) => ev.start.getTime() >= candidateStart));
-        if (isFirstOfDay && effectiveFirstSlotBuffer > bufferMinutes) {
-          const dayStart = parse("09:00:00", "HH:mm:ss", date).getTime();
-          const earliestAllowed = dayStart + effectiveFirstSlotBuffer * 60000;
-          if (candidateStart < earliestAllowed) return false;
+        // Inside working window
+        if (candidateStart < cached.window.start || candidateEnd > cached.window.end) {
+          return false;
         }
 
-        const lessonConflict = cached.existing.some((ex) => {
-          const exStart = parse(ex.start_time, "HH:mm:ss", date).getTime();
-          const exEnd = exStart + ((ex.duration_minutes as number) || 60) * 60000;
-          return candidateStart < exEnd + bufferMs && candidateEnd > exStart - bufferMs;
-        });
-        if (lessonConflict) return false;
+        // Manual blocks (hard, no buffer — they're explicit blocks)
+        const blockConflict = cached.blocks.some(
+          (b) => candidateStart < b.end.getTime() && candidateEnd > b.start.getTime(),
+        );
+        if (blockConflict) return false;
+
+        // Calendar busy (with buffer either side)
         const calConflict = cached.cal.some(
           (ev) =>
             candidateStart < ev.end.getTime() + bufferMs &&
             candidateEnd > ev.start.getTime() - bufferMs,
         );
-        return !calConflict;
+        if (calConflict) return false;
+
+        // First-lesson-of-day travel from instructor's home
+        const hasEarlierCommitment =
+          cached.existing.some(
+            (ex) => parse(ex.start_time, "HH:mm:ss", date).getTime() < candidateStart,
+          ) || cached.cal.some((ev) => ev.start.getTime() < candidateStart);
+        if (!hasEarlierCommitment) {
+          const homeTravel = await lookupTravelMinutes(homePostcode, pupilPostcode);
+          const firstSlotBuffer = Math.max(homeTravel, bufferMinutes);
+          const earliestAllowed = cached.window.start + firstSlotBuffer * 60000;
+          if (candidateStart < earliestAllowed) return false;
+        }
+
+        // Direct overlap with any existing lesson (with buffer)
+        const lessons = [...cached.existing].sort(
+          (a, b) =>
+            parse(a.start_time, "HH:mm:ss", date).getTime() -
+            parse(b.start_time, "HH:mm:ss", date).getTime(),
+        );
+        const overlap = lessons.some((ex) => {
+          const exStart = parse(ex.start_time, "HH:mm:ss", date).getTime();
+          const exEnd = exStart + ((ex.duration_minutes as number) || 60) * 60000;
+          return candidateStart < exEnd + bufferMs && candidateEnd > exStart - bufferMs;
+        });
+        if (overlap) return false;
+
+        // Travel to/from immediately adjacent pupils
+        let prev: DayLesson | null = null;
+        let next: DayLesson | null = null;
+        for (const ex of lessons) {
+          const exStart = parse(ex.start_time, "HH:mm:ss", date).getTime();
+          if (exStart < candidateStart) prev = ex;
+          else if (exStart >= candidateEnd && !next) next = ex;
+        }
+
+        if (prev) {
+          const prevEnd =
+            parse(prev.start_time, "HH:mm:ss", date).getTime() +
+            ((prev.duration_minutes as number) || 60) * 60000;
+          const travel = await lookupTravelMinutes(prev.pupil_postcode, pupilPostcode);
+          const required = Math.max(travel, bufferMinutes) * 60000;
+          if (candidateStart < prevEnd + required) return false;
+        }
+        if (next) {
+          const nextStart = parse(next.start_time, "HH:mm:ss", date).getTime();
+          const travel = await lookupTravelMinutes(pupilPostcode, next.pupil_postcode);
+          const required = Math.max(travel, bufferMinutes) * 60000;
+          if (candidateEnd + required > nextStart) return false;
+        }
+
+        return true;
       };
 
       // ---- Category-driven candidate pipeline ----
@@ -319,7 +465,7 @@ export function StepBookNext({
           if (date.getDay() !== pattern.dow) continue;
           const hhmmss = `${pattern.hhmm}:00`;
           const dateStr = format(date, "yyyy-MM-dd");
-          if (!isAvailable(dateStr, hhmmss)) continue;
+          if (!(await isAvailable(dateStr, hhmmss))) continue;
           const dayName = format(date, "EEEE");
           const reasoning = `Pupil's usual ${dayName} slot`;
           const added = pushIfFresh({
@@ -342,7 +488,7 @@ export function StepBookNext({
           if (!cached || cached.existing.length < 2) continue;
           const candidateTimes = ["09:00:00", "10:30:00", "11:00:00", "13:00:00", "15:00:00"];
           for (const ct of candidateTimes) {
-            if (!isAvailable(dateStr, ct)) continue;
+            if (!(await isAvailable(dateStr, ct))) continue;
             const candidateStart = parse(ct, "HH:mm:ss", date).getTime();
             const candidateEnd = candidateStart + durationMinutes * 60000;
             const before = cached.existing.find((ex) => {
@@ -394,7 +540,7 @@ export function StepBookNext({
             const timeMatchesPref =
               preferredTimes.length === 0 || preferredTimes.includes(tod);
             if (!timeMatchesPref) continue;
-            if (!isAvailable(dateStr, ct)) continue;
+            if (!(await isAvailable(dateStr, ct))) continue;
             // Reasoning: prefer day-name when explicit, else time-of-day
             let reasoning: string;
             if (preferredDays.length > 0) {
@@ -423,7 +569,7 @@ export function StepBookNext({
             for (let d = 1; d <= 7 && candidates.length < 3; d++) {
               const date = addDays(today, d);
               const dateStr = format(date, "yyyy-MM-dd");
-              if (!isAvailable(dateStr, todayStartTime)) continue;
+              if (!(await isAvailable(dateStr, todayStartTime))) continue;
               const remaining = differenceInCalendarDays(testDate, date);
               const added = pushIfFresh({
                 date: dateStr,
@@ -444,7 +590,7 @@ export function StepBookNext({
       if (candidates.length < 3 && todayStartTime) {
         const date = addDays(today, 7);
         const dateStr = format(date, "yyyy-MM-dd");
-        if (isAvailable(dateStr, todayStartTime)) {
+        if (await isAvailable(dateStr, todayStartTime)) {
           pushIfFresh({
             date: dateStr,
             startTime: todayStartTime,
@@ -461,7 +607,7 @@ export function StepBookNext({
           ? ["09:00:00", "09:30:00", "10:00:00", "10:30:00", "11:00:00", "13:00:00", "15:00:00"]
           : ["09:00:00", "10:00:00", "11:00:00", "13:00:00", "15:00:00"];
         for (const ct of candidateTimes) {
-          if (isAvailable(tomorrowStr, ct)) {
+          if (await isAvailable(tomorrowStr, ct)) {
             pushIfFresh({
               date: tomorrowStr,
               startTime: ct,
@@ -476,7 +622,7 @@ export function StepBookNext({
       if (candidates.length < 3 && todayStartTime) {
         const date = addDays(today, 2);
         const dateStr = format(date, "yyyy-MM-dd");
-        if (isAvailable(dateStr, todayStartTime)) {
+        if (await isAvailable(dateStr, todayStartTime)) {
           pushIfFresh({
             date: dateStr,
             startTime: todayStartTime,
