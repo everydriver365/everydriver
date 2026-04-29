@@ -41,31 +41,6 @@ function getStatusLine(args: { remainingToday: number; totalToday: number; nextS
   return "No lessons today — perfect for catching up on admin";
 }
 
-// ─── Header ──────────────────────────────────────
-function AppHeader({ unreadNotifs, onMenu, onNotifications }: { unreadNotifs: number; onMenu: () => void; onNotifications: () => void; }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
-      <button type="button" onClick={onMenu} aria-label="Open menu" style={{ background: "transparent", border: "none", padding: 4, cursor: "pointer" }}>
-        <Menu style={{ width: 22, height: 22, color: "#000000" }} strokeWidth={2} />
-      </button>
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <div aria-hidden style={{ width: 18, height: 18, display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 1.5 }}>
-          <div style={{ background: "#C8434F", borderRadius: 2 }} />
-          <div style={{ background: "#2B7BC8", borderRadius: 2 }} />
-          <div style={{ background: "#1F1F1F", borderRadius: 2 }} />
-          <div style={{ background: "#1F1F1F", borderRadius: 2 }} />
-        </div>
-        <span style={{ fontSize: 13, fontWeight: 500, color: "#000000", letterSpacing: "-0.1px" }}>DSM</span>
-      </div>
-      <button type="button" onClick={onNotifications} aria-label="Notifications" style={{ background: "transparent", border: "none", padding: 4, cursor: "pointer", position: "relative" }}>
-        <Bell style={{ width: 20, height: 20, color: "#000000" }} strokeWidth={2} />
-        {unreadNotifs > 0 && (
-          <span aria-hidden style={{ position: "absolute", top: 2, right: 2, width: 7, height: 7, borderRadius: "50%", background: "#C8434F", border: "1.5px solid #FFFFFF" }} />
-        )}
-      </button>
-    </div>
-  );
-}
 
 // ─── Greeting ────────────────────────────────────
 function HomeGreeting({ firstName, statusText }: { firstName: string; statusText: string }) {
