@@ -24,6 +24,7 @@ import { LessonRouteRecorder } from "./LessonRouteRecorder";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
 import { useRunningLateDetection } from "@/hooks/useRunningLateDetection";
+import { useInstructorNotificationSettings } from "@/hooks/useInstructorNotificationSettings";
 import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { LessonCheckInBadge } from "./LessonCheckInBadge";
