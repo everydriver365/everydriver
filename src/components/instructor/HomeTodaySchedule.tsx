@@ -327,6 +327,8 @@ function ConflictBanner({ time }: { time: string }) {
 export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
   const [tab, setTab] = useState<"today" | "tomorrow">("today");
   const [addOpen, setAddOpen] = useState(false);
+  const [wizardLesson, setWizardLesson] = useState<TodayLesson | null>(null);
+  const [wizardBalance, setWizardBalance] = useState<number>(0);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -342,6 +344,23 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
 
   const { data: overview, isLoading: overviewLoading } = useTodayOverview(instructorId);
   const { data: lessons = [], isLoading: lessonsLoading } = useDayLessons(instructorId, targetDate);
+  const { data: eolDoneKeys = new Set<string>() } = useDayLessonHistory(instructorId, targetDate);
+
+  const openEOLWizard = async (lesson: TodayLesson) => {
+    let balance = 0;
+    try {
+      const { data } = await supabase
+        .from("pupils")
+        .select("account_balance")
+        .eq("id", lesson.pupilId)
+        .single();
+      balance = Number(data?.account_balance ?? 0);
+    } catch {
+      balance = 0;
+    }
+    setWizardBalance(balance);
+    setWizardLesson(lesson);
+  };
 
   const nowSec = tickNow.getHours() * 3600 + tickNow.getMinutes() * 60;
 
