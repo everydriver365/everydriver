@@ -467,7 +467,7 @@ export function StepBookNext({
           const dateStr = format(date, "yyyy-MM-dd");
           if (!(await isAvailable(dateStr, hhmmss))) continue;
           const dayName = format(date, "EEEE");
-          const reasoning = `Pupil's usual ${dayName} slot`;
+          const reasoning = `Pupil's usual ${dayName}`;
           const added = pushIfFresh({
             date: dateStr,
             startTime: hhmmss,
@@ -608,11 +608,13 @@ export function StepBookNext({
           : ["09:00:00", "10:00:00", "11:00:00", "13:00:00", "15:00:00"];
         for (const ct of candidateTimes) {
           if (await isAvailable(tomorrowStr, ct)) {
+            const hr = parseInt(ct.slice(0, 2), 10);
+            const tod = hr < 12 ? "morning" : hr < 17 ? "afternoon" : "evening";
             pushIfFresh({
               date: tomorrowStr,
               startTime: ct,
               category: "pattern",
-              reasoning: "Tomorrow's first opening",
+              reasoning: `Tomorrow ${tod}`,
             });
             break;
           }
@@ -627,7 +629,7 @@ export function StepBookNext({
             date: dateStr,
             startTime: todayStartTime,
             category: "pattern",
-            reasoning: "Two days from now, same time",
+            reasoning: "Same time, in 2 days",
           });
         }
       }
