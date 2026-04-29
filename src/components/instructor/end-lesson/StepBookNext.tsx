@@ -873,7 +873,7 @@ export function StepBookNext({
       </div>
 
       {/* Body — scrollable */}
-      <div style={{ padding: "18px 0 16px", flex: 1, minHeight: 0, overflowY: "auto" }}>
+      <div style={{ padding: "0 0 12px", flex: 1, minHeight: 0, overflowY: "auto" }}>
         {loading ? (
           <div
             style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
