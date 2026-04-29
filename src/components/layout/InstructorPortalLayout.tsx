@@ -224,6 +224,11 @@ function GlobalSyncBridge({ instructorId }: { instructorId: string | undefined }
   return null;
 }
 
+function PaymentReceivedAlertBridge({ instructorId }: { instructorId: string | undefined }) {
+  usePaymentReceivedAlert(instructorId);
+  return null;
+}
+
 
 interface InstructorPortalLayoutProps {
   children: ReactNode;
