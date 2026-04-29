@@ -352,10 +352,21 @@ export function EndLessonWizard({
   const stepNumber = step === "summary" ? 1 : step === "payment" ? 2 : step === "skills" ? 3 : step === "book" ? 4 : 5;
   const totalSteps = needsPayment ? 4 : 3;
 
-  // Premium step-1 chrome (Cancel / centred title / spacer + thin progress bars).
-  const isSummaryChrome = step === "summary";
+  // Premium chrome shared by Step 1 (summary) and Step 2 (payment):
+  // Back / centred title / spacer + thin progress bars.
+  const isPremiumChrome = step === "summary" || step === "payment";
   const showStepChrome =
     step !== "completed" && step !== "completing" && step !== "course_complete";
+
+  const premiumEyebrow =
+    step === "summary"
+      ? `Step 1 of ${totalSteps} · Quick summary`
+      : `Step 2 of ${totalSteps} · Take payment`;
+  const premiumLeftLabel = step === "summary" ? "Cancel" : "Back";
+  const handlePremiumLeft = () => {
+    if (step === "summary") onOpenChange(false);
+    else if (step === "payment") setStep("summary");
+  };
 
   // Refresh pupil balance after Record Payment (called from Step 1 "Due now" tile)
   const [refreshedBalance, setRefreshedBalance] = useState<number | null>(null);
@@ -380,11 +391,11 @@ export function EndLessonWizard({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className={`max-h-[90vh] overflow-y-auto rounded-2xl p-0 ${isSummaryChrome ? "[&>button.absolute]:hidden" : ""}`}
+        className={`max-h-[90vh] overflow-y-auto rounded-2xl p-0 ${isPremiumChrome ? "[&>button.absolute]:hidden" : ""}`}
       >
-        {isSummaryChrome ? (
+        {isPremiumChrome ? (
           <>
-            {/* Premium header bar: Cancel / centred title / spacer */}
+            {/* Premium header bar: Cancel/Back / centred title / spacer */}
             <div
               style={{
                 padding: "12px 16px",
@@ -396,7 +407,7 @@ export function EndLessonWizard({
             >
               <button
                 type="button"
-                onClick={() => onOpenChange(false)}
+                onClick={handlePremiumLeft}
                 style={{
                   background: "transparent",
                   border: "none",
@@ -408,7 +419,7 @@ export function EndLessonWizard({
                   cursor: "pointer",
                 }}
               >
-                Cancel
+                {premiumLeftLabel}
               </button>
               <div style={{ flex: 1, minWidth: 0, textAlign: "center" }}>
                 <div
@@ -421,7 +432,7 @@ export function EndLessonWizard({
                     margin: "0 0 1px",
                   }}
                 >
-                  Step 1 of {totalSteps} · Quick summary
+                  {premiumEyebrow}
                 </div>
                 <SheetTitle
                   className="m-0"
@@ -456,73 +467,93 @@ export function EndLessonWizard({
               </div>
             </div>
 
-            <div style={{ padding: "8px 24px 0" }}>
-              <StepSummary
-                pupilId={pupilId}
-                pupilName={pupilName}
-                instructorId={instructorId}
-                durationMinutes={durationMinutes}
-                balanceBefore={effectiveBalance}
-                lessonCost={lessonCost}
-                lessonDate={lessonDate}
-                startTime={startTime}
-                notes={notes}
-                onNotesChange={setNotes}
-                onVoiceNoteRecorded={setVoiceNoteBlob}
-                onPaymentRecorded={handleSummaryPaymentRecorded}
-              />
-            </div>
+            {step === "summary" && (
+              <>
+                <div style={{ padding: "8px 24px 0" }}>
+                  <StepSummary
+                    pupilId={pupilId}
+                    pupilName={pupilName}
+                    instructorId={instructorId}
+                    durationMinutes={durationMinutes}
+                    balanceBefore={effectiveBalance}
+                    lessonCost={lessonCost}
+                    lessonDate={lessonDate}
+                    startTime={startTime}
+                    notes={notes}
+                    onNotesChange={setNotes}
+                    onVoiceNoteRecorded={setVoiceNoteBlob}
+                    onPaymentRecorded={handleSummaryPaymentRecorded}
+                  />
+                </div>
 
-            {/* Footer action row */}
-            <div
-              style={{
-                padding: "12px 16px",
-                background: "#F8FAFB",
-                borderTop: "0.5px solid #E5E5EA",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 8,
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => onOpenChange(false)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  padding: "8px 14px",
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: "#6E6E73",
-                  cursor: "pointer",
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={goNext}
-                style={{
-                  background: "#2B7BC8",
-                  border: "none",
-                  borderRadius: 10,
-                  padding: "10px 20px",
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: "#FFFFFF",
-                }}
-              >
-                Next
-                <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 6l6 6-6 6" />
-                </svg>
-              </button>
-            </div>
+                {/* Footer action row */}
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    background: "#F8FAFB",
+                    borderTop: "0.5px solid #E5E5EA",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 8,
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => onOpenChange(false)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      padding: "8px 14px",
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: "#6E6E73",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={goNext}
+                    style={{
+                      background: "#2B7BC8",
+                      border: "none",
+                      borderRadius: 10,
+                      padding: "10px 20px",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: "#FFFFFF",
+                    }}
+                  >
+                    Next
+                    <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 6l6 6-6 6" />
+                    </svg>
+                  </button>
+                </div>
+              </>
+            )}
+
+            {step === "payment" && (
+              <div style={{ padding: "8px 24px 0" }}>
+                <StepPayment
+                  pupilId={pupilId}
+                  pupilName={pupilName}
+                  instructorId={instructorId}
+                  currentBalance={effectiveBalance}
+                  lessonCost={lessonCost}
+                  lessonId={lessonId}
+                  paymentQrUrl={paymentQrUrl}
+                  onPaymentRecorded={goNext}
+                  onSkip={goNext}
+                />
+              </div>
+            )}
           </>
         ) : (
         <div className="p-6">
@@ -553,19 +584,8 @@ export function EndLessonWizard({
 
         <div className="py-2">
 
-          {step === "payment" && (
-            <StepPayment
-              pupilId={pupilId}
-              pupilName={pupilName}
-              instructorId={instructorId}
-              currentBalance={currentBalance}
-              lessonCost={lessonCost}
-              lessonId={lessonId}
-              paymentQrUrl={paymentQrUrl}
-              onPaymentRecorded={goNext}
-              onSkip={goNext}
-            />
-          )}
+          {/* payment step rendered above in premium chrome */}
+
 
           {step === "skills" && historyId === null && (
             <>
