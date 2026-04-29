@@ -40,6 +40,8 @@ interface SuggestedSlot {
   startTime: string;
   category: SlotCategory;
   reasoning: string;
+  /** True only when this slot was generated from a real 3+ historical pattern match. */
+  isGenuineBestMatch?: boolean;
 }
 
 function needsNameReview(name: string): boolean {
@@ -58,6 +60,7 @@ interface PupilContext {
   courseName: string | null;
   courseHoursTotal: number | null;
   courseHoursRemaining: number | null;
+  lessonType: string | null;
 }
 
 export function StepBookNext({
