@@ -787,7 +787,7 @@ export function IOSNativeHomeView({ instructorId, instructor }: IOSNativeHomeVie
       <ProgressRingsCompact
         lessonsDone={lessonsDone}
         lessonsTotal={Math.max(totalToday, lessonsDone)}
-        earned={dayEarnings ?? 0}
+        earned={(weeklyGoals?.earningsThisWeek ?? 0) > 0 && totalToday > 0 ? Math.round(((weeklyGoals!.earningsThisWeek) / 7)) : Math.round((monthEarnings ?? 0) / 30)}
         hoursTaught={hoursTaught}
         onPress={() => navigate("/instructor/goals")}
       />
