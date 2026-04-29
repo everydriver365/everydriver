@@ -151,7 +151,7 @@ export default function InstructorSchedule() {
         >
           {isMobile ? (
             <>
-              {/* Mobile toggle: List / Month */}
+              {/* Mobile toggle: Calendar / Schedule */}
               <div
                 style={{
                   display: "flex",
@@ -161,25 +161,6 @@ export default function InstructorSchedule() {
                   borderRadius: 10,
                 }}
               >
-                <button
-                  onClick={() => setViewMode('list')}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    padding: "5px 10px",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontWeight: 500,
-                    transition: "all 0.2s",
-                    ...(viewMode === 'list'
-                      ? { backgroundColor: "#F2F2F4", color: "#000000" }
-                      : { backgroundColor: "transparent", color: "#6E6E73" }),
-                  }}
-                >
-                  <List style={{ width: 14, height: 14 }} />
-                  List
-                </button>
                 <button
                   onClick={() => setViewMode('month')}
                   style={{
@@ -197,7 +178,26 @@ export default function InstructorSchedule() {
                   }}
                 >
                   <CalendarRange style={{ width: 14, height: 14 }} />
-                  Month
+                  Calendar
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                    padding: "5px 10px",
+                    borderRadius: 8,
+                    fontSize: 13,
+                    fontWeight: 500,
+                    transition: "all 0.2s",
+                    ...(viewMode === 'list'
+                      ? { backgroundColor: "#F2F2F4", color: "#000000" }
+                      : { backgroundColor: "transparent", color: "#6E6E73" }),
+                  }}
+                >
+                  <List style={{ width: 14, height: 14 }} />
+                  Schedule
                 </button>
               </div>
 
