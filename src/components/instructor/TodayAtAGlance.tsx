@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
-import { Clock, Calendar, PoundSterling, Timer } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { format, isToday, differenceInMinutes } from "date-fns";
+import { format, differenceInMinutes } from "date-fns";
 
 interface TodayAtAGlanceProps {
   instructorId: string | undefined;
@@ -93,13 +91,24 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
     fetchToday();
   }, [instructorId]);
 
+  const dateLabel = format(new Date(), "EEE d").toUpperCase();
+
   if (data.loading) {
     return (
-      <Card className="bg-gradient-to-r from-primary/5 to-primary/[0.02] border-primary/20">
-        <CardContent className="p-4">
-          <div className="h-16 animate-pulse bg-muted rounded" />
-        </CardContent>
-      </Card>
+      <div
+        className="bg-white rounded-[24px] overflow-hidden ring-1 ring-black/5"
+        style={{ boxShadow: "0 2px 12px -4px rgba(0,0,0,0.04)" }}
+      >
+        <div className="px-5 pt-5 pb-2 flex justify-between items-baseline">
+          <h2 className="text-[15px] font-semibold text-gray-900 tracking-tight">Today's Pulse</h2>
+          <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest tabular-nums">{dateLabel}</span>
+        </div>
+        <div className="flex gap-3 px-5 pb-6 pt-2">
+          {[156, 124, 124, 124].map((w, i) => (
+            <div key={i} className="shrink-0 h-[108px] rounded-[16px] bg-gray-100 animate-pulse" style={{ width: w }} />
+          ))}
+        </div>
+      </div>
     );
   }
 
@@ -110,57 +119,115 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
     return m > 0 ? `${h}h ${m}m` : `${h}h`;
   };
 
-  const stats = [
-    {
-      icon: Clock,
-      label: "Next Lesson",
-      value: data.nextLesson
-        ? `${data.nextLesson.time}`
-        : "None",
-      sub: data.nextLesson
-        ? `${data.nextLesson.pupilName} · in ${formatMinutes(data.nextLesson.minutesUntil)}`
-        : "No more lessons today",
-    },
-    {
-      icon: Calendar,
-      label: "Remaining",
-      value: `${data.lessonsRemaining}`,
-      sub: `lesson${data.lessonsRemaining !== 1 ? "s" : ""} left`,
-    },
-    {
-      icon: Timer,
-      label: "Hours",
-      value: `${data.hoursToday}h`,
-      sub: "scheduled today",
-    },
-    {
-      icon: PoundSterling,
-      label: "Earnings",
-      value: `£${data.earningsToday.toFixed(0)}`,
-      sub: "received today",
-    },
-  ];
+  const nextLessonChip = data.nextLesson
+    ? {
+        time: data.nextLesson.time,
+        name: data.nextLesson.pupilName,
+        subtitle: `Starts in ${formatMinutes(data.nextLesson.minutesUntil)}`,
+      }
+    : { time: "—", name: "No upcoming", subtitle: "Nothing scheduled" };
 
   return (
-    <Card className="shadow-premium bg-gradient-to-r from-primary/5 to-primary/[0.02] border-0">
-      <CardContent className="p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-xs font-bold uppercase tracking-widest text-primary/70">Today at a Glance</span>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {stats.map((stat) => (
-            <div key={stat.label} className="flex items-start gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-primary/10 shrink-0">
-                <stat.icon className="h-4 w-4 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold leading-tight">{stat.value}</p>
-                <p className="text-[11px] text-muted-foreground truncate">{stat.sub}</p>
-              </div>
+    <div
+      className="bg-white rounded-[24px] overflow-hidden ring-1 ring-black/5"
+      style={{ boxShadow: "0 2px 12px -4px rgba(0,0,0,0.04)" }}
+    >
+      {/* Header */}
+      <div className="px-5 pt-5 pb-2 flex justify-between items-baseline">
+        <h2 className="text-[15px] font-semibold text-gray-900 tracking-tight">Today's Pulse</h2>
+        <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest tabular-nums">{dateLabel}</span>
+      </div>
+
+      {/* Scrollable chip strip */}
+      <div
+        className="flex overflow-x-auto snap-x snap-mandatory gap-3 px-5 pb-6 pt-2"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      >
+        <style>{`.tag-pulse-strip::-webkit-scrollbar{display:none}`}</style>
+
+        {/* Next Up — wider for hierarchy */}
+        <div
+          className="snap-start shrink-0 w-[156px] rounded-[16px] p-4 flex flex-col justify-between ring-1"
+          style={{ backgroundColor: "#F0F6FF", borderColor: "transparent", boxShadow: "inset 0 0 0 1px rgba(0,86,214,0.10)" }}
+        >
+          <div className="flex items-center justify-between mb-5">
+            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#0056D6" }}>
+              Next Up
+            </span>
+            {data.nextLesson && (
+              <div className="size-2 rounded-full animate-pulse" style={{ backgroundColor: "rgba(0,86,214,0.6)" }} />
+            )}
+          </div>
+          <div>
+            <div className="text-2xl font-bold tracking-tighter text-gray-900 tabular-nums leading-none mb-1.5">
+              {nextLessonChip.time}
             </div>
-          ))}
+            <div className="text-[13px] font-medium text-gray-700 leading-tight truncate">{nextLessonChip.name}</div>
+            <div className="text-[11px] font-medium text-gray-500 mt-0.5 truncate">{nextLessonChip.subtitle}</div>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Remaining */}
+        <div
+          className="snap-start shrink-0 w-[124px] rounded-[16px] p-4 flex flex-col justify-between"
+          style={{ backgroundColor: "#FFF5EC", boxShadow: "inset 0 0 0 1px rgba(185,74,0,0.10)" }}
+        >
+          <div className="text-[10px] font-bold uppercase tracking-widest mb-5" style={{ color: "#B94A00" }}>
+            Remaining
+          </div>
+          <div>
+            <div className="text-2xl font-bold tracking-tighter text-gray-900 tabular-nums leading-none mb-1.5">
+              {data.lessonsRemaining}
+            </div>
+            <div className="text-[12px] font-medium text-gray-500 leading-snug">
+              Lesson{data.lessonsRemaining !== 1 ? "s" : ""}
+              <br />left today
+            </div>
+          </div>
+        </div>
+
+        {/* Hours */}
+        <div
+          className="snap-start shrink-0 w-[124px] rounded-[16px] p-4 flex flex-col justify-between"
+          style={{ backgroundColor: "#F0FDF8", boxShadow: "inset 0 0 0 1px rgba(13,122,92,0.10)" }}
+        >
+          <div className="text-[10px] font-bold uppercase tracking-widest mb-5" style={{ color: "#0D7A5C" }}>
+            Scheduled
+          </div>
+          <div>
+            <div className="text-2xl font-bold tracking-tighter text-gray-900 tabular-nums leading-none mb-1.5">
+              {data.hoursToday}
+              <span className="text-base font-medium text-gray-500 ml-0.5">h</span>
+            </div>
+            <div className="text-[12px] font-medium text-gray-500 leading-snug">
+              Total time
+              <br />on platform
+            </div>
+          </div>
+        </div>
+
+        {/* Earnings */}
+        <div
+          className="snap-start shrink-0 w-[124px] rounded-[16px] p-4 flex flex-col justify-between"
+          style={{ backgroundColor: "#F8F5FF", boxShadow: "inset 0 0 0 1px rgba(96,56,208,0.10)" }}
+        >
+          <div className="text-[10px] font-bold uppercase tracking-widest mb-5" style={{ color: "#6038D0" }}>
+            Earnings
+          </div>
+          <div>
+            <div className="text-2xl font-bold tracking-tighter text-gray-900 tabular-nums leading-none mb-1.5">
+              £{data.earningsToday.toFixed(0)}
+            </div>
+            <div className="text-[12px] font-medium text-gray-500 leading-snug">
+              Received
+              <br />today
+            </div>
+          </div>
+        </div>
+
+        {/* End spacer */}
+        <div className="snap-end shrink-0 w-1" aria-hidden />
+      </div>
+    </div>
   );
 }
