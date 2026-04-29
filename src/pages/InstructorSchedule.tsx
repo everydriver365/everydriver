@@ -54,6 +54,7 @@ export default function InstructorSchedule() {
   const [mobileListRefreshKey, setMobileListRefreshKey] = useState(0);
 
   const calendar = useInstructorCalendar(instructorId || '');
+  const { data: gapSuggestions, isLoading: gapsLoading } = useRealGapSlots(instructorId);
   const [isSyncing, setIsSyncing] = useState(false);
 
   const handleSync = async () => {
