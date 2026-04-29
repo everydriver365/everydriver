@@ -1,6 +1,8 @@
 import { Coffee, Clock, Dumbbell, Wind, Eye, Footprints, GlassWater, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useBreakReminders } from "@/hooks/useBreakReminders";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { useInstructorNotificationSettings } from "@/hooks/useInstructorNotificationSettings";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
