@@ -3,6 +3,7 @@ import { Bell, Plus, Menu, ChevronLeft } from "lucide-react";
 import dsmLogo from "@/assets/dsm-logo.png";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { DSMThemeToggle } from "@/components/instructor/DSMThemeToggle";
+import { useLongPress } from "@/hooks/useLongPress";
 
 interface Props {
   instructorId: string | undefined;
