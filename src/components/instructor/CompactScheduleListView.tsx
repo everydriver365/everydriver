@@ -453,11 +453,12 @@ export function CompactScheduleListView({
       try {
         const { data } = await supabase
           .from("instructors")
-          .select("lesson_buffer_minutes")
+          .select("buffer_minutes")
           .eq("id", instructorId)
           .maybeSingle();
-        if (!cancelled && data?.lesson_buffer_minutes != null) {
-          setBufferMinutes(Number(data.lesson_buffer_minutes) || 0);
+        const bm = (data as { buffer_minutes?: number } | null)?.buffer_minutes;
+        if (!cancelled && typeof bm === "number") {
+          setBufferMinutes(bm || 0);
         }
       } catch {
         // keep default 0
