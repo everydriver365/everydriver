@@ -1,7 +1,7 @@
-import { ComponentType, SVGProps } from "react";
+import { ComponentType } from "react";
 import { haptics } from "@/lib/haptics";
 
-type IconProps = SVGProps<SVGSVGElement> & { size?: number };
+type IconProps = { size?: number | string };
 
 interface QuickActionTileProps {
   icon: ComponentType<IconProps>;
