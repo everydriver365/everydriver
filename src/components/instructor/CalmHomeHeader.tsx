@@ -284,13 +284,9 @@ export function CalmHomeHeader({ instructorId, instructorName }: CalmHomeHeaderP
   return (
     <div style={{ background: "#F2F2F4", padding: "20px 16px" }}>
       <HomeGreeting firstName={firstName} statusText={statusText} />
-      <ProgressRingsCompact
-        lessonsDone={lessonsDone}
-        lessonsTotal={Math.max(totalToday, lessonsDone)}
-        earned={earnedToday}
-        hoursTaught={hoursTaught}
-        onPress={() => navigate("/instructor/earnings")}
-      />
+      <div style={{ marginBottom: 16 }}>
+        <WeekAtAGlanceCard instructorId={instructorId} />
+      </div>
       <UpNextTile
         pupilName={nextLesson?.pupilName ?? null}
         startTime={nextLesson?.startTime ?? null}
