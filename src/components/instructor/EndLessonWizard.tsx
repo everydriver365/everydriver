@@ -655,7 +655,10 @@ export function EndLessonWizard({
             />
           )}
         </div>
+        </div>
+        )}
       </SheetContent>
     </Sheet>
+
   );
 }
