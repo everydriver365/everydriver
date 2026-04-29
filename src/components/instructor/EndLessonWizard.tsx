@@ -584,19 +584,8 @@ export function EndLessonWizard({
 
         <div className="py-2">
 
-          {step === "payment" && (
-            <StepPayment
-              pupilId={pupilId}
-              pupilName={pupilName}
-              instructorId={instructorId}
-              currentBalance={currentBalance}
-              lessonCost={lessonCost}
-              lessonId={lessonId}
-              paymentQrUrl={paymentQrUrl}
-              onPaymentRecorded={goNext}
-              onSkip={goNext}
-            />
-          )}
+          {/* payment step rendered above in premium chrome */}
+
 
           {step === "skills" && historyId === null && (
             <>
