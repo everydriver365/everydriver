@@ -557,6 +557,18 @@ export function EndLessonWizard({
                 />
               </div>
             )}
+
+            {step === "skills" && (
+              <InlineStepSkills
+                lessonId={lessonId}
+                pupilId={pupilId}
+                pupilName={pupilName}
+                instructorId={instructorId}
+                onSaved={() => {}}
+                onSkip={goNext}
+                onSaveAndNext={goNext}
+              />
+            )}
           </>
         ) : (
         <div className="p-6">
@@ -590,24 +602,8 @@ export function EndLessonWizard({
           {/* payment step rendered above in premium chrome */}
 
 
-          {step === "skills" && historyId === null && (
-            <>
-              <StepSkills
-                lessonId={lessonId}
-                pupilId={pupilId}
-                instructorId={instructorId}
-                onSaved={() => {}}
-              />
-              <div className="flex gap-2 pt-4">
-                <Button variant="ghost" onClick={goNext} className="flex-1">
-                  Skip
-                </Button>
-                <Button onClick={goNext} className="flex-1">
-                  Next
-                </Button>
-              </div>
-            </>
-          )}
+          {/* skills step rendered above in premium chrome */}
+
 
           {step === "book" && (
             <StepBookNext
