@@ -647,7 +647,7 @@ export function StepBookNext({
       </div>
 
       {/* Body */}
-      <div style={{ padding: 16, margin: "0 -24px" }}>
+      <div style={{ padding: "18px 0 16px" }}>
         {/* Suggested slots header */}
         <div
           style={{
@@ -722,6 +722,7 @@ export function StepBookNext({
                 style={{
                   position: "relative",
                   marginBottom: idx === slots.length - 1 ? 0 : 8,
+                  marginTop: isBest && idx === 0 ? 10 : 0,
                 }}
               >
                 {isBest && (
@@ -762,7 +763,15 @@ export function StepBookNext({
                   }}
                 >
                   {/* Date stack */}
-                  <div style={{ flexShrink: 0, minWidth: 38 }}>
+                  <div
+                    style={{
+                      flexShrink: 0,
+                      minWidth: 38,
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                    }}
+                  >
                     <div
                       style={{
                         fontSize: 11,
@@ -770,7 +779,7 @@ export function StepBookNext({
                         color: C.muted,
                         letterSpacing: 0.3,
                         textTransform: "uppercase",
-                        lineHeight: 1.1,
+                        lineHeight: 1.2,
                         margin: 0,
                       }}
                     >
@@ -778,11 +787,11 @@ export function StepBookNext({
                     </div>
                     <div
                       style={{
-                        fontSize: 19,
+                        fontSize: 17,
                         fontWeight: 500,
                         color: C.text,
                         letterSpacing: -0.4,
-                        lineHeight: 1,
+                        lineHeight: 1.15,
                         margin: 0,
                       }}
                     >
@@ -792,8 +801,8 @@ export function StepBookNext({
                       style={{
                         fontSize: 11,
                         color: C.muted,
-                        lineHeight: 1.1,
-                        margin: "1px 0 0",
+                        lineHeight: 1.2,
+                        margin: 0,
                       }}
                     >
                       {format(dt, "MMM")}
@@ -891,7 +900,7 @@ export function StepBookNext({
       {/* Footer */}
       <div
         style={{
-          padding: "12px 16px",
+          padding: "12px 16px 16px",
           background: C.surface,
           borderTop: `0.5px solid ${C.hairline}`,
           display: "flex",
@@ -899,6 +908,8 @@ export function StepBookNext({
           justifyContent: "space-between",
           gap: 8,
           margin: "0 -24px -8px",
+          borderBottomLeftRadius: 16,
+          borderBottomRightRadius: 16,
         }}
       >
         <button
@@ -906,12 +917,13 @@ export function StepBookNext({
           onClick={onSkip}
           disabled={booking}
           style={{
-            background: "transparent",
-            border: "none",
-            padding: "8px 14px",
+            background: "#FFFFFF",
+            border: `0.5px solid ${C.hairline}`,
+            borderRadius: 10,
+            padding: "10px 16px",
             fontSize: 14,
             fontWeight: 500,
-            color: C.muted,
+            color: C.text,
             cursor: booking ? "default" : "pointer",
           }}
         >
