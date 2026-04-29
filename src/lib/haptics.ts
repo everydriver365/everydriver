@@ -1,78 +1,60 @@
-// Haptic feedback utility for mobile interactions
-export const haptics = {
-  light: () => {
-    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-      navigator.vibrate(10);
-    }
-  },
-  medium: () => {
-    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-      navigator.vibrate(25);
-    }
-  },
-  heavy: () => {
-    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-      navigator.vibrate(50);
-    }
-  },
-  success: () => {
-    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-      navigator.vibrate([10, 50, 10]);
-    }
-  },
-  error: () => {
-    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-      navigator.vibrate([50, 30, 50, 30, 50]);
-    }
-  },
-  selection: () => {
-    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-      navigator.vibrate(5);
-    }
-  },
+/**
+ * Lightweight haptic feedback helpers.
+ *
+ * Uses the Web Vibration API where available (Android Chrome, most PWAs).
+ * iOS Safari ignores it silently — that is the intended no-op fallback.
+ * If/when Capacitor is added, swap the implementations to @capacitor/haptics
+ * without changing call sites.
+ *
+ * Exports:
+ *   - `haptics`        — object with named convenience methods (e.g. haptics.medium())
+ *   - `triggerHaptic`  — single function accepting an intensity string
+ *   - `haptic`         — alias of triggerHaptic for shorter call sites
+ */
+
+export type HapticIntensity =
+  | "selection"
+  | "light"
+  | "medium"
+  | "heavy"
+  | "success"
+  | "warning"
+  | "error";
+
+const PATTERNS: Record<HapticIntensity, number | number[]> = {
+  selection: 8,
+  light: 10,
+  medium: 18,
+  heavy: 28,
+  success: [12, 40, 12],
+  warning: [18, 60, 18],
+  error: [25, 60, 25, 60, 25],
 };
 
-// Convenience function for triggering haptics by type
-export function triggerHaptic(type: "light" | "medium" | "heavy" | "success" | "error" | "selection") {
-  haptics[type]();
+function vibrate(pattern: number | number[]): void {
+  try {
+    if (typeof navigator === "undefined") return;
+    const v = (navigator as Navigator & {
+      vibrate?: (p: number | number[]) => boolean;
+    }).vibrate;
+    if (typeof v === "function") v.call(navigator, pattern);
+  } catch {
+    // ignore
+  }
 }
 
-// Hook for long press detection
-export function useLongPress(
-  callback: () => void,
-  options: { delay?: number; onStart?: () => void; onCancel?: () => void } = {}
-) {
-  const { delay = 500, onStart, onCancel } = options;
-  let timeout: NodeJS.Timeout | null = null;
-  let triggered = false;
-
-  const start = () => {
-    triggered = false;
-    onStart?.();
-    haptics.light();
-    timeout = setTimeout(() => {
-      triggered = true;
-      haptics.medium();
-      callback();
-    }, delay);
-  };
-
-  const cancel = () => {
-    if (timeout) {
-      clearTimeout(timeout);
-      timeout = null;
-    }
-    if (!triggered) {
-      onCancel?.();
-    }
-  };
-
-  return {
-    onTouchStart: start,
-    onTouchEnd: cancel,
-    onTouchCancel: cancel,
-    onMouseDown: start,
-    onMouseUp: cancel,
-    onMouseLeave: cancel,
-  };
+export function triggerHaptic(intensity: HapticIntensity = "selection"): void {
+  vibrate(PATTERNS[intensity]);
 }
+
+export const haptic = triggerHaptic;
+
+export const haptics = {
+  selection: () => vibrate(PATTERNS.selection),
+  light: () => vibrate(PATTERNS.light),
+  medium: () => vibrate(PATTERNS.medium),
+  heavy: () => vibrate(PATTERNS.heavy),
+  success: () => vibrate(PATTERNS.success),
+  warning: () => vibrate(PATTERNS.warning),
+  error: () => vibrate(PATTERNS.error),
+};
