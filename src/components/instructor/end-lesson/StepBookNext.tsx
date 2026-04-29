@@ -732,24 +732,61 @@ export function StepBookNext({
         flexDirection: "column",
       }}
     >
-      {/* Headline question — replaces the old pupil identity bar */}
+      {/* Compact pupil context row — replaces the headline question */}
       <div
         style={{
-          padding: "4px 4px 16px",
+          padding: "4px 4px 10px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
           flexShrink: 0,
         }}
       >
-        <h2
+        {/* Compact avatar */}
+        <div
+          aria-hidden
           style={{
-            fontSize: 22,
+            width: 28,
+            height: 28,
+            borderRadius: "50%",
+            background: C.link,
+            color: "#FFFFFF",
+            fontSize: 11,
             fontWeight: 500,
-            color: C.text,
-            letterSpacing: -0.4,
-            lineHeight: 1.2,
-            margin: "0 0 4px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
           }}
         >
-          When shall we book {displayName}
+          {(displayName || "?")
+            .split(/\s+/)
+            .map((p) => p[0])
+            .filter(Boolean)
+            .slice(0, 2)
+            .join("")
+            .toUpperCase()}
+        </div>
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            flexWrap: "wrap",
+          }}
+        >
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 500,
+              color: C.text,
+              letterSpacing: -0.1,
+            }}
+          >
+            {displayName}
+          </span>
           {showReview && (
             <span
               style={{
@@ -761,37 +798,78 @@ export function StepBookNext({
                 padding: "2px 5px",
                 borderRadius: 3,
                 textTransform: "uppercase",
-                verticalAlign: "middle",
-                marginLeft: 6,
               }}
             >
               Review
             </span>
           )}
-          {" "}in next?
-        </h2>
-        <p
+          <span style={{ fontSize: 12, color: C.muted }}>·</span>
+          <span style={{ fontSize: 12, color: C.muted }}>
+            {(() => {
+              if (pupilCtx.testDate) {
+                try {
+                  return `Test prep · test on ${format(parse(pupilCtx.testDate, "yyyy-MM-dd", new Date()), "d MMM")}`;
+                } catch {
+                  /* fall through */
+                }
+              }
+              if (
+                pupilCtx.courseName &&
+                pupilCtx.courseHoursTotal != null &&
+                pupilCtx.courseHoursRemaining != null
+              ) {
+                return `${pupilCtx.courseName} · ${pupilCtx.courseHoursRemaining}h of ${pupilCtx.courseHoursTotal}h remaining`;
+              }
+              const lt = pupilCtx.lessonType
+                ? pupilCtx.lessonType.charAt(0).toUpperCase() + pupilCtx.lessonType.slice(1)
+                : "Standard lesson";
+              const wrapTime = todayStartTime
+                ? format(parse(todayStartTime, "HH:mm:ss", new Date()), "HH:mm")
+                : null;
+              return wrapTime ? `${lt} · ended ${wrapTime}` : lt;
+            })()}
+          </span>
+        </div>
+      </div>
+
+      {/* "When next?" eyebrow + Pick another time link */}
+      <div
+        style={{
+          padding: "0 4px 8px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}
+      >
+        <div
           style={{
-            fontSize: 13,
+            fontSize: 11,
+            fontWeight: 500,
             color: C.muted,
-            margin: 0,
-            lineHeight: 1.4,
+            letterSpacing: 0.3,
+            textTransform: "uppercase",
           }}
         >
-          {(() => {
-            const wrapTime = todayStartTime
-              ? format(parse(todayStartTime, "HH:mm:ss", new Date()), "HH:mm")
-              : null;
-            const head = wrapTime
-              ? `Lesson wrapped at ${wrapTime}.`
-              : "Lesson just wrapped.";
-            const courseTail =
-              pupilCtx.courseHoursRemaining != null
-                ? ` · ${pupilCtx.courseHoursRemaining}h remaining on this course`
-                : "";
-            return `${head}${courseTail} Pick a time or skip if you'll book later.`;
-          })()}
-        </p>
+          When next?
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            toast.message("Open the calendar to pick another time");
+          }}
+          style={{
+            background: "transparent",
+            border: "none",
+            padding: 0,
+            fontSize: 11,
+            fontWeight: 500,
+            color: C.link,
+            cursor: "pointer",
+          }}
+        >
+          Pick another time
+        </button>
       </div>
 
       {/* Body — scrollable */}
