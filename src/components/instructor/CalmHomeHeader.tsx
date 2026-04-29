@@ -217,11 +217,6 @@ export function CalmHomeHeader({ instructorId, instructorName }: CalmHomeHeaderP
     return getStatusLine({ remainingToday, totalToday, nextStartTime, nextDayLabel });
   }, [remainingToday, totalToday, nextLesson]);
 
-  const tip = useMemo(() => {
-    const day = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
-    return TIPS[day % TIPS.length];
-  }, []);
-
   const jobsSubtitle = pendingJobsCount > 0 ? `${pendingJobsCount} ${pendingJobsCount === 1 ? "course" : "courses"} available` : "Up to date";
   const messagesSubtitle = unreadMessages > 0 ? `${unreadMessages} unread` : "All caught up";
   const testsSubtitle = testSwapCount > 0 ? `${testSwapCount} this week` : "No new matches";
