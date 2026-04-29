@@ -72,7 +72,7 @@ export default function InstructorSchedule() {
   };
 
   useEffect(() => {
-    if (viewMode === 'schedule') {
+    if (viewMode === 'schedule' || viewMode === 'compact') {
       calendar.goToDate(new Date());
       calendar.setExtendedRange(true);
     } else {
