@@ -1,52 +1,35 @@
-## Goal
+# Fix Step 4 (Book Next Lesson) display issues
 
-Wire the new "Complete EOL" prompt on the Today's schedule card into the **existing** `EndLessonWizard` flow, and source EOL-completeness from the canonical `lesson_history` table (not from `scheduled_lessons.notes`).
+The data/logic from the previous prompt is correct — the problems are purely visual. On a 390px viewport, the layout fights the wizard's chrome: negative bleed margins overshoot, the "Best match" badge clips into the section header, the date stack and time row don't share a baseline, the footer overhangs the rounded sheet corners, and a `UserAvatar` ref warning fires.
 
-## Why
+## What's wrong
 
-`EndLessonWizard` already runs the full end-of-lesson procedure (mark complete → upload voice note → insert `lesson_history` → request feedback → award points → deduct balance → check course completion → trigger automations). Today the new prompt:
-- Routes to the pupil page instead of opening this wizard.
-- Derives "EOL done" from `scheduled_lessons.notes`, which the wizard doesn't write to (it writes `lesson_history.notes`).
+1. **Footer overhangs the rounded sheet.** Body uses `margin: "0 -24px -8px"` to escape the wizard's `padding: "8px 24px 0"`, but the wizard has no bottom padding to absorb it — the grey footer bar sits flush against the rounded-2xl dialog corners and visually clips.
+2. **"Best match" badge clips the section header.** The badge is positioned `top: -7px` above the first slot card, which collides with the "SUGGESTED SLOTS / Pick another time" row sitting directly above it (only `marginBottom: 14`).
+3. **Date stack vs time row baselines don't match.** The date stack is three lines (`EEE` / big day / `MMM`), the slot details is two lines (time + reasoning). They're center-aligned but the day number's `lineHeight: 1` and `EEE`/`MMM`'s `lineHeight: 1.1` push the visual centre off the time row.
+4. **Section header has no top breathing room.** With the identity bar bleed and no top padding on the body, "SUGGESTED SLOTS" jams against the divider.
+5. **Skip button looks inert.** Bare grey text "Skip — finish" next to a loud blue "Book & finish" reads as a label, not an action — needs a hairline border or pill shape to register as tappable.
+6. **Console warning** — `UserAvatar` inside `StepBookNext` triggers `Function components cannot be given refs`. Likely a parent (Radix Dialog focus management) forwarding a ref. Wrap or guard the avatar so it stops warning.
 
-So the badge currently mis-fires and the tap goes to the wrong place.
+## Changes (all in `src/components/instructor/end-lesson/StepBookNext.tsx`)
 
-## Changes
-
-### 1. New hook: `src/hooks/useDayLessonHistory.ts`
-
-Query `lesson_history` for the instructor on the given date, returns a `Set<string>` of `"{pupil_id}|{HH:MM:SS}"` keys (matches `scheduled_lessons.pupil_id` + `start_time`). Exports `eolKey(pupilId, startTime)` helper. `staleTime: 30s`, refetch on window focus, `enabled` guarded by `instructorId`.
-
-### 2. Realtime invalidation: `src/hooks/useGlobalLessonSync.ts`
-
-Add `"day-lesson-history"` to `LESSON_QUERY_KEYS` and add a new `useRealtimeSubscription("lesson_history", "*", invalidate, …)` so EOL completions propagate live.
-
-### 3. `src/components/instructor/HomeTodaySchedule.tsx`
-
-- Import `useDayLessonHistory`, `eolKey`, and `EndLessonWizard`.
-- Call `useDayLessonHistory(instructorId, targetDate)` alongside `useDayLessons`.
-- Replace the local `isEOLComplete(lesson)` (which checked `notes`) with: `eolDoneKeys.has(eolKey(pupil_id, start_time))`. Treat "still loading" as "complete" so the prompt never flickers in.
-- Add wizard state: `wizardLesson: TodayLesson | null` and `wizardBalance: number` (default 0).
-- New handler `openEOLWizard(lesson)`:
-  1. Fetch `pupils.account_balance` for `lesson.pupilId` (one-shot; tolerate missing as 0).
-  2. `setWizardLesson(lesson)` and open the sheet.
-- The amber `EOLPrompt` now calls `openEOLWizard(lesson)` instead of navigating.
-- Render `<EndLessonWizard … />` next to `<AddLessonSheet />` with these props pulled from `wizardLesson`: `lessonId`, `pupilId`, `pupilName`, `instructorId`, `durationMinutes`, `lessonDate` (today's `yyyy-MM-dd` for the active tab), `startTime`, `currentBalance: wizardBalance`, `onCompleted`: invalidate `["day-lessons"]`, `["day-lesson-history"]`, `["today-overview"]`, `["today-remaining-lessons"]`, then close.
-
-No other behaviour changes — Today/Tomorrow toggle, lesson tap-through, Add lesson, View full calendar, conflict banner, stat tiles, and all existing `EndLessonWizard` usages elsewhere (`NextUpTile`, `TodayScheduleView`, `InstructorPortalLayout`) are untouched.
-
-### 4. Revert the `notes` plumbing added in the previous step
-
-`useDayLessons.ts` and `useTodayRemainingLessons.ts`: drop `notes` from the SELECT and the mapped object — it's no longer used and keeps payloads slim. (`TodayLesson.notes` field removed.)
+1. **Drop the negative bottom margin on the footer**, change `margin: "0 -24px -8px"` to `margin: "0 -24px"` and add `paddingBottom: 16` inside the footer so it sits inside the rounded corners. Add `borderBottomLeftRadius: 16; borderBottomRightRadius: 16` to the footer so it respects the sheet's rounded-2xl.
+2. **Body wrapper:** change `padding: 16` to `padding: "16px 16px 0"` and add `paddingTop: 18` so the section header gets breathing room. Remove the negative left/right bleed (`margin: "0 -24px"`) — keep the body inside the wizard's 24px gutter so the slot cards align with the identity bar text instead of bleeding to the dialog edge.
+3. **Reduce the body bleed too on the identity bar** to match — use `margin: "-8px -24px 0"` only when the wizard supplies that gutter; since we're keeping the bleed pattern consistent, normalise both to `margin: "-8px -24px 0"` (identity) and **no horizontal bleed on body/footer**. The footer becomes a normal-width block with `borderTop` and rounded bottom.
+4. **Add `marginTop: 4` to the "Best match" badge container** by lifting the first slot card's `marginTop` to 10 so the badge clears the section header. Alternatively shift badge inline with the card title (replace the absolute positioning with a small inline pill above the time row) — preferred, simpler, no clipping.
+5. **Align the date stack with the time row.** Wrap the date stack in `display: flex; flexDirection: column; justifyContent: center` and reduce the day number from 19px to 17px with `lineHeight: 1.15`. Tighten EEE/MMM to `lineHeight: 1.2` so the three lines centre cleanly against the two-line slot details.
+6. **Skip button hierarchy.** Add `border: "0.5px solid #E5E5EA"; borderRadius: 10; padding: "10px 16px"; background: "#FFFFFF"` so it reads as a real action. Keep "Skip — finish" copy.
+7. **`UserAvatar` ref warning.** Open `src/components/instructor/UserAvatar.tsx`, confirm it's a plain function component, and convert it to `React.forwardRef` so Radix's focus management can attach a ref without warning. (No visual change.)
 
 ## Out of scope
 
-- Any change to `EndLessonWizard` itself or any other surface that opens it.
-- Backfilling missing `lesson_history` rows for already-completed lessons (those will continue to show "Complete EOL" until the wizard is run, which is the correct behaviour).
-- Mobile layout changes elsewhere on the home screen.
+- Slot suggestion logic (already fixed in previous prompt)
+- Wizard chrome / progress dots
+- Identity bar copy / subtitle resolver
+- Pickup row content
+- Booking API / data model
 
-## Verification
+## Files to edit
 
-- Completed lesson with no `lesson_history` row → amber "Complete EOL" pill visible. Tap opens `EndLessonWizard`. Finishing it inserts `lesson_history`, the realtime subscription fires, the pill disappears, the row stays struck-through.
-- Completed lesson with an existing `lesson_history` row → no pill. Row tap still goes to the pupil page.
-- Live and upcoming rows → no pill regardless of history state.
-- Tomorrow tab → all rows render as upcoming (pill never shows).
+- `src/components/instructor/end-lesson/StepBookNext.tsx` — layout/padding/badge/footer/skip-button refinements
+- `src/components/instructor/UserAvatar.tsx` — wrap in `React.forwardRef` to silence ref warning
