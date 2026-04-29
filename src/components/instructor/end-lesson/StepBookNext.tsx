@@ -1067,30 +1067,7 @@ export function StepBookNext({
           })
         )}
 
-        {/* "Pick another time" — full-width hairline button below slots */}
-        {!loading && (
-          <button
-            type="button"
-            onClick={() => {
-              toast.message("Open the calendar to pick another time");
-            }}
-            style={{
-              background: "transparent",
-              border: `0.5px solid ${C.hairline}`,
-              borderRadius: 10,
-              padding: 10,
-              cursor: "pointer",
-              width: "100%",
-              textAlign: "center",
-              fontSize: 13,
-              fontWeight: 500,
-              color: C.link,
-              marginBottom: 14,
-            }}
-          >
-            Pick another time
-          </button>
-        )}
+        {/* Pick another time link is now rendered next to the "When next?" eyebrow above */}
 
         {/* Pickup location — calm inline row */}
         {pickupAddress && (
