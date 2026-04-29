@@ -88,6 +88,7 @@ export function StepBookNext({
   onBooked,
   onSkip,
 }: StepBookNextProps) {
+  const queryClient = useQueryClient();
   const [slots, setSlots] = useState<SuggestedSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
