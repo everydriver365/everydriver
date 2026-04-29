@@ -21,6 +21,8 @@ const ICON_COLOR = "hsl(var(--dsm-text-secondary))";
 
 export function MobileBlueHeader({
   instructorId,
+  firstName,
+  profileImageUrl,
   showBackButton = false,
   onBack,
   onPlus,
@@ -28,6 +30,7 @@ export function MobileBlueHeader({
 }: Props) {
   const navigate = useNavigate();
   const { total: notifCount } = useCombinedNotificationCount(instructorId);
+  const initial = (firstName || "I").trim().charAt(0).toUpperCase();
 
   const bgStyle = { background: "hsl(var(--dsm-bg))" };
 
