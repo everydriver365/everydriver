@@ -1,57 +1,65 @@
-## Goal — Option A
+# Restore the rest of the instructor home page
 
-Restore the rich functionality (Today/Week/Month switcher, real period stats, editable goals, tappable legend rows) that was lost when the strict-redesign cleanup removed `WeekAtAGlanceCard` from the home page, while keeping the merged "Today" card concept.
+## What happened
 
-## Approach
+During the earlier "Strict redesign / calm" cleanup of `src/components/instructor/InstructorMobileHome.tsx`, the default layout branch was reduced to just three things:
 
-Rebuild the merged Today card on `/instructor` so its top half is the full-featured `WeekAtAGlanceCard` (period switcher + editable goals + real stats from `useInstructorPeriodStats`) and its bottom half is the existing "Up Next / Done for today" zone.
+1. `<CalmHomeHeader />` (greeting + merged Today stats + Up Next)
+2. `<WeatherAlertBanner />`
+3. `<DrivingAlertsStrip />` + `<FloatingSessionBar />`
 
-Layout:
+Everything else that used to render below the header — today's schedule list, quick action tiles, activity tiles, telematics, vehicle health, plan/referral widgets, pupil milestones, tomorrow peek, road alerts, bottom promo, etc. — was removed from the JSX (the imports were left in place, which is why they look "available" but nothing shows on screen).
+
+The other layout styles (`schedule`, `lockscreen`, `clean`, `ios-native`, `compact`, `bestmate`, `mission-control`, `widgets`) were not touched and still render their own full content. Only the **default ("calm") layout** lost its sections.
+
+## Goal
+
+Keep the new `CalmHomeHeader` (which already merges Today stats + Up Next + rings + goals) at the top, and restore the rest of the home page underneath it in a sensible order, without re-introducing duplication of what `CalmHomeHeader` already shows.
+
+## Proposed order for the default layout
 
 ```text
-┌─────────────────────────────────────────┐
-│  TODAY · YOUR STATS         This week ▾ │
-│  [ Today | Week | Month ]               │
-│         ┌─────────┐                     │
-│         │  rings  │   3 Lessons         │
-│         └─────────┘                     │
-│  ● Lessons      3 of 4         75%      │
-│  ● Earned    £128 of £160      80%      │
-│  ● Hours       4h of 6h        66%      │
-│  Day resets at midnight    Set goals •  │
-└─────────────────────────────────────────┘
-┌─────────────────────────────────────────┐
-│ [icon] UP NEXT · IN 25M             ›   │
-│        Sarah Mitchell                   │
-│        1h lesson · 14:30 at SO22        │
-└─────────────────────────────────────────┘
+CalmHomeHeader                  (greeting, rings, Up Next, goals)  — kept
+WeatherAlertBanner              (weather + traffic to next pupil)  — kept
+DrivingAlertsStrip              (non-weather alerts)               — kept
+────────────────────────────────────────────────────────────
+RoadAlertsRow                   (road closures / incidents row)
+HomeTodaySchedule               (today's remaining lessons list)
+TomorrowPeekCard                (tomorrow at a glance)
+QuickActionTiles                (search + primary actions)
+ActivityTilesGrid               (editable 2x N tiles, edit-mode aware)
+TestRequestsTile                (test requests summary)
+TelematicsTile                  (driving/telematics summary)
+VehicleHealthCard               (engine faults, MOT, service)
+IdleTimeCostCard                (idle cost insight)
+SmartRemindersCard              (reminders)
+PupilMilestoneFeed              (recent pupil wins)
+UpcomingEventsCard              (upcoming tests / events)
+PlanWidget + ReferralStatsWidget (subscription + referrals)
+BottomPromoGroup                (promos / cross-sell)
+FloatingSessionBar              (only when a lesson is in progress) — kept
 ```
 
-Two stacked cards with a small 10px gap — visually paired but each a distinct tappable surface, which is necessary because `WeekAtAGlanceCard` already manages its own internal taps (segmented control, legend rows, "Set goals" button, expand/collapse).
+Each section is wrapped in `px-4` with consistent vertical spacing (`mt-3` / `mt-4`) to match the existing rhythm used elsewhere in the file.
 
-## Implementation
+## Anti-duplication rules
 
-Single file change: `src/components/instructor/CalmHomeHeader.tsx`.
+- Do **not** re-add `WarmHomeTiles`, `ContextualHomeHero`, `HomepageHero`, `MorningBriefingCard`, `ReadyToTeachTile`, `WeeklyGoalRing`, or `NextUpTile` — these overlap with what `CalmHomeHeader` now shows (greeting, rings, goals, Up Next). They stay out.
+- Do **not** re-add `TodayMiniTimeline` — `HomeTodaySchedule` covers the same ground more usefully.
+- Keep `FloatingSessionBar` exactly where it is (last child of the fragment).
 
-1. Import `WeekAtAGlanceCard` from `@/components/instructor/WeekAtAGlanceCard`.
-2. Remove the local `TodayCard` component and the now-unused `ConcentricRings`, `LegendRow`, and `ProgressRingsCompact`-style helpers that are no longer referenced anywhere.
-3. In the `CalmHomeHeader` JSX, replace the current `<TodayCard …/>` with:
-   - `<WeekAtAGlanceCard instructorId={instructorId} />` — restores period switcher, real stats, editable goals, tappable legend.
-   - A spacer (`marginTop: 10`).
-   - A standalone "Up Next / Done for today" tile (the bottom-zone code already in `TodayCard`, lifted out into its own small component or rendered inline) routing to `/instructor/diary`.
-4. Drop unused imports/props: the rings no longer need `lessonsDone`, `lessonsTotal`, `earned`, `hoursTaught` props or the `useWeeklyGoals` / `useInstructorLiveStats` derivations (`WeekAtAGlanceCard` fetches its own data via `useInstructorPeriodStats`). Keep `useTodayRemainingLessons` / `useTodayOverview` only where they're still needed for the greeting status line.
+## Files to change
 
-## What this restores
+- `src/components/instructor/InstructorMobileHome.tsx` — only the default-layout `<>...</>` branch (lines ~451–486). All the required components are already imported at the top of the file, so no new imports are needed; the unused-import warnings will also clear up once they're rendered again.
 
-- Today / Week / Month period switcher (segmented control + horizontal swipe)
-- Editable goals via bottom sheet (tap "Set goals" / "Edit goals")
-- Real lessons / £ earned / hours-taught data per period from `useInstructorPeriodStats` (no more derived `weeklyEarnings / 7` estimate)
-- Tappable legend rows that deep-link: Lessons → schedule, Earned → pay, Hours → schedule
-- Expand/collapse compact pill state on the rings card
-- "Day resets at midnight" / "Week resets every Monday" / "Month resets on the 1st" footer copy
+No other files, no DB changes, no new components.
 
 ## Out of scope
 
-- No changes to the 2×2 dashboard tile grid, weather banner, Tip of the Day, or any other home section.
-- No changes to other portals or layouts.
-- No data/query changes — `WeekAtAGlanceCard` already exists and works.
+- The other layout styles (schedule / lockscreen / clean / ios-native / compact / bestmate / mission-control / widgets) — untouched.
+- The mobile layout structure itself — per project memory, mobile changes are not made unless explicitly instructed; this is purely restoring sections the user previously had on this same mobile home view.
+- `CalmHomeHeader` internals — left as-is.
+
+## After approval
+
+I'll edit the default branch in `InstructorMobileHome.tsx` to render the sections listed above in that order, then you can confirm on `/instructor` that the home page feels complete again. If any specific section shouldn't come back (e.g. you don't want PlanWidget or BottomPromoGroup), tell me which and I'll omit them.

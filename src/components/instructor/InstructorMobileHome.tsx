@@ -452,7 +452,7 @@ export function InstructorMobileHome({
       {/* Calm home header (greeting / rings / Up Next / 2x2 grid / Tip) */}
       <CalmHomeHeader instructorId={instructorId} instructorName={instructor?.name} />
 
-      {/* Safety: weather + traffic banner (kept — not duplicated by calm header) */}
+      {/* Safety: weather + traffic banner */}
       <div className="px-4 mt-3">
         <WeatherAlertBanner
           trafficAlerts={trafficAlerts}
@@ -479,6 +479,110 @@ export function InstructorMobileHome({
             className="mt-4"
           />
         )}
+      </div>
+
+      {/* Road alerts (closures / incidents) */}
+      {alerts.filter(a => a.type === "traffic").length > 0 && (
+        <div className="px-4 mt-3">
+          <RoadAlertsRow alerts={alerts.filter(a => a.type === "traffic")} />
+        </div>
+      )}
+
+      {/* Today's remaining lessons */}
+      {instructorId && (
+        <div className="px-4 mt-4">
+          <HomeTodaySchedule instructorId={instructorId} />
+        </div>
+      )}
+
+      {/* Tomorrow at a glance */}
+      {tomorrowPreview && tomorrowPreview.lessonCount > 0 && (
+        <div className="px-4 mt-4">
+          <TomorrowPeekCard
+            lessonCount={tomorrowPreview.lessonCount}
+            totalHours={tomorrowPreview.totalHours}
+            expectedEarnings={tomorrowPreview.expectedEarnings}
+            firstLessonTime={tomorrowPreview.firstLessonTime}
+            lessons={tomorrowLessons || []}
+            instructorId={instructorId}
+          />
+        </div>
+      )}
+
+      {/* Quick action tiles */}
+      <div className="px-4 mt-4">
+        <QuickActionTiles
+          quickActions={content?.quick_actions || []}
+          pendingJobsCount={pendingJobsCount}
+          instructorId={instructorId}
+          loading={contentLoading}
+          isEditMode={isTileEditMode}
+          onEditModeChange={setIsTileEditMode}
+        />
+      </div>
+
+      {/* Activity tiles grid */}
+      <div className="px-4 mt-4">
+        <ActivityTilesGrid
+          pendingJobsCount={pendingJobsCount}
+          unreadMessagesCount={unreadCount || 0}
+          testRequestsCount={testSwapCount || 0}
+          gapSlotsCount={gapSuggestions?.length || 0}
+        />
+      </div>
+
+      {/* Test requests */}
+      {instructorId && (
+        <div className="px-4 mt-4">
+          <TestRequestsTile instructorId={instructorId} />
+        </div>
+      )}
+
+      {/* Telematics summary */}
+      <div className="px-4 mt-4">
+        <TelematicsTile />
+      </div>
+
+      {/* Vehicle health */}
+      {instructorId && (
+        <div className="px-4 mt-4">
+          <VehicleHealthCard instructorId={instructorId} />
+        </div>
+      )}
+
+      {/* Idle time cost insight */}
+      {instructorId && (
+        <div className="px-4 mt-4">
+          <IdleTimeCostCard instructorId={instructorId} />
+        </div>
+      )}
+
+      {/* Smart reminders */}
+      <div className="px-4 mt-4">
+        <SmartRemindersCard />
+      </div>
+
+      {/* Pupil milestones */}
+      {instructorId && (
+        <div className="px-4 mt-4">
+          <PupilMilestoneFeed instructorId={instructorId} />
+        </div>
+      )}
+
+      {/* Upcoming events (tests etc.) */}
+      <div className="px-4 mt-4">
+        <UpcomingEventsCard />
+      </div>
+
+      {/* Plan + Referrals */}
+      <div className="px-4 mt-4 space-y-4">
+        <PlanWidget />
+        <ReferralStatsWidget />
+      </div>
+
+      {/* Bottom promos */}
+      <div className="px-4 mt-4 mb-6">
+        <BottomPromoGroup />
       </div>
 
       {/* Floating active-session bar (critical: only shows when a lesson is in progress) */}
