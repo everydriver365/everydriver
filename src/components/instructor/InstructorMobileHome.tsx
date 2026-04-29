@@ -590,24 +590,37 @@ export function InstructorMobileHome({
                     metaColor="#185FA5"
                   />
                 </div>
-                <NextUpTile
-                  lessonId={nextLesson.lessonId}
-                  pupilId={nextLesson.pupilId}
-                  pupilName={nextLesson.pupilName}
-                  pupilProfileImage={nextLesson.pupilProfileImage}
-                  pupilPhone={nextLesson.pupilPhone}
-                  lessonDate={nextLesson.lessonDate}
-                  pickupPostcode={nextLesson.pickupPostcode}
-                  pickupLocation={nextLesson.pickupLocation}
-                  startTime={nextLesson.startTime}
-                  minutesUntil={nextLesson.minutesUntil}
-                  accountBalance={nextLesson.accountBalance}
-                  prepaidHours={nextLesson.prepaidHours}
-                  durationMinutes={nextLesson.durationMinutes}
-                  instructorId={instructorId}
-                  checkInStatus={nextLesson.checkInStatus}
-                  lastLessonPlan={nextLesson.lastLessonPlan}
-                />
+                {nextLesson.minutesUntil > 240 ? (
+                  <SimpleNextLessonCard
+                    lessonId={nextLesson.lessonId}
+                    pupilId={nextLesson.pupilId}
+                    pupilName={nextLesson.pupilName}
+                    lessonDate={nextLesson.lessonDate}
+                    startTime={nextLesson.startTime}
+                    durationMinutes={nextLesson.durationMinutes}
+                    pickupLocation={nextLesson.pickupLocation}
+                    minutesUntil={nextLesson.minutesUntil}
+                  />
+                ) : (
+                  <NextUpTile
+                    lessonId={nextLesson.lessonId}
+                    pupilId={nextLesson.pupilId}
+                    pupilName={nextLesson.pupilName}
+                    pupilProfileImage={nextLesson.pupilProfileImage}
+                    pupilPhone={nextLesson.pupilPhone}
+                    lessonDate={nextLesson.lessonDate}
+                    pickupPostcode={nextLesson.pickupPostcode}
+                    pickupLocation={nextLesson.pickupLocation}
+                    startTime={nextLesson.startTime}
+                    minutesUntil={nextLesson.minutesUntil}
+                    accountBalance={nextLesson.accountBalance}
+                    prepaidHours={nextLesson.prepaidHours}
+                    durationMinutes={nextLesson.durationMinutes}
+                    instructorId={instructorId}
+                    checkInStatus={nextLesson.checkInStatus}
+                    lastLessonPlan={nextLesson.lastLessonPlan}
+                  />
+                )}
               </div>
             )}
 
