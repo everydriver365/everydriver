@@ -206,7 +206,7 @@ interface Tip { eyebrow: string; title: string; subtitle: string; cta: string; p
 const TIPS: Tip[] = [
   { eyebrow: "Tip of the day", title: "Use voice notes after lessons", subtitle: "Saves about 5 minutes per pupil and keeps progress notes consistent.", cta: "Try it", path: "/instructor/pupils" },
   { eyebrow: "Did you know", title: "Drag and drop in Calendar to reschedule", subtitle: "Move lessons in seconds — pupils get notified automatically.", cta: "Open diary", path: "/instructor/diary" },
-  { eyebrow: "Heads up", title: "Set weekly goals on your home rings", subtitle: "Track lessons taught, hours and earnings against a target.", cta: "Set goals", path: "/instructor/goals" },
+  { eyebrow: "Heads up", title: "Set weekly goals on your home rings", subtitle: "Track lessons taught, hours and earnings against a target.", cta: "Set goals", path: "/instructor/earnings" },
   { eyebrow: "New feature", title: "Fill empty slots automatically", subtitle: "Open Fill gaps and offer your free time to pupils on the waitlist.", cta: "See more", path: "/instructor/gaps" },
   { eyebrow: "Tip of the day", title: "Add a payment QR to your dashboard", subtitle: "Pupils scan and pay in seconds — no card details to read out.", cta: "Learn more", path: "/instructor/pay" },
 ];
