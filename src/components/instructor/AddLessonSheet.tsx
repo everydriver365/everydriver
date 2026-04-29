@@ -635,7 +635,7 @@ export function AddLessonSheet({
       handlePostSavePayment(selectedPupil);
       resetForm(); onOpenChange(false); onSuccess();
     } catch (error) { console.error(error); toast.error('Failed to schedule lesson'); }
-    finally { setLoading(false); }
+    finally { setLoading(false); submittingRef.current = false; }
   };
 
   const handleAddLessonNew = async () => {
