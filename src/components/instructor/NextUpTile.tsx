@@ -255,7 +255,49 @@ export function NextUpTile({
   };
 
   const isImminent = minutesUntil <= 30;
+  const isWithin4h = minutesUntil <= 240;
   const navBlue = "#2A394F";
+
+  // Compute "leave by" recommendation when imminent
+  const PARKING_BUFFER_MIN = 3;
+  const leaveByText = (() => {
+    if (!isImminent || !etaMinutes || etaMinutes <= 0) return null;
+    try {
+      const start = parse(startTime, "HH:mm:ss", new Date());
+      const leaveAt = new Date(start.getTime() - (etaMinutes + PARKING_BUFFER_MIN) * 60000);
+      return format(leaveAt, "HH:mm");
+    } catch { return null; }
+  })();
+
+  // Severity for travel-time bar
+  const minsLateIfLeaveNow = etaMinutes && etaMinutes > 0
+    ? Math.max(0, etaMinutes + PARKING_BUFFER_MIN - minutesUntil)
+    : 0;
+  const trafficHeavy = trafficCondition?.toLowerCase() === "heavy";
+  const travelBarSeverity: "normal" | "amber" | "red" =
+    minsLateIfLeaveNow > 0 ? "red" : trafficHeavy ? "amber" : "normal";
+  const travelBarBg =
+    travelBarSeverity === "red" ? "#FBEAEC"
+      : travelBarSeverity === "amber" ? "#FBF1DE"
+      : "#E6F1FB";
+  const travelBarIconColor =
+    travelBarSeverity === "red" ? "#C8434F"
+      : travelBarSeverity === "amber" ? "#B8801F"
+      : "#2B7BC8";
+
+  // Format pickup address with postcode appearing exactly once
+  const formattedPickupAddress = (() => {
+    const addr = (pickupLocation || "").trim();
+    const pc = (pickupPostcode || "").trim();
+    if (!addr) return pc;
+    if (!pc) return addr;
+    // Strip postcode if already present in address (case-insensitive, ignoring spaces)
+    const normPc = pc.replace(/\s+/g, "").toUpperCase();
+    const normAddr = addr.replace(/\s+/g, "").toUpperCase();
+    if (normAddr.endsWith(normPc)) return `${addr.replace(/[, ]+$/, "")}`.replace(new RegExp(`\\s*,?\\s*${pc.replace(/\s+/g, "\\s*")}\\s*$`, "i"), "") + ` · ${pc}`;
+    if (normAddr.includes(normPc)) return addr; // already contains it somewhere
+    return `${addr} · ${pc}`;
+  })();
   const countdownColor = minutesUntil <= 5 ? "#ef4444" : minutesUntil <= 15 ? "#f59e0b" : navBlue;
 
   // iOS 17 native palette — scoped to this component
@@ -367,8 +409,8 @@ export function NextUpTile({
             </div>
           </button>
 
-          {/* ── MAP PREVIEW (live map preserved) ── */}
-          {pickupPostcode && (
+          {/* ── MAP PREVIEW (only when within 4h) ── */}
+          {isWithin4h && pickupPostcode && (
             <div
               style={{
                 position: "relative",
@@ -401,46 +443,70 @@ export function NextUpTile({
             </div>
           )}
 
-          {/* ── ROUTE LIST (origin → destination) ── */}
-          {(pickupLocation || pickupPostcode) && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {/* Origin */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{
-                  width: 18, height: 18, borderRadius: "50%", background: "#FFFFFF",
-                  border: "2px solid #6E6E73",
-                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#6E6E73" }} />
+          {/* ── TRAVEL-TIME BAR (only when within 30 min and ETA known) ── */}
+          {isImminent && etaMinutes > 0 && (
+            <div
+              style={{
+                display: "flex", alignItems: "center", gap: 10,
+                padding: "12px 14px",
+                background: travelBarBg,
+                borderRadius: 10,
+                border: "0.5px solid #E5E5EA",
+              }}
+            >
+              <div style={{
+                width: 32, height: 32, borderRadius: 8, background: "#FFFFFF",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <Car style={{ width: 16, height: 16, color: travelBarIconColor }} strokeWidth={2} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", marginBottom: 1 }}>
+                  {travelBarSeverity === "red"
+                    ? `Running ${minsLateIfLeaveNow} min late`
+                    : `${etaMinutes} min drive${etaText && /·/.test(etaText) ? ` · ${etaText.split("·").slice(-1)[0].trim()}` : ""}`}
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: a11yPx(14), fontWeight: 500, color: "#000000" }}>Your location</div>
-                  <div style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>Current position</div>
-                </div>
-                <div style={{ fontSize: a11yPx(12), color: "#6E6E73", fontVariantNumeric: "tabular-nums" }}>
-                  {etaText || "—"}
+                <div style={{ fontSize: a11yPx(11), color: "#6E6E73" }}>
+                  {leaveByText
+                    ? `Leave by ${leaveByText} to arrive on time`
+                    : "Calculating leave-by time…"}
                 </div>
               </div>
+            </div>
+          )}
 
-              {/* Destination */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {/* ── ROUTE LIST (origin → destination) ── */}
+          {(pickupLocation || pickupPostcode) && (
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+              {/* Timeline column */}
+              <div style={{
+                flexShrink: 0, width: 14, display: "flex", flexDirection: "column",
+                alignItems: "center", paddingTop: 4,
+              }}>
                 <div style={{
-                  width: 18, height: 18, borderRadius: "50%", background: "#FFFFFF",
-                  border: "2px solid #C8434F",
-                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#C8434F" }} />
+                  width: 10, height: 10, borderRadius: "50%", background: "#FFFFFF",
+                  border: "2px solid #2B7BC8",
+                }} />
+                <div style={{ width: 1.5, height: 20, background: "#E5E5EA", margin: "2px 0" }} />
+                <div style={{
+                  width: 10, height: 10, borderRadius: "50%", background: "#C8434F",
+                }} />
+              </div>
+
+              {/* Content column */}
+              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+                {/* Origin */}
+                <div style={{ fontSize: a11yPx(12), color: "#6E6E73", lineHeight: 1.3 }}>
+                  Your location
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: a11yPx(14), fontWeight: 500, color: "#000000" }}>
-                    Pick up {firstName}
+                {/* Destination */}
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", letterSpacing: -0.1, marginBottom: 1 }}>
+                    Pick up {toSentenceName(firstName)}
                   </div>
-                  <div style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>
-                    {[pickupLocation, pickupPostcode].filter(Boolean).join(" · ")}
+                  <div style={{ fontSize: a11yPx(11), color: "#6E6E73", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {formattedPickupAddress || "—"}
                   </div>
-                </div>
-                <div style={{ fontSize: a11yPx(12), color: "#6E6E73", fontVariantNumeric: "tabular-nums" }}>
-                  {formatTime24(startTime)}
                 </div>
               </div>
             </div>
@@ -519,46 +585,28 @@ export function NextUpTile({
             </div>
           </div>
 
-          {/* ── START TRACK (preserved functionality, repositioned) ── */}
-          {!trackerDismissed && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
-                }}
-                className="active:opacity-90"
-                style={{
-                  flex: 1,
-                  background: "#C8434F", color: "#FFFFFF",
-                  border: "none", borderRadius: 10,
-                  padding: 12, fontSize: a11yPx(14), fontWeight: 500,
-                  cursor: "pointer",
-                  transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                }}
-                title="Start tracking session for this lesson"
-              >
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FFFFFF", display: "inline-block" }} />
-                Start track
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  dismissTracker(lessonId);
-                  setTrackerDismissed(true);
-                }}
-                aria-label="Dismiss start track"
-                style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  border: "0.5px solid #E5E5EA", background: "#FFFFFF",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer",
-                }}
-              >
-                <X style={{ width: 14, height: 14, color: "#6E6E73" }} strokeWidth={2} />
-              </button>
-            </div>
+          {/* ── START TRACK (only when within 4h; full-width primary CTA) ── */}
+          {isWithin4h && !trackerDismissed && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
+              }}
+              className="active:opacity-90"
+              style={{
+                width: "100%",
+                background: "#C8434F", color: "#FFFFFF",
+                border: "none", borderRadius: 10,
+                padding: 13, fontSize: a11yPx(14), fontWeight: 500,
+                cursor: "pointer",
+                transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+              }}
+              title="Start tracking session for this lesson"
+            >
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FFFFFF", display: "inline-block" }} />
+              Start track
+            </button>
           )}
         </div>
 
