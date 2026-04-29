@@ -6,8 +6,6 @@ import {
   CheckCircle2, ArrowRight,
 } from "lucide-react";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
-import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
-import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
@@ -16,6 +14,7 @@ import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCou
 import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { triggerHaptic } from "@/lib/haptics";
+import { WeekAtAGlanceCard } from "@/components/instructor/WeekAtAGlanceCard";
 
 // ─── Helpers ──────────────────────────────────────
 function titleCase(s: string): string {
@@ -78,139 +77,69 @@ function HomeGreeting({ firstName, statusText }: { firstName: string; statusText
   );
 }
 
-// ─── Concentric rings ────────────────────────────
-function ConcentricRings({ pctOuter, pctMiddle, pctInner, size = 80 }: { pctOuter: number; pctMiddle: number; pctInner: number; size?: number; }) {
-  const stroke = 5;
-  const center = size / 2;
-  const radii = [center - stroke / 2 - 1, center - stroke * 2, center - stroke * 3.5];
-  const colors = ["#C8434F", "#2B7BC8", "#3B8B3B"];
-  const pcts = [pctOuter, pctMiddle, pctInner];
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
-      {radii.map((r, i) => {
-        const c = 2 * Math.PI * r;
-        const clamped = Math.max(0, Math.min(100, pcts[i]));
-        const dash = (clamped / 100) * c;
-        return (
-          <g key={i} transform={`rotate(-90 ${center} ${center})`}>
-            <circle cx={center} cy={center} r={r} stroke={`${colors[i]}22`} strokeWidth={stroke} fill="none" />
-            <circle cx={center} cy={center} r={r} stroke={colors[i]} strokeWidth={stroke} strokeLinecap="round" fill="none" strokeDasharray={`${dash} ${c - dash}`} />
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
 
-function LegendRow({ color, valueBold, valueRest }: { color: string; valueBold: string; valueRest: string }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#000000" }}>
-      <span style={{ width: 6, height: 6, borderRadius: "50%", background: color, flexShrink: 0 }} />
-      <span style={{ fontWeight: 500 }}>{valueBold}</span>
-      <span style={{ color: "#6E6E73" }}>{valueRest}</span>
-    </div>
-  );
-}
-
-// ─── Combined Today card (rings + up next / done) ──
-interface TodayCardProps {
-  lessonsDone: number;
-  lessonsTotal: number;
-  earned: number;
-  hoursTaught: number;
+// ─── Standalone Up Next / Done for today tile ────
+interface UpNextStandaloneTileProps {
   pupilName: string | null;
   startTime: string | null;
   durationMinutes: number | null;
   pickupLocation: string | null;
   minutesUntil: number | null;
-  onRingsPress: () => void;
-  onNextPress: () => void;
+  onPress: () => void;
 }
 
-function TodayCard({
-  lessonsDone, lessonsTotal, earned, hoursTaught,
-  pupilName, startTime, durationMinutes, pickupLocation, minutesUntil,
-  onRingsPress, onNextPress,
-}: TodayCardProps) {
-  const lessonsPct = lessonsTotal > 0 ? (lessonsDone / lessonsTotal) * 100 : 0;
-  const earnedPct = lessonsPct * 0.92;
-  const hoursPct = lessonsPct * 0.85;
-  const overall = Math.round(lessonsPct);
+function UpNextStandaloneTile({
+  pupilName, startTime, durationMinutes, pickupLocation, minutesUntil, onPress,
+}: UpNextStandaloneTileProps) {
   const hasNext = !!(pupilName && startTime && minutesUntil != null);
-  const ringsEyebrow = hasNext ? "On track today" : "Today";
 
-  // Bottom zone content
-  let bottomEyebrow = "Done for today";
-  let bottomEyebrowColor = "#3B8B3B";
-  let bottomIconBg = "#E8F3E8";
-  let bottomIcon = <CheckCircle2 style={{ width: 22, height: 22, color: "#3B8B3B" }} strokeWidth={2} />;
-  let bottomTitle = "No lessons coming up";
-  let bottomSubtitle = "Tap to open your diary";
+  let eyebrow = "Done for today";
+  let eyebrowColor = "#3B8B3B";
+  let iconBg = "#E8F3E8";
+  let icon = <CheckCircle2 style={{ width: 22, height: 22, color: "#3B8B3B" }} strokeWidth={2} />;
+  let title = "No lessons coming up";
+  let subtitle = "Tap to open your diary";
 
   if (hasNext) {
-    let eyebrow = "Up next · later";
+    let label = "Up next · later";
     if (minutesUntil! < 90) {
       const h = Math.floor(minutesUntil! / 60);
       const m = minutesUntil! % 60;
-      eyebrow = h > 0 ? `Up next · in ${h}h ${m}m` : `Up next · in ${m}m`;
-    } else if (minutesUntil! < 1440) eyebrow = "Up next · later today";
-    else if (minutesUntil! < 2880) eyebrow = "Up next · tomorrow";
-    else eyebrow = `Up next · in ${Math.floor(minutesUntil! / 1440)} days`;
+      label = h > 0 ? `Up next · in ${h}h ${m}m` : `Up next · in ${m}m`;
+    } else if (minutesUntil! < 1440) label = "Up next · later today";
+    else if (minutesUntil! < 2880) label = "Up next · tomorrow";
+    else label = `Up next · in ${Math.floor(minutesUntil! / 1440)} days`;
     const durationLabel = durationMinutes && durationMinutes >= 60
       ? `${(durationMinutes / 60).toFixed(durationMinutes % 60 === 0 ? 0 : 1)}h lesson`
       : `${durationMinutes ?? 60}m lesson`;
-    bottomEyebrow = eyebrow;
-    bottomEyebrowColor = "#2B7BC8";
-    bottomIconBg = "#E6F1FB";
-    bottomIcon = <Clock style={{ width: 22, height: 22, color: "#2B7BC8" }} strokeWidth={2} />;
-    bottomTitle = titleCase(pupilName!);
-    bottomSubtitle = pickupLocation ? `${durationLabel} · ${startTime} at ${pickupLocation}` : `${durationLabel} · ${startTime}`;
+    eyebrow = label;
+    eyebrowColor = "#2B7BC8";
+    iconBg = "#E6F1FB";
+    icon = <Clock style={{ width: 22, height: 22, color: "#2B7BC8" }} strokeWidth={2} />;
+    title = titleCase(pupilName!);
+    subtitle = pickupLocation ? `${durationLabel} · ${startTime} at ${pickupLocation}` : `${durationLabel} · ${startTime}`;
   }
 
   return (
-    <div style={{ background: "#FFFFFF", borderRadius: 16, marginBottom: 16, overflow: "hidden" }}>
-      {/* Top zone — rings */}
-      <button
-        type="button"
-        onClick={onRingsPress}
-        style={{ width: "100%", background: "transparent", border: "none", padding: 18, cursor: "pointer", textAlign: "left" }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ position: "relative", width: 80, height: 80, flexShrink: 0 }}>
-            <ConcentricRings pctOuter={lessonsPct} pctMiddle={earnedPct} pctInner={hoursPct} />
-            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 500, color: "#000000", letterSpacing: "-0.3px" }}>{overall}%</div>
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 11, fontWeight: 500, color: "#6E6E73", letterSpacing: "0.3px", textTransform: "uppercase", margin: "0 0 4px" }}>{ringsEyebrow}</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              <LegendRow color="#C8434F" valueBold={`${lessonsDone} of ${lessonsTotal}`} valueRest="lessons" />
-              <LegendRow color="#2B7BC8" valueBold={`£${Math.round(earned)}`} valueRest="earned" />
-              <LegendRow color="#3B8B3B" valueBold={`${hoursTaught.toFixed(1)}h`} valueRest="taught" />
-            </div>
-          </div>
-        </div>
-      </button>
-
-      {/* Hairline divider (inset) */}
-      <div style={{ height: 0.5, background: "#E5E5EA", margin: "0 16px" }} />
-
-      {/* Bottom zone — up next / done */}
-      <button
-        type="button"
-        onClick={onNextPress}
-        style={{ width: "100%", background: "transparent", border: "none", padding: 16, cursor: "pointer", display: "flex", alignItems: "center", gap: 14, textAlign: "left" }}
-      >
-        <div style={{ width: 44, height: 44, borderRadius: 11, background: bottomIconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          {bottomIcon}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: 11, fontWeight: 500, color: bottomEyebrowColor, letterSpacing: "0.3px", textTransform: "uppercase", margin: "0 0 2px" }}>{bottomEyebrow}</p>
-          <p style={{ fontSize: 16, fontWeight: 500, color: "#000000", letterSpacing: "-0.2px", margin: "0 0 1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{bottomTitle}</p>
-          <p style={{ fontSize: 12, color: "#6E6E73", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{bottomSubtitle}</p>
-        </div>
-        <ChevronRight style={{ width: 14, height: 14, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={() => { triggerHaptic("light"); onPress(); }}
+      style={{
+        width: "100%", background: "#FFFFFF", border: "none", borderRadius: 14,
+        padding: 16, marginBottom: 16, cursor: "pointer",
+        display: "flex", alignItems: "center", gap: 14, textAlign: "left",
+      }}
+    >
+      <div style={{ width: 44, height: 44, borderRadius: 11, background: iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        {icon}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 11, fontWeight: 500, color: eyebrowColor, letterSpacing: "0.3px", textTransform: "uppercase", margin: "0 0 2px" }}>{eyebrow}</p>
+        <p style={{ fontSize: 16, fontWeight: 500, color: "#000000", letterSpacing: "-0.2px", margin: "0 0 1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</p>
+        <p style={{ fontSize: 12, color: "#6E6E73", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{subtitle}</p>
+      </div>
+      <ChevronRight style={{ width: 14, height: 14, color: "#6E6E73", flexShrink: 0 }} strokeWidth={1.6} />
+    </button>
   );
 }
 
@@ -272,8 +201,6 @@ export function CalmHomeHeader({ instructorId, instructorName }: CalmHomeHeaderP
   const navigate = useNavigate();
 
   const { data: nextLesson } = useNextLessonDetails(instructorId);
-  const { data: weeklyGoals } = useWeeklyGoals(instructorId);
-  const { monthEarnings } = useInstructorLiveStats(instructorId);
   const { data: unreadMessages = 0 } = useUnreadMessagesCount(instructorId);
   const pendingJobsCount = usePendingJobsCount();
   const { data: todayLessons } = useTodayRemainingLessons(instructorId);
@@ -285,8 +212,6 @@ export function CalmHomeHeader({ instructorId, instructorName }: CalmHomeHeaderP
   const firstName = (instructorName || "Instructor").split(" ")[0];
   const remainingToday = todayLessons?.length ?? 0;
   const totalToday = todayOverview?.lessonCount ?? 0;
-  const lessonsDone = Math.max(0, totalToday - remainingToday);
-  const hoursTaught = lessonsDone;
 
   const statusText = useMemo(() => {
     let nextStartTime: string | null = null;
@@ -312,9 +237,6 @@ export function CalmHomeHeader({ instructorId, instructorName }: CalmHomeHeaderP
   const gapsCount = gapSuggestions?.length ?? 0;
   const gapsSubtitle = gapsCount > 0 ? `${gapsCount} this week` : "Nothing to fill";
 
-  const earnedToday = (weeklyGoals?.earningsThisWeek ?? 0) > 0
-    ? Math.round((weeklyGoals!.earningsThisWeek) / 7)
-    : Math.round((monthEarnings ?? 0) / 30);
 
   return (
     <div style={{ background: "#F2F2F4", padding: "20px 16px" }}>
@@ -324,18 +246,16 @@ export function CalmHomeHeader({ instructorId, instructorName }: CalmHomeHeaderP
         onNotifications={() => navigate("/instructor/notifications")}
       />
       <HomeGreeting firstName={firstName} statusText={statusText} />
-      <TodayCard
-        lessonsDone={lessonsDone}
-        lessonsTotal={Math.max(totalToday, lessonsDone)}
-        earned={earnedToday}
-        hoursTaught={hoursTaught}
+      <div style={{ marginBottom: 16 }}>
+        <WeekAtAGlanceCard instructorId={instructorId} />
+      </div>
+      <UpNextStandaloneTile
         pupilName={nextLesson?.pupilName ?? null}
         startTime={nextLesson?.startTime ?? null}
         durationMinutes={nextLesson?.durationMinutes ?? null}
         pickupLocation={nextLesson?.pickupLocation ?? nextLesson?.pickupPostcode ?? null}
         minutesUntil={nextLesson?.minutesUntil ?? null}
-        onRingsPress={() => navigate("/instructor/goals")}
-        onNextPress={() => navigate("/instructor/diary")}
+        onPress={() => navigate("/instructor/diary")}
       />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10, marginBottom: 18 }}>
         <DashboardTile icon={Briefcase} iconColor="#8A5BC9" iconBackground="#F1ECFA" title="Job offers" subtitle={jobsSubtitle}
