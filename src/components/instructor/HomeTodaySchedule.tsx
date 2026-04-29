@@ -82,10 +82,10 @@ function getLessonState(lesson: TodayLesson, nowSec: number, isTomorrow: boolean
   return "upcoming";
 }
 
-// EOL completeness derived from notes — no dedicated column today.
-// If/when an explicit `eol_completed_at` field is added, swap in here.
-function isEOLComplete(lesson: TodayLesson): boolean {
-  return !!(lesson.notes && lesson.notes.trim().length > 0);
+// EOL completeness is sourced from the lesson_history table via
+// useDayLessonHistory; helpers below take a Set<string> of completed keys.
+function isEOLComplete(lesson: TodayLesson, doneKeys: Set<string>): boolean {
+  return doneKeys.has(eolKey(lesson.pupilId, lesson.startTime));
 }
 
 function SkeletonBlock({ width, height = 12 }: { width: number | string; height?: number }) {
