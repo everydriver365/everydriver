@@ -675,8 +675,8 @@ export function StepBookNext({
         </div>
       </div>
 
-      {/* Body */}
-      <div style={{ padding: "18px 0 16px" }}>
+      {/* Body — scrollable */}
+      <div style={{ padding: "18px 0 16px", flex: 1, minHeight: 0, overflowY: "auto" }}>
         {/* Suggested slots header */}
         <div
           style={{
@@ -926,10 +926,11 @@ export function StepBookNext({
         )}
       </div>
 
-      {/* Footer */}
+      {/* Footer — pinned */}
       <div
         style={{
-          padding: "12px 16px 16px",
+          padding: "12px 16px",
+          paddingBottom: "max(16px, env(safe-area-inset-bottom))",
           background: C.surface,
           borderTop: `0.5px solid ${C.hairline}`,
           display: "flex",
@@ -939,6 +940,7 @@ export function StepBookNext({
           margin: "0 -24px -8px",
           borderBottomLeftRadius: 16,
           borderBottomRightRadius: 16,
+          flexShrink: 0,
         }}
       >
         <button
