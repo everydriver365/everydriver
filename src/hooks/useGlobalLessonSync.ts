@@ -21,6 +21,7 @@ const LESSON_QUERY_KEYS = [
   "gap-slots",
   "last-week-comparison",
   "day-lessons",
+  "day-lesson-history",
 ];
 
 const PUPIL_QUERY_KEYS = [
