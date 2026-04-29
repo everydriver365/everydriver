@@ -725,7 +725,7 @@ export function StepBookNext({
       style={{
         fontFamily: FONT_STACK,
         color: C.text,
-        background: C.bg,
+        background: "#F2F2F4",
         flex: 1,
         minHeight: 0,
         display: "flex",
@@ -843,7 +843,7 @@ export function StepBookNext({
                 disabled={booking}
                 style={{
                   width: "100%",
-                  background: showStrong ? C.bg : C.surface,
+                  background: C.bg,
                   border: showStrong
                     ? `1.5px solid ${C.link}`
                     : `0.5px solid ${C.hairline}`,
@@ -1067,7 +1067,7 @@ export function StepBookNext({
         style={{
           padding: "12px 16px",
           paddingBottom: "max(16px, env(safe-area-inset-bottom))",
-          background: C.bg,
+          background: C.surface,
           borderTop: `0.5px solid ${C.hairline}`,
           display: "flex",
           alignItems: "center",
