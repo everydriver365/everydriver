@@ -448,110 +448,33 @@ export function InstructorMobileHome({
         />
       ) : (
       <>
-      {/* 1. Hero greeting card — single coloured anchor above the fold */}
-      <div style={{ padding: "8px 16px 4px" }}>
-        <div
+      {/* 1. Quiet greeting */}
+      <div style={{ padding: "6px 20px 20px" }}>
+        <h1
           style={{
-            background:
-              "linear-gradient(135deg, #2B7BC8 0%, #1E5A94 55%, #163F69 100%)",
-            borderRadius: 20,
-            padding: "16px 18px",
-            color: "#FFFFFF",
-            boxShadow:
-              "0 10px 28px -10px rgba(43,123,200,0.45), 0 2px 6px rgba(0,0,0,0.06)",
-            display: "flex",
-            alignItems: "center",
-            gap: 14,
+            fontSize: 22,
+            fontWeight: 500,
+            color: "hsl(var(--dsm-text))",
+            lineHeight: 1.2,
+            margin: 0,
           }}
         >
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: 0.6,
-                textTransform: "uppercase",
-                opacity: 0.78,
-              }}
-            >
-              {format(new Date(), "EEEE")}
-            </div>
-            <h1
-              style={{
-                fontSize: 22,
-                fontWeight: 600,
-                lineHeight: 1.15,
-                margin: "2px 0 8px",
-              }}
-            >
-              Hi {firstName}
-            </h1>
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 500,
-                opacity: 0.95,
-                fontVariantNumeric: "tabular-nums",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flexWrap: "wrap",
-              }}
-            >
-              <span>
-                {currentLessons === 0
-                  ? "No lessons today"
-                  : `${currentLessons} ${currentLessons === 1 ? "lesson" : "lessons"}`}
-              </span>
-              {nextLesson && (
-                <>
-                  <span style={{ opacity: 0.4 }}>·</span>
-                  <span>First {nextLesson.startTime}</span>
-                </>
-              )}
-              {todayOverview?.expectedEarnings ? (
-                <>
-                  <span style={{ opacity: 0.4 }}>·</span>
-                  <span>£{todayOverview.expectedEarnings}</span>
-                </>
-              ) : null}
-            </div>
-          </div>
-          {nextLesson?.pupilProfileImage ? (
-            <img
-              src={nextLesson.pupilProfileImage}
-              alt={nextLesson.pupilName}
-              style={{
-                width: 52,
-                height: 52,
-                borderRadius: "50%",
-                objectFit: "cover",
-                border: "2px solid rgba(255,255,255,0.85)",
-                flexShrink: 0,
-              }}
-            />
-          ) : nextLesson ? (
-            <div
-              aria-hidden
-              style={{
-                width: 52,
-                height: 52,
-                borderRadius: "50%",
-                background: "rgba(255,255,255,0.18)",
-                color: "#FFFFFF",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 16,
-                fontWeight: 600,
-                border: "2px solid rgba(255,255,255,0.4)",
-                flexShrink: 0,
-              }}
-            >
-              {getInitials(nextLesson.pupilName || "")}
-            </div>
-          ) : null}
-        </div>
+          Hi {firstName}
+          <span style={{ color: "hsl(var(--dsm-text-secondary))", margin: "0 8px", fontWeight: 400 }}>·</span>
+          <span style={{ color: "hsl(var(--dsm-text-secondary))", fontWeight: 400 }}>
+            {format(new Date(), "EEEE")}
+          </span>
+        </h1>
+        <p
+          style={{
+            fontSize: 13,
+            color: "hsl(var(--dsm-text-secondary))",
+            marginTop: 4,
+            fontWeight: 400,
+          }}
+        >
+          Here's what needs you today
+        </p>
       </div>
 
       {/* Warm priority tiles: action needed, up next, week at a glance */}
@@ -564,12 +487,7 @@ export function InstructorMobileHome({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-2 left-3 right-3 z-50 text-primary-foreground px-4 py-2 flex items-center justify-between shadow-lg rounded-2xl"
-            style={{
-              background: "rgba(43,123,200,0.78)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-            }}
+            className="fixed top-2 left-3 right-3 z-50 bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between shadow-lg rounded-2xl"
           >
             <div className="flex items-center gap-2 min-w-0">
               <Timer className="h-3.5 w-3.5 shrink-0" />
@@ -656,36 +574,24 @@ export function InstructorMobileHome({
                     metaColor="#185FA5"
                   />
                 </div>
-                <div
-                  style={{
-                    margin: "0 16px",
-                    borderRadius: 20,
-                    borderLeft: "3px solid #2B7BC8",
-                    boxShadow:
-                      "0 8px 24px -8px rgba(43,123,200,0.18), 0 2px 6px rgba(0,0,0,0.04)",
-                    overflow: "hidden",
-                    background: "#FFFFFF",
-                  }}
-                >
-                  <NextUpTile
-                    lessonId={nextLesson.lessonId}
-                    pupilId={nextLesson.pupilId}
-                    pupilName={nextLesson.pupilName}
-                    pupilProfileImage={nextLesson.pupilProfileImage}
-                    pupilPhone={nextLesson.pupilPhone}
-                    lessonDate={nextLesson.lessonDate}
-                    pickupPostcode={nextLesson.pickupPostcode}
-                    pickupLocation={nextLesson.pickupLocation}
-                    startTime={nextLesson.startTime}
-                    minutesUntil={nextLesson.minutesUntil}
-                    accountBalance={nextLesson.accountBalance}
-                    prepaidHours={nextLesson.prepaidHours}
-                    durationMinutes={nextLesson.durationMinutes}
-                    instructorId={instructorId}
-                    checkInStatus={nextLesson.checkInStatus}
-                    lastLessonPlan={nextLesson.lastLessonPlan}
-                  />
-                </div>
+                <NextUpTile
+                  lessonId={nextLesson.lessonId}
+                  pupilId={nextLesson.pupilId}
+                  pupilName={nextLesson.pupilName}
+                  pupilProfileImage={nextLesson.pupilProfileImage}
+                  pupilPhone={nextLesson.pupilPhone}
+                  lessonDate={nextLesson.lessonDate}
+                  pickupPostcode={nextLesson.pickupPostcode}
+                  pickupLocation={nextLesson.pickupLocation}
+                  startTime={nextLesson.startTime}
+                  minutesUntil={nextLesson.minutesUntil}
+                  accountBalance={nextLesson.accountBalance}
+                  prepaidHours={nextLesson.prepaidHours}
+                  durationMinutes={nextLesson.durationMinutes}
+                  instructorId={instructorId}
+                  checkInStatus={nextLesson.checkInStatus}
+                  lastLessonPlan={nextLesson.lastLessonPlan}
+                />
               </div>
             )}
 
@@ -733,70 +639,35 @@ export function InstructorMobileHome({
 
         </div>
 
-        {/* Insights Tiles — quiet tier */}
+        {/* Insights Tiles */}
         <div className="mt-5">
           <div className="px-4">
             <SectionHeader title="Insights" category="navigation" />
           </div>
-          <div
-            style={{
-              margin: "0 16px",
-              background: "#F8FAFB",
-              borderRadius: 14,
-              padding: 4,
-              boxShadow: "inset 0 0 0 0.5px rgba(0,0,0,0.04)",
-            }}
-          >
-            <InsightTilesGrid instructorId={instructorId} gapCount={gapSuggestions?.length || 0} />
-          </div>
+          <InsightTilesGrid instructorId={instructorId} gapCount={gapSuggestions?.length || 0} />
         </div>
 
-        {/* Telematics — quiet tier */}
+        {/* Telematics */}
         <div className="mt-5">
           <div className="px-4">
             <SectionHeader title="Telematics" category="navigation" />
           </div>
-          <div
-            style={{
-              margin: "0 16px",
-              background: "#F8FAFB",
-              borderRadius: 14,
-              padding: 4,
-              boxShadow: "inset 0 0 0 0.5px rgba(0,0,0,0.04)",
-            }}
-          >
+          <div className="mb-2">
             <TelematicsTile />
           </div>
         </div>
 
         <div className="px-4">
 
-          {/* Vehicle Health & Idle Time — quiet tier */}
-          <div
-            style={{
-              background: "#F8FAFB",
-              borderRadius: 14,
-              padding: 4,
-              boxShadow: "inset 0 0 0 0.5px rgba(0,0,0,0.04)",
-              marginTop: 12,
-            }}
-          >
-            <VehicleHealthCard instructorId={instructorId} />
-            <div style={{ height: 8 }} />
-            <IdleTimeCostCard instructorId={instructorId} />
-          </div>
+          {/* Vehicle Health & Idle Time */}
+          <VehicleHealthCard instructorId={instructorId} className="mt-3" />
+          <IdleTimeCostCard instructorId={instructorId} className="mt-3" />
+
+
+
 
           <div className="mt-5">
-            <div
-              style={{
-                background: "#F8FAFB",
-                borderRadius: 14,
-                padding: 4,
-                boxShadow: "inset 0 0 0 0.5px rgba(0,0,0,0.04)",
-              }}
-            >
-              <UpcomingEventsCard />
-            </div>
+            <UpcomingEventsCard className="mb-6" />
           </div>
         </div>
 
