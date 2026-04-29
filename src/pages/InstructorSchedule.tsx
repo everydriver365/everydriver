@@ -30,7 +30,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { InstructorPageHeader } from "@/components/instructor/InstructorPageHeader";
 
-type ViewMode = 'list' | 'month' | 'calendar' | 'schedule';
+type ViewMode = 'list' | 'month' | 'calendar' | 'schedule' | 'compact';
 
 export default function InstructorSchedule() {
   const { instructor } = useInstructorAuth();
@@ -40,8 +40,8 @@ export default function InstructorSchedule() {
   
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem('instructor-schedule-view');
-    if (saved && ['list', 'month', 'calendar', 'schedule'].includes(saved)) return saved as ViewMode;
-    return isMobile ? 'list' : 'calendar';
+    if (saved && ['list', 'month', 'calendar', 'schedule', 'compact'].includes(saved)) return saved as ViewMode;
+    return isMobile ? 'compact' : 'calendar';
   });
 
   const [colorSettingsOpen, setColorSettingsOpen] = useState(false);
