@@ -501,7 +501,8 @@ export function StepBookNext({
   const showReview = needsNameReview(pupilName);
 
   const subtitle = useMemo(() => {
-    const { courseName, courseHoursTotal, courseHoursRemaining, testDate } = pupilCtx;
+    const { courseName, courseHoursTotal, courseHoursRemaining, testDate, lessonType } = pupilCtx;
+    // Course context wins (active package with hours)
     if (
       courseName &&
       typeof courseHoursTotal === "number" &&
@@ -509,15 +510,20 @@ export function StepBookNext({
     ) {
       return `${courseName} · ${courseHoursRemaining}h of ${courseHoursTotal}h remaining`;
     }
+    // Test prep within 6 weeks
     if (testDate) {
       try {
         const td = parse(testDate, "yyyy-MM-dd", new Date());
-        return `Test prep · test on ${format(td, "d MMM")}`;
+        const days = differenceInCalendarDays(td, new Date());
+        if (days >= 0 && days <= 42) {
+          return `Test prep · test on ${format(td, "d MMM")}`;
+        }
       } catch {
         /* ignore */
       }
     }
-    return "Standard lesson";
+    // Otherwise: the type of lesson that just ended
+    return lessonType || "Standard lesson";
   }, [pupilCtx]);
 
   const formatDurationLabel = (mins: number): string => {
