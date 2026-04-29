@@ -29,6 +29,8 @@ interface StepBookNextProps {
   durationMinutes: number;
   /** Today's lesson start time (HH:mm:ss) — used as the "same time" pattern anchor. */
   todayStartTime?: string;
+  /** ID of the lesson just completed — used to read its lesson_type for subtitle fallback. */
+  lessonId?: string;
   onBooked: () => void;
   onSkip: () => void;
 }
