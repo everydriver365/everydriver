@@ -22,6 +22,8 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
     lessonsRemaining: 0,
     hoursToday: 0,
     earningsToday: 0,
+    remainingPostcode: null,
+    scheduledPostcode: null,
     loading: true,
   });
 
