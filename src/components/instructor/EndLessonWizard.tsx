@@ -460,7 +460,7 @@ export function EndLessonWizard({
             </div>
 
             {/* Thin progress bars */}
-            <div style={{ padding: "8px 16px 0" }}>
+            <div style={{ padding: "8px 16px 0", flexShrink: 0 }}>
               <div style={{ display: "flex", gap: 4 }}>
                 {Array.from({ length: totalSteps }).map((_, i) => (
                   <div
@@ -577,7 +577,16 @@ export function EndLessonWizard({
             )}
 
             {step === "book" && (
-              <div style={{ padding: "8px 24px 0" }}>
+              <div
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  padding: "8px 24px 0",
+                  overflow: "hidden",
+                }}
+              >
                 <StepBookNext
                   pupilId={pupilId}
                   pupilName={pupilName}
