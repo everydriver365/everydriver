@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { format, parse, addDays } from "date-fns";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
@@ -113,16 +113,6 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
   const [tab, setTab] = useState<"today" | "tomorrow">("today");
   const [addOpen, setAddOpen] = useState(false);
   const queryClient = useQueryClient();
-  const anchorRef = useRef<HTMLDivElement | null>(null);
-
-  // Allow other home tiles (e.g. Today's Pulse "Remaining" chip) to scroll us into view
-  useEffect(() => {
-    const handler = () => {
-      anchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    };
-    window.addEventListener("home:scroll-to-today-schedule", handler);
-    return () => window.removeEventListener("home:scroll-to-today-schedule", handler);
-  }, []);
 
   const now = new Date();
   const targetDate = tab === "today" ? now : addDays(now, 1);
@@ -175,11 +165,9 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
 
   return (
     <div
-      id="home-today-schedule"
-      ref={anchorRef}
+      className=""
       style={{
         padding: "0 16px",
-        scrollMarginTop: 80,
         fontFamily: IOS_FONT,
         WebkitFontSmoothing: "antialiased",
         fontVariantNumeric: "tabular-nums",
@@ -429,218 +417,149 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           </div>
         ) : (
           <div style={{ borderTop: `0.5px solid ${IOS.opaqueSeparator}` }}>
-            {(() => {
-              const periodOf = (hhmm: string): "MORNING" | "AFTERNOON" | "EVENING" => {
-                const h = parseInt(hhmm.slice(0, 2), 10) || 0;
-                if (h < 12) return "MORNING";
-                if (h < 17) return "AFTERNOON";
-                return "EVENING";
-              };
-              const outward = (pc: string | null | undefined): string | null => {
-                if (!pc) return null;
-                const t = pc.trim().toUpperCase();
-                if (!t) return null;
-                const sp = t.indexOf(" ");
-                return sp > 0 ? t.slice(0, sp) : t.slice(0, 4);
-              };
+            {lessons.map((lesson, idx) => {
+              const time = fmtTime(lesson.startTime);
+              const isDone = lesson.status === "completed";
+              const isNext = !isTomorrow && lesson.id === nextUpcomingId;
+              const isDrivingTest = (lesson.lessonType || "").toLowerCase().includes("driving test")
+                || (lesson.lessonType || "").toLowerCase().includes("driving_test");
 
-              const nodes: JSX.Element[] = [];
-              let lastPeriod: string | null = null;
-              let prevOutward: string | null = null;
+              // Match Schedule view: red accent for driving tests, system blue for lessons.
+              const accentColor = isDone
+                ? IOS.tertiaryLabel
+                : isDrivingTest
+                ? "#C8434F"
+                : IOS.systemBlue;
 
-              lessons.forEach((lesson, idx) => {
-                const time = fmtTime(lesson.startTime);
-                const isDone = lesson.status === "completed";
-                const isNext = !isTomorrow && lesson.id === nextUpcomingId;
-                const isDrivingTest =
-                  (lesson.lessonType || "").toLowerCase().includes("driving test") ||
-                  (lesson.lessonType || "").toLowerCase().includes("driving_test");
+              const lessonLabel = isDrivingTest
+                ? "Driving test"
+                : `${lesson.lessonType || "Standard"} lesson`;
+              const location = lesson.pickupLocation || lesson.pickupPostcode || null;
+              const subtitle = [lessonLabel, location].filter(Boolean).join(" · ");
 
-                const accentColor = isDone
-                  ? IOS.tertiaryLabel
-                  : isDrivingTest
-                  ? "#C8434F"
-                  : IOS.systemBlue;
+              const title = isDrivingTest
+                ? `${sentenceName(lesson.pupilName)} · driving test`
+                : sentenceName(lesson.pupilName);
 
-                const lessonLabel = isDrivingTest
-                  ? "Driving test"
-                  : `${lesson.lessonType || "Standard"} lesson`;
-                const location = lesson.pickupLocation || lesson.pickupPostcode || null;
-                const subtitle = [lessonLabel, location].filter(Boolean).join(" · ");
-                const title = isDrivingTest
-                  ? `${sentenceName(lesson.pupilName)} · driving test`
-                  : sentenceName(lesson.pupilName);
-
-                // Period divider
-                const period = periodOf(lesson.startTime);
-                if (period !== lastPeriod) {
-                  nodes.push(
-                    <div
-                      key={`period-${period}-${idx}`}
-                      style={{
-                        padding: "10px 16px 6px",
-                        fontSize: a11yPx(10),
-                        fontWeight: 600,
-                        color: IOS.secondaryLabel,
-                        letterSpacing: 1.2,
-                        textTransform: "uppercase",
-                        borderTop:
-                          idx === 0 ? "none" : `0.5px solid ${IOS.opaqueSeparator}`,
-                      }}
-                    >
-                      {period === "MORNING"
-                        ? "Morning"
-                        : period === "AFTERNOON"
-                        ? "Afternoon"
-                        : "Evening"}
-                    </div>
-                  );
-                  lastPeriod = period;
-                  prevOutward = null; // reset so the first row in a section never gets a travel chip
-                }
-
-                // Travel chip: shown when consecutive lessons have different outward postcodes
-                const thisOutward = outward(lesson.pickupPostcode || null);
-                if (prevOutward && thisOutward && prevOutward !== thisOutward) {
-                  nodes.push(
-                    <div
-                      key={`travel-${idx}`}
-                      style={{
-                        padding: "4px 16px 8px",
-                        marginLeft: 62,
-                        fontSize: a11yPx(11),
-                        color: IOS.secondaryLabel,
-                        fontVariantNumeric: "tabular-nums",
-                      }}
-                    >
-                      ↳ Travel · {prevOutward} → {thisOutward}
-                    </div>
-                  );
-                }
-                prevOutward = thisOutward || prevOutward;
-
-                nodes.push(
-                  <Link
-                    key={lesson.id}
-                    to={`/instructor/pupils/${lesson.pupilId}`}
-                    className="hts-row"
+              return (
+                <Link
+                  key={lesson.id}
+                  to={`/instructor/pupils/${lesson.pupilId}`}
+                  className="hts-row"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: "12px 16px",
+                    cursor: "pointer",
+                    textDecoration: "none",
+                    color: "inherit",
+                    borderTop: idx === 0 ? "none" : `0.5px solid ${IOS.opaqueSeparator}`,
+                    transition: "background 0.15s cubic-bezier(0.2,0.7,0.2,1)",
+                    opacity: isDone ? 0.6 : 1,
+                    position: "relative",
+                  }}
+                >
+                  {/* Time column */}
+                  <div
                     style={{
+                      flexShrink: 0,
+                      minWidth: 50,
                       display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      padding: "12px 16px",
-                      cursor: "pointer",
-                      textDecoration: "none",
-                      color: "inherit",
-                      borderTop: `0.5px solid ${IOS.opaqueSeparator}`,
-                      transition: "background 0.15s cubic-bezier(0.2,0.7,0.2,1)",
-                      opacity: isDone ? 0.6 : 1,
-                      position: "relative",
+                      flexDirection: "column",
+                      alignItems: "flex-end",
                     }}
                   >
-                    {/* Time column */}
-                    <div
+                    <span
                       style={{
-                        flexShrink: 0,
-                        minWidth: 50,
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "flex-end",
+                        fontSize: a11yPx(14),
+                        fontWeight: 500,
+                        color: IOS.label,
+                        letterSpacing: -0.1,
+                        fontVariantNumeric: "tabular-nums",
+                        lineHeight: 1.1,
                       }}
                     >
+                      {time.hour}
+                    </span>
+                    {lesson.durationMinutes ? (
                       <span
                         style={{
-                          fontSize: a11yPx(14),
-                          fontWeight: 500,
-                          color: IOS.label,
-                          letterSpacing: -0.1,
+                          fontSize: a11yPx(11),
+                          color: IOS.secondaryLabel,
+                          marginTop: 1,
                           fontVariantNumeric: "tabular-nums",
-                          lineHeight: 1.1,
                         }}
                       >
-                        {time.hour}
+                        {durationLabel(lesson.durationMinutes)}
                       </span>
-                      {lesson.durationMinutes ? (
-                        <span
-                          style={{
-                            fontSize: a11yPx(11),
-                            color: IOS.secondaryLabel,
-                            marginTop: 1,
-                            fontVariantNumeric: "tabular-nums",
-                          }}
-                        >
-                          {durationLabel(lesson.durationMinutes)}
-                        </span>
-                      ) : null}
-                    </div>
+                    ) : null}
+                  </div>
 
-                    {/* Source colour bar (pulses for the next-upcoming lesson) */}
-                    <span
-                      className={isNext ? "hts-pulse" : ""}
+                  {/* Source colour bar (pulses for the next-upcoming lesson) */}
+                  <span
+                    className={isNext ? "hts-pulse" : ""}
+                    style={{
+                      flexShrink: 0,
+                      width: 3,
+                      height: 36,
+                      borderRadius: 2,
+                      background: accentColor,
+                      animation: isNext ? "hts-pulse 2s infinite" : "none",
+                    }}
+                  />
+
+                  {/* Title + subtitle */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
                       style={{
-                        flexShrink: 0,
-                        width: 3,
-                        height: 36,
-                        borderRadius: 2,
-                        background: accentColor,
-                        animation: isNext ? "hts-pulse 2s infinite" : "none",
+                        fontSize: a11yPx(14),
+                        fontWeight: 500,
+                        color: IOS.label,
+                        letterSpacing: -0.1,
+                        margin: "0 0 1px",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        textDecoration: isDone ? "line-through" : "none",
                       }}
-                    />
-
-                    {/* Title + subtitle */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                    >
+                      {title}
+                    </div>
+                    {subtitle && (
                       <div
                         style={{
-                          fontSize: a11yPx(14),
-                          fontWeight: 500,
-                          color: IOS.label,
-                          letterSpacing: -0.1,
-                          margin: "0 0 1px",
+                          fontSize: a11yPx(12),
+                          color: IOS.secondaryLabel,
+                          margin: 0,
                           whiteSpace: "nowrap",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
                           textDecoration: isDone ? "line-through" : "none",
                         }}
                       >
-                        {title}
+                        {subtitle}
                       </div>
-                      {subtitle && (
-                        <div
-                          style={{
-                            fontSize: a11yPx(12),
-                            color: IOS.secondaryLabel,
-                            margin: 0,
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            textDecoration: isDone ? "line-through" : "none",
-                          }}
-                        >
-                          {subtitle}
-                        </div>
-                      )}
-                    </div>
+                    )}
+                  </div>
 
-                    {/* Chevron */}
-                    <svg
-                      width={12}
-                      height={12}
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke={IOS.secondaryLabel}
-                      strokeWidth={1.6}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      style={{ flexShrink: 0 }}
-                    >
-                      <path d="M9 6l6 6-6 6" />
-                    </svg>
-                  </Link>
-                );
-              });
-
-              return nodes;
-            })()}
+                  {/* Chevron */}
+                  <svg
+                    width={12}
+                    height={12}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke={IOS.secondaryLabel}
+                    strokeWidth={1.6}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ flexShrink: 0 }}
+                  >
+                    <path d="M9 6l6 6-6 6" />
+                  </svg>
+                </Link>
+              );
+            })}
           </div>
         )}
 
