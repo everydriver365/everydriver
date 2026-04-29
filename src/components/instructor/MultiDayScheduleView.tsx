@@ -5,16 +5,16 @@ import {
   format,
   addDays,
   isToday,
+  isTomorrow,
+  isYesterday,
+  isSameYear,
   parseISO,
   startOfDay,
   endOfDay,
-  startOfWeek,
-  endOfWeek,
-  isSameWeek,
   differenceInMinutes,
-  isSameMonth,
 } from "date-fns";
-import { Loader2, MapPin, Video, ExternalLink } from "lucide-react";
+import { Loader2, MapPin, Video, ExternalLink, ChevronRight } from "lucide-react";
+import { titleCaseName } from "@/lib/titleCase";
 import { supabase } from "@/integrations/supabase/client";
 import { ExpandableLessonCard } from "./ExpandableLessonCard";
 import { LessonTextSheet } from "./LessonTextSheet";
