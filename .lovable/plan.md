@@ -1,30 +1,44 @@
-## Goal
+## Problem
 
-Strip the remaining blue accent colour from the "Up next" card in the instructor mobile home (`NextUpTile.tsx`) so the card reads as fully neutral, matching the already-greyed "Up next" label.
+When adding a lesson from the home schedule's "Add lesson" button, two identical rows are being inserted into `scheduled_lessons` ~1 ms apart (confirmed in the database — e.g. two rows at 12:17:08.428 and 12:17:08.429 for the same pupil/date/time).
 
-## What still has blue today
+The save button uses React state (`loading`) to disable itself, but `setLoading(true)` is asynchronous. A fast double-tap (common on iOS) fires the handler twice before React re-renders the disabled button, so two inserts go through.
 
-After the previous edit, the label is grey but three blue elements remain on the card:
+There are no DB triggers duplicating rows, and only one `AddLessonSheet` is mounted on the home screen — this is purely a client-side double-submit race.
 
-1. The **Navigation icon** in the map's "open in maps" button — currently `#2B7BC8` (blue).
-2. The **origin pin** in the route list (the "Your location" row) — uses a blue ring + blue inner dot (`#2B7BC8`).
-3. None on the destination pin (it's intentionally red `#C8434F` to indicate the pupil pickup) — leave as-is since it's a semantic destination marker, not an accent.
+## Fix
 
-## Changes
+In `src/components/instructor/AddLessonSheet.tsx`:
 
-File: `src/components/instructor/NextUpTile.tsx`
+1. Add a `useRef` flag (`submittingRef`) that flips synchronously on entry to either save handler and resets in the `finally` block.
+2. At the top of `handleAddLessonExisting` and `handleAddLessonNew`, return immediately if `submittingRef.current` is already `true`.
+3. Reset `submittingRef.current = false` in `finally` (alongside `setLoading(false)`), and also reset it inside `resetForm` / when the sheet closes, so reopening works cleanly.
 
-1. **Line 399** — change the Navigation icon colour from `#2B7BC8` to neutral `#6E6E73` (same grey as secondary text).
-2. **Lines 409–414** — change the origin pin's border + inner dot from `#2B7BC8` to neutral `#6E6E73`, so "Your location" is a simple grey marker.
+This blocks the second invocation immediately, regardless of React render timing.
 
-Leave the destination (red) pin untouched — it's a functional marker for the pickup, not decorative accent.
+### Technical detail
+
+```text
+const submittingRef = useRef(false);
+
+const handleAddLessonExisting = async () => {
+  if (submittingRef.current) return;   // sync guard
+  submittingRef.current = true;
+  setLoading(true);
+  try { ...existing logic, single insert... }
+  finally {
+    setLoading(false);
+    submittingRef.current = false;
+  }
+};
+```
+
+Same change applied to `handleAddLessonNew`.
 
 ## Out of scope
 
-- Header label (already neutral).
-- Destination pin colour (semantic, not an accent).
-- Other home tiles / other home views (`CleanHomeView`, `BestMateHomeView`, `IOSNativeHomeView`, etc.) — only the active `NextUpTile` used by `InstructorMobileHome`.
+No DB-level unique constraint is added (would require deciding on the natural key and handling legitimate edits). The client guard is sufficient for this UX bug; we can revisit a DB constraint separately if duplicates ever appear from another entry point.
 
-## Verification
+## Files touched
 
-After applying, the "Up next" card should contain no blue: label grey, time/name black, origin pin grey, destination pin red, map icon grey.
+- `src/components/instructor/AddLessonSheet.tsx` — add ref guard to both save handlers.

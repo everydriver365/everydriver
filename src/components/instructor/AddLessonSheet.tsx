@@ -215,6 +215,7 @@ export function AddLessonSheet({
   const [travelDetailsOpen, setTravelDetailsOpen] = useState(false);
   const [checkingConflict, setCheckingConflict] = useState(false);
   const pendingCheckRef = useRef<Promise<void> | null>(null);
+  const submittingRef = useRef(false);
   const [travelSuggestion, setTravelSuggestion] = useState<{ suggestedTime: string; travelMinutes: number; fromName: string } | null>(null);
   // Soft (non-blocking) travel-time warning — Phase 2. Save is never gated on this.
   const [travelWarning, setTravelWarning] = useState<{
@@ -600,10 +601,12 @@ export function AddLessonSheet({
   };
 
   const handleAddLessonExisting = async () => {
+    if (submittingRef.current) return;
     if (!selectedPupil || !lessonDate) { toast.error('Please select a pupil and date'); return; }
     if (pendingCheckRef.current) { try { await pendingCheckRef.current; } catch { /* ignore */ } }
     if (conflictWarning && !overrideBuffer) { toast.error(conflictWarning); return; }
     if (!(await validateExaminerCentreMatch())) return;
+    submittingRef.current = true;
     setLoading(true);
     try {
       const durationMinutes = parseFloat(lessonDuration) * 60;
@@ -632,14 +635,16 @@ export function AddLessonSheet({
       handlePostSavePayment(selectedPupil);
       resetForm(); onOpenChange(false); onSuccess();
     } catch (error) { console.error(error); toast.error('Failed to schedule lesson'); }
-    finally { setLoading(false); }
+    finally { setLoading(false); submittingRef.current = false; }
   };
 
   const handleAddLessonNew = async () => {
+    if (submittingRef.current) return;
     if (!newPupilName.trim() || !lessonDate) { toast.error('Please enter a name and date'); return; }
     if (pendingCheckRef.current) { try { await pendingCheckRef.current; } catch { /* ignore */ } }
     if (conflictWarning && !overrideBuffer) { toast.error(conflictWarning); return; }
     if (!(await validateExaminerCentreMatch())) return;
+    submittingRef.current = true;
     setLoading(true);
     try {
       const { data: newPupil, error: pupilError } = await supabase
@@ -674,7 +679,7 @@ export function AddLessonSheet({
       handlePostSavePayment(newPupil.id);
       resetForm(); onOpenChange(false); onSuccess();
     } catch (error) { console.error(error); toast.error('Failed to schedule lesson'); }
-    finally { setLoading(false); }
+    finally { setLoading(false); submittingRef.current = false; }
   };
 
   const timeSlots = Array.from({ length: 28 }, (_, i) => {
