@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Calendar, Clock } from "lucide-react";
+import { ChevronDown, ChevronRight, Calendar, Clock } from "lucide-react";
 import {
   format,
   startOfWeek,
