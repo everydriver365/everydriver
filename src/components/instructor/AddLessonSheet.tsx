@@ -639,10 +639,12 @@ export function AddLessonSheet({
   };
 
   const handleAddLessonNew = async () => {
+    if (submittingRef.current) return;
     if (!newPupilName.trim() || !lessonDate) { toast.error('Please enter a name and date'); return; }
     if (pendingCheckRef.current) { try { await pendingCheckRef.current; } catch { /* ignore */ } }
     if (conflictWarning && !overrideBuffer) { toast.error(conflictWarning); return; }
     if (!(await validateExaminerCentreMatch())) return;
+    submittingRef.current = true;
     setLoading(true);
     try {
       const { data: newPupil, error: pupilError } = await supabase
