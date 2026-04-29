@@ -378,8 +378,7 @@ export function WarmHomeTiles({ instructorId }: Props) {
         </TileShell>
       )}
 
-      {/* Tile 3 — This week at a glance (premium tile system) */}
-      <WeekAtAGlanceCard instructorId={instructorId} />
+      {/* Tile 3 — This week at a glance: now rendered in CalmHomeHeader hero */}
     </div>
   );
 }
