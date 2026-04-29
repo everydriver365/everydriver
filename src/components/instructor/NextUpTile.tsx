@@ -255,7 +255,49 @@ export function NextUpTile({
   };
 
   const isImminent = minutesUntil <= 30;
+  const isWithin4h = minutesUntil <= 240;
   const navBlue = "#2A394F";
+
+  // Compute "leave by" recommendation when imminent
+  const PARKING_BUFFER_MIN = 3;
+  const leaveByText = (() => {
+    if (!isImminent || !etaMinutes || etaMinutes <= 0) return null;
+    try {
+      const start = parse(startTime, "HH:mm:ss", new Date());
+      const leaveAt = new Date(start.getTime() - (etaMinutes + PARKING_BUFFER_MIN) * 60000);
+      return format(leaveAt, "HH:mm");
+    } catch { return null; }
+  })();
+
+  // Severity for travel-time bar
+  const minsLateIfLeaveNow = etaMinutes && etaMinutes > 0
+    ? Math.max(0, etaMinutes + PARKING_BUFFER_MIN - minutesUntil)
+    : 0;
+  const trafficHeavy = trafficCondition?.toLowerCase() === "heavy";
+  const travelBarSeverity: "normal" | "amber" | "red" =
+    minsLateIfLeaveNow > 0 ? "red" : trafficHeavy ? "amber" : "normal";
+  const travelBarBg =
+    travelBarSeverity === "red" ? "#FBEAEC"
+      : travelBarSeverity === "amber" ? "#FBF1DE"
+      : "#E6F1FB";
+  const travelBarIconColor =
+    travelBarSeverity === "red" ? "#C8434F"
+      : travelBarSeverity === "amber" ? "#B8801F"
+      : "#2B7BC8";
+
+  // Format pickup address with postcode appearing exactly once
+  const formattedPickupAddress = (() => {
+    const addr = (pickupLocation || "").trim();
+    const pc = (pickupPostcode || "").trim();
+    if (!addr) return pc;
+    if (!pc) return addr;
+    // Strip postcode if already present in address (case-insensitive, ignoring spaces)
+    const normPc = pc.replace(/\s+/g, "").toUpperCase();
+    const normAddr = addr.replace(/\s+/g, "").toUpperCase();
+    if (normAddr.endsWith(normPc)) return `${addr.replace(/[, ]+$/, "")}`.replace(new RegExp(`\\s*,?\\s*${pc.replace(/\s+/g, "\\s*")}\\s*$`, "i"), "") + ` · ${pc}`;
+    if (normAddr.includes(normPc)) return addr; // already contains it somewhere
+    return `${addr} · ${pc}`;
+  })();
   const countdownColor = minutesUntil <= 5 ? "#ef4444" : minutesUntil <= 15 ? "#f59e0b" : navBlue;
 
   // iOS 17 native palette — scoped to this component
