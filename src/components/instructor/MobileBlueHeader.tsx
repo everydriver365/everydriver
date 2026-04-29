@@ -3,6 +3,7 @@ import { Bell, Plus, Menu, ChevronLeft } from "lucide-react";
 import dsmLogo from "@/assets/dsm-logo.png";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { DSMThemeToggle } from "@/components/instructor/DSMThemeToggle";
+import { useLongPress } from "@/hooks/useLongPress";
 
 interface Props {
   instructorId: string | undefined;
@@ -31,6 +32,13 @@ export function MobileBlueHeader({
   const navigate = useNavigate();
   const { total: notifCount } = useCombinedNotificationCount(instructorId);
   const initial = (firstName || "I").trim().charAt(0).toUpperCase();
+
+  // Long-press the + → jump straight to the most-used action (Add lesson).
+  // Tap still opens the bottom-sheet quick actions.
+  const plusHandlers = useLongPress({
+    onClick: onPlus,
+    onLongPress: () => navigate("/instructor/schedule?action=add"),
+  });
 
   const bgStyle = { background: "hsl(var(--dsm-bg))" };
 
@@ -86,10 +94,10 @@ export function MobileBlueHeader({
             )}
           </button>
           <button
-            onClick={onPlus}
+            {...plusHandlers}
             className="flex items-center justify-center"
             style={{ width: 32, height: 32 }}
-            aria-label="Quick actions"
+            aria-label="Quick actions (long-press to add a lesson)"
           >
             <Plus size={18} strokeWidth={1.8} color={ICON_COLOR} />
           </button>
