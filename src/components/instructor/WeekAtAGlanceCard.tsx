@@ -554,6 +554,21 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
   };
 
   if (!expanded) {
+    // Compact rings card — radii 25/19/13, stroke 4 in a 60×60 viewport
+    const COMPACT_RINGS = [
+      { key: "lessons" as const, radius: 25, color: TXT.red, track: TXT.redTint, pct: lessonsPct },
+      { key: "earnings" as const, radius: 19, color: TXT.blue, track: TXT.blueTint, pct: earningsPct },
+      { key: "hours" as const, radius: 13, color: TXT.green, track: TXT.greenTint, pct: hoursPct },
+    ];
+    const COMPACT_STROKE = 4;
+    const overallPct = Math.round(((lessonsPct + earningsPct + hoursPct) / 3) * 100);
+
+    const lessonsLabel = `${lessons} of ${goal.lessons || 0} ${
+      (goal.lessons || 0) === 1 ? "lesson" : "lessons"
+    }`;
+    const earningsLabel = `${currencyFormatter.format(earnings)} earned`;
+    const hoursLabel = `${hours}h taught`;
+
     return (
       <button
         type="button"
@@ -563,9 +578,9 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
         }}
         style={{
           background: "#FFFFFF",
-          border: `0.5px solid ${TXT.hairline}`,
-          borderRadius: a11yPx(12),
-          padding: 16,
+          border: "none",
+          borderRadius: 12,
+          padding: 14,
           width: "100%",
           textAlign: "left",
           cursor: "pointer",
@@ -576,30 +591,31 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
         }}
         aria-label="Show progress rings"
       >
-        <div style={{ position: "relative", width: 56, height: 56, flexShrink: 0 }}>
-          <svg width={56} height={56} viewBox="0 0 160 160">
-            <g transform="rotate(-90 80 80)">
-              {RINGS.map((ring) => {
+        <div style={{ position: "relative", width: 60, height: 60, flexShrink: 0 }}>
+          <svg width={60} height={60} viewBox="0 0 60 60">
+            <g transform="rotate(-90 30 30)">
+              {COMPACT_RINGS.map((ring) => {
                 const c = 2 * Math.PI * ring.radius;
-                const pct =
-                  ring.key === "lessons"
-                    ? lessonsPct
-                    : ring.key === "earnings"
-                    ? earningsPct
-                    : hoursPct;
                 return (
                   <g key={ring.key}>
-                    <circle cx={80} cy={80} r={ring.radius} fill="none" stroke={ring.track} strokeWidth={STROKE_WIDTH} />
                     <circle
-                      cx={80}
-                      cy={80}
+                      cx={30}
+                      cy={30}
+                      r={ring.radius}
+                      fill="none"
+                      stroke={ring.track}
+                      strokeWidth={COMPACT_STROKE}
+                    />
+                    <circle
+                      cx={30}
+                      cy={30}
                       r={ring.radius}
                       fill="none"
                       stroke={ring.color}
-                      strokeWidth={STROKE_WIDTH}
+                      strokeWidth={COMPACT_STROKE}
                       strokeLinecap="round"
                       strokeDasharray={c}
-                      strokeDashoffset={c * (1 - pct)}
+                      strokeDashoffset={c * (1 - ring.pct)}
                     />
                   </g>
                 );
@@ -618,14 +634,45 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
               margin: "0 0 4px",
             }}
           >
-            {meta.eyebrow}
+            Today · {overallPct}%
           </p>
-          <p style={{ fontSize: 15, fontWeight: 500, color: TXT.primary, margin: 0, letterSpacing: "-0.2px" }}>
-            {lessons} {lessons === 1 ? "Lesson" : "Lessons"} Booked
-          </p>
-          <p style={{ fontSize: 12, color: TXT.secondary, margin: "2px 0 0" }}>
-            Tap to view rings
-          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {[
+              { color: TXT.red, label: lessonsLabel },
+              { color: TXT.blue, label: earningsLabel },
+              { color: TXT.green, label: hoursLabel },
+            ].map((row) => (
+              <div
+                key={row.label}
+                style={{ display: "flex", alignItems: "center", gap: 6 }}
+              >
+                <span
+                  style={{
+                    width: 5,
+                    height: 5,
+                    borderRadius: "50%",
+                    background: row.color,
+                    flexShrink: 0,
+                  }}
+                />
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: TXT.primary,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {row.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>
+          <ChevronRight size={14} strokeWidth={1.6} color={TXT.secondary} />
         </div>
       </button>
     );
