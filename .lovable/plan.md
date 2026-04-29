@@ -1,53 +1,65 @@
-# What's actually on your home page right now
+## Goal
 
-I just re-checked the code and the new calm redesign IS wired into your default mobile home page. Specifically, in `src/components/instructor/InstructorMobileHome.tsx` (line 453), `<CalmHomeHeader />` renders at the very top of the dashboard layout. Your appearance preference in the database is `dashboard`, which is the branch that includes it. So the new block (greeting / compact rings / Up Next tile / 2×2 grid / Tip of the day) is being rendered.
+On the default instructor mobile home (`/instructor`), combine the two stacked tiles inside `CalmHomeHeader` into a single card:
 
-## Why it might *feel* like nothing changed
+- **Tile A** — "On track today" rings card (`ProgressRingsCompact`): concentric rings + Lessons / Earned / Taught legend.
+- **Tile B** — "Up Next" / "Done for today" card (`UpNextTile`): green check + "No lessons coming up" when the day is finished, or the next pupil's name + time when there's a lesson coming.
 
-You earlier chose **"Keep extras below the new layout"**. That means everything that was on the page before is still rendering underneath the new calm header:
+These two cards currently sit one above the other and convey overlapping info ("done for today" / "X of Y lessons"). Merging them removes a tile, reclaims vertical space, and gives a single, calmer "Today" panel.
 
-- WarmHomeTiles (the "Action Needed" / "1 new job offer" red strip you can see in the session replay)
-- MorningBriefingCard
-- WeatherAlertBanner
-- ActivityTilesGrid (the older 4-tile grid — duplicates the new 2×2)
-- PupilMilestoneFeed
-- NextUpTile workspace card with the "Tap to expand" map (duplicates the new Up Next tile)
-- HomeTodaySchedule, SwipeableQuickAccess, ImpactAlertCard, InsightTilesGrid, TelematicsTile, VehicleHealthCard, IdleTimeCostCard, UpcomingEventsCard
+## Design
 
-So the calm block is only the top ~600px, and everything you remembered is still scrolling below. From the session replay it looks like you're seeing those older tiles ("ACTION NEEDED · 89 test alerts", "1 new job offer", the map preview) and reading them as "no change happened".
+A single white rounded card with two zones, divided by a thin hairline:
 
-## How I'd recommend resolving this
+```text
+┌─────────────────────────────────────────────────┐
+│  [rings 80px]   ON TRACK TODAY                  │
+│      45%        ● 3 of 4   lessons              │
+│                 ● £128     earned               │
+│                 ● 4.5h     taught               │
+│  ───────────────────────────────────────────    │
+│  [icon]  UP NEXT · IN 25M             ›         │
+│          Sarah Mitchell                         │
+│          1h lesson · 14:30 at SO22              │
+└─────────────────────────────────────────────────┘
+```
 
-Pick one. I won't change anything until you say which.
+End-of-day variant (no more lessons today):
 
-### Option A — Strict redesign (recommended, matches the original spec)
+```text
+┌─────────────────────────────────────────────────┐
+│  [rings 80px]   TODAY                           │
+│     100%        ● 4 of 4   lessons              │
+│                 ● £172     earned               │
+│                 ● 6.0h     taught               │
+│  ───────────────────────────────────────────    │
+│  [✓]    DONE FOR TODAY                ›         │
+│          No lessons coming up                   │
+│          Tap to open your diary                 │
+└─────────────────────────────────────────────────┘
+```
 
-Render **only** the calm layout in the default branch. Removes from this view:
+Behaviour:
+- Top zone (rings) tap → `/instructor/goals` (unchanged).
+- Bottom zone (next/done) tap → `/instructor/diary` (unchanged).
+- Both zones are independently tappable buttons inside one shared card shell.
+- Eyebrow text on the rings becomes "On track today" while there are remaining lessons, and just "Today" once all lessons are done, to avoid duplicating the "Done for today" message immediately below.
 
-- WarmHomeTiles (red Action Needed strip — duplicated by 2×2 grid)
-- MorningBriefingCard
-- ActivityTilesGrid (duplicated by 2×2 grid)
-- NextUpTile workspace card (duplicated by Up Next tile; map preview goes too)
-- HomeTodaySchedule, SwipeableQuickAccess, ImpactAlertCard, InsightTilesGrid, TelematicsTile, VehicleHealthCard, IdleTimeCostCard, UpcomingEventsCard, PupilMilestoneFeed
+## Implementation
 
-Kept exactly as-is: AppHeader, urgent-alert overlay, pull-to-refresh, FloatingSessionBar, bottom navigation, FAB, all routing. Every removed feature is still reachable from the new 2×2 grid, the side menu, or other portal screens — nothing is deleted from the app.
+Single file change: `src/components/instructor/CalmHomeHeader.tsx`.
 
-### Option B — Light cleanup (keep most extras, remove the obvious duplicates)
+1. Add a new component `TodayCard` that renders one rounded `#FFFFFF` shell (`borderRadius: 16, padding: 0, marginBottom: 16`) containing:
+   - A top button reusing the existing rings + legend layout from `ProgressRingsCompact` (without its own outer card chrome — pull padding inward), routing to `/instructor/goals`.
+   - A 0.5px `#E5E5EA` hairline divider with horizontal inset (`margin: 0 16px`).
+   - A bottom button reusing the existing layout from `UpNextTile` (without its own outer card chrome), routing to `/instructor/diary`.
+2. Swap dynamic eyebrow on the rings zone: `remainingToday > 0 ? "On track today" : "Today"`.
+3. Replace the two separate `<ProgressRingsCompact />` and `<UpNextTile />` calls in the `CalmHomeHeader` JSX (lines ~292–306) with a single `<TodayCard … />` that receives the same props the two components already receive.
+4. Keep `ProgressRingsCompact` and `UpNextTile` as internal helpers but no longer rendered standalone — or inline their internals into `TodayCard` and delete them. Prefer inlining to keep the file lean.
+5. No changes to data hooks, props on `CalmHomeHeader`, or `InstructorMobileHome.tsx`.
 
-Remove only the items the calm block already replaces:
+## Out of scope
 
-- WarmHomeTiles (red Action Needed strip)
-- ActivityTilesGrid (old 4-tile grid)
-- NextUpTile workspace card with mini-map
-
-Keep everything else (Morning Briefing, Today schedule, Insights, Telematics, Vehicle Health, etc.). This makes the calm block actually visible and removes the visual duplication, but you keep the longer scroll.
-
-### Option C — Leave as-is
-
-You see the calm block at the top followed by every existing section.
-
-## Files that would change
-
-- `src/components/instructor/InstructorMobileHome.tsx` — remove the relevant JSX from the `else` branch (lines ~456-635). No other files affected. No data hooks deleted (still used by other layouts and screens). No routes change. No bottom navigation change. No notifications/menu changes.
-
-Tell me **A**, **B**, or **C** and I'll apply it.
+- No changes to the 2×2 dashboard tile grid, Tip of the Day, weather banner, or any other home section.
+- No changes to mobile layout breakpoints or other portals.
+- No data/query changes.
