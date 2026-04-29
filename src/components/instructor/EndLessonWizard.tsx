@@ -477,8 +477,16 @@ export function EndLessonWizard({
             </div>
 
             {step === "summary" && (
-              <>
-                <div style={{ padding: "8px 24px 0" }}>
+              <div
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  overflow: "hidden",
+                }}
+              >
+                <div style={{ padding: "8px 24px 0", flex: 1, minHeight: 0, overflowY: "auto" }}>
                   <StepSummary
                     pupilId={pupilId}
                     pupilName={pupilName}
@@ -499,12 +507,14 @@ export function EndLessonWizard({
                 <div
                   style={{
                     padding: "12px 16px",
+                    paddingBottom: "max(12px, env(safe-area-inset-bottom))",
                     background: "#F8FAFB",
                     borderTop: "0.5px solid #E5E5EA",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
                     gap: 8,
+                    flexShrink: 0,
                   }}
                 >
                   <button
@@ -545,11 +555,11 @@ export function EndLessonWizard({
                     </svg>
                   </button>
                 </div>
-              </>
+              </div>
             )}
 
             {step === "payment" && (
-              <div style={{ padding: "8px 24px 0" }}>
+              <div style={{ padding: "8px 24px 0", flex: 1, minHeight: 0, overflowY: "auto" }}>
                 <StepPayment
                   pupilId={pupilId}
                   pupilName={pupilName}
@@ -565,15 +575,17 @@ export function EndLessonWizard({
             )}
 
             {step === "skills" && (
-              <InlineStepSkills
-                lessonId={lessonId}
-                pupilId={pupilId}
-                pupilName={pupilName}
-                instructorId={instructorId}
-                onSaved={() => {}}
-                onSkip={goNext}
-                onSaveAndNext={goNext}
-              />
+              <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+                <InlineStepSkills
+                  lessonId={lessonId}
+                  pupilId={pupilId}
+                  pupilName={pupilName}
+                  instructorId={instructorId}
+                  onSaved={() => {}}
+                  onSkip={goNext}
+                  onSaveAndNext={goNext}
+                />
+              </div>
             )}
 
             {step === "book" && (
