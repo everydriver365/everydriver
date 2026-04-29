@@ -13,6 +13,8 @@ import { CalendarEventSheet } from "@/components/instructor/CalendarEventSheet";
 import { ScheduleFAB } from "@/components/instructor/ScheduleFAB";
 import { WeeklySummaryWidget } from "@/components/instructor/WeeklySummaryWidget";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { GapFillerCard } from "@/components/instructor/GapFillerCard";
+import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useInstructorCalendar, type CalendarEvent } from "@/hooks/useInstructorCalendar";
 
