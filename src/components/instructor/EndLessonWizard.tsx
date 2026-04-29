@@ -319,8 +319,14 @@ export function EndLessonWizard({
     // schedule's "Complete EOL" amber marker stays visible until the wizard
     // is truly finished. Also fire the optional feedback request that depends
     // on the new history row id.
+    let historyRowId: string | null = null;
+    let feedbackRowId: string | null = null;
+    let feedbackSkippedReason: string | null = null;
+    let historyError: string | null = null;
+    let feedbackError: string | null = null;
+
     try {
-      const { data: historyData } = await supabase
+      const { data: historyData, error: historyErr } = await supabase
         .from("lesson_history")
         .insert({
           instructor_id: instructorId,
@@ -334,22 +340,75 @@ export function EndLessonWizard({
         .select("id")
         .single();
 
+      if (historyErr) historyError = historyErr.message;
+
       if (historyData) {
+        historyRowId = historyData.id;
         setHistoryId(historyData.id);
         if (authInstructor?.lesson_feedback_enabled !== false) {
           try {
-            await supabase.from("lesson_feedback").insert({
-              lesson_history_id: historyData.id,
-              pupil_id: pupilId,
-              instructor_id: instructorId,
-            });
-          } catch (e) {
+            const { data: fbData, error: fbErr } = await supabase
+              .from("lesson_feedback")
+              .insert({
+                lesson_history_id: historyData.id,
+                pupil_id: pupilId,
+                instructor_id: instructorId,
+              })
+              .select("id")
+              .single();
+            if (fbErr) feedbackError = fbErr.message;
+            if (fbData) feedbackRowId = fbData.id;
+          } catch (e: any) {
+            feedbackError = e?.message ?? "unknown";
             console.error("Feedback request error:", e);
           }
+        } else {
+          feedbackSkippedReason = "feedback_disabled";
         }
       }
-    } catch (e) {
+    } catch (e: any) {
+      historyError = historyError ?? (e?.message ?? "unknown");
       console.error("Lesson history insert error:", e);
+    }
+
+    // Audit: write one row per affected table so admins/instructors can see
+    // exactly who tapped Done, when, and what was created. Fire-and-forget.
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      const meta = {
+        event: "eol_done",
+        lesson_history_id: historyRowId,
+        lesson_feedback_id: feedbackRowId,
+        feedback_skipped_reason: feedbackSkippedReason,
+        pupil_id: pupilId,
+        pupil_name: pupilName,
+        scheduled_lesson_id: lessonId,
+        lesson_date: lessonDate,
+        start_time: startTime,
+        duration_minutes: durationMinutes,
+        voice_note_attached: !!pendingVoiceNoteUrl,
+        auth_user_id: auth?.user?.id ?? null,
+        client_completed_at: new Date().toISOString(),
+      };
+
+      await Promise.all([
+        logAudit({
+          instructorId,
+          tableName: "lesson_history",
+          recordId: historyRowId ?? lessonId,
+          action: "insert",
+          newValues: { ...meta, error: historyError },
+        }),
+        logAudit({
+          instructorId,
+          tableName: "lesson_feedback",
+          recordId: feedbackRowId ?? historyRowId ?? lessonId,
+          action: "insert",
+          newValues: { ...meta, error: feedbackError },
+        }),
+      ]);
+    } catch (e) {
+      console.error("EOL audit log error:", e);
     }
 
     onCompleted();
