@@ -323,8 +323,7 @@ export function NextUpTile({
           >
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2B7BC8", display: "inline-block" }} />
-                <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#2B7BC8", letterSpacing: 0.2, textTransform: "uppercase" }}>Up next</span>
+                <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73", letterSpacing: 0.2, textTransform: "uppercase" }}>Up next</span>
                 {checkInStatus && (
                   <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5 ml-1" />
                 )}
