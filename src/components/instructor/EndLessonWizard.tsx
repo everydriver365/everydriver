@@ -352,16 +352,188 @@ export function EndLessonWizard({
   const stepNumber = step === "summary" ? 1 : step === "payment" ? 2 : step === "skills" ? 3 : step === "book" ? 4 : 5;
   const totalSteps = needsPayment ? 4 : 3;
 
+  // Premium step-1 chrome (Cancel / centred title / spacer + thin progress bars).
+  const isSummaryChrome = step === "summary";
+  const showStepChrome =
+    step !== "completed" && step !== "completing" && step !== "course_complete";
+
+  // Refresh pupil balance after Record Payment (called from Step 1 "Due now" tile)
+  const [refreshedBalance, setRefreshedBalance] = useState<number | null>(null);
+  const handleSummaryPaymentRecorded = async () => {
+    try {
+      const { data } = await supabase
+        .from("pupils")
+        .select("account_balance")
+        .eq("id", pupilId)
+        .single();
+      if (data && typeof data.account_balance === "number") {
+        setRefreshedBalance(Number(data.account_balance));
+      }
+    } catch (e) {
+      console.error("Refresh balance error:", e);
+    }
+    invalidatePaymentQueries({ pupilId, instructorId });
+  };
+  const effectiveBalance = refreshedBalance ?? currentBalance;
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto rounded-2xl">
+      <SheetContent
+        side="bottom"
+        className="max-h-[90vh] overflow-y-auto rounded-2xl p-0"
+        hideClose={isSummaryChrome as any}
+      >
+        {isSummaryChrome ? (
+          <>
+            {/* Premium header bar: Cancel / centred title / spacer */}
+            <div
+              style={{
+                padding: "12px 16px",
+                borderBottom: "0.5px solid #E5E5EA",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  padding: 4,
+                  flexShrink: 0,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: "#2B7BC8",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <div style={{ flex: 1, minWidth: 0, textAlign: "center" }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: "#6E6E73",
+                    letterSpacing: 0.3,
+                    textTransform: "uppercase",
+                    margin: "0 0 1px",
+                  }}
+                >
+                  Step 1 of {totalSteps} · Quick summary
+                </div>
+                <SheetTitle
+                  className="m-0"
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 500,
+                    color: "#000",
+                    letterSpacing: -0.2,
+                  }}
+                >
+                  End lesson
+                </SheetTitle>
+              </div>
+              <div style={{ width: 50, flexShrink: 0 }} />
+              <SheetDescription className="sr-only">End of lesson wizard</SheetDescription>
+            </div>
+
+            {/* Thin progress bars */}
+            <div style={{ padding: "8px 16px 0" }}>
+              <div style={{ display: "flex", gap: 4 }}>
+                {Array.from({ length: totalSteps }).map((_, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      flex: 1,
+                      height: 3,
+                      borderRadius: 2,
+                      background: i < stepNumber ? "#2B7BC8" : "#E5E5EA",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div style={{ padding: "8px 24px 0" }}>
+              <StepSummary
+                pupilId={pupilId}
+                pupilName={pupilName}
+                instructorId={instructorId}
+                durationMinutes={durationMinutes}
+                balanceBefore={effectiveBalance}
+                lessonCost={lessonCost}
+                lessonDate={lessonDate}
+                startTime={startTime}
+                notes={notes}
+                onNotesChange={setNotes}
+                onVoiceNoteRecorded={setVoiceNoteBlob}
+                onPaymentRecorded={handleSummaryPaymentRecorded}
+              />
+            </div>
+
+            {/* Footer action row */}
+            <div
+              style={{
+                padding: "12px 16px",
+                background: "#F8FAFB",
+                borderTop: "0.5px solid #E5E5EA",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 8,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  padding: "8px 14px",
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: "#6E6E73",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={goNext}
+                style={{
+                  background: "#2B7BC8",
+                  border: "none",
+                  borderRadius: 10,
+                  padding: "10px 20px",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: "#FFFFFF",
+                }}
+              >
+                Next
+                <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
+              </button>
+            </div>
+          </>
+        ) : (
+        <div className="p-6">
         <SheetHeader className="pb-3">
           <SheetTitle className="text-base">
             {step === "completed" ? "Lesson Summary" : `End Lesson — ${pupilName}`}
           </SheetTitle>
           <SheetDescription className="sr-only">End of lesson wizard</SheetDescription>
           {/* Progress dots - hide on completed */}
-          {step !== "completed" && step !== "completing" && step !== "course_complete" && (
+          {showStepChrome && (
             <>
               <div className="flex items-center gap-1.5 pt-1">
                 {Array.from({ length: totalSteps }).map((_, i) => (
@@ -381,27 +553,6 @@ export function EndLessonWizard({
         </SheetHeader>
 
         <div className="py-2">
-          {step === "summary" && (
-            <>
-              <StepSummary
-                pupilName={pupilName}
-                durationMinutes={durationMinutes}
-                balanceBefore={currentBalance}
-                lessonCost={lessonCost}
-                notes={notes}
-                onNotesChange={setNotes}
-                onVoiceNoteRecorded={setVoiceNoteBlob}
-              />
-              <div className="flex gap-2 pt-4">
-                <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-                  Cancel
-                </Button>
-                <Button onClick={goNext} className="flex-1">
-                  Next
-                </Button>
-              </div>
-            </>
-          )}
 
           {step === "payment" && (
             <StepPayment
