@@ -215,6 +215,7 @@ export function AddLessonSheet({
   const [travelDetailsOpen, setTravelDetailsOpen] = useState(false);
   const [checkingConflict, setCheckingConflict] = useState(false);
   const pendingCheckRef = useRef<Promise<void> | null>(null);
+  const submittingRef = useRef(false);
   const [travelSuggestion, setTravelSuggestion] = useState<{ suggestedTime: string; travelMinutes: number; fromName: string } | null>(null);
   // Soft (non-blocking) travel-time warning — Phase 2. Save is never gated on this.
   const [travelWarning, setTravelWarning] = useState<{
