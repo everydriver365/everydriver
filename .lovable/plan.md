@@ -1,69 +1,72 @@
-# Make Step 4 use full live availability
+# EOL Audit Log
 
-Today Step 4 already respects live lessons + Google Calendar busy + instructor buffer + first-lesson travel from home. It does NOT respect:
+Track every "Done" tap at the end of the End Lesson wizard, including when `lesson_history` and `lesson_feedback` rows were created. Surface the trail in both the instructor portal (own activity) and admin portal (all instructors).
 
-1. Instructor working hours / day-of-week schedule
-2. Date overrides (holidays, one-off changes)
-3. Manual blocks (lunch, time off)
-4. Travel time between back-to-back pupils (only first-of-day uses travel)
+## Approach
 
-Fix: extend the existing `dayCache` and `isAvailable()` in `src/components/instructor/end-lesson/StepBookNext.tsx`. The slot suggestion pipeline (best/gap/preference/urgency/fallbacks) and visual rendering stay exactly as they are.
+Reuse the existing `data_audit_log` table — it already has instructor-scoped RLS, an `insert` action, and a `new_values` jsonb column for metadata. No schema changes required.
 
-## Data added to the up-front fetch
+When the user taps **Done** in `EndLessonWizard.handleDone`, after the inserts succeed we write two audit rows (one per table), both tagged with the wizard finish event so they can be grouped.
 
-Run in parallel with the existing calendar query:
+Each audit row's `new_values` carries:
+- `event: "eol_done"`
+- `lesson_history_id`
+- `lesson_feedback_id` (null if feedback was disabled or insert failed)
+- `pupil_id`, `pupil_name`
+- `lesson_date`, `start_time`, `duration_minutes`
+- `voice_note_attached: boolean`
+- `auth_user_id` (who tapped Done)
+- `client_completed_at` (ISO timestamp)
 
-- `instructor_working_hours` — `day_of_week`, `start_time`, `end_time`, where `is_active = true`
-- `instructor_date_overrides` — for the 7-day window
-- `instructor_manual_blocks` — for the 7-day window
-- Upgrade per-day `scheduled_lessons` query to also pull `pupil_id` and the joined `pupils.postcode` so we can compute travel between adjacent pupils
+If either insert fails, we still log a row with `action: "insert"` and `new_values.error: "<message>"` so failures are visible in the audit too.
 
-## Per-day window computation
+## Changes
 
-For each of the next 7 days, derive a `window: { start, end }` (epoch ms):
+### 1. Logging hook in the wizard
+`src/components/instructor/EndLessonWizard.tsx` — inside `handleDone`, after the `lesson_history` and `lesson_feedback` inserts, call `logAudit` (existing helper in `src/lib/auditLogger.ts`) twice:
+- One row with `table_name: "lesson_history"`, `record_id: historyData.id`, full metadata payload.
+- One row with `table_name: "lesson_feedback"`, `record_id: feedbackData.id` (or the history id with `note: "feedback_disabled"` if skipped).
 
-- If a date override exists and `is_available = false` → `window = null` (instructor off)
-- If override exists and is available → use override `start_time` / `end_time`
-- Otherwise → use the matching `instructor_working_hours` row for that day_of_week
-- If no working hours row → `window = null` (not a working day)
+Wrap in try/catch — audit failure must never block the wizard close.
 
-Cache `window`, `existing` lessons (with pupil postcode), `cal` busy windows, and `blocks` per day.
+### 2. Instructor portal viewer
+New component `src/components/instructor/EOLAuditLog.tsx`:
+- Lists this instructor's `data_audit_log` rows where `new_values->>event = 'eol_done'`, newest first, paginated 25 at a time.
+- Each row shows: pupil name, lesson date/time, duration, "Done tapped" timestamp (relative + absolute on hover), small chips for "feedback requested" / "voice note" when present, and the `lesson_history_id` short hash.
+- Filter chips: All / Today / Last 7 days / Last 30 days, and a pupil filter.
 
-## Per-pupil travel cache
+Mount it inside the existing **Lesson History** screen (`src/components/instructor/LessonHistory.tsx`) as a new tab/section called "EOL Activity", so it lives alongside the lessons themselves.
 
-Add a `Map<"FROM→TO", minutes>` cache. Helper `lookupTravelMinutes(from, to)` calls `check-travel-buffer` once per unique pair, falls back to 10 minutes on error or null postcode. Used for both first-of-day (home → pupil) and back-to-back (prev pupil → this pupil → next pupil) checks.
+### 3. Admin portal viewer
+New page `src/pages/admin/EOLAuditLog.tsx` + route `/admin/eol-audit`:
+- Same query, but unscoped (admin RLS already grants read on `data_audit_log` via `has_role(_, 'admin')` — verify; if not, add a SELECT policy in this migration).
+- Columns: instructor name, pupil name, lesson date, duration, Done timestamp, feedback chip, voice-note chip, lesson_history_id.
+- Filters: instructor (searchable select), date range, "feedback enabled only".
+- Add a link card to `AdminPortal` in the existing dashboard grid, plus the lazy import in `src/routes/adminRoutes.tsx`.
 
-## New `isAvailable(dateStr, hhmmss)` (async)
+### 4. RLS for admin read access
+Quick check shows `data_audit_log` only has instructor-scoped policies. Add one migration:
 
-Order of checks — first failure wins:
+```sql
+CREATE POLICY "Admins can view all audit logs"
+  ON public.data_audit_log
+  FOR SELECT
+  TO authenticated
+  USING (public.has_role(auth.uid(), 'admin'::public.app_role));
+```
 
-1. `window` is null → fail (not working that day)
-2. Candidate start/end must sit fully inside `window`
-3. Manual block overlap (no buffer — explicit blocks are hard) → fail
-4. Calendar busy overlap ± `bufferMinutes` → fail
-5. If no earlier commitment that day → enforce `window.start + max(homeTravel, bufferMinutes)`
-6. Direct overlap with any existing lesson ± `bufferMinutes` → fail
-7. Find immediately previous + next lesson; for each:
-   - Required gap = `max(travel(prevPostcode → pupilPostcode), bufferMinutes)`
-   - Required gap (next side) = `max(travel(pupilPostcode → nextPostcode), bufferMinutes)`
-   - Fail if candidate start violates prev requirement, or candidate end violates next requirement
+No other schema changes.
 
-Because `isAvailable` becomes async, every call site in the candidate pipeline becomes `await isAvailable(...)`. All existing pipeline logic and ordering stays the same.
+## Technical details
 
-## Out of scope (intentionally unchanged)
+- `logAudit` signature already accepts arbitrary `newValues`, so no helper changes needed.
+- The audit insert is fire-and-forget (existing helper swallows errors and logs to console) — wizard close path is unaffected.
+- Pupil name comes from the wizard's existing `pupilName` prop, so no extra join at write time.
+- Both viewers query `data_audit_log` filtered with `new_values->>event = 'eol_done'`. Index `idx_audit_log_instructor (instructor_id, created_at DESC)` already covers the instructor view; admin view scans by `created_at DESC` which is acceptable at expected volumes (1–2 rows per completed lesson).
+- Admin viewer joins instructor name client-side from a single `instructors` fetch (id → name map), keeping the audit query a single round-trip.
+- No edge functions, no new tables, no new secrets.
 
-- Slot suggestion categories (best / gap / preference / urgency / fallbacks)
-- Reasoning text and dedup rules
-- Sort order (genuine best-match first, then chronological)
-- Visual rendering, pickup row, identity bar, footer
-- The `check-travel-buffer` edge function itself
-- Vehicle availability / multi-vehicle constraints (still not modelled)
-
-## Files to edit
-
-- `src/components/instructor/end-lesson/StepBookNext.tsx` — the `load()` function only (data fetch + `isAvailable`); pipeline below is awaited but otherwise unchanged
-
-## Risk notes
-
-- `isAvailable` becoming async means each candidate evaluation now potentially awaits two `check-travel-buffer` calls. Mitigation: pairwise `travelCache` collapses repeated edges (most days have ≤ 5 unique pupil pairs). With at most 3 returned suggestions and early-exit on first match per category, real call counts stay low.
-- If `instructor_working_hours` is empty for a brand-new instructor, the screen will show "no slots" rather than the old hardcoded 09:00 fallback. This is the correct behaviour but worth knowing.
+## Out of scope
+- Editing past audit rows.
+- Tracking partial wizard state (Step 1/2/3 events) — only the final "Done" tap is logged.
+- Exporting to CSV (can be added later if needed).
