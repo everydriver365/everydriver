@@ -71,6 +71,7 @@ export function StepBookNext({
   instructorId,
   durationMinutes,
   todayStartTime,
+  lessonId,
   onBooked,
   onSkip,
 }: StepBookNextProps) {
@@ -85,6 +86,7 @@ export function StepBookNext({
     courseName: null,
     courseHoursTotal: null,
     courseHoursRemaining: null,
+    lessonType: null,
   });
 
   useEffect(() => {
@@ -94,32 +96,53 @@ export function StepBookNext({
 
   const load = async () => {
     try {
-      // Pupil context
+      // ---- Pupil + preferences ----
       const { data: pupil } = await supabase
         .from("pupils")
-        .select("postcode, address, test_date")
+        .select("postcode, address, test_date, preferred_days, preferred_times")
         .eq("id", pupilId)
         .maybeSingle();
 
-      // Course / package context (best-effort; tolerate missing tables)
+      const preferredDays = ((pupil as any)?.preferred_days || []) as string[]; // e.g. ["monday","wednesday"]
+      const preferredTimes = ((pupil as any)?.preferred_times || []) as string[]; // e.g. ["morning","afternoon"]
+
+      // ---- Active course (pupil_packages JOIN lesson_packages) ----
       let courseName: string | null = null;
       let courseHoursTotal: number | null = null;
       let courseHoursRemaining: number | null = null;
       try {
         const { data: pkg } = await (supabase as any)
           .from("pupil_packages")
-          .select("name, total_hours, remaining_hours")
+          .select("hours_purchased, hours_remaining, status, lesson_packages(name)")
           .eq("pupil_id", pupilId)
-          .order("created_at", { ascending: false })
+          .eq("status", "active")
+          .order("purchased_at", { ascending: false })
           .limit(1)
           .maybeSingle();
         if (pkg) {
-          courseName = pkg.name ?? null;
-          courseHoursTotal = pkg.total_hours ?? null;
-          courseHoursRemaining = pkg.remaining_hours ?? null;
+          courseName = pkg.lesson_packages?.name ?? null;
+          courseHoursTotal =
+            typeof pkg.hours_purchased === "number" ? pkg.hours_purchased : null;
+          courseHoursRemaining =
+            typeof pkg.hours_remaining === "number" ? pkg.hours_remaining : null;
         }
       } catch {
         /* table optional */
+      }
+
+      // ---- Just-completed lesson type (subtitle fallback) ----
+      let lessonType: string | null = null;
+      if (lessonId) {
+        try {
+          const { data: l } = await supabase
+            .from("scheduled_lessons")
+            .select("lesson_type")
+            .eq("id", lessonId)
+            .maybeSingle();
+          lessonType = (l as any)?.lesson_type || null;
+        } catch {
+          /* ignore */
+        }
       }
 
       setPupilCtx({
@@ -129,9 +152,10 @@ export function StepBookNext({
         courseName,
         courseHoursTotal,
         courseHoursRemaining,
+        lessonType,
       });
 
-      // Instructor preferences + buffer + home_postcode
+      // ---- Instructor preferences + buffer + travel ----
       const { data: instructorData } = await supabase
         .from("instructors")
         .select("prefer_earliest_slot, buffer_minutes, home_postcode")
@@ -142,7 +166,6 @@ export function StepBookNext({
       const homePostcode = (instructorData as any)?.home_postcode;
       const pupilPostcode = (pupil as any)?.postcode;
 
-      // Travel time for first-of-day buffer
       let travelMinutes = 0;
       if (homePostcode && pupilPostcode) {
         try {
@@ -155,8 +178,9 @@ export function StepBookNext({
         }
       }
       const effectiveFirstSlotBuffer = Math.max(travelMinutes, bufferMinutes);
+      const bufferMs = bufferMinutes * 60000;
 
-      // Pupil's previously-booked patterns (for preference scoring)
+      // ---- Pupil's booking history (for genuine 3+ pattern detection) ----
       const { data: pastLessons } = await supabase
         .from("scheduled_lessons")
         .select("lesson_date, start_time")
@@ -166,23 +190,22 @@ export function StepBookNext({
         .order("lesson_date", { ascending: false })
         .limit(20);
 
-      const dowCount: Record<number, number> = {};
-      const todCount: Record<string, number> = {};
+      // Group by exact (DOW, HH:MM) bucket — threshold 3 = genuine pattern.
+      const dowTimeBuckets: Record<string, number> = {};
       (pastLessons || []).forEach((l) => {
         const d = parse(l.lesson_date as string, "yyyy-MM-dd", new Date());
-        dowCount[d.getDay()] = (dowCount[d.getDay()] || 0) + 1;
-        const hour = parseInt((l.start_time as string).slice(0, 2), 10);
-        const tod = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
-        todCount[tod] = (todCount[tod] || 0) + 1;
+        const hhmm = (l.start_time as string).slice(0, 5);
+        const key = `${d.getDay()}|${hhmm}`;
+        dowTimeBuckets[key] = (dowTimeBuckets[key] || 0) + 1;
       });
-      const preferredDow = Object.entries(dowCount).sort((a, b) => b[1] - a[1])[0]?.[0];
-      const preferredTod = Object.entries(todCount).sort((a, b) => b[1] - a[1])[0]?.[0] as
-        | "morning"
-        | "afternoon"
-        | "evening"
-        | undefined;
+      const genuinePatterns = Object.entries(dowTimeBuckets)
+        .filter(([, n]) => n >= 3)
+        .map(([k]) => {
+          const [dow, hhmm] = k.split("|");
+          return { dow: parseInt(dow, 10), hhmm };
+        });
 
-      // Look at next 7 days for available slots
+      // ---- Conflict data for next 7 days ----
       const today = new Date();
       const todayStr = format(today, "yyyy-MM-dd");
       const weekLaterStr = format(addDays(today, 7), "yyyy-MM-dd");
@@ -195,23 +218,17 @@ export function StepBookNext({
         .gte("end_time", `${todayStr}T00:00:00`)
         .lte("start_time", `${weekLaterStr}T23:59:59`);
 
-      const bufferMs = bufferMinutes * 60000;
-
-      interface Candidate {
-        date: string;
-        startTime: string;
-        score: number;
-        category: SlotCategory;
-        reasoning: string;
-      }
-      const candidates: Candidate[] = [];
-
-      const anchorTime = todayStartTime ?? null; // for "same time" pattern
-
+      // Cache day's existing lessons + cal-busy windows
+      const dayCache = new Map<
+        string,
+        {
+          existing: Array<{ start_time: string; duration_minutes: number | null }>;
+          cal: Array<{ start: Date; end: Date }>;
+        }
+      >();
       for (let d = 1; d <= 7; d++) {
         const date = addDays(today, d);
         const dateStr = format(date, "yyyy-MM-dd");
-
         const { data: existing } = await supabase
           .from("scheduled_lessons")
           .select("start_time, duration_minutes")
@@ -219,135 +236,259 @@ export function StepBookNext({
           .eq("lesson_date", dateStr)
           .neq("status", "cancelled")
           .order("start_time");
-
         const dayCalBusy = (calendarEvents || [])
           .map((ev) => ({ start: new Date(ev.start_time), end: new Date(ev.end_time) }))
           .filter((ev) => {
             if (ev.end.getTime() - ev.start.getTime() >= 24 * 60 * 60 * 1000) return false;
             return format(ev.start, "yyyy-MM-dd") === dateStr;
           });
+        dayCache.set(dateStr, {
+          existing: (existing || []) as Array<{
+            start_time: string;
+            duration_minutes: number | null;
+          }>,
+          cal: dayCalBusy,
+        });
+      }
 
-        const hasExistingOnDay = (existing || []).length > 0 || dayCalBusy.length > 0;
+      // ---- Slot availability check (shared) ----
+      const isAvailable = (dateStr: string, hhmmss: string): boolean => {
+        const date = parse(dateStr, "yyyy-MM-dd", new Date());
+        const cached = dayCache.get(dateStr);
+        if (!cached) return false;
+        const candidateStart = parse(hhmmss, "HH:mm:ss", date).getTime();
+        const candidateEnd = candidateStart + durationMinutes * 60000;
 
-        const candidateTimes = preferEarliest
-          ? ["09:00:00", "09:30:00", "10:00:00", "10:30:00", "11:00:00", "13:00:00", "15:00:00"]
-          : ["09:00:00", "11:00:00", "13:00:00", "15:00:00"];
-
-        // Always consider the anchor time too, so "same time" pattern works
-        if (anchorTime && !candidateTimes.includes(anchorTime)) {
-          candidateTimes.push(anchorTime);
+        const hasExistingOnDay = cached.existing.length > 0 || cached.cal.length > 0;
+        const isFirstOfDay =
+          !hasExistingOnDay ||
+          (cached.existing.every(
+            (ex) => parse(ex.start_time, "HH:mm:ss", date).getTime() >= candidateStart,
+          ) &&
+            cached.cal.every((ev) => ev.start.getTime() >= candidateStart));
+        if (isFirstOfDay && effectiveFirstSlotBuffer > bufferMinutes) {
+          const dayStart = parse("09:00:00", "HH:mm:ss", date).getTime();
+          const earliestAllowed = dayStart + effectiveFirstSlotBuffer * 60000;
+          if (candidateStart < earliestAllowed) return false;
         }
 
-        for (const ct of candidateTimes) {
-          const candidateStart = parse(ct, "HH:mm:ss", date).getTime();
-          const candidateEnd = candidateStart + durationMinutes * 60000;
+        const lessonConflict = cached.existing.some((ex) => {
+          const exStart = parse(ex.start_time, "HH:mm:ss", date).getTime();
+          const exEnd = exStart + ((ex.duration_minutes as number) || 60) * 60000;
+          return candidateStart < exEnd + bufferMs && candidateEnd > exStart - bufferMs;
+        });
+        if (lessonConflict) return false;
+        const calConflict = cached.cal.some(
+          (ev) =>
+            candidateStart < ev.end.getTime() + bufferMs &&
+            candidateEnd > ev.start.getTime() - bufferMs,
+        );
+        return !calConflict;
+      };
 
-          const isFirstOfDay =
-            !hasExistingOnDay ||
-            ((existing || []).every(
-              (ex) => parse(ex.start_time as string, "HH:mm:ss", date).getTime() >= candidateStart,
-            ) &&
-              dayCalBusy.every((ev) => ev.start.getTime() >= candidateStart));
-          if (isFirstOfDay && effectiveFirstSlotBuffer > bufferMinutes) {
-            const dayStart = parse("09:00:00", "HH:mm:ss", date).getTime();
-            const earliestAllowed = dayStart + effectiveFirstSlotBuffer * 60000;
-            if (candidateStart < earliestAllowed) continue;
-          }
+      // ---- Category-driven candidate pipeline ----
+      const candidates: SuggestedSlot[] = [];
+      const usedReasonings = new Set<string>();
+      const usedSlotKeys = new Set<string>();
 
-          const lessonConflict = (existing || []).some((ex) => {
-            const exStart = parse(ex.start_time as string, "HH:mm:ss", date).getTime();
-            const exEnd = exStart + ((ex.duration_minutes as number) || 60) * 60000;
-            return candidateStart < exEnd + bufferMs && candidateEnd > exStart - bufferMs;
+      const pushIfFresh = (slot: SuggestedSlot) => {
+        const slotKey = `${slot.date}|${slot.startTime}`;
+        if (usedSlotKeys.has(slotKey)) return false;
+        if (usedReasonings.has(slot.reasoning)) return false;
+        usedSlotKeys.add(slotKey);
+        usedReasonings.add(slot.reasoning);
+        candidates.push(slot);
+        return true;
+      };
+
+      // 1) BEST MATCH — first available genuine 3+ pattern slot in next 7 days
+      for (const pattern of genuinePatterns) {
+        if (candidates.length >= 3) break;
+        for (let d = 1; d <= 7; d++) {
+          const date = addDays(today, d);
+          if (date.getDay() !== pattern.dow) continue;
+          const hhmmss = `${pattern.hhmm}:00`;
+          const dateStr = format(date, "yyyy-MM-dd");
+          if (!isAvailable(dateStr, hhmmss)) continue;
+          const dayName = format(date, "EEEE");
+          const reasoning = `Pupil's usual ${dayName} slot`;
+          const added = pushIfFresh({
+            date: dateStr,
+            startTime: hhmmss,
+            category: "best",
+            reasoning,
+            isGenuineBestMatch: true,
           });
-          const calConflict = dayCalBusy.some(
-            (ev) =>
-              candidateStart < ev.end.getTime() + bufferMs &&
-              candidateEnd > ev.start.getTime() - bufferMs,
-          );
-          if (lessonConflict || calConflict) continue;
+          if (added) break; // one instance per pattern
+        }
+      }
 
-          // --- score & categorise ---
-          let score = 0;
-          let category: SlotCategory = "pattern";
-          let reasoning = "Same time as last lesson";
-
-          if (anchorTime && ct === anchorTime) {
-            score += 30;
-            category = "pattern";
-            reasoning = d === 7 ? "Same time next week" : "Same time as today";
-          }
-          if (preferredDow && date.getDay() === parseInt(preferredDow, 10)) {
-            score += 20;
-            category = "preference";
-            reasoning = `Pupil's usual ${format(date, "EEEE")} slot`;
-          }
-          const hour = parseInt(ct.slice(0, 2), 10);
-          const tod = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
-          if (preferredTod && preferredTod === tod) {
-            score += 10;
-            if (category !== "preference") {
-              reasoning = `Pupil's preferred ${tod}`;
-              category = "preference";
-            }
-          }
-          // Gap fill: if this slot is sandwiched between existing lessons that day
-          if ((existing || []).length >= 1) {
-            const before = (existing || []).find((ex) => {
-              const exStart = parse(ex.start_time as string, "HH:mm:ss", date).getTime();
+      // 2) GAP FILL — sandwich detection in next 7 days
+      if (candidates.length < 3) {
+        for (let d = 1; d <= 7 && candidates.length < 3; d++) {
+          const date = addDays(today, d);
+          const dateStr = format(date, "yyyy-MM-dd");
+          const cached = dayCache.get(dateStr);
+          if (!cached || cached.existing.length < 2) continue;
+          const candidateTimes = ["09:00:00", "10:30:00", "11:00:00", "13:00:00", "15:00:00"];
+          for (const ct of candidateTimes) {
+            if (!isAvailable(dateStr, ct)) continue;
+            const candidateStart = parse(ct, "HH:mm:ss", date).getTime();
+            const candidateEnd = candidateStart + durationMinutes * 60000;
+            const before = cached.existing.find((ex) => {
+              const exStart = parse(ex.start_time, "HH:mm:ss", date).getTime();
               const exEnd = exStart + ((ex.duration_minutes as number) || 60) * 60000;
               return exEnd <= candidateStart;
             });
-            const after = (existing || []).find((ex) => {
-              const exStart = parse(ex.start_time as string, "HH:mm:ss", date).getTime();
+            const after = cached.existing.find((ex) => {
+              const exStart = parse(ex.start_time, "HH:mm:ss", date).getTime();
               return exStart >= candidateEnd;
             });
             if (before && after) {
-              score += 25;
-              category = "gap";
-              reasoning = "Fills a gap in your schedule";
+              const added = pushIfFresh({
+                date: dateStr,
+                startTime: ct,
+                category: "gap",
+                reasoning: "Fills a gap in your schedule",
+              });
+              if (added) break;
             }
           }
-          // Test-prep urgency
-          if (pupil && (pupil as any).test_date) {
-            const testDate = parse((pupil as any).test_date, "yyyy-MM-dd", new Date());
-            const daysToTest = differenceInCalendarDays(testDate, date);
-            if (daysToTest >= 0 && daysToTest <= 21) {
-              score += 15;
-              category = "urgency";
-              reasoning = `Test in ${daysToTest} days · keeps pace`;
-            }
-          }
-          // Earliest preference bonus
-          if (preferEarliest) score += Math.max(0, 12 - hour);
-
-          // Sooner-is-better tiebreaker
-          score += Math.max(0, 8 - d);
-
-          candidates.push({ date: dateStr, startTime: ct, score, category, reasoning });
         }
       }
 
-      // Pick best 3, deduped by (date, time), avoiding duplicate categories on top picks.
-      candidates.sort((a, b) => b.score - a.score);
-      const seen = new Set<string>();
-      const top: Candidate[] = [];
-      for (const c of candidates) {
-        const key = `${c.date}|${c.startTime}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        top.push(c);
-        if (top.length === 3) break;
+      // 3) PUPIL PREFERENCE — explicit preferred_days / preferred_times
+      const dayNameToIdx: Record<string, number> = {
+        sunday: 0,
+        monday: 1,
+        tuesday: 2,
+        wednesday: 3,
+        thursday: 4,
+        friday: 5,
+        saturday: 6,
+      };
+      if (candidates.length < 3 && (preferredDays.length > 0 || preferredTimes.length > 0)) {
+        const candidateTimes = preferEarliest
+          ? ["09:00:00", "09:30:00", "10:00:00", "10:30:00", "11:00:00", "13:00:00", "15:00:00"]
+          : ["09:00:00", "11:00:00", "13:00:00", "15:00:00"];
+        for (let d = 1; d <= 7 && candidates.length < 3; d++) {
+          const date = addDays(today, d);
+          const dateStr = format(date, "yyyy-MM-dd");
+          const dayMatchesPref =
+            preferredDays.length === 0 ||
+            preferredDays.some((dn) => dayNameToIdx[dn.toLowerCase()] === date.getDay());
+          if (!dayMatchesPref) continue;
+          for (const ct of candidateTimes) {
+            const hour = parseInt(ct.slice(0, 2), 10);
+            const tod = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+            const timeMatchesPref =
+              preferredTimes.length === 0 || preferredTimes.includes(tod);
+            if (!timeMatchesPref) continue;
+            if (!isAvailable(dateStr, ct)) continue;
+            // Reasoning: prefer day-name when explicit, else time-of-day
+            let reasoning: string;
+            if (preferredDays.length > 0) {
+              reasoning = `Pupil's preferred ${format(date, "EEEE")}`;
+            } else {
+              reasoning = `Pupil's preferred ${tod}s`;
+            }
+            const added = pushIfFresh({
+              date: dateStr,
+              startTime: ct,
+              category: "preference",
+              reasoning,
+            });
+            if (added) break;
+          }
+        }
       }
 
-      const out: SuggestedSlot[] = top.map((t, i) => ({
-        date: t.date,
-        startTime: t.startTime,
-        category: i === 0 ? "best" : t.category,
-        reasoning: t.reasoning,
-      }));
+      // 4) TEST-PREP URGENCY — only when test_date ≤ 21 days away
+      const testDateRaw = (pupil as any)?.test_date as string | undefined;
+      if (candidates.length < 3 && testDateRaw) {
+        try {
+          const testDate = parse(testDateRaw, "yyyy-MM-dd", new Date());
+          const daysToTest = differenceInCalendarDays(testDate, today);
+          if (daysToTest >= 0 && daysToTest <= 21 && todayStartTime) {
+            for (let d = 1; d <= 7 && candidates.length < 3; d++) {
+              const date = addDays(today, d);
+              const dateStr = format(date, "yyyy-MM-dd");
+              if (!isAvailable(dateStr, todayStartTime)) continue;
+              const remaining = differenceInCalendarDays(testDate, date);
+              const added = pushIfFresh({
+                date: dateStr,
+                startTime: todayStartTime,
+                category: "urgency",
+                reasoning: `Test in ${remaining} days · keeps pace`,
+              });
+              if (added) break;
+            }
+          }
+        } catch {
+          /* ignore */
+        }
+      }
 
+      // 5) PATTERN CONTINUATION (Step-3 fallbacks) — honest defaults
+      // 5a) Same time next week
+      if (candidates.length < 3 && todayStartTime) {
+        const date = addDays(today, 7);
+        const dateStr = format(date, "yyyy-MM-dd");
+        if (isAvailable(dateStr, todayStartTime)) {
+          pushIfFresh({
+            date: dateStr,
+            startTime: todayStartTime,
+            category: "pattern",
+            reasoning: "Same time next week",
+          });
+        }
+      }
+      // 5b) Tomorrow's first opening
+      if (candidates.length < 3) {
+        const tomorrow = addDays(today, 1);
+        const tomorrowStr = format(tomorrow, "yyyy-MM-dd");
+        const candidateTimes = preferEarliest
+          ? ["09:00:00", "09:30:00", "10:00:00", "10:30:00", "11:00:00", "13:00:00", "15:00:00"]
+          : ["09:00:00", "10:00:00", "11:00:00", "13:00:00", "15:00:00"];
+        for (const ct of candidateTimes) {
+          if (isAvailable(tomorrowStr, ct)) {
+            pushIfFresh({
+              date: tomorrowStr,
+              startTime: ct,
+              category: "pattern",
+              reasoning: "Tomorrow's first opening",
+            });
+            break;
+          }
+        }
+      }
+      // 5c) Two days from now, same time
+      if (candidates.length < 3 && todayStartTime) {
+        const date = addDays(today, 2);
+        const dateStr = format(date, "yyyy-MM-dd");
+        if (isAvailable(dateStr, todayStartTime)) {
+          pushIfFresh({
+            date: dateStr,
+            startTime: todayStartTime,
+            category: "pattern",
+            reasoning: "Two days from now, same time",
+          });
+        }
+      }
+
+      // ---- Sort: genuine best-match first, then chronological ascending ----
+      candidates.sort((a, b) => {
+        const aBest = a.isGenuineBestMatch ? 1 : 0;
+        const bBest = b.isGenuineBestMatch ? 1 : 0;
+        if (aBest !== bBest) return bBest - aBest;
+        const aKey = `${a.date}T${a.startTime}`;
+        const bKey = `${b.date}T${b.startTime}`;
+        return aKey.localeCompare(bKey);
+      });
+
+      const out = candidates.slice(0, 3);
       setSlots(out);
-      // Pre-select the best match for tap-to-confirm flow
+      // Pre-select the first slot for tap-to-confirm flow
       if (out.length > 0) setSelectedIdx(0);
     } catch (e) {
       console.error("Error finding slots:", e);
