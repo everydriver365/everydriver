@@ -89,6 +89,7 @@ export function CoursePlannerForm({
   onComplete,
   showHeader = true,
 }: CoursePlannerFormProps) {
+  const queryClient = useQueryClient();
   const [pupilName, setPupilName] = useState(defaultPupilName || "");
   const [pupilEmail, setPupilEmail] = useState("");
   const [pupilPhone, setPupilPhone] = useState("");
