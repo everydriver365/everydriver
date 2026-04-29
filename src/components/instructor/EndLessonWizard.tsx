@@ -380,8 +380,7 @@ export function EndLessonWizard({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="max-h-[90vh] overflow-y-auto rounded-2xl p-0"
-        hideClose={isSummaryChrome as any}
+        className={`max-h-[90vh] overflow-y-auto rounded-2xl p-0 ${isSummaryChrome ? "[&>button.absolute]:hidden" : ""}`}
       >
         {isSummaryChrome ? (
           <>
