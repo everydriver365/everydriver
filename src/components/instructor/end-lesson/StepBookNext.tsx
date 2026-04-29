@@ -5,6 +5,7 @@ import { format, addDays, parse, differenceInCalendarDays } from "date-fns";
 import { toast } from "sonner";
 
 import { titleCaseName } from "@/lib/titleCase";
+import { UserAvatar } from "@/components/instructor/UserAvatar";
 
 const FONT_STACK =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
