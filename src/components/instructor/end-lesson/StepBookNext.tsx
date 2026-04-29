@@ -826,47 +826,6 @@ export function StepBookNext({
 
       {/* Body — scrollable */}
       <div style={{ padding: "18px 0 16px", flex: 1, minHeight: 0, overflowY: "auto" }}>
-        {/* Suggested slots header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 14,
-          }}
-        >
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 500,
-              color: C.muted,
-              letterSpacing: 0.3,
-              textTransform: "uppercase",
-            }}
-          >
-            Suggested slots
-          </span>
-          <button
-            type="button"
-            onClick={() => {
-              // Preserve existing date/time picker access. If none is wired here,
-              // skip-as-pick lets the instructor reach the calendar to choose freely.
-              toast.message("Open the calendar to pick another time");
-            }}
-            style={{
-              background: "transparent",
-              border: "none",
-              padding: 0,
-              fontSize: 11,
-              fontWeight: 500,
-              color: C.link,
-              cursor: "pointer",
-            }}
-          >
-            Pick another time
-          </button>
-        </div>
-
         {loading ? (
           <div
             style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
@@ -889,146 +848,164 @@ export function StepBookNext({
         ) : (
           slots.map((slot, idx) => {
             const dt = parse(slot.date, "yyyy-MM-dd", new Date());
-            const isBest = !!slot.isGenuineBestMatch;
-            const showBlueBorder = isBest;
+            const isSelected = idx === selectedIdx;
+            const isLast = idx === slots.length - 1;
             const r = reasoningColor(slot.category);
             const startDisplay = format(parse(slot.startTime, "HH:mm:ss", dt), "HH:mm");
 
+            // Suggested = the top-ranked slot in the sorted list (always idx 0).
+            const isTopRanked = idx === 0;
+            // Show the strong "suggested" treatment when this is the top rank
+            // AND it is currently the selected slot. Once the user taps another
+            // card, that card takes the strong treatment instead.
+            const showStrong = isSelected;
+            const reasoningText =
+              isTopRanked && isSelected ? `${slot.reasoning} · suggested` : slot.reasoning;
+            const reasoningColorVal = showStrong ? C.link : r.color;
+            const reasoningWeightVal: 400 | 500 = showStrong ? 500 : r.weight;
+            const dowColor = showStrong ? C.link : C.muted;
+
             return (
-              <div
+              <button
                 key={`${slot.date}-${slot.startTime}`}
+                type="button"
+                onClick={() => setSelectedIdx(idx)}
+                disabled={booking}
                 style={{
-                  position: "relative",
-                  marginBottom: idx === slots.length - 1 ? 0 : 8,
-                  marginTop: isBest && idx === 0 ? 10 : 0,
+                  width: "100%",
+                  background: C.bg,
+                  border: showStrong
+                    ? `1.5px solid ${C.link}`
+                    : `0.5px solid ${C.hairline}`,
+                  borderRadius: 12,
+                  padding: 14,
+                  cursor: booking ? "default" : "pointer",
+                  textAlign: "left",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 14,
+                  marginBottom: isLast ? 14 : 8,
                 }}
               >
-                {isBest && (
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: -7,
-                      left: 12,
-                      background: C.linkTint,
-                      color: C.link,
-                      borderRadius: 999,
-                      padding: "2px 8px",
-                      fontSize: 9,
-                      fontWeight: 500,
-                      letterSpacing: 0.3,
-                      textTransform: "uppercase",
-                      zIndex: 1,
-                    }}
-                  >
-                    Best match
-                  </span>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setSelectedIdx(idx)}
-                  disabled={booking}
+                {/* Date stack */}
+                <div
                   style={{
-                    width: "100%",
-                    background: C.bg,
-                    border: `0.5px solid ${showBlueBorder ? C.link : C.hairline}`,
-                    borderRadius: 10,
-                    padding: 12,
-                    cursor: booking ? "default" : "pointer",
-                    textAlign: "left",
+                    flexShrink: 0,
+                    minWidth: 42,
                     display: "flex",
-                    alignItems: "center",
-                    gap: 12,
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    textAlign: "center",
                   }}
                 >
-                  {/* Date stack */}
                   <div
                     style={{
-                      flexShrink: 0,
-                      minWidth: 38,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
+                      fontSize: 11,
+                      fontWeight: 500,
+                      color: dowColor,
+                      letterSpacing: 0.3,
+                      textTransform: "uppercase",
+                      lineHeight: 1.1,
+                      margin: 0,
                     }}
                   >
-                    <div
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 500,
-                        color: C.muted,
-                        letterSpacing: 0.3,
-                        textTransform: "uppercase",
-                        lineHeight: 1.2,
-                        margin: 0,
-                      }}
-                    >
-                      {format(dt, "EEE")}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 17,
-                        fontWeight: 500,
-                        color: C.text,
-                        letterSpacing: -0.4,
-                        lineHeight: 1.15,
-                        margin: 0,
-                      }}
-                    >
-                      {format(dt, "d")}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: C.muted,
-                        lineHeight: 1.2,
-                        margin: 0,
-                      }}
-                    >
-                      {format(dt, "MMM")}
-                    </div>
+                    {format(dt, "EEE")}
                   </div>
-
-                  {/* Hairline divider */}
                   <div
                     style={{
-                      width: 0.5,
-                      alignSelf: "stretch",
-                      background: C.hairline,
-                      flexShrink: 0,
+                      fontSize: 22,
+                      fontWeight: 500,
+                      color: C.text,
+                      letterSpacing: -0.4,
+                      lineHeight: 1,
+                      margin: 0,
                     }}
-                  />
+                  >
+                    {format(dt, "d")}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: C.muted,
+                      lineHeight: 1.1,
+                      margin: "1px 0 0",
+                    }}
+                  >
+                    {format(dt, "MMM")}
+                  </div>
+                </div>
 
-                  {/* Slot details */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
+                {/* Hairline divider */}
+                <div
+                  style={{
+                    width: 0.5,
+                    alignSelf: "stretch",
+                    background: C.hairline,
+                    flexShrink: 0,
+                  }}
+                />
+
+                {/* Slot details */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      marginBottom: 2,
+                    }}
+                  >
+                    <span
                       style={{
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: 500,
                         color: C.text,
-                        letterSpacing: -0.1,
-                        margin: "0 0 1px",
-                      }}
-                    >
-                      {startDisplay} · {formatDurationLabel(durationMinutes)}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: r.color,
-                        fontWeight: r.weight,
+                        letterSpacing: -0.2,
                         margin: 0,
                       }}
                     >
-                      {slot.reasoning}
-                    </div>
+                      {startDisplay}
+                    </span>
+                    <span style={{ fontSize: 13, color: C.muted }}>·</span>
+                    <span style={{ fontSize: 13, color: C.muted, margin: 0 }}>
+                      {formatDurationLabel(durationMinutes)}
+                    </span>
                   </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: reasoningColorVal,
+                      fontWeight: reasoningWeightVal,
+                      margin: 0,
+                    }}
+                  >
+                    {reasoningText}
+                  </div>
+                </div>
 
-                  {/* Trailing chevron */}
+                {/* Right action — circular check on selected slot, calm chevron otherwise */}
+                {showStrong ? (
+                  <div
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 9999,
+                      background: C.link,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Check size={14} strokeWidth={2} color="#FFFFFF" />
+                  </div>
+                ) : (
                   <svg
                     width={12}
                     height={12}
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke={showBlueBorder ? C.link : C.muted}
+                    stroke={C.muted}
                     strokeWidth={1.6}
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -1036,27 +1013,48 @@ export function StepBookNext({
                   >
                     <path d="M9 6l6 6-6 6" />
                   </svg>
-                </button>
-              </div>
+                )}
+              </button>
             );
           })
         )}
 
-        {/* Pickup location reminder */}
+        {/* "Pick another time" — full-width hairline button below slots */}
+        {!loading && (
+          <button
+            type="button"
+            onClick={() => {
+              toast.message("Open the calendar to pick another time");
+            }}
+            style={{
+              background: "transparent",
+              border: `0.5px solid ${C.hairline}`,
+              borderRadius: 10,
+              padding: 10,
+              cursor: "pointer",
+              width: "100%",
+              textAlign: "center",
+              fontSize: 13,
+              fontWeight: 500,
+              color: C.link,
+              marginBottom: 14,
+            }}
+          >
+            Pick another time
+          </button>
+        )}
+
+        {/* Pickup location — calm inline row */}
         {pickupAddress && (
           <div
             style={{
-              marginTop: 16,
-              background: C.surface,
-              border: `0.5px solid ${C.hairline}`,
-              borderRadius: 10,
-              padding: "10px 12px",
               display: "flex",
               alignItems: "center",
-              gap: 10,
+              gap: 8,
+              padding: "4px 4px 0",
             }}
           >
-            <MapPin size={16} strokeWidth={2} style={{ color: C.muted, flexShrink: 0 }} />
+            <MapPin size={13} strokeWidth={2} style={{ color: C.muted, flexShrink: 0 }} />
             <div
               style={{
                 flex: 1,
@@ -1067,10 +1065,29 @@ export function StepBookNext({
                 minWidth: 0,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
               }}
             >
               Pickup at {pickupAddress}
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                toast.message("Open the pickup picker");
+              }}
+              style={{
+                background: "transparent",
+                border: "none",
+                padding: 0,
+                fontSize: 11,
+                fontWeight: 500,
+                color: C.link,
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
+            >
+              Change
+            </button>
           </div>
         )}
       </div>
