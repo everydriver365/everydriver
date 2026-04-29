@@ -46,12 +46,22 @@ interface SuggestedSlot {
   isGenuineBestMatch?: boolean;
 }
 
+// Heuristic for the existing "Review" flag — corrupted / suspicious pupil names.
+// Triggers on: known sentinel words, dangerous chars, all-consonant strings,
+// repeated-letter runs ("Daaf", "Aaaa"), or short non-name tokens.
 function needsNameReview(name: string): boolean {
   if (!name) return false;
   const t = name.trim();
   if (!t) return false;
-  if (/^(unknown|n\/a|none)$/i.test(t)) return true;
-  if (/[<>{}\\]/.test(t)) return true;
+  if (/^(unknown|n\/a|none|test|tbc|tba)$/i.test(t)) return true;
+  if (/[<>{}\\@#$%^*]/.test(t)) return true;
+  // First token only — surnames legitimately vary more
+  const first = t.split(/\s+/)[0];
+  if (!first) return false;
+  // Repeated-letter run of 2+ same chars in a row (e.g. "Daaf", "Aaaa", "Jooe")
+  if (/(.)\1{1,}/i.test(first) && first.length <= 5) return true;
+  // All consonants (no vowels and no 'y')
+  if (first.length >= 3 && !/[aeiouy]/i.test(first)) return true;
   return false;
 }
 
