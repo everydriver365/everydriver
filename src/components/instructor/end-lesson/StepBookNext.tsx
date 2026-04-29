@@ -1115,7 +1115,6 @@ export function StepBookNext({
           alignItems: "center",
           justifyContent: "space-between",
           gap: 8,
-          margin: "0 -24px -8px",
           borderBottomLeftRadius: 16,
           borderBottomRightRadius: 16,
           flexShrink: 0,
