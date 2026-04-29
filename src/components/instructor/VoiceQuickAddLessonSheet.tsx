@@ -8,6 +8,8 @@ import { Mic, MicOff, Loader2, Sparkles, Check } from "lucide-react";
 import { useVoiceToText } from "@/hooks/useVoiceToText";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { invalidateLessonQueries } from "@/lib/invalidateLessonQueries";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +42,7 @@ export function VoiceQuickAddLessonSheet({
   instructorId,
   onCreated,
 }: VoiceQuickAddLessonSheetProps) {
+  const queryClient = useQueryClient();
   const { isListening, transcript, isSupported, startListening, stopListening, resetTranscript } =
     useVoiceToText();
 
@@ -146,6 +149,7 @@ export function VoiceQuickAddLessonSheet({
         status: "scheduled",
       });
       if (error) throw error;
+      invalidateLessonQueries(queryClient);
       toast.success("Lesson added");
       onCreated?.();
       onOpenChange(false);

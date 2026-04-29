@@ -3,6 +3,8 @@ import { Loader2, MapPin, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, parse, differenceInCalendarDays } from "date-fns";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { invalidateLessonQueries } from "@/lib/invalidateLessonQueries";
 
 import { titleCaseName } from "@/lib/titleCase";
 import { UserAvatar } from "@/components/instructor/UserAvatar";
@@ -86,6 +88,7 @@ export function StepBookNext({
   onBooked,
   onSkip,
 }: StepBookNextProps) {
+  const queryClient = useQueryClient();
   const [slots, setSlots] = useState<SuggestedSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
@@ -687,6 +690,7 @@ export function StepBookNext({
         lesson_type: "Standard",
       });
       if (error) throw error;
+      invalidateLessonQueries(queryClient);
       const dt = parse(slot.date, "yyyy-MM-dd", new Date());
       toast.success(
         `Lesson booked · ${format(dt, "d MMM")} ${format(parse(slot.startTime, "HH:mm:ss", dt), "HH:mm")}`,

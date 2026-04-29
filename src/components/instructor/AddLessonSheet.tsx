@@ -13,6 +13,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+import { invalidateLessonQueries } from '@/lib/invalidateLessonQueries';
 import { cn } from '@/lib/utils';
 import { CompetencyPicker } from './CompetencyPicker';
 import { GoogleAddressAutocomplete } from '@/components/admin/GoogleAddressAutocomplete';
@@ -192,6 +194,7 @@ export function AddLessonSheet({
   defaultDate,
   onSuccess 
 }: AddLessonSheetProps) {
+  const queryClient = useQueryClient();
   const [tab, setTab] = useState<'existing' | 'new'>('existing');
   const [loading, setLoading] = useState(false);
   const [pupils, setPupils] = useState<Pupil[]>([]);
@@ -630,6 +633,7 @@ export function AddLessonSheet({
       if (error) throw error;
       toast.success(isDrivingTest ? 'Test scheduled!' : isRecurring ? `${weeks} lessons scheduled` : 'Lesson scheduled');
       handlePostSavePayment(selectedPupil);
+      invalidateLessonQueries(queryClient);
       resetForm(); onOpenChange(false); onSuccess();
     } catch (error) { console.error(error); toast.error('Failed to schedule lesson'); }
     finally { setLoading(false); }
@@ -672,6 +676,7 @@ export function AddLessonSheet({
       if (lessonError) throw lessonError;
       toast.success(isDrivingTest ? 'Pupil created & test scheduled!' : isRecurring ? `Pupil created & ${weeks} lessons scheduled` : 'Pupil created & lesson scheduled');
       handlePostSavePayment(newPupil.id);
+      invalidateLessonQueries(queryClient);
       resetForm(); onOpenChange(false); onSuccess();
     } catch (error) { console.error(error); toast.error('Failed to schedule lesson'); }
     finally { setLoading(false); }

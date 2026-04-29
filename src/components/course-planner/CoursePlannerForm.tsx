@@ -22,6 +22,8 @@ import { Badge } from "@/components/ui/badge";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { invalidateLessonQueries } from "@/lib/invalidateLessonQueries";
 import { cn } from "@/lib/utils";
 
 type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
@@ -87,6 +89,7 @@ export function CoursePlannerForm({
   onComplete,
   showHeader = true,
 }: CoursePlannerFormProps) {
+  const queryClient = useQueryClient();
   const [pupilName, setPupilName] = useState(defaultPupilName || "");
   const [pupilEmail, setPupilEmail] = useState("");
   const [pupilPhone, setPupilPhone] = useState("");
@@ -234,6 +237,7 @@ export function CoursePlannerForm({
 
       const { error: lessonError } = await supabase.from("scheduled_lessons").insert(lessons);
       if (lessonError) throw lessonError;
+      invalidateLessonQueries(queryClient);
 
       await supabase.from("course_proposals").insert({
         instructor_id: instructorId,
