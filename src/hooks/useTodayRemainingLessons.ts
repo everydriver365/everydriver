@@ -64,6 +64,7 @@ export function useTodayRemainingLessons(instructorId: string | undefined) {
           amountDue: l.amount_due ?? null,
           status: l.status || "scheduled",
           googleEventId: (l as any).google_event_id ?? null,
+          notes: (l as any).notes ?? null,
         };
       });
     },
