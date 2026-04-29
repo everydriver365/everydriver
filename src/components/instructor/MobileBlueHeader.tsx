@@ -94,10 +94,10 @@ export function MobileBlueHeader({
             )}
           </button>
           <button
-            onClick={onPlus}
+            {...plusHandlers}
             className="flex items-center justify-center"
             style={{ width: 32, height: 32 }}
-            aria-label="Quick actions"
+            aria-label="Quick actions (long-press to add a lesson)"
           >
             <Plus size={18} strokeWidth={1.8} color={ICON_COLOR} />
           </button>
