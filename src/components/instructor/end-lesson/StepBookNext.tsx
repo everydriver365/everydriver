@@ -843,7 +843,7 @@ export function StepBookNext({
                 disabled={booking}
                 style={{
                   width: "100%",
-                  background: C.bg,
+                  background: showStrong ? C.bg : C.surface,
                   border: showStrong
                     ? `1.5px solid ${C.link}`
                     : `0.5px solid ${C.hairline}`,
