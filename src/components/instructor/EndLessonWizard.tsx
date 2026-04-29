@@ -64,6 +64,7 @@ export function EndLessonWizard({
       setVoiceNoteBlob(null);
       setCompleting(false);
       setHistoryId(null);
+      setPendingVoiceNoteUrl(null);
       setUpdatedCompetencies([]);
       setRouteReportData(null);
       setIsLastLesson(false);
