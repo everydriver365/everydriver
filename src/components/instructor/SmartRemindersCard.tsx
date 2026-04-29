@@ -3,14 +3,19 @@ import { Link } from "react-router-dom";
 import { Lightbulb, Clock, Briefcase, ChevronRight } from "lucide-react";
 import { useBreakReminders } from "@/hooks/useBreakReminders";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { useInstructorNotificationSettings } from "@/hooks/useInstructorNotificationSettings";
 import { format } from "date-fns";
 
 export function SmartRemindersCard() {
+  const { instructor } = useInstructorAuth();
+  const { settings } = useInstructorNotificationSettings(instructor?.id);
+  const breaksEnabled = settings.notification_rules.reminder_breaks !== false;
   const { nextBreak, formatBreakTime, getBreakDescription } = useBreakReminders();
   const pendingJobsCount = usePendingJobsCount();
 
-  // Only show if there's a gap AND pending jobs
-  if (!nextBreak || pendingJobsCount === 0) {
+  // Only show if breaks are enabled, there's a gap AND pending jobs
+  if (!breaksEnabled || !nextBreak || pendingJobsCount === 0) {
     return null;
   }
 
