@@ -882,6 +882,30 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
           }}
         />
       )}
+
+      {instructorId && wizardLesson && (
+        <EndLessonWizard
+          open={!!wizardLesson}
+          onOpenChange={(open) => {
+            if (!open) setWizardLesson(null);
+          }}
+          lessonId={wizardLesson.id}
+          pupilId={wizardLesson.pupilId}
+          pupilName={wizardLesson.pupilName}
+          instructorId={instructorId}
+          durationMinutes={wizardLesson.durationMinutes}
+          lessonDate={format(targetDate, "yyyy-MM-dd")}
+          startTime={wizardLesson.startTime}
+          currentBalance={wizardBalance}
+          onCompleted={() => {
+            setWizardLesson(null);
+            queryClient.invalidateQueries({ queryKey: ["day-lessons"] });
+            queryClient.invalidateQueries({ queryKey: ["day-lesson-history"] });
+            queryClient.invalidateQueries({ queryKey: ["today-overview"] });
+            queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+          }}
+        />
+      )}
     </div>
   );
 }
