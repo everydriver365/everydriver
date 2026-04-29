@@ -42,6 +42,7 @@ export function VoiceQuickAddLessonSheet({
   instructorId,
   onCreated,
 }: VoiceQuickAddLessonSheetProps) {
+  const queryClient = useQueryClient();
   const { isListening, transcript, isSupported, startListening, stopListening, resetTranscript } =
     useVoiceToText();
 
