@@ -289,7 +289,7 @@ export function CalmHomeHeader({ instructorId, instructorName }: CalmHomeHeaderP
         lessonsTotal={Math.max(totalToday, lessonsDone)}
         earned={earnedToday}
         hoursTaught={hoursTaught}
-        onPress={() => navigate("/instructor/goals")}
+        onPress={() => navigate("/instructor/earnings")}
       />
       <UpNextTile
         pupilName={nextLesson?.pupilName ?? null}
