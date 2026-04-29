@@ -6,8 +6,6 @@ import {
   CheckCircle2, ArrowRight,
 } from "lucide-react";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
-import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
-import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
@@ -79,39 +77,6 @@ function HomeGreeting({ firstName, statusText }: { firstName: string; statusText
   );
 }
 
-// ─── Concentric rings ────────────────────────────
-function ConcentricRings({ pctOuter, pctMiddle, pctInner, size = 80 }: { pctOuter: number; pctMiddle: number; pctInner: number; size?: number; }) {
-  const stroke = 5;
-  const center = size / 2;
-  const radii = [center - stroke / 2 - 1, center - stroke * 2, center - stroke * 3.5];
-  const colors = ["#C8434F", "#2B7BC8", "#3B8B3B"];
-  const pcts = [pctOuter, pctMiddle, pctInner];
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
-      {radii.map((r, i) => {
-        const c = 2 * Math.PI * r;
-        const clamped = Math.max(0, Math.min(100, pcts[i]));
-        const dash = (clamped / 100) * c;
-        return (
-          <g key={i} transform={`rotate(-90 ${center} ${center})`}>
-            <circle cx={center} cy={center} r={r} stroke={`${colors[i]}22`} strokeWidth={stroke} fill="none" />
-            <circle cx={center} cy={center} r={r} stroke={colors[i]} strokeWidth={stroke} strokeLinecap="round" fill="none" strokeDasharray={`${dash} ${c - dash}`} />
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
-
-function LegendRow({ color, valueBold, valueRest }: { color: string; valueBold: string; valueRest: string }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#000000" }}>
-      <span style={{ width: 6, height: 6, borderRadius: "50%", background: color, flexShrink: 0 }} />
-      <span style={{ fontWeight: 500 }}>{valueBold}</span>
-      <span style={{ color: "#6E6E73" }}>{valueRest}</span>
-    </div>
-  );
-}
 
 // ─── Standalone Up Next / Done for today tile ────
 interface UpNextStandaloneTileProps {
@@ -249,8 +214,6 @@ export function CalmHomeHeader({ instructorId, instructorName }: CalmHomeHeaderP
   const firstName = (instructorName || "Instructor").split(" ")[0];
   const remainingToday = todayLessons?.length ?? 0;
   const totalToday = todayOverview?.lessonCount ?? 0;
-  const lessonsDone = Math.max(0, totalToday - remainingToday);
-  const hoursTaught = lessonsDone;
 
   const statusText = useMemo(() => {
     let nextStartTime: string | null = null;
@@ -276,9 +239,6 @@ export function CalmHomeHeader({ instructorId, instructorName }: CalmHomeHeaderP
   const gapsCount = gapSuggestions?.length ?? 0;
   const gapsSubtitle = gapsCount > 0 ? `${gapsCount} this week` : "Nothing to fill";
 
-  const earnedToday = (weeklyGoals?.earningsThisWeek ?? 0) > 0
-    ? Math.round((weeklyGoals!.earningsThisWeek) / 7)
-    : Math.round((monthEarnings ?? 0) / 30);
 
   return (
     <div style={{ background: "#F2F2F4", padding: "20px 16px" }}>
