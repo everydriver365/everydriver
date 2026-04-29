@@ -5,16 +5,16 @@ import {
   format,
   addDays,
   isToday,
+  isTomorrow,
+  isYesterday,
+  isSameYear,
   parseISO,
   startOfDay,
   endOfDay,
-  startOfWeek,
-  endOfWeek,
-  isSameWeek,
   differenceInMinutes,
-  isSameMonth,
 } from "date-fns";
-import { Loader2, MapPin, Video, ExternalLink } from "lucide-react";
+import { Loader2, MapPin, Video, ExternalLink, ChevronRight } from "lucide-react";
+import { titleCaseName } from "@/lib/titleCase";
 import { supabase } from "@/integrations/supabase/client";
 import { ExpandableLessonCard } from "./ExpandableLessonCard";
 import { LessonTextSheet } from "./LessonTextSheet";
@@ -218,6 +218,191 @@ function EventChip({
       )}
       <span className="sr-only">{` ${category}`}</span>
     </div>
+  );
+}
+
+/** Smart relative day-header label, e.g. "Mon 28 Apr · today". */
+function formatDayHeader(d: Date): string {
+  const base = format(d, "EEE d MMM");
+  const yearSuffix = isSameYear(d, new Date()) ? "" : ` ${format(d, "yyyy")}`;
+  let suffix = "";
+  if (isToday(d)) suffix = " · today";
+  else if (isTomorrow(d)) suffix = " · tomorrow";
+  else if (isYesterday(d)) suffix = " · yesterday";
+  return `${base}${yearSuffix}${suffix}`;
+}
+
+/** Hairline divider between rows within the same day. */
+function RowDivider() {
+  return (
+    <div
+      style={{
+        height: 0.5,
+        backgroundColor: "#E5E5EA",
+        margin: "0 8px",
+      }}
+    />
+  );
+}
+
+type RowStatus = "live" | "conflict" | "tentative" | null;
+
+function StatusPill({ status }: { status: RowStatus }) {
+  if (!status) return null;
+  const map: Record<Exclude<RowStatus, null>, { bg: string; fg: string; label: string }> = {
+    live: { bg: "#FBEAEC", fg: "#C8434F", label: "LIVE" },
+    conflict: { bg: "#FBF1DE", fg: "#B8801F", label: "CONFLICT" },
+    tentative: { bg: "#F2F2F4", fg: "#6E6E73", label: "TENTATIVE" },
+  };
+  const s = map[status];
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        background: s.bg,
+        color: s.fg,
+        borderRadius: 999,
+        padding: "2px 7px",
+        fontSize: 9,
+        fontWeight: 500,
+        letterSpacing: "0.3px",
+        flexShrink: 0,
+      }}
+    >
+      {s.label}
+    </span>
+  );
+}
+
+/** Compact tappable lesson/event row used in the new Schedule list view. */
+function ScheduleListRow({
+  timeText,
+  durationText,
+  accentColor,
+  title,
+  subtitle,
+  statusPill,
+  showChevron,
+  struck,
+  onClick,
+}: {
+  timeText: string;
+  durationText: string | null;
+  accentColor: string;
+  title: string;
+  subtitle?: string | null;
+  statusPill: RowStatus;
+  showChevron: boolean;
+  struck: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        width: "100%",
+        textAlign: "left",
+        background: "transparent",
+        border: "none",
+        padding: "12px 8px",
+        cursor: "pointer",
+        fontFamily: FONT_STACK,
+      }}
+    >
+      {/* Time column */}
+      <div
+        style={{
+          flexShrink: 0,
+          minWidth: 50,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-end",
+        }}
+      >
+        <span
+          style={{
+            fontSize: 14,
+            fontWeight: 500,
+            color: "#000000",
+            letterSpacing: "-0.1px",
+            fontVariantNumeric: "tabular-nums",
+            textDecoration: struck ? "line-through" : "none",
+          }}
+        >
+          {timeText}
+        </span>
+        {durationText && (
+          <span
+            style={{
+              fontSize: 11,
+              color: "#6E6E73",
+              marginTop: 1,
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {durationText}
+          </span>
+        )}
+      </div>
+
+      {/* Source colour bar */}
+      <div
+        style={{
+          flexShrink: 0,
+          width: 3,
+          height: 36,
+          borderRadius: 2,
+          backgroundColor: accentColor,
+        }}
+      />
+
+      {/* Title + subtitle */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: 14,
+            fontWeight: 500,
+            color: "#000000",
+            letterSpacing: "-0.1px",
+            margin: "0 0 1px",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            textDecoration: struck ? "line-through" : "none",
+          }}
+        >
+          {title}
+        </div>
+        {subtitle && (
+          <div
+            style={{
+              fontSize: 12,
+              color: "#6E6E73",
+              margin: 0,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              textDecoration: struck ? "line-through" : "none",
+            }}
+          >
+            {subtitle}
+          </div>
+        )}
+      </div>
+
+      <StatusPill status={statusPill} />
+
+      {showChevron && (
+        <ChevronRight
+          style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0, strokeWidth: 1.6 }}
+        />
+      )}
+    </button>
   );
 }
 
@@ -512,25 +697,20 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
         minHeight: "100%",
       }}
     >
-      {/* Day-grouped list */}
-      <div>
-
-        {visibleDays.map(({ day, dateStr, timeline, allDay }, idx) => {
-          const prevDay = idx > 0 ? visibleDays[idx - 1].day : null;
+      {/* Single white card containing day-grouped sections */}
+      <div
+        style={{
+          margin: "12px 16px 0",
+          backgroundColor: "#FFFFFF",
+          borderRadius: 12,
+          overflow: "hidden",
+          border: "0.5px solid #E5E5EA",
+        }}
+      >
+        {dayData.map(({ day, dateStr, timeline, allDay }, idx) => {
           const today = isToday(day);
 
-          // Week group header — show when this is the first day, or when this day
-          // belongs to a different ISO week (Mon-start) than the previous visible day.
-          const isFirstOfWeek =
-            !prevDay || !isSameWeek(day, prevDay, { weekStartsOn: 1 });
-          const weekStart = startOfWeek(day, { weekStartsOn: 1 });
-          const weekEnd = endOfWeek(day, { weekStartsOn: 1 });
-          const weekLabel = isSameMonth(weekStart, weekEnd)
-            ? `${format(weekStart, "MMMM d")} — ${format(weekEnd, "d")}`
-            : `${format(weekStart, "MMMM d")} — ${format(weekEnd, "MMM d")}`;
-          const isVeryFirst = idx === 0;
-
-          // Now indicator: only on today, only when there are still future items.
+          // Now indicator inputs (today only)
           const nowTimeStr = today
             ? `${String(nowTick.getHours()).padStart(2, "0")}:${String(nowTick.getMinutes()).padStart(2, "0")}`
             : null;
@@ -547,358 +727,332 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
             : 0;
           const showNowIndicator = today && nowTimeStr && futureCount > 0;
 
+          const hasContent = timeline.length > 0 || allDay.length > 0;
+
           return (
             <div key={dateStr}>
-              {isFirstOfWeek && (
+              {/* Inter-day separator (skip before the very first day) */}
+              {idx > 0 && (
                 <div
                   style={{
-                    padding: isVeryFirst ? "16px 16px 12px 16px" : "20px 16px 12px 16px",
-                    marginTop: 0,
-                    marginBottom: 0,
-                    fontSize: 11,
-                    fontWeight: 500,
-                    letterSpacing: "0.3px",
-                    color: "#6E6E73",
-                    textTransform: "uppercase",
+                    height: 4,
+                    backgroundColor: "#F2F2F4",
                   }}
-                >
-                  {weekLabel.toUpperCase()}
-                </div>
+                />
               )}
 
+              {/* Day header (sticky) */}
               <div
                 id={`schedule-day-${dateStr}`}
                 ref={today ? todayRef : undefined}
                 style={{
-                  display: "flex",
-                  gap: 12,
-                  alignItems: "flex-start",
-                  margin: "0 16px 12px 16px",
-                  padding: 14,
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 5,
                   backgroundColor: "#FFFFFF",
-                  border: "0.5px solid #E5E5EA",
-                  borderRadius: 12,
+                  padding: "10px 16px 6px",
+                  borderBottom: "0.5px solid transparent",
                 }}
               >
-
-                {/* Date column */}
-                <div
+                <h3
                   style={{
-                    width: 44,
-                    flexShrink: 0,
-                    textAlign: "center",
-                    paddingTop: 2,
+                    margin: 0,
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: today ? "#2B7BC8" : "#6E6E73",
+                    letterSpacing: "0.3px",
+                    textTransform: "uppercase",
                   }}
                 >
-                  <div
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 500,
-                      letterSpacing: "0.3px",
-                      lineHeight: 1,
-                      textTransform: "uppercase",
-                      color: today ? "#2B7BC8" : "#6E6E73",
-                    }}
-                  >
-                    {format(day, "EEE")}
-                  </div>
-                  {today ? (
-                    <div
-                      style={{
-                        marginTop: 4,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: 32,
-                        height: 32,
-                        borderRadius: "50%",
-                        background: "#2B7BC8",
-                        color: "#FFFFFF",
-                        fontSize: 14,
-                        fontWeight: 500,
-                        letterSpacing: "-0.3px",
-                        fontVariantNumeric: "tabular-nums",
-                      }}
-                    >
-                      {format(day, "d")}
+                  {formatDayHeader(day)}
+                </h3>
+              </div>
+
+              {/* Day rows container */}
+              <div style={{ padding: "0 8px" }}>
+                {/* All-day externals first */}
+                {allDay.map((evt, aIdx) => {
+                  const isExpanded = expandedEventId === evt.id;
+                  const colorOverride = styleFromGoogleColor(evt.color);
+                  const accent = colorOverride?.border || "#2B7BC8";
+                  const showHairline = aIdx < allDay.length - 1 || timeline.length > 0;
+                  return (
+                    <div key={evt.id}>
+                      <ScheduleListRow
+                        timeText="All day"
+                        durationText={null}
+                        accentColor={accent}
+                        title={cleanEventTitle(evt.title)}
+                        subtitle={evt.location || "Google Calendar"}
+                        statusPill={null}
+                        showChevron={false}
+                        struck={false}
+                        onClick={() => setExpandedEventId(isExpanded ? null : evt.id)}
+                      />
+                      {isExpanded && <ExternalDetails evt={evt} />}
+                      {showHairline && <RowDivider />}
                     </div>
-                  ) : (
-                    <div
-                      style={{
-                        marginTop: 4,
-                        fontSize: 18,
-                        fontWeight: 500,
-                        letterSpacing: "-0.3px",
-                        color: "#000000",
-                        lineHeight: 1,
-                        fontVariantNumeric: "tabular-nums",
-                      }}
-                    >
-                      {format(day, "d")}
-                    </div>
-                  )}
-                </div>
+                  );
+                })}
 
-                {/* Events column */}
-                <div
-                  style={{
-                    flex: 1,
-                    minWidth: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8,
-                  }}
-                >
-                  {/* All-day externals */}
-                  {allDay.map((evt) => {
-                    const category = categoriseEvent(evt.title, "external", { isAllDay: true });
-                    const colorOverride = styleFromGoogleColor(evt.color);
-                    const isExpanded = expandedEventId === evt.id;
-                    return (
-                      <div key={evt.id}>
-                        <button
-                          type="button"
-                          onClick={() => setExpandedEventId(isExpanded ? null : evt.id)}
-                          aria-label={evt.title}
-                          style={{
-                            display: "block",
-                            width: "100%",
-                            textAlign: "left",
-                            background: "none",
-                            border: "none",
-                            padding: 0,
-                            cursor: "pointer",
-                          }}
-                        >
-                          <EventChip
-                            category={category}
-                            title={cleanEventTitle(evt.title)}
-                            timeLine={null}
-                            meta={evt.location || null}
-                            colorOverride={colorOverride}
-                          />
-                        </button>
-                        {isExpanded && (
-                          <ExternalDetails evt={evt} />
-                        )}
-                      </div>
-                    );
-                  })}
+                {(() => {
+                  const elements: React.ReactNode[] = [];
+                  let nowRendered = false;
 
-                  {(() => {
-                    const elements: React.ReactNode[] = [];
-                    let nowRendered = false;
-
-                    const pushNowIndicator = () => {
-                      elements.push(
+                  const pushNowIndicator = () => {
+                    elements.push(
+                      <div
+                        key="now-indicator"
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          padding: "6px 8px",
+                          alignItems: "center",
+                        }}
+                      >
                         <div
-                          key="now-indicator"
                           style={{
-                            display: "flex",
-                            gap: 8,
-                            padding: "0 8px",
-                            alignItems: "center",
+                            width: 6,
+                            height: 6,
+                            borderRadius: "50%",
+                            backgroundColor: "#C8434F",
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 500,
+                            color: "#C8434F",
+                            letterSpacing: "0.2px",
+                            fontVariantNumeric: "tabular-nums",
                           }}
                         >
-                          <div
-                            style={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: "50%",
-                              backgroundColor: "#C8434F",
-                              flexShrink: 0,
-                            }}
+                          {nowTimeStr}
+                        </span>
+                        <div
+                          style={{
+                            flex: 1,
+                            height: 1,
+                            backgroundColor: "#C8434F",
+                            opacity: 0.3,
+                          }}
+                        />
+                      </div>,
+                    );
+                    nowRendered = true;
+                  };
+
+                  // Helper: should a hairline divider follow this lesson row?
+                  const lastTimelineIdx = timeline.length - 1;
+
+                  timeline.forEach((item, i) => {
+                    if (showNowIndicator && nowTimeStr && !nowRendered && item.time > nowTimeStr) {
+                      pushNowIndicator();
+                    }
+
+                    if (item.kind === "lesson") {
+                      const lesson = item.data;
+                      const endTime = getEndTime(lesson.start_time, lesson.duration_minutes);
+                      const durationStr = formatDuration(lesson.duration_minutes);
+                      const location =
+                        lesson.pickup_location ||
+                        lesson.pupil?.address ||
+                        lesson.pickup_postcode ||
+                        null;
+
+                      // Live = now is between start and end on today only
+                      const isLive =
+                        today &&
+                        nowTimeStr &&
+                        lesson.start_time <= nowTimeStr &&
+                        endTime > nowTimeStr;
+
+                      const isDrivingTest = (lesson.lesson_type || "")
+                        .toLowerCase()
+                        .includes("driving test");
+
+                      const accent = isDrivingTest
+                        ? "#C8434F"
+                        : "#2B7BC8"; // DSM-native default
+
+                      const pupilName = titleCaseName(lesson.pupil?.name || "Lesson");
+                      const title = isDrivingTest
+                        ? `${pupilName} · driving test`
+                        : pupilName;
+
+                      const subtitleParts = [
+                        isDrivingTest ? "Driving test" : `${lesson.lesson_type || "Standard"} lesson`,
+                        location || undefined,
+                      ].filter(Boolean) as string[];
+
+                      const status = isLive
+                        ? "live"
+                        : (lesson as any).status === "tentative"
+                          ? "tentative"
+                          : null;
+
+                      elements.push(
+                        <ExpandableLessonCard
+                          key={lesson.id}
+                          lesson={lesson}
+                          onNavigate={handleNavigate}
+                          onCall={handleCall}
+                          onText={handleText}
+                          onOnWay={handleOnWay}
+                          onCancel={handleCancelLesson}
+                          onReschedule={handleRescheduleLesson}
+                          onNoShow={handleNoShow}
+                          sendingMessage={sendingMessage}
+                          onDelete={handleDeleteLesson}
+                          renderCustomCollapsed={
+                            <ScheduleListRow
+                              timeText={formatTime(lesson.start_time)}
+                              durationText={durationStr}
+                              accentColor={accent}
+                              title={title}
+                              subtitle={subtitleParts.join(" · ")}
+                              statusPill={status as any}
+                              showChevron={true}
+                              struck={false}
+                            />
+                          }
+                        />,
+                      );
+                      if (i < lastTimelineIdx) elements.push(<RowDivider key={`d-${lesson.id}`} />);
+                    }
+
+                    if (item.kind === "external") {
+                      const evt = item.data;
+                      const startDt = parseISO(evt.start_time);
+                      const endDt = parseISO(evt.end_time);
+                      const colorOverride = styleFromGoogleColor(evt.color);
+                      const accent = colorOverride?.border || "#8A5BC9";
+                      const isExpanded = expandedEventId === evt.id;
+                      const durationMins = differenceInMinutes(endDt, startDt);
+                      const durationStr = formatDuration(durationMins);
+
+                      elements.push(
+                        <div key={evt.id}>
+                          <ScheduleListRow
+                            timeText={format(startDt, "HH:mm")}
+                            durationText={durationStr}
+                            accentColor={accent}
+                            title={cleanEventTitle(evt.title)}
+                            subtitle={evt.location || "Google Calendar"}
+                            statusPill={null}
+                            showChevron={false}
+                            struck={false}
+                            onClick={() => setExpandedEventId(isExpanded ? null : evt.id)}
                           />
-                          <span
-                            style={{
-                              fontSize: 11,
-                              fontWeight: 500,
-                              color: "#C8434F",
-                              letterSpacing: "0.2px",
-                              fontVariantNumeric: "tabular-nums",
-                            }}
-                          >
-                            {nowTimeStr}
-                          </span>
-                          <div
-                            style={{
-                              flex: 1,
-                              height: 1,
-                              backgroundColor: "#C8434F",
-                              opacity: 0.3,
-                            }}
-                          />
+                          {isExpanded && <ExternalDetails evt={evt} />}
                         </div>,
                       );
-                      nowRendered = true;
-                    };
+                      if (i < lastTimelineIdx) elements.push(<RowDivider key={`d-${evt.id}`} />);
+                    }
 
-                    timeline.forEach((item, i) => {
-                      // Insert now-indicator before the first item that hasn't started yet.
-                      if (showNowIndicator && nowTimeStr && !nowRendered && item.time > nowTimeStr) {
-                        pushNowIndicator();
-                      }
+                    if (item.kind === "block") {
+                      const block = item.data;
+                      const startDt = parseISO(block.start_datetime);
+                      const endDt = parseISO(block.end_datetime);
+                      const category = categoriseEvent(block.title, "block", { blockType: block.block_type });
+                      const isExpanded = expandedEventId === `block-${block.id}`;
+                      const durationMins = differenceInMinutes(endDt, startDt);
+                      const durationStr = formatDuration(durationMins);
+                      const accent = CATEGORY_STYLES[category]?.border || "#6E6E73";
 
-                      if (item.kind === "lesson") {
-                        const lesson = item.data;
-                        const endTime = getEndTime(lesson.start_time, lesson.duration_minutes);
-                        const durationStr = formatDuration(lesson.duration_minutes);
-                        const location = lesson.pickup_location || lesson.pupil?.address;
+                      elements.push(
+                        <div key={block.id}>
+                          <ScheduleListRow
+                            timeText={format(startDt, "HH:mm")}
+                            durationText={durationStr}
+                            accentColor={accent}
+                            title={cleanEventTitle(block.title)}
+                            subtitle={category === "task" ? "Task" : "Personal · blocked"}
+                            statusPill={null}
+                            showChevron={true}
+                            struck={false}
+                            onClick={() => setExpandedEventId(isExpanded ? null : `block-${block.id}`)}
+                          />
+                          {isExpanded && (
+                            <div style={{ padding: "6px 16px 10px", fontSize: 12, color: "#5F6368" }}>
+                              {block.notes || (
+                                <span style={{ fontStyle: "italic", color: "#9AA0A6" }}>No notes</span>
+                              )}
+                            </div>
+                          )}
+                        </div>,
+                      );
+                      if (i < lastTimelineIdx) elements.push(<RowDivider key={`d-${block.id}`} />);
+                    }
+
+                    // Gap Filler — preserved exactly as today, inline at the
+                    // same chronological position, with its existing component.
+                    if (i < timeline.length - 1) {
+                      const nextItem = timeline[i + 1];
+                      const currentEndStr =
+                        item.kind === "lesson"
+                          ? getEndTime(item.data.start_time, item.data.duration_minutes)
+                          : item.kind === "external"
+                            ? format(parseISO(item.data.end_time), "HH:mm")
+                            : format(parseISO(item.data.end_datetime), "HH:mm");
+                      const nextStartStr = nextItem.time;
+                      const [cH, cM] = currentEndStr.split(":").map(Number);
+                      const [nH, nM] = nextStartStr.split(":").map(Number);
+                      const rawGapMin = (nH * 60 + nM) - (cH * 60 + cM);
+
+                      const sideAllowance = bufferMinutes + TRAVEL_FALLBACK_MIN;
+                      const effectiveStartMin = cH * 60 + cM + sideAllowance;
+                      const effectiveEndMin = nH * 60 + nM - sideAllowance;
+                      const effectiveGapMin = effectiveEndMin - effectiveStartMin;
+
+                      if (effectiveGapMin >= MIN_OFFERABLE_GAP_MIN) {
+                        const fmt = (mins: number) =>
+                          `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
                         elements.push(
-                          <ExpandableLessonCard
-                            key={lesson.id}
-                            lesson={lesson}
-                            onNavigate={handleNavigate}
-                            onCall={handleCall}
-                            onText={handleText}
-                            onOnWay={handleOnWay}
-                            onCancel={handleCancelLesson}
-                            onReschedule={handleRescheduleLesson}
-                            onNoShow={handleNoShow}
-                            sendingMessage={sendingMessage}
-                            onDelete={handleDeleteLesson}
-                            renderCustomCollapsed={
-                              <EventChip
-                                category="lesson"
-                                title={cleanEventTitle(lesson.pupil?.name || "Lesson")}
-                                timeLine={`${formatTime(lesson.start_time)} — ${endTime} · ${durationStr}`}
-                                meta={location || null}
-                              />
-                            }
-                          />,
-                        );
-                      }
-
-                      if (item.kind === "external") {
-                        const evt = item.data;
-                        const startDt = parseISO(evt.start_time);
-                        const endDt = parseISO(evt.end_time);
-                        const category = categoriseEvent(evt.title, "external", { isAllDay: false });
-                        const colorOverride = styleFromGoogleColor(evt.color);
-                        const isExpanded = expandedEventId === evt.id;
-                        const durationMins = differenceInMinutes(endDt, startDt);
-                        const durationStr = formatDuration(durationMins);
-                        elements.push(
-                          <div key={evt.id}>
-                            <button
-                              type="button"
-                              onClick={() => setExpandedEventId(isExpanded ? null : evt.id)}
-                              aria-label={evt.title}
-                              style={{
-                                display: "block",
-                                width: "100%",
-                                textAlign: "left",
-                                background: "none",
-                                border: "none",
-                                padding: 0,
-                                cursor: "pointer",
-                              }}
-                            >
-                              <EventChip
-                                category={category}
-                                title={cleanEventTitle(evt.title)}
-                                timeLine={`${format(startDt, "HH:mm")} — ${format(endDt, "HH:mm")} · ${durationStr}`}
-                                meta={evt.location || null}
-                                colorOverride={colorOverride}
-                              />
-                            </button>
-                            {isExpanded && <ExternalDetails evt={evt} />}
-                          </div>,
-                        );
-                      }
-
-                      if (item.kind === "block") {
-                        const block = item.data;
-                        const startDt = parseISO(block.start_datetime);
-                        const endDt = parseISO(block.end_datetime);
-                        const category = categoriseEvent(block.title, "block", { blockType: block.block_type });
-                        const isExpanded = expandedEventId === `block-${block.id}`;
-                        const durationMins = differenceInMinutes(endDt, startDt);
-                        const durationStr = formatDuration(durationMins);
-                        const isTask = category === "task";
-                        elements.push(
-                          <div key={block.id}>
-                            <button
-                              type="button"
-                              onClick={() => setExpandedEventId(isExpanded ? null : `block-${block.id}`)}
-                              aria-label={block.title}
-                              style={{
-                                display: "block",
-                                width: "100%",
-                                textAlign: "left",
-                                background: "none",
-                                border: "none",
-                                padding: 0,
-                                cursor: "pointer",
-                              }}
-                            >
-                              <EventChip
-                                category={category}
-                                title={cleanEventTitle(block.title)}
-                                timeLine={`${format(startDt, "HH:mm")} — ${format(endDt, "HH:mm")} · ${durationStr}`}
-                                isTask={isTask}
-                              />
-                            </button>
-                            {isExpanded && (
-                              <div style={{ padding: "8px 12px", fontSize: 12, color: "#5F6368" }}>
-                                {block.notes || (
-                                  <span style={{ fontStyle: "italic", color: "#9AA0A6" }}>No notes</span>
-                                )}
-                              </div>
-                            )}
-                          </div>,
-                        );
-                      }
-
-                      // Gap insight — apply instructor buffer + default travel
-                      // allowance on each side, and only surface if the
-                      // remaining bookable window is at least the minimum.
-                      if (i < timeline.length - 1) {
-                        const nextItem = timeline[i + 1];
-                        const currentEndStr =
-                          item.kind === "lesson"
-                            ? getEndTime(item.data.start_time, item.data.duration_minutes)
-                            : item.kind === "external"
-                              ? format(parseISO(item.data.end_time), "HH:mm")
-                              : format(parseISO(item.data.end_datetime), "HH:mm");
-                        const nextStartStr = nextItem.time;
-                        const [cH, cM] = currentEndStr.split(":").map(Number);
-                        const [nH, nM] = nextStartStr.split(":").map(Number);
-                        const rawGapMin = (nH * 60 + nM) - (cH * 60 + cM);
-
-                        // Shrink by buffer + travel on both ends
-                        const sideAllowance = bufferMinutes + TRAVEL_FALLBACK_MIN;
-                        const effectiveStartMin = cH * 60 + cM + sideAllowance;
-                        const effectiveEndMin = nH * 60 + nM - sideAllowance;
-                        const effectiveGapMin = effectiveEndMin - effectiveStartMin;
-
-                        if (effectiveGapMin >= MIN_OFFERABLE_GAP_MIN) {
-                          const fmt = (mins: number) =>
-                            `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
-                          elements.push(
+                          <div key={`gap-${i}`} style={{ padding: "8px 8px" }}>
                             <GapFillCard
-                              key={`gap-${i}`}
                               instructorId={instructorId}
                               instructorName={instructorName}
                               date={dateStr}
                               startTime={fmt(effectiveStartMin)}
                               endTime={fmt(effectiveEndMin)}
                               gapMinutes={effectiveGapMin}
-                            />,
-                          );
-                        }
-                        // (rawGapMin retained for future analytics; not displayed.)
-                        void rawGapMin;
+                            />
+                          </div>,
+                        );
                       }
-                    });
-
-                    if (showNowIndicator && nowTimeStr && !nowRendered) {
-                      pushNowIndicator();
+                      void rawGapMin;
                     }
+                  });
 
-                    return elements;
-                  })()}
-                </div>
+                  if (showNowIndicator && nowTimeStr && !nowRendered) {
+                    pushNowIndicator();
+                  }
+
+                  // Empty-day placeholder
+                  if (!hasContent) {
+                    elements.push(
+                      <div
+                        key="empty"
+                        style={{ padding: "0 16px 14px" }}
+                      >
+                        <p
+                          style={{
+                            margin: "8px 0",
+                            fontSize: 12,
+                            color: "#6E6E73",
+                            fontStyle: "italic",
+                          }}
+                        >
+                          No lessons
+                        </p>
+                      </div>,
+                    );
+                  }
+
+                  return elements;
+                })()}
               </div>
             </div>
           );
