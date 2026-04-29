@@ -269,7 +269,12 @@ function CompactStatTile({ icon, iconBackground, hero, label }: CompactStatTileP
 }
 
 // ----- EOL prompt -----
-function EOLPrompt({ onTap }: { onTap: () => void }) {
+// Always rendered on completed lessons. When the EOL flow has finished, the
+// marker stays in place but is muted with strikethrough so the row's history
+// is still discoverable (re-tap reopens the wizard for review/edit).
+function EOLPrompt({ onTap, done = false }: { onTap: () => void; done?: boolean }) {
+  const fg = done ? IOS.secondaryLabel : IOS.systemAmber;
+  const bg = done ? "rgba(120,120,128,0.12)" : IOS.amberTint;
   return (
     <button
       type="button"
@@ -279,7 +284,7 @@ function EOLPrompt({ onTap }: { onTap: () => void }) {
         onTap();
       }}
       style={{
-        background: IOS.amberTint,
+        background: bg,
         borderRadius: 6,
         padding: "6px 10px",
         marginTop: 8,
@@ -292,8 +297,17 @@ function EOLPrompt({ onTap }: { onTap: () => void }) {
         fontFamily: IOS_FONT,
       }}
     >
-      <AlertIcon size={12} color={IOS.systemAmber} />
-      <span style={{ fontSize: 11, fontWeight: 500, color: IOS.systemAmber }}>Complete EOL</span>
+      <AlertIcon size={12} color={fg} />
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 500,
+          color: fg,
+          textDecoration: done ? "line-through" : "none",
+        }}
+      >
+        Complete EOL
+      </span>
     </button>
   );
 }
@@ -633,7 +647,8 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               const showReview = needsNameReview(lesson.pupilName);
               const isConflict = conflictIdSet.has(lesson.id);
               const showBannerAbove = lesson.id === firstConflictRowId;
-              const eolMissing = state === "completed" && !isEOLComplete(lesson, eolDoneKeys) && lesson.status !== "cancelled";
+              const showEOL = state === "completed" && lesson.status !== "cancelled";
+              const eolDone = showEOL && isEOLComplete(lesson, eolDoneKeys);
               const lessonHref = `/instructor/pupils/${lesson.pupilId}`;
               const accentColor = isDrivingTest ? IOS.systemRed : IOS.systemBlue;
 
@@ -755,7 +770,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                           {subtitleText}
                         </div>
                       )}
-                      {eolMissing && <EOLPrompt onTap={() => openEOLWizard(lesson)} />}
+                      {showEOL && <EOLPrompt onTap={() => openEOLWizard(lesson)} done={eolDone} />}
                     </div>
                   </Link>
                 ) : (
