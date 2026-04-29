@@ -352,9 +352,10 @@ export function EndLessonWizard({
   const stepNumber = step === "summary" ? 1 : step === "payment" ? 2 : step === "skills" ? 3 : step === "book" ? 4 : 5;
   const totalSteps = needsPayment ? 4 : 3;
 
-  // Premium chrome shared by Step 1 (summary) and Step 2 (payment):
+  // Premium chrome shared by Steps 1–4.
   // Back / centred title / spacer + thin progress bars.
-  const isPremiumChrome = step === "summary" || step === "payment" || step === "skills";
+  const isPremiumChrome =
+    step === "summary" || step === "payment" || step === "skills" || step === "book";
   const showStepChrome =
     step !== "completed" && step !== "completing" && step !== "course_complete";
 
@@ -363,12 +364,15 @@ export function EndLessonWizard({
       ? `Step 1 of ${totalSteps} · Quick summary`
       : step === "payment"
         ? `Step 2 of ${totalSteps} · Take payment`
-        : `Step ${stepNumber} of ${totalSteps} · Skills update`;
+        : step === "skills"
+          ? `Step ${stepNumber} of ${totalSteps} · Skills update`
+          : `Step ${totalSteps} of ${totalSteps} · Book next lesson`;
   const premiumLeftLabel = step === "summary" ? "Cancel" : "Back";
   const handlePremiumLeft = () => {
     if (step === "summary") onOpenChange(false);
     else if (step === "payment") setStep("summary");
     else if (step === "skills") setStep(needsPayment ? "payment" : "summary");
+    else if (step === "book") setStep("skills");
   };
 
   // Refresh pupil balance after Record Payment (called from Step 1 "Due now" tile)
