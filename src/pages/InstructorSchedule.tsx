@@ -302,7 +302,15 @@ export default function InstructorSchedule() {
 
         {/* Content */}
         <div className="flex-1 overflow-auto pb-4">
-          {viewMode === 'list' ? (
+          {viewMode === 'compact' ? (
+            <div style={{ padding: isMobile ? "0 12px 16px" : "0" }}>
+              <CompactScheduleListView
+                events={calendar.events}
+                loading={calendar.loading}
+                onEventClick={(event) => setSelectedEvent(event)}
+              />
+            </div>
+          ) : viewMode === 'list' ? (
             <MultiDayScheduleView key={mobileListRefreshKey} instructorId={instructorId} />
           ) : viewMode === 'month' ? (
             <MobileMonthCalendarView instructorId={instructorId} />
