@@ -623,16 +623,7 @@ export function EndLessonWizard({
           {/* skills step rendered above in premium chrome */}
 
 
-          {step === "book" && (
-            <StepBookNext
-              pupilId={pupilId}
-              pupilName={pupilName}
-              instructorId={instructorId}
-              durationMinutes={durationMinutes}
-              onBooked={handleComplete}
-              onSkip={handleComplete}
-            />
-          )}
+          {/* book step rendered above in premium chrome */}
 
           {step === "completing" && (
             <div className="flex flex-col items-center justify-center py-10 gap-3">
