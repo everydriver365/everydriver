@@ -283,11 +283,6 @@ export function CalmHomeHeader({ instructorId, instructorName }: CalmHomeHeaderP
 
   return (
     <div style={{ background: "#F2F2F4", padding: "20px 16px" }}>
-      <AppHeader
-        unreadNotifs={combinedNotifs}
-        onMenu={() => navigate("/instructor/menu")}
-        onNotifications={() => navigate("/instructor/notifications")}
-      />
       <HomeGreeting firstName={firstName} statusText={statusText} />
       <ProgressRingsCompact
         lessonsDone={lessonsDone}
