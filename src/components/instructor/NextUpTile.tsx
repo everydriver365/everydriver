@@ -585,46 +585,28 @@ export function NextUpTile({
             </div>
           </div>
 
-          {/* ── START TRACK (preserved functionality, repositioned) ── */}
-          {!trackerDismissed && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
-                }}
-                className="active:opacity-90"
-                style={{
-                  flex: 1,
-                  background: "#C8434F", color: "#FFFFFF",
-                  border: "none", borderRadius: 10,
-                  padding: 12, fontSize: a11yPx(14), fontWeight: 500,
-                  cursor: "pointer",
-                  transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                }}
-                title="Start tracking session for this lesson"
-              >
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FFFFFF", display: "inline-block" }} />
-                Start track
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  dismissTracker(lessonId);
-                  setTrackerDismissed(true);
-                }}
-                aria-label="Dismiss start track"
-                style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  border: "0.5px solid #E5E5EA", background: "#FFFFFF",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer",
-                }}
-              >
-                <X style={{ width: 14, height: 14, color: "#6E6E73" }} strokeWidth={2} />
-              </button>
-            </div>
+          {/* ── START TRACK (only when within 4h; full-width primary CTA) ── */}
+          {isWithin4h && !trackerDismissed && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
+              }}
+              className="active:opacity-90"
+              style={{
+                width: "100%",
+                background: "#C8434F", color: "#FFFFFF",
+                border: "none", borderRadius: 10,
+                padding: 13, fontSize: a11yPx(14), fontWeight: 500,
+                cursor: "pointer",
+                transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+              }}
+              title="Start tracking session for this lesson"
+            >
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FFFFFF", display: "inline-block" }} />
+              Start track
+            </button>
           )}
         </div>
 
