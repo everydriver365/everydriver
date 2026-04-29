@@ -720,7 +720,7 @@ export function IOSNativeHomeView({ instructorId, instructor }: IOSNativeHomeVie
   // Data
   const { data: nextLesson } = useNextLessonDetails(instructorId);
   const { data: weeklyGoals } = useWeeklyGoals(instructorId);
-  const { dayEarnings } = useInstructorLiveStats(instructorId);
+  const { monthEarnings } = useInstructorLiveStats(instructorId);
   const { data: unreadMessages = 0 } = useUnreadMessagesCount(instructorId);
   const pendingJobsCount = usePendingJobsCount();
   const { data: todayLessons } = useTodayRemainingLessons(instructorId);
