@@ -13,6 +13,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+import { invalidateLessonQueries } from '@/lib/invalidateLessonQueries';
 import { cn } from '@/lib/utils';
 import { CompetencyPicker } from './CompetencyPicker';
 import { GoogleAddressAutocomplete } from '@/components/admin/GoogleAddressAutocomplete';
