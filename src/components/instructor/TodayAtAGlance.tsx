@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
-import { Clock, Calendar, PoundSterling, Timer } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { format, isToday, differenceInMinutes } from "date-fns";
+import { format, differenceInMinutes } from "date-fns";
 
 interface TodayAtAGlanceProps {
   instructorId: string | undefined;
