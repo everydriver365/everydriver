@@ -109,6 +109,7 @@ import { CompactHomeView } from "@/components/instructor/CompactHomeView";
 import { BestMateHomeView } from "@/components/instructor/BestMateHomeView";
 import { MissionControlHomeView } from "@/components/instructor/MissionControlHomeView";
 import { WidgetsHomeView } from "@/components/instructor/WidgetsHomeView";
+import { CalmHomeHeader } from "@/components/instructor/CalmHomeHeader";
 
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { HomeTodaySchedule } from "@/components/instructor/HomeTodaySchedule";
@@ -448,34 +449,8 @@ export function InstructorMobileHome({
         />
       ) : (
       <>
-      {/* 1. Quiet greeting */}
-      <div style={{ padding: "6px 20px 20px" }}>
-        <h1
-          style={{
-            fontSize: 22,
-            fontWeight: 500,
-            color: "hsl(var(--dsm-text))",
-            lineHeight: 1.2,
-            margin: 0,
-          }}
-        >
-          Hi {firstName}
-          <span style={{ color: "hsl(var(--dsm-text-secondary))", margin: "0 8px", fontWeight: 400 }}>·</span>
-          <span style={{ color: "hsl(var(--dsm-text-secondary))", fontWeight: 400 }}>
-            {format(new Date(), "EEEE")}
-          </span>
-        </h1>
-        <p
-          style={{
-            fontSize: 13,
-            color: "hsl(var(--dsm-text-secondary))",
-            marginTop: 4,
-            fontWeight: 400,
-          }}
-        >
-          Here's what needs you today
-        </p>
-      </div>
+      {/* Calm home header (greeting / rings / Up Next / 2x2 grid / Tip) */}
+      <CalmHomeHeader instructorId={instructorId} instructorName={instructor?.name} />
 
       {/* Warm priority tiles: action needed, up next, week at a glance */}
       <WarmHomeTiles instructorId={instructorId} />
