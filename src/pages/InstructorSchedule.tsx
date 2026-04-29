@@ -13,8 +13,6 @@ import { CalendarEventSheet } from "@/components/instructor/CalendarEventSheet";
 import { ScheduleFAB } from "@/components/instructor/ScheduleFAB";
 import { WeeklySummaryWidget } from "@/components/instructor/WeeklySummaryWidget";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
-import { GapFillerCard } from "@/components/instructor/GapFillerCard";
-import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useInstructorCalendar, type CalendarEvent } from "@/hooks/useInstructorCalendar";
 
@@ -54,7 +52,6 @@ export default function InstructorSchedule() {
   const [mobileListRefreshKey, setMobileListRefreshKey] = useState(0);
 
   const calendar = useInstructorCalendar(instructorId || '');
-  const { data: gapSuggestions, isLoading: gapsLoading } = useRealGapSlots(instructorId);
   const [isSyncing, setIsSyncing] = useState(false);
 
   const handleSync = async () => {
@@ -305,12 +302,6 @@ export default function InstructorSchedule() {
 
         {/* Content */}
         <div className="flex-1 overflow-auto pb-4">
-          {/* Gap Filler — restored to top of Schedule page */}
-          {(gapsLoading || (gapSuggestions && gapSuggestions.length > 0)) && (
-            <div style={{ padding: isMobile ? "0 12px 12px" : "0 0 12px" }}>
-              <GapFillerCard gaps={gapSuggestions ?? []} isLoading={gapsLoading} />
-            </div>
-          )}
           {viewMode === 'compact' ? (
             <div style={{ padding: isMobile ? "0 12px 16px" : "0" }}>
               <CompactScheduleListView
