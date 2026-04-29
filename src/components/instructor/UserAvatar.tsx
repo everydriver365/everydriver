@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { getInitials } from "@/lib/formatJobOffer";
 
 // System-friendly deterministic palette (light mobile aesthetic).
@@ -30,13 +31,17 @@ interface UserAvatarProps {
   className?: string;
 }
 
-export function UserAvatar({ name, photoUrl, size = 36, className }: UserAvatarProps) {
+export const UserAvatar = forwardRef<HTMLDivElement, UserAvatarProps>(function UserAvatar(
+  { name, photoUrl, size = 36, className },
+  ref,
+) {
   const initials = getInitials(name);
   const colour = PALETTE[djb2(name ?? "?") % PALETTE.length];
 
   if (photoUrl) {
     return (
       <img
+        ref={ref as unknown as React.Ref<HTMLImageElement>}
         src={photoUrl}
         alt={name ?? ""}
         width={size}
@@ -55,6 +60,7 @@ export function UserAvatar({ name, photoUrl, size = 36, className }: UserAvatarP
 
   return (
     <div
+      ref={ref}
       className={className}
       style={{
         width: size,
@@ -75,4 +81,4 @@ export function UserAvatar({ name, photoUrl, size = 36, className }: UserAvatarP
       {initials}
     </div>
   );
-}
+});
