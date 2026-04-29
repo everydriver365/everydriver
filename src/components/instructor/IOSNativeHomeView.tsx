@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useInstructorNotificationSettings } from "@/hooks/useInstructorNotificationSettings";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -65,12 +66,15 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
   const { data: pupilUnreadCount = 0 } = usePupilUnreadCount(instructorId, nextLesson?.pupilId);
   const { data: adminUnreadCount = 0 } = useAdminUnreadForPupil(instructorId, nextLesson?.pupilId, nextLesson?.pupilName);
   const totalUnreadBadge = pupilUnreadCount + adminUnreadCount;
-  const { isRunningLate, lateByMinutes, suggestedMessage, arrivalTimeText, sendLateETA } = useRunningLateDetection({
+  const { settings: notifSettings } = useInstructorNotificationSettings(instructorId);
+  const reminderRunningLateEnabled = notifSettings.notification_rules.reminder_running_late !== false;
+  const { isRunningLate: isRunningLateRaw, lateByMinutes, suggestedMessage, arrivalTimeText, sendLateETA } = useRunningLateDetection({
     etaMinutes,
     minutesUntil: nextLesson?.minutesUntil ?? 999,
     pupilName: nextLesson?.pupilName ?? "",
     pupilPhone: nextLesson?.pupilPhone ?? null,
   });
+  const isRunningLate = isRunningLateRaw && reminderRunningLateEnabled;
 
   // No lesson — show "All Clear"
   if (!nextLesson) {

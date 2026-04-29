@@ -1,6 +1,8 @@
 import { Coffee, Clock, Dumbbell, Wind, Eye, Footprints, GlassWater, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useBreakReminders } from "@/hooks/useBreakReminders";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { useInstructorNotificationSettings } from "@/hooks/useInstructorNotificationSettings";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +20,9 @@ interface BreakReminderWidgetProps {
 
 export function BreakReminderWidget({ variant = "full" }: BreakReminderWidgetProps) {
   const navigate = useNavigate();
+  const { instructor } = useInstructorAuth();
+  const { settings } = useInstructorNotificationSettings(instructor?.id);
+  const breaksEnabled = settings.notification_rules.reminder_breaks !== false;
   const {
     nextBreak,
     currentBreak,
@@ -27,6 +32,8 @@ export function BreakReminderWidget({ variant = "full" }: BreakReminderWidgetPro
     hasBreaksAvailable,
     isLoading,
   } = useBreakReminders();
+
+  if (!breaksEnabled) return null;
 
   // Show current break if we're in one
   const activeBreak = currentBreak || nextBreak;
