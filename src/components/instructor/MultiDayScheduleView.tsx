@@ -435,6 +435,29 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
     return () => clearInterval(id);
   }, []);
 
+  // Floating "Today" pill — show when the today header is scrolled out of view.
+  const [todayOffscreen, setTodayOffscreen] = useState<"above" | "below" | null>(null);
+  useEffect(() => {
+    const el = todayRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setTodayOffscreen(null);
+        else {
+          const rect = entry.boundingClientRect;
+          setTodayOffscreen(rect.top < 0 ? "above" : "below");
+        }
+      },
+      { threshold: 0, rootMargin: "-60px 0px -60% 0px" },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [loading]);
+
+  const jumpToToday = () => {
+    todayRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const startDate = useMemo(() => startOfDay(new Date()), []);
   const days = useMemo(
     () => Array.from({ length: DAYS_TO_LOAD }, (_, i) => addDays(startDate, i)),
