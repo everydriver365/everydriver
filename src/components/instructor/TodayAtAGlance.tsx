@@ -35,10 +35,12 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
       const now = new Date();
 
       try {
-        // Fetch today's lessons with pupil info
+        // Fetch today's lessons with pupil info + postcodes
         const { data: lessons } = await supabase
           .from("scheduled_lessons")
-          .select("lesson_date, start_time, duration_minutes, status, pupils(name)")
+          .select(
+            "lesson_date, start_time, duration_minutes, status, pickup_postcode, pupils(name, pickup_postcode, postcode)"
+          )
           .eq("instructor_id", instructorId)
           .eq("lesson_date", today)
           .neq("status", "cancelled")
@@ -47,8 +49,23 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
         const todayLessons = lessons || [];
         const totalMinutes = todayLessons.reduce((sum, l) => sum + (l.duration_minutes || 0), 0);
 
+        // Outward postcode helper (e.g. "SO22 6QR" -> "SO22")
+        const outward = (pc: string | null | undefined): string | null => {
+          if (!pc) return null;
+          const trimmed = pc.trim().toUpperCase();
+          if (!trimmed) return null;
+          const space = trimmed.indexOf(" ");
+          return space > 0 ? trimmed.slice(0, space) : trimmed.slice(0, 4);
+        };
+
+        const lessonPostcode = (l: any): string | null => {
+          const p = l?.pupils as any;
+          return outward(l?.pickup_postcode || p?.pickup_postcode || p?.postcode);
+        };
+
         // Find next upcoming lesson
         let nextLesson: TodayData["nextLesson"] = null;
+        let remainingPostcode: string | null = null;
         for (const lesson of todayLessons) {
           if (lesson.start_time && lesson.status !== "completed") {
             const [h, m] = lesson.start_time.split(":").map(Number);
@@ -61,6 +78,7 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
                 time: lesson.start_time.slice(0, 5),
                 minutesUntil: differenceInMinutes(lessonTime, now),
               };
+              remainingPostcode = lessonPostcode(lesson);
               break;
             }
           }
@@ -68,6 +86,9 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
 
         // Remaining lessons (not completed)
         const remaining = todayLessons.filter(l => l.status !== "completed").length;
+
+        // Postcode of the first scheduled lesson of the day (overall)
+        const scheduledPostcode = todayLessons.length > 0 ? lessonPostcode(todayLessons[0]) : null;
 
         // Today's earnings
         const { data: payments } = await supabase
@@ -84,6 +105,8 @@ export function TodayAtAGlance({ instructorId }: TodayAtAGlanceProps) {
           lessonsRemaining: remaining,
           hoursToday: Math.round(totalMinutes / 60 * 10) / 10,
           earningsToday: earnings,
+          remainingPostcode,
+          scheduledPostcode,
           loading: false,
         });
       } catch (err) {
