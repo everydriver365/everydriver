@@ -39,14 +39,35 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
 
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
+  const [editing, setEditing] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const lastPageRef = useRef(0);
 
-  // Alphabetical tile order
-  const orderedTiles = useMemo(
-    () => [...QUICK_ACCESS_TILES].sort((a, b) => a.title.localeCompare(b.title)),
+  // Saved per-instructor order (also used by hybrid). When the row is
+  // empty/missing, the hook returns the 6 defaults — we ignore that and
+  // fall back to the full alphabetical list of all 33 tiles.
+  const { data: pinnedRows, isCustomised, setPins, isSaving } =
+    useInstructorPinnedTiles(instructorId);
+
+  const alphabeticalIds = useMemo(
+    () =>
+      [...QUICK_ACCESS_TILES]
+        .sort((a, b) => a.title.localeCompare(b.title))
+        .map((t) => t.id),
     [],
   );
+
+  // Effective ordered visible tiles. If the user has saved a custom order,
+  // use it verbatim (hidden tiles simply omitted). Otherwise alphabetical.
+  const orderedTiles = useMemo(() => {
+    const ids =
+      isCustomised && pinnedRows && pinnedRows.length > 0
+        ? pinnedRows.map((r) => r.tile_id)
+        : alphabeticalIds;
+    return ids
+      .map((id) => QUICK_ACCESS_TILES_BY_ID[id])
+      .filter(Boolean) as QuickAccessTile[];
+  }, [isCustomised, pinnedRows, alphabeticalIds]);
 
   const richMeta = (tileId: string): TileMeta => {
     switch (tileId) {
