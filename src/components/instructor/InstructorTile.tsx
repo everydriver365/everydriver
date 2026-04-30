@@ -134,58 +134,85 @@ export function InstructorTile({
     >
       <div
         style={{
-          position: "relative",
-          width: 40,
-          height: 40,
-          borderRadius: 10,
-          background: colors.tint,
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
+          justifyContent: "space-between",
+          width: "100%",
+          gap: 8,
         }}
       >
-        <Icon
-          size={22}
-          color={colors.accent}
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-        {liveDot && (
-          <span
-            className="instructor-tile-dot"
-            style={{
-              position: "absolute",
-              top: 4,
-              right: 4,
-              width: 7,
-              height: 7,
-              borderRadius: "50%",
-              background: colors.accent,
-              boxShadow: "0 0 0 2px #FFFFFF",
-            }}
+        <div
+          style={{
+            position: "relative",
+            width: 40,
+            height: 40,
+            borderRadius: 10,
+            background: colors.tint,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Icon
+            size={22}
+            color={colors.accent}
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
           />
-        )}
-        {showCount && (
+          {liveDot && (
+            <span
+              className="instructor-tile-dot"
+              style={{
+                position: "absolute",
+                top: 4,
+                right: 4,
+                width: 7,
+                height: 7,
+                borderRadius: "50%",
+                background: colors.accent,
+                boxShadow: "0 0 0 2px #FFFFFF",
+              }}
+            />
+          )}
+          {showCount && !pill && (
+            <span
+              style={{
+                position: "absolute",
+                top: -6,
+                right: -6,
+                minWidth: 20,
+                height: 20,
+                padding: "0 6px",
+                borderRadius: 10,
+                background: colors.accent,
+                color: "#FFFFFF",
+                fontSize: 11,
+                fontWeight: 600,
+                lineHeight: "20px",
+                textAlign: "center",
+                fontVariantNumeric: "tabular-nums",
+                boxShadow: "0 0 0 2px #FFFFFF",
+              }}
+            >
+              {count}
+            </span>
+          )}
+        </div>
+
+        {showCount && pill && (
           <span
             style={{
-              position: "absolute",
-              top: -6,
-              right: -6,
-              minWidth: 20,
-              height: 20,
-              padding: "0 6px",
-              borderRadius: 10,
-              background: colors.accent,
-              color: "#FFFFFF",
+              background: pill.bg,
+              color: pill.fg,
+              borderRadius: 999,
+              padding: "3px 9px",
               fontSize: 11,
-              fontWeight: 600,
-              lineHeight: "20px",
-              textAlign: "center",
+              fontWeight: 500,
               fontVariantNumeric: "tabular-nums",
-              boxShadow: "0 0 0 2px #FFFFFF",
+              lineHeight: 1.2,
             }}
           >
             {count}
