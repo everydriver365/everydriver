@@ -126,7 +126,7 @@ export function TileGrid({ children, className, padded = true, variant = "defaul
       className={className}
       style={{
         padding: padded ? "18px 14px 20px" : undefined,
-        background: "#F2F2F7",
+        background: "#EAEAEA",
         fontFamily: FONT_STACK,
       }}
     >
