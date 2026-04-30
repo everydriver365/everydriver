@@ -197,11 +197,33 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
 
   return (
     <div style={{ padding: "0 16px" }}>
-      <PersistentSearchBar
-        value={query}
-        onChange={setQuery}
-        totalToolCount={orderedTiles.length}
-      />
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <PersistentSearchBar
+            value={query}
+            onChange={setQuery}
+            totalToolCount={orderedTiles.length}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          aria-label="Customize tiles"
+          style={{
+            background: "transparent",
+            border: 0,
+            padding: "0 4px",
+            marginBottom: 16,
+            fontSize: 12,
+            fontWeight: 500,
+            color: "#2B7BC8",
+            cursor: "pointer",
+            flexShrink: 0,
+          }}
+        >
+          Customize
+        </button>
+      </div>
 
       {filtered ? (
         filtered.length === 0 ? (
