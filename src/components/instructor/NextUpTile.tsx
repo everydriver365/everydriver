@@ -400,7 +400,7 @@ export function NextUpTile({
                   {formatTime24(startTime)}
                 </div>
                 <div style={{ fontSize: a11yPx(11), fontWeight: 400, color: "#6E6E73", marginTop: 4, fontVariantNumeric: "tabular-nums" }}>
-                  {minutesUntil <= 0 ? "Now" : `in ${getCountdownText()}`}
+                  {minutesUntil <= 0 ? "Starting now" : `in ${getCountdownText()}`}
                 </div>
               </div>
               <ChevronDown
