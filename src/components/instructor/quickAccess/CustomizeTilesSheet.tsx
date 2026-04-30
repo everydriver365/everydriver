@@ -267,9 +267,6 @@ export function CustomizeTilesSheet({
               </button>
             )}
           </div>
-        </SheetHeader>
-
-        <div style={{ padding: "12px 16px 24px" }}>
           {(() => {
             const visibleFiltered = visible
               .map((id, idx) => ({ id, idx }))
