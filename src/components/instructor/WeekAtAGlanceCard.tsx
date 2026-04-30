@@ -639,20 +639,20 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
           >
             Today · {overallPct}%
           </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {[
-              { color: TXT.red, label: lessonsLabel },
-              { color: TXT.blue, label: earningsLabel },
-              { color: TXT.green, label: hoursLabel },
+              { color: TXT.red, value: lessonsValue, rest: lessonsRest },
+              { color: TXT.blue, value: earningsValue, rest: earningsRest },
+              { color: TXT.green, value: hoursValue, rest: hoursRest },
             ].map((row) => (
               <div
-                key={row.label}
-                style={{ display: "flex", alignItems: "center", gap: 6 }}
+                key={row.value + row.rest}
+                style={{ display: "flex", alignItems: "center", gap: 7 }}
               >
                 <span
                   style={{
-                    width: 5,
-                    height: 5,
+                    width: 7,
+                    height: 7,
                     borderRadius: "50%",
                     background: row.color,
                     flexShrink: 0,
@@ -660,22 +660,21 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
                 />
                 <span
                   style={{
-                    fontSize: 11,
-                    fontWeight: 500,
-                    color: TXT.primary,
+                    fontSize: 14,
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {row.label}
+                  <span style={{ fontWeight: 500, color: TXT.primary }}>{row.value}</span>
+                  <span style={{ fontWeight: 400, color: TXT.secondary }}>{row.rest}</span>
                 </span>
               </div>
             ))}
           </div>
         </div>
         <div style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>
-          <ChevronRight size={14} strokeWidth={1.6} color={TXT.secondary} />
+          <ChevronRight size={14} strokeWidth={2} color={TXT.primary} />
         </div>
       </button>
     );
