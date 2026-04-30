@@ -35,15 +35,30 @@ export function CustomizeTilesSheet({
   saving,
 }: Props) {
   const [visible, setVisible] = useState<string[]>(currentOrder);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
-    if (open) setVisible(currentOrder);
+    if (open) {
+      setVisible(currentOrder);
+      setQuery("");
+    }
   }, [open, currentOrder]);
 
   const hidden = useMemo(() => {
     const set = new Set(visible);
     return QUICK_ACCESS_TILES.filter((t) => !set.has(t.id)).map((t) => t.id);
   }, [visible]);
+
+  const matches = (id: string) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    const t = QUICK_ACCESS_TILES_BY_ID[id];
+    if (!t) return false;
+    return (
+      t.title.toLowerCase().includes(q) ||
+      (t.subtitle ?? "").toLowerCase().includes(q)
+    );
+  };
 
   const move = (idx: number, dir: -1 | 1) => {
     const target = idx + dir;
