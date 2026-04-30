@@ -496,7 +496,7 @@ export function InstructorMobileHome({
           lastEndTimeToday = format(end, "HH:mm");
         }
 
-        const statusSubtitle = composeStatusSubtitle(
+        const statusParts = composeStatusSubtitleParts(
           {
             upcomingTodayCount,
             liveLessonEndsInMinutes,
@@ -509,7 +509,7 @@ export function InstructorMobileHome({
           { totalActions: homeActions.length }
         );
 
-        return <HomeGreeting greeting={greeting} statusSubtitle={statusSubtitle} />;
+        return <HomeGreeting greeting={greeting} statusParts={statusParts} />;
       })()}
 
       {/* Warm priority tiles: action needed, up next, week at a glance */}

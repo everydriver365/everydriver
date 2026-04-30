@@ -1,18 +1,25 @@
+import type { StatusSubtitleParts } from "@/lib/composeStatusSubtitle";
+
 interface HomeGreetingProps {
   greeting: string;
-  statusSubtitle: string;
+  /** Legacy plain-string subtitle (kept for backwards compatibility). */
+  statusSubtitle?: string;
+  /** Preferred: structured subtitle so urgent fragment renders red. */
+  statusParts?: StatusSubtitleParts;
 }
 
-export function HomeGreeting({ greeting, statusSubtitle }: HomeGreetingProps) {
+const RED = "#C8434F";
+
+export function HomeGreeting({ greeting, statusSubtitle, statusParts }: HomeGreetingProps) {
   return (
-    <div style={{ padding: "6px 20px 0", marginBottom: 14 }}>
+    <div style={{ padding: "6px 20px 0", marginBottom: 18 }}>
       <h1
         style={{
-          fontSize: 26,
+          fontSize: 30,
           fontWeight: 500,
           color: "#000000",
-          letterSpacing: "-0.5px",
-          lineHeight: 1.1,
+          letterSpacing: "-0.6px",
+          lineHeight: 1.05,
           margin: "0 0 4px",
         }}
       >
@@ -20,12 +27,21 @@ export function HomeGreeting({ greeting, statusSubtitle }: HomeGreetingProps) {
       </h1>
       <p
         style={{
-          fontSize: 13,
-          color: "#6E6E73",
+          fontSize: 14,
+          color: "#000000",
           margin: 0,
         }}
       >
-        {statusSubtitle}
+        {statusParts ? (
+          <>
+            {statusParts.calm}
+            {statusParts.urgent && (
+              <span style={{ color: RED, fontWeight: 500 }}>{statusParts.urgent}</span>
+            )}
+          </>
+        ) : (
+          statusSubtitle
+        )}
       </p>
     </div>
   );

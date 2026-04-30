@@ -92,6 +92,63 @@ export function composeStatusSubtitle(
   return "Quiet day — perfect for catching up";
 }
 
+/**
+ * Returns the subtitle as structured parts so the UI can colour the urgent
+ * fragment (e.g. "2 things waiting", "Lesson in progress") in red while
+ * keeping the calm part pure black. The "calm" part already includes any
+ * trailing " · " separator before the urgent fragment when both exist.
+ */
+export interface StatusSubtitleParts {
+  calm: string;
+  urgent: string | null;
+}
+
+export function composeStatusSubtitleParts(
+  lesson: LessonStateInput,
+  action: ActionStateInput
+): StatusSubtitleParts {
+  const { totalActions } = action;
+  const {
+    upcomingTodayCount,
+    liveLessonEndsInMinutes,
+    hasLessonsToday,
+    lastEndTimeToday,
+    nextLesson,
+  } = lesson;
+
+  // Live lesson takes precedence — the "in progress" fragment is the alert.
+  if (liveLessonEndsInMinutes != null && liveLessonEndsInMinutes > 0) {
+    return {
+      calm: `· ends in ${liveLessonEndsInMinutes} min`,
+      urgent: "Lesson in progress",
+    };
+  }
+
+  const urgent =
+    totalActions > 0
+      ? `${totalActions} ${totalActions === 1 ? "thing" : "things"} waiting`
+      : null;
+
+  if (upcomingTodayCount > 0) {
+    const lessonFrag = `${upcomingTodayCount} ${
+      upcomingTodayCount === 1 ? "lesson" : "lessons"
+    } today`;
+    if (urgent) return { calm: `${lessonFrag} · `, urgent };
+    if (lastEndTimeToday) return { calm: `${lessonFrag} · finished by ${fmtTime(lastEndTimeToday)}`, urgent: null };
+    return { calm: lessonFrag, urgent: null };
+  }
+
+  if (hasLessonsToday) {
+    if (urgent) return { calm: "Done for today · ", urgent };
+    const nextFrag = nextLessonFragment(nextLesson);
+    if (nextFrag) return { calm: `Done for today · ${nextFrag}`, urgent: null };
+    return { calm: "Done for today", urgent: null };
+  }
+
+  if (urgent) return { calm: "No lessons today · ", urgent };
+  return { calm: "Quiet day — perfect for catching up", urgent: null };
+}
+
 export interface PriorityAction {
   kind: "job_offer" | "test_swap" | "message" | "visitor_chat" | "conflict" | "payment" | "generic";
   count: number;
