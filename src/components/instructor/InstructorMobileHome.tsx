@@ -26,7 +26,7 @@ import {
   Target,
   Timer,
   Award,
-  Search,
+  
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
@@ -52,7 +52,7 @@ import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { HomepageHero } from "@/components/instructor/HomepageHero";
 import { ActivityTilesGrid } from "@/components/instructor/ActivityTilesGrid";
 import { TelematicsTile } from "@/components/instructor/TelematicsTile";
-import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAccess";
+import { QuickAccessHybrid } from "@/components/instructor/quickAccess/QuickAccessHybrid";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
 import { SectionHeader } from "@/components/instructor/SectionHeader";
@@ -222,8 +222,6 @@ export function InstructorMobileHome({
   const [isTileEditMode, setIsTileEditMode] = useState(false);
   const [showFAB, setShowFAB] = useState(false);
   const [showRefreshFeedback, setShowRefreshFeedback] = useState(false);
-  const [quickActionsSearchOpen, setQuickActionsSearchOpen] = useState(false);
-  const [quickActionsQuery, setQuickActionsQuery] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
   const { content, loading: contentLoading } = useInstructorHomepageContent();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -633,29 +631,9 @@ export function InstructorMobileHome({
           </>
         )}
 
-        {/* More tools — Swipeable Grid */}
+        {/* Quick Access — search + Frequently used + All tools */}
         <div className="mt-5 py-4">
-          <div className="px-4" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 0 }}>
-            <EyebrowLabel>More tools</EyebrowLabel>
-            <button
-              type="button"
-              onClick={() => setQuickActionsSearchOpen((v) => !v)}
-              aria-label="Search quick actions"
-              className="h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground active:bg-muted"
-              style={{ marginTop: -10 }}
-            >
-              <Search className="h-4 w-4" />
-            </button>
-          </div>
-          <SwipeableQuickAccess
-            searchOpen={quickActionsSearchOpen}
-            query={quickActionsQuery}
-            onSearchOpenChange={(open) => {
-              setQuickActionsSearchOpen(open);
-              if (!open) setQuickActionsQuery("");
-            }}
-            onQueryChange={setQuickActionsQuery}
-          />
+          <QuickAccessHybrid instructorId={instructorId} />
         </div>
 
         <div className="px-4">
