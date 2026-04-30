@@ -6810,6 +6810,33 @@ export type Database = {
           },
         ]
       }
+      instructor_pinned_tiles: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          position: number
+          tile_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          position: number
+          tile_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          position?: number
+          tile_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       instructor_premium_placements: {
         Row: {
           created_at: string
