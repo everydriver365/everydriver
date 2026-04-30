@@ -609,19 +609,7 @@ export function NextUpTile({
               <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FFFFFF", display: "inline-block" }} />
               Start track
             </button>
-          )}
-
-        {/* ── EXPANDED CONTENT (inside the same white card) ── */}
-        <AnimatePresence>
-          {expanded && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="overflow-hidden"
-              style={{ marginLeft: -16, marginRight: -16, marginBottom: -16 }}>
-              <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", borderTop: "0.5px solid #E5E5EA" }}>
-
-
-                {/* ── SECTION 1 — Lesson details ── */}
+          {/* ── SECTION 1 — Lesson details ── */}
                 <div style={{
                   fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73",
                   letterSpacing: 0.3, textTransform: "uppercase", margin: "0 0 8px",
