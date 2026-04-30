@@ -35,7 +35,7 @@ async function geocodePostcode(postcode: string): Promise<{ lat: number; lng: nu
   }
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
