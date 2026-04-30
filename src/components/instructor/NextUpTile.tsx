@@ -1052,6 +1052,7 @@ export function NextUpTile({
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
       </div>
 
       {/* Dialogs */}
