@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+
 import { HomeSkeleton } from "@/components/ui/skeletons/HomeSkeleton";
 import { ChevronRight } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -34,7 +34,7 @@ import { useDemoMode } from "@/context/DemoModeContext";
 import { DemoModeBanner, DemoModeInviteCard } from "@/components/instructor/DemoModeBanner";
 import { demoStats } from "@/data/demoModeData";
 import { PDIBanner } from "@/components/instructor/PDIBanner";
-import { PlanBadge } from "@/components/instructor/PlanBadge";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
@@ -171,9 +171,6 @@ export default function InstructorPortal() {
     }
   };
 
-  const getInitials = (name: string) => {
-    return name.split(" ").map(n => n[0]).join("").toUpperCase();
-  };
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -235,7 +232,7 @@ export default function InstructorPortal() {
   }
 
   // Desktop Layout — calm, system palette
-  const unpaidCount = pupils.filter(p => (Number(p.account_balance) || 0) < 0).length;
+  
   const lessonsTodayLabel =
     todaysLessonCount > 0
       ? `${todaysLessonCount} lesson${todaysLessonCount !== 1 ? "s" : ""} today`
