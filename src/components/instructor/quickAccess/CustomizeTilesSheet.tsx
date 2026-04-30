@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ChevronUp, ChevronDown, X, Plus, RotateCcw } from "lucide-react";
+import { ChevronUp, ChevronDown, X, Plus, RotateCcw, Search } from "lucide-react";
 import { toast } from "sonner";
 import {
   QUICK_ACCESS_TILES,
