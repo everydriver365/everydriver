@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { HomeSkeleton } from "@/components/ui/skeletons/HomeSkeleton";
-import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, CreditCard, Eye, EyeOff, Briefcase, Car, MapPin, CheckCircle2, AlertTriangle, Globe, CalendarCheck, MessageSquare, Plus, PoundSterling, LogOut } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -20,12 +20,7 @@ import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
 import { InstructorMobileHome } from "@/components/instructor/InstructorMobileHome";
 
-import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
-import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
-import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
 import { MileageTaxSavingsCard } from "@/components/instructor/dashboard/MileageTaxSavingsCard";
-import { ReferralCard } from "@/components/instructor/ReferralCard";
-import { NotesWidget } from "@/components/instructor/dashboard/NotesWidget";
 import { MessagesWidget } from "@/components/instructor/dashboard/MessagesWidget";
 import { RetentionAlertsTile } from "@/components/instructor/dashboard/RetentionAlertsTile";
 import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
@@ -33,9 +28,7 @@ import { AICommandCenter } from "@/components/instructor/AICommandCenter";
 import { WelcomeTour } from "@/components/instructor/WelcomeTour";
 
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
-import edLogo from "@/assets/ed-black-white-logo.png";
 import { AvailabilityCalendar } from "@/components/instructor/AvailabilityCalendar";
-import { TodayAtAGlance } from "@/components/instructor/TodayAtAGlance";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useDemoMode } from "@/context/DemoModeContext";
 import { DemoModeBanner, DemoModeInviteCard } from "@/components/instructor/DemoModeBanner";
