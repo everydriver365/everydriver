@@ -601,241 +601,399 @@ export function NextUpTile({
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="overflow-hidden">
-              <div className="px-4 pb-4 flex flex-col gap-3">
-                <div className="h-px w-full" style={{ background: "rgba(0,0,0,0.06)" }} />
+              <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column" }}>
+                <div className="h-px w-full" style={{ background: "#E5E5EA", marginBottom: 14 }} />
 
-                {/* Mini-map removed — already shown at top of tile */}
-
-                {/* Stats row */}
-                <div className="grid grid-cols-2 gap-2">
+                {/* ── SECTION 1 — Lesson details ── */}
+                <div style={{
+                  fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73",
+                  letterSpacing: 0.3, textTransform: "uppercase", margin: "0 0 8px",
+                }}>
+                  Lesson details
+                </div>
+                <div style={{
+                  display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: 8, marginBottom: 18,
+                }}>
                   {[
-                    { icon: Hourglass, label: "Duration", value: formatDuration(), color: "hsl(220, 52%, 22%)" },
-                    { icon: PoundSterling, label: "Earnings", value: `£${expectedEarnings.toFixed(0)}`, color: "#10b981" },
+                    { icon: Clock, label: "Duration", value: formatDuration() },
+                    { icon: PoundSterling, label: "Lesson fee", value: `£${expectedEarnings.toFixed(0)}` },
                   ].map((stat) => (
-                    <div key={stat.label} className="flex flex-col items-center py-3 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)" }}>
-                      <div className="w-8 h-8 rounded-2xl flex items-center justify-center mb-1.5" style={{ background: `${stat.color}15` }}>
-                        <stat.icon className="h-4 w-4" style={{ color: stat.color }} />
+                    <div key={stat.label} style={{
+                      background: "#F8FAFB", border: "0.5px solid #E5E5EA",
+                      borderRadius: 10, padding: 12,
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                        <stat.icon style={{ width: 12, height: 12, color: "#6E6E73" }} strokeWidth={2} />
+                        <span style={{
+                          fontSize: a11yPx(10), color: "#6E6E73", letterSpacing: 0.2,
+                        }}>{stat.label}</span>
                       </div>
-                      <span className="text-[15px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{stat.value}</span>
-                      <span className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</span>
+                      <div style={{
+                        fontSize: a11yPx(18), fontWeight: 500, color: "#000000",
+                        letterSpacing: -0.3, margin: 0,
+                      }}>{stat.value}</div>
                     </div>
                   ))}
                 </div>
 
-                {/* Live ETA — clickable when traffic alerts exist */}
-                {(etaLoading || etaMinutes > 0) && (
-                  <button
-                    type="button"
-                    disabled={!hasTrafficAlerts}
-                    onClick={(e) => { e.stopPropagation(); if (hasTrafficAlerts) setTrafficModalOpen(true); }}
-                    className={`w-full flex items-center gap-3 p-3.5 rounded-2xl text-left transition-transform ${hasTrafficAlerts ? "active:scale-[0.99] cursor-pointer" : "cursor-default"}`}
-                    style={{
-                      background: hasTrafficAlerts ? "rgba(239,68,68,0.08)" : "rgba(21,30,48,0.05)",
-                      border: hasTrafficAlerts ? "1px solid rgba(239,68,68,0.2)" : "none",
-                    }}
-                  >
-                    <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0" style={{ background: hasTrafficAlerts ? "rgba(239,68,68,0.15)" : "rgba(21,30,48,0.1)" }}>
-                      {hasTrafficAlerts ? <AlertTriangle className="h-5 w-5" style={{ color: "#dc2626" }} /> : <Car className="h-5 w-5" style={{ color: "hsl(220, 52%, 16%)" }} />}
-                    </div>
-                    {etaLoading ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                        <span className="text-[11px] text-muted-foreground">Calculating ETA...</span>
-                      </div>
-                    ) : (
-                      <div className="flex-1 flex items-center justify-between">
-                        <div>
-                          <span className="text-[10px] text-muted-foreground">Drive time</span>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[15px] font-bold" style={{ color: "hsl(var(--foreground))" }}>~{etaMinutes} min</span>
-                            {trafficCondition && (
-                              <>
-                                <span className={`w-2 h-2 rounded-full ${getTrafficDot()}`} />
-                                <span className="text-[11px] capitalize text-muted-foreground">{trafficCondition}</span>
-                              </>
-                            )}
-                          </div>
-                          {hasTrafficAlerts && (
-                            <p className="text-[10px] mt-0.5 font-semibold" style={{ color: "#dc2626" }}>
-                              {trafficAlerts.length} alert{trafficAlerts.length !== 1 ? "s" : ""} on route — tap for details
-                            </p>
-                          )}
-                        </div>
-                        {hasTrafficAlerts && <ChevronRight className="h-4 w-4" style={{ color: "#dc2626" }} />}
-                      </div>
-                    )}
-                  </button>
-                )}
-
-                {/* Weather */}
-                {currentWeather && currentWeather.temperature != null && (
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)" }}>
-                    <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "rgba(245,158,11,0.1)" }}>
-                      <Thermometer className="h-5 w-5" style={{ color: "#f59e0b" }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[14px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{currentWeather.temperature}°C</span>
-                        {currentWeather.description && <span className="text-[11px] text-muted-foreground">{currentWeather.description}</span>}
-                      </div>
-                      {getWeatherSafetyTip() && (
-                        <p className="text-[10px] mt-0.5" style={{ color: getWeatherSafetyTip()!.color }}>⚠ {getWeatherSafetyTip()!.tip}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Vehicle Health */}
-                {primaryDevice && (
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)" }}>
-                    <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0"
-                      style={{ background: primaryDevice.is_connected ? "rgba(22,163,74,0.1)" : "rgba(220,38,38,0.1)" }}>
-                      <Car className="h-5 w-5" style={{ color: primaryDevice.is_connected ? "#16a34a" : "#dc2626" }} />
-                    </div>
-                    <div className="flex-1 flex items-center gap-4">
-                      <div className="flex items-center gap-1.5">
-                        <Wifi className="h-3.5 w-3.5" style={{ color: primaryDevice.is_connected ? "#16a34a" : "#dc2626" }} />
-                        <span className="text-[11px] font-medium" style={{ color: "hsl(var(--foreground))" }}>
-                          {primaryDevice.is_connected ? "Connected" : "Offline"}
-                        </span>
-                      </div>
-                      {primaryDevice.last_battery_percent != null && (
-                        <div className="flex items-center gap-1.5">
-                          <Battery className="h-3.5 w-3.5" style={{ color: primaryDevice.last_battery_percent > 20 ? "#16a34a" : "#dc2626" }} />
-                          <span className="text-[11px] font-medium" style={{ color: "hsl(var(--foreground))" }}>{primaryDevice.last_battery_percent}%</span>
-                        </div>
-                      )}
-                      {primaryDevice.last_fuel_percent != null && (
-                        <div className="flex items-center gap-1">
-                          <span className="text-[11px] text-muted-foreground">⛽</span>
-                          <span className="text-[11px] font-medium" style={{ color: "hsl(var(--foreground))" }}>{primaryDevice.last_fuel_percent}%</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Last Lesson Plan */}
-                {lastLessonPlan && (
-                  <div className="flex items-start gap-3 p-3.5 rounded-2xl" style={{ background: "rgba(124,58,237,0.05)" }}>
-                    <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: "rgba(124,58,237,0.1)" }}>
-                      <BookOpen className="h-5 w-5" style={{ color: "#7c3aed" }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Lesson Plan</span>
-                      <p className="text-[12px] mt-0.5 line-clamp-2" style={{ color: "hsl(var(--foreground))" }}>{lastLessonPlan}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Payment Warning */}
-                {noBalance && (
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl"
-                    style={{
-                      background: paymentDue ? "rgba(239,68,68,0.08)" : "rgba(251,191,36,0.08)",
-                      border: `1px solid ${paymentDue ? "rgba(239,68,68,0.2)" : "rgba(251,191,36,0.2)"}`,
+                {/* ── SECTION 2 — Conditions ── */}
+                {(etaMinutes > 0 || currentWeather || primaryDevice) && (
+                  <>
+                    <div style={{
+                      fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73",
+                      letterSpacing: 0.3, textTransform: "uppercase", margin: "0 0 8px",
                     }}>
-                    <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0"
-                      style={{ background: paymentDue ? "rgba(239,68,68,0.15)" : "rgba(251,191,36,0.15)" }}>
-                      <Banknote className="h-5 w-5" style={{ color: paymentDue ? "#dc2626" : "#d97706" }} />
+                      Conditions
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-bold" style={{ color: "hsl(var(--foreground))" }}>
-                        {paymentDue ? `£${Math.abs(effectiveBalance).toFixed(0)} payment due` : "No balance remaining"}
-                      </p>
-                      <p className="text-[10px] mt-0.5 text-muted-foreground">Collect before or after lesson</p>
+                    <div style={{
+                      background: "#FFFFFF", border: "0.5px solid #E5E5EA",
+                      borderRadius: 10, marginBottom: 18, overflow: "hidden",
+                    }}>
+                      {/* Drive row — derives severity from HERE traffic + late detection,
+                          NOT the unrelated drivingAlerts feed. */}
+                      {(etaLoading || etaMinutes > 0) && (
+                        <button
+                          type="button"
+                          disabled={!hasTrafficAlerts}
+                          onClick={(e) => { e.stopPropagation(); if (hasTrafficAlerts) setTrafficModalOpen(true); }}
+                          style={{
+                            width: "100%", padding: 12,
+                            borderBottom: (currentWeather || primaryDevice) ? "0.5px solid #E5E5EA" : "none",
+                            display: "flex", alignItems: "center", gap: 12,
+                            background: "transparent", border: "none", textAlign: "left",
+                            cursor: hasTrafficAlerts ? "pointer" : "default",
+                          }}
+                        >
+                          {(() => {
+                            const driveSeverity: "normal" | "amber" | "red" =
+                              isRunningLate ? "red" : trafficHeavy ? "amber" : "normal";
+                            const driveBg = driveSeverity === "red" ? "#FBEAEC"
+                              : driveSeverity === "amber" ? "#FBF1DE" : "#E6F1FB";
+                            const driveStroke = driveSeverity === "red" ? "#C8434F"
+                              : driveSeverity === "amber" ? "#B8801F" : "#2B7BC8";
+                            const distancePart = etaText && /·/.test(etaText)
+                              ? etaText.split("·").slice(-1)[0].trim() : null;
+                            return (
+                              <>
+                                <div style={{
+                                  width: 32, height: 32, borderRadius: 8, background: driveBg,
+                                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                                }}>
+                                  <Car style={{ width: 16, height: 16, color: driveStroke }} strokeWidth={2} />
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 1 }}>
+                                    <span style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000" }}>
+                                      {etaLoading ? "Calculating drive…"
+                                        : `${etaMinutes} min drive${distancePart ? ` · ${distancePart}` : ""}`}
+                                    </span>
+                                    {driveSeverity !== "normal" && !etaLoading && (
+                                      <span style={{
+                                        background: driveSeverity === "red" ? "#FBEAEC" : "#FBF1DE",
+                                        color: driveSeverity === "red" ? "#C8434F" : "#B8801F",
+                                        fontSize: a11yPx(9), fontWeight: 500, letterSpacing: 0.3,
+                                        padding: "2px 5px", borderRadius: 3, textTransform: "uppercase",
+                                      }}>
+                                        {driveSeverity === "red"
+                                          ? `Late by ${lateByMinutes}m`
+                                          : "Heavy traffic"}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div style={{ fontSize: a11yPx(11), color: "#6E6E73" }}>
+                                    {etaLoading ? "Checking current traffic"
+                                      : isRunningLate
+                                        ? `Even leaving now, will arrive at ${arrivalTimeText} (${lateByMinutes} min late)`
+                                        : trafficHeavy
+                                          ? `Heavier than usual${leaveByText ? ` — leave by ${leaveByText} to be on time` : ""}`
+                                          : leaveByText
+                                            ? `Traffic looks normal — leave by ${leaveByText} to be on time`
+                                            : `Traffic looks normal at current conditions`}
+                                  </div>
+                                </div>
+                                {hasTrafficAlerts && (
+                                  <ChevronRight style={{ width: 14, height: 14, color: "#6E6E73", flexShrink: 0 }} />
+                                )}
+                              </>
+                            );
+                          })()}
+                        </button>
+                      )}
+
+                      {/* Weather row */}
+                      {currentWeather && currentWeather.temperature != null && (() => {
+                        const tip = getWeatherSafetyTip();
+                        const poor = !!tip;
+                        return (
+                          <div style={{
+                            padding: 12,
+                            borderBottom: primaryDevice ? "0.5px solid #E5E5EA" : "none",
+                            display: "flex", alignItems: "center", gap: 12,
+                          }}>
+                            <div style={{
+                              width: 32, height: 32, borderRadius: 8,
+                              background: poor ? "#FBF1DE" : "#E6F1FB",
+                              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                            }}>
+                              <Thermometer style={{
+                                width: 16, height: 16,
+                                color: poor ? "#B8801F" : "#2B7BC8",
+                              }} strokeWidth={2} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", margin: "0 0 1px" }}>
+                                {currentWeather.temperature}°C{currentWeather.description ? ` · ${currentWeather.description}` : ""}
+                              </div>
+                              <div style={{ fontSize: a11yPx(11), color: "#6E6E73" }}>
+                                {tip ? tip.tip : "No weather concerns at lesson time"}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Vehicle row */}
+                      {primaryDevice && (() => {
+                        const connected = primaryDevice.is_connected;
+                        const deviceLabel = (() => {
+                          const t = (primaryDevice as any).device_type?.toLowerCase?.() || "";
+                          if (t.includes("obd")) return "Vehicle data linked";
+                          if (t.includes("bluetooth")) return "Bluetooth connected";
+                          if (t.includes("eco")) return "ECO Driving connected";
+                          if (t.includes("telematics") || t.includes("black")) return "Telematics connected";
+                          return "Vehicle data linked";
+                        })();
+                        const lastSync = (primaryDevice as any).last_seen_at || (primaryDevice as any).updated_at;
+                        const lastSyncText = lastSync
+                          ? (() => { try { return `Last sync ${format(new Date(lastSync), "HH:mm")}`; } catch { return "Last sync recently"; } })()
+                          : "Last sync recently";
+                        return (
+                          <div style={{
+                            padding: 12,
+                            display: "flex", alignItems: "center", gap: 12,
+                          }}>
+                            <div style={{
+                              width: 32, height: 32, borderRadius: 8,
+                              background: connected ? "#E8F3E8" : "#F2F2F4",
+                              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                            }}>
+                              <Car style={{
+                                width: 16, height: 16,
+                                color: connected ? "#3B8B3B" : "#6E6E73",
+                              }} strokeWidth={2} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", margin: "0 0 1px" }}>
+                                {connected ? deviceLabel : "Vehicle offline"}
+                              </div>
+                              <div style={{ fontSize: a11yPx(11), color: "#6E6E73" }}>
+                                {connected
+                                  ? `${lastSyncText} · ready to track`
+                                  : "Reconnect in Settings"}
+                              </div>
+                            </div>
+                            <span style={{
+                              flexShrink: 0,
+                              background: connected ? "#E8F3E8" : "#F2F2F4",
+                              color: connected ? "#3B8B3B" : "#6E6E73",
+                              fontSize: a11yPx(9), fontWeight: 500, letterSpacing: 0.3,
+                              padding: "3px 7px", borderRadius: 999, textTransform: "uppercase",
+                            }}>
+                              {connected ? "Online" : "Offline"}
+                            </span>
+                          </div>
+                        );
+                      })()}
                     </div>
-                    <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/take-payment?pupil=${pupilId}`); }}
-                      className="shrink-0 px-3.5 py-2 rounded-2xl text-[11px] font-bold text-white"
-                      style={{ background: paymentDue ? "#ef4444" : "#d97706" }}>
-                      Collect
-                    </button>
-                  </div>
+                  </>
                 )}
 
-                {/* Unread Messages */}
-                {hasUnread && (
-                  <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/messages`); }}
-                    className="flex items-center gap-3 p-3.5 rounded-2xl w-full text-left"
-                    style={{ background: "rgba(249,115,22,0.06)" }}>
-                    <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "rgba(249,115,22,0.12)" }}>
-                      <MessageCircle className="h-5 w-5 text-orange-500" />
-                    </div>
-                    <span className="text-[13px] font-medium flex-1" style={{ color: "hsl(var(--foreground))" }}>
-                      {pupilUnreadCount} unread from {firstName}
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                )}
-
-                {/* Admin notes about this pupil */}
-                {adminUnreadCount > 0 && (
-                  <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor-app/admin-chat`); }}
-                    className="flex items-center gap-3 p-3.5 rounded-2xl w-full text-left"
-                    style={{ background: "rgba(249,115,22,0.06)" }}>
-                    <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "rgba(249,115,22,0.12)" }}>
-                      <Mail className="h-5 w-5 text-orange-500" />
-                    </div>
-                    <span className="text-[13px] font-medium flex-1" style={{ color: "hsl(var(--foreground))" }}>
-                      {adminUnreadCount} admin note{adminUnreadCount !== 1 ? "s" : ""} about {firstName}
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex flex-col gap-2">
-                  {/* Manual Start Track (auto-start is on by default; this is the manual override) */}
+                {/* ── SECTION 3 — Start track CTA ── */}
+                {!trackerDismissed && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
                     }}
-                    className="w-full flex items-center justify-center gap-2 py-[14px] rounded-2xl font-semibold text-[15px] active:opacity-80"
-                    style={{ background: "#007AFF", color: "#fff", border: "none", letterSpacing: -0.24, transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)" }}
-                  >
-                    <Send className="h-4 w-4" strokeWidth={2.2} /> Start track manually
-                  </button>
-
-                  {/* Start Lesson */}
-                  {minutesUntil <= 15 && (
-                    <button onClick={(e) => {
-                      e.stopPropagation();
-                      supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
-                      navigate(`/instructor/tracking?lesson=${lessonId}`);
+                    className="active:opacity-90"
+                    style={{
+                      width: "100%", background: "#2B7BC8", color: "#FFFFFF",
+                      border: "none", borderRadius: 10, padding: 13,
+                      fontSize: a11yPx(14), fontWeight: 500, cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                      marginBottom: 18,
+                      transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
                     }}
-                    className="w-full flex items-center justify-center gap-2 py-[14px] rounded-2xl text-white font-bold text-[15px] transition-transform active:scale-[0.98]"
-                    style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>
-                      <Navigation className="h-4.5 w-4.5" /> Start Lesson
-                    </button>
-                  )}
+                  >
+                    <span style={{ width: 14, height: 14, borderRadius: "50%", background: "#FFFFFF", display: "inline-block" }} />
+                    Start track
+                  </button>
+                )}
 
-                  {/* End Lesson */}
-                  {minutesUntil <= 0 && (
-                    <button onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
-                      className="w-full flex items-center justify-center gap-2 py-[14px] rounded-2xl font-bold text-[15px] transition-transform active:scale-[0.98]"
-                      style={{ background: "rgba(0,0,0,0.06)", color: "hsl(var(--foreground))" }}>
-                      <CheckCircle2 className="h-4.5 w-4.5" /> End Lesson
+                {/* In-progress / start lesson buttons preserved (only render when relevant) */}
+                {minutesUntil <= 15 && (
+                  <button onClick={(e) => {
+                    e.stopPropagation();
+                    supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
+                    navigate(`/instructor/tracking?lesson=${lessonId}`);
+                  }}
+                  style={{
+                    width: "100%", marginBottom: 14,
+                    background: "linear-gradient(135deg, #22c55e, #16a34a)",
+                    color: "#FFFFFF", border: "none", borderRadius: 10, padding: 13,
+                    fontSize: a11yPx(14), fontWeight: 600, cursor: "pointer",
+                    display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  }}>
+                    <Navigation style={{ width: 16, height: 16 }} /> Start Lesson
+                  </button>
+                )}
+                {minutesUntil <= 0 && (
+                  <button onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
+                    style={{
+                      width: "100%", marginBottom: 14,
+                      background: "rgba(0,0,0,0.06)", color: "hsl(var(--foreground))",
+                      border: "none", borderRadius: 10, padding: 13,
+                      fontSize: a11yPx(14), fontWeight: 600, cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    }}>
+                    <CheckCircle2 style={{ width: 16, height: 16 }} /> End Lesson
+                  </button>
+                )}
+
+                {/* Lesson Plan / Payment / Unread preserved */}
+                {lastLessonPlan && (
+                  <div style={{
+                    display: "flex", alignItems: "flex-start", gap: 12,
+                    padding: 12, borderRadius: 10, background: "#F8FAFB",
+                    border: "0.5px solid #E5E5EA", marginBottom: 14,
+                  }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 8, background: "#F1ECFA",
+                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    }}>
+                      <BookOpen style={{ width: 16, height: 16, color: "#8A5BC9" }} strokeWidth={2} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontSize: a11yPx(10), fontWeight: 500, color: "#6E6E73",
+                        letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 2,
+                      }}>Lesson plan</div>
+                      <p style={{
+                        fontSize: a11yPx(12), color: "#000000", margin: 0,
+                        display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+                      }}>{lastLessonPlan}</p>
+                    </div>
+                  </div>
+                )}
+
+                {noBalance && (
+                  <div style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    padding: 12, borderRadius: 10, marginBottom: 14,
+                    background: paymentDue ? "rgba(239,68,68,0.08)" : "rgba(251,191,36,0.08)",
+                    border: `0.5px solid ${paymentDue ? "rgba(239,68,68,0.2)" : "rgba(251,191,36,0.2)"}`,
+                  }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 8,
+                      background: paymentDue ? "rgba(239,68,68,0.15)" : "rgba(251,191,36,0.15)",
+                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    }}>
+                      <Banknote style={{ width: 16, height: 16, color: paymentDue ? "#dc2626" : "#d97706" }} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", margin: 0 }}>
+                        {paymentDue ? `£${Math.abs(effectiveBalance).toFixed(0)} payment due` : "No balance remaining"}
+                      </p>
+                      <p style={{ fontSize: a11yPx(11), color: "#6E6E73", margin: "1px 0 0" }}>Collect before or after lesson</p>
+                    </div>
+                    <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/take-payment?pupil=${pupilId}`); }}
+                      style={{
+                        flexShrink: 0, padding: "8px 12px", borderRadius: 8,
+                        background: paymentDue ? "#ef4444" : "#d97706",
+                        color: "#FFFFFF", fontSize: a11yPx(11), fontWeight: 600,
+                        border: "none", cursor: "pointer",
+                      }}>
+                      Collect
                     </button>
-                  )}
+                  </div>
+                )}
+
+                {hasUnread && (
+                  <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/messages`); }}
+                    style={{
+                      width: "100%", marginBottom: 14,
+                      display: "flex", alignItems: "center", gap: 12,
+                      padding: 12, borderRadius: 10, background: "#F8FAFB",
+                      border: "0.5px solid #E5E5EA", textAlign: "left", cursor: "pointer",
+                    }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 8, background: "rgba(249,115,22,0.12)",
+                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    }}>
+                      <MessageCircle style={{ width: 16, height: 16, color: "#f97316" }} />
+                    </div>
+                    <span style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", flex: 1 }}>
+                      {pupilUnreadCount} unread from {firstName}
+                    </span>
+                    <ChevronRight style={{ width: 14, height: 14, color: "#6E6E73" }} />
+                  </button>
+                )}
+
+                {adminUnreadCount > 0 && (
+                  <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor-app/admin-chat`); }}
+                    style={{
+                      width: "100%", marginBottom: 14,
+                      display: "flex", alignItems: "center", gap: 12,
+                      padding: 12, borderRadius: 10, background: "#F8FAFB",
+                      border: "0.5px solid #E5E5EA", textAlign: "left", cursor: "pointer",
+                    }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 8, background: "rgba(249,115,22,0.12)",
+                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    }}>
+                      <Mail style={{ width: 16, height: 16, color: "#f97316" }} />
+                    </div>
+                    <span style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", flex: 1 }}>
+                      {adminUnreadCount} admin note{adminUnreadCount !== 1 ? "s" : ""} about {firstName}
+                    </span>
+                    <ChevronRight style={{ width: 14, height: 14, color: "#6E6E73" }} />
+                  </button>
+                )}
+
+                {/* ── SECTION 4 — Update status (3 buttons) ── */}
+                <div style={{
+                  fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73",
+                  letterSpacing: 0.3, textTransform: "uppercase", margin: "0 0 8px",
+                }}>
+                  Update status
                 </div>
-
-                {/* Extended actions */}
-                <div className="grid grid-cols-5 gap-2">
+                <div style={{
+                  display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                  gap: 6, marginBottom: 14,
+                }}>
+                  {/* Prep */}
                   <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/pupils/${pupilId}?tab=progress`); }}
-                    className="flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
-                    style={{ background: "rgba(124,58,237,0.08)" }}>
-                    <ClipboardList className="h-4 w-4" style={{ color: "#7c3aed" }} />
-                    <span className="text-[9px] font-bold text-muted-foreground">Prep</span>
+                    style={{
+                      background: "#F1ECFA", border: "none", borderRadius: 10,
+                      padding: "10px 4px", cursor: "pointer",
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                    }}>
+                    <ClipboardList style={{ width: 18, height: 18, color: "#8A5BC9" }} strokeWidth={1.8} />
+                    <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#8A5BC9" }}>Prep</span>
                   </button>
 
+                  {/* On the way */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
-                        style={{ background: "rgba(21,30,48,0.08)" }}
-                        onClick={(e) => e.stopPropagation()}>
-                        <Send className="h-4 w-4" style={{ color: "hsl(220, 52%, 16%)" }} />
-                        <span className="text-[9px] font-bold text-muted-foreground">On Way</span>
+                      <button onClick={(e) => e.stopPropagation()}
+                        style={{
+                          background: "#E6F1FB", border: "none", borderRadius: 10,
+                          padding: "10px 4px", cursor: "pointer",
+                          display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                        }}>
+                        <Send style={{ width: 18, height: 18, color: "#2B7BC8" }} strokeWidth={1.8} />
+                        <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#2B7BC8" }}>On the way</span>
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="center" className="w-52">
@@ -851,28 +1009,44 @@ export function NextUpTile({
                     </DropdownMenuContent>
                   </DropdownMenu>
 
+                  {/* Running late */}
                   <button onClick={(e) => { e.stopPropagation(); setLateSheetOpen(true); }}
-                    className="flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
-                    style={{ background: "rgba(251,191,36,0.08)" }}>
-                    <AlertTriangle className="h-4 w-4" style={{ color: "#d97706" }} />
-                    <span className="text-[9px] font-bold text-muted-foreground">Late</span>
-                  </button>
-
-                  <button onClick={(e) => { e.stopPropagation(); setRescheduleOpen(true); }}
-                    className="flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
-                    style={{ background: "rgba(0,0,0,0.04)" }}>
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-[9px] font-bold text-muted-foreground">Move</span>
-                  </button>
-
-                  <button onClick={(e) => { e.stopPropagation(); setCancelOpen(true); }}
-                    className="flex flex-col items-center gap-1 py-2.5 rounded-2xl transition-transform active:scale-95"
-                    style={{ background: "rgba(239,68,68,0.06)" }}>
-                    <X className="h-4 w-4" style={{ color: "#dc2626" }} />
-                    <span className="text-[9px] font-bold text-muted-foreground">Cancel</span>
+                    style={{
+                      background: "#FBF1DE", border: "none", borderRadius: 10,
+                      padding: "10px 4px", cursor: "pointer",
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                    }}>
+                    <Clock style={{ width: 18, height: 18, color: "#B8801F" }} strokeWidth={1.8} />
+                    <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#B8801F" }}>Running late</span>
                   </button>
                 </div>
 
+                {/* ── SECTION 5 — Reschedule + Cancel (lower hierarchy) ── */}
+                <div style={{
+                  borderTop: "0.5px solid #E5E5EA", paddingTop: 14,
+                  display: "flex", alignItems: "center", gap: 8,
+                }}>
+                  <button onClick={(e) => { e.stopPropagation(); setRescheduleOpen(true); }}
+                    style={{
+                      flex: 1, background: "transparent",
+                      border: "0.5px solid #E5E5EA", borderRadius: 10, padding: 10,
+                      cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    }}>
+                    <Calendar style={{ width: 14, height: 14, color: "#2B7BC8" }} strokeWidth={2} />
+                    <span style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#2B7BC8" }}>Reschedule</span>
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); setCancelOpen(true); }}
+                    style={{
+                      flex: 1, background: "transparent",
+                      border: "0.5px solid #E5E5EA", borderRadius: 10, padding: 10,
+                      cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    }}>
+                    <X style={{ width: 14, height: 14, color: "#C8434F" }} strokeWidth={2} />
+                    <span style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#C8434F" }}>Cancel lesson</span>
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
