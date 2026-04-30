@@ -93,9 +93,9 @@ export function InstructorTile({
       style={{
         gridColumn: fullWidth ? "1 / span 2" : undefined,
         background: "#FFFFFF",
-        border: "0.5px solid #EEF0F4",
-        boxShadow: "0 1px 2px rgba(20,30,60,0.04), 0 8px 20px rgba(20,30,60,0.08)",
-        borderRadius: 14,
+        border: "0.5px solid #E5E5EA",
+        boxShadow: "none",
+        borderRadius: 12,
         padding: 16,
         minHeight: 110,
         display: "flex",
@@ -172,11 +172,11 @@ export function InstructorTile({
       <div style={{ minWidth: 0, width: "100%" }}>
         <p
           style={{
-            fontSize: "0.9375em", /* 15px @ default */
+            fontSize: 16,
             fontWeight: 500,
             color: "#000000",
             letterSpacing: "-0.2px",
-            lineHeight: 1.25,
+            lineHeight: 1.2,
             margin: "0 0 3px",
           }}
         >
@@ -185,7 +185,7 @@ export function InstructorTile({
         {(subtitle || (showCount && countLabel)) && (
           <p
             style={{
-              fontSize: "0.75em", /* 12px @ default */
+              fontSize: 13,
               fontWeight: 400,
               color: "#6E6E73",
               lineHeight: 1.35,
