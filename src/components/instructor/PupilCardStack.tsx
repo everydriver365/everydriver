@@ -193,6 +193,12 @@ export function PupilCardStack({
   const [changingStatus, setChangingStatus] = useState(false);
   const currentStatus = (pupil.status || 'active') as PupilStatus;
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  // Sync with prop changes — allows route-driven expansion (e.g. tapping a
+  // schedule row that deep-links to /instructor/pupils/:pupilId) to open
+  // already-mounted cards.
+  useEffect(() => {
+    if (defaultExpanded) setIsExpanded(true);
+  }, [defaultExpanded]);
   const [latestFeedback, setLatestFeedback] = useState<LatestFeedback | null>(null);
   const [isAddingFeedback, setIsAddingFeedback] = useState(false);
   const [newFeedback, setNewFeedback] = useState("");
