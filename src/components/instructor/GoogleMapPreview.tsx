@@ -49,6 +49,20 @@ export function GoogleMapPreview({
   const [error, setError] = useState(false);
   const [open, setOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const previewMapRef = useRef<google.maps.Map | null>(null);
+
+  // Whenever the route changes, fit the preview map to the route bounds with
+  // padding so we never default to a national overview.
+  useEffect(() => {
+    if (!previewMapRef.current || !directions) return;
+    const bounds = directions.routes?.[0]?.bounds;
+    if (!bounds) return;
+    try {
+      previewMapRef.current.fitBounds(bounds, { top: 32, right: 32, bottom: 48, left: 32 });
+    } catch (e) {
+      console.warn("fitBounds failed:", e);
+    }
+  }, [directions]);
 
   useEffect(() => {
     let cancelled = false;
