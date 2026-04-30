@@ -652,21 +652,6 @@ export function InstructorMobileHome({
           <InsightTilesGrid instructorId={instructorId} gapCount={gapSuggestions?.length || 0} />
         </div>
 
-        <div className="px-4">
-          {/* Impact Alerts */}
-          <div className="mt-5">
-            <ImpactAlertCard instructorId={instructorId} />
-          </div>
-
-        </div>
-
-        {/* Insights Tiles */}
-        <div className="mt-5">
-          <div className="px-4">
-            <SectionHeader title="Insights" category="navigation" />
-          </div>
-          <InsightTilesGrid instructorId={instructorId} gapCount={gapSuggestions?.length || 0} />
-        </div>
 
         {/* Telematics */}
         <div className="mt-5">
