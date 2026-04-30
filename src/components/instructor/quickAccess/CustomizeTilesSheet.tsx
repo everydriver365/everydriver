@@ -220,27 +220,112 @@ export function CustomizeTilesSheet({
         </SheetHeader>
 
         <div style={{ padding: "12px 16px 24px" }}>
-          <SectionLabel>
-            Visible · {visible.length}
-          </SectionLabel>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 18 }}>
-            {visible.map((id, idx) => renderTileRow(id, idx, true))}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              background: "#FFFFFF",
+              border: "0.5px solid #E5E5EA",
+              borderRadius: 10,
+              padding: "8px 10px",
+              marginTop: 10,
+            }}
+          >
+            <Search size={14} strokeWidth={1.8} color="#6E6E73" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search tiles"
+              aria-label="Search tiles"
+              style={{
+                flex: 1,
+                border: 0,
+                outline: "none",
+                background: "transparent",
+                fontSize: 13,
+                color: "#000",
+              }}
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                aria-label="Clear search"
+                style={{
+                  background: "transparent",
+                  border: 0,
+                  color: "#6E6E73",
+                  display: "flex",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
+        </SheetHeader>
 
-          {hidden.length > 0 && (
-            <>
-              <SectionLabel>Hidden · {hidden.length}</SectionLabel>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 18 }}>
-                {hidden.map((id, idx) => renderTileRow(id, idx, false))}
-              </div>
-            </>
-          )}
+        <div style={{ padding: "12px 16px 24px" }}>
+          {(() => {
+            const visibleFiltered = visible
+              .map((id, idx) => ({ id, idx }))
+              .filter(({ id }) => matches(id));
+            const hiddenFiltered = hidden.filter((id) => matches(id));
+            const noResults =
+              query.trim().length > 0 &&
+              visibleFiltered.length === 0 &&
+              hiddenFiltered.length === 0;
+            return (
+              <>
+                <SectionLabel>Visible · {visibleFiltered.length}{query ? ` of ${visible.length}` : ""}</SectionLabel>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 18 }}>
+                  {visibleFiltered.map(({ id, idx }) => renderTileRow(id, idx, true))}
+                  {visibleFiltered.length === 0 && !noResults && (
+                    <div style={{ fontSize: 12, color: "#6E6E73", padding: "4px 2px" }}>
+                      No visible tiles match.
+                    </div>
+                  )}
+                </div>
+
+                {hiddenFiltered.length > 0 && (
+                  <>
+                    <SectionLabel>Hidden · {hiddenFiltered.length}{query ? ` of ${hidden.length}` : ""}</SectionLabel>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 18 }}>
+                      {hiddenFiltered.map((id, idx) => renderTileRow(id, idx, false))}
+                    </div>
+                  </>
+                )}
+
+                {noResults && (
+                  <div style={{ fontSize: 13, color: "#6E6E73", textAlign: "center", padding: "16px 0" }}>
+                    No tiles match “{query}”.
+                  </div>
+                )}
+              </>
+            );
+          })()}
 
           <button
             type="button"
             onClick={handleReset}
             disabled={saving}
             style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              background: "transparent",
+              border: 0,
+              color: "#6E6E73",
+              fontSize: 12,
+              cursor: "pointer",
+              padding: "8px 0",
+              margin: "0 auto",
+            }}
+          >
               display: "flex",
               alignItems: "center",
               gap: 6,
