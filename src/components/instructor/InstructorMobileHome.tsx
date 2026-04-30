@@ -52,7 +52,7 @@ import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { HomepageHero } from "@/components/instructor/HomepageHero";
 import { ActivityTilesGrid } from "@/components/instructor/ActivityTilesGrid";
 import { TelematicsTile } from "@/components/instructor/TelematicsTile";
-import { QuickAccessHybrid } from "@/components/instructor/quickAccess/QuickAccessHybrid";
+import { QuickAccessSwipeablePaged } from "@/components/instructor/quickAccess/QuickAccessSwipeablePaged";
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
 import { SectionHeader } from "@/components/instructor/SectionHeader";
@@ -631,9 +631,9 @@ export function InstructorMobileHome({
           </>
         )}
 
-        {/* Quick Access — search + Frequently used + All tools */}
+        {/* Quick Access — search + 6-per-page swipeable tiles */}
         <div className="mt-5 py-4">
-          <QuickAccessHybrid instructorId={instructorId} />
+          <QuickAccessSwipeablePaged instructorId={instructorId} />
         </div>
 
         <div className="px-4">
