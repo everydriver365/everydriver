@@ -427,25 +427,6 @@ export function NextUpTile({
               }}
             >
               <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={140} />
-
-              {/* Subtle recenter / open-in-maps button — top right */}
-              <button
-                onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
-                aria-label="Open in maps"
-                className="active:opacity-80"
-                style={{
-                  position: "absolute", top: 8, right: 8, zIndex: 10,
-                  width: 32, height: 32, borderRadius: 8,
-                  background: "rgba(255,255,255,0.92)",
-                  backdropFilter: "blur(20px) saturate(180%)",
-                  WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  border: "0.5px solid #E5E5EA", cursor: "pointer",
-                  transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-                }}
-              >
-                <Navigation style={{ width: 16, height: 16, color: "#6E6E73" }} strokeWidth={2} />
-              </button>
             </div>
           )}
 
