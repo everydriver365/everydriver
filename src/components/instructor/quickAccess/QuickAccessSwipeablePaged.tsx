@@ -330,6 +330,15 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
           )}
         </>
       )}
+
+      <CustomizeTilesSheet
+        open={editing}
+        onOpenChange={setEditing}
+        defaultOrder={alphabeticalIds}
+        currentOrder={orderedTiles.map((t) => t.id)}
+        onSave={setPins}
+        saving={isSaving}
+      />
     </div>
   );
 }
