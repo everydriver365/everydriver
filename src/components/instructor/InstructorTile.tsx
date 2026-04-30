@@ -46,6 +46,22 @@ export const TILE_CATEGORY_COLORS: Record<TileCategory, CategoryColor> = {
 
 // ---- Tile ------------------------------------------------------------------
 
+/**
+ * Calm category-tinted pill palette used when `badgeVariant` is supplied.
+ * Pill spec: bg = tint, colour = accent, radius 999, padding 3px 9px,
+ * font 11/500.
+ */
+export type BadgeVariant = "green" | "blue" | "amber" | "red" | "purple" | "grey";
+
+const BADGE_PILL_COLORS: Record<BadgeVariant, { bg: string; fg: string }> = {
+  green:  { bg: "#E8F3E8", fg: "#3B8B3B" },
+  blue:   { bg: "#E6F1FB", fg: "#2B7BC8" },
+  amber:  { bg: "#FBF1DE", fg: "#B8801F" },
+  red:    { bg: "#FBEAEC", fg: "#C8434F" },
+  purple: { bg: "#F1ECFA", fg: "#8A5BC9" },
+  grey:   { bg: "#F2F2F4", fg: "#6E6E73" },
+};
+
 export interface InstructorTileProps {
   icon: LucideIcon;
   title: string;
@@ -57,6 +73,11 @@ export interface InstructorTileProps {
   countLabel?: string;
   /** Category for accent + tint. Defaults to "settings". */
   category?: TileCategory;
+  /**
+   * When set, renders the count as a calm tinted pill in the top-right of
+   * the icon row instead of the saturated corner dot.
+   */
+  badgeVariant?: BadgeVariant;
   /** Subtle pulsing live-status dot on the icon. */
   liveDot?: boolean;
   /** Span the full grid width. */
@@ -73,6 +94,7 @@ export function InstructorTile({
   count,
   countLabel,
   category = "settings",
+  badgeVariant,
   liveDot,
   fullWidth,
   onPress,
@@ -83,6 +105,8 @@ export function InstructorTile({
 
   const showCount =
     count !== undefined && count !== null && count !== "" && count !== 0;
+
+  const pill = badgeVariant ? BADGE_PILL_COLORS[badgeVariant] : null;
 
   return (
     <button
