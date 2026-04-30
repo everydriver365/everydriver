@@ -416,6 +416,22 @@ export function NextUpTile({
             </div>
           </button>
 
+          {/* ── EXPANDED CONTENT (inside the same white card) ──
+              When collapsed, ONLY the header above is visible. Tapping the
+              chevron reveals everything below (map, travel bar, route,
+              actions, start-track, lesson details, conditions, status). */}
+          <AnimatePresence initial={false}>
+          {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="overflow-hidden"
+            style={{ marginLeft: -16, marginRight: -16, marginBottom: -16 }}
+          >
+          <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 14, borderTop: "0.5px solid #E5E5EA" }}>
+
           {/* ── MAP PREVIEW (only when within 4h) ── */}
           {isWithin4h && pickupPostcode && (
             <div
