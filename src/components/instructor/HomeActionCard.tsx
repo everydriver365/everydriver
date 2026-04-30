@@ -65,9 +65,9 @@ export function HomeActionCard({
         className="w-full text-left"
         style={{
           background: "#FFFFFF",
-          border: "none",
+          border: "0.5px solid #E5E5EA",
           borderRadius: 12,
-          padding: 14,
+          padding: "14px 16px",
           display: "flex",
           alignItems: "center",
           gap: 12,
@@ -96,17 +96,17 @@ export function HomeActionCard({
               color: RED,
               letterSpacing: "0.3px",
               textTransform: "uppercase",
-              margin: "0 0 1px",
+              margin: "0 0 2px",
             }}
           >
             {action.eyebrow}
           </div>
           <div
             style={{
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: 500,
               color: TXT_PRIMARY,
-              letterSpacing: "-0.1px",
+              letterSpacing: "-0.2px",
               margin: "0 0 1px",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -117,7 +117,7 @@ export function HomeActionCard({
           </div>
           <div
             style={{
-              fontSize: 11,
+              fontSize: 12,
               color: TXT_SECONDARY,
               margin: 0,
               overflow: "hidden",
@@ -129,7 +129,7 @@ export function HomeActionCard({
           </div>
         </div>
         <div style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>
-          <ChevronRight size={14} strokeWidth={1.6} color={TXT_SECONDARY} />
+          <ChevronRight size={14} strokeWidth={2} color="#000000" />
         </div>
       </button>
 
