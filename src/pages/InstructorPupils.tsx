@@ -207,7 +207,10 @@ export default function InstructorPupils() {
     }
   }, [location.search]);
 
-  // Auto-open pupil profile when navigated with /instructor/pupils/:pupilId or ?pupil=ID
+  // Auto-open pupil profile when navigated with /instructor/pupils/:pupilId or ?pupil=ID.
+  // Re-fires for repeated taps on the same pupilId by briefly clearing
+  // expandedPupilId so the prop transitions false → true and child cards
+  // re-expand even if the user previously collapsed them manually.
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const deepLinkPupilId = pupilId || params.get("pupil");
@@ -215,7 +218,10 @@ export default function InstructorPupils() {
     if (deepLinkPupilId && pupils.length > 0) {
       const pupil = pupils.find((p) => p.id === deepLinkPupilId);
       if (pupil) {
-        setExpandedPupilId(deepLinkPupilId);
+        setExpandedPupilId(null);
+        requestAnimationFrame(() => {
+          setExpandedPupilId(deepLinkPupilId);
+        });
 
         if (params.get("pupil")) {
           navigate(`/instructor/pupils/${deepLinkPupilId}`, { replace: true });
