@@ -117,6 +117,7 @@ import { HomeGreeting } from "@/components/instructor/HomeGreeting";
 import { useHomeActions } from "@/components/instructor/WarmHomeTiles";
 import {
   composeStatusSubtitle,
+  composeStatusSubtitleParts,
   getTimeOfDayGreeting,
 } from "@/lib/composeStatusSubtitle";
 import { useTomorrowLessons } from "@/hooks/useTomorrowLessons";
@@ -496,7 +497,7 @@ export function InstructorMobileHome({
           lastEndTimeToday = format(end, "HH:mm");
         }
 
-        const statusSubtitle = composeStatusSubtitle(
+        const statusParts = composeStatusSubtitleParts(
           {
             upcomingTodayCount,
             liveLessonEndsInMinutes,
@@ -509,7 +510,7 @@ export function InstructorMobileHome({
           { totalActions: homeActions.length }
         );
 
-        return <HomeGreeting greeting={greeting} statusSubtitle={statusSubtitle} />;
+        return <HomeGreeting greeting={greeting} statusParts={statusParts} />;
       })()}
 
       {/* Warm priority tiles: action needed, up next, week at a glance */}
