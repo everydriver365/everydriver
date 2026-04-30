@@ -609,6 +609,8 @@ export function NextUpTile({
               <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FFFFFF", display: "inline-block" }} />
               Start track
             </button>
+          )}
+
           {/* ── SECTION 1 — Lesson details ── */}
                 <div style={{
                   fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73",
