@@ -56,6 +56,7 @@ import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAcce
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
 import { SectionHeader } from "@/components/instructor/SectionHeader";
+import { EyebrowLabel } from "@/components/instructor/EyebrowLabel";
 
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
 import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
