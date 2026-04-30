@@ -563,11 +563,14 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
     const COMPACT_STROKE = 4;
     const overallPct = Math.round(((lessonsPct + earningsPct + hoursPct) / 3) * 100);
 
-    const lessonsLabel = `${lessons} of ${goal.lessons || 0} ${
+    const lessonsValue = `${lessons}`;
+    const lessonsRest = ` of ${goal.lessons || 0} ${
       (goal.lessons || 0) === 1 ? "lesson" : "lessons"
     }`;
-    const earningsLabel = `${currencyFormatter.format(earnings)} earned`;
-    const hoursLabel = `${hours}h taught`;
+    const earningsValue = currencyFormatter.format(earnings);
+    const earningsRest = " earned";
+    const hoursValue = `${hours}h`;
+    const hoursRest = " taught";
 
     return (
       <button
@@ -578,7 +581,7 @@ export function WeekAtAGlanceCard({ instructorId }: WeekAtAGlanceCardProps) {
         }}
         style={{
           background: "#FFFFFF",
-          border: "none",
+          border: `0.5px solid ${TXT.hairline}`,
           borderRadius: 12,
           padding: 14,
           width: "100%",
