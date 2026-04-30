@@ -631,9 +631,9 @@ export function InstructorMobileHome({
           </>
         )}
 
-        {/* Quick Access — search + Frequently used + All tools */}
+        {/* Quick Access — search + 6-per-page swipeable tiles */}
         <div className="mt-5 py-4">
-          <QuickAccessHybrid instructorId={instructorId} />
+          <QuickAccessSwipeablePaged instructorId={instructorId} />
         </div>
 
         <div className="px-4">
