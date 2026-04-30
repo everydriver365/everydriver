@@ -46,44 +46,62 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
     [],
   );
 
-  const meta: Record<string, TileMeta> = useMemo(() => {
-    const openTodos = (todos ?? []).filter((t: any) => !t.completed).length;
-    return {
-      messages: {
-        subtitle: unreadMessages > 0 ? `${unreadMessages} unread` : "All caught up",
-        badge: unreadMessages > 0 ? { label: String(unreadMessages), tone: "red" } : undefined,
-      },
-      pupils: {
-        subtitle: activePupils > 0 ? `${activePupils} active` : "Manage learners",
-        badge: activePupils > 0 ? { label: String(activePupils), tone: "green" } : undefined,
-      },
-      schedule: {
-        subtitle: todayRemaining > 0 ? `${todayRemaining} today` : "Done for today",
-        badge: todayRemaining > 0 ? { label: String(todayRemaining), tone: "blue" } : undefined,
-      },
-      "fill-gaps": {
-        subtitle: gapSuggestions?.length ? `${gapSuggestions.length} open slots` : "No gaps",
-        badge: gapSuggestions?.length ? { label: String(gapSuggestions.length), tone: "green" } : undefined,
-      },
-      "to-do": {
-        subtitle: openTodos > 0 ? `${openTodos} open` : "All done",
-        badge: openTodos > 0 ? { label: String(openTodos), tone: "amber" } : undefined,
-      },
-    };
-  }, [unreadMessages, activePupils, todayRemaining, gapSuggestions, todos]);
-
-  const isLocked = (tile: QuickAccessTile) => {
-    if (!tile.requiredFeature) return false;
-    return !(featureGates as any)?.[tile.requiredFeature];
+  const richMeta = (tileId: string): TileMeta => {
+    switch (tileId) {
+      case "schedule": {
+        const n = todayLessons?.length ?? 0;
+        return { subtitle: n === 0 ? "Done for today" : `${n} lesson${n === 1 ? "" : "s"} today` };
+      }
+      case "pupils": {
+        const n = activePupils ?? 0;
+        return {
+          subtitle: "Manage learners",
+          badge: n > 0 ? { label: String(n), tone: "green" } : undefined,
+        };
+      }
+      case "tests": {
+        const n = swapCount ?? 0;
+        return {
+          subtitle: n > 0 ? `${n} swap request${n === 1 ? "" : "s"}` : "No swap requests",
+          badge: n > 0 ? { label: String(n), tone: "blue" } : undefined,
+        };
+      }
+      case "earnings": {
+        const amt = Math.round(monthStats?.earnings ?? 0);
+        return { subtitle: `£${amt.toLocaleString("en-GB")} this month` };
+      }
+      case "messages": {
+        const n = unreadMessages ?? 0;
+        return {
+          subtitle: n > 0 ? `${n} unread` : "Chat",
+          badge: n > 0 ? { label: String(n), tone: "red" } : undefined,
+        };
+      }
+      case "vehicle-health": {
+        const n = vehicleFaultCount;
+        return {
+          subtitle: n > 0 ? `${n} fault${n === 1 ? "" : "s"} detected` : "All clear",
+          badge: n > 0 ? { label: String(n), tone: "red" } : undefined,
+        };
+      }
+      default: {
+        const t = QUICK_ACCESS_TILES_BY_ID[tileId];
+        return { subtitle: t?.subtitle };
+      }
+    }
   };
+
+  const isLocked = (tile: QuickAccessTile) =>
+    tile.requiredFeature ? !features.includes(tile.requiredFeature) : false;
 
   const onTilePress = (tile: QuickAccessTile) => {
     if (isLocked(tile)) {
-      navigate("/instructor/plans");
+      toast.info(`${tile.title} requires a plan upgrade`, {
+        action: { label: "View plans", onClick: () => navigate("/instructor/plans") },
+      });
       return;
     }
-    if (handleTileTap) handleTileTap(tile.id, tile.route);
-    else navigate(tile.route);
+    navigate(tile.route);
   };
 
   // Search filtering
