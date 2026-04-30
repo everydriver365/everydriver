@@ -1,37 +1,39 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { QUICK_ACCESS_TILES, QuickAccessTile } from "./tileRegistry";
+import { toast } from "sonner";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { QUICK_ACCESS_TILES, QUICK_ACCESS_TILES_BY_ID, QuickAccessTile, TileTone } from "./tileRegistry";
 import { RichTileCard, PersistentSearchBar } from "./QuickAccessTiles";
-import { useQuickTileActions } from "@/hooks/useQuickTileActions";
-import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
-import { useActivePupilsCount } from "@/hooks/useActivePupilsCount";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
-import { useGapSuggestions } from "@/hooks/useGapSuggestions";
-import { useInstructorTodos } from "@/hooks/useInstructorTodos";
-import { useMenuFeatureGates } from "@/hooks/useMenuFeatureGates";
+import { useActivePupilsCount } from "@/hooks/useActivePupilsCount";
+import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
+import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
+import { useVehicleHealth } from "@/hooks/useVehicleHealth";
+import { useInstructorPeriodStats } from "@/hooks/useInstructorPeriodStats";
 
 const TILES_PER_PAGE = 6;
 
 interface Props {
-  instructorId: string | null;
+  instructorId?: string;
 }
 
 interface TileMeta {
   subtitle?: string;
-  badge?: { label: string; tone?: "blue" | "green" | "amber" | "purple" | "red" | "grey" };
+  badge?: { label: string; tone?: TileTone };
 }
 
 export function QuickAccessSwipeablePaged({ instructorId }: Props) {
   const navigate = useNavigate();
-  const { handleTileTap } = useQuickTileActions();
-  const featureGates = useMenuFeatureGates();
+  const { subscription } = useInstructorAuth();
+  const features = subscription?.features || [];
 
-  // Data sources for subtitles / badges
-  const { count: unreadMessages } = useUnreadMessagesCount();
-  const { count: activePupils } = useActivePupilsCount(instructorId);
-  const { count: todayRemaining } = useTodayRemainingLessons(instructorId);
-  const { suggestions: gapSuggestions } = useGapSuggestions(instructorId);
-  const { todos } = useInstructorTodos(instructorId);
+  const { data: todayLessons } = useTodayRemainingLessons(instructorId);
+  const { data: activePupils } = useActivePupilsCount(instructorId);
+  const { data: swapCount } = useTestSwapNotifications(instructorId);
+  const { data: unreadMessages } = useUnreadMessagesCount(instructorId);
+  const { data: monthStats } = useInstructorPeriodStats(instructorId, "month");
+  const { devices: vehicleDevices } = useVehicleHealth();
+  const vehicleFaultCount = vehicleDevices.flatMap((d) => d.last_fault_codes || []).length;
 
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
