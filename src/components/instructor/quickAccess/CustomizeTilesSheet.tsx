@@ -326,18 +326,6 @@ export function CustomizeTilesSheet({
               margin: "0 auto",
             }}
           >
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              background: "transparent",
-              border: 0,
-              color: "#6E6E73",
-              fontSize: 12,
-              cursor: "pointer",
-              padding: "8px 0",
-              margin: "0 auto",
-            }}
-          >
             <RotateCcw size={13} /> Reset to default order
           </button>
         </div>
