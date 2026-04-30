@@ -370,7 +370,7 @@ export function InstructorMobileHome({
        <div
          className="min-h-screen flex flex-col overflow-x-hidden relative"
          style={{
-           background: "#F2F2F4",
+           background: "transparent",
          }}
         >
 
