@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+
 import { HomeSkeleton } from "@/components/ui/skeletons/HomeSkeleton";
-import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, CreditCard, Eye, EyeOff, Briefcase, Car, MapPin, CheckCircle2, AlertTriangle, Globe, CalendarCheck, MessageSquare, Plus, PoundSterling, LogOut } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -20,12 +20,7 @@ import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
 import { InstructorMobileHome } from "@/components/instructor/InstructorMobileHome";
 
-import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
-import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
-import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
 import { MileageTaxSavingsCard } from "@/components/instructor/dashboard/MileageTaxSavingsCard";
-import { ReferralCard } from "@/components/instructor/ReferralCard";
-import { NotesWidget } from "@/components/instructor/dashboard/NotesWidget";
 import { MessagesWidget } from "@/components/instructor/dashboard/MessagesWidget";
 import { RetentionAlertsTile } from "@/components/instructor/dashboard/RetentionAlertsTile";
 import { WhatsNewModal } from "@/components/shared/WhatsNewModal";
@@ -33,15 +28,13 @@ import { AICommandCenter } from "@/components/instructor/AICommandCenter";
 import { WelcomeTour } from "@/components/instructor/WelcomeTour";
 
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
-import edLogo from "@/assets/ed-black-white-logo.png";
 import { AvailabilityCalendar } from "@/components/instructor/AvailabilityCalendar";
-import { TodayAtAGlance } from "@/components/instructor/TodayAtAGlance";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useDemoMode } from "@/context/DemoModeContext";
 import { DemoModeBanner, DemoModeInviteCard } from "@/components/instructor/DemoModeBanner";
 import { demoStats } from "@/data/demoModeData";
 import { PDIBanner } from "@/components/instructor/PDIBanner";
-import { PlanBadge } from "@/components/instructor/PlanBadge";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
@@ -178,15 +171,12 @@ export default function InstructorPortal() {
     }
   };
 
-  const getInitials = (name: string) => {
-    return name.split(" ").map(n => n[0]).join("").toUpperCase();
-  };
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
+    if (hour < 12) return "Morning";
+    if (hour < 18) return "Afternoon";
+    return "Evening";
   };
 
   if (authLoading) {
@@ -241,10 +231,16 @@ export default function InstructorPortal() {
     );
   }
 
-  // Desktop Layout - Bold & Branded
+  // Desktop Layout — calm, system palette
+  
+  const lessonsTodayLabel =
+    todaysLessonCount > 0
+      ? `${todaysLessonCount} lesson${todaysLessonCount !== 1 ? "s" : ""} today`
+      : "No lessons today — perfect for catching up";
+
   return (
     <InstructorPortalLayout>
-      <div className="space-y-5">
+      <div className="space-y-3" style={{ backgroundColor: "hsl(var(--dsm-bg))" }}>
 
         {/* Demo Mode Banner */}
         <DemoModeBanner />
@@ -254,99 +250,104 @@ export default function InstructorPortal() {
           <PDIBanner instructorName={instructorData?.name?.split(' ')[0]} />
         )}
 
-        {/* Contextual Status Bar — replaces heavy hero */}
-        <div className="flex items-center justify-between bg-card border border-border rounded-xl px-5 py-3">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 border-2 border-primary/20">
-              <AvatarImage src={instructorData?.profile_image_url || undefined} />
-              <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
-                {instructorData?.name ? getInitials(instructorData.name) : "I"}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                {getGreeting()}, {instructorData?.name?.split(' ')[0] || 'there'}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {todaysLessonCount > 0
-                  ? `${todaysLessonCount} lesson${todaysLessonCount !== 1 ? 's' : ''} today`
-                  : 'No lessons today'}
-                {' · '}
-                {pupils.filter(p => (Number(p.account_balance) || 0) < 0).length > 0
-                  ? `${pupils.filter(p => (Number(p.account_balance) || 0) < 0).length} unpaid`
-                  : 'All paid up'}
-              </p>
-            </div>
+        {/* Calm header card — greeting + online pill */}
+        <div className="flex items-center justify-between bg-card rounded-2xl px-5 py-4">
+          <div>
+            <h1
+              className="text-foreground"
+              style={{ fontSize: 22, fontWeight: 500, letterSpacing: "-0.4px", margin: 0 }}
+            >
+              {getGreeting()}, {instructorData?.name?.split(' ')[0] || 'there'}
+            </h1>
+            <p className="text-muted-foreground" style={{ fontSize: 13, margin: "2px 0 0" }}>
+              {lessonsTodayLabel}
+            </p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className={cn(
-              "flex items-center gap-2 border rounded-lg px-3 py-1.5 text-sm",
-              authInstructor?.is_active
-                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                : "bg-muted border-border text-muted-foreground"
-            )}>
-              <Globe className="h-3.5 w-3.5" />
-              <span className="text-xs font-medium">{authInstructor?.is_active ? 'Online' : 'Offline'}</span>
+          <div className="flex items-center gap-2">
+            <div
+              className={cn(
+                "flex items-center gap-2 rounded-full px-3 py-1.5",
+                authInstructor?.is_active
+                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                  : "bg-muted text-muted-foreground"
+              )}
+              style={{ fontSize: 11, fontWeight: 500 }}
+            >
+              <span
+                className={cn(
+                  "inline-block rounded-full",
+                  authInstructor?.is_active ? "bg-emerald-500" : "bg-muted-foreground/40"
+                )}
+                style={{ width: 6, height: 6 }}
+              />
+              {authInstructor?.is_active ? "Online" : "Offline"}
               <Switch
                 checked={authInstructor?.is_active ?? false}
                 onCheckedChange={handleVisibilityToggle}
                 disabled={updatingVisibility}
-                className="data-[state=checked]:bg-emerald-500 scale-90"
+                className="data-[state=checked]:bg-emerald-500 scale-75 ml-1"
               />
             </div>
           </div>
         </div>
 
-        {/* Inline Stats Strip */}
-        <div className="grid grid-cols-4 gap-3">
-          <button
-            onClick={() => navigate("/instructor/schedule")}
-            className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-primary/30 hover:shadow-sm transition-all text-left group"
-          >
-            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <Calendar className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-foreground">{isDemoMode ? demoStats.todayLessonCount : todaysLessonCount}</p>
-              <p className="text-[11px] text-muted-foreground">Today's Lessons</p>
-            </div>
-          </button>
-          <button
-            onClick={() => navigate("/instructor/pay")}
-            className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-emerald-500/30 hover:shadow-sm transition-all text-left group"
-          >
-            <div className="h-9 w-9 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
-              <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-foreground">{isDemoMode ? `£${demoStats.monthEarnings.toLocaleString()}` : statsLoading ? '...' : `£${monthEarnings.toLocaleString()}`}</p>
-              <p className="text-[11px] text-muted-foreground">This Month</p>
-            </div>
-          </button>
-          <button
-            onClick={() => navigate("/instructor/pupils")}
-            className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-amber-500/30 hover:shadow-sm transition-all text-left group"
-          >
-            <div className="h-9 w-9 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
-              <Users className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-foreground">{isDemoMode ? demoStats.activePupils : pupils.length}</p>
-              <p className="text-[11px] text-muted-foreground">Active Pupils</p>
-            </div>
-          </button>
-          <button
-            onClick={() => navigate("/instructor/schedule")}
-            className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-purple-500/30 hover:shadow-sm transition-all text-left group"
-          >
-            <div className="h-9 w-9 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
-              <Clock className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-foreground">{isDemoMode ? demoStats.hoursThisWeek : statsLoading ? '...' : hoursThisWeek}</p>
-              <p className="text-[11px] text-muted-foreground">Hours This Week</p>
-            </div>
-          </button>
+        {/* KPI tiles — calm, no saturated icons */}
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            {
+              label: "Today",
+              value: isDemoMode ? demoStats.todayLessonCount : todaysLessonCount,
+              to: "/instructor/schedule",
+            },
+            {
+              label: "This month",
+              value: isDemoMode
+                ? `£${demoStats.monthEarnings.toLocaleString()}`
+                : statsLoading
+                  ? "—"
+                  : `£${monthEarnings.toLocaleString()}`,
+              to: "/instructor/pay",
+            },
+            {
+              label: "Active pupils",
+              value: isDemoMode ? demoStats.activePupils : pupils.length,
+              to: "/instructor/pupils",
+            },
+            {
+              label: "This week",
+              value: isDemoMode
+                ? `${demoStats.hoursThisWeek}h`
+                : statsLoading
+                  ? "—"
+                  : `${hoursThisWeek}h`,
+              to: "/instructor/schedule",
+            },
+          ].map((tile) => (
+            <button
+              key={tile.label}
+              onClick={() => navigate(tile.to)}
+              className="bg-card rounded-xl px-4 py-3 text-left hover:bg-card/80 transition-colors"
+            >
+              <p
+                style={{
+                  fontSize: 10,
+                  fontWeight: 500,
+                  color: "#6E6E73",
+                  letterSpacing: "0.3px",
+                  textTransform: "uppercase",
+                  margin: "0 0 4px",
+                }}
+              >
+                {tile.label}
+              </p>
+              <p
+                className="text-foreground tabular-nums"
+                style={{ fontSize: 20, fontWeight: 500, letterSpacing: "-0.3px", margin: 0 }}
+              >
+                {tile.value}
+              </p>
+            </button>
+          ))}
         </div>
 
         {/* Demo Mode Invite for empty accounts */}
@@ -354,65 +355,36 @@ export default function InstructorPortal() {
           <DemoModeInviteCard />
         )}
 
-        {/* Today at a Glance */}
-        <TodayAtAGlance instructorId={instructorId} />
-
         {/* Main 2-Column Dashboard Grid */}
-        <div className="grid gap-5 lg:grid-cols-3">
+        <div className="grid gap-3 lg:grid-cols-3">
           
           {/* Left Column - Schedule & Primary Content */}
-          <div className="lg:col-span-2 space-y-5">
-            <Card className="border-border">
+          <div className="lg:col-span-2 space-y-3">
+            <Card className="border-0 shadow-none rounded-2xl">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Today's Schedule</CardTitle>
+                  <CardTitle className="text-lg" style={{ fontWeight: 500, letterSpacing: "-0.3px" }}>
+                    Today's schedule
+                  </CardTitle>
                   <Link to="/instructor/schedule">
                     <Button variant="ghost" size="sm" className="text-muted-foreground">
-                      View Full Calendar <ChevronRight className="w-4 h-4 ml-1" />
+                      View calendar <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
                   </Link>
                 </div>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="today" className="w-full">
-                  <TabsList className="w-full grid grid-cols-4 mb-4">
+                  <TabsList className="w-full grid grid-cols-3 mb-4">
                     <TabsTrigger value="today">Today</TabsTrigger>
                     <TabsTrigger value="tomorrow">Tomorrow</TabsTrigger>
-                    <TabsTrigger value="pupils">Pupils</TabsTrigger>
-                    <TabsTrigger value="gaps">Fill Gaps</TabsTrigger>
+                    <TabsTrigger value="gaps">Fill gaps</TabsTrigger>
                   </TabsList>
                   <TabsContent value="today">
                     <TodayScheduleView instructorId={instructorId} />
                   </TabsContent>
                   <TabsContent value="tomorrow">
                     <TomorrowScheduleView instructorId={instructorId} />
-                  </TabsContent>
-                  <TabsContent value="pupils">
-                    <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                      {pupils.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-4">No pupils yet</p>
-                      ) : (
-                        pupils.map((pupil) => (
-                          <div key={pupil.id} className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
-                            <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-medium">
-                              {pupil.name.split(" ").map(n => n[0]).join("")}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="text-sm font-medium truncate">{pupil.name}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {pupil.lessons_completed || 0} lessons
-                              </div>
-                            </div>
-                            <div className="text-xs text-muted-foreground">{pupil.progress || 0}%</div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                    <Link to="/instructor/pupils">
-                      <Button variant="ghost" className="w-full mt-3 text-xs h-8">
-                        View All <ChevronRight className="h-3 w-3 ml-1" />
-                      </Button>
-                    </Link>
                   </TabsContent>
                   <TabsContent value="gaps">
                     <GapsFiller instructorId={instructorId} />
@@ -426,21 +398,23 @@ export default function InstructorPortal() {
             <JobOfferAlert instructorId={instructorId} />
           </div>
 
-          {/* Right Column - Messages, Payments, Alerts */}
-          <div className="space-y-4">
-            <MessagesWidget instructorId={instructorId} />
-            <Card className="border-border">
+          {/* Right Column — consolidated to 4 cards */}
+          <div className="space-y-3">
+            {/* This month */}
+            <Card className="border-0 shadow-none rounded-2xl">
               <CardContent className="p-4">
                 <PaymentSummaryWidget instructorId={instructorId} instructorName={instructorData?.name} />
               </CardContent>
             </Card>
-            <MileageTaxSavingsCard instructorId={instructorId} />
+
+            {/* Needs attention (was Retention Alerts) */}
             <RetentionAlertsTile instructorId={instructorId} />
-            <UnifiedAgendaTile instructorId={instructorId} />
-            <NotesWidget instructorId={instructorId} />
-            <PlanWidget />
-            <ReferralStatsWidget />
-            <ReferralCard />
+
+            {/* Tax savings */}
+            <MileageTaxSavingsCard instructorId={instructorId} />
+
+            {/* Messages */}
+            <MessagesWidget instructorId={instructorId} />
           </div>
         </div>
 
