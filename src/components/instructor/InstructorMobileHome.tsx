@@ -117,6 +117,7 @@ import { HomeGreeting } from "@/components/instructor/HomeGreeting";
 import { useHomeActions } from "@/components/instructor/WarmHomeTiles";
 import {
   composeStatusSubtitle,
+  composeStatusSubtitleParts,
   getTimeOfDayGreeting,
 } from "@/lib/composeStatusSubtitle";
 import { useTomorrowLessons } from "@/hooks/useTomorrowLessons";
