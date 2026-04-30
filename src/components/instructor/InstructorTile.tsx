@@ -46,6 +46,22 @@ export const TILE_CATEGORY_COLORS: Record<TileCategory, CategoryColor> = {
 
 // ---- Tile ------------------------------------------------------------------
 
+/**
+ * Calm category-tinted pill palette used when `badgeVariant` is supplied.
+ * Pill spec: bg = tint, colour = accent, radius 999, padding 3px 9px,
+ * font 11/500.
+ */
+export type BadgeVariant = "green" | "blue" | "amber" | "red" | "purple" | "grey";
+
+const BADGE_PILL_COLORS: Record<BadgeVariant, { bg: string; fg: string }> = {
+  green:  { bg: "#E8F3E8", fg: "#3B8B3B" },
+  blue:   { bg: "#E6F1FB", fg: "#2B7BC8" },
+  amber:  { bg: "#FBF1DE", fg: "#B8801F" },
+  red:    { bg: "#FBEAEC", fg: "#C8434F" },
+  purple: { bg: "#F1ECFA", fg: "#8A5BC9" },
+  grey:   { bg: "#F2F2F4", fg: "#6E6E73" },
+};
+
 export interface InstructorTileProps {
   icon: LucideIcon;
   title: string;
@@ -57,6 +73,11 @@ export interface InstructorTileProps {
   countLabel?: string;
   /** Category for accent + tint. Defaults to "settings". */
   category?: TileCategory;
+  /**
+   * When set, renders the count as a calm tinted pill in the top-right of
+   * the icon row instead of the saturated corner dot.
+   */
+  badgeVariant?: BadgeVariant;
   /** Subtle pulsing live-status dot on the icon. */
   liveDot?: boolean;
   /** Span the full grid width. */
@@ -73,6 +94,7 @@ export function InstructorTile({
   count,
   countLabel,
   category = "settings",
+  badgeVariant,
   liveDot,
   fullWidth,
   onPress,
@@ -83,6 +105,8 @@ export function InstructorTile({
 
   const showCount =
     count !== undefined && count !== null && count !== "" && count !== 0;
+
+  const pill = badgeVariant ? BADGE_PILL_COLORS[badgeVariant] : null;
 
   return (
     <button
@@ -110,58 +134,85 @@ export function InstructorTile({
     >
       <div
         style={{
-          position: "relative",
-          width: 40,
-          height: 40,
-          borderRadius: 10,
-          background: colors.tint,
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
+          justifyContent: "space-between",
+          width: "100%",
+          gap: 8,
         }}
       >
-        <Icon
-          size={22}
-          color={colors.accent}
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-        {liveDot && (
-          <span
-            className="instructor-tile-dot"
-            style={{
-              position: "absolute",
-              top: 4,
-              right: 4,
-              width: 7,
-              height: 7,
-              borderRadius: "50%",
-              background: colors.accent,
-              boxShadow: "0 0 0 2px #FFFFFF",
-            }}
+        <div
+          style={{
+            position: "relative",
+            width: 40,
+            height: 40,
+            borderRadius: 10,
+            background: colors.tint,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Icon
+            size={22}
+            color={colors.accent}
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
           />
-        )}
-        {showCount && (
+          {liveDot && (
+            <span
+              className="instructor-tile-dot"
+              style={{
+                position: "absolute",
+                top: 4,
+                right: 4,
+                width: 7,
+                height: 7,
+                borderRadius: "50%",
+                background: colors.accent,
+                boxShadow: "0 0 0 2px #FFFFFF",
+              }}
+            />
+          )}
+          {showCount && !pill && (
+            <span
+              style={{
+                position: "absolute",
+                top: -6,
+                right: -6,
+                minWidth: 20,
+                height: 20,
+                padding: "0 6px",
+                borderRadius: 10,
+                background: colors.accent,
+                color: "#FFFFFF",
+                fontSize: 11,
+                fontWeight: 600,
+                lineHeight: "20px",
+                textAlign: "center",
+                fontVariantNumeric: "tabular-nums",
+                boxShadow: "0 0 0 2px #FFFFFF",
+              }}
+            >
+              {count}
+            </span>
+          )}
+        </div>
+
+        {showCount && pill && (
           <span
             style={{
-              position: "absolute",
-              top: -6,
-              right: -6,
-              minWidth: 20,
-              height: 20,
-              padding: "0 6px",
-              borderRadius: 10,
-              background: colors.accent,
-              color: "#FFFFFF",
+              background: pill.bg,
+              color: pill.fg,
+              borderRadius: 999,
+              padding: "3px 9px",
               fontSize: 11,
-              fontWeight: 600,
-              lineHeight: "20px",
-              textAlign: "center",
+              fontWeight: 500,
               fontVariantNumeric: "tabular-nums",
-              boxShadow: "0 0 0 2px #FFFFFF",
+              lineHeight: 1.2,
             }}
           >
             {count}

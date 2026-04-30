@@ -56,6 +56,7 @@ import { SwipeableQuickAccess } from "@/components/instructor/SwipeableQuickAcce
 import { TodayLessonsList } from "@/components/instructor/TodayLessonsList";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
 import { SectionHeader } from "@/components/instructor/SectionHeader";
+import { EyebrowLabel } from "@/components/instructor/EyebrowLabel";
 
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
 import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
@@ -632,23 +633,19 @@ export function InstructorMobileHome({
           </>
         )}
 
-        {/* Quick Access — Swipeable Grid */}
+        {/* More tools — Swipeable Grid */}
         <div className="mt-5 py-4">
-          <div className="px-4">
-            <SectionHeader
-              title="Quick actions"
-              category="navigation"
-              rightSlot={
-                <button
-                  type="button"
-                  onClick={() => setQuickActionsSearchOpen((v) => !v)}
-                  aria-label="Search quick actions"
-                  className="h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground active:bg-muted"
-                >
-                  <Search className="h-4 w-4" />
-                </button>
-              }
-            />
+          <div className="px-4" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 0 }}>
+            <EyebrowLabel>More tools</EyebrowLabel>
+            <button
+              type="button"
+              onClick={() => setQuickActionsSearchOpen((v) => !v)}
+              aria-label="Search quick actions"
+              className="h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground active:bg-muted"
+              style={{ marginTop: -10 }}
+            >
+              <Search className="h-4 w-4" />
+            </button>
           </div>
           <SwipeableQuickAccess
             searchOpen={quickActionsSearchOpen}
@@ -659,6 +656,22 @@ export function InstructorMobileHome({
             }}
             onQueryChange={setQuickActionsQuery}
           />
+        </div>
+
+        <div className="px-4">
+          {/* Impact Alerts */}
+          <div className="mt-5">
+            <ImpactAlertCard instructorId={instructorId} />
+          </div>
+
+        </div>
+
+        {/* Insights Tiles */}
+        <div className="mt-5">
+          <div className="px-4">
+            <EyebrowLabel>Insights</EyebrowLabel>
+          </div>
+          <InsightTilesGrid instructorId={instructorId} gapCount={gapSuggestions?.length || 0} />
         </div>
 
         <div className="px-4">

@@ -39,10 +39,11 @@ export function InsightTilesGrid({ instructorId, gapCount = 0 }: InsightTilesGri
         category="schedule"
         onPress={() => navigate("/instructor/gaps")}
         count={fillGapsCount > 0 ? fillGapsCount : undefined}
+        badgeVariant="green"
         subtitle={
           fillGapsCount > 0
-            ? `${fillGapsCount} open ${fillGapsCount === 1 ? "slot" : "slots"}`
-            : "No open slots"
+            ? `${fillGapsCount} open ${fillGapsCount === 1 ? "slot" : "slots"} this week`
+            : "No open slots this week"
         }
       />
       <InstructorTile
@@ -51,31 +52,34 @@ export function InsightTilesGrid({ instructorId, gapCount = 0 }: InsightTilesGri
         category="location"
         onPress={() => navigate("/instructor/vehicle-health")}
         count={faultCount > 0 ? faultCount : undefined}
+        badgeVariant="red"
         subtitle={
           faultCount > 0
-            ? `${faultCount} ${faultCount === 1 ? "fault" : "faults"} detected`
+            ? `${faultCount} fault${faultCount === 1 ? "" : "s"} detected`
             : "All clear"
         }
         liveDot={faultCount > 0}
       />
       <InstructorTile
         icon={Sparkles}
-        title="Smart nudges"
+        title="Smart tips"
         category="insights"
         onPress={() => navigate("/instructor/nudges")}
         count={nudgesCount > 0 ? nudgesCount : undefined}
+        badgeVariant="purple"
         subtitle={
           nudgesCount > 0
-            ? `${nudgesCount} ${nudgesCount === 1 ? "tip" : "tips"} ready`
+            ? `${nudgesCount} suggestion${nudgesCount === 1 ? "" : "s"} ready`
             : "No suggestions"
         }
       />
       <InstructorTile
         icon={UserCheck}
-        title="Re-engage"
-        category="people"
+        title="Needs attention"
+        category="money"
         onPress={() => navigate("/instructor/dormant-pupils")}
         count={dormantCount > 0 ? dormantCount : undefined}
+        badgeVariant="amber"
         subtitle={
           dormantCount > 0
             ? `${dormantCount} dormant ${dormantCount === 1 ? "pupil" : "pupils"}`
