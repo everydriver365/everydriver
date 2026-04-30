@@ -192,13 +192,22 @@ export function GoogleMapPreview({
           center={coords}
           zoom={14}
           options={PREVIEW_OPTIONS}
+          onLoad={(map) => {
+            previewMapRef.current = map;
+            // If directions arrived before the map mounted, fit now.
+            const bounds = directions?.routes?.[0]?.bounds;
+            if (bounds) {
+              try { map.fitBounds(bounds, { top: 32, right: 32, bottom: 48, left: 32 }); } catch {}
+            }
+          }}
+          onUnmount={() => { previewMapRef.current = null; }}
         >
           {directions ? (
             <DirectionsRenderer
               directions={directions}
               options={{
                 suppressMarkers: true,
-                preserveViewport: false,
+                preserveViewport: true,
                 polylineOptions: routePolyline,
               }}
             />
