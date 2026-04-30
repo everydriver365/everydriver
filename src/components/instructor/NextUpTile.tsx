@@ -571,7 +571,7 @@ export function NextUpTile({
           </div>
 
           {/* ── START TRACK (only when within 4h; full-width primary CTA) ── */}
-          {isWithin4h && !trackerDismissed && (
+          {isImminent && !trackerDismissed && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
