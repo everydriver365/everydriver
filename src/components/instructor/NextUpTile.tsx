@@ -390,7 +390,7 @@ export function NextUpTile({
                 )}
               </div>
               <div style={{ fontSize: a11yPx(12), color: "#6E6E73", marginTop: 2 }}>
-                {formatHoursLong(durationMinutes)} lesson{pickupLocation ? ` · ${pickupLocation.split(",")[0]}` : ""}
+                {`Standard lesson · ${formatHoursLong(durationMinutes)} · ${formatTime24(startTime)}`}
               </div>
             </div>
 
