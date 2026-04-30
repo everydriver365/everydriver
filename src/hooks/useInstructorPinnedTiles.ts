@@ -46,17 +46,18 @@ export function useInstructorPinnedTiles(instructorId: string | undefined) {
   const setPins = useMutation({
     mutationFn: async (tileIds: string[]) => {
       if (!instructorId) return;
-      const trimmed = tileIds.slice(0, 6);
 
-      // Replace strategy: delete then insert. Small set (≤6) so one round trip each.
+      // Replace strategy: delete then insert. Stores the user's full
+      // ordered list of visible tiles (no hard cap — used by both the
+      // 6-pin Frequently used UI and the full-order swipeable customize).
       await supabase
         .from("instructor_pinned_tiles")
         .delete()
         .eq("instructor_id", instructorId);
 
-      if (trimmed.length === 0) return;
+      if (tileIds.length === 0) return;
 
-      const rows = trimmed.map((tile_id, idx) => ({
+      const rows = tileIds.map((tile_id, idx) => ({
         instructor_id: instructorId,
         tile_id,
         position: idx,
