@@ -594,16 +594,16 @@ export function NextUpTile({
               Start track
             </button>
           )}
-        </div>
 
-        {/* ── EXPANDED CONTENT ── */}
+        {/* ── EXPANDED CONTENT (inside the same white card) ── */}
         <AnimatePresence>
           {expanded && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="overflow-hidden">
-              <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column" }}>
-                <div className="h-px w-full" style={{ background: "#E5E5EA", marginBottom: 14 }} />
+              className="overflow-hidden"
+              style={{ marginLeft: -16, marginRight: -16, marginBottom: -16 }}>
+              <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", borderTop: "0.5px solid #E5E5EA" }}>
+
 
                 {/* ── SECTION 1 — Lesson details ── */}
                 <div style={{
