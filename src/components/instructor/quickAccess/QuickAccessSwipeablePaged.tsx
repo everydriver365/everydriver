@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { QUICK_ACCESS_TILES, QUICK_ACCESS_TILES_BY_ID, QuickAccessTile, TileTone } from "./tileRegistry";
 import { RichTileCard, PersistentSearchBar } from "./QuickAccessTiles";
+import { CustomizeTilesSheet } from "./CustomizeTilesSheet";
+import { useInstructorPinnedTiles } from "@/hooks/useInstructorPinnedTiles";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
 import { useActivePupilsCount } from "@/hooks/useActivePupilsCount";
 import { useTestSwapNotifications } from "@/hooks/useTestSwapNotifications";
@@ -37,14 +39,35 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
 
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
+  const [editing, setEditing] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const lastPageRef = useRef(0);
 
-  // Alphabetical tile order
-  const orderedTiles = useMemo(
-    () => [...QUICK_ACCESS_TILES].sort((a, b) => a.title.localeCompare(b.title)),
+  // Saved per-instructor order (also used by hybrid). When the row is
+  // empty/missing, the hook returns the 6 defaults — we ignore that and
+  // fall back to the full alphabetical list of all 33 tiles.
+  const { data: pinnedRows, isCustomised, setPins, isSaving } =
+    useInstructorPinnedTiles(instructorId);
+
+  const alphabeticalIds = useMemo(
+    () =>
+      [...QUICK_ACCESS_TILES]
+        .sort((a, b) => a.title.localeCompare(b.title))
+        .map((t) => t.id),
     [],
   );
+
+  // Effective ordered visible tiles. If the user has saved a custom order,
+  // use it verbatim (hidden tiles simply omitted). Otherwise alphabetical.
+  const orderedTiles = useMemo(() => {
+    const ids =
+      isCustomised && pinnedRows && pinnedRows.length > 0
+        ? pinnedRows.map((r) => r.tile_id)
+        : alphabeticalIds;
+    return ids
+      .map((id) => QUICK_ACCESS_TILES_BY_ID[id])
+      .filter(Boolean) as QuickAccessTile[];
+  }, [isCustomised, pinnedRows, alphabeticalIds]);
 
   const richMeta = (tileId: string): TileMeta => {
     switch (tileId) {
@@ -174,11 +197,33 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
 
   return (
     <div style={{ padding: "0 16px" }}>
-      <PersistentSearchBar
-        value={query}
-        onChange={setQuery}
-        totalToolCount={orderedTiles.length}
-      />
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <PersistentSearchBar
+            value={query}
+            onChange={setQuery}
+            totalToolCount={orderedTiles.length}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          aria-label="Customize tiles"
+          style={{
+            background: "transparent",
+            border: 0,
+            padding: "0 4px",
+            marginBottom: 16,
+            fontSize: 12,
+            fontWeight: 500,
+            color: "#2B7BC8",
+            cursor: "pointer",
+            flexShrink: 0,
+          }}
+        >
+          Customize
+        </button>
+      </div>
 
       {filtered ? (
         filtered.length === 0 ? (
@@ -285,6 +330,15 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
           )}
         </>
       )}
+
+      <CustomizeTilesSheet
+        open={editing}
+        onOpenChange={setEditing}
+        defaultOrder={alphabeticalIds}
+        currentOrder={orderedTiles.map((t) => t.id)}
+        onSave={setPins}
+        saving={isSaving}
+      />
     </div>
   );
 }
