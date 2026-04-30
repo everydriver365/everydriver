@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GoogleMap, MarkerF, DirectionsRenderer } from "@react-google-maps/api";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
@@ -49,6 +49,20 @@ export function GoogleMapPreview({
   const [error, setError] = useState(false);
   const [open, setOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const previewMapRef = useRef<google.maps.Map | null>(null);
+
+  // Whenever the route changes, fit the preview map to the route bounds with
+  // padding so we never default to a national overview.
+  useEffect(() => {
+    if (!previewMapRef.current || !directions) return;
+    const bounds = directions.routes?.[0]?.bounds;
+    if (!bounds) return;
+    try {
+      previewMapRef.current.fitBounds(bounds, { top: 32, right: 32, bottom: 48, left: 32 });
+    } catch (e) {
+      console.warn("fitBounds failed:", e);
+    }
+  }, [directions]);
 
   useEffect(() => {
     let cancelled = false;
@@ -178,13 +192,22 @@ export function GoogleMapPreview({
           center={coords}
           zoom={14}
           options={PREVIEW_OPTIONS}
+          onLoad={(map) => {
+            previewMapRef.current = map;
+            // If directions arrived before the map mounted, fit now.
+            const bounds = directions?.routes?.[0]?.bounds;
+            if (bounds) {
+              try { map.fitBounds(bounds, { top: 32, right: 32, bottom: 48, left: 32 }); } catch {}
+            }
+          }}
+          onUnmount={() => { previewMapRef.current = null; }}
         >
           {directions ? (
             <DirectionsRenderer
               directions={directions}
               options={{
                 suppressMarkers: true,
-                preserveViewport: false,
+                preserveViewport: true,
                 polylineOptions: routePolyline,
               }}
             />

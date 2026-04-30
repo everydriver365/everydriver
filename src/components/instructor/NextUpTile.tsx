@@ -194,13 +194,19 @@ export function NextUpTile({
     return format(date, "EEE d MMM");
   };
 
+  // Natural-language countdown — rounds to calm thresholds rather than a
+  // railway-departure-board style "2h 7m" precision.
   const getCountdownText = () => {
-    if (minutesUntil <= 0) return "Now";
-    if (minutesUntil < 60) return `${minutesUntil}m`;
-    const hours = Math.floor(minutesUntil / 60);
-    const mins = minutesUntil % 60;
-    if (hours >= 24) return `${Math.floor(hours / 24)}d`;
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+    if (minutesUntil <= 0) return "now";
+    if (minutesUntil >= 60 * 24) {
+      const days = Math.round(minutesUntil / (60 * 24));
+      return days === 1 ? "1 day" : `${days} days`;
+    }
+    if (minutesUntil >= 60) {
+      const hours = Math.round(minutesUntil / 60);
+      return hours === 1 ? "1 hour" : `${hours} hours`;
+    }
+    return `${Math.max(1, Math.round(minutesUntil))} min`;
   };
 
   const formatDuration = () => `${durationMinutes / 60}h`;
@@ -384,7 +390,7 @@ export function NextUpTile({
                 )}
               </div>
               <div style={{ fontSize: a11yPx(12), color: "#6E6E73", marginTop: 2 }}>
-                {formatHoursLong(durationMinutes)} lesson{pickupLocation ? ` · ${pickupLocation.split(",")[0]}` : ""}
+                {`Standard lesson · ${formatHoursLong(durationMinutes)} · ${formatTime24(startTime)}`}
               </div>
             </div>
 
@@ -394,7 +400,7 @@ export function NextUpTile({
                   {formatTime24(startTime)}
                 </div>
                 <div style={{ fontSize: a11yPx(11), fontWeight: 400, color: "#6E6E73", marginTop: 4, fontVariantNumeric: "tabular-nums" }}>
-                  {minutesUntil <= 0 ? "Now" : `in ${getCountdownText()}`}
+                  {minutesUntil <= 0 ? "Starting now" : `in ${getCountdownText()}`}
                 </div>
               </div>
               <ChevronDown
@@ -421,25 +427,6 @@ export function NextUpTile({
               }}
             >
               <GoogleMapPreview postcode={pickupPostcode} address={pickupLocation} height={140} />
-
-              {/* Subtle recenter / open-in-maps button — top right */}
-              <button
-                onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
-                aria-label="Open in maps"
-                className="active:opacity-80"
-                style={{
-                  position: "absolute", top: 8, right: 8, zIndex: 10,
-                  width: 32, height: 32, borderRadius: 8,
-                  background: "rgba(255,255,255,0.92)",
-                  backdropFilter: "blur(20px) saturate(180%)",
-                  WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  border: "0.5px solid #E5E5EA", cursor: "pointer",
-                  transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-                }}
-              >
-                <Navigation style={{ width: 16, height: 16, color: "#6E6E73" }} strokeWidth={2} />
-              </button>
             </div>
           )}
 
@@ -557,7 +544,7 @@ export function NextUpTile({
                 { icon: Navigation, label: "Navigate", accent: "#2B7BC8", tint: "#E6F1FB", action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
                 { icon: Phone, label: "Call", accent: "#3B8B3B", tint: "#E8F3E8", action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
                 { icon: MessageSquare, label: "Message", accent: "#B8801F", tint: "#FBF1DE", action: (e: React.MouseEvent) => { e.stopPropagation(); handleMessage(); } },
-                { icon: MapPin, label: "I\u2019m here", accent: "#C8434F", tint: "#FBEAEC", action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
+                { icon: MapPin, label: "Arrived", accent: "#C8434F", tint: "#FBEAEC", action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
               ].map((btn) => (
                 <button
                   key={btn.label}
@@ -584,7 +571,7 @@ export function NextUpTile({
           </div>
 
           {/* ── START TRACK (only when within 4h; full-width primary CTA) ── */}
-          {isWithin4h && !trackerDismissed && (
+          {isImminent && !trackerDismissed && (
             <button
               onClick={(e) => {
                 e.stopPropagation();

@@ -42,12 +42,16 @@ function formatDateLabel(dateStr: string) {
 }
 
 function getCountdownText(minutesUntil: number) {
-  if (minutesUntil <= 0) return "Now";
-  if (minutesUntil < 60) return `${minutesUntil}m`;
-  const hours = Math.floor(minutesUntil / 60);
-  const mins = minutesUntil % 60;
-  if (hours >= 24) return `${Math.floor(hours / 24)}d`;
-  return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+  if (minutesUntil <= 0) return "now";
+  if (minutesUntil >= 60 * 24) {
+    const days = Math.round(minutesUntil / (60 * 24));
+    return days === 1 ? "1 day" : `${days} days`;
+  }
+  if (minutesUntil >= 60) {
+    const hours = Math.round(minutesUntil / 60);
+    return hours === 1 ? "1 hour" : `${hours} hours`;
+  }
+  return `${Math.max(1, Math.round(minutesUntil))} min`;
 }
 
 /**
@@ -85,7 +89,7 @@ export function SimpleNextLessonCard({
             {toSentenceName(pupilName)}
           </div>
           <div style={{ fontSize: a11yPx(12), color: "#6E6E73", marginTop: 2 }}>
-            {formatHoursLong(durationMinutes)} lesson{pickupLocation ? ` · ${pickupLocation.split(",")[0]}` : ""}
+            {`Standard lesson · ${formatHoursLong(durationMinutes)} · ${formatTime24(startTime)}`}
           </div>
         </div>
 
