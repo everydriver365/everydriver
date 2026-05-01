@@ -28,6 +28,7 @@ import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { LessonCheckInBadge } from "./LessonCheckInBadge";
 import { haptics } from "@/lib/haptics";
+import { toast } from "sonner";
 
 import {
   DropdownMenu,
@@ -790,7 +791,13 @@ export function NextUpTile({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
+                    supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(({ error }) => {
+                      if (error) {
+                        toast.error("Couldn't start lesson", { description: error.message });
+                      } else {
+                        toast.success("Lesson started", { description: pupilName ? `${pupilName} • good luck!` : "Good luck!" });
+                      }
+                    });
                     navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
                   }}
                   className="active:opacity-90"
