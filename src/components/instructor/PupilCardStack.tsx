@@ -731,31 +731,31 @@ export function PupilCardStack({
         {/* Collapsed Card — premium tile system */}
         <motion.button
           onClick={handleCardClick}
-          whileTap={{ scale: 0.98, opacity: 0.92 }}
+          whileTap={{ scale: 0.98, opacity: 0.94 }}
           transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
           className="w-full text-left flex items-center"
-          style={{ padding: 14, gap: 12, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif', background: "transparent", border: "none" }}
+          style={{ padding: 16, gap: 14, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif', background: "transparent", border: "none" }}
         >
-          {/* Deterministic avatar */}
-          <div className="relative shrink-0" style={{ width: 44, height: 44 }}>
+          {/* Deterministic avatar — slightly larger */}
+          <div className="relative shrink-0" style={{ width: 48, height: 48 }}>
             {pupil.profile_image_url ? (
               <img
                 src={pupil.profile_image_url}
                 alt={titleCaseName(pupil.name)}
-                style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", display: "block" }}
+                style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", display: "block" }}
               />
             ) : (
               <div
                 style={{
-                  width: 44,
-                  height: 44,
+                  width: 48,
+                  height: 48,
                   borderRadius: "50%",
                   background: avatarBg,
                   color: "#FFFFFF",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 15,
+                  fontSize: 16,
                   fontWeight: 500,
                   letterSpacing: "0.02em",
                 }}
@@ -783,97 +783,118 @@ export function PupilCardStack({
           </div>
 
           {/* Name + meta */}
-          <div className="flex-1 min-w-0" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <div className="flex items-center" style={{ gap: 6, minWidth: 0 }}>
-              <h3
-                className="truncate"
-                style={{
-                  fontSize: 15,
-                  fontWeight: 500,
-                  color: "#000000",
-                  letterSpacing: "-0.2px",
-                  lineHeight: 1.25,
-                  margin: 0,
-                  minWidth: 0,
-                }}
-              >
-                {titleCaseName(pupil.name)}
-              </h3>
-              {isTracking && (
-                <span
+          {(() => {
+            // --- Lesson timing classification (display only) ---
+            let lessonPill: { label: string; bg: string; fg: string } | null = null;
+            let lessonLine: string | null = null;
+            let rightLabel: string | null = null;
+            if (lessonSummary?.date) {
+              const d = parseISO(lessonSummary.date);
+              const today = new Date(); today.setHours(0,0,0,0);
+              const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+              const dayStart = new Date(d); dayStart.setHours(0,0,0,0);
+              const isToday = dayStart.getTime() === today.getTime();
+              const isTomorrow = dayStart.getTime() === tomorrow.getTime();
+              if (lessonSummary.type === "next") {
+                lessonLine = `Next: ${format(d, "d MMM")}`;
+                if (isToday) {
+                  lessonPill = { label: "Today", bg: "#E8F1FB", fg: "#2B7BC8" };
+                  rightLabel = format(d, "HH:mm");
+                } else if (isTomorrow) {
+                  lessonPill = { label: "Tomorrow", bg: "#EEF4FB", fg: "#2B7BC8" };
+                } else {
+                  lessonPill = { label: "Next", bg: "#F2F2F4", fg: "#3C3C43" };
+                }
+              } else {
+                lessonLine = `Last: ${format(d, "d MMM")}`;
+              }
+            }
+            const overduePill = isOverdue ? { label: "Overdue", bg: "#FBEAEC", fg: "#C8434F" } : null;
+
+            const totalLessons = pupil.lessons_completed || 0;
+            const metaSecondary = `${totalLessons} ${totalLessons === 1 ? "lesson" : "lessons"} · ${totalHours}h`;
+
+            return (
+              <div className="flex-1 min-w-0" style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                {/* Name row */}
+                <div className="flex items-center" style={{ gap: 6, minWidth: 0 }}>
+                  <h3
+                    className="truncate"
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 600,
+                      color: "#000000",
+                      letterSpacing: "-0.2px",
+                      lineHeight: 1.25,
+                      margin: 0,
+                      minWidth: 0,
+                    }}
+                  >
+                    {titleCaseName(pupil.name)}
+                    {nameSuffix && (
+                      <span style={{ color: "#8E8E93", fontWeight: 400, marginLeft: 6 }}>
+                        – {nameSuffix}
+                      </span>
+                    )}
+                  </h3>
+                  {/* Subtle pill: Overdue > Today > Tomorrow > Next */}
+                  {(overduePill || lessonPill) && (
+                    <span
+                      style={{
+                        background: (overduePill || lessonPill)!.bg,
+                        color: (overduePill || lessonPill)!.fg,
+                        fontSize: 10.5,
+                        fontWeight: 600,
+                        letterSpacing: "0.2px",
+                        padding: "2px 7px",
+                        borderRadius: 999,
+                        lineHeight: 1.3,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {(overduePill || lessonPill)!.label}
+                    </span>
+                  )}
+                </div>
+
+                {/* Primary meta: next/last lesson */}
+                {lessonLine && (
+                  <div
+                    style={{
+                      fontSize: 13,
+                      color: "#3C3C43",
+                      lineHeight: 1.3,
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
+                    {lessonLine}
+                  </div>
+                )}
+
+                {/* Secondary meta: lessons + hours */}
+                <div
                   style={{
-                    background: "#FBEAEC",
-                    color: "#C8434F",
-                    fontSize: 10,
-                    fontWeight: 500,
-                    letterSpacing: "0.4px",
-                    padding: "2px 6px",
-                    borderRadius: 4,
-                    textTransform: "uppercase",
-                    lineHeight: 1.2,
-                    flexShrink: 0,
+                    fontSize: 12,
+                    color: "#8E8E93",
+                    lineHeight: 1.3,
+                    fontVariantNumeric: "tabular-nums",
                   }}
                 >
-                  LIVE
-                </span>
-              )}
-            </div>
+                  {metaSecondary}
+                </div>
+              </div>
+            );
+          })()}
 
-            {/* Meta row: lessons · hours · next/last lesson */}
-            <div
-              className="flex items-center"
-              style={{
-                gap: 10,
-                fontSize: 12,
-                color: "#6E6E73",
-                lineHeight: 1.35,
-                flexWrap: "wrap",
-                rowGap: 2,
-              }}
-            >
-              <span style={{ fontVariantNumeric: "tabular-nums" }}>
-                {pupil.lessons_completed || 0} {pupil.lessons_completed === 1 ? "lesson" : "lessons"}
-              </span>
-              <span style={{ width: 2, height: 2, borderRadius: "50%", background: "#C7C7CC" }} aria-hidden="true" />
-              <span style={{ fontVariantNumeric: "tabular-nums" }}>{totalHours}h</span>
-              {lessonSummary && (
-                <>
-                  <span style={{ width: 2, height: 2, borderRadius: "50%", background: "#C7C7CC" }} aria-hidden="true" />
-                  <span className="flex items-center" style={{ gap: 4 }}>
-                    <Calendar size={11} strokeWidth={1.6} aria-hidden="true" />
-                    {lessonSummary.type === "next" ? "Next" : "Last"}: {format(parseISO(lessonSummary.date), "d MMM")}
-                  </span>
-                </>
-              )}
-            </div>
-
-            {pupil.phone && (
-              <p
-                className="flex items-center truncate"
-                style={{
-                  fontSize: 12,
-                  fontWeight: 400,
-                  color: "#8E8E93",
-                  gap: 5,
-                  margin: 0,
-                  lineHeight: 1.3,
-                }}
-              >
-                <Phone size={11} strokeWidth={1.6} aria-hidden="true" />
-                {formatPhoneNumber(pupil.phone)}
-              </p>
-            )}
-          </div>
-
-          {/* Right column: balance + chevron */}
-          <div className="shrink-0 flex items-center" style={{ gap: 8 }}>
-            {(hasDebt || hasCredit) && (
+          {/* Right column: ONE element only — balance OR next time */}
+          <div className="shrink-0 flex items-center" style={{ gap: 6 }}>
+            {(hasDebt || hasCredit) ? (
               <span
                 style={{
-                  fontSize: 12,
-                  fontWeight: 500,
-                  padding: "3px 8px",
-                  borderRadius: 6,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  padding: "4px 9px",
+                  borderRadius: 999,
                   fontVariantNumeric: "tabular-nums",
                   background: hasDebt ? "#FBEAEC" : "#E8F3E8",
                   color: hasDebt ? "#C8434F" : "#3B8B3B",
@@ -881,8 +902,8 @@ export function PupilCardStack({
               >
                 {hasDebt ? "−" : "+"}£{Math.abs(balance).toFixed(0)}
               </span>
-            )}
-            <ChevronRight size={14} strokeWidth={1.6} color="#C7C7CC" />
+            ) : null}
+            <ChevronRight size={16} strokeWidth={1.6} color="#C7C7CC" />
           </div>
         </motion.button>
 
