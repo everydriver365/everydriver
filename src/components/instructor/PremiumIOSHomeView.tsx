@@ -92,6 +92,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
   const { data: todayOverview } = useTodayOverview(instructorId);
   const { data: todayLessons } = useTodayRemainingLessons(instructorId);
+  const { data: tomorrowLessons } = useTomorrowLessons(instructorId);
   const { data: gapSuggestions } = useRealGapSlots(instructorId);
   const { data: comparison } = useLastWeekComparison(instructorId);
   const { messageCount, pendingJobsCount } = useCombinedNotificationCount(instructorId);
@@ -103,11 +104,8 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
   /* ---------------- Subtitle counts -------------------------------------- */
   const lessonsToday = todayOverview?.lessonCount ?? 0;
+  const expectedEarnings = todayOverview?.expectedEarnings ?? 0;
   const waitingCount = homeActions.length;
-  const subParts: string[] = [];
-  subParts.push(`${lessonsToday} lesson${lessonsToday === 1 ? "" : "s"} today`);
-  if (waitingCount > 0)
-    subParts.push(`${waitingCount} thing${waitingCount === 1 ? "" : "s"} waiting`);
 
   /* ---------------- Needs attention (max 3 rows) ------------------------- */
   const totalGapSlots =
