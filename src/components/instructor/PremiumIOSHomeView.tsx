@@ -578,30 +578,55 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
           </button>
         </div>
         <div className="grid grid-cols-4 gap-2">
-          <QuickActionPill
-            icon={<CalendarPlus className="size-[20px]" />}
-            label="Add lesson"
-            tone="blue"
-            onClick={() => navigate("/instructor/schedule?action=add")}
-          />
-          <QuickActionPill
-            icon={<PoundSterling className="size-[20px]" />}
-            label="Payment"
-            tone="green"
-            onClick={onPaymentClick}
-          />
-          <QuickActionPill
-            icon={<MessageCircle className="size-[20px]" />}
-            label="Message"
-            tone="indigo"
-            onClick={() => navigate("/instructor/messages")}
-          />
-          <QuickActionPill
-            icon={<Clock className="size-[20px]" />}
-            label="Fill gap"
-            tone="amber"
-            onClick={() => navigate("/instructor/gaps")}
-          />
+          {(() => {
+            const actions = {
+              add: (
+                <QuickActionPill
+                  key="add"
+                  icon={<CalendarPlus className="size-[20px]" />}
+                  label="Add lesson"
+                  tone="blue"
+                  onClick={() => navigate("/instructor/schedule?action=add")}
+                />
+              ),
+              payment: (
+                <QuickActionPill
+                  key="payment"
+                  icon={<PoundSterling className="size-[20px]" />}
+                  label="Payment"
+                  tone="green"
+                  onClick={onPaymentClick}
+                />
+              ),
+              message: (
+                <QuickActionPill
+                  key="message"
+                  icon={<MessageCircle className="size-[20px]" />}
+                  label="Message"
+                  tone="indigo"
+                  onClick={() => navigate("/instructor/messages")}
+                />
+              ),
+              gap: (
+                <QuickActionPill
+                  key="gap"
+                  icon={<Clock className="size-[20px]" />}
+                  label="Fill gap"
+                  tone="amber"
+                  onClick={() => navigate("/instructor/gaps")}
+                />
+              ),
+            };
+            const hour = new Date().getHours();
+            // Morning: navigate-ish (add) + message first
+            // Midday: fill gap + message first
+            // Evening: payment first
+            let order: Array<keyof typeof actions>;
+            if (hour < 11) order = ["add", "message", "gap", "payment"];
+            else if (hour < 16) order = ["gap", "message", "add", "payment"];
+            else order = ["payment", "message", "add", "gap"];
+            return order.map((k) => actions[k]);
+          })()}
         </div>
       </section>
 
