@@ -455,6 +455,12 @@ export function InstructorMobileHome({
           instructorId={instructorId}
           instructor={instructor}
         />
+      ) : layoutStyle === "premium-ios" ? (
+        <PremiumIOSHomeView
+          instructorId={instructorId}
+          instructor={instructor}
+          onPaymentClick={onPaymentClick}
+        />
       ) : (
       <>
       {/* 1. Time-aware greeting + status-aware subtitle */}
