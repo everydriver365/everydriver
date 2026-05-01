@@ -536,35 +536,38 @@ export function NextUpTile({
           >
           <div style={{ padding: "20px 16px 20px", display: "flex", flexDirection: "column", gap: 24, borderTop: "0.5px solid #E5E5EA", background: "#F2F2F7" }}>
 
-          {/* ── HERO: time as the headline ── */}
-          <div>
+          {/* ── HERO + PRIMARY ACTIONS card (elevated) ── */}
+          <div style={{
+            background: "#FFFFFF", borderRadius: 18, padding: 18,
+            boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+            display: "flex", flexDirection: "column", gap: 16,
+          }}>
             {/* Pupil + lesson type */}
-            <div style={{ fontSize: a11yPx(15), fontWeight: 600, color: "#000000", letterSpacing: -0.2, lineHeight: 1.2 }}>
-              {toSentenceName(pupilName)}
-            </div>
-            <div style={{ fontSize: a11yPx(12), color: "#8A8A8E", marginTop: 2 }}>
-              {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
+            <div>
+              <div style={{ fontSize: a11yPx(15), fontWeight: 600, color: "#000000", letterSpacing: -0.2, lineHeight: 1.2 }}>
+                {toSentenceName(pupilName)}
+              </div>
+              <div style={{ fontSize: a11yPx(12), color: "#8A8A8E", marginTop: 2 }}>
+                {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
+              </div>
             </div>
 
             {/* Time hero */}
-            <div style={{
-              marginTop: 14,
-              fontSize: a11yPx(48),
-              fontWeight: 700,
-              letterSpacing: -1.4,
-              color: "#000000",
-              lineHeight: 1,
-              fontVariantNumeric: "tabular-nums",
-            }}>
-              {formatTime24(startTime)}
-            </div>
-            <div style={{ fontSize: a11yPx(13), color: "#8A8A8E", marginTop: 6 }}>
-              {getDateLabel()} · starts in {getCountdownText()}
+            <div>
+              <div style={{
+                fontSize: a11yPx(48), fontWeight: 700, letterSpacing: -1.4,
+                color: "#000000", lineHeight: 1, fontVariantNumeric: "tabular-nums",
+              }}>
+                {formatTime24(startTime)}
+              </div>
+              <div style={{ fontSize: a11yPx(13), color: "#8A8A8E", marginTop: 6 }}>
+                {getDateLabel()} · starts in {getCountdownText()}
+              </div>
             </div>
 
             {/* Single-line location */}
             {(pickupLocation || pickupPostcode) && (
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 14, color: "#3C3C43", minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#3C3C43", minWidth: 0 }}>
                 <MapPin style={{ width: 13, height: 13, flexShrink: 0, color: "#8A8A8E" }} strokeWidth={2} />
                 <span style={{ fontSize: a11yPx(13), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {formattedPickupAddress || pickupPostcode || pickupLocation}
@@ -573,7 +576,7 @@ export function NextUpTile({
             )}
 
             {/* Starts-in pill */}
-            <div style={{ marginTop: 12 }}>
+            <div>
               <span style={{
                 display: "inline-flex", alignItems: "center", gap: 5,
                 padding: "5px 11px", borderRadius: 999,
@@ -586,52 +589,52 @@ export function NextUpTile({
                 {minutesUntil <= 0 ? "Starting now" : `Starts in ${getCountdownText()}`}
               </span>
             </div>
-          </div>
 
-          {/* ── PRIMARY ACTIONS: Navigate (primary) + Call / Message (icon) ── */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button
-              onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
-              className="active:opacity-90"
-              style={{
-                flex: 1, height: 48, borderRadius: 14,
-                background: "#007AFF", color: "#FFFFFF",
-                border: "none", cursor: "pointer",
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                fontSize: a11yPx(15), fontWeight: 600, letterSpacing: -0.1,
-                transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-              }}
-              aria-label="Navigate"
-            >
-              <Navigation style={{ width: 17, height: 17 }} strokeWidth={2.2} />
-              Navigate
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); handleCall(); }}
-              className="active:opacity-80"
-              style={{
-                width: 48, height: 48, borderRadius: 14,
-                background: "rgba(120,120,128,0.10)", color: "#1C1C1E",
-                border: "none", cursor: "pointer",
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-              }}
-              aria-label="Call pupil"
-            >
-              <Phone style={{ width: 18, height: 18 }} strokeWidth={2.1} />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); handleMessage(); }}
-              className="active:opacity-80"
-              style={{
-                width: 48, height: 48, borderRadius: 14,
-                background: "rgba(120,120,128,0.10)", color: "#1C1C1E",
-                border: "none", cursor: "pointer",
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-              }}
-              aria-label="Message pupil"
-            >
-              <MessageSquare style={{ width: 18, height: 18 }} strokeWidth={2.1} />
-            </button>
+            {/* Primary actions: Navigate + Call/Message — integrated, not floating */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
+                className="active:opacity-90"
+                style={{
+                  flex: 1, height: 48, borderRadius: 14,
+                  background: "#007AFF", color: "#FFFFFF",
+                  border: "none", cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  fontSize: a11yPx(15), fontWeight: 600, letterSpacing: -0.1,
+                  transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+                }}
+                aria-label="Navigate"
+              >
+                <Navigation style={{ width: 17, height: 17 }} strokeWidth={2.2} />
+                Navigate
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleCall(); }}
+                className="active:opacity-80"
+                style={{
+                  width: 48, height: 48, borderRadius: 14,
+                  background: "rgba(120,120,128,0.10)", color: "#1C1C1E",
+                  border: "none", cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                }}
+                aria-label="Call pupil"
+              >
+                <Phone style={{ width: 18, height: 18 }} strokeWidth={2.1} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleMessage(); }}
+                className="active:opacity-80"
+                style={{
+                  width: 48, height: 48, borderRadius: 14,
+                  background: "rgba(120,120,128,0.10)", color: "#1C1C1E",
+                  border: "none", cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                }}
+                aria-label="Message pupil"
+              >
+                <MessageSquare style={{ width: 18, height: 18 }} strokeWidth={2.1} />
+              </button>
+            </div>
           </div>
 
           {/* ── MAP PREVIEW (only when within 4h) ── */}
