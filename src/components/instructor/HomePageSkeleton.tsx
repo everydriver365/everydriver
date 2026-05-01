@@ -2,21 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function HomePageSkeleton() {
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header skeleton */}
-      <div className="fixed top-0 left-0 right-0 z-40 px-4 py-3 bg-background border-b border-border">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-6 w-32" />
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-8 w-8 rounded-full" />
-            <Skeleton className="h-8 w-8 rounded-full" />
-            <Skeleton className="h-9 w-9 rounded-full" />
-          </div>
-        </div>
-      </div>
-
-      <div className="h-16" />
-
+    <div className="min-h-screen bg-transparent pb-24">
       {/* Hero skeleton */}
       <Skeleton className="w-full h-56" />
       
