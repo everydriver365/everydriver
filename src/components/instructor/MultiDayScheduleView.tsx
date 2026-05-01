@@ -1159,24 +1159,41 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                           onNoShow={handleNoShow}
                           sendingMessage={sendingMessage}
                           onDelete={handleDeleteLesson}
-                          renderCustomCollapsed={
-                            <ScheduleListRow
-                              timeText={formatTime(lesson.start_time)}
-                              durationText={durationStr}
-                              accentColor={accent}
-                              title={title}
-                              subtitle={subtitleParts[0]}
-                              metaLine={location || null}
-                              statusPill={status as any}
-                              showChevron={true}
-                              struck={false}
-                              kind="lesson"
-                              isOverdue={
-                                lesson.payment_status !== "paid" &&
-                                (lesson.pupil?.account_balance ?? 0) < 0
-                              }
-                            />
-                          }
+                          renderCustomCollapsed={(() => {
+                            // Compute completion + attention from existing data only
+                            const isCompleted = lesson.status === "completed";
+                            const paymentDone = lesson.payment_status === "paid" || (lesson.prepaid_hours_used ?? 0) > 0;
+                            const notesDone = !!(lesson.notes && lesson.notes.trim().length > 0);
+                            // Past = lesson end time before now
+                            const lessonStart = new Date(`${lesson.lesson_date}T${lesson.start_time}`);
+                            const lessonEnd = new Date(lessonStart.getTime() + (lesson.duration_minutes || 60) * 60000);
+                            const isPast = lessonEnd.getTime() < Date.now();
+                            const needsAttention = isPast && (!isCompleted || !paymentDone);
+                            return (
+                              <ScheduleListRow
+                                timeText={formatTime(lesson.start_time)}
+                                durationText={durationStr}
+                                accentColor={accent}
+                                title={title}
+                                subtitle={subtitleParts[0]}
+                                metaLine={location || null}
+                                statusPill={status as any}
+                                showChevron={true}
+                                struck={false}
+                                kind="lesson"
+                                isOverdue={
+                                  lesson.payment_status !== "paid" &&
+                                  (lesson.pupil?.account_balance ?? 0) < 0
+                                }
+                                completion={
+                                  isCompleted
+                                    ? { eol: true, payment: paymentDone, notes: notesDone }
+                                    : undefined
+                                }
+                                needsAttention={needsAttention}
+                              />
+                            );
+                          })()}
                         />,
                       );
                       if (i < lastTimelineIdx) elements.push(<RowDivider key={`d-${lesson.id}`} />);
