@@ -30,12 +30,9 @@ export function MobileBlueHeader({
   const { total: notifCount } = useCombinedNotificationCount(instructorId);
 
   return (
-    <header
-      className="sticky top-0 z-40 bg-[#F2F2F7]"
-      style={{ paddingTop: "env(safe-area-inset-top)" }}
-    >
+    <header className="sticky top-0 z-40 bg-[hsl(var(--dsm-page-bg,var(--dsm-bg)))]">
       <div className="flex h-12 items-center justify-between px-5">
-        {/* Left: DSM logo (or back) */}
+        {/* Left: DSM logo + wordmark (or back) */}
         <div className="flex items-center gap-2.5 min-w-0">
           {showBackButton ? (
             <button
@@ -46,7 +43,7 @@ export function MobileBlueHeader({
               <ChevronLeft size={20} strokeWidth={1.8} color={ICON_COLOR} />
             </button>
           ) : null}
-          <img src={dsmLogo} alt="DSM" className="h-10 w-auto object-contain shrink-0" />
+          <img src={dsmLogo} alt="DSM" className="h-7 w-auto object-contain shrink-0" />
         </div>
 
         {/* Right: bell, +, avatar, menu */}
