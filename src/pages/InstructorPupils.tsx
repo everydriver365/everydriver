@@ -177,7 +177,7 @@ export default function InstructorPupils() {
   const [newPupilId, setNewPupilId] = useState<string | null>(null);
   const [showPostAddPayment, setShowPostAddPayment] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<"all" | PupilStatus>("all");
+  const [activeTab, setActiveTab] = useState<"all" | "needs_lesson" | "upcoming" | PupilStatus>("all");
   const [isLookingUpW3W, setIsLookingUpW3W] = useState(false);
   const [isPupilPickerOpen, setIsPupilPickerOpen] = useState(false);
   const [pendingPupilAction, setPendingPupilAction] = useState<"terms" | null>(null);
