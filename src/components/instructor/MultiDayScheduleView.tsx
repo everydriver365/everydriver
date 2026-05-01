@@ -1228,7 +1228,9 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                             const lessonEnd = new Date(lessonStart.getTime() + (lesson.duration_minutes || 60) * 60000);
                             const isPast = lessonEnd.getTime() < Date.now();
                             const needsAttention = isPast && (!eolDone || !paymentDone);
-                            const showCompletion = eolDone || paymentDone || notesDone;
+                            const eolPending = isPast && !eolDone;
+                            const paymentPending = isPast && !paymentDone;
+                            const showCompletion = eolDone || paymentDone || notesDone || eolPending || paymentPending;
                             return (
                               <ScheduleListRow
                                 timeText={formatTime(lesson.start_time)}
@@ -1247,7 +1249,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                                 }
                                 completion={
                                   showCompletion
-                                    ? { eol: eolDone, payment: paymentDone, notes: notesDone }
+                                    ? { eol: eolDone, payment: paymentDone, notes: notesDone, eolPending, paymentPending }
                                     : undefined
                                 }
                                 needsAttention={needsAttention}
