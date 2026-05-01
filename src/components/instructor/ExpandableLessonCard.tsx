@@ -292,15 +292,7 @@ export function ExpandableLessonCard({
           className="w-full text-left"
         >
           {renderCustomCollapsed ? (
-            <div className="relative">
-              {renderCustomCollapsed}
-              <ChevronDown
-                className={cn(
-                  "absolute top-1/2 -translate-y-1/2 right-3 h-4 w-4 text-muted-foreground shrink-0 transition-transform pointer-events-none",
-                  isExpanded && "rotate-180"
-                )}
-              />
-            </div>
+            <div className="relative">{renderCustomCollapsed}</div>
           ) : (
             <div className="px-3 py-2 flex gap-3 items-center">
               <span className="text-sm font-bold text-foreground min-w-[44px]">{formatTime(lesson.start_time)}</span>
