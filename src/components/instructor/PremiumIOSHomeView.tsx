@@ -33,7 +33,7 @@ import { useTomorrowLessons } from "@/hooks/useTomorrowLessons";
 import { useLastWeekComparison } from "@/hooks/useLastWeekComparison";
 import { useHomeActions } from "@/components/instructor/WarmHomeTiles";
 import { getTimeOfDayGreeting } from "@/lib/composeStatusSubtitle";
-import { AlertTriangle, GraduationCap } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 
 interface Props {
   instructorId: string | undefined;
