@@ -462,6 +462,12 @@ export function InstructorMobileHome({
           instructor={instructor}
           onPaymentClick={onPaymentClick}
         />
+      ) : layoutStyle === "premium" ? (
+        <PremiumHome
+          instructorId={instructorId}
+          instructor={instructor}
+          onPaymentClick={onPaymentClick}
+        />
       ) : (
       <>
       {/* 1. Time-aware greeting + status-aware subtitle */}
