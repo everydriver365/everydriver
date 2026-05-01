@@ -229,7 +229,7 @@ function usePupilLessonStats(pupilId: string | undefined) {
           .lte("lesson_date", today),
         supabase
           .from("scheduled_lessons")
-          .select("id, lesson_date, start_time, duration_minutes, lesson_type, pickup_postcode, pickup_location, status, focus_area")
+          .select("id, lesson_date, start_time, duration_minutes, lesson_type, pickup_postcode, pickup_location, status")
           .eq("pupil_id", pupilId!)
           .neq("status", "cancelled")
           .neq("status", "completed")
