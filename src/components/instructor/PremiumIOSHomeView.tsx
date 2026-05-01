@@ -185,7 +185,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
   /* ---------------- Render ----------------------------------------------- */
   return (
-    <div className="min-h-screen bg-[#F2F2F7] pb-32 px-4">
+    <div className="bg-[#F2F2F7] pb-20 px-4">
       {/* SECTION 1: Greeting / subtext / date pill — strict left-aligned vertical stack */}
       <header style={{ paddingTop: 6 }}>
         <h1
