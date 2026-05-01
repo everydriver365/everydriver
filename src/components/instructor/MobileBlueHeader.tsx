@@ -50,7 +50,7 @@ export function MobileBlueHeader({
         backgroundColor: bg,
       }}
     >
-      <div className="flex h-12 items-center justify-between px-5" style={{ marginTop: 2 }}>
+      <div className="flex h-14 items-center justify-between px-5" style={{ marginTop: 2 }}>
         {/* Left: DSM logo + wordmark (or back) */}
         <div className="flex items-center gap-2.5 min-w-0" style={{ opacity: 0.95 }}>
           {showBackButton ? (
@@ -62,7 +62,7 @@ export function MobileBlueHeader({
               <ChevronLeft size={20} strokeWidth={1.7} color={ICON_COLOR} />
             </button>
           ) : null}
-          <img src={dsmLogo} alt="DSM" className="h-7 w-auto object-contain shrink-0" />
+          <img src={dsmLogo} alt="DSM" className="h-9 w-auto object-contain shrink-0" />
         </div>
 
         {/* Right: bell, +, avatar, menu */}
