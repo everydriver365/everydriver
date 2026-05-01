@@ -154,6 +154,26 @@ export function NextUpTile({
       });
   }, [instructorId]);
   const expectedEarnings = (durationMinutes / 60) * hourlyRate;
+
+  // Last completed lesson for this pupil — read-only summary shown in expanded view.
+  const { data: lastLesson } = useQuery({
+    queryKey: ["next-up-tile-last-lesson", instructorId, pupilId],
+    enabled: !!instructorId && !!pupilId && expanded,
+    staleTime: 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("lesson_history")
+        .select("lesson_date, start_time, duration_minutes, skills_practiced, notes, rating")
+        .eq("instructor_id", instructorId!)
+        .eq("pupil_id", pupilId)
+        .order("lesson_date", { ascending: false })
+        .order("start_time", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) return null;
+      return data;
+    },
+  });
   const { currentWeather, alerts: drivingAlerts } = useDrivingAlerts(instructorId);
   const { devices } = useVehicleHealth();
   const trafficAlerts = drivingAlerts.filter(a => a.type === "traffic" || a.type === "road");
