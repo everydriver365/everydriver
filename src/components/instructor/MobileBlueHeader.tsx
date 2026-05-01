@@ -36,7 +36,7 @@ export function MobileBlueHeader({
     <header className="sticky top-0 z-40" style={{ background: "#F7F6F3" }}>
       <div
         className="flex items-center justify-between"
-        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 4px)", paddingBottom: 6, paddingLeft: 20, paddingRight: 20, ...bgStyle }}
+        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 2px)", paddingBottom: 2, paddingLeft: 20, paddingRight: 20, height: "calc(env(safe-area-inset-top, 0px) + 44px)", ...bgStyle }}
       >
         {/* Left: DSM logo (or back) */}
         <div className="flex items-center gap-2">
