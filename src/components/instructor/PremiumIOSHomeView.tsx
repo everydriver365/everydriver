@@ -174,27 +174,25 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
   /* ---------------- Render ----------------------------------------------- */
   return (
-    <div className="min-h-screen bg-[#F2F2F7] pb-16">
-      {/* 1. Header — large, spacious */}
-      <header className="px-6 pt-14 pb-8">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="text-[32px] leading-[1.1] font-bold tracking-tight text-[#1C1C1E]">
+    <div className="min-h-screen bg-[#F2F2F7] pb-32">
+      {/* 1. Header — compact, balanced */}
+      <header className="px-6 pt-6 pb-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-[28px] leading-[1.15] font-bold tracking-tight text-[#1C1C1E] truncate">
               {greeting}
             </h1>
-            <p className="mt-2 text-[15px] text-[#3C3C43]/65 font-medium">
+            <p className="mt-1 text-[14px] text-[#3C3C43]/65 font-medium">
               {subParts.join(" · ")}
             </p>
           </div>
-          <div className="flex items-center gap-2 shrink-0 pt-1">
-            <button
-              onClick={() => navigate("/instructor/notifications")}
-              className="size-11 rounded-full bg-white flex items-center justify-center active:scale-95 transition-transform shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
-              aria-label="Notifications"
-            >
-              <Bell className="size-[19px] text-[#1C1C1E]" />
-            </button>
-          </div>
+          <button
+            onClick={() => navigate("/instructor/notifications")}
+            className="size-10 rounded-full bg-white flex items-center justify-center active:scale-95 transition-transform shadow-[0_1px_2px_rgba(0,0,0,0.04)] shrink-0"
+            aria-label="Notifications"
+          >
+            <Bell className="size-[18px] text-[#1C1C1E]" />
+          </button>
         </div>
       </header>
 
