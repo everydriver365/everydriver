@@ -551,7 +551,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                 </div>
               </div>
               <button
-                onClick={() => navigate("/instructor/schedule?view=gaps")}
+                onClick={() => navigate("/instructor/gaps")}
                 className="mt-4 w-full h-11 rounded-[12px] bg-[#1F8E3F] text-white text-[14px] font-semibold active:opacity-85 transition-opacity shadow-[0_1px_2px_rgba(16,24,40,0.08)]"
               >
                 Fill slot
