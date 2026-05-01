@@ -707,6 +707,12 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               const showBannerAbove = lesson.id === firstConflictRowId;
               const showEOL = state === "completed" && lesson.status !== "cancelled";
               const eolDone = showEOL && isEOLComplete(lesson, eolDoneKeys);
+              // Right-side completion micro-indicators (shown on every row).
+              const paymentDoneRow = lesson.paymentStatus === "paid";
+              const eolDoneAny = isEOLComplete(lesson, eolDoneKeys) || lesson.status === "completed";
+              const isPastRow = !isTomorrow && nowSec >= endSec;
+              const rowNeedsAttention =
+                isPastRow && lesson.status !== "cancelled" && (!eolDoneAny || !paymentDoneRow);
               const lessonHref = `/instructor/pupils/${lesson.pupilId}`;
               const accentColor = isDrivingTest ? IOS.systemRed : IOS.systemBlue;
 
