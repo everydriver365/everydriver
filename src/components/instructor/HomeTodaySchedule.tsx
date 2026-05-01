@@ -836,6 +836,11 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                       )}
                       {showEOL && <EOLPrompt onTap={() => openEOLWizard(lesson)} done={eolDone} />}
                     </div>
+                    <RowStatusIcons
+                      eolDone={eolDoneAny}
+                      paymentDone={paymentDoneRow}
+                      needsAttention={rowNeedsAttention}
+                    />
                   </Link>
                 ) : (
                   <Link
