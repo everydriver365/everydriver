@@ -219,20 +219,20 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
       )}
 
       {/* ---------------- Today's schedule ---------------- */}
-      <section className="px-5 mb-6">
+      <section className="px-6 mb-7">
         <div className="flex items-center justify-between mb-3.5">
           <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
             Today's schedule
           </h2>
           <button
             onClick={() => navigate("/instructor/schedule")}
-            className="text-[13px] font-medium text-[#007AFF] active:opacity-60 transition-opacity"
+            className="text-[14px] font-medium text-[#007AFF] active:opacity-60 transition-opacity"
           >
             View full schedule ›
           </button>
         </div>
 
-        <div className="rounded-[20px] border border-black/[0.06] bg-white overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+        <div className="rounded-[24px] border border-black/[0.05] bg-white overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
           {previewLessons.length === 0 ? (
             <div className="px-5 py-12 text-center">
               <p className="text-[15px] text-[#3C3C43]/65">
