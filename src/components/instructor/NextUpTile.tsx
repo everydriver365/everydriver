@@ -89,6 +89,7 @@ interface NextUpTileProps {
   durationMinutes?: number;
   instructorId?: string;
   checkInStatus?: string | null;
+  lessonStatus?: string | null;
   lastLessonPlan?: string | null;
 }
 
@@ -122,7 +123,7 @@ export function NextUpTile({
   lessonId, pupilId, pupilName, pupilProfileImage, pupilPhone,
   lessonDate, pickupPostcode, pickupLocation, startTime,
   minutesUntil, accountBalance, prepaidHours, durationMinutes = 60, instructorId,
-  checkInStatus, lastLessonPlan,
+  checkInStatus, lessonStatus, lastLessonPlan,
 }: NextUpTileProps) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
@@ -704,52 +705,104 @@ export function NextUpTile({
               </span>
             </div>
 
-            {/* Primary actions: Navigate + Call/Message — integrated, not floating */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+            {/* Secondary actions: Navigate / Call / Message — inline, neutral, no competing primary */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
               <button
                 onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
-                className="active:opacity-90"
+                className="active:opacity-80"
                 style={{
-                  flex: 1, height: 48, borderRadius: 14,
-                  background: "#007AFF", color: "#FFFFFF",
+                  flex: 1, height: 40, borderRadius: 10,
+                  background: "transparent", color: "#3C3C43",
                   border: "none", cursor: "pointer",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                  fontSize: a11yPx(15), fontWeight: 600, letterSpacing: -0.1,
-                  transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  fontSize: a11yPx(13), fontWeight: 500, letterSpacing: -0.05,
                 }}
                 aria-label="Navigate"
               >
-                <Navigation style={{ width: 17, height: 17 }} strokeWidth={2.2} />
+                <Navigation style={{ width: 15, height: 15, color: "#8E8E93" }} strokeWidth={2} />
                 Navigate
               </button>
+              <div style={{ width: 1, height: 20, background: "rgba(60,60,67,0.10)" }} />
               <button
                 onClick={(e) => { e.stopPropagation(); handleCall(); }}
                 className="active:opacity-80"
                 style={{
-                  width: 48, height: 48, borderRadius: 14,
-                  background: "rgba(120,120,128,0.10)", color: "#1C1C1E",
+                  flex: 1, height: 40, borderRadius: 10,
+                  background: "transparent", color: "#3C3C43",
                   border: "none", cursor: "pointer",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  fontSize: a11yPx(13), fontWeight: 500, letterSpacing: -0.05,
                 }}
                 aria-label="Call pupil"
               >
-                <Phone style={{ width: 18, height: 18 }} strokeWidth={2.1} />
+                <Phone style={{ width: 15, height: 15, color: "#8E8E93" }} strokeWidth={2} />
+                Call
               </button>
+              <div style={{ width: 1, height: 20, background: "rgba(60,60,67,0.10)" }} />
               <button
                 onClick={(e) => { e.stopPropagation(); handleMessage(); }}
                 className="active:opacity-80"
                 style={{
-                  width: 48, height: 48, borderRadius: 14,
-                  background: "rgba(120,120,128,0.10)", color: "#1C1C1E",
+                  flex: 1, height: 40, borderRadius: 10,
+                  background: "transparent", color: "#3C3C43",
                   border: "none", cursor: "pointer",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  fontSize: a11yPx(13), fontWeight: 500, letterSpacing: -0.05,
                 }}
                 aria-label="Message pupil"
               >
-                <MessageSquare style={{ width: 18, height: 18 }} strokeWidth={2.1} />
+                <MessageSquare style={{ width: 15, height: 15, color: "#8E8E93" }} strokeWidth={2} />
+                Message
               </button>
             </div>
           </div>
+
+          {/* PRIMARY CTA — single, state-based, full-width. No competing buttons nearby. */}
+          {(() => {
+            const inLesson = lessonStatus === "in_progress";
+            if (inLesson) {
+              return (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
+                  className="active:opacity-90"
+                  style={{
+                    width: "100%",
+                    background: "#FF3B30", color: "#FFFFFF",
+                    border: "none", borderRadius: 14, padding: "14px 16px",
+                    fontSize: a11yPx(16), fontWeight: 600, letterSpacing: -0.2,
+                    cursor: "pointer",
+                    display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -6px rgba(255,59,48,0.35)",
+                  }}
+                >
+                  <CheckCircle2 style={{ width: 17, height: 17 }} strokeWidth={2.4} />
+                  End lesson
+                </button>
+              );
+            }
+            return (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
+                  navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
+                }}
+                className="active:opacity-90"
+                style={{
+                  width: "100%",
+                  background: "#007AFF", color: "#FFFFFF",
+                  border: "none", borderRadius: 14, padding: "14px 16px",
+                  fontSize: a11yPx(16), fontWeight: 600, letterSpacing: -0.2,
+                  cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -6px rgba(0,122,255,0.35)",
+                }}
+              >
+                <Play style={{ width: 16, height: 16 }} strokeWidth={2.4} fill="#FFFFFF" />
+                Start lesson
+              </button>
+            );
+          })()}
 
           {/* ── MAP PREVIEW (only when within 4h) ── */}
           {isWithin4h && pickupPostcode && (
@@ -1142,61 +1195,7 @@ export function NextUpTile({
                         </div>
                       )}
 
-                      {/* Start lesson CTA — integrated inside last-lesson card so it feels connected */}
-                      {!trackerDismissed && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
-                          }}
-                          className="active:opacity-90"
-                          style={{
-                            width: "100%", marginTop: 14,
-                            background: "#007AFF", color: "#FFFFFF",
-                            border: "none", borderRadius: 12, padding: "12px 14px",
-                            fontSize: a11yPx(15), fontWeight: 600, letterSpacing: -0.1,
-                            cursor: "pointer",
-                            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                            transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-                          }}
-                        >
-                          <Play style={{ width: 16, height: 16 }} strokeWidth={2.4} fill="#FFFFFF" />
-                          Start lesson
-                        </button>
-                      )}
                     </div>
-
-                    {/* In-progress / start lesson buttons preserved (only render when relevant) */}
-                    {minutesUntil <= 15 && (
-                      <button onClick={(e) => {
-                        e.stopPropagation();
-                        supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
-                        navigate(`/instructor/tracking?lesson=${lessonId}`);
-                      }}
-                      style={{
-                        width: "100%",
-                        background: "linear-gradient(135deg, #22c55e, #16a34a)",
-                        color: "#FFFFFF", border: "none", borderRadius: 12, padding: 13,
-                        fontSize: a11yPx(14), fontWeight: 600, cursor: "pointer",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(34,197,94,0.25)",
-                      }}>
-                        <Navigation style={{ width: 16, height: 16 }} /> Start Lesson
-                      </button>
-                    )}
-                    {minutesUntil <= 0 && (
-                      <button onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
-                        style={{
-                          width: "100%",
-                          background: "#FFFFFF", color: "hsl(var(--foreground))",
-                          border: "none", borderRadius: 12, padding: 13,
-                          fontSize: a11yPx(14), fontWeight: 600, cursor: "pointer",
-                          display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                          boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
-                        }}>
-                        <CheckCircle2 style={{ width: 16, height: 16 }} /> End Lesson
-                      </button>
-                    )}
 
                     {/* Lesson plan card (elevated) */}
                     {lastLessonPlan && (

@@ -204,6 +204,7 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
             durationMinutes={nextLesson.durationMinutes}
             instructorId={instructorId}
             checkInStatus={nextLesson.checkInStatus}
+              lessonStatus={(nextLesson as any).lessonStatus}
             lastLessonPlan={nextLesson.lastLessonPlan}
           />
         </div>
@@ -367,6 +368,7 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
                   durationMinutes={nextLesson.durationMinutes}
                   instructorId={instructorId}
                   checkInStatus={nextLesson.checkInStatus}
+              lessonStatus={(nextLesson as any).lessonStatus}
                   lastLessonPlan={nextLesson.lastLessonPlan}
                 />
               </div>

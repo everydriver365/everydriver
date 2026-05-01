@@ -246,6 +246,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
             durationMinutes={nextLesson.durationMinutes}
             instructorId={instructorId}
             checkInStatus={nextLesson.checkInStatus}
+              lessonStatus={(nextLesson as any).lessonStatus}
             lastLessonPlan={nextLesson.lastLessonPlan}
           />
         ) : (

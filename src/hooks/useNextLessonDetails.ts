@@ -17,6 +17,7 @@ interface NextLessonDetails {
   accountBalance: number;
   prepaidHours: number;
   checkInStatus: string | null;
+  lessonStatus: string | null;
   lastLessonPlan: string | null;
 }
 
@@ -95,6 +96,7 @@ export function useNextLessonDetails(instructorId: string | undefined) {
         accountBalance: pupil.account_balance || 0,
         prepaidHours: pupil.prepaid_hours || 0,
         checkInStatus: (lesson as any).check_in_status || null,
+        lessonStatus: (lesson as any).status || null,
         lastLessonPlan,
       };
     },
