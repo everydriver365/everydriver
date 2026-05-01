@@ -310,6 +310,26 @@ function usePupilDocuments(pupilId: string | undefined) {
   });
 }
 
+function usePupilTermsStatus(pupilId: string | undefined) {
+  return useQuery({
+    queryKey: ["pupil-terms-status", pupilId],
+    enabled: !!pupilId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("pupil_terms_agreements" as any)
+        .select("status, signed_at, created_at")
+        .eq("pupil_id", pupilId!)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const row = (data as any[])?.[0];
+      if (!row) return { state: "required" as const };
+      if (row.status === "signed" || row.signed_at) return { state: "signed" as const };
+      if (row.status === "pending") return { state: "awaiting" as const };
+      return { state: "required" as const };
+    },
+  });
+}
+
 /* ──────────────────────────── page ──────────────────────────── */
 export default function PremiumPupilProfile() {
   const { pupilId } = useParams<{ pupilId: string }>();
@@ -322,6 +342,8 @@ export default function PremiumPupilProfile() {
   const { data: stats } = usePupilLessonStats(pupilId);
   const { data: notes = [] } = usePupilNotes(pupilId);
   const { data: documents = [] } = usePupilDocuments(pupilId);
+  const { data: terms } = usePupilTermsStatus(pupilId);
+  const termsState = terms?.state ?? "required";
 
   const [editOpen, setEditOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
@@ -868,6 +890,16 @@ export default function PremiumPupilProfile() {
       tags.unshift({ label: "Outstanding balance", tone: "red" });
     }
 
+    if (termsState !== "signed") {
+      tags.push({
+        label: termsState === "awaiting" ? "Awaiting signature" : "Terms required",
+        tone: termsState === "awaiting" ? "amber" : "red",
+      });
+      if (!recommendation || termsState === "required") {
+        recommendation = "Send agreement before next lesson";
+      }
+    }
+
     return { headline, bullets: bullets.slice(0, 4), recommendation, tags: tags.slice(0, 3) };
   })();
 
@@ -903,9 +935,30 @@ export default function PremiumPupilProfile() {
             marginTop: 4,
             fontFamily: FONT, fontSize: 13, fontWeight: 500,
             color: C.muted, letterSpacing: "0.1px",
+            display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8,
           }}
         >
-          {stageLabel}
+          <span>{stageLabel}</span>
+          {(() => {
+            const map = {
+              signed:   { label: "Terms signed",       bg: "#E5F4EC", fg: C.green },
+              awaiting: { label: "Awaiting signature", bg: "#FBF1E0", fg: C.amber },
+              required: { label: "Needs signature",    bg: "#FBEAEC", fg: C.red },
+            } as const;
+            const t = map[termsState];
+            return (
+              <span
+                style={{
+                  background: t.bg, color: t.fg,
+                  fontFamily: FONT, fontSize: 11, fontWeight: 600,
+                  padding: "3px 9px", borderRadius: 999, lineHeight: 1.3,
+                  letterSpacing: "0.2px",
+                }}
+              >
+                {t.label}
+              </span>
+            );
+          })()}
         </div>
         {(pupil.phone || pupil.address || pupil.postcode) && (
           <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 4 }}>
