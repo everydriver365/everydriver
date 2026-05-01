@@ -1249,30 +1249,28 @@ export function NextUpTile({
                   </div>
                 </div>
 
-                {/* ── SECTION 5 — Reschedule + Cancel (lower hierarchy) ── */}
+                {/* ── SECTION 5 — Reschedule + Cancel (secondary/destructive) ── */}
                 <div style={{
-                  borderTop: "0.5px solid #E5E5EA", paddingTop: 14,
-                  display: "flex", alignItems: "center", gap: 8,
+                  marginTop: 8,
+                  borderTop: "0.5px solid #E5E5EA", paddingTop: 16,
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
                 }}>
                   <button onClick={(e) => { e.stopPropagation(); setRescheduleOpen(true); }}
                     style={{
-                      flex: 1, background: "transparent",
-                      border: "0.5px solid #E5E5EA", borderRadius: 10, padding: 10,
+                      background: "transparent", border: "none", padding: 4,
                       cursor: "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                      display: "inline-flex", alignItems: "center", gap: 6,
                     }}>
-                    <Calendar style={{ width: 14, height: 14, color: "#2B7BC8" }} strokeWidth={2} />
-                    <span style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#2B7BC8" }}>Reschedule</span>
+                    <Calendar style={{ width: 13, height: 13, color: "#8A8A8E" }} strokeWidth={2} />
+                    <span style={{ fontSize: a11yPx(12), fontWeight: 500, color: "#3C3C43" }}>Reschedule</span>
                   </button>
                   <button onClick={(e) => { e.stopPropagation(); setCancelOpen(true); }}
                     style={{
-                      flex: 1, background: "transparent",
-                      border: "0.5px solid #E5E5EA", borderRadius: 10, padding: 10,
+                      background: "transparent", border: "none", padding: 4,
                       cursor: "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                      display: "inline-flex", alignItems: "center",
                     }}>
-                    <X style={{ width: 14, height: 14, color: "#C8434F" }} strokeWidth={2} />
-                    <span style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#C8434F" }}>Cancel lesson</span>
+                    <span style={{ fontSize: a11yPx(12), fontWeight: 500, color: "#C8434F" }}>Cancel lesson</span>
                   </button>
                 </div>
               </div>
