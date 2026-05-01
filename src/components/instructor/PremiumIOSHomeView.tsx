@@ -193,6 +193,12 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </h1>
         <p className="mt-1 text-[13px] font-medium text-[#3C3C43]/65 whitespace-nowrap overflow-hidden text-ellipsis">
           <span>{lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today</span>
+          {expectedEarnings > 0 && (
+            <>
+              <span className="mx-1.5 text-[#3C3C43]/40">·</span>
+              <span>£{expectedEarnings} expected</span>
+            </>
+          )}
           {waitingCount > 0 && (
             <>
               <span className="mx-1.5 text-[#3C3C43]/40">·</span>
