@@ -473,19 +473,46 @@ export default function InstructorPupils() {
     }
   };
 
+  const now = Date.now();
+  const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+  const isUpcoming = (p: Pupil) => {
+    if (!p.next_lesson) return false;
+    const t = new Date(p.next_lesson).getTime();
+    return !isNaN(t) && t >= now && t - now <= SEVEN_DAYS_MS;
+  };
+  const needsLesson = (p: Pupil) => {
+    const status = p.status || 'active';
+    if (status !== 'active') return false;
+    if (!p.next_lesson) return true;
+    const t = new Date(p.next_lesson).getTime();
+    return isNaN(t) || t < now;
+  };
+
   const filteredPupils = pupils.filter((pupil) => {
-    const matchesSearch =
-      pupil.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pupil.postcode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pupil.email?.toLowerCase().includes(searchQuery.toLowerCase());
+    const q = searchQuery.trim().toLowerCase();
+    const matchesSearch = !q || (
+      pupil.name.toLowerCase().includes(q) ||
+      pupil.postcode.toLowerCase().includes(q) ||
+      (pupil.email?.toLowerCase().includes(q) ?? false) ||
+      (pupil.phone?.toLowerCase().includes(q) ?? false) ||
+      (pupil.parent_phone?.toLowerCase().includes(q) ?? false) ||
+      (pupil.parent_name?.toLowerCase().includes(q) ?? false) ||
+      (pupil.address?.toLowerCase().includes(q) ?? false) ||
+      (pupil.what3words?.toLowerCase().includes(q) ?? false) ||
+      (pupil.notes?.toLowerCase().includes(q) ?? false)
+    );
+
+    if (!matchesSearch) return false;
 
     if (activeTab === "all") {
       const pupilStatus = pupil.status || 'active';
-      return matchesSearch && pupilStatus !== 'inactive' && pupilStatus !== 'archived';
+      return pupilStatus !== 'inactive' && pupilStatus !== 'archived';
     }
-    // Filter by the status field
+    if (activeTab === "needs_lesson") return needsLesson(pupil);
+    if (activeTab === "upcoming") return isUpcoming(pupil);
     const pupilStatus = pupil.status || 'active';
-    return matchesSearch && pupilStatus === activeTab;
+    return pupilStatus === activeTab;
   });
 
   const displayedPupils = pupilId ? filteredPupils.filter((p) => p.id === pupilId) : filteredPupils;
