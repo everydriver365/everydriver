@@ -534,7 +534,7 @@ export function NextUpTile({
             className="overflow-hidden"
             style={{ marginLeft: -16, marginRight: -16, marginBottom: -16 }}
           >
-          <div style={{ padding: "18px 20px 4px", display: "flex", flexDirection: "column", gap: 18, borderTop: "0.5px solid #F2F2F7" }}>
+          <div style={{ padding: "20px 16px 20px", display: "flex", flexDirection: "column", gap: 24, borderTop: "0.5px solid #E5E5EA", background: "#F2F2F7" }}>
 
           {/* ── HERO: time as the headline ── */}
           <div>
