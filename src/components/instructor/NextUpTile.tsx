@@ -123,7 +123,7 @@ export function NextUpTile({
   lessonId, pupilId, pupilName, pupilProfileImage, pupilPhone,
   lessonDate, pickupPostcode, pickupLocation, startTime,
   minutesUntil, accountBalance, prepaidHours, durationMinutes = 60, instructorId,
-  checkInStatus, lastLessonPlan,
+  checkInStatus, lessonStatus, lastLessonPlan,
 }: NextUpTileProps) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
