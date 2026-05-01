@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import {
   ChevronRight,
+  ChevronDown,
   Bell,
   Plus,
   Briefcase,
@@ -13,8 +14,12 @@ import {
   X,
   TrendingUp,
   TrendingDown,
+  Calendar as CalendarIcon,
+  MapPin,
+  MoreHorizontal,
 } from "lucide-react";
 import { useState } from "react";
+import { format } from "date-fns";
 
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
