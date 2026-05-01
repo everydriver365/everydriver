@@ -125,8 +125,8 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
     green: "bg-[#D6F3DD] text-[#1F8E3F]",
   };
 
-  /* ---------------- Today's schedule (max 4) ---------------- */
-  const previewLessons = (todayLessons || []).slice(0, 4);
+  /* ---------------- Today's schedule (max 2 in preview) ---------------- */
+  const previewLessons = (todayLessons || []).slice(0, 2);
   // Color rail per row, cycled in reference order
   const rails = ["#007AFF", "#34C759", "#007AFF", "#34C759"];
 
@@ -219,9 +219,9 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
       )}
 
       {/* ---------------- Today's schedule ---------------- */}
-      <section className="px-5 mb-5">
-        <div className="flex items-center justify-between mb-2.5">
-          <h2 className="text-[15px] font-semibold tracking-tight text-[#1C1C1E]">
+      <section className="px-5 mb-6">
+        <div className="flex items-center justify-between mb-3.5">
+          <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
             Today's schedule
           </h2>
           <button
@@ -232,15 +232,15 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
           </button>
         </div>
 
-        <div className="rounded-[18px] border border-black/[0.06] bg-white overflow-hidden">
+        <div className="rounded-[20px] border border-black/[0.06] bg-white overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
           {previewLessons.length === 0 ? (
-            <div className="px-5 py-10 text-center">
-              <p className="text-[14px] text-[#3C3C43]/65">
+            <div className="px-5 py-12 text-center">
+              <p className="text-[15px] text-[#3C3C43]/65">
                 No lessons scheduled today
               </p>
             </div>
           ) : (
-            <div>
+            <div className="pt-1">
               {previewLessons.map((lesson, i) => {
                 const initials = (lesson.pupilName || "?")
                   .split(" ")
@@ -275,25 +275,25 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
                       onClick={() =>
                         navigate(`/instructor/schedule?lessonId=${lesson.id}`)
                       }
-                      className="w-full flex items-stretch gap-3 pr-4 py-3 active:bg-black/[0.03] transition-colors text-left"
-                      style={{ minHeight: 76 }}
+                      className="w-full flex items-stretch gap-4 pr-4 py-4 active:bg-black/[0.03] transition-colors text-left"
+                      style={{ minHeight: 96 }}
                     >
                       {/* Coloured rail */}
                       <div
-                        className="w-1 rounded-r-full ml-0 my-1"
+                        className="w-[3.5px] rounded-r-full ml-0 my-1.5"
                         style={{ background: rails[i % rails.length] }}
                       />
                       {/* Time + duration */}
-                      <div className="w-[58px] shrink-0 self-center">
-                        <div className="text-[16px] font-bold tracking-tight text-[#1C1C1E] tabular-nums leading-none">
+                      <div className="w-[68px] shrink-0 self-center pl-1">
+                        <div className="text-[21px] font-bold tracking-tight text-[#1C1C1E] tabular-nums leading-none">
                           {lesson.startTime?.slice(0, 5) || "--:--"}
                         </div>
-                        <div className="text-[11.5px] text-[#3C3C43]/55 mt-1 tabular-nums">
+                        <div className="text-[12.5px] text-[#3C3C43]/55 mt-1.5 tabular-nums">
                           {durLabel}
                         </div>
                       </div>
                       {/* Avatar */}
-                      <div className="size-11 rounded-full bg-[#E5E5EA] text-[#3C3C43] flex items-center justify-center text-[13px] font-semibold shrink-0 overflow-hidden self-center">
+                      <div className="size-12 rounded-full bg-[#E5E5EA] text-[#3C3C43] flex items-center justify-center text-[14px] font-semibold shrink-0 overflow-hidden self-center">
                         {lesson.pupilProfileImageUrl ? (
                           <img
                             src={lesson.pupilProfileImageUrl}
@@ -306,11 +306,11 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
                       </div>
                       {/* Pupil + meta */}
                       <div className="flex-1 min-w-0 self-center">
-                        <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight truncate">
+                        <div className="text-[18px] font-semibold text-[#1C1C1E] tracking-tight truncate leading-tight">
                           {lesson.pupilName || "Pupil"}
                         </div>
-                        <div className="text-[12px] text-[#3C3C43]/65 mt-0.5 truncate flex items-center gap-1">
-                          <MapPin className="size-[11px] text-[#3C3C43]/45 shrink-0" />
+                        <div className="text-[14px] text-[#3C3C43]/65 mt-1 truncate flex items-center gap-1">
+                          <MapPin className="size-[12px] text-[#3C3C43]/45 shrink-0" />
                           <span className="truncate">
                             {[
                               lesson.lessonType || "Standard lesson",
@@ -322,14 +322,14 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
                         </div>
                       </div>
                       <span
-                        className={`text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0 self-center ${tone}`}
+                        className={`text-[12px] font-semibold px-3 py-1.5 rounded-full shrink-0 self-center ${tone}`}
                       >
                         {label}
                       </span>
-                      <ChevronRight className="size-[14px] text-[#3C3C43]/35 shrink-0 self-center" />
+                      <ChevronRight className="size-[16px] text-[#3C3C43]/35 shrink-0 self-center" />
                     </button>
                     {i < previewLessons.length - 1 && (
-                      <div className="ml-[88px] border-t border-black/[0.05]" />
+                      <div className="ml-[96px] border-t border-black/[0.05]" />
                     )}
                   </div>
                 );
@@ -337,12 +337,12 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
             </div>
           )}
 
-          <div className="px-3 pb-3 pt-1">
+          <div className="px-4 pb-4 pt-3">
             <button
               onClick={() => navigate("/instructor/schedule?action=add")}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] bg-[#F2F4F7] text-[14px] font-semibold text-[#007AFF] active:bg-[#E9ECF1] transition-colors"
+              className="w-full flex items-center justify-center gap-2 h-[52px] rounded-[14px] bg-[#F2F4F7] text-[15px] font-semibold text-[#007AFF] active:bg-[#E9ECF1] transition-colors"
             >
-              <Plus className="size-[16px]" />
+              <Plus className="size-[18px]" />
               Add lesson
             </button>
           </div>
