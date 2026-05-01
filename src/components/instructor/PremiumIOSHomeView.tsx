@@ -198,19 +198,19 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </p>
         <button
           onClick={() => navigate("/instructor/schedule")}
-          className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)] active:scale-[0.97] transition-transform"
+          className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)] active:scale-[0.97] transition-transform"
         >
-          <CalendarIcon className="size-[14px] text-[#3C3C43]/70" />
-          <span className="text-[13px] font-semibold text-[#1C1C1E]">
+          <CalendarIcon className="size-[12px] text-[#3C3C43]/70" />
+          <span className="text-[12px] font-semibold text-[#1C1C1E]">
             {format(new Date(), "EEE, d MMM yyyy")}
           </span>
-          <ChevronDown className="size-[13px] text-[#3C3C43]/55" />
+          <ChevronDown className="size-[12px] text-[#3C3C43]/55" />
         </button>
       </header>
 
-      {/* SECTION 2: Needs attention — single card, 72px rows */}
+      {/* SECTION 2: Needs attention — single card, 64px rows */}
       {attentionRows.length > 0 && (
-        <section className="mt-6">
+        <section className="mt-4">
           <Card>
             <div className="px-4 pt-4 pb-1">
               <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
