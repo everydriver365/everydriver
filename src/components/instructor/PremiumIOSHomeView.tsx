@@ -179,13 +179,13 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
   /* ---------------- Render ----------------------------------------------- */
   return (
-    <div className="min-h-screen bg-[#F2F2F7] pb-32 px-5">
+    <div className="min-h-screen bg-[#F2F2F7] pb-32 px-4">
       {/* SECTION 1: Greeting / subtext / date pill — strict left-aligned vertical stack */}
-      <header className="pt-3">
-        <h1 className="text-[34px] leading-[1.05] font-bold tracking-tight text-[#1C1C1E] truncate">
+      <header className="pt-2">
+        <h1 className="text-[26px] leading-[1.05] font-bold tracking-tight text-[#1C1C1E] truncate">
           {greeting}
         </h1>
-        <p className="mt-2 text-[15px] font-medium text-[#3C3C43]/65 whitespace-nowrap overflow-hidden text-ellipsis">
+        <p className="mt-1 text-[13px] font-medium text-[#3C3C43]/65 whitespace-nowrap overflow-hidden text-ellipsis">
           <span>{lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today</span>
           {waitingCount > 0 && (
             <>
