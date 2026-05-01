@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw, CalendarRange } from "lucide-react";
 import { ScheduleSkeleton } from "@/components/ui/skeletons/ScheduleSkeleton";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -82,6 +83,18 @@ export default function InstructorSchedule() {
   useEffect(() => {
     localStorage.setItem('instructor-schedule-view', viewMode);
   }, [viewMode]);
+
+  // Open Add Lesson sheet when navigated with ?action=add
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get('action') === 'add') {
+      setAddEventDate(null);
+      setAddEventOpen(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete('action');
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleAddEvent = (date?: Date) => {
     if (date) {

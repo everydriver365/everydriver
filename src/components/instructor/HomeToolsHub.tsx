@@ -104,7 +104,7 @@ function CategoryRow({ category, count, expanded, onPress }: { category: Categor
       style={{
         display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
         background: "#FFFFFF", width: "100%", textAlign: "left",
-        cursor: "pointer", border: 0, minHeight: 68,
+        cursor: "pointer", borderWidth: 0, borderStyle: "none", minHeight: 68,
       }}
     >
       <div style={{ width: 36, height: 36, borderRadius: 10, background: palette.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
