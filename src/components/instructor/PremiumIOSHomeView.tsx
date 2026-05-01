@@ -214,6 +214,30 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </button>
       </header>
 
+      {/* SECTION: Next lesson tile */}
+      <NextLessonTile
+        nextLesson={nextLesson}
+        expanded={nextLessonExpanded}
+        onToggleExpanded={() => setNextLessonExpanded((v) => !v)}
+        onOpen={() => {
+          if (nextLesson) {
+            navigate(`/instructor/pupils/${nextLesson.pupilId}?lesson=${nextLesson.lessonId}`);
+          }
+        }}
+        onCall={() => {
+          if (nextLesson?.pupilPhone) window.location.href = `tel:${nextLesson.pupilPhone}`;
+        }}
+        onNavigate={() => {
+          if (nextLesson?.pickupPostcode) {
+            window.open(
+              `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(nextLesson.pickupPostcode)}`,
+              "_blank",
+            );
+          }
+        }}
+        onAddLesson={() => navigate("/instructor/schedule?action=add")}
+      />
+
       {/* SECTION 2: Needs attention — single card, 64px rows */}
       {attentionRows.length > 0 && (
         <section className="mt-4">
