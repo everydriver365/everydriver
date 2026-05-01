@@ -510,7 +510,7 @@ function QuickActionPill({
     <button
       onClick={onClick}
       className="flex flex-col items-center justify-center gap-1.5 px-1.5 rounded-[16px] active:scale-[0.97] transition-transform shadow-[0_1px_2px_rgba(16,24,40,0.04),0_6px_20px_-12px_rgba(16,24,40,0.08)]"
-      style={{ background: t.bg, color: t.fg, minHeight: 88 }}
+      style={{ background: t.bg, color: t.fg, height: 88 }}
     >
       <span
         className="size-9 rounded-[11px] flex items-center justify-center shrink-0"
