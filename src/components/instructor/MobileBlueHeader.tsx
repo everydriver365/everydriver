@@ -10,6 +10,8 @@ interface Props {
   isOnline?: boolean;
   showBackButton?: boolean;
   showGreeting?: boolean;
+  /** Background colour for the header + safe-area zone. Defaults to page bg. */
+  surface?: "page" | "white";
   onBack?: () => void;
   onSOS: () => void;
   onPlus: () => void;
