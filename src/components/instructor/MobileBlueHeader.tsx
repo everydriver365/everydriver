@@ -50,19 +50,19 @@ export function MobileBlueHeader({
         backgroundColor: bg,
       }}
     >
-      <div className="flex h-11 items-center justify-between px-5" style={{ marginTop: 2 }}>
+      <div className="flex h-12 items-center justify-between px-5" style={{ marginTop: 2 }}>
         {/* Left: DSM logo + wordmark (or back) */}
-        <div className="flex items-center gap-2.5 min-w-0" style={{ opacity: 0.92 }}>
+        <div className="flex items-center gap-2.5 min-w-0" style={{ opacity: 0.95 }}>
           {showBackButton ? (
             <button
               onClick={onBack}
               className="h-8 w-8 flex items-center justify-center -ml-1"
               aria-label="Back"
             >
-              <ChevronLeft size={18} strokeWidth={1.7} color={ICON_COLOR} />
+              <ChevronLeft size={20} strokeWidth={1.7} color={ICON_COLOR} />
             </button>
           ) : null}
-          <img src={dsmLogo} alt="DSM" className="h-6 w-auto object-contain shrink-0" />
+          <img src={dsmLogo} alt="DSM" className="h-7 w-auto object-contain shrink-0" />
         </div>
 
         {/* Right: bell, +, avatar, menu */}
@@ -73,7 +73,7 @@ export function MobileBlueHeader({
             style={{ width: 32, height: 32 }}
             aria-label="Notifications"
           >
-            <Bell size={18} strokeWidth={1.7} color={ICON_COLOR} />
+            <Bell size={20} strokeWidth={1.7} color={ICON_COLOR} />
             {notifCount > 0 && (
               <span
                 className="absolute flex items-center justify-center"
@@ -101,7 +101,7 @@ export function MobileBlueHeader({
             style={{ width: 32, height: 32 }}
             aria-label="Quick actions"
           >
-            <Plus size={18} strokeWidth={1.7} color={ICON_COLOR} />
+            <Plus size={20} strokeWidth={1.7} color={ICON_COLOR} />
           </button>
           <button
             onClick={() => navigate("/instructor/profile")}
@@ -123,7 +123,7 @@ export function MobileBlueHeader({
             style={{ width: 32, height: 32 }}
             aria-label="Menu"
           >
-            <Menu size={18} strokeWidth={1.7} color={ICON_COLOR} />
+            <Menu size={20} strokeWidth={1.7} color={ICON_COLOR} />
           </button>
         </div>
       </div>
