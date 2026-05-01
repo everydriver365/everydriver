@@ -1,49 +1,23 @@
-## Problem
+I found the likely cause: the Home header greeting is using a very tight line-height (`leading-[1.05]`) combined with `truncate` overflow behavior. On mobile/iOS font rendering, descenders and anti-aliased pixels can get clipped at the bottom when the line box is too shallow.
 
-On the Home screen there is a visible warm-grey block (`#F7F6F3` page background) running from the top of the screen down to the white greeting card. On a notched device this strip is roughly 100px tall (safe-area inset + 44px header row + 16px gap), so it reads as a "huge area of grey at the top".
+Plan:
 
-Other screens (Pupils, Schedule, More, Track) intentionally use that warm page bg as their canvas and look correct — so the fix must be Home-only.
+1. Update the Home header greeting text only
+   - Keep the same layout and content.
+   - Slightly increase the greeting line-height from the current tight value to a safer compact value.
+   - Remove or avoid vertical clipping behavior on the greeting line while preserving single-line behavior where needed.
 
-## Fix (visual only — no layout, data, navigation, or content changes)
+2. Preserve the recent header polish
+   - Keep the reduced top spacing.
+   - Keep greeting-to-meta spacing at 6px.
+   - Keep meta-to-date spacing around 10px.
+   - Keep the date alignment unchanged.
 
-### 1. `src/components/instructor/MobileBlueHeader.tsx`
-- Add an optional `surface?: "page" | "white"` prop (default `"page"`).
-- When `surface="white"`, set the header's `backgroundColor` to `#FFFFFF` instead of `hsl(var(--dsm-page-bg))`. The safe-area inset zone is already painted by the `html:has(.ios-instructor)` rule using the same token, so we'll override that on Home too (step 3).
+3. Add a small safety buffer if needed
+   - Add minimal bottom padding or overflow-visible styling to the greeting element/header so letters like `g`, `y`, `j`, and `p` cannot be cut off.
+   - Avoid making the header feel loose again.
 
-### 2. `src/components/layout/InstructorPortalLayout.tsx`
-- Pass `surface={isHomePage ? "white" : "page"}` to `<MobileBlueHeader />`.
-- When `isHomePage`, add a class (e.g. `home-white-top`) to the outer `.instructor-portal` wrapper so we can scope the safe-area background override.
-
-### 3. `src/index.css`
-- Add a Home-only override so the body / html safe-area zone is white instead of warm-grey:
-  ```css
-  html:has(.instructor-portal.home-white-top),
-  body:has(.instructor-portal.home-white-top) {
-    background-color: #FFFFFF;
-  }
-  ```
-- This keeps the existing rule for every other instructor screen untouched.
-
-### 4. `src/components/instructor/HomepageHero.tsx`
-- Reduce the wrapper's top padding from `pt-4` to `pt-2` (8px) so the white hero card sits flush against the now-white header with only a small breathing gap. The greeting itself keeps its internal `pt-4` so vertical rhythm inside the card is unchanged.
-
-## Result
-
-```text
-Before                          After
-┌──────────────┐                ┌──────────────┐
-│ status bar   │ grey           │ status bar   │ white
-├──────────────┤                ├──────────────┤
-│ logo  icons  │ grey           │ logo  icons  │ white
-├──────────────┤ ← 16px grey    ├──────────────┤ ← 8px white
-│ ▢ Greeting ▢ │ white card     │ ▢ Greeting ▢ │ white card
-└──────────────┘                └──────────────┘
-```
-
-The top of the Home screen reads as one continuous white surface flowing into the hero card. No other screen is affected.
-
-## Out of scope
-
-- No change to functionality, data fetching, navigation, routing or content.
-- No change to other screens' header background (they keep the warm page bg).
-- No change to bottom nav, FAB, or any card content.
+Technical target:
+- File: `src/components/instructor/PremiumIOSHomeView.tsx`
+- Current issue location: the `<h1>` around the greeting, currently using `text-[26px] leading-[1.05] ... truncate`.
+- Proposed fix: use a safer line-height such as `leading-[1.16]` or equivalent inline style, plus non-clipping overflow handling.
