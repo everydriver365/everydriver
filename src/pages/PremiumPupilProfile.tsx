@@ -936,7 +936,7 @@ export default function PremiumPupilProfile() {
       style={{
         background: C.card,
         borderRadius: 22,
-        padding: "14px 8px",
+        padding: "12px 8px",
         boxShadow: SHADOW_CARD,
         display: "flex",
         justifyContent: "space-between",
