@@ -482,7 +482,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
       <div
         className={cn(
           "min-h-screen instructor-portal ios-instructor a11y-scope",
-           isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : "pb-16 instructor-shell-bg"
+           isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : "pb-16 instructor-shell-bg",
+           !isFullscreenMode && isHomePage && "home-white-top"
         )}
       >
         {!isFullscreenMode && (
@@ -498,6 +499,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               isOnline={instructor?.is_active ?? true}
               showBackButton={showBackButton}
               showGreeting={!showBackButton}
+              surface={isHomePage ? "white" : "page"}
               onBack={() => navigate(-1)}
               onSOS={() => setShowSOS(true)}
               onPlus={() => setHeaderQuickActionsOpen(true)}
