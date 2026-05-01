@@ -17,6 +17,7 @@ interface NextLessonDetails {
   accountBalance: number;
   prepaidHours: number;
   checkInStatus: string | null;
+  lessonStatus: string | null;
   lastLessonPlan: string | null;
 }
 
