@@ -431,11 +431,13 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                           </div>
                         </div>
                       </div>
-                      <span
-                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${statusClasses}`}
-                      >
-                        {statusLabel}
-                      </span>
+                      {statusLabel && (
+                        <span
+                          className={`text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${statusClasses}`}
+                        >
+                          {statusLabel}
+                        </span>
+                      )}
                     </button>
                     {i < previewLessons.length - 1 && (
                       <div className="ml-[80px] mr-4 border-t border-black/[0.05]" />
