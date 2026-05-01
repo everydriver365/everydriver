@@ -310,6 +310,26 @@ function usePupilDocuments(pupilId: string | undefined) {
   });
 }
 
+function usePupilTermsStatus(pupilId: string | undefined) {
+  return useQuery({
+    queryKey: ["pupil-terms-status", pupilId],
+    enabled: !!pupilId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("pupil_terms_agreements" as any)
+        .select("status, signed_at, created_at")
+        .eq("pupil_id", pupilId!)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const row = (data as any[])?.[0];
+      if (!row) return { state: "required" as const };
+      if (row.status === "signed" || row.signed_at) return { state: "signed" as const };
+      if (row.status === "pending") return { state: "awaiting" as const };
+      return { state: "required" as const };
+    },
+  });
+}
+
 /* ──────────────────────────── page ──────────────────────────── */
 export default function PremiumPupilProfile() {
   const { pupilId } = useParams<{ pupilId: string }>();
