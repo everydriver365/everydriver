@@ -145,6 +145,38 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
       {/* Top bar (logo + bell + avatar) is provided by InstructorPortalLayout's
           MobileBlueHeader. Do not render a second header here. */}
 
+      {/* ---------------- Greeting + date pill ---------------- */}
+      <div className="px-5 pt-2 pb-4">
+        <div className="flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-[26px] leading-[1.15] font-bold tracking-tight text-[#1C1C1E]">
+              {greeting} <span className="inline-block">👋</span>
+            </h1>
+            <p className="mt-1 text-[14px] text-[#3C3C43]/70">
+              <span>
+                {lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today
+              </span>
+              {waitingCount > 0 && (
+                <>
+                  <span className="mx-1.5 text-[#3C3C43]/40">·</span>
+                  <span className="text-[#FF3B30] font-medium">
+                    {waitingCount} thing{waitingCount === 1 ? "" : "s"} waiting
+                  </span>
+                </>
+              )}
+            </p>
+          </div>
+          <button
+            onClick={() => navigate("/instructor/schedule")}
+            className="flex items-center gap-1.5 px-3 h-9 rounded-[10px] border border-black/10 bg-white text-[13px] font-medium text-[#1C1C1E] active:bg-black/[0.03] transition-colors shrink-0"
+          >
+            <Calendar className="size-[14px] text-[#3C3C43]/70" />
+            {format(today, "EEE, d MMM yyyy")}
+            <ChevronRight className="size-[14px] text-[#3C3C43]/50 rotate-90" />
+          </button>
+        </div>
+      </div>
+
       {/* ---------------- Needs your attention ---------------- */}
       {attention.length > 0 && (
         <section className="px-5 mb-5">
