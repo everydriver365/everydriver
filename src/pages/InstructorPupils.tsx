@@ -575,29 +575,25 @@ export default function InstructorPupils() {
 
   return (
     <InstructorPortalLayout>
-      <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingBottom: 24 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 18, paddingBottom: 24 }}>
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between" style={{ marginBottom: 4 }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 500, color: "#000000", letterSpacing: "-0.3px" }}>Pupils</h1>
-            <p style={{ fontSize: 13, color: "#6E6E73", marginTop: 2 }}>{stats.total} total · {stats.active} active</p>
+            <h1 style={{ fontSize: 26, fontWeight: 600, color: "#000000", letterSpacing: "-0.5px", lineHeight: 1.15 }}>
+              Pupils
+            </h1>
+            <p style={{ fontSize: 13, color: "#8E8E93", marginTop: 4, lineHeight: 1.4 }}>
+              {stats.active} active · {stats.passed} passed · {stats.totalLessons} lessons
+            </p>
           </div>
-          <Button size="sm" className="bg-[#2B7BC8] hover:bg-[#2670B8] text-white rounded-[10px] h-9 px-3 shadow-none" onClick={() => setIsAddOpen(true)}>
+          <Button
+            size="sm"
+            className="bg-[#2B7BC8] hover:bg-[#2670B8] text-white rounded-full h-9 px-4 shadow-none"
+            onClick={() => setIsAddOpen(true)}
+          >
             <Plus className="h-4 w-4 mr-1" />
             Add
           </Button>
-        </div>
-
-        {/* Stat cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 8 }}>
-          {[
-            { label: "Active", value: stats.active, dot: "#3B8B3B" },
-            { label: "Passed", value: stats.passed, dot: "#2B7BC8" },
-            { label: "Lessons", value: stats.totalLessons, dot: "#B8801F" },
-            { label: "On Hold", value: statusCounts.on_hold + statusCounts.inactive, dot: "#6E6E73" },
-          ].map((stat) => (
-            <StatCard key={stat.label} dot={stat.dot} value={stat.value} label={stat.label} />
-          ))}
         </div>
 
         {/* Search */}
