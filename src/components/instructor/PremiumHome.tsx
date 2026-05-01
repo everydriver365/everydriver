@@ -349,79 +349,71 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
         </div>
       </section>
 
-      {/* ---------------- Quick actions (horizontal chips) ---------------- */}
-      <section className="px-5 mb-5">
-        <div className="flex items-center justify-between mb-2.5">
-          <h2 className="text-[15px] font-semibold tracking-tight text-[#1C1C1E]">
+      {/* ---------------- Quick actions (4-tile grid) ---------------- */}
+      <section className="px-6 mb-7">
+        <div className="flex items-center justify-between mb-3.5">
+          <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
             Quick actions
           </h2>
           <button
             onClick={() => navigate("/instructor/account?tab=quick-actions")}
-            className="text-[13px] font-medium text-[#007AFF] active:opacity-60 transition-opacity"
+            className="text-[14px] font-medium text-[#007AFF] active:opacity-60 transition-opacity"
           >
             Edit
           </button>
         </div>
-        <div className="-mx-5 px-5 overflow-x-auto scrollbar-none">
-          <div className="flex gap-2.5 pb-1">
-            <ActionChip
-              icon={<CalendarPlus className="size-[18px]" />}
-              label="Add lesson"
-              tone="blue"
-              onClick={() => navigate("/instructor/schedule?action=add")}
-            />
-            <ActionChip
-              icon={<PoundSterling className="size-[18px]" />}
-              label="Take payment"
-              tone="green"
-              onClick={onPaymentClick}
-            />
-            <ActionChip
-              icon={<MessageCircle className="size-[18px]" />}
-              label="Message"
-              tone="indigo"
-              onClick={() => navigate("/instructor/messages")}
-            />
-            <ActionChip
-              icon={<Clock className="size-[18px]" />}
-              label="Fill gap"
-              tone="amber"
-              onClick={() => navigate("/instructor/schedule?view=gaps")}
-            />
-            <ActionChip
-              icon={<MoreHorizontal className="size-[18px]" />}
-              label="More"
-              tone="grey"
-              onClick={() => navigate("/instructor/account?tab=quick-actions")}
-            />
-          </div>
+        <div className="grid grid-cols-4 gap-3">
+          <ActionTile
+            icon={<CalendarPlus className="size-[20px]" />}
+            label="Add lesson"
+            tone="blue"
+            onClick={() => navigate("/instructor/schedule?action=add")}
+          />
+          <ActionTile
+            icon={<PoundSterling className="size-[20px]" />}
+            label="Take payment"
+            tone="green"
+            onClick={onPaymentClick}
+          />
+          <ActionTile
+            icon={<MessageCircle className="size-[20px]" />}
+            label="Message"
+            tone="indigo"
+            onClick={() => navigate("/instructor/messages")}
+          />
+          <ActionTile
+            icon={<Clock className="size-[20px]" />}
+            label="Fill gap"
+            tone="amber"
+            onClick={() => navigate("/instructor/schedule?view=gaps")}
+          />
         </div>
       </section>
 
-      {/* ---------------- Smart suggestion (soft grey card) ---------------- */}
+      {/* ---------------- Smart suggestion (soft card) ---------------- */}
       {firstGap && !suggestionDismissed && gapMins > 0 && (
-        <section className="px-5">
-          <div className="rounded-[18px] bg-[#F5F6F8] p-4 flex items-start gap-3.5 relative">
-            <div className="size-10 rounded-[12px] bg-white flex items-center justify-center shrink-0 mt-0.5 border border-black/[0.04]">
-              <CalendarCheck className="size-[18px] text-[#1F8E3F]" />
+        <section className="px-6">
+          <div className="rounded-[24px] bg-white border border-black/[0.05] shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-5 flex items-start gap-4 relative">
+            <div className="size-12 rounded-[14px] bg-[#E2F5E8] flex items-center justify-center shrink-0 mt-0.5">
+              <CalendarCheck className="size-[20px] text-[#1F8E3F]" />
             </div>
             <div className="flex-1 min-w-0 pr-7">
-              <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight">
+              <div className="text-[16px] font-semibold text-[#1C1C1E] tracking-tight">
                 You have a {gapMins} min gap at {firstGap.startTime.slice(0, 5)}
               </div>
-              <p className="text-[12.5px] text-[#3C3C43]/70 mt-1 leading-snug">
+              <p className="text-[13.5px] text-[#3C3C43]/70 mt-1 leading-snug">
                 Fill it with a new lesson and boost your earnings.
               </p>
             </div>
             <button
               onClick={() => navigate("/instructor/schedule?view=gaps")}
-              className="shrink-0 self-center px-4 h-10 rounded-[12px] bg-[#34C759] text-white text-[13px] font-semibold active:opacity-85 transition-opacity"
+              className="shrink-0 self-center px-5 h-11 rounded-[14px] bg-[#34C759] text-white text-[14px] font-semibold active:opacity-85 transition-opacity"
             >
               Add lesson
             </button>
             <button
               onClick={() => setSuggestionDismissed(true)}
-              className="absolute top-2.5 right-2.5 size-6 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+              className="absolute top-3 right-3 size-6 rounded-full flex items-center justify-center active:scale-95 transition-transform"
               aria-label="Dismiss"
             >
               <X className="size-[14px] text-[#3C3C43]/45" />
