@@ -480,7 +480,7 @@ function ScheduleListRow({
           <StatusPill status={statusPill} />
 
           {/* Completion micro-indicators / needs-attention dot — quiet, no labels, no backgrounds */}
-          {(completion?.eol || completion?.payment || completion?.notes || needsAttention) && (
+          {(completion?.eol || completion?.payment || completion?.notes || completion?.eolPending || completion?.paymentPending || needsAttention) && (
             <div
               style={{
                 display: "inline-flex",
@@ -493,7 +493,9 @@ function ScheduleListRow({
                   ? "Needs attention"
                   : [
                       completion?.eol ? "Lesson completed" : null,
+                      completion?.eolPending ? "End-of-lesson pending" : null,
                       completion?.payment ? "Payment recorded" : null,
+                      completion?.paymentPending ? "Payment pending" : null,
                       completion?.notes ? "Notes added" : null,
                     ]
                       .filter(Boolean)
@@ -503,8 +505,28 @@ function ScheduleListRow({
               {completion?.eol && (
                 <Check style={{ width: 12, height: 12, color: "#34C759", strokeWidth: 2.6 }} />
               )}
+              {completion?.eolPending && !completion?.eol && (
+                <span
+                  title="End-of-lesson not completed"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 2,
+                    color: "#B8801F",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: "-0.05px",
+                  }}
+                >
+                  <Clock style={{ width: 11, height: 11, color: "#B8801F", strokeWidth: 2.4 }} />
+                  EOL
+                </span>
+              )}
               {completion?.payment && (
                 <PoundSterling style={{ width: 12, height: 12, color: "#8E8E93", strokeWidth: 2.4 }} />
+              )}
+              {completion?.paymentPending && !completion?.payment && (
+                <PoundSterling style={{ width: 12, height: 12, color: "#B8801F", strokeWidth: 2.6 }} />
               )}
               {completion?.notes && (
                 <FileText style={{ width: 12, height: 12, color: "#8E8E93", strokeWidth: 2 }} />
