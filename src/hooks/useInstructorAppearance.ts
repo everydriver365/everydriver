@@ -43,7 +43,7 @@ export function useInstructorAppearance(instructorId: string | undefined) {
         const rawColor = data.wallpaper_color as string | null;
         const normalizedColor = rawColor?.toUpperCase() === "#E8F1FE" ? null : rawColor;
         return {
-          layoutStyle: (data.home_layout_style as LayoutStyle) || "dashboard",
+          layoutStyle: (data.home_layout_style as LayoutStyle) || "premium-ios",
           heroImageUrl: data.hero_image_url as string | null,
           wallpaperColor: normalizedColor,
         };
