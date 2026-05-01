@@ -245,9 +245,8 @@ export function ExpandableLessonCard({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className={cn(
-          "rounded-2xl border overflow-hidden relative",
-          colorPreset.bg,
-          colorPreset.border,
+          "rounded-2xl overflow-hidden relative",
+          renderCustomCollapsed ? "bg-transparent" : cn("border", colorPreset.bg, colorPreset.border),
           isDragging && "cursor-grabbing"
         )}
       >
