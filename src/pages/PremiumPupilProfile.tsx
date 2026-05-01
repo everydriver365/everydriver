@@ -769,12 +769,41 @@ export default function PremiumPupilProfile() {
     </Card>
   );
 
-  // ─────────── Mobile-only: priority + inline summary ───────────
+  // ─────────────── Mobile-only intelligence layer ───────────────
   const nextLessonDate = stats?.nextLesson?.lesson_date
     ? parseISO(stats.nextLesson.lesson_date as unknown as string)
     : null;
+  const lastLessonDate = stats?.lastLesson?.lesson_date
+    ? parseISO(stats.lastLesson.lesson_date as unknown as string)
+    : null;
+  const testDate = pupil.test_date ? parseISO(pupil.test_date) : null;
+
+  const daysUntilTest = testDate
+    ? Math.ceil((testDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
+  const daysSinceLastLesson = lastLessonDate
+    ? Math.floor((Date.now() - lastLessonDate.getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+
+  const totalLessons = stats?.totalLessons ?? 0;
+
+  // Driving stage label from progress %
+  const stageLabel = (() => {
+    if (status === "passed") return "Passed";
+    if (progressPct == null) {
+      if (totalLessons === 0) return "New pupil";
+      if (totalLessons < 10) return "Beginner";
+      return "In progress";
+    }
+    if (progressPct >= 80) return "Test ready";
+    if (progressPct >= 50) return "Intermediate";
+    return "Beginner";
+  })();
+
   const isPriority = (() => {
     if (hasDebt) return true;
+    if (daysUntilTest != null && daysUntilTest >= 0 && daysUntilTest <= 14) return true;
+    if (daysSinceLastLesson != null && daysSinceLastLesson >= 14) return true;
     if (!nextLessonDate) return false;
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
@@ -782,109 +811,283 @@ export default function PremiumPupilProfile() {
     return d.getTime() === today.getTime() || d.getTime() === tomorrow.getTime();
   })();
 
-  const inlineSummary = [
-    `${stats?.totalLessons ?? 0} ${(stats?.totalLessons ?? 0) === 1 ? "lesson" : "lessons"}`,
-    `${(stats?.totalHours ?? 0).toFixed(1)}h`,
-    pupil.test_date ? `Test ${format(parseISO(pupil.test_date), "d MMM")}` : null,
-  ].filter(Boolean).join(" · ");
+  // ── Smart insight derivation (no mock data) ──
+  type Insight = { headline: string; bullets: string[]; recommendation: string | null; tags: { label: string; tone: "amber" | "red" | "blue" | "green" }[] };
+  const insight: Insight | null = (() => {
+    const bullets: string[] = [];
+    const tags: Insight["tags"] = [];
+    let headline = "";
+    let recommendation: string | null = null;
 
-  const MobilePupilHero = (
+    if (daysUntilTest != null && daysUntilTest >= 0 && daysUntilTest <= 30) {
+      headline = daysUntilTest === 0 ? "Test today" : `Test in ${daysUntilTest} day${daysUntilTest === 1 ? "" : "s"}`;
+      tags.push({ label: "Test soon", tone: "amber" });
+      bullets.push(`Test date ${format(testDate!, "EEE d MMM")}`);
+      if (progressPct != null && progressPct < 80) {
+        recommendation = "Focus on weak areas before test";
+      } else if (!nextLessonDate) {
+        recommendation = "Book a final practice lesson";
+      } else {
+        recommendation = "Confirm test-day arrangements";
+      }
+    } else if (daysSinceLastLesson != null && daysSinceLastLesson >= 14) {
+      headline = `No lesson in ${daysSinceLastLesson} days`;
+      tags.push({ label: "Inactive", tone: "amber" });
+      bullets.push(`Last lesson ${formatDistanceToNow(lastLessonDate!, { addSuffix: true })}`);
+      if (!nextLessonDate) recommendation = "Reach out and schedule next lesson";
+      else recommendation = "Confirm upcoming lesson is going ahead";
+    } else if (totalLessons === 0) {
+      headline = "New pupil";
+      tags.push({ label: "Onboarding", tone: "blue" });
+      bullets.push("No lessons logged yet");
+      recommendation = nextLessonDate
+        ? "First lesson scheduled — prepare welcome plan"
+        : "Schedule first lesson";
+    } else if (progressPct != null && progressPct >= 80) {
+      headline = "Test ready";
+      tags.push({ label: "High progress", tone: "green" });
+      bullets.push(`${progressPct}% test readiness`);
+      if (totalLessons) bullets.push(`${totalLessons} lessons completed`);
+      recommendation = testDate ? "Confirm test booking" : "Book a driving test";
+    } else if (progressPct != null && progressPct >= 50) {
+      headline = "Steady progress";
+      bullets.push(`${progressPct}% test readiness`);
+      if (totalLessons) bullets.push(`${totalLessons} lessons · ${(stats?.totalHours ?? 0).toFixed(1)}h`);
+      recommendation = "Keep momentum — book next 2 lessons";
+    } else if (totalLessons > 0) {
+      headline = "Building foundations";
+      bullets.push(`${totalLessons} lessons · ${(stats?.totalHours ?? 0).toFixed(1)}h`);
+      if (lastLessonDate) bullets.push(`Last lesson ${formatDistanceToNow(lastLessonDate, { addSuffix: true })}`);
+      recommendation = nextLessonDate ? null : "Schedule next lesson";
+    } else {
+      return null;
+    }
+
+    if (hasDebt) {
+      bullets.unshift(`£${Math.abs(balance).toFixed(2)} outstanding`);
+      tags.unshift({ label: "Outstanding balance", tone: "red" });
+    }
+
+    return { headline, bullets: bullets.slice(0, 4), recommendation, tags: tags.slice(0, 3) };
+  })();
+
+  // ── Header (avatar-led, flowing — no card border) ──
+  const MobileHero = (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 16, padding: "4px 2px" }}>
+      <div style={{ position: "relative", flexShrink: 0 }}>
+        <PupilAvatar name={pupil.name} imageUrl={pupil.profile_image_url} size="lg" />
+        {status === "active" && (
+          <span
+            aria-hidden="true"
+            style={{
+              position: "absolute", bottom: 2, right: 2,
+              width: 14, height: 14, borderRadius: "50%",
+              background: C.green, border: `2px solid ${C.bg}`,
+              boxSizing: "border-box",
+            }}
+          />
+        )}
+      </div>
+      <div style={{ minWidth: 0, flex: 1, paddingTop: 2 }}>
+        <div
+          style={{
+            fontFamily: FONT, fontSize: 24, fontWeight: 700,
+            color: C.text, letterSpacing: "-0.02em", lineHeight: 1.15,
+            wordBreak: "break-word",
+          }}
+        >
+          {pupil.name}
+        </div>
+        <div
+          style={{
+            marginTop: 4,
+            fontFamily: FONT, fontSize: 13, fontWeight: 500,
+            color: C.muted, letterSpacing: "0.1px",
+          }}
+        >
+          {stageLabel}
+        </div>
+        {(pupil.phone || pupil.address || pupil.postcode) && (
+          <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 4 }}>
+            {pupil.phone && (
+              <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, lineHeight: 1.4 }}>
+                {pupil.phone}
+              </div>
+            )}
+            {(pupil.address || pupil.postcode) && (
+              <div
+                style={{
+                  fontFamily: FONT, fontSize: 13, color: C.muted, lineHeight: 1.4,
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                }}
+              >
+                {[pupil.address, pupil.postcode].filter(Boolean).join(", ")}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // ── Action row (subtle depth, larger targets) ──
+  const MobileActions = (
+    <div
+      style={{
+        background: C.card,
+        borderRadius: 22,
+        padding: "14px 8px",
+        boxShadow: SHADOW_CARD,
+        display: "flex",
+        justifyContent: "space-between",
+        gap: 8,
+      }}
+    >
+      <QuickAction icon={Phone} label="Call" onClick={handleCall} disabled={!pupil.phone} />
+      <QuickAction icon={MessageSquare} label="Message" onClick={handleMessage} color={C.green} />
+      <QuickAction icon={Navigation} label="Navigate" onClick={handleNavigate} color={C.amber} disabled={!pupil.address && !pupil.postcode && !pupil.what3words} />
+      <QuickAction icon={CalendarPlus} label="Book" onClick={() => setAddLessonOpen(true)} color={C.red} />
+    </div>
+  );
+
+  // ── Smart insight card ──
+  const toneMap = {
+    amber: { bg: "#FBF1E0", fg: C.amber },
+    red:   { bg: "#FBEAEC", fg: C.red },
+    blue:  { bg: "#E8F1FB", fg: C.accent },
+    green: { bg: "#E5F4EC", fg: C.green },
+  } as const;
+
+  const SmartInsight = insight ? (
     <div
       style={{
         background: C.card,
         borderRadius: RADIUS,
-        padding: 22,
-        border: `1px solid ${isPriority ? "#DCE7F2" : C.hairline}`,
+        padding: 20,
         boxShadow: isPriority
           ? "0 4px 16px rgba(43,123,200,0.10), 0 1px 2px rgba(16,24,40,0.04)"
           : SHADOW_CARD,
+        border: `1px solid ${isPriority ? "#DCE7F2" : C.hairline}`,
         transition: TRANSITION,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <PupilAvatar name={pupil.name} imageUrl={pupil.profile_image_url} size="lg" />
-        <div style={{ minWidth: 0, flex: 1 }}>
-          <div className="flex items-center" style={{ gap: 8, minWidth: 0 }}>
-            <div
-              className="truncate"
-              style={{
-                fontFamily: FONT,
-                fontSize: 22,
-                fontWeight: 700,
-                color: C.text,
-                letterSpacing: "-0.02em",
-                lineHeight: 1.15,
-                minWidth: 0,
-              }}
-            >
-              {pupil.name}
-            </div>
-            {hasDebt && (
-              <span
-                style={{
-                  background: "#FBEAEC",
-                  color: C.red,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  letterSpacing: "0.2px",
-                  padding: "3px 9px",
-                  borderRadius: 999,
-                  lineHeight: 1.3,
-                  flexShrink: 0,
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                −£{Math.abs(balance).toFixed(0)}
-              </span>
-            )}
-          </div>
-          <div style={{ marginTop: 6 }}>
-            <StatusDot status={status} />
-          </div>
-          <div
-            style={{
-              marginTop: 8,
-              fontFamily: FONT,
-              fontSize: 13,
-              color: C.muted,
-              lineHeight: 1.4,
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            {inlineSummary}
-          </div>
-        </div>
+      <div
+        style={{
+          fontFamily: FONT, fontSize: 11, fontWeight: 600,
+          color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase",
+        }}
+      >
+        Insight
+      </div>
+      <div
+        style={{
+          marginTop: 6,
+          fontFamily: FONT, fontSize: 20, fontWeight: 700,
+          color: C.text, letterSpacing: "-0.02em", lineHeight: 1.25,
+        }}
+      >
+        {insight.headline}
       </div>
 
-      {(pupil.address || pupil.postcode) && (
+      {insight.bullets.length > 0 && (
+        <ul style={{ marginTop: 12, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
+          {insight.bullets.map((b, i) => (
+            <li
+              key={i}
+              style={{
+                display: "flex", alignItems: "flex-start", gap: 8,
+                fontFamily: FONT, fontSize: 14, color: C.text, lineHeight: 1.45,
+              }}
+            >
+              <span style={{ width: 4, height: 4, borderRadius: 2, background: C.subtle, marginTop: 9, flexShrink: 0 }} />
+              <span>{b}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {insight.recommendation && (
         <div
           style={{
-            marginTop: 16,
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            color: C.muted,
-            fontFamily: FONT,
-            fontSize: 13,
+            marginTop: 14, padding: "12px 14px",
+            background: C.surface, borderRadius: 14,
+            display: "flex", alignItems: "center", gap: 10,
           }}
         >
-          <MapPin size={13} />
-          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {[pupil.address, pupil.postcode].filter(Boolean).join(", ")}
-          </span>
+          <div
+            style={{
+              width: 28, height: 28, borderRadius: 14,
+              background: `${C.accent}14`, color: C.accent,
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+            }}
+          >
+            <CalendarPlus size={14} />
+          </div>
+          <div style={{ fontFamily: FONT, fontSize: 13.5, fontWeight: 500, color: C.text, lineHeight: 1.4 }}>
+            {insight.recommendation}
+          </div>
         </div>
       )}
 
-      <div style={{
-        marginTop: 18, paddingTop: 16,
-        borderTop: `1px solid ${C.hairline}`,
-        display: "flex", justifyContent: "space-between", gap: 8,
-      }}>
-        <QuickAction icon={Phone} label="Call" onClick={handleCall} disabled={!pupil.phone} />
-        <QuickAction icon={MessageSquare} label="Message" onClick={handleMessage} color={C.green} />
-        <QuickAction icon={Navigation} label="Navigate" onClick={handleNavigate} color={C.amber} disabled={!pupil.address && !pupil.postcode && !pupil.what3words} />
-        <QuickAction icon={CalendarPlus} label="Book" onClick={() => setAddLessonOpen(true)} color={C.red} />
-      </div>
+      {insight.tags.length > 0 && (
+        <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {insight.tags.map((t) => {
+            const tone = toneMap[t.tone];
+            return (
+              <span
+                key={t.label}
+                style={{
+                  background: tone.bg, color: tone.fg,
+                  fontFamily: FONT, fontSize: 11, fontWeight: 600,
+                  padding: "4px 10px", borderRadius: 999, lineHeight: 1.3,
+                  letterSpacing: "0.2px",
+                }}
+              >
+                {t.label}
+              </span>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  ) : null;
+
+  // ── Lighter metrics row (no boxes) ──
+  const MobileMetrics = (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+        gap: 4,
+        padding: "4px 2px",
+      }}
+    >
+      {[
+        { label: "Lessons", value: String(totalLessons) },
+        { label: "Hours", value: (stats?.totalHours ?? 0).toFixed(1) },
+        { label: "Progress", value: progressPct != null ? `${progressPct}%` : "—" },
+        { label: "Test", value: testDate ? format(testDate, "d MMM") : "—" },
+      ].map((m) => (
+        <div key={m.label} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <div
+            style={{
+              fontFamily: FONT, fontSize: 20, fontWeight: 700,
+              color: C.text, letterSpacing: "-0.02em",
+              fontVariantNumeric: "tabular-nums", lineHeight: 1.1,
+            }}
+          >
+            {m.value}
+          </div>
+          <div
+            style={{
+              fontFamily: FONT, fontSize: 11, fontWeight: 500,
+              color: C.muted, letterSpacing: "0.3px", textTransform: "uppercase",
+            }}
+          >
+            {m.label}
+          </div>
+        </div>
+      ))}
     </div>
   );
 
@@ -892,19 +1095,22 @@ export default function PremiumPupilProfile() {
     <div style={{ background: C.bg, minHeight: "100vh", paddingBottom: 96, fontFamily: FONT }}>
       <div style={{ padding: "0 20px" }}>
         {Header}
-        <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-          {MobilePupilHero}
-          <SectionHeader title="Progress" />
-          {ProgressOverview}
+        <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
+          {MobileHero}
+          {MobileActions}
+          {SmartInsight}
+          {MobileMetrics}
           <SectionHeader title="Lessons" />
           {NextLesson}
           {LastLesson}
           {HistoryCard}
+          <SectionHeader title="Progress" />
+          {ProgressOverview}
           <SectionHeader title="Notes" />
           {NotesCard}
           <SectionHeader title="Documents" />
           {DocumentsCard}
-          <SectionHeader title="Money" />
+          <SectionHeader title="Payments" />
           {PaymentsCard}
           <SectionHeader title="Details" />
           {DetailsCard}
