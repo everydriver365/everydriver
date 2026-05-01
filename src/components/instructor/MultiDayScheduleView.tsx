@@ -296,7 +296,7 @@ function ScheduleListRow({
   struck: boolean;
   isOverdue?: boolean;
   kind?: "lesson" | "external" | "block" | "allday";
-  completion?: { eol?: boolean; payment?: boolean; notes?: boolean };
+  completion?: { eol?: boolean; payment?: boolean; notes?: boolean; eolPending?: boolean; paymentPending?: boolean };
   needsAttention?: boolean;
   onClick?: () => void;
 }) {
