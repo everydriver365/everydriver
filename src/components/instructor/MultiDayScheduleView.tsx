@@ -758,6 +758,59 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
     [dayData],
   );
 
+  // Today summary strip — uses already-fetched data, no extra queries.
+  const todaySummary = useMemo(() => {
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    const todayLessons = lessons.filter((l) => l.lesson_date === todayStr);
+    const lessonCount = todayLessons.length;
+    const scheduledMins = todayLessons.reduce(
+      (sum, l) => sum + (l.duration_minutes || 0),
+      0,
+    );
+
+    // Free gap time today: sum of gaps between consecutive timeline items 8am–8pm,
+    // bounded so we don't count overnight time.
+    const today = dayData.find((d) => d.dateStr === todayStr);
+    let freeMins = 0;
+    if (today) {
+      const items = today.timeline.map((t) => {
+        const startStr =
+          t.kind === "lesson"
+            ? t.data.start_time
+            : t.kind === "external"
+              ? format(parseISO(t.data.start_time), "HH:mm")
+              : format(parseISO(t.data.start_datetime), "HH:mm");
+        const endStr =
+          t.kind === "lesson"
+            ? getEndTime(t.data.start_time, t.data.duration_minutes)
+            : t.kind === "external"
+              ? format(parseISO(t.data.end_time), "HH:mm")
+              : format(parseISO(t.data.end_datetime), "HH:mm");
+        const toMin = (s: string) => {
+          const [h, m] = s.split(":").map(Number);
+          return h * 60 + m;
+        };
+        return { s: toMin(startStr), e: toMin(endStr) };
+      });
+      const dayStart = 8 * 60;
+      const dayEnd = 20 * 60;
+      const sorted = [...items].sort((a, b) => a.s - b.s);
+      let cursor = dayStart;
+      for (const it of sorted) {
+        if (it.e <= dayStart || it.s >= dayEnd) continue;
+        if (it.s > cursor) freeMins += it.s - cursor;
+        cursor = Math.max(cursor, it.e);
+      }
+      if (cursor < dayEnd) freeMins += dayEnd - cursor;
+    }
+
+    const overdueCount = todayLessons.filter(
+      (l) => l.payment_status !== "paid" && (l.pupil?.account_balance ?? 0) < 0,
+    ).length;
+
+    return { lessonCount, scheduledMins, freeMins, overdueCount };
+  }, [lessons, dayData]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16" style={{ backgroundColor: "transparent" }}>
@@ -769,23 +822,55 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   return (
     <div
       style={{
-        backgroundColor: "#F2F2F4",
+        backgroundColor: "#F7F7F8",
         color: "#1F1F1F",
         fontFamily: FONT_STACK,
         paddingBottom: 96,
         minHeight: "100%",
       }}
     >
-      {/* Single white card containing day-grouped sections */}
-      <div
-        style={{
-          margin: "12px 16px 0",
-          backgroundColor: "#FFFFFF",
-          borderRadius: 12,
-          overflow: "hidden",
-          border: "0.5px solid #E5E5EA",
-        }}
-      >
+      {/* Summary strip — uses existing data only */}
+      <div style={{ padding: "8px 16px 4px" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+            gap: 0,
+            background: "#FFFFFF",
+            borderRadius: 18,
+            padding: "12px 6px",
+            boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -10px rgba(16,24,40,0.08)",
+          }}
+        >
+          <SummaryStat
+            icon={<CalendarDays style={{ width: 14, height: 14 }} />}
+            value={String(todaySummary.lessonCount)}
+            label="Lessons"
+            tint="#2B7BC8"
+          />
+          <SummaryStat
+            icon={<Clock style={{ width: 14, height: 14 }} />}
+            value={formatHm(todaySummary.scheduledMins)}
+            label="Scheduled"
+            tint="#3B8B3B"
+          />
+          <SummaryStat
+            icon={<Hourglass style={{ width: 14, height: 14 }} />}
+            value={formatHm(todaySummary.freeMins)}
+            label="Free"
+            tint="#8A5BC9"
+          />
+          <SummaryStat
+            icon={<AlertCircle style={{ width: 14, height: 14 }} />}
+            value={String(todaySummary.overdueCount)}
+            label="Overdue"
+            tint={todaySummary.overdueCount > 0 ? "#C8434F" : "#8E8E93"}
+          />
+        </div>
+      </div>
+
+      {/* Day-grouped timeline sections (no big white wrapper — let cards float) */}
+      <div>
         {dayData.map(({ day, dateStr, timeline, allDay }, idx) => {
           const today = isToday(day);
 
