@@ -95,6 +95,41 @@ function LargeToolCard({ tile, onPress, locked }: { tile: QuickAccessTile; onPre
   );
 }
 
+function PrimaryToolCard({ tile, onPress, locked }: { tile: QuickAccessTile; onPress: () => void; locked?: boolean }) {
+  const palette = TILE_TONE[tile.tone];
+  const Icon = tile.icon;
+  return (
+    <motion.button
+      type="button"
+      whileTap={{ scale: 0.97 }}
+      onClick={onPress}
+      aria-label={tile.title}
+      style={{
+        background: "#FFFFFF", borderRadius: 22, padding: "18px 16px",
+        height: 130, display: "flex", flexDirection: "column",
+        alignItems: "flex-start", justifyContent: "space-between",
+        textAlign: "left", width: "100%", cursor: "pointer",
+        opacity: locked ? 0.55 : 1, border: 0,
+        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 8px 24px -10px rgba(16,24,40,0.10)",
+      }}
+    >
+      <div style={{ width: 44, height: 44, borderRadius: 13, background: palette.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Icon size={22} strokeWidth={1.8} color={palette.fg} />
+      </div>
+      <div style={{ width: "100%" }}>
+        <div style={{ fontSize: 15, fontWeight: 600, color: "#000", letterSpacing: "-0.2px", lineHeight: 1.2 }}>
+          {tile.title}
+        </div>
+        {tile.subtitle && (
+          <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 3, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical" }}>
+            {tile.subtitle}
+          </div>
+        )}
+      </div>
+    </motion.button>
+  );
+}
+
 function CategoryRow({ category, count, expanded, onPress }: { category: Category; count: number; expanded: boolean; onPress: () => void }) {
   const palette = TILE_TONE[category.tone];
   const Icon = category.icon;
@@ -283,16 +318,63 @@ export function HomeToolsHub() {
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          style={{ overflow: "hidden", background: "#FAFAFC", borderTop: "0.5px solid #E5E5EA" }}
+                          transition={{ duration: 0.22 }}
+                          style={{ overflow: "hidden", background: "#F7F7F9", borderTop: "0.5px solid #E5E5EA" }}
                         >
-                          <div style={{ padding: "12px 14px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                            {validTiles.map((id) => {
-                              const tile = QUICK_ACCESS_TILES_BY_ID[id];
+                          <div style={{ padding: "20px 16px 22px" }}>
+                            {/* Category sub-header */}
+                            <div style={{ marginBottom: 16, padding: "0 2px" }}>
+                              <div style={{ fontSize: 11, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase", letterSpacing: "0.4px" }}>
+                                {validTiles.length} tool{validTiles.length === 1 ? "" : "s"}
+                              </div>
+                            </div>
+
+                            {/* Primary tools — first 3 as larger cards */}
+                            {validTiles.length > 0 && (() => {
+                              const primary = validTiles.slice(0, 3);
+                              const rest = validTiles.slice(3);
                               return (
-                                <LargeToolCard key={id} tile={tile} onPress={() => handleTap(tile)} locked={isLocked(tile)} />
+                                <>
+                                  <div style={{ fontSize: 11, fontWeight: 600, color: "#6E6E73", textTransform: "uppercase", letterSpacing: "0.4px", margin: "0 2px 10px" }}>
+                                    Primary
+                                  </div>
+                                  <div style={{ display: "grid", gridTemplateColumns: primary.length === 1 ? "1fr" : "1fr 1fr", gap: 12, marginBottom: rest.length > 0 ? 24 : 0 }}>
+                                    {primary.map((id) => {
+                                      const tile = QUICK_ACCESS_TILES_BY_ID[id];
+                                      return (
+                                        <PrimaryToolCard
+                                          key={id}
+                                          tile={tile}
+                                          onPress={() => handleTap(tile)}
+                                          locked={isLocked(tile)}
+                                        />
+                                      );
+                                    })}
+                                  </div>
+
+                                  {rest.length > 0 && (
+                                    <>
+                                      <div style={{ fontSize: 11, fontWeight: 600, color: "#6E6E73", textTransform: "uppercase", letterSpacing: "0.4px", margin: "0 2px 10px" }}>
+                                        All tools
+                                      </div>
+                                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                                        {rest.map((id) => {
+                                          const tile = QUICK_ACCESS_TILES_BY_ID[id];
+                                          return (
+                                            <LargeToolCard
+                                              key={id}
+                                              tile={tile}
+                                              onPress={() => handleTap(tile)}
+                                              locked={isLocked(tile)}
+                                            />
+                                          );
+                                        })}
+                                      </div>
+                                    </>
+                                  )}
+                                </>
                               );
-                            })}
+                            })()}
                           </div>
                         </motion.div>
                       )}
