@@ -459,13 +459,13 @@ function ActionTile({
   return (
     <button
       onClick={onClick}
-      className="aspect-square flex flex-col items-start justify-between rounded-[22px] p-3 active:scale-[0.97] transition-transform"
-      style={{ background: t.bg, color: t.fg, minHeight: 88 }}
+      className="shrink-0 flex items-center gap-2.5 rounded-[18px] pl-3 pr-4 active:scale-[0.97] transition-transform"
+      style={{ background: t.bg, color: t.fg, height: 64, minWidth: 132 }}
     >
-      <span className="size-9 rounded-full bg-white/80 flex items-center justify-center">
+      <span className="size-9 rounded-full bg-white/85 flex items-center justify-center shrink-0">
         {icon}
       </span>
-      <span className="text-[13px] font-semibold tracking-tight leading-tight text-left">
+      <span className="text-[13.5px] font-semibold tracking-tight leading-tight text-left">
         {label}
       </span>
     </button>
