@@ -121,12 +121,6 @@ serve(async (req) => {
     }
 
     const routeResult = await calculateRoute(fromCoords, toCoords);
-    if (!routeResult) {
-      return new Response(
-        JSON.stringify({ error: "Could not calculate route" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
 
     const returnDistance =
       instructor_home_postcode && to_postcode !== instructor_home_postcode
@@ -136,6 +130,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
+        estimated: routeResult.estimated ?? false,
         from_postcode,
         to_postcode: destinationPostcode,
         one_way_miles: Number(routeResult.distanceMiles.toFixed(1)),
