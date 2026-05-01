@@ -426,10 +426,10 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
 }
 
 /* -------------------------------------------------------------------------- */
-/* ActionChip                                                                 */
+/* ActionTile (4-up grid, large pastel square)                                */
 /* -------------------------------------------------------------------------- */
 
-function ActionChip({
+function ActionTile({
   icon,
   label,
   tone,
@@ -451,13 +451,13 @@ function ActionChip({
   return (
     <button
       onClick={onClick}
-      className="shrink-0 flex flex-col items-start justify-between rounded-[16px] px-3.5 py-3 active:scale-[0.97] transition-transform"
-      style={{ background: t.bg, color: t.fg, width: 96, minHeight: 76 }}
+      className="aspect-square flex flex-col items-start justify-between rounded-[22px] p-3 active:scale-[0.97] transition-transform"
+      style={{ background: t.bg, color: t.fg, minHeight: 88 }}
     >
-      <span className="size-7 rounded-full bg-white/70 flex items-center justify-center">
+      <span className="size-9 rounded-full bg-white/80 flex items-center justify-center">
         {icon}
       </span>
-      <span className="text-[12.5px] font-semibold tracking-tight leading-tight text-left mt-2">
+      <span className="text-[13px] font-semibold tracking-tight leading-tight text-left">
         {label}
       </span>
     </button>
