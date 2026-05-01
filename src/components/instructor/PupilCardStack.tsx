@@ -673,12 +673,15 @@ export function PupilCardStack({
         layout
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
+        whileTap={{ boxShadow: "0 8px 20px rgba(0,0,0,0.08)" }}
+        transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
         style={{
           backgroundColor: "#FFFFFF",
           border: "0.5px solid #E5E5EA",
           borderRadius: 12,
           overflow: "hidden",
           position: "relative",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
         }}
       >
         {/* Overdue corner ribbon */}
