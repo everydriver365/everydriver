@@ -478,6 +478,65 @@ function ScheduleListRow({
             </span>
           )}
           <StatusPill status={statusPill} />
+
+          {/* Completion micro-indicators / needs-attention dot — quiet, no labels, no backgrounds */}
+          {(completion?.eol || completion?.payment || completion?.notes || needsAttention) && (
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                marginTop: 2,
+              }}
+              aria-label={
+                needsAttention
+                  ? "Needs attention"
+                  : [
+                      completion?.eol ? "Lesson completed" : null,
+                      completion?.payment ? "Payment recorded" : null,
+                      completion?.notes ? "Notes added" : null,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")
+              }
+            >
+              {completion?.eol && (
+                <Check style={{ width: 12, height: 12, color: "#34C759", strokeWidth: 2.6 }} />
+              )}
+              {completion?.payment && (
+                <PoundSterling style={{ width: 12, height: 12, color: "#8E8E93", strokeWidth: 2.4 }} />
+              )}
+              {completion?.notes && (
+                <FileText style={{ width: 12, height: 12, color: "#8E8E93", strokeWidth: 2 }} />
+              )}
+              {needsAttention && (
+                <span
+                  title="Needs attention"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 3,
+                    color: "#B8801F",
+                    fontSize: 10.5,
+                    fontWeight: 600,
+                    letterSpacing: "-0.05px",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: "50%",
+                      background: "#FF9500",
+                      display: "inline-block",
+                    }}
+                  />
+                  Needs attention
+                </span>
+              )}
+            </div>
+          )}
+
           {showChevron && (
             <ChevronRight
               style={{ width: 14, height: 14, color: "#C7C7CC", flexShrink: 0, strokeWidth: 1.8 }}
