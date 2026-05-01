@@ -924,18 +924,8 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
           const hasContent = timeline.length > 0 || allDay.length > 0;
 
           return (
-            <div key={dateStr}>
-              {/* Inter-day separator (skip before the very first day) */}
-              {idx > 0 && (
-                <div
-                  style={{
-                    height: 4,
-                    backgroundColor: "#F2F2F4",
-                  }}
-                />
-              )}
-
-              {/* Day header (sticky) */}
+            <div key={dateStr} style={{ padding: "12px 16px 4px" }}>
+              {/* Day header */}
               <div
                 id={`schedule-day-${dateStr}`}
                 ref={today ? todayRef : undefined}
@@ -943,19 +933,21 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                   position: "sticky",
                   top: 0,
                   zIndex: 5,
-                  backgroundColor: "#FFFFFF",
-                  padding: "10px 16px 6px",
-                  borderBottom: "0.5px solid transparent",
+                  backgroundColor: "#F7F7F8",
+                  padding: "8px 4px 10px",
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 8,
                 }}
               >
                 <h3
                   style={{
                     margin: 0,
-                    fontSize: 11,
-                    fontWeight: 500,
-                    color: today ? "#2B7BC8" : "#6E6E73",
-                    letterSpacing: "0.3px",
-                    textTransform: "uppercase",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: today ? "#2B7BC8" : "#1C1C1E",
+                    letterSpacing: "-0.1px",
+                    textTransform: "none",
                   }}
                 >
                   {formatDayHeader(day)}
