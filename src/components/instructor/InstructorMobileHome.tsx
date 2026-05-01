@@ -112,6 +112,7 @@ import { BestMateHomeView } from "@/components/instructor/BestMateHomeView";
 import { MissionControlHomeView } from "@/components/instructor/MissionControlHomeView";
 import { WidgetsHomeView } from "@/components/instructor/WidgetsHomeView";
 import { PremiumIOSHomeView } from "@/components/instructor/PremiumIOSHomeView";
+import { PremiumHome } from "@/components/instructor/PremiumHome";
 
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { HomeTodaySchedule } from "@/components/instructor/HomeTodaySchedule";
@@ -457,6 +458,12 @@ export function InstructorMobileHome({
         />
       ) : layoutStyle === "premium-ios" ? (
         <PremiumIOSHomeView
+          instructorId={instructorId}
+          instructor={instructor}
+          onPaymentClick={onPaymentClick}
+        />
+      ) : layoutStyle === "premium" ? (
+        <PremiumHome
           instructorId={instructorId}
           instructor={instructor}
           onPaymentClick={onPaymentClick}

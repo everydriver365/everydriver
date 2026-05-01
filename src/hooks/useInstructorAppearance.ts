@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-export type LayoutStyle = "dashboard" | "schedule" | "lockscreen" | "clean" | "ios-native" | "compact" | "bestmate" | "mission-control" | "widgets" | "premium-ios";
+export type LayoutStyle = "dashboard" | "schedule" | "lockscreen" | "clean" | "ios-native" | "compact" | "bestmate" | "mission-control" | "widgets" | "premium-ios" | "premium";
 
 export interface AppearanceSettings {
   layoutStyle: LayoutStyle;
