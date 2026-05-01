@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { format, parse, addMinutes } from "date-fns";
 import { motion } from "framer-motion";
-import { CalendarOff, Navigation, Calendar } from "lucide-react";
+import { CalendarOff, Navigation, Calendar, Check, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { TodayLesson } from "@/hooks/useTodayRemainingLessons";
+import { useDayLessonHistory, eolKey } from "@/hooks/useDayLessonHistory";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { PupilAvatar } from "./PupilAvatar";
@@ -26,6 +27,9 @@ const typeColors: Record<string, { bg: string; text: string }> = {
 
 export function TodayLessonsList({ lessons, instructorId, className = "" }: TodayLessonsListProps) {
   const [recordingLessonId, setRecordingLessonId] = useState<string | null>(null);
+  // EOL-completed keys for today (pupilId|HH:MM:SS) — used to show ✓ vs amber pending
+  const { data: eolDoneKeys } = useDayLessonHistory(instructorId, new Date());
+
   const formatTime = (time: string) => {
     try {
       return format(parse(time, "HH:mm:ss", new Date()), "HH:mm");
@@ -77,6 +81,19 @@ export function TodayLessonsList({ lessons, instructorId, className = "" }: Toda
               const isPaid = lesson.paymentStatus === "paid";
               const colors = typeColors[lesson.lessonType] || typeColors.Standard;
               const isLast = idx === lessons.length - 1;
+
+              // EOL completion: lesson_history row exists OR status flipped to completed
+              const eolDone = isCompleted || (
+                lesson.pupilId
+                  ? !!eolDoneKeys?.has(eolKey(lesson.pupilId, lesson.startTime))
+                  : false
+              );
+              // Past = lesson end time has passed
+              const today = format(new Date(), "yyyy-MM-dd");
+              const lessonStart = new Date(`${today}T${lesson.startTime}`);
+              const lessonEnd = new Date(lessonStart.getTime() + (lesson.durationMinutes || 60) * 60000);
+              const isPast = lessonEnd.getTime() < Date.now();
+              const eolPending = isPast && !eolDone && !isCancelled;
 
               return (
                 <motion.div
@@ -175,6 +192,24 @@ export function TodayLessonsList({ lessons, instructorId, className = "" }: Toda
                                 {formatTime(lesson.startTime)} – {getEndTime(lesson.startTime, lesson.durationMinutes)}
                               </span>
                               <div className="flex items-center gap-2">
+                                {/* EOL status pill — green ✓ when done, amber clock when pending on past lessons */}
+                                {eolDone ? (
+                                  <span
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600"
+                                    title="End-of-lesson completed"
+                                  >
+                                    <Check className="h-[10px] w-[10px]" strokeWidth={3} />
+                                    EOL
+                                  </span>
+                                ) : eolPending ? (
+                                  <span
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-600"
+                                    title="End-of-lesson not completed"
+                                  >
+                                    <Clock className="h-[10px] w-[10px]" strokeWidth={2.6} />
+                                    EOL
+                                  </span>
+                                ) : null}
                                 <button
                                   onClick={(e) => {
                                     e.preventDefault();
