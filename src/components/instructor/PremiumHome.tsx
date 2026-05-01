@@ -141,12 +141,12 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
     : 0;
 
   return (
-    <div className="min-h-screen bg-white pb-8">
+    <div className="bg-white pb-8">
       {/* Top bar (logo + bell + avatar) is provided by InstructorPortalLayout's
           MobileBlueHeader. Do not render a second header here. */}
 
       {/* ---------------- Greeting + date pill ---------------- */}
-      <div className="px-5 pt-2 pb-4">
+      <div className="px-5 pt-1 pb-4">
         <div className="flex items-end justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-[26px] leading-[1.15] font-bold tracking-tight text-[#1C1C1E]">
