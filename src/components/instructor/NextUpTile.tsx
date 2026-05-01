@@ -1473,7 +1473,10 @@ export function NextUpTile({
         <EndLessonWizard open={wizardOpen} onOpenChange={setWizardOpen} lessonId={lessonId}
           pupilId={pupilId} pupilName={pupilName} instructorId={instructorId}
           durationMinutes={durationMinutes} lessonDate={lessonDate} startTime={startTime}
-          currentBalance={accountBalance} onCompleted={handleCancelled} />
+          currentBalance={accountBalance} onCompleted={() => {
+            toast.success("Lesson ended", { description: pupilName ? `${pupilName}'s lesson saved` : "Lesson saved" });
+            handleCancelled();
+          }} />
       )}
       <RunningLateSheet open={lateSheetOpen} onOpenChange={setLateSheetOpen}
         pupilName={pupilName} pupilPhone={pupilPhone} startTime={startTime} />
