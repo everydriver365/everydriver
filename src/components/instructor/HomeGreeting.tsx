@@ -19,7 +19,7 @@ export function HomeGreeting({ greeting, statusSubtitle, statusParts }: HomeGree
           fontWeight: 500,
           color: "#000000",
           letterSpacing: "-0.6px",
-          lineHeight: 1.05,
+          lineHeight: 1.2,
           margin: "0 0 4px",
         }}
       >
