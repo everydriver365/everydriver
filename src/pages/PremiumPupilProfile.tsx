@@ -769,15 +769,15 @@ export default function PremiumPupilProfile() {
   );
 
   const MobileLayout = (
-    <div style={{ background: C.bg, minHeight: "100vh", paddingBottom: 80, fontFamily: FONT }}>
-      <div style={{ padding: "0 14px" }}>
+    <div style={{ background: C.bg, minHeight: "100vh", paddingBottom: 96, fontFamily: FONT }}>
+      <div style={{ padding: "0 20px" }}>
         {Header}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {hasDebt && (
-            <Card padding={12} className="">
+            <Card padding={14} className="">
               <div style={{ display: "flex", alignItems: "center", gap: 10, color: C.amber }}>
                 <AlertCircle size={18} />
-                <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600 }}>
+                <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 600 }}>
                   £{Math.abs(balance).toFixed(2)} outstanding
                 </div>
               </div>
@@ -807,15 +807,15 @@ export default function PremiumPupilProfile() {
 
   const DesktopLayout = (
     <div style={{ background: C.bg, minHeight: "100vh", fontFamily: FONT }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "16px 24px 80px" }}>
+      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "24px 40px 96px" }}>
         {Header}
-        <div style={{ display: "grid", gridTemplateColumns: "360px 1fr", gap: 24, alignItems: "start" }}>
-          <div style={{ position: "sticky", top: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "380px 1fr", gap: 32, alignItems: "start" }}>
+          <div style={{ position: "sticky", top: 24, display: "flex", flexDirection: "column", gap: 16 }}>
             {hasDebt && (
-              <Card padding={12}>
+              <Card padding={14}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, color: C.amber }}>
                   <AlertCircle size={18} />
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>
                     £{Math.abs(balance).toFixed(2)} outstanding
                   </div>
                 </div>
@@ -828,12 +828,12 @@ export default function PremiumPupilProfile() {
             {NextLesson}
             {LastLesson}
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 820 }}>
             <SectionHeader title="Progress" />
             {ProgressOverview}
             <SectionHeader title="Lesson history" />
             {HistoryCard}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <div>
                 <SectionHeader title="Notes" />
                 {NotesCard}
