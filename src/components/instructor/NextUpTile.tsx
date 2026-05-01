@@ -492,13 +492,15 @@ export function NextUpTile({
           {/* ── Header (whole row tappable to expand) ── */}
           <div style={{ position: "relative" }}>
 
-            {/* UP NEXT label */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
-              <span style={{ fontSize: a11yPx(11), fontWeight: 600, color: "#5856D6", letterSpacing: 0.6, textTransform: "uppercase" }}>Up next</span>
-              {checkInStatus && (
-                <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5 ml-1" />
-              )}
-            </div>
+            {/* UP NEXT label — hidden when expanded (the expanded hero shows its own pill) */}
+            {!expanded && (
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                <span style={{ fontSize: a11yPx(11), fontWeight: 600, color: "#5856D6", letterSpacing: 0.6, textTransform: "uppercase" }}>Up next</span>
+                {checkInStatus && (
+                  <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5 ml-1" />
+                )}
+              </div>
+            )}
 
             <button
               onClick={() => setExpanded(!expanded)}
@@ -511,6 +513,27 @@ export function NextUpTile({
                 transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
               }}
             >
+              {expanded ? (
+                /* Slim toggle strip when expanded — avoids duplicating pupil/time/countdown shown in the hero card below */
+                <div style={{
+                  width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "2px 0",
+                }}>
+                  <span style={{ fontSize: a11yPx(11), fontWeight: 600, color: "#5856D6", letterSpacing: 0.6, textTransform: "uppercase" }}>
+                    Up next · tap to hide
+                  </span>
+                  <ChevronDown
+                    aria-hidden
+                    style={{
+                      width: 16, height: 16, color: "#6E6E73",
+                      transform: "rotate(180deg)",
+                      transition: "transform 250ms cubic-bezier(0.2,0.7,0.2,1)",
+                    }}
+                    strokeWidth={1.8}
+                  />
+                </div>
+              ) : (
+                <>
               {/* LEFT: avatar + identity */}
               <div style={{ flex: 1, minWidth: 0, display: "flex", gap: 12, alignItems: "flex-start" }}>
                 {/* Avatar */}
@@ -633,6 +656,8 @@ export function NextUpTile({
                   </span>
                 </div>
               </div>
+                </>
+              )}
             </button>
           </div>
 
