@@ -227,6 +227,12 @@
   body:has(.ios-instructor) {
     background-color: hsl(var(--dsm-page-bg, var(--dsm-bg, 35 17% 96%)));
   }
+  /* Home-only override: safe-area zone reads white so it flows into the
+     white hero card with no warm-grey strip above the logo row. */
+  html:has(.instructor-portal.home-white-top),
+  body:has(.instructor-portal.home-white-top) {
+    background-color: #FFFFFF;
+  }
 
   /* ===== Unified Portal Design System (instructor mobile) =====
      One coherent visual language across every instructor screen.
