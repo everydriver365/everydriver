@@ -29,9 +29,11 @@ import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
+import { useTomorrowLessons } from "@/hooks/useTomorrowLessons";
 import { useLastWeekComparison } from "@/hooks/useLastWeekComparison";
 import { useHomeActions } from "@/components/instructor/WarmHomeTiles";
 import { getTimeOfDayGreeting } from "@/lib/composeStatusSubtitle";
+import { GraduationCap } from "lucide-react";
 
 interface Props {
   instructorId: string | undefined;
@@ -90,6 +92,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
   const { data: todayOverview } = useTodayOverview(instructorId);
   const { data: todayLessons } = useTodayRemainingLessons(instructorId);
+  const { data: tomorrowLessons } = useTomorrowLessons(instructorId);
   const { data: gapSuggestions } = useRealGapSlots(instructorId);
   const { data: comparison } = useLastWeekComparison(instructorId);
   const { messageCount, pendingJobsCount } = useCombinedNotificationCount(instructorId);
@@ -101,11 +104,8 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
   /* ---------------- Subtitle counts -------------------------------------- */
   const lessonsToday = todayOverview?.lessonCount ?? 0;
+  const expectedEarnings = todayOverview?.expectedEarnings ?? 0;
   const waitingCount = homeActions.length;
-  const subParts: string[] = [];
-  subParts.push(`${lessonsToday} lesson${lessonsToday === 1 ? "" : "s"} today`);
-  if (waitingCount > 0)
-    subParts.push(`${waitingCount} thing${waitingCount === 1 ? "" : "s"} waiting`);
 
   /* ---------------- Needs attention (max 3 rows) ------------------------- */
   const totalGapSlots =
@@ -193,6 +193,12 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </h1>
         <p className="mt-1 text-[13px] font-medium text-[#3C3C43]/65 whitespace-nowrap overflow-hidden text-ellipsis">
           <span>{lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today</span>
+          {expectedEarnings > 0 && (
+            <>
+              <span className="mx-1.5 text-[#3C3C43]/40">·</span>
+              <span>£{expectedEarnings} expected</span>
+            </>
+          )}
           {waitingCount > 0 && (
             <>
               <span className="mx-1.5 text-[#3C3C43]/40">·</span>
@@ -256,6 +262,57 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
           </div>
         )}
       </section>
+
+      {/* Smart inline alert: leave-soon prompt for next lesson (uses existing data) */}
+      {(() => {
+        if (!nextLesson) return null;
+        const m = nextLesson.minutesUntil;
+        // Only relevant when next lesson is today and within the next ~45 min
+        if (m <= 0 || m > 45) return null;
+        const hhmm = (nextLesson.startTime || "").slice(0, 5);
+        const label =
+          m <= 15
+            ? `Leave now for your ${hhmm} lesson`
+            : `Leave in ${m - 10} min for your ${hhmm} lesson`;
+        return (
+          <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-[14px] bg-[#FFF6E0] text-[#8A5A00]">
+            <Clock className="size-[14px] shrink-0" />
+            <span className="text-[12.5px] font-medium leading-snug">{label}</span>
+          </div>
+        );
+      })()}
+
+      {/* Contextual nudges (conditional, subtle) */}
+      {(() => {
+        const nudges: Array<{ key: string; icon: React.ReactNode; label: string; onClick?: () => void }> = [];
+        const testTomorrow = (tomorrowLessons || []).find((l: any) => {
+          const t = (l.lessonType || "").toLowerCase();
+          return t.includes("test");
+        });
+        if (testTomorrow) {
+          nudges.push({
+            key: "test-tomorrow",
+            icon: <GraduationCap className="size-[14px]" />,
+            label: `Pupil test tomorrow — ${testTomorrow.pupilName || "review prep"}`,
+            onClick: () => navigate("/instructor/schedule"),
+          });
+        }
+        if (!nudges.length) return null;
+        return (
+          <div className="mt-3 flex flex-col gap-2">
+            {nudges.map((n) => (
+              <button
+                key={n.key}
+                onClick={n.onClick}
+                className="flex items-center gap-2 px-3 py-2 rounded-[14px] bg-[#EEF4FF] text-[#1A4FB8] active:opacity-80 transition-opacity text-left"
+              >
+                <span className="shrink-0">{n.icon}</span>
+                <span className="text-[12.5px] font-medium leading-snug truncate">{n.label}</span>
+              </button>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* SECTION 2: Needs attention — single card, 64px rows */}
       {attentionRows.length > 0 && (
@@ -336,117 +393,162 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
             </div>
           ) : (
             <div className="pt-1">
-              {previewLessons.map((lesson, i) => {
-                const initials = (lesson.pupilName || "?")
-                  .split(" ")
-                  .map((n: string) => n[0])
-                  .join("")
-                  .slice(0, 2)
-                  .toUpperCase();
-                const isCompleted = lesson.status === "completed";
-                const isInProgress = lesson.status === "in_progress";
-                const owesAmount =
-                  !isCompleted &&
-                  lesson.paymentStatus !== "paid" &&
-                  typeof lesson.amountDue === "number" &&
-                  lesson.amountDue > 0
-                    ? lesson.amountDue
-                    : 0;
-                // For non-completed / non-live lessons, show "Owed £X" pill if
-                // payment is outstanding; otherwise show no pill (Upcoming removed).
-                const statusTone: "green" | "blue" | "red" | null = isCompleted
-                  ? "green"
-                  : isInProgress
-                  ? "blue"
-                  : owesAmount > 0
-                  ? "red"
-                  : null;
-                const statusLabel = isCompleted
-                  ? "Done"
-                  : isInProgress
-                  ? "Live"
-                  : owesAmount > 0
-                  ? `Owed £${owesAmount % 1 === 0 ? owesAmount.toFixed(0) : owesAmount.toFixed(2)}`
-                  : null;
-                const statusClasses =
-                  statusTone === "green"
-                    ? "bg-[#34C759]/12 text-[#1F8E3F]"
-                    : statusTone === "blue"
-                    ? "bg-[#007AFF]/12 text-[#007AFF]"
-                    : statusTone === "red"
-                    ? "bg-[#FF3B30]/12 text-[#FF3B30]"
-                    : "";
-                const accentColor =
-                  statusTone === "green"
-                    ? "#34C759"
-                    : statusTone === "blue"
-                    ? "#007AFF"
-                    : "#007AFF";
-                const durationLabel = lesson.durationMinutes
-                  ? `${lesson.durationMinutes >= 60 ? Math.floor(lesson.durationMinutes / 60) + "h " : ""}${lesson.durationMinutes % 60 ? (lesson.durationMinutes % 60) + "m" : ""}`.trim() || "--"
-                  : "--";
-                return (
-                  <div key={lesson.id || i}>
-                    <button
-                      onClick={() =>
-                        navigate(`/instructor/schedule?lessonId=${lesson.id}`)
-                      }
-                      className="w-full flex items-center gap-3 px-4 active:bg-black/[0.03] transition-colors text-left"
-                      style={{ height: 68 }}
-                    >
-                      <div
-                        className="w-[3px] h-12 rounded-full shrink-0"
-                        style={{ backgroundColor: accentColor }}
-                      />
-                      <div className="w-[54px] shrink-0">
-                        <div className="text-[18px] font-bold tracking-tight text-[#1C1C1E] tabular-nums leading-none">
-                          {lesson.startTime?.slice(0, 5) || "--:--"}
-                        </div>
-                        <div className="text-[12px] font-medium text-[#3C3C43]/55 mt-1 tabular-nums">
-                          {durationLabel}
-                        </div>
-                      </div>
-                      <div className="size-10 rounded-full bg-[#E5E5EA] text-[#3C3C43] flex items-center justify-center text-[13px] font-semibold shrink-0 overflow-hidden">
-                        {lesson.pupilProfileImageUrl ? (
-                          <img
-                            src={lesson.pupilProfileImageUrl}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          initials
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight truncate">
-                          {lesson.pupilName || "Pupil"}
-                        </div>
-                        <div className="flex items-center gap-1 mt-0.5 min-w-0">
-                          <MapPin className="size-[12px] text-[#3C3C43]/55 shrink-0" />
-                          <div className="text-[12.5px] text-[#3C3C43]/65 truncate">
-                            {[
-                              lesson.lessonType || "Lesson",
-                              lesson.pickupLocation || lesson.pickupPostcode,
-                            ]
-                              .filter(Boolean)
-                              .join(" · ")}
-                          </div>
-                        </div>
-                      </div>
-                      {statusLabel && (
-                        <span
-                          className={`text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${statusClasses}`}
-                        >
-                          {statusLabel}
-                        </span>
-                      )}
-                    </button>
-                    {i < previewLessons.length - 1 && (
-                      <div className="ml-[80px] mr-4 border-t border-black/[0.05]" />
-                    )}
+              {(() => {
+                const now = new Date();
+                const nowMin = now.getHours() * 60 + now.getMinutes();
+                const lessonMin = (l: any) => {
+                  const [h, m] = (l.startTime || "00:00").split(":").map(Number);
+                  return (h || 0) * 60 + (m || 0);
+                };
+                const lessonEndMin = (l: any) =>
+                  lessonMin(l) + (l.durationMinutes || 60);
+
+                // Find first upcoming index for the "Now" indicator
+                let nowInsertIndex = -1;
+                for (let i = 0; i < previewLessons.length; i++) {
+                  if (lessonMin(previewLessons[i]) >= nowMin) {
+                    nowInsertIndex = i;
+                    break;
+                  }
+                }
+                // Only show if current time falls within today's schedule window
+                const firstStart = previewLessons.length ? lessonMin(previewLessons[0]) : Infinity;
+                const lastEnd = previewLessons.length
+                  ? lessonEndMin(previewLessons[previewLessons.length - 1])
+                  : -Infinity;
+                const showNowMarker = nowMin >= firstStart && nowMin <= lastEnd;
+
+                const NowMarker = (
+                  <div className="flex items-center gap-2 px-4 py-1.5">
+                    <div className="size-1.5 rounded-full bg-[#FF3B30]" />
+                    <div className="flex-1 h-px bg-[#FF3B30]/40" />
+                    <span className="text-[10.5px] font-bold tracking-wide uppercase text-[#FF3B30] tabular-nums">
+                      Now {format(now, "HH:mm")}
+                    </span>
                   </div>
                 );
-              })}
+
+                return previewLessons.map((lesson, i) => {
+                  const initials = (lesson.pupilName || "?")
+                    .split(" ")
+                    .map((n: string) => n[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase();
+                  const isCompleted = lesson.status === "completed";
+                  const isInProgress = lesson.status === "in_progress";
+                  const isPast = !isCompleted && !isInProgress && lessonEndMin(lesson) < nowMin;
+                  const owesAmount =
+                    !isCompleted &&
+                    lesson.paymentStatus !== "paid" &&
+                    typeof lesson.amountDue === "number" &&
+                    lesson.amountDue > 0
+                      ? lesson.amountDue
+                      : 0;
+                  const statusTone: "green" | "blue" | "red" | null = isCompleted
+                    ? "green"
+                    : isInProgress
+                    ? "blue"
+                    : owesAmount > 0
+                    ? "red"
+                    : null;
+                  const statusLabel = isCompleted
+                    ? "Done"
+                    : isInProgress
+                    ? "Live"
+                    : owesAmount > 0
+                    ? `Owed £${owesAmount % 1 === 0 ? owesAmount.toFixed(0) : owesAmount.toFixed(2)}`
+                    : null;
+                  const statusClasses =
+                    statusTone === "green"
+                      ? "bg-[#34C759]/12 text-[#1F8E3F]"
+                      : statusTone === "blue"
+                      ? "bg-[#007AFF]/12 text-[#007AFF]"
+                      : statusTone === "red"
+                      ? "bg-[#FF3B30]/12 text-[#FF3B30]"
+                      : "";
+                  const accentColor =
+                    statusTone === "green"
+                      ? "#34C759"
+                      : statusTone === "blue"
+                      ? "#007AFF"
+                      : "#007AFF";
+                  const durationLabel = lesson.durationMinutes
+                    ? `${lesson.durationMinutes >= 60 ? Math.floor(lesson.durationMinutes / 60) + "h " : ""}${lesson.durationMinutes % 60 ? (lesson.durationMinutes % 60) + "m" : ""}`.trim() || "--"
+                    : "--";
+
+                  // Dim past, faintly emphasize live
+                  const rowOpacity = isPast || isCompleted ? "opacity-55" : "";
+                  const rowBg = isInProgress ? "bg-[#007AFF]/[0.04]" : "";
+
+                  return (
+                    <div key={lesson.id || i}>
+                      {showNowMarker && i === nowInsertIndex && NowMarker}
+                      <button
+                        onClick={() =>
+                          navigate(`/instructor/schedule?lessonId=${lesson.id}`)
+                        }
+                        className={`w-full flex items-center gap-3 px-4 active:bg-black/[0.03] transition-colors text-left ${rowBg} ${rowOpacity}`}
+                        style={{ height: 68 }}
+                      >
+                        <div
+                          className="w-[3px] h-12 rounded-full shrink-0"
+                          style={{ backgroundColor: accentColor }}
+                        />
+                        <div className="w-[54px] shrink-0">
+                          <div className="text-[18px] font-bold tracking-tight text-[#1C1C1E] tabular-nums leading-none">
+                            {lesson.startTime?.slice(0, 5) || "--:--"}
+                          </div>
+                          <div className="text-[12px] font-medium text-[#3C3C43]/55 mt-1 tabular-nums">
+                            {durationLabel}
+                          </div>
+                        </div>
+                        <div className="size-10 rounded-full bg-[#E5E5EA] text-[#3C3C43] flex items-center justify-center text-[13px] font-semibold shrink-0 overflow-hidden">
+                          {lesson.pupilProfileImageUrl ? (
+                            <img
+                              src={lesson.pupilProfileImageUrl}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            initials
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight truncate">
+                            {lesson.pupilName || "Pupil"}
+                          </div>
+                          <div className="flex items-center gap-1 mt-0.5 min-w-0">
+                            <MapPin className="size-[12px] text-[#3C3C43]/55 shrink-0" />
+                            <div className="text-[12.5px] text-[#3C3C43]/65 truncate">
+                              {[
+                                lesson.lessonType || "Lesson",
+                                lesson.pickupLocation || lesson.pickupPostcode,
+                              ]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </div>
+                          </div>
+                        </div>
+                        {statusLabel && (
+                          <span
+                            className={`text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${statusClasses}`}
+                          >
+                            {statusLabel}
+                          </span>
+                        )}
+                      </button>
+                      {i < previewLessons.length - 1 && (
+                        <div className="ml-[80px] mr-4 border-t border-black/[0.05]" />
+                      )}
+                      {showNowMarker &&
+                        nowInsertIndex === -1 &&
+                        i === previewLessons.length - 1 &&
+                        NowMarker}
+                    </div>
+                  );
+                });
+              })()}
             </div>
           )}
           <div className="px-4 pb-3 pt-2">
@@ -476,30 +578,55 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
           </button>
         </div>
         <div className="grid grid-cols-4 gap-2">
-          <QuickActionPill
-            icon={<CalendarPlus className="size-[20px]" />}
-            label="Add lesson"
-            tone="blue"
-            onClick={() => navigate("/instructor/schedule?action=add")}
-          />
-          <QuickActionPill
-            icon={<PoundSterling className="size-[20px]" />}
-            label="Payment"
-            tone="green"
-            onClick={onPaymentClick}
-          />
-          <QuickActionPill
-            icon={<MessageCircle className="size-[20px]" />}
-            label="Message"
-            tone="indigo"
-            onClick={() => navigate("/instructor/messages")}
-          />
-          <QuickActionPill
-            icon={<Clock className="size-[20px]" />}
-            label="Fill gap"
-            tone="amber"
-            onClick={() => navigate("/instructor/gaps")}
-          />
+          {(() => {
+            const actions = {
+              add: (
+                <QuickActionPill
+                  key="add"
+                  icon={<CalendarPlus className="size-[20px]" />}
+                  label="Add lesson"
+                  tone="blue"
+                  onClick={() => navigate("/instructor/schedule?action=add")}
+                />
+              ),
+              payment: (
+                <QuickActionPill
+                  key="payment"
+                  icon={<PoundSterling className="size-[20px]" />}
+                  label="Payment"
+                  tone="green"
+                  onClick={onPaymentClick}
+                />
+              ),
+              message: (
+                <QuickActionPill
+                  key="message"
+                  icon={<MessageCircle className="size-[20px]" />}
+                  label="Message"
+                  tone="indigo"
+                  onClick={() => navigate("/instructor/messages")}
+                />
+              ),
+              gap: (
+                <QuickActionPill
+                  key="gap"
+                  icon={<Clock className="size-[20px]" />}
+                  label="Fill gap"
+                  tone="amber"
+                  onClick={() => navigate("/instructor/gaps")}
+                />
+              ),
+            };
+            const hour = new Date().getHours();
+            // Morning: navigate-ish (add) + message first
+            // Midday: fill gap + message first
+            // Evening: payment first
+            let order: Array<keyof typeof actions>;
+            if (hour < 11) order = ["add", "message", "gap", "payment"];
+            else if (hour < 16) order = ["gap", "message", "add", "payment"];
+            else order = ["payment", "message", "add", "gap"];
+            return order.map((k) => actions[k]);
+          })()}
         </div>
       </section>
 
@@ -528,8 +655,14 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                   <CalendarIcon className="size-[18px] text-[#1F8E3F]" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[11px] font-semibold tracking-wide uppercase text-[#1F8E3F]">
-                    Gap opportunity
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <div className="text-[11px] font-semibold tracking-wide uppercase text-[#1F8E3F]">
+                      Gap opportunity
+                    </div>
+                    <span className="inline-flex items-center gap-1 px-1.5 py-[2px] rounded-full bg-white text-[#1F8E3F] text-[10px] font-bold tracking-wide uppercase border border-[#34C759]/25">
+                      <Sparkles className="size-[10px]" />
+                      Best match
+                    </span>
                   </div>
                   <h3 className="mt-0.5 text-[15.5px] font-semibold tracking-tight text-[#1C1C1E] leading-snug">
                     You have a {gapMins} min gap at {startLabel}
