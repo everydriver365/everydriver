@@ -189,7 +189,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
       {/* SECTION 1: Greeting / subtext / date pill — strict left-aligned vertical stack */}
       <header style={{ paddingTop: 6 }}>
         <h1
-          className="text-[26px] font-bold tracking-tight text-[#1C1C1E] whitespace-nowrap text-ellipsis"
+          className="text-[30px] font-bold tracking-tight text-[#1C1C1E] whitespace-nowrap text-ellipsis"
           style={{ lineHeight: 1.2, overflow: "visible", paddingBottom: 2 }}
         >
           {greeting}
