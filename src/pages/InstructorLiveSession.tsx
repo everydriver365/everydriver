@@ -17,7 +17,13 @@ import {
   ExternalLink,
   MapPin,
   Camera,
-  ChevronRight
+  ChevronRight,
+  Play,
+  ShieldCheck,
+  Car,
+  History,
+  Users,
+  ChevronDown,
 } from "lucide-react";
 import TripSummarySheet from "@/components/instructor/TripSummarySheet";
 import { autoCaptureLessonRoute } from "@/hooks/useLessonRouteAutoCapture";
