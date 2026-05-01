@@ -17,7 +17,6 @@ import {
 import { useState } from "react";
 
 import { useTodayOverview } from "@/hooks/useTodayOverview";
-import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
