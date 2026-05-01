@@ -594,6 +594,9 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   const [instructorName, setInstructorName] = useState<string>("Your instructor");
   const [lessonForText, setLessonForText] = useState<ScheduledLesson | null>(null);
   const [bufferMinutes, setBufferMinutes] = useState<number>(0);
+  // Set of `${pupil_id}|${lesson_date}|${HH:MM:SS}` keys for lessons whose
+  // end-of-lesson procedure has been recorded in lesson_history.
+  const [eolDoneKeys, setEolDoneKeys] = useState<Set<string>>(new Set());
 
   // Default travel allowance applied symmetrically when surfacing fill-gap slots
   // (overridden by real ETA in the per-pupil text flow).
