@@ -251,6 +251,43 @@ export function HomeToolsHub() {
 
   const { pinnedIds } = useInstructorPinnedTiles(instructor?.id);
 
+  useEffect(() => {
+    const term = query.trim();
+    if (!instructor?.id || term.length < 2) {
+      setPupilSearchResults([]);
+      setPupilsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    const timeout = window.setTimeout(async () => {
+      setPupilsLoading(true);
+      const pattern = `%${term}%`;
+      const { data, error } = await supabase
+        .from("pupils")
+        .select("id, name, email, phone, postcode, address, parent_name, parent_phone, lessons_completed, progress")
+        .eq("instructor_id", instructor.id)
+        .is("deleted_at", null)
+        .or(`name.ilike.${pattern},email.ilike.${pattern},phone.ilike.${pattern},postcode.ilike.${pattern},address.ilike.${pattern},parent_name.ilike.${pattern},parent_phone.ilike.${pattern}`)
+        .order("name", { ascending: true })
+        .limit(8);
+
+      if (cancelled) return;
+      if (error) {
+        console.error("Error searching pupils:", error);
+        setPupilSearchResults([]);
+      } else {
+        setPupilSearchResults((data || []) as PupilSearchResult[]);
+      }
+      setPupilsLoading(false);
+    }, 180);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
+  }, [query, instructor?.id]);
+
   const isLocked = (tile: QuickAccessTile) =>
     tile.requiredFeature ? !features.includes(tile.requiredFeature) : false;
 
@@ -285,6 +322,7 @@ export function HomeToolsHub() {
         (t) => t.title.toLowerCase().includes(trimmed) || t.subtitle.toLowerCase().includes(trimmed),
       )
     : [];
+  const totalSearchResults = searchResults.length + pupilSearchResults.length;
 
   const SectionLabel = ({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) => (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 4px 10px" }}>
