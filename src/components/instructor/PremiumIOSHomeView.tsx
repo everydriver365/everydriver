@@ -394,10 +394,10 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
               })}
             </div>
           )}
-          <div className="border-t border-black/[0.05]">
+          <div className="px-4 pb-4 pt-1">
             <button
               onClick={() => navigate("/instructor/schedule?action=add")}
-              className="w-full flex items-center justify-center gap-1.5 py-3.5 text-[14px] font-semibold text-[#007AFF] active:bg-black/[0.03] transition-colors"
+              className="w-full flex items-center justify-center gap-1.5 py-3 rounded-[12px] bg-[#007AFF]/[0.06] text-[14px] font-semibold text-[#007AFF] active:bg-[#007AFF]/[0.1] transition-colors"
             >
               <Plus className="size-[17px]" />
               Add lesson
