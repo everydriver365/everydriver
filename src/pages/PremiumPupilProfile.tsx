@@ -492,7 +492,7 @@ export default function PremiumPupilProfile() {
 
   const NextLesson = (
     <Card>
-      <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3px", marginBottom: 10 }}>
+      <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em", marginBottom: 10 }}>
         Next lesson
       </div>
       {stats?.nextLesson ? (
@@ -528,7 +528,7 @@ export default function PremiumPupilProfile() {
 
   const LastLesson = (
     <Card>
-      <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3px", marginBottom: 10 }}>
+      <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em", marginBottom: 10 }}>
         Last lesson
       </div>
       {stats?.lastLesson ? (
@@ -578,7 +578,7 @@ export default function PremiumPupilProfile() {
   const NotesCard = (
     <Card>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3px" }}>
+        <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em" }}>
           Notes
         </div>
         <button
@@ -633,7 +633,7 @@ export default function PremiumPupilProfile() {
   const DocumentsCard = (
     <Card>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3px" }}>
+        <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em" }}>
           Documents
         </div>
       </div>
@@ -676,7 +676,7 @@ export default function PremiumPupilProfile() {
   const PaymentsCard = (
     <Card>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3px" }}>
+        <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em" }}>
           Payments
         </div>
         <button
@@ -753,7 +753,7 @@ export default function PremiumPupilProfile() {
 
   const DetailsCard = (
     <Card>
-      <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3px", marginBottom: 6 }}>
+      <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em", marginBottom: 6 }}>
         Pupil details
       </div>
       <Row icon={User} label="Date of birth" value={pupil.date_of_birth ? format(parseISO(pupil.date_of_birth), "d MMM yyyy") : null} />
