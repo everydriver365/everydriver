@@ -487,49 +487,6 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </section>
       )}
 
-      {/* 6. Earnings — lower priority */}
-      <section className="px-6">
-        <Card>
-          <SectionHeader
-            title="Earnings this week"
-            action={{
-              label: "Details",
-              onClick: () => navigate("/instructor/finance"),
-            }}
-          />
-          <div className="px-6 pb-6 pt-1">
-            <div className="flex items-baseline gap-3">
-              <span className="text-[40px] font-bold tracking-tight text-[#1C1C1E] tabular-nums leading-none">
-                £{(comparison?.earningsThisWeek ?? 0).toLocaleString()}
-              </span>
-              {typeof comparison?.percentChange === "number" &&
-                comparison.percentChange !== 0 && (
-                  <span
-                    className={`inline-flex items-center gap-1 text-[14px] font-semibold ${
-                      comparison.isImprovement ? "text-[#1F8E3F]" : "text-[#C46E00]"
-                    }`}
-                  >
-                    {comparison.isImprovement ? (
-                      <TrendingUp className="size-[15px]" />
-                    ) : (
-                      <TrendingDown className="size-[15px]" />
-                    )}
-                    {Math.abs(comparison.percentChange)}%
-                  </span>
-                )}
-            </div>
-            <p className="text-[14px] text-[#3C3C43]/65 mt-2">
-              {comparison?.lessonsThisWeek ?? 0} lessons ·{" "}
-              {comparison?.hoursThisWeek ?? 0} h taught
-            </p>
-
-            <WeekMiniChart
-              thisWeek={comparison?.earningsThisWeek ?? 0}
-              lastWeek={comparison?.earningsLastWeek ?? 0}
-            />
-          </div>
-        </Card>
-      </section>
     </div>
   );
 }
