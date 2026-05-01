@@ -190,6 +190,8 @@ export function PupilCardStack({
   isTracking = false,
   paymentQrUrl,
   commissionPayer,
+  nameSuffix,
+  priority = false,
 }: PupilCardStackProps) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
