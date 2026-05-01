@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw, CalendarRange } from "lucide-react";
 import { ScheduleSkeleton } from "@/components/ui/skeletons/ScheduleSkeleton";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -34,6 +34,7 @@ type ViewMode = 'list' | 'month' | 'calendar' | 'schedule';
 
 export default function InstructorSchedule() {
   const { instructor } = useInstructorAuth();
+  const navigate = useNavigate();
   const instructorId = instructor?.id;
   const isMobile = useIsMobile();
   const { wallpaperColor } = useInstructorAppearance(instructorId);
