@@ -758,6 +758,16 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
         },
         trigger,
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "lesson_history",
+          filter: `instructor_id=eq.${instructorId}`,
+        },
+        trigger,
+      )
       .subscribe();
 
     return () => {
