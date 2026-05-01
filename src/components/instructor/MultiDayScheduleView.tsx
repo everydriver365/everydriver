@@ -275,9 +275,12 @@ function ScheduleListRow({
   accentColor,
   title,
   subtitle,
+  metaLine,
   statusPill,
   showChevron,
   struck,
+  isOverdue,
+  kind,
   onClick,
 }: {
   timeText: string;
@@ -285,11 +288,15 @@ function ScheduleListRow({
   accentColor: string;
   title: string;
   subtitle?: string | null;
+  metaLine?: string | null;
   statusPill: RowStatus;
   showChevron: boolean;
   struck: boolean;
+  isOverdue?: boolean;
+  kind?: "lesson" | "external" | "block" | "allday";
   onClick?: () => void;
 }) {
+  const Icon = kind === "lesson" ? User : CalendarDays;
   return (
     <button
       type="button"
@@ -297,12 +304,12 @@ function ScheduleListRow({
       style={{
         display: "flex",
         alignItems: "stretch",
-        gap: 14,
+        gap: 12,
         width: "100%",
         textAlign: "left",
         background: "transparent",
         border: "none",
-        padding: "14px 6px",
+        padding: 0,
         cursor: "pointer",
         fontFamily: FONT_STACK,
       }}
@@ -311,17 +318,17 @@ function ScheduleListRow({
       <div
         style={{
           flexShrink: 0,
-          minWidth: 56,
+          minWidth: 54,
           display: "flex",
           flexDirection: "column",
           alignItems: "flex-end",
-          justifyContent: "center",
-          paddingTop: 2,
+          justifyContent: "flex-start",
+          paddingTop: 14,
         }}
       >
         <span
           style={{
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: 600,
             color: "#000000",
             letterSpacing: "-0.3px",
@@ -356,11 +363,11 @@ function ScheduleListRow({
           alignItems: "center",
           gap: 12,
           background: "#FFFFFF",
-          borderRadius: 16,
-          padding: "14px 14px 14px 12px",
-          minHeight: 72,
+          borderRadius: 22,
+          padding: "16px 16px 16px 18px",
+          minHeight: 100,
           boxShadow:
-            "0 1px 2px rgba(16,24,40,0.04), 0 6px 18px -10px rgba(16,24,40,0.08)",
+            "0 1px 2px rgba(16,24,40,0.04), 0 8px 24px -12px rgba(16,24,40,0.10)",
           position: "relative",
           overflow: "hidden",
         }}
@@ -370,19 +377,35 @@ function ScheduleListRow({
           style={{
             position: "absolute",
             left: 0,
-            top: 10,
-            bottom: 10,
+            top: 14,
+            bottom: 14,
             width: 4,
             borderRadius: 4,
             backgroundColor: accentColor,
           }}
         />
 
+        {/* Event-type icon */}
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 12,
+            background: `${accentColor}14`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Icon style={{ width: 17, height: 17, color: accentColor, strokeWidth: 2 }} />
+        </div>
+
         {/* Title + subtitle */}
-        <div style={{ flex: 1, minWidth: 0, paddingLeft: 6 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 15.5,
+              fontSize: 16,
               fontWeight: 600,
               color: "#000000",
               letterSpacing: "-0.2px",
@@ -407,20 +430,56 @@ function ScheduleListRow({
                 textOverflow: "ellipsis",
                 textDecoration: struck ? "line-through" : "none",
                 lineHeight: 1.3,
+                fontWeight: 500,
               }}
             >
               {subtitle}
             </div>
           )}
+          {metaLine && (
+            <div
+              style={{
+                fontSize: 11.5,
+                color: "#8E8E93",
+                marginTop: 3,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {metaLine}
+            </div>
+          )}
         </div>
 
-        <StatusPill status={statusPill} />
-
-        {showChevron && (
-          <ChevronRight
-            style={{ width: 14, height: 14, color: "#C7C7CC", flexShrink: 0, strokeWidth: 1.8 }}
-          />
-        )}
+        {/* Trailing badges */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
+          {isOverdue && (
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 3,
+                background: "#FFE5E5",
+                color: "#C8434F",
+                borderRadius: 999,
+                padding: "3px 8px",
+                fontSize: 9.5,
+                fontWeight: 700,
+                letterSpacing: "0.4px",
+              }}
+            >
+              OVERDUE
+            </span>
+          )}
+          <StatusPill status={statusPill} />
+          {showChevron && (
+            <ChevronRight
+              style={{ width: 14, height: 14, color: "#C7C7CC", flexShrink: 0, strokeWidth: 1.8 }}
+            />
+          )}
+        </div>
       </div>
     </button>
   );
