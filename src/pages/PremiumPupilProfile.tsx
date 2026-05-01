@@ -769,24 +769,131 @@ export default function PremiumPupilProfile() {
     </Card>
   );
 
+  // ─────────── Mobile-only: priority + inline summary ───────────
+  const nextLessonDate = stats?.nextLesson?.lesson_date
+    ? parseISO(stats.nextLesson.lesson_date as unknown as string)
+    : null;
+  const isPriority = (() => {
+    if (hasDebt) return true;
+    if (!nextLessonDate) return false;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+    const d = new Date(nextLessonDate); d.setHours(0, 0, 0, 0);
+    return d.getTime() === today.getTime() || d.getTime() === tomorrow.getTime();
+  })();
+
+  const inlineSummary = [
+    `${stats?.totalLessons ?? 0} ${(stats?.totalLessons ?? 0) === 1 ? "lesson" : "lessons"}`,
+    `${(stats?.totalHours ?? 0).toFixed(1)}h`,
+    pupil.test_date ? `Test ${format(parseISO(pupil.test_date), "d MMM")}` : null,
+  ].filter(Boolean).join(" · ");
+
+  const MobilePupilHero = (
+    <div
+      style={{
+        background: C.card,
+        borderRadius: RADIUS,
+        padding: 22,
+        border: `1px solid ${isPriority ? "#DCE7F2" : C.hairline}`,
+        boxShadow: isPriority
+          ? "0 4px 16px rgba(43,123,200,0.10), 0 1px 2px rgba(16,24,40,0.04)"
+          : SHADOW_CARD,
+        transition: TRANSITION,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <PupilAvatar name={pupil.name} imageUrl={pupil.profile_image_url} size="lg" />
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div className="flex items-center" style={{ gap: 8, minWidth: 0 }}>
+            <div
+              className="truncate"
+              style={{
+                fontFamily: FONT,
+                fontSize: 22,
+                fontWeight: 700,
+                color: C.text,
+                letterSpacing: "-0.02em",
+                lineHeight: 1.15,
+                minWidth: 0,
+              }}
+            >
+              {pupil.name}
+            </div>
+            {hasDebt && (
+              <span
+                style={{
+                  background: "#FBEAEC",
+                  color: C.red,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: "0.2px",
+                  padding: "3px 9px",
+                  borderRadius: 999,
+                  lineHeight: 1.3,
+                  flexShrink: 0,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                −£{Math.abs(balance).toFixed(0)}
+              </span>
+            )}
+          </div>
+          <div style={{ marginTop: 6 }}>
+            <StatusDot status={status} />
+          </div>
+          <div
+            style={{
+              marginTop: 8,
+              fontFamily: FONT,
+              fontSize: 13,
+              color: C.muted,
+              lineHeight: 1.4,
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {inlineSummary}
+          </div>
+        </div>
+      </div>
+
+      {(pupil.address || pupil.postcode) && (
+        <div
+          style={{
+            marginTop: 16,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            color: C.muted,
+            fontFamily: FONT,
+            fontSize: 13,
+          }}
+        >
+          <MapPin size={13} />
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {[pupil.address, pupil.postcode].filter(Boolean).join(", ")}
+          </span>
+        </div>
+      )}
+
+      <div style={{
+        marginTop: 18, paddingTop: 16,
+        borderTop: `1px solid ${C.hairline}`,
+        display: "flex", justifyContent: "space-between", gap: 8,
+      }}>
+        <QuickAction icon={Phone} label="Call" onClick={handleCall} disabled={!pupil.phone} />
+        <QuickAction icon={MessageSquare} label="Message" onClick={handleMessage} color={C.green} />
+        <QuickAction icon={Navigation} label="Navigate" onClick={handleNavigate} color={C.amber} disabled={!pupil.address && !pupil.postcode && !pupil.what3words} />
+        <QuickAction icon={CalendarPlus} label="Book" onClick={() => setAddLessonOpen(true)} color={C.red} />
+      </div>
+    </div>
+  );
+
   const MobileLayout = (
     <div style={{ background: C.bg, minHeight: "100vh", paddingBottom: 96, fontFamily: FONT }}>
       <div style={{ padding: "0 20px" }}>
         {Header}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {hasDebt && (
-            <Card padding={14} className="">
-              <div style={{ display: "flex", alignItems: "center", gap: 10, color: C.amber }}>
-                <AlertCircle size={18} />
-                <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 600 }}>
-                  £{Math.abs(balance).toFixed(2)} outstanding
-                </div>
-              </div>
-            </Card>
-          )}
-          {PupilCard}
-          <SectionHeader title="At a glance" />
-          {StatsRow}
+        <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+          {MobilePupilHero}
           <SectionHeader title="Progress" />
           {ProgressOverview}
           <SectionHeader title="Lessons" />
