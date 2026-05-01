@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
+import { HomeToolsHub } from "@/components/instructor/HomeToolsHub";
 
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
@@ -436,6 +437,9 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
           />
         </div>
       </section>
+
+      {/* SECTION: Tools — premium iOS hub */}
+      <HomeToolsHub />
 
 
       {/* 5. Smart suggestion — green tinted card with green CTA */}
