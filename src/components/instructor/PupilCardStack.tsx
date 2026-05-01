@@ -155,6 +155,10 @@ interface PupilCardStackProps {
   isTracking?: boolean;
   paymentQrUrl?: string | null;
   commissionPayer?: string | null;
+  /** Small disambiguator shown after the name when duplicates exist (e.g. street). */
+  nameSuffix?: string | null;
+  /** Visually highlight this card as needing attention (subtle shadow lift). */
+  priority?: boolean;
 }
 
 const courseTypeLabels: Record<string, string> = {
