@@ -268,54 +268,74 @@ export function HomeToolsHub() {
       </h2>
 
       {/* Search — lighter, blended, integrated */}
-      <motion.div
-        layout
-        animate={{
-          backgroundColor: searchFocused ? "#FFFFFF" : "rgba(118,118,128,0.08)",
-          boxShadow: searchFocused
-            ? "0 2px 10px rgba(0,0,0,0.06)"
-            : "0 0 0 rgba(0,0,0,0)",
-          borderColor: searchFocused ? "rgba(0,0,0,0.06)" : "rgba(0,0,0,0)",
-        }}
-        transition={{ duration: 0.18, ease: "easeOut" }}
+      <div
         style={{
-          display: "flex", alignItems: "center", gap: 10,
-          borderRadius: 12, padding: "9px 12px",
-          borderWidth: 0.5, borderStyle: "solid",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          borderRadius: 12,
+          padding: "9px 12px",
+          borderWidth: 0.5,
+          borderStyle: "solid",
+          backgroundColor: searchFocused ? "#FFFFFF" : "rgba(118,118,128,0.08)",
+          borderColor: searchFocused ? "rgba(0,0,0,0.06)" : "rgba(0,0,0,0)",
+          boxShadow: searchFocused ? "0 2px 10px rgba(0,0,0,0.06)" : "none",
+          transition: "background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease",
         }}
       >
         <Search size={16} color="#8E8E93" strokeWidth={1.8} />
         <input
           ref={inputRef}
+          type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setSearchFocused(true)}
           onBlur={() => {
             // delay so taps on results register
-            setTimeout(() => setSearchFocused(false), 120);
+            window.setTimeout(() => setSearchFocused(false), 150);
             if (trimmed) persistRecent(query);
           }}
           placeholder="Search tools, pupils, lessons"
           aria-label="Search"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck={false}
           style={{
-            flex: 1, border: 0, outline: "none", background: "transparent",
-            fontSize: 14, color: "#000",
+            flex: 1,
+            border: 0,
+            outline: "none",
+            background: "transparent",
+            fontSize: 16, // 16px to prevent iOS zoom-on-focus
+            color: "#000",
+            minWidth: 0,
             fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
           }}
         />
         {query ? (
           <button
             type="button"
-            onClick={() => { setQuery(""); inputRef.current?.focus(); }}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              setQuery("");
+              inputRef.current?.focus();
+            }}
             aria-label="Clear search"
-            style={{ border: 0, background: "transparent", padding: 0, cursor: "pointer", color: "#8E8E93", fontSize: 13 }}
+            style={{
+              border: 0,
+              background: "transparent",
+              padding: 0,
+              cursor: "pointer",
+              color: "#8E8E93",
+              fontSize: 13,
+            }}
           >
             Clear
           </button>
         ) : (
           <Mic size={16} color="#8E8E93" strokeWidth={1.8} />
         )}
-      </motion.div>
+      </div>
 
       <AnimatePresence initial={false}>
         {trimmed ? (
