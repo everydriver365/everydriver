@@ -1370,34 +1370,38 @@ export function NextUpTile({
 
                 {/* ── SECTION 5 — Reschedule + Cancel (secondary/destructive) ── */}
                 <div style={{
-                  marginTop: 8,
-                  borderTop: "0.5px solid #E5E5EA", paddingTop: 16,
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  marginTop: 12,
+                  borderTop: "0.5px solid #E5E5EA", paddingTop: 14,
+                  display: "flex", alignItems: "stretch", justifyContent: "space-between",
                 }}>
                   <button onClick={(e) => { e.stopPropagation(); setRescheduleOpen(true); }}
+                    className="active:opacity-60"
                     style={{
-                      background: "transparent", border: "none", padding: 4,
-                      cursor: "pointer",
-                      display: "inline-flex", alignItems: "center", gap: 6,
+                      flex: 1, background: "transparent", border: "none",
+                      padding: "10px 4px", cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                      minHeight: 44,
                     }}>
-                    <Calendar style={{ width: 13, height: 13, color: "#8A8A8E" }} strokeWidth={2} />
-                    <span style={{ fontSize: a11yPx(12), fontWeight: 500, color: "#3C3C43" }}>Reschedule</span>
+                    <Calendar style={{ width: 16, height: 16, color: "#3C3C43" }} strokeWidth={2.2} />
+                    <span style={{ fontSize: a11yPx(14), fontWeight: 600, color: "#1C1C1E", letterSpacing: -0.1 }}>
+                      Reschedule
+                    </span>
                   </button>
+                  <div style={{ width: 0.5, background: "#E5E5EA", margin: "4px 0" }} />
                   <button onClick={(e) => { e.stopPropagation(); setCancelOpen(true); }}
+                    className="active:opacity-60"
                     style={{
-                      background: "transparent", border: "none", padding: 4,
-                      cursor: "pointer",
-                      display: "inline-flex", alignItems: "center",
+                      flex: 1, background: "transparent", border: "none",
+                      padding: "10px 4px", cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                      minHeight: 44,
                     }}>
-                    <span style={{ fontSize: a11yPx(12), fontWeight: 500, color: "#C8434F" }}>Cancel lesson</span>
+                    <X style={{ width: 16, height: 16, color: "#FF3B30" }} strokeWidth={2.4} />
+                    <span style={{ fontSize: a11yPx(14), fontWeight: 600, color: "#FF3B30", letterSpacing: -0.1 }}>
+                      Cancel lesson
+                    </span>
                   </button>
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        </div>
-      </div>
 
       {/* Dialogs */}
       {instructorId && (
