@@ -353,9 +353,8 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                         </div>
                         <div className="text-[13px] text-[#3C3C43]/70 mt-0.5 truncate">
                           {[
-                            (lesson as any).lessonType || "Lesson",
-                            (lesson as any).pickupLocation ||
-                              (lesson as any).pickupPostcode,
+                            lesson.lessonType || "Lesson",
+                            lesson.pickupLocation || lesson.pickupPostcode,
                           ]
                             .filter(Boolean)
                             .join(" · ")}
