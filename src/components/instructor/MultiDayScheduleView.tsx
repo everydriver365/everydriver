@@ -485,6 +485,36 @@ function ScheduleListRow({
   );
 }
 
+/** Format minutes into "Xh", "Ym", or "Xh Ym" — short variant for summary. */
+function formatHm(mins: number): string {
+  if (!mins || mins <= 0) return "0h";
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
+
+/** Single stat tile inside the today summary strip. */
+function SummaryStat({ icon, value, label, tint }: {
+  icon: React.ReactNode;
+  value: string;
+  label: string;
+  tint: string;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 4, color: tint }}>
+        {icon}
+        <span style={{ fontSize: 17, fontWeight: 700, color: "#000000", letterSpacing: "-0.3px", fontVariantNumeric: "tabular-nums" }}>
+          {value}
+        </span>
+      </div>
+      <div style={{ fontSize: 11, fontWeight: 500, color: "#8E8E93", marginTop: 2 }}>{label}</div>
+    </div>
+  );
+}
+
 export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps) {
   const navigate = useNavigate();
   const todayRef = useRef<HTMLDivElement>(null);
