@@ -94,8 +94,10 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
   const { data: comparison } = useLastWeekComparison(instructorId);
   const { messageCount, pendingJobsCount } = useCombinedNotificationCount(instructorId);
   const homeActions = useHomeActions(instructorId);
+  const { data: nextLesson } = useNextLessonDetails(instructorId);
 
   const [suggestionDismissed, setSuggestionDismissed] = useState(false);
+  const [nextLessonExpanded, setNextLessonExpanded] = useState(false);
 
   /* ---------------- Subtitle counts -------------------------------------- */
   const lessonsToday = todayOverview?.lessonCount ?? 0;
