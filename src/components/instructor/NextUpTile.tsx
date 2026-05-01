@@ -842,52 +842,7 @@ export function NextUpTile({
             </div>
           </div>
 
-          {/* PRIMARY CTA — single, state-based, full-width. No competing buttons nearby. */}
-          {(() => {
-            const inLesson = lessonStatus === "in_progress";
-            if (inLesson) {
-              return (
-                <button
-                  onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
-                  className="active:opacity-90"
-                  style={{
-                    width: "100%",
-                    background: "#FF3B30", color: "#FFFFFF",
-                    border: "none", borderRadius: 14, padding: "14px 16px",
-                    fontSize: a11yPx(16), fontWeight: 600, letterSpacing: -0.2,
-                    cursor: "pointer",
-                    display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -6px rgba(255,59,48,0.35)",
-                  }}
-                >
-                  <CheckCircle2 style={{ width: 17, height: 17 }} strokeWidth={2.4} />
-                  End lesson
-                </button>
-              );
-            }
-            return (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
-                  navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
-                }}
-                className="active:opacity-90"
-                style={{
-                  width: "100%",
-                  background: "#007AFF", color: "#FFFFFF",
-                  border: "none", borderRadius: 14, padding: "14px 16px",
-                  fontSize: a11yPx(16), fontWeight: 600, letterSpacing: -0.2,
-                  cursor: "pointer",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                  boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -6px rgba(0,122,255,0.35)",
-                }}
-              >
-                <Play style={{ width: 16, height: 16 }} strokeWidth={2.4} fill="#FFFFFF" />
-                Start lesson
-              </button>
-            );
-          })()}
+          {/* (Primary CTA is rendered inside the hero card above) */}
 
           {/* ── MAP PREVIEW (only when within 4h) ── */}
           {isWithin4h && pickupPostcode && (
