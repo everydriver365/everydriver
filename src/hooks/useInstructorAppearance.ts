@@ -19,6 +19,12 @@ const defaultAppearance: AppearanceSettings = {
   wallpaperColor: null,
 };
 
+const normalizeLayoutStyle = (style: string | null | undefined): LayoutStyle => {
+  // "dashboard" is the legacy mobile default. The new default home design is Premium.
+  if (!style || style === "dashboard") return "premium";
+  return style as LayoutStyle;
+};
+
 export function useInstructorAppearance(instructorId: string | undefined) {
   const queryClient = useQueryClient();
 
@@ -43,7 +49,7 @@ export function useInstructorAppearance(instructorId: string | undefined) {
         const rawColor = data.wallpaper_color as string | null;
         const normalizedColor = rawColor?.toUpperCase() === "#E8F1FE" ? null : rawColor;
         return {
-          layoutStyle: (data.home_layout_style as LayoutStyle) || "premium",
+          layoutStyle: normalizeLayoutStyle(data.home_layout_style as string | null),
           heroImageUrl: data.hero_image_url as string | null,
           wallpaperColor: normalizedColor,
         };
