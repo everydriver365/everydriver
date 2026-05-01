@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -187,6 +187,26 @@ export function HomeToolsHub() {
   const features = subscription?.features || [];
   const [query, setQuery] = useState("");
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem("instructor.toolsRecentSearches");
+      return raw ? (JSON.parse(raw) as string[]).slice(0, 5) : [];
+    } catch {
+      return [];
+    }
+  });
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const persistRecent = (term: string) => {
+    const t = term.trim();
+    if (!t) return;
+    setRecentSearches((prev) => {
+      const next = [t, ...prev.filter((x) => x.toLowerCase() !== t.toLowerCase())].slice(0, 5);
+      try { localStorage.setItem("instructor.toolsRecentSearches", JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
 
   const { pinnedIds } = useInstructorPinnedTiles(instructor?.id);
 
@@ -200,8 +220,14 @@ export function HomeToolsHub() {
       });
       return;
     }
+    if (trimmed) persistRecent(query);
     navigate(tile.route);
   };
+
+  const suggestedTools = useMemo(
+    () => QUICK_ACCESS_TILES.slice(0, 6),
+    [],
+  );
 
   const frequentlyUsed = useMemo(
     () => pinnedIds.map((id) => QUICK_ACCESS_TILES_BY_ID[id]).filter(Boolean).slice(0, 6) as QuickAccessTile[],
@@ -241,48 +267,154 @@ export function HomeToolsHub() {
         Tools
       </h2>
 
-      {/* Search */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: 10,
-        background: "#FFFFFF", borderRadius: 14, padding: "11px 13px",
-        boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
-        border: "0.5px solid rgba(0,0,0,0.05)",
-      }}>
-        <Search size={17} color="#8E8E93" strokeWidth={1.8} />
+      {/* Search — lighter, blended, integrated */}
+      <motion.div
+        layout
+        animate={{
+          backgroundColor: searchFocused ? "#FFFFFF" : "rgba(118,118,128,0.08)",
+          boxShadow: searchFocused
+            ? "0 2px 10px rgba(0,0,0,0.06)"
+            : "0 0 0 rgba(0,0,0,0)",
+          borderColor: searchFocused ? "rgba(0,0,0,0.06)" : "rgba(0,0,0,0)",
+        }}
+        transition={{ duration: 0.18, ease: "easeOut" }}
+        style={{
+          display: "flex", alignItems: "center", gap: 10,
+          borderRadius: 12, padding: "9px 12px",
+          borderWidth: 0.5, borderStyle: "solid",
+        }}
+      >
+        <Search size={16} color="#8E8E93" strokeWidth={1.8} />
         <input
-          value={query} onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search tools, pupils, lessons…"
+          ref={inputRef}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => {
+            // delay so taps on results register
+            setTimeout(() => setSearchFocused(false), 120);
+            if (trimmed) persistRecent(query);
+          }}
+          placeholder="Search tools, pupils, lessons"
           aria-label="Search"
           style={{
             flex: 1, border: 0, outline: "none", background: "transparent",
-            fontSize: 14.5, color: "#000",
+            fontSize: 14, color: "#000",
             fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
           }}
         />
-        <Mic size={17} color="#8E8E93" strokeWidth={1.8} />
-      </div>
+        {query ? (
+          <button
+            type="button"
+            onClick={() => { setQuery(""); inputRef.current?.focus(); }}
+            aria-label="Clear search"
+            style={{ border: 0, background: "transparent", padding: 0, cursor: "pointer", color: "#8E8E93", fontSize: 13 }}
+          >
+            Clear
+          </button>
+        ) : (
+          <Mic size={16} color="#8E8E93" strokeWidth={1.8} />
+        )}
+      </motion.div>
 
-      {trimmed ? (
-        <div style={{
-          marginTop: 14, background: "#FFFFFF", borderRadius: 16, overflow: "hidden",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-        }}>
-          {searchResults.length === 0 ? (
-            <div style={{ padding: 22, textAlign: "center", color: "#8E8E93", fontSize: 13.5 }}>
-              No matches for "{query}"
-            </div>
-          ) : (
-            searchResults.map((tile, i) => (
-              <div key={tile.id}>
-                <SearchResultRow tile={tile} onPress={() => handleTap(tile)} />
-                {i < searchResults.length - 1 && (
-                  <div style={{ marginLeft: 56, height: 0.5, background: "#E5E5EA" }} />
-                )}
+      <AnimatePresence initial={false}>
+        {trimmed ? (
+          <motion.div
+            key="results"
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.18 }}
+            style={{
+              marginTop: 12, background: "#FFFFFF", borderRadius: 16, overflow: "hidden",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            }}
+          >
+            {searchResults.length === 0 ? (
+              <div style={{ padding: 22, textAlign: "center", color: "#8E8E93", fontSize: 13.5 }}>
+                No matches for "{query}"
               </div>
-            ))
-          )}
-        </div>
-      ) : (
+            ) : (
+              searchResults.map((tile, i) => (
+                <div key={tile.id}>
+                  <SearchResultRow tile={tile} onPress={() => handleTap(tile)} />
+                  {i < searchResults.length - 1 && (
+                    <div style={{ marginLeft: 56, height: 0.5, background: "#E5E5EA" }} />
+                  )}
+                </div>
+              ))
+            )}
+          </motion.div>
+        ) : searchFocused ? (
+          <motion.div
+            key="expansion"
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.18 }}
+            style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 14 }}
+          >
+            {recentSearches.length > 0 && (
+              <div>
+                <SectionLabel
+                  action={
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        setRecentSearches([]);
+                        try { localStorage.removeItem("instructor.toolsRecentSearches"); } catch {}
+                      }}
+                      style={{ border: 0, background: "transparent", color: "#2B7BC8", fontSize: 12, cursor: "pointer" }}
+                    >
+                      Clear
+                    </button>
+                  }
+                >
+                  Recent
+                </SectionLabel>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {recentSearches.map((term) => (
+                    <button
+                      key={term}
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => { setQuery(term); inputRef.current?.focus(); }}
+                      style={{
+                        border: "0.5px solid rgba(0,0,0,0.08)",
+                        background: "#FFFFFF",
+                        borderRadius: 999,
+                        padding: "6px 12px",
+                        fontSize: 13, color: "#1C1C1E", cursor: "pointer",
+                      }}
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div>
+              <SectionLabel>Suggested</SectionLabel>
+              <div style={{
+                background: "#FFFFFF", borderRadius: 16, overflow: "hidden",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+              }}>
+                {suggestedTools.map((tile, i) => (
+                  <div key={tile.id} onMouseDown={(e) => e.preventDefault()}>
+                    <SearchResultRow tile={tile} onPress={() => handleTap(tile)} />
+                    {i < suggestedTools.length - 1 && (
+                      <div style={{ marginLeft: 56, height: 0.5, background: "#E5E5EA" }} />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
+      {!trimmed && !searchFocused && (
         <>
           {/* Frequently used */}
           {frequentlyUsed.length > 0 && (
