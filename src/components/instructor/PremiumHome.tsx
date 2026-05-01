@@ -116,7 +116,7 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
       subtitle: "Boost your earnings",
       tone: "green",
       pill: String(totalGapSlots),
-      onClick: () => navigate("/instructor/schedule?view=gaps"),
+      onClick: () => navigate("/instructor/gaps"),
     });
 
   const pillCls: Record<Tone, string> = {
@@ -386,7 +386,7 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
               icon={<Clock className="size-[22px]" />}
               label="Fill gap"
               tone="amber"
-              onClick={() => navigate("/instructor/schedule?view=gaps")}
+              onClick={() => navigate("/instructor/gaps")}
             />
             <ActionTile
               icon={<MoreHorizontal className="size-[22px]" />}
@@ -414,7 +414,7 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
               </p>
             </div>
             <button
-              onClick={() => navigate("/instructor/schedule?view=gaps")}
+              onClick={() => navigate("/instructor/gaps")}
               className="shrink-0 self-center px-5 h-11 rounded-[14px] bg-[#34C759] text-white text-[14px] font-semibold active:opacity-85 transition-opacity"
             >
               Add lesson
