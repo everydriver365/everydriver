@@ -365,16 +365,19 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                       </div>
                       {/* Pupil + meta */}
                       <div className="flex-1 min-w-0">
-                        <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight break-words">
+                        <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight truncate">
                           {lesson.pupilName || "Pupil"}
                         </div>
-                        <div className="text-[12.5px] text-[#3C3C43]/65 mt-0.5 truncate">
-                          {[
-                            lesson.lessonType || "Lesson",
-                            lesson.pickupLocation || lesson.pickupPostcode,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
+                        <div className="flex items-center gap-1 mt-0.5 min-w-0">
+                          <MapPin className="size-[12px] text-[#3C3C43]/55 shrink-0" />
+                          <div className="text-[12.5px] text-[#3C3C43]/65 truncate">
+                            {[
+                              lesson.lessonType || "Lesson",
+                              lesson.pickupLocation || lesson.pickupPostcode,
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </div>
                         </div>
                       </div>
                       <span
