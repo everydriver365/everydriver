@@ -223,7 +223,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                   <button
                     onClick={row.onClick}
                     className="w-full flex items-center gap-3 px-4 active:bg-black/[0.03] transition-colors text-left"
-                    style={{ height: 72 }}
+                    style={{ height: 64 }}
                   >
                     <div
                       className="size-10 rounded-[12px] flex items-center justify-center shrink-0"
