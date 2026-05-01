@@ -991,37 +991,41 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         key="now-indicator"
                         style={{
                           display: "flex",
-                          gap: 8,
-                          padding: "6px 8px",
+                          gap: 10,
+                          padding: "2px 4px",
                           alignItems: "center",
                         }}
                       >
-                        <div
-                          style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: "50%",
-                            backgroundColor: "#C8434F",
-                            flexShrink: 0,
-                          }}
-                        />
                         <span
                           style={{
                             fontSize: 11,
-                            fontWeight: 500,
-                            color: "#C8434F",
-                            letterSpacing: "0.2px",
+                            fontWeight: 700,
+                            color: "#FF3B30",
+                            letterSpacing: "0.4px",
                             fontVariantNumeric: "tabular-nums",
+                            textTransform: "uppercase",
+                            minWidth: 54,
+                            textAlign: "right",
                           }}
                         >
-                          {nowTimeStr}
+                          Now {nowTimeStr}
                         </span>
                         <div
                           style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: "50%",
+                            backgroundColor: "#FF3B30",
+                            flexShrink: 0,
+                            boxShadow: "0 0 0 3px rgba(255,59,48,0.18)",
+                          }}
+                        />
+                        <div
+                          style={{
                             flex: 1,
-                            height: 1,
-                            backgroundColor: "#C8434F",
-                            opacity: 0.3,
+                            height: 1.5,
+                            background: "linear-gradient(90deg, #FF3B30, rgba(255,59,48,0.05))",
+                            borderRadius: 1,
                           }}
                         />
                       </div>,
