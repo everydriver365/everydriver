@@ -36,6 +36,10 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
 import { DeviceSelectorDropdown } from "@/components/instructor/tracking/DeviceSelectorDropdown";
 
 import { SatNavLiveMap } from "@/components/instructor/tracking/SatNavLiveMap";
+import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
+import { PupilSelectorRow } from "@/components/instructor/ui/PupilSelectorRow";
+import { motion, AnimatePresence } from "framer-motion";
+import { CheckCircle } from "lucide-react";
 import { LessonRouteRecorder } from "@/components/instructor/LessonRouteRecorder";
 import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
 
