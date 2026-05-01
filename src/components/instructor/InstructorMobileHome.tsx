@@ -243,6 +243,7 @@ export function InstructorMobileHome({
   
   // Appearance preferences (layout, wallpaper, hero)
   const { layoutStyle, wallpaperColor, heroImageUrl: personalHeroUrl } = useInstructorAppearance(instructorId);
+  const effectiveLayoutStyle = layoutStyle === "dashboard" ? "premium" : layoutStyle;
   
   // GPS connection status and today's overview
   const { 
@@ -394,14 +395,14 @@ export function InstructorMobileHome({
 
 
       {/* App Style layout: iOS launcher (replaces entire page content) */}
-      {layoutStyle === "schedule" ? (
+      {effectiveLayoutStyle === "schedule" ? (
         <AppStyleHomeView
           instructorId={instructorId}
           heroImageUrl={personalHeroUrl || content?.hero_image_url}
           wallpaperColor={wallpaperColor}
           profileImageUrl={instructor?.profile_image_url}
         />
-      ) : layoutStyle === "lockscreen" ? (
+      ) : effectiveLayoutStyle === "lockscreen" ? (
         <LockScreenHomeView
           instructorId={instructorId}
           instructor={instructor}
@@ -424,45 +425,45 @@ export function InstructorMobileHome({
           onTileEditModeChange={setIsTileEditMode}
           authInstructorId={authInstructor?.id}
         />
-      ) : layoutStyle === "clean" ? (
+      ) : effectiveLayoutStyle === "clean" ? (
         <CleanHomeView
           instructorId={instructorId}
           instructor={instructor}
           todayOverview={todayOverview}
           todayLessons={todayLessons}
         />
-      ) : layoutStyle === "ios-native" ? (
+      ) : effectiveLayoutStyle === "ios-native" ? (
         <IOSNativeHomeView
           instructorId={instructorId}
           instructor={instructor}
         />
-      ) : layoutStyle === "compact" ? (
+      ) : effectiveLayoutStyle === "compact" ? (
         <CompactHomeView
           instructorId={instructorId}
           instructor={instructor}
         />
-      ) : layoutStyle === "bestmate" ? (
+      ) : effectiveLayoutStyle === "bestmate" ? (
         <BestMateHomeView
           instructorId={instructorId}
           instructor={instructor}
         />
-      ) : layoutStyle === "mission-control" ? (
+      ) : effectiveLayoutStyle === "mission-control" ? (
         <MissionControlHomeView
           instructorId={instructorId}
           instructor={instructor}
         />
-      ) : layoutStyle === "widgets" ? (
+      ) : effectiveLayoutStyle === "widgets" ? (
         <WidgetsHomeView
           instructorId={instructorId}
           instructor={instructor}
         />
-      ) : layoutStyle === "premium-ios" ? (
+      ) : effectiveLayoutStyle === "premium-ios" ? (
         <PremiumIOSHomeView
           instructorId={instructorId}
           instructor={instructor}
           onPaymentClick={onPaymentClick}
         />
-      ) : layoutStyle === "premium" ? (
+      ) : effectiveLayoutStyle === "premium" ? (
         <PremiumHome
           instructorId={instructorId}
           instructor={instructor}
