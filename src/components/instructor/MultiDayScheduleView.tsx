@@ -1181,15 +1181,22 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                           sendingMessage={sendingMessage}
                           onDelete={handleDeleteLesson}
                           renderCustomCollapsed={(() => {
-                            // Compute completion + attention from existing data only
-                            const isCompleted = lesson.status === "completed";
+                            // Compute completion + attention from existing data only.
+                            // EOL is "done" when a lesson_history row exists for this
+                            // pupil/date/time, or status is completed.
+                            const startNorm = lesson.start_time.length === 5
+                              ? `${lesson.start_time}:00`
+                              : lesson.start_time;
+                            const eolKey = `${lesson.pupil?.id}|${lesson.lesson_date}|${startNorm}`;
+                            const eolDone = eolDoneKeys.has(eolKey) || lesson.status === "completed";
                             const paymentDone = lesson.payment_status === "paid" || (lesson.prepaid_hours_used ?? 0) > 0;
                             const notesDone = !!(lesson.notes && lesson.notes.trim().length > 0);
                             // Past = lesson end time before now
                             const lessonStart = new Date(`${lesson.lesson_date}T${lesson.start_time}`);
                             const lessonEnd = new Date(lessonStart.getTime() + (lesson.duration_minutes || 60) * 60000);
                             const isPast = lessonEnd.getTime() < Date.now();
-                            const needsAttention = isPast && (!isCompleted || !paymentDone);
+                            const needsAttention = isPast && (!eolDone || !paymentDone);
+                            const showCompletion = eolDone || paymentDone || notesDone;
                             return (
                               <ScheduleListRow
                                 timeText={formatTime(lesson.start_time)}
@@ -1207,8 +1214,8 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                                   (lesson.pupil?.account_balance ?? 0) < 0
                                 }
                                 completion={
-                                  isCompleted
-                                    ? { eol: true, payment: paymentDone, notes: notesDone }
+                                  showCompletion
+                                    ? { eol: eolDone, payment: paymentDone, notes: notesDone }
                                     : undefined
                                 }
                                 needsAttention={needsAttention}
