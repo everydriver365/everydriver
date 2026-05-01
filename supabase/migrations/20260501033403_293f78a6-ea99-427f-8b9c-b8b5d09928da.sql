@@ -1,0 +1,1 @@
+UPDATE public.instructor_tile_preferences SET home_layout_style = 'premium-ios', updated_at = now() WHERE home_layout_style = 'dashboard';
