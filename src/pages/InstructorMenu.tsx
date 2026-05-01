@@ -839,7 +839,7 @@ export default function InstructorMenu() {
         <SearchInput
           value={searchQuery}
           onChange={setSearchQuery}
-          placeholder="Search menu & settings"
+          placeholder="Search settings"
           ariaLabel="Search menu and settings"
         />
 
