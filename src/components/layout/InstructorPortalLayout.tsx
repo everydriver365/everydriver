@@ -558,69 +558,138 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               <SheetContent
                 side="right"
                 className={cn(
-                  "dsm-instructor a11y-scope flex w-[296px] max-w-[calc(100vw-18px)] flex-col border-l border-[hsl(var(--dsm-border))] !bg-[hsl(var(--dsm-bg))] bg-none p-0 text-[hsl(var(--dsm-text))] opacity-100 shadow-2xl backdrop-blur-none [&>button]:hidden",
+                  "dsm-instructor a11y-scope flex w-[84vw] max-w-[360px] flex-col border-0 !bg-[hsl(var(--dsm-bg))] bg-none p-0 text-[hsl(var(--dsm-text))] opacity-100 backdrop-blur-none [&>button]:hidden",
                   (resolvedTheme === "dark" || resolvedTheme === "oled") && "dsm-dark"
                 )}
-                style={{ backgroundColor: "hsl(var(--dsm-bg))" }}
+                style={{
+                  backgroundColor: "hsl(var(--dsm-bg))",
+                  borderTopLeftRadius: 18,
+                  borderBottomLeftRadius: 18,
+                  boxShadow: "-12px 0 40px rgba(0,0,0,0.18)",
+                  overflow: "hidden",
+                }}
               >
-                <SheetHeader className="border-b border-[hsl(var(--dsm-border))] px-4 py-4 text-left">
+                {/* Compact profile header */}
+                <SheetHeader className="px-5 pt-5 pb-3 text-left space-y-0">
                   <SheetTitle className="sr-only">Instructor menu</SheetTitle>
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-11 w-11 border border-[hsl(var(--dsm-border))]">
+                    <Avatar className="h-9 w-9 border border-[hsl(var(--dsm-border))]">
                       <AvatarImage src={instructor?.profile_image_url || undefined} />
-                      <AvatarFallback className="bg-[hsl(var(--dsm-tile-icon-bg))] text-[hsl(var(--dsm-text))]">
+                      <AvatarFallback className="bg-[hsl(var(--dsm-tile-icon-bg))] text-[hsl(var(--dsm-text))] text-[13px] font-semibold">
                         {instructor?.name?.charAt(0) || "I"}
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1 text-left">
-                      <p className="truncate text-[15px] font-semibold leading-5 tracking-normal text-[hsl(var(--dsm-text))]">{instructor?.name || "Instructor"}</p>
-                      <p className="truncate text-[13px] leading-5 tracking-normal text-[hsl(var(--dsm-text-secondary))]">{instructor?.email}</p>
+                      <p className="truncate text-[15px] font-semibold leading-[18px] tracking-[-0.2px] text-[hsl(var(--dsm-text))]">
+                        {instructor?.name || "Instructor"}
+                      </p>
+                      <p className="truncate text-[12px] leading-4 tracking-normal text-[hsl(var(--dsm-text-secondary))]">
+                        {instructor?.email}
+                      </p>
                     </div>
-                    <SheetClose className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[hsl(var(--dsm-text-secondary))] hover:bg-[hsl(var(--dsm-card)/0.7)]" aria-label="Close menu">
-                      <X className="h-5 w-5" strokeWidth={1.8} />
+                    <SheetClose
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[hsl(var(--dsm-text-secondary))] hover:bg-[hsl(var(--dsm-card)/0.7)]"
+                      aria-label="Close menu"
+                    >
+                      <X className="h-[18px] w-[18px]" strokeWidth={1.8} />
                     </SheetClose>
                   </div>
                 </SheetHeader>
 
-                {/* Navigation Links */}
-                <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3" style={{ maxHeight: "calc(100dvh - 166px)" }}>
-                  <DrawerRow
-                    icon={Search}
-                    label="Search"
-                    index={0}
-                    onClick={() => { setIsMobileMenuOpen(false); setMobileSearchOpen(true); setMobileSearchQuery(""); setMobileSearchResults([]); }}
-                  />
-                  <DrawerRow
-                    icon={Headphones}
-                    label="Voice assistant"
-                    index={1}
-                    onClick={() => { setIsMobileMenuOpen(false); handleVoiceTap(); }}
-                  />
-                  <div className="my-2 h-px bg-[hsl(var(--dsm-border))]" />
-                  {sidebarLinks.map((link) => {
-                    const isActive = location.pathname === link.href;
-                    return (
-                      <DrawerRow
-                        key={link.href}
-                        icon={link.icon}
-                        label={link.label === "Test Results" ? "Test results" : link.label === "Test Swap" ? "Test swap" : link.label === "GPS Tracking" ? "GPS tracking" : link.label === "Contact Admin" ? "Contact admin" : link.label === "Visitor Chats" ? "Visitor chats" : link.label === "Fill Gaps" ? "Fill gaps" : link.label === "Saved Routes" ? "Saved routes" : link.label === "Mini Website" ? "Mini website" : link.label}
-                        active={isActive}
-                        index={sidebarLinks.indexOf(link) + 2}
-                        onClick={() => handleNavClick(link.href)}
-                      >
-                        {renderDrawerBadge(link, isActive)}
-                      </DrawerRow>
-                    );
-                  })}
+                {/* Grouped navigation */}
+                <nav
+                  className="flex-1 overflow-y-auto px-3 pb-3"
+                  style={{ maxHeight: "calc(100dvh - 140px)" }}
+                >
+                  <DrawerSectionLabel>Primary</DrawerSectionLabel>
+                  <div className="space-y-0.5">
+                    {drawerPrimary.map((link) => {
+                      const isActive = location.pathname === link.href;
+                      return (
+                        <DrawerRow
+                          key={link.href}
+                          icon={link.icon}
+                          label={friendlyLabel(link.label)}
+                          active={isActive}
+                          onClick={() => handleNavClick(link.href)}
+                        >
+                          {renderDrawerBadge(link, isActive)}
+                        </DrawerRow>
+                      );
+                    })}
+                  </div>
+
+                  <DrawerSectionLabel>Secondary</DrawerSectionLabel>
+                  <div className="space-y-0.5">
+                    {drawerSecondary.map((link) => {
+                      const isActive = location.pathname === link.href;
+                      return (
+                        <DrawerRow
+                          key={link.href}
+                          icon={link.icon}
+                          label={friendlyLabel(link.label)}
+                          active={isActive}
+                          onClick={() => handleNavClick(link.href)}
+                        >
+                          {renderDrawerBadge(link, isActive)}
+                        </DrawerRow>
+                      );
+                    })}
+                  </div>
+
+                  <DrawerSectionLabel>Tools</DrawerSectionLabel>
+                  <div className="space-y-0.5">
+                    <DrawerRow
+                      icon={Search}
+                      label="Search"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        setMobileSearchOpen(true);
+                        setMobileSearchQuery("");
+                        setMobileSearchResults([]);
+                      }}
+                    />
+                    <DrawerRow
+                      icon={Headphones}
+                      label="Voice assistant"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        handleVoiceTap();
+                      }}
+                    />
+                  </div>
+
+                  {drawerExtraGroups.map((group) => (
+                    <div key={group.label}>
+                      <DrawerSectionLabel>
+                        {group.label.charAt(0) + group.label.slice(1).toLowerCase()}
+                      </DrawerSectionLabel>
+                      <div className="space-y-0.5">
+                        {group.items.map((link) => {
+                          const isActive = location.pathname === link.href;
+                          return (
+                            <DrawerRow
+                              key={link.href}
+                              icon={link.icon}
+                              label={friendlyLabel(link.label)}
+                              active={isActive}
+                              onClick={() => handleNavClick(link.href)}
+                            >
+                              {renderDrawerBadge(link, isActive)}
+                            </DrawerRow>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </nav>
 
-                {/* Menu Footer */}
-                <div className="mt-auto border-t border-[hsl(var(--dsm-border))] p-3">
+                {/* Footer */}
+                <div className="mt-auto border-t border-[hsl(var(--dsm-border)/0.7)] px-3 py-2.5">
                   <DrawerRow
                     icon={LogOut}
                     label="Sign out"
                     destructive
-                    index={0}
                     onClick={() => {
                       handleSignOut();
                       setIsMobileMenuOpen(false);
