@@ -141,17 +141,17 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
     : 0;
 
   return (
-    <div className="pb-8" style={{ background: "#F7F6F3" }}>
+    <div className="pb-10" style={{ background: "#F7F6F3" }}>
       {/* Top bar (logo + bell + avatar) is provided by InstructorPortalLayout's
           MobileBlueHeader. Do not render a second header here. */}
 
       {/* ---------------- Greeting + date pill ---------------- */}
-      <div className="px-5 pt-0 pb-3">
-        <h1 className="text-[32px] leading-[1.1] font-bold tracking-tight text-[#1C1C1E]">
+      <div className="px-6 pt-4 pb-5">
+        <h1 className="text-[36px] leading-[1.05] font-bold tracking-tight text-[#1C1C1E]">
           {greeting} <span className="inline-block">👋</span>
         </h1>
-        <div className="mt-1.5 flex items-center justify-between gap-3">
-          <p className="text-[14px] text-[#3C3C43]/70 min-w-0 truncate">
+        <div className="mt-2.5 flex items-center justify-between gap-3">
+          <p className="text-[15px] text-[#3C3C43]/70 min-w-0 truncate">
             <span>
               {lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today
             </span>
@@ -166,9 +166,9 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
           </p>
           <button
             onClick={() => navigate("/instructor/schedule")}
-            className="flex items-center gap-1.5 px-2.5 h-7 rounded-full border border-black/10 bg-white text-[12px] font-medium text-[#1C1C1E] active:bg-black/[0.03] transition-colors shrink-0"
+            className="flex items-center gap-1.5 px-3 h-9 rounded-full border border-black/[0.08] bg-white text-[13px] font-medium text-[#1C1C1E] active:bg-black/[0.03] transition-colors shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
           >
-            <Calendar className="size-[12px] text-[#3C3C43]/70" />
+            <Calendar className="size-[13px] text-[#3C3C43]/70" />
             {format(today, "EEE, d MMM")}
           </button>
         </div>
@@ -176,41 +176,41 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
 
       {/* ---------------- Needs your attention ---------------- */}
       {attention.length > 0 && (
-        <section className="px-5 mb-5">
-          <h2 className="text-[15px] font-semibold tracking-tight text-[#1C1C1E] mb-2.5">
+        <section className="px-6 mb-7">
+          <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] mb-3">
             Needs your attention
           </h2>
-          <div className="rounded-[18px] border border-black/[0.06] bg-white overflow-hidden">
+          <div className="rounded-[24px] border border-black/[0.05] bg-white overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
             {attention.map((row, i) => (
               <div key={row.key}>
                 <button
                   onClick={row.onClick}
-                  className="w-full flex items-center gap-3.5 px-4 py-3.5 active:bg-black/[0.03] transition-colors text-left"
-                  style={{ minHeight: 72 }}
+                  className="w-full flex items-center gap-4 px-5 py-4 active:bg-black/[0.03] transition-colors text-left"
+                  style={{ minHeight: 92 }}
                 >
                   <div
-                    className="size-11 rounded-[12px] flex items-center justify-center shrink-0"
+                    className="size-12 rounded-[14px] flex items-center justify-center shrink-0"
                     style={{ background: row.iconBg, color: row.iconFg }}
                   >
                     {row.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight truncate">
+                    <div className="text-[16px] font-semibold text-[#1C1C1E] tracking-tight truncate">
                       {row.title}
                     </div>
-                    <div className="text-[12.5px] text-[#3C3C43]/65 mt-0.5 truncate">
+                    <div className="text-[13px] text-[#3C3C43]/65 mt-0.5 truncate">
                       {row.subtitle}
                     </div>
                   </div>
                   <span
-                    className={`text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0 ${pillCls[row.tone]}`}
+                    className={`text-[12px] font-bold px-3 py-1 rounded-full shrink-0 ${pillCls[row.tone]}`}
                   >
                     {row.pill}
                   </span>
-                  <ChevronRight className="size-[16px] text-[#3C3C43]/35 shrink-0" />
+                  <ChevronRight className="size-[18px] text-[#3C3C43]/35 shrink-0" />
                 </button>
                 {i < attention.length - 1 && (
-                  <div className="ml-[72px] border-t border-black/[0.05]" />
+                  <div className="ml-[80px] border-t border-black/[0.05]" />
                 )}
               </div>
             ))}
