@@ -27,9 +27,10 @@ export interface MenuRowProps {
 const fontFamily =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
 
-const ACTIVE_BG = "#E6F1FB";
-const ACTIVE_FG = "#2B7BC8";
-const DESTRUCTIVE_FG = "#C8434F";
+// Aligned with unified --portal-accent token (#2B7BC8) and danger.
+const ACTIVE_BG = "var(--portal-accent-soft, #E6F1FB)";
+const ACTIVE_FG = "var(--portal-accent, #2B7BC8)";
+const DESTRUCTIVE_FG = "var(--portal-danger, #C8434F)";
 
 export function MenuRow({
   icon: Icon,
