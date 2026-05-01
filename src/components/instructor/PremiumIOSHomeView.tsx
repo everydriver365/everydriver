@@ -406,12 +406,20 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </Card>
       </section>
 
-      {/* 4. Quick actions — 4 in a row, compact tiles */}
+      {/* 4. Quick actions — 5 tiles in a row, with Edit link */}
       <section className="px-6 mb-6">
-        <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] mb-3 px-1">
-          Quick actions
-        </h2>
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
+            Quick actions
+          </h2>
+          <button
+            onClick={() => navigate("/instructor/settings?tab=appearance")}
+            className="text-[14px] font-semibold text-[#007AFF] active:opacity-60 transition-opacity"
+          >
+            Edit
+          </button>
+        </div>
+        <div className="grid grid-cols-5 gap-2">
           <QuickActionPill
             icon={<CalendarPlus className="size-[20px]" />}
             label="Add lesson"
@@ -435,6 +443,12 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
             label="Fill gap"
             tone="amber"
             onClick={() => navigate("/instructor/schedule?view=gaps")}
+          />
+          <QuickActionPill
+            icon={<MoreHorizontal className="size-[20px]" />}
+            label="More"
+            tone="neutral"
+            onClick={() => navigate("/instructor/more")}
           />
         </div>
       </section>
