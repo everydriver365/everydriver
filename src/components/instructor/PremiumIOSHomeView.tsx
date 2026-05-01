@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import {
   ChevronRight,
+  ChevronDown,
   Bell,
   Plus,
   Briefcase,
@@ -13,8 +14,12 @@ import {
   X,
   TrendingUp,
   TrendingDown,
+  Calendar as CalendarIcon,
+  MapPin,
+  MoreHorizontal,
 } from "lucide-react";
 import { useState } from "react";
+import { format } from "date-fns";
 
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
@@ -160,7 +165,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
   };
 
   /* ---------------- Today's schedule (max 2 for premium feel) ------------ */
-  const previewLessons = (todayLessons || []).slice(0, 2);
+  const previewLessons = (todayLessons || []).slice(0, 4);
 
   /* ---------------- Smart suggestion ------------------------------------- */
   const firstGap = gapSuggestions?.find((d) => d.slots.length > 0)?.slots?.[0];
@@ -175,23 +180,32 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
   /* ---------------- Render ----------------------------------------------- */
   return (
     <div className="min-h-screen bg-[#F2F2F7] pb-32">
-      {/* 1. Header — compact, balanced */}
-      <header className="px-6 pt-6 pb-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-[28px] leading-[1.15] font-bold tracking-tight text-[#1C1C1E] truncate">
-              {greeting}
-            </h1>
-            <p className="mt-1 text-[14px] text-[#3C3C43]/65 font-medium">
-              {subParts.join(" · ")}
-            </p>
-          </div>
+      {/* 1. Header — greeting + date pill (DSM logo & bell live in MobileBlueHeader above) */}
+      <header className="px-6 pt-5 pb-5">
+        <h1 className="text-[32px] leading-[1.1] font-bold tracking-tight text-[#1C1C1E]">
+          {greeting}
+        </h1>
+        <div className="mt-2 flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-[15px] font-medium text-[#3C3C43]/65">
+            <span>{lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today</span>
+            {waitingCount > 0 && (
+              <>
+                <span className="mx-1.5 text-[#3C3C43]/40">·</span>
+                <span className="text-[#FF3B30] font-semibold">
+                  {waitingCount} thing{waitingCount === 1 ? "" : "s"} waiting
+                </span>
+              </>
+            )}
+          </p>
           <button
-            onClick={() => navigate("/instructor/notifications")}
-            className="size-10 rounded-full bg-white flex items-center justify-center active:scale-95 transition-transform shadow-[0_1px_2px_rgba(0,0,0,0.04)] shrink-0"
-            aria-label="Notifications"
+            onClick={() => navigate("/instructor/schedule")}
+            className="flex items-center gap-2 pl-3 pr-3 py-2 rounded-full bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)] active:scale-[0.97] transition-transform shrink-0"
           >
-            <Bell className="size-[18px] text-[#1C1C1E]" />
+            <CalendarIcon className="size-[15px] text-[#3C3C43]/70" />
+            <span className="text-[14px] font-semibold text-[#1C1C1E]">
+              {format(new Date(), "EEE, d MMM yyyy")}
+            </span>
+            <ChevronDown className="size-[14px] text-[#3C3C43]/55" />
           </button>
         </div>
       </header>
@@ -351,16 +365,19 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                       </div>
                       {/* Pupil + meta */}
                       <div className="flex-1 min-w-0">
-                        <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight break-words">
+                        <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight truncate">
                           {lesson.pupilName || "Pupil"}
                         </div>
-                        <div className="text-[12.5px] text-[#3C3C43]/65 mt-0.5 truncate">
-                          {[
-                            lesson.lessonType || "Lesson",
-                            lesson.pickupLocation || lesson.pickupPostcode,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
+                        <div className="flex items-center gap-1 mt-0.5 min-w-0">
+                          <MapPin className="size-[12px] text-[#3C3C43]/55 shrink-0" />
+                          <div className="text-[12.5px] text-[#3C3C43]/65 truncate">
+                            {[
+                              lesson.lessonType || "Lesson",
+                              lesson.pickupLocation || lesson.pickupPostcode,
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </div>
                         </div>
                       </div>
                       <span
@@ -377,10 +394,10 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
               })}
             </div>
           )}
-          <div className="border-t border-black/[0.05]">
+          <div className="px-4 pb-4 pt-1">
             <button
               onClick={() => navigate("/instructor/schedule?action=add")}
-              className="w-full flex items-center justify-center gap-1.5 py-3.5 text-[14px] font-semibold text-[#007AFF] active:bg-black/[0.03] transition-colors"
+              className="w-full flex items-center justify-center gap-1.5 py-3 rounded-[12px] bg-[#007AFF]/[0.06] text-[14px] font-semibold text-[#007AFF] active:bg-[#007AFF]/[0.1] transition-colors"
             >
               <Plus className="size-[17px]" />
               Add lesson
@@ -389,12 +406,20 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </Card>
       </section>
 
-      {/* 4. Quick actions — 4 in a row, compact tiles */}
+      {/* 4. Quick actions — 5 tiles in a row, with Edit link */}
       <section className="px-6 mb-6">
-        <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] mb-3 px-1">
-          Quick actions
-        </h2>
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
+            Quick actions
+          </h2>
+          <button
+            onClick={() => navigate("/instructor/settings?tab=appearance")}
+            className="text-[14px] font-semibold text-[#007AFF] active:opacity-60 transition-opacity"
+          >
+            Edit
+          </button>
+        </div>
+        <div className="grid grid-cols-5 gap-2">
           <QuickActionPill
             icon={<CalendarPlus className="size-[20px]" />}
             label="Add lesson"
@@ -419,40 +444,45 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
             tone="amber"
             onClick={() => navigate("/instructor/schedule?view=gaps")}
           />
+          <QuickActionPill
+            icon={<MoreHorizontal className="size-[20px]" />}
+            label="More"
+            tone="neutral"
+            onClick={() => navigate("/instructor/more")}
+          />
         </div>
       </section>
 
-      {/* 5. Smart suggestion — single full-width card */}
+      {/* 5. Smart suggestion — green tinted card with green CTA */}
       {firstGap && !suggestionDismissed && gapMins > 0 && (
         <section className="px-6 mb-7">
-          <div className="rounded-[20px] p-6 relative overflow-hidden bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_28px_-12px_rgba(16,24,40,0.08)]">
+          <div className="rounded-[20px] px-5 py-4 relative overflow-hidden bg-[#E9F8EE] border border-[#34C759]/20">
             <button
               onClick={() => setSuggestionDismissed(true)}
-              className="absolute top-4 right-4 size-8 rounded-full bg-black/[0.04] flex items-center justify-center active:scale-95 transition-transform"
+              className="absolute top-3 right-3 size-7 rounded-full flex items-center justify-center active:scale-95 transition-transform"
               aria-label="Dismiss"
             >
-              <X className="size-[15px] text-[#3C3C43]/55" />
+              <X className="size-[16px] text-[#3C3C43]/55" />
             </button>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="size-7 rounded-full bg-[#34C759]/12 flex items-center justify-center">
-                <Sparkles className="size-[15px] text-[#1F8E3F]" />
+            <div className="flex items-center gap-3 pr-7">
+              <div className="size-11 rounded-[12px] bg-white flex items-center justify-center shrink-0 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+                <CalendarIcon className="size-[20px] text-[#1F8E3F]" />
               </div>
-              <span className="text-[12px] font-semibold uppercase tracking-[0.06em] text-[#1F8E3F]">
-                Smart suggestion
-              </span>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[15.5px] font-semibold tracking-tight text-[#1C1C1E] leading-snug">
+                  You have a {gapMins} min gap at {firstGap.startTime.slice(0, 5)}
+                </h3>
+                <p className="text-[13px] text-[#3C3C43]/70 mt-0.5 leading-snug">
+                  Fill it with a new lesson and boost your earnings.
+                </p>
+              </div>
+              <button
+                onClick={() => navigate("/instructor/schedule?view=gaps")}
+                className="shrink-0 px-4 py-2.5 rounded-[12px] bg-[#1F8E3F] text-white text-[13.5px] font-semibold active:opacity-85 transition-opacity shadow-[0_1px_2px_rgba(16,24,40,0.08)]"
+              >
+                Add lesson
+              </button>
             </div>
-            <h3 className="text-[22px] font-semibold tracking-tight text-[#1C1C1E] leading-tight pr-8">
-              You have a {gapMins} min gap at {firstGap.startTime.slice(0, 5)}
-            </h3>
-            <p className="text-[15px] text-[#3C3C43]/70 mt-2 leading-relaxed">
-              Fill it with a new lesson and boost your earnings.
-            </p>
-            <button
-              onClick={() => navigate("/instructor/schedule?view=gaps")}
-              className="mt-5 w-full py-4 rounded-[14px] bg-[#1C1C1E] text-white text-[16px] font-semibold active:opacity-85 transition-opacity"
-            >
-              Fill slot
-            </button>
           </div>
         </section>
       )}
@@ -516,7 +546,7 @@ function QuickActionPill({
 }: {
   icon: React.ReactNode;
   label: string;
-  tone: "blue" | "green" | "amber" | "indigo";
+  tone: "blue" | "green" | "amber" | "indigo" | "neutral";
   onClick: () => void;
 }) {
   const tones: Record<string, { bg: string; fg: string; iconBg: string }> = {
@@ -524,12 +554,14 @@ function QuickActionPill({
     green: { bg: "#FFFFFF", fg: "#1C1C1E", iconBg: "#E6F8EC" },
     amber: { bg: "#FFFFFF", fg: "#1C1C1E", iconBg: "#FFF3DC" },
     indigo: { bg: "#FFFFFF", fg: "#1C1C1E", iconBg: "#ECEAFE" },
+    neutral: { bg: "#FFFFFF", fg: "#1C1C1E", iconBg: "#EFEFF4" },
   };
   const iconColors: Record<string, string> = {
     blue: "#007AFF",
     green: "#1F8E3F",
     amber: "#C46E00",
     indigo: "#5856D6",
+    neutral: "#3C3C43",
   };
   const t = tones[tone];
   return (

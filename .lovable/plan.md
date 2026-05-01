@@ -1,29 +1,46 @@
-## Problem
+## Why the preview doesn't match
 
-The "massive grey gap" at the top of the instructor mobile home is **not** part of the header — it's the page area *above* the sticky header showing the body's default white/grey background. The sticky `MobileBlueHeader` paints `#F7F6F3` only from its own top edge, so anything above it (the safe-area inset on iOS, or the browser viewport area in the preview) shows the underlying `bg-background` colour.
+Your active home layout is `"premium"` which renders `PremiumHome.tsx`. The reference design (and all my recent refinements) live in a different component: `PremiumIOSHomeView.tsx`, which only renders when `layoutStyle === "premium-ios"`. That's why nothing visible has changed for you despite multiple edits.
 
-A second contributing issue: the header currently has both `paddingTop: env(safe-area-inset-top) + 2px` and a fixed `height: env(safe-area-inset-top) + 44px`. In the preview (where `env(safe-area-inset-top)` is 0) that's fine, but the layout is fragile and on real iOS the icon row gets squeezed.
+Two things need to happen to fix this properly:
 
-## Fix
+### 1. Make the reference layout the default
 
-Two small, header-only changes — nothing below "Needs your attention" is touched.
+In `src/hooks/useInstructorAppearance.ts`, change the default `layoutStyle` from `"premium"` to `"premium-ios"` so PremiumIOSHomeView is what loads for everyone (including you) on first paint, with no settings change required.
 
-### 1. `src/components/instructor/MobileBlueHeader.tsx`
-- Drop the fixed `height` on the inner row. Let `paddingTop: env(safe-area-inset-top) + 6px` and `paddingBottom: 6px` size it naturally to ~44–50px.
-- Add an absolutely-positioned filler block behind the safe-area inset so the notch zone is also `#F7F6F3` (belt-and-braces on real devices).
+### 2. Bring `PremiumIOSHomeView` up to match the reference
 
-### 2. `src/components/layout/InstructorPortalLayout.tsx`
-- On the wrapper that has `instructor-shell-bg`, also set the page background colour explicitly via inline style on the outermost div so the body shows the same `#F7F6F3` regardless of the global `bg-background` token. Simplest path: add `style={{ background: "#F7F6F3" }}` to the wrapper div at line 482, OR add a one-line CSS rule that paints `body` the shell colour while inside `.ios-instructor`.
+The current PremiumIOSHomeView is close but missing several elements visible in the reference. Update only this file:
 
-Pick the CSS-rule approach — cleaner and only affects the instructor mobile shell:
-- In `src/index.css`, add a rule near the existing `.instructor-shell-bg` block that paints `html, body` `#F7F6F3` when the `.ios-instructor` shell is mounted. Use `:has(.ios-instructor)` on `body` so it's auto-scoped.
+**Header band**
+- Add a top row with the DSM logo (red/blue/black tiles + "Driving School Manager" wordmark) on the left, and bell (with red 9+ badge) + circular avatar on the right.
+- Below it: large "Good evening, Ken 👋" greeting (~32px), subtitle "1 lesson today · 2 things waiting" (red accent on waiting count), and a date pill "Fri, 16 May 2025 ⌄" aligned to the right of the subtitle row (not stacked, not overlapping).
 
-## Result
+**Needs your attention**
+- Keep current 3-row card structure. Confirm pill colours: red (NEW), amber number, green number. Compact rows (~76–82px). Already mostly aligned.
 
-- No grey strip above the DSM logo.
-- Header stays compact (~46px content height + safe-area).
-- Background flows seamlessly from notch → header → page content.
+**Today's schedule**
+- Show up to 4 lessons (reference shows 4) instead of the current 2.
+- Each row: coloured accent bar (blue for upcoming, green for confirmed), time + duration block, real avatar photo (fall back to initials), pupil full name (no truncation), "lesson type · location" subtext with pin icon, status pill (Upcoming = blue, Confirmed = green) and chevron.
+- Add lesson footer: light blue tinted bar with "+ Add lesson" centred.
 
-## Files touched
-- `src/components/instructor/MobileBlueHeader.tsx` (header padding/height tidy)
-- `src/index.css` (single rule to paint body `#F7F6F3` while instructor shell is mounted)
+**Quick actions**
+- Header row: "Quick actions" left, "Edit" link right (navigates to appearance settings).
+- 5 tiles in one horizontally scrollable row (or 5-col grid that fits): Add lesson, Take payment, Message, Fill gap, More. Each tile ~88–96px tall, icon over label, soft tinted icon backgrounds matching the reference (blue, green, indigo, amber, neutral grey for More).
+
+**Smart suggestion**
+- Light green tinted card with calendar icon, "You have a 90 min gap at HH:MM" headline, "Fill it with a new lesson and boost your earnings." subtext, and a solid green "Add lesson" button on the right (replacing the current black pill button).
+- Keep the dismiss X.
+
+**Bottom spacing**
+- Keep `pb-32` so nothing is hidden behind the bottom nav.
+
+### What stays untouched
+- All data hooks, navigation handlers, RLS, auth, routing, the bottom nav itself, and every other layout option (`clean`, `lockscreen`, `bestmate`, etc.).
+- `PremiumHome.tsx` is left as-is (still selectable in appearance settings).
+
+### Files to edit
+- `src/hooks/useInstructorAppearance.ts` — default to `"premium-ios"`.
+- `src/components/instructor/PremiumIOSHomeView.tsx` — header band, schedule (4 rows), Quick actions row of 5 with Edit, green Smart suggestion CTA.
+
+After approval I'll implement the above and you should see the reference design on next reload.

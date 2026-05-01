@@ -14,14 +14,14 @@ export interface AppearanceSettings {
 const QUERY_KEY = "instructor-appearance";
 
 const defaultAppearance: AppearanceSettings = {
-  layoutStyle: "premium",
+  layoutStyle: "premium-ios",
   heroImageUrl: null,
   wallpaperColor: null,
 };
 
 const normalizeLayoutStyle = (style: string | null | undefined): LayoutStyle => {
-  // "dashboard" is the legacy mobile default. The new default home design is Premium.
-  if (!style || style === "dashboard") return "premium";
+  // "dashboard" is the legacy mobile default. The new default home design is Premium iOS.
+  if (!style || style === "dashboard" || style === "premium") return "premium-ios";
   return style as LayoutStyle;
 };
 
