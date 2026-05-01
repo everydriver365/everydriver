@@ -73,7 +73,7 @@ export function MobileBlueHeader({
             style={{ width: 32, height: 32 }}
             aria-label="Notifications"
           >
-            <Bell size={20} strokeWidth={1.8} color={ICON_COLOR} />
+            <Bell size={18} strokeWidth={1.7} color={ICON_COLOR} />
             {notifCount > 0 && (
               <span
                 className="absolute flex items-center justify-center"
