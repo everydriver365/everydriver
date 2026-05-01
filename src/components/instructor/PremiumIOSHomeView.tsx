@@ -95,7 +95,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
   const { messageCount, pendingJobsCount } = useCombinedNotificationCount(instructorId);
   const homeActions = useHomeActions(instructorId);
   const { data: nextLesson } = useNextLessonDetails(instructorId);
-  const { data: instructorProfile } = useInstructorProfile(instructorId);
+  const { profile: instructorProfile } = useInstructorProfile(instructorId);
 
   const [suggestionDismissed, setSuggestionDismissed] = useState(false);
 
