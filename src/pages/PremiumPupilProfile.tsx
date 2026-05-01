@@ -890,6 +890,16 @@ export default function PremiumPupilProfile() {
       tags.unshift({ label: "Outstanding balance", tone: "red" });
     }
 
+    if (termsState !== "signed") {
+      tags.push({
+        label: termsState === "awaiting" ? "Awaiting signature" : "Terms required",
+        tone: termsState === "awaiting" ? "amber" : "red",
+      });
+      if (!recommendation || termsState === "required") {
+        recommendation = "Send agreement before next lesson";
+      }
+    }
+
     return { headline, bullets: bullets.slice(0, 4), recommendation, tags: tags.slice(0, 3) };
   })();
 
