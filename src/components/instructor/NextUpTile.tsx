@@ -924,16 +924,16 @@ export function NextUpTile({
                   </div>
                 )}
 
-                {/* ── SECTION 2.5 — Last lesson (read-only summary) ── */}
+                {/* ── SECTION 2.5 — Last lesson (elevated card) ── */}
                 <div style={{
-                  fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73",
-                  letterSpacing: 0.3, textTransform: "uppercase", margin: "0 0 8px",
+                  fontSize: a11yPx(11), fontWeight: 600, color: "#6E6E73",
+                  letterSpacing: 0.4, textTransform: "uppercase", margin: "0 4px 10px",
                 }}>
                   Last lesson
                 </div>
                 <div style={{
-                  background: "#FFFFFF", border: "0.5px solid #E5E5EA",
-                  borderRadius: 12, padding: 14, marginBottom: 18,
+                  background: "#FFFFFF", borderRadius: 16, padding: 16,
+                  boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
                 }}>
                   {lastLesson ? (
                     (() => {
