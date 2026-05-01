@@ -179,65 +179,63 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
   /* ---------------- Render ----------------------------------------------- */
   return (
-    <div className="min-h-screen bg-[#F2F2F7] pb-32">
-      {/* 1. Header — greeting + date pill (DSM logo & bell live in MobileBlueHeader above) */}
-      <header className="px-6 pt-5 pb-5">
-        <h1 className="text-[32px] leading-[1.1] font-bold tracking-tight text-[#1C1C1E]">
+    <div className="min-h-screen bg-[#F2F2F7] pb-32 px-5">
+      {/* SECTION 1: Greeting / subtext / date pill — strict left-aligned vertical stack */}
+      <header className="pt-3">
+        <h1 className="text-[34px] leading-[1.05] font-bold tracking-tight text-[#1C1C1E] truncate">
           {greeting}
         </h1>
-        <div className="mt-2 flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-[15px] font-medium text-[#3C3C43]/65">
-            <span>{lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today</span>
-            {waitingCount > 0 && (
-              <>
-                <span className="mx-1.5 text-[#3C3C43]/40">·</span>
-                <span className="text-[#FF3B30] font-semibold">
-                  {waitingCount} thing{waitingCount === 1 ? "" : "s"} waiting
-                </span>
-              </>
-            )}
-          </p>
-          <button
-            onClick={() => navigate("/instructor/schedule")}
-            className="flex items-center gap-2 pl-3 pr-3 py-2 rounded-full bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)] active:scale-[0.97] transition-transform shrink-0"
-          >
-            <CalendarIcon className="size-[15px] text-[#3C3C43]/70" />
-            <span className="text-[14px] font-semibold text-[#1C1C1E]">
-              {format(new Date(), "EEE, d MMM yyyy")}
-            </span>
-            <ChevronDown className="size-[14px] text-[#3C3C43]/55" />
-          </button>
-        </div>
+        <p className="mt-2 text-[15px] font-medium text-[#3C3C43]/65 whitespace-nowrap overflow-hidden text-ellipsis">
+          <span>{lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today</span>
+          {waitingCount > 0 && (
+            <>
+              <span className="mx-1.5 text-[#3C3C43]/40">·</span>
+              <span className="text-[#FF3B30] font-semibold">
+                {waitingCount} thing{waitingCount === 1 ? "" : "s"} waiting
+              </span>
+            </>
+          )}
+        </p>
+        <button
+          onClick={() => navigate("/instructor/schedule")}
+          className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)] active:scale-[0.97] transition-transform"
+        >
+          <CalendarIcon className="size-[14px] text-[#3C3C43]/70" />
+          <span className="text-[13px] font-semibold text-[#1C1C1E]">
+            {format(new Date(), "EEE, d MMM yyyy")}
+          </span>
+          <ChevronDown className="size-[13px] text-[#3C3C43]/55" />
+        </button>
       </header>
 
-      {/* 2. Needs your attention (single card, compact rows) */}
+      {/* SECTION 2: Needs attention — single card, 72px rows */}
       {attentionRows.length > 0 && (
-        <section className="px-6 mb-5">
+        <section className="mt-6">
           <Card>
-            <div className="px-5 pt-4 pb-1">
+            <div className="px-4 pt-4 pb-1">
               <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
                 Needs your attention
               </h2>
             </div>
-            <div className="pt-1 pb-1">
+            <div>
               {attentionRows.map((row, i) => (
                 <div key={row.key}>
                   <button
                     onClick={row.onClick}
-                    className="w-full flex items-center gap-3 px-5 py-3 active:bg-black/[0.03] transition-colors text-left"
-                    style={{ minHeight: 76 }}
+                    className="w-full flex items-center gap-3 px-4 active:bg-black/[0.03] transition-colors text-left"
+                    style={{ height: 72 }}
                   >
                     <div
-                      className="size-11 rounded-[12px] flex items-center justify-center shrink-0"
+                      className="size-10 rounded-[12px] flex items-center justify-center shrink-0"
                       style={{ background: row.iconBg, color: row.iconFg }}
                     >
                       {row.icon}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[15.5px] font-semibold text-[#1C1C1E] tracking-tight truncate">
+                      <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight truncate">
                         {row.title}
                       </div>
-                      <div className="text-[13px] text-[#3C3C43]/65 mt-0.5 truncate">
+                      <div className="text-[12.5px] text-[#3C3C43]/65 mt-0.5 truncate">
                         {row.subtitle}
                       </div>
                     </div>
@@ -249,7 +247,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                     <ChevronRight className="size-[16px] text-[#3C3C43]/35 shrink-0" />
                   </button>
                   {i < attentionRows.length - 1 && (
-                    <div className="ml-[76px] border-t border-black/[0.05]" />
+                    <div className="ml-[68px] border-t border-black/[0.05]" />
                   )}
                 </div>
               ))}
@@ -258,20 +256,14 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </section>
       )}
 
-      {/* 3. Today's schedule — main section, balanced */}
-      <section className="px-6 mb-5">
+
+      {/* SECTION 3: Today's schedule */}
+      <section className="mt-5">
         <Card>
-          <div className="flex items-center justify-between px-5 pt-4 pb-1">
-            <div className="min-w-0">
-              <h2 className="text-[19px] font-bold tracking-tight text-[#1C1C1E] leading-tight">
-                Today's schedule
-              </h2>
-              <p className="text-[13px] text-[#3C3C43]/60 mt-0.5">
-                {previewLessons.length === 0
-                  ? "Nothing booked yet"
-                  : `${lessonsToday} lesson${lessonsToday === 1 ? "" : "s"} planned`}
-              </p>
-            </div>
+          <div className="flex items-center justify-between px-4 pt-4 pb-1">
+            <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] leading-tight">
+              Today's schedule
+            </h2>
             <button
               onClick={() => navigate("/instructor/schedule")}
               className="flex items-center gap-0.5 text-[14px] font-semibold text-[#007AFF] active:opacity-60 transition-opacity shrink-0 ml-2"
@@ -282,7 +274,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
           </div>
 
           {previewLessons.length === 0 ? (
-            <div className="px-5 pt-3 pb-6 text-center">
+            <div className="px-4 pt-3 pb-5 text-center">
               <div className="size-12 rounded-full bg-[#F2F2F7] flex items-center justify-center mx-auto mb-3">
                 <CalendarPlus className="size-[22px] text-[#3C3C43]/50" />
               </div>
@@ -294,7 +286,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
               </p>
             </div>
           ) : (
-            <div className="pt-2 pb-1">
+            <div className="pt-1">
               {previewLessons.map((lesson, i) => {
                 const initials = (lesson.pupilName || "?")
                   .split(" ")
@@ -335,24 +327,22 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                       onClick={() =>
                         navigate(`/instructor/schedule?lessonId=${lesson.id}`)
                       }
-                      className="w-full flex items-center gap-3 px-5 py-3 active:bg-black/[0.03] transition-colors text-left"
+                      className="w-full flex items-center gap-3 px-4 active:bg-black/[0.03] transition-colors text-left"
+                      style={{ height: 80 }}
                     >
-                      {/* Accent bar */}
                       <div
                         className="w-[3px] h-12 rounded-full shrink-0"
                         style={{ backgroundColor: accentColor }}
                       />
-                      {/* Time block */}
-                      <div className="w-[58px] shrink-0">
-                        <div className="text-[20px] font-bold tracking-tight text-[#1C1C1E] tabular-nums leading-none">
+                      <div className="w-[54px] shrink-0">
+                        <div className="text-[18px] font-bold tracking-tight text-[#1C1C1E] tabular-nums leading-none">
                           {lesson.startTime?.slice(0, 5) || "--:--"}
                         </div>
                         <div className="text-[12px] font-medium text-[#3C3C43]/55 mt-1 tabular-nums">
                           {durationLabel}
                         </div>
                       </div>
-                      {/* Avatar */}
-                      <div className="size-11 rounded-full bg-[#E5E5EA] text-[#3C3C43] flex items-center justify-center text-[14px] font-semibold shrink-0 overflow-hidden">
+                      <div className="size-10 rounded-full bg-[#E5E5EA] text-[#3C3C43] flex items-center justify-center text-[13px] font-semibold shrink-0 overflow-hidden">
                         {lesson.pupilProfileImageUrl ? (
                           <img
                             src={lesson.pupilProfileImageUrl}
@@ -363,7 +353,6 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                           initials
                         )}
                       </div>
-                      {/* Pupil + meta */}
                       <div className="flex-1 min-w-0">
                         <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight truncate">
                           {lesson.pupilName || "Pupil"}
@@ -387,17 +376,18 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                       </span>
                     </button>
                     {i < previewLessons.length - 1 && (
-                      <div className="ml-[88px] mr-5 border-t border-black/[0.05]" />
+                      <div className="ml-[80px] mr-4 border-t border-black/[0.05]" />
                     )}
                   </div>
                 );
               })}
             </div>
           )}
-          <div className="px-4 pb-4 pt-1">
+          <div className="px-4 pb-4 pt-3">
             <button
               onClick={() => navigate("/instructor/schedule?action=add")}
-              className="w-full flex items-center justify-center gap-1.5 py-3 rounded-[12px] bg-[#007AFF]/[0.06] text-[14px] font-semibold text-[#007AFF] active:bg-[#007AFF]/[0.1] transition-colors"
+              className="w-full flex items-center justify-center gap-1.5 rounded-[12px] bg-[#007AFF]/[0.06] text-[14px] font-semibold text-[#007AFF] active:bg-[#007AFF]/[0.1] transition-colors"
+              style={{ height: 48 }}
             >
               <Plus className="size-[17px]" />
               Add lesson
@@ -406,9 +396,9 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </Card>
       </section>
 
-      {/* 4. Quick actions — 5 tiles in a row, with Edit link */}
-      <section className="px-6 mb-6">
-        <div className="flex items-center justify-between mb-3 px-1">
+      {/* SECTION 4: Quick actions — 4 tiles, single row, 88px */}
+      <section className="mt-5">
+        <div className="flex items-center justify-between mb-3">
           <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
             Quick actions
           </h2>
@@ -419,7 +409,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
             Edit
           </button>
         </div>
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           <QuickActionPill
             icon={<CalendarPlus className="size-[20px]" />}
             label="Add lesson"
@@ -444,18 +434,13 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
             tone="amber"
             onClick={() => navigate("/instructor/schedule?view=gaps")}
           />
-          <QuickActionPill
-            icon={<MoreHorizontal className="size-[20px]" />}
-            label="More"
-            tone="neutral"
-            onClick={() => navigate("/instructor/more")}
-          />
         </div>
       </section>
 
+
       {/* 5. Smart suggestion — green tinted card with green CTA */}
       {firstGap && !suggestionDismissed && gapMins > 0 && (
-        <section className="px-6 mb-7">
+        <section className="mt-5">
           <div className="rounded-[20px] px-5 py-4 relative overflow-hidden bg-[#E9F8EE] border border-[#34C759]/20">
             <button
               onClick={() => setSuggestionDismissed(true)}
@@ -525,7 +510,7 @@ function QuickActionPill({
     <button
       onClick={onClick}
       className="flex flex-col items-center justify-center gap-1.5 px-1.5 rounded-[16px] active:scale-[0.97] transition-transform shadow-[0_1px_2px_rgba(16,24,40,0.04),0_6px_20px_-12px_rgba(16,24,40,0.08)]"
-      style={{ background: t.bg, color: t.fg, minHeight: 88 }}
+      style={{ background: t.bg, color: t.fg, height: 88 }}
     >
       <span
         className="size-9 rounded-[11px] flex items-center justify-center shrink-0"

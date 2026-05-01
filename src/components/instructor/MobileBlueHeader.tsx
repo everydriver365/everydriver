@@ -31,7 +31,7 @@ export function MobileBlueHeader({
 
   return (
     <header className="sticky top-0 z-40 bg-[hsl(var(--dsm-page-bg,var(--dsm-bg)))]">
-      <div className="flex h-14 items-center justify-between px-5">
+      <div className="flex h-12 items-center justify-between px-5">
         {/* Left: DSM logo + wordmark (or back) */}
         <div className="flex items-center gap-2.5 min-w-0">
           {showBackButton ? (
