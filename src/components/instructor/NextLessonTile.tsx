@@ -295,6 +295,52 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
               {showRecorder ? "Hide Recorder" : "Record Route"}
             </button>
           </div>
+
+          {/* Action buttons: Call / Navigate / Open */}
+          <div className="grid grid-cols-3 gap-2 pt-1">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (nextLesson.pupil.phone) {
+                  window.location.href = `tel:${nextLesson.pupil.phone}`;
+                }
+              }}
+              disabled={!nextLesson.pupil.phone}
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold transition-all active:scale-95 disabled:opacity-40"
+              style={{ background: "rgba(34,197,94,0.1)", color: "#16A34A" }}
+            >
+              <Phone className="h-3.5 w-3.5" />
+              Call
+            </button>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const dest = nextLesson.pupil.pickup_address || nextLesson.pupil.address || nextLesson.pupil.pickup_postcode || nextLesson.pupil.postcode;
+                if (dest) {
+                  window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}`, "_blank");
+                }
+              }}
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold transition-all active:scale-95"
+              style={{ background: "rgba(59,130,246,0.1)", color: "#2563EB" }}
+            >
+              <Navigation className="h-3.5 w-3.5" />
+              Navigate
+            </button>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigate(`/instructor/pupils/${nextLesson.pupil.id}?lesson=${nextLesson.id}`);
+              }}
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold transition-all active:scale-95"
+              style={{ background: "rgba(99,102,241,0.1)", color: "#4338CA" }}
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Open
+            </button>
+          </div>
         </div>
       </div>
     </Link>
