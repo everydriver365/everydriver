@@ -1010,7 +1010,7 @@ export function NextUpTile({
                   )}
                 </div>
 
-                {/* ── SECTION 3 — Start track CTA ── */}
+                {/* ── SECTION 3 — Start lesson CTA ── */}
                 {!trackerDismissed && (
                   <button
                     onClick={(e) => {
@@ -1019,16 +1019,17 @@ export function NextUpTile({
                     }}
                     className="active:opacity-90"
                     style={{
-                      width: "100%", background: "#2B7BC8", color: "#FFFFFF",
-                      border: "none", borderRadius: 10, padding: 13,
-                      fontSize: a11yPx(14), fontWeight: 500, cursor: "pointer",
+                      width: "100%", background: "#007AFF", color: "#FFFFFF",
+                      border: "none", borderRadius: 14, padding: 14,
+                      fontSize: a11yPx(15), fontWeight: 600, letterSpacing: -0.1,
+                      cursor: "pointer",
                       display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
                       marginBottom: 18,
                       transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
                     }}
                   >
-                    <span style={{ width: 14, height: 14, borderRadius: "50%", background: "#FFFFFF", display: "inline-block" }} />
-                    Start track
+                    <Play style={{ width: 16, height: 16 }} strokeWidth={2.4} fill="#FFFFFF" />
+                    Start lesson
                   </button>
                 )}
 
