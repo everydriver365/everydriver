@@ -389,12 +389,12 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </Card>
       </section>
 
-      {/* 4. Quick actions — exactly 4 large pills */}
-      <section className="px-6 mb-7">
-        <h2 className="text-[20px] font-semibold tracking-tight text-[#1C1C1E] mb-4 px-1">
+      {/* 4. Quick actions — 4 in a row, compact tiles */}
+      <section className="px-6 mb-6">
+        <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] mb-3 px-1">
           Quick actions
         </h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-4 gap-2.5">
           <QuickActionPill
             icon={<CalendarPlus className="size-[20px]" />}
             label="Add lesson"
@@ -403,7 +403,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
           />
           <QuickActionPill
             icon={<PoundSterling className="size-[20px]" />}
-            label="Take payment"
+            label="Payment"
             tone="green"
             onClick={onPaymentClick}
           />
