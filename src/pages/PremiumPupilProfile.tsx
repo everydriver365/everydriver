@@ -935,9 +935,30 @@ export default function PremiumPupilProfile() {
             marginTop: 4,
             fontFamily: FONT, fontSize: 13, fontWeight: 500,
             color: C.muted, letterSpacing: "0.1px",
+            display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8,
           }}
         >
-          {stageLabel}
+          <span>{stageLabel}</span>
+          {(() => {
+            const map = {
+              signed:   { label: "Terms signed",       bg: "#E5F4EC", fg: C.green },
+              awaiting: { label: "Awaiting signature", bg: "#FBF1E0", fg: C.amber },
+              required: { label: "Needs signature",    bg: "#FBEAEC", fg: C.red },
+            } as const;
+            const t = map[termsState];
+            return (
+              <span
+                style={{
+                  background: t.bg, color: t.fg,
+                  fontFamily: FONT, fontSize: 11, fontWeight: 600,
+                  padding: "3px 9px", borderRadius: 999, lineHeight: 1.3,
+                  letterSpacing: "0.2px",
+                }}
+              >
+                {t.label}
+              </span>
+            );
+          })()}
         </div>
         {(pupil.phone || pupil.address || pupil.postcode) && (
           <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 4 }}>
