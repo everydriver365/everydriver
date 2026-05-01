@@ -728,23 +728,26 @@ export default function PremiumPupilProfile() {
   const HistoryCard = (
     <button
       onClick={() => setHistoryOpen(true)}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.boxShadow = SHADOW_HOVER; (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)"; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.boxShadow = SHADOW_CARD; (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)"; }}
       style={{
-        width: "100%", textAlign: "left", padding: 16, border: "none",
-        background: C.card, borderRadius: 20,
-        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 18px -10px rgba(16,24,40,0.08)",
+        width: "100%", textAlign: "left", padding: 20, border: `1px solid ${C.hairline}`,
+        background: C.card, borderRadius: RADIUS,
+        boxShadow: SHADOW_CARD,
         cursor: "pointer",
         display: "flex", alignItems: "center", justifyContent: "space-between",
+        transition: TRANSITION,
       }}
     >
       <div>
-        <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 600, color: C.text }}>
+        <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 600, color: C.text, letterSpacing: "-0.01em" }}>
           Lesson history
         </div>
-        <div style={{ fontFamily: FONT, fontSize: 12, color: C.muted, marginTop: 2 }}>
+        <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, marginTop: 4 }}>
           {stats?.totalLessons ?? 0} completed · {(stats?.totalHours ?? 0).toFixed(1)}h total
         </div>
       </div>
-      <ChevronRight size={18} color={C.subtle} />
+      <ChevronRight size={20} color={C.subtle} />
     </button>
   );
 
