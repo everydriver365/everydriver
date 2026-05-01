@@ -14,7 +14,7 @@ export interface AppearanceSettings {
 const QUERY_KEY = "instructor-appearance";
 
 const defaultAppearance: AppearanceSettings = {
-  layoutStyle: "dashboard",
+  layoutStyle: "premium-ios",
   heroImageUrl: null,
   wallpaperColor: null,
 };
