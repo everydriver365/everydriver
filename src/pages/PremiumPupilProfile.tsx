@@ -364,14 +364,14 @@ export default function PremiumPupilProfile() {
   }
 
   const Header = (
-    <div className="flex items-center justify-between" style={{ padding: "12px 4px" }}>
+    <div className="flex items-center justify-between" style={{ padding: "8px 4px 16px" }}>
       <button
         onClick={() => navigate(-1)}
         style={{
           display: "flex", alignItems: "center", gap: 4,
           background: "transparent", border: "none",
-          color: C.accent, fontFamily: FONT, fontSize: 15, fontWeight: 500,
-          cursor: "pointer", padding: 4,
+          color: C.accent, fontFamily: FONT, fontSize: 16, fontWeight: 500,
+          cursor: "pointer", padding: 6,
         }}
       >
         <ArrowLeft size={20} /> Pupils
@@ -379,11 +379,15 @@ export default function PremiumPupilProfile() {
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <button
           onClick={() => setEditOpen(true)}
+          onMouseDown={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.97)"; }}
+          onMouseUp={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
           style={{
-            background: C.card, border: "none", borderRadius: 12,
-            padding: "8px 12px", display: "flex", alignItems: "center", gap: 6,
-            fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.text,
-            boxShadow: "0 1px 2px rgba(16,24,40,0.06)", cursor: "pointer",
+            background: C.card, border: `1px solid ${C.hairline}`, borderRadius: 14,
+            padding: "9px 14px", display: "flex", alignItems: "center", gap: 6,
+            fontFamily: FONT, fontSize: 14, fontWeight: 600, color: C.text,
+            boxShadow: SHADOW_CARD, cursor: "pointer",
+            transition: TRANSITION,
           }}
         >
           <Edit3 size={14} /> Edit
@@ -393,29 +397,29 @@ export default function PremiumPupilProfile() {
   );
 
   const PupilCard = (
-    <Card padding={18}>
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+    <Card padding={22}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
         <PupilAvatar name={pupil.name} imageUrl={pupil.profile_image_url} size="lg" />
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{ fontFamily: FONT, fontSize: 20, fontWeight: 700, color: C.text }}>
+          <div style={{ fontFamily: FONT, fontSize: isMobile ? 24 : 26, fontWeight: 700, color: C.text, letterSpacing: "-0.02em", lineHeight: 1.15 }}>
             {pupil.name}
           </div>
-          <div style={{ marginTop: 4 }}>
+          <div style={{ marginTop: 8 }}>
             <StatusDot status={status} />
           </div>
         </div>
       </div>
 
       {(pupil.phone || pupil.postcode || pupil.address) && (
-        <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 6 }}>
+        <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 8 }}>
           {pupil.phone && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, color: C.muted, fontFamily: FONT, fontSize: 13 }}>
-              <Phone size={13} /> {pupil.phone}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, color: C.muted, fontFamily: FONT, fontSize: 14 }}>
+              <Phone size={14} /> {pupil.phone}
             </div>
           )}
           {(pupil.address || pupil.postcode) && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, color: C.muted, fontFamily: FONT, fontSize: 13 }}>
-              <MapPin size={13} />
+            <div style={{ display: "flex", alignItems: "center", gap: 10, color: C.muted, fontFamily: FONT, fontSize: 14 }}>
+              <MapPin size={14} />
               <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {[pupil.address, pupil.postcode].filter(Boolean).join(", ")}
               </span>
@@ -425,7 +429,7 @@ export default function PremiumPupilProfile() {
       )}
 
       <div style={{
-        marginTop: 16, paddingTop: 14,
+        marginTop: 20, paddingTop: 18,
         borderTop: `1px solid ${C.hairline}`,
         display: "flex", justifyContent: "space-between", gap: 8,
       }}>
