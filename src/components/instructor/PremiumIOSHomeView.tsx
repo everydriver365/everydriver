@@ -383,21 +383,21 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
               })}
             </div>
           )}
-          <div className="px-4 pb-4 pt-3">
+          <div className="px-4 pb-3 pt-2">
             <button
               onClick={() => navigate("/instructor/schedule?action=add")}
-              className="w-full flex items-center justify-center gap-1.5 rounded-[12px] bg-[#007AFF]/[0.06] text-[14px] font-semibold text-[#007AFF] active:bg-[#007AFF]/[0.1] transition-colors"
-              style={{ height: 48 }}
+              className="w-full flex items-center justify-center gap-1.5 rounded-[10px] bg-[#007AFF]/[0.06] text-[13px] font-semibold text-[#007AFF] active:bg-[#007AFF]/[0.1] transition-colors"
+              style={{ height: 40 }}
             >
-              <Plus className="size-[17px]" />
+              <Plus className="size-[15px]" />
               Add lesson
             </button>
           </div>
         </Card>
       </section>
 
-      {/* SECTION 4: Quick actions — 4 tiles, single row, 88px */}
-      <section className="mt-5">
+      {/* SECTION 4: Quick actions — 4 tiles, single row */}
+      <section className="mt-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
             Quick actions
