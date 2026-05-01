@@ -120,6 +120,7 @@ export default function InstructorLiveSession() {
     customPupilName: string;
     examinerId: string | null;
   } | null>(null);
+  const [showPupilPicker, setShowPupilPicker] = useState(false);
 
   const isSessionActive = !!device?.current_session_id;
   const location = useLocation();
