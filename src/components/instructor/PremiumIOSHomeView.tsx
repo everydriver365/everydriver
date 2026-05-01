@@ -341,24 +341,39 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                   .join("")
                   .slice(0, 2)
                   .toUpperCase();
-                const statusTone =
-                  lesson.status === "completed"
-                    ? "green"
-                    : lesson.status === "in_progress"
-                    ? "blue"
-                    : "neutral";
-                const statusLabel =
-                  lesson.status === "completed"
-                    ? "Done"
-                    : lesson.status === "in_progress"
-                    ? "Live"
-                    : "Upcoming";
+                const isCompleted = lesson.status === "completed";
+                const isInProgress = lesson.status === "in_progress";
+                const owesAmount =
+                  !isCompleted &&
+                  lesson.paymentStatus !== "paid" &&
+                  typeof lesson.amountDue === "number" &&
+                  lesson.amountDue > 0
+                    ? lesson.amountDue
+                    : 0;
+                // For non-completed / non-live lessons, show "Owed £X" pill if
+                // payment is outstanding; otherwise show no pill (Upcoming removed).
+                const statusTone: "green" | "blue" | "red" | null = isCompleted
+                  ? "green"
+                  : isInProgress
+                  ? "blue"
+                  : owesAmount > 0
+                  ? "red"
+                  : null;
+                const statusLabel = isCompleted
+                  ? "Done"
+                  : isInProgress
+                  ? "Live"
+                  : owesAmount > 0
+                  ? `Owed £${owesAmount % 1 === 0 ? owesAmount.toFixed(0) : owesAmount.toFixed(2)}`
+                  : null;
                 const statusClasses =
                   statusTone === "green"
                     ? "bg-[#34C759]/12 text-[#1F8E3F]"
                     : statusTone === "blue"
                     ? "bg-[#007AFF]/12 text-[#007AFF]"
-                    : "bg-[#007AFF]/10 text-[#007AFF]";
+                    : statusTone === "red"
+                    ? "bg-[#FF3B30]/12 text-[#FF3B30]"
+                    : "";
                 const accentColor =
                   statusTone === "green"
                     ? "#34C759"
@@ -416,11 +431,13 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                           </div>
                         </div>
                       </div>
-                      <span
-                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${statusClasses}`}
-                      >
-                        {statusLabel}
-                      </span>
+                      {statusLabel && (
+                        <span
+                          className={`text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${statusClasses}`}
+                        >
+                          {statusLabel}
+                        </span>
+                      )}
                     </button>
                     {i < previewLessons.length - 1 && (
                       <div className="ml-[80px] mr-4 border-t border-black/[0.05]" />
