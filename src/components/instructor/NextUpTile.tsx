@@ -312,6 +312,119 @@ export function NextUpTile({
       : travelBarSeverity === "amber" ? "#B8801F"
       : "#2B7BC8";
 
+  // ── SMART PROMPTS (PRE_LESSON phase) ───────────────────────────────────
+  // Real-time assistant strip. Only surfaces prompts when something
+  // actually matters; never invents data. Top 1–2 by priority are shown.
+  const smartPrompts: SmartPrompt[] = (() => {
+    const out: SmartPrompt[] = [];
+
+    // 1. Running late (URGENT — highest priority)
+    if (isRunningLate) {
+      out.push({
+        id: "late",
+        tone: "red",
+        icon: AlertTriangle,
+        priority: 0,
+        text: lateByMinutes > 0 ? `You may be late (${lateByMinutes} min)` : "You may be late",
+        cta: pupilPhone ? { label: "Notify pupil", onClick: sendLateETA } : undefined,
+      });
+    }
+
+    // 2. Travel — leave-now / leave-in-X / traffic delay
+    if (etaMinutes > 0 && !isRunningLate) {
+      const slack = minutesUntil - (etaMinutes + PARKING_BUFFER_MIN);
+      if (slack <= 0 && minutesUntil <= 60) {
+        out.push({
+          id: "leave-now",
+          tone: "amber",
+          icon: Car,
+          priority: 1,
+          text: "Leave now to arrive on time",
+        });
+      } else if (slack > 0 && slack <= 20 && minutesUntil <= 90) {
+        out.push({
+          id: "leave-in",
+          tone: "blue",
+          icon: Car,
+          priority: 3,
+          text: `Leave in ${Math.round(slack)} min`,
+        });
+      }
+      if (trafficHeavy) {
+        out.push({
+          id: "traffic",
+          tone: "amber",
+          icon: Car,
+          priority: 2,
+          text: "Heavy traffic on your route",
+        });
+      }
+    }
+
+    // 3. Confirmation
+    if (checkInStatus === "pending" || checkInStatus == null) {
+      // Only nudge once we're inside a useful window (next 24h)
+      if (minutesUntil <= 24 * 60 && minutesUntil > 30) {
+        out.push({
+          id: "confirm",
+          tone: "blue",
+          icon: MessageCircle,
+          priority: 5,
+          text: "Pupil has not confirmed yet",
+          cta: pupilPhone ? { label: "Message pupil", onClick: handleMessage } : undefined,
+        });
+      }
+    }
+
+    // 4. Payment due
+    if (paymentDue) {
+      out.push({
+        id: "payment",
+        tone: "amber",
+        icon: PoundSterling,
+        priority: 4,
+        text: `Payment due — £${Math.abs(effectiveBalance).toFixed(0)} owed`,
+        cta: { label: "Collect", onClick: () => navigate(`/instructor/pupils/${pupilId}?tab=payments`) },
+      });
+    }
+
+    // 5. Weather (only if it could affect the lesson)
+    const weatherTip = getWeatherSafetyTip();
+    if (weatherTip && minutesUntil <= 6 * 60) {
+      const code = currentWeather?.weatherCode;
+      const isLowVis = code === 45 || code === 48;
+      out.push({
+        id: "weather",
+        tone: "amber",
+        icon: isLowVis ? Eye : CloudRain,
+        priority: 6,
+        text: weatherTip.tip,
+      });
+    }
+
+    // 6. Lesson prep — last focus / recommended today
+    if (lastLesson?.skills_practiced && Array.isArray(lastLesson.skills_practiced) && lastLesson.skills_practiced.length > 0) {
+      const lastFocus = String(lastLesson.skills_practiced[0]);
+      out.push({
+        id: "prep",
+        tone: "green",
+        icon: BookOpen,
+        priority: 7,
+        text: `Last focus: ${lastFocus}`,
+      });
+    } else if (lastLessonPlan) {
+      out.push({
+        id: "prep-plan",
+        tone: "green",
+        icon: BookOpen,
+        priority: 7,
+        text: `Recommended today: ${lastLessonPlan}`,
+      });
+    }
+
+    return out;
+  })();
+
   // Format pickup address with postcode appearing exactly once
   const formattedPickupAddress = (() => {
     const addr = (pickupLocation || "").trim();
