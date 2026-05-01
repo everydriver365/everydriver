@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { format, parse, isToday, isTomorrow, parseISO, formatDistanceToNowStrict } from "date-fns";
 import { a11yPx } from "@/lib/a11yScale";
 import {
@@ -653,156 +653,196 @@ export function NextUpTile({
 
           {/* ── HERO + PRIMARY ACTIONS card (elevated) ── */}
           <div style={{
-            background: "#FFFFFF", borderRadius: 18, padding: 18,
+            background: "#FFFFFF", borderRadius: 18, padding: 16,
             boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
-            display: "flex", flexDirection: "column", gap: 16,
+            display: "flex", flexDirection: "column", gap: 14,
           }}>
-            {/* Pupil + lesson type */}
-            <div>
-              <div style={{ fontSize: a11yPx(15), fontWeight: 600, color: "#000000", letterSpacing: -0.2, lineHeight: 1.2 }}>
-                {toSentenceName(pupilName)}
-              </div>
-              <div style={{ fontSize: a11yPx(12), color: "#8A8A8E", marginTop: 2 }}>
-                {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
-              </div>
-            </div>
-
-            {/* Time hero */}
-            <div>
-              <div style={{
-                fontSize: a11yPx(48), fontWeight: 700, letterSpacing: -1.4,
-                color: "#000000", lineHeight: 1, fontVariantNumeric: "tabular-nums",
-              }}>
-                {formatTime24(startTime)}
-              </div>
-              <div style={{ fontSize: a11yPx(13), color: "#8A8A8E", marginTop: 6 }}>
-                {getDateLabel()} · starts in {getCountdownText()}
-              </div>
-            </div>
-
-            {/* Single-line location */}
-            {(pickupLocation || pickupPostcode) && (
-              <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#3C3C43", minWidth: 0 }}>
-                <MapPin style={{ width: 13, height: 13, flexShrink: 0, color: "#8A8A8E" }} strokeWidth={2} />
-                <span style={{ fontSize: a11yPx(13), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {formattedPickupAddress || pickupPostcode || pickupLocation}
-                </span>
-              </div>
-            )}
-
-            {/* Starts-in pill */}
+            {/* UP NEXT pill */}
             <div>
               <span style={{
-                display: "inline-flex", alignItems: "center", gap: 5,
-                padding: "5px 11px", borderRadius: 999,
-                background: minutesUntil <= 5 ? "rgba(255,59,48,0.10)" : minutesUntil <= 15 ? "rgba(255,149,0,0.12)" : "rgba(0,122,255,0.10)",
-                color: minutesUntil <= 5 ? "#FF3B30" : minutesUntil <= 15 ? "#FF9500" : "#007AFF",
-                fontSize: a11yPx(12), fontWeight: 600, letterSpacing: 0.1,
-                fontVariantNumeric: "tabular-nums",
+                display: "inline-flex", alignItems: "center",
+                padding: "4px 10px", borderRadius: 999,
+                background: "rgba(0,122,255,0.10)", color: "#007AFF",
+                fontSize: a11yPx(10), fontWeight: 700, letterSpacing: 0.6,
+                textTransform: "uppercase",
               }}>
-                <Clock style={{ width: 11, height: 11 }} strokeWidth={2.4} />
-                {minutesUntil <= 0 ? "Starting now" : `Starts in ${getCountdownText()}`}
+                Up next
               </span>
             </div>
 
-            {/* Secondary actions: Navigate / Call / Message — inline, neutral, no competing primary */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
-                className="active:opacity-80"
-                style={{
-                  flex: 1, height: 40, borderRadius: 10,
-                  background: "transparent", color: "#3C3C43",
-                  border: "none", cursor: "pointer",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
-                  fontSize: a11yPx(13), fontWeight: 500, letterSpacing: -0.05,
-                }}
-                aria-label="Navigate"
-              >
-                <Navigation style={{ width: 15, height: 15, color: "#8E8E93" }} strokeWidth={2} />
-                Navigate
-              </button>
-              <div style={{ width: 1, height: 20, background: "rgba(60,60,67,0.10)" }} />
-              <button
-                onClick={(e) => { e.stopPropagation(); handleCall(); }}
-                className="active:opacity-80"
-                style={{
-                  flex: 1, height: 40, borderRadius: 10,
-                  background: "transparent", color: "#3C3C43",
-                  border: "none", cursor: "pointer",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
-                  fontSize: a11yPx(13), fontWeight: 500, letterSpacing: -0.05,
-                }}
-                aria-label="Call pupil"
-              >
-                <Phone style={{ width: 15, height: 15, color: "#8E8E93" }} strokeWidth={2} />
-                Call
-              </button>
-              <div style={{ width: 1, height: 20, background: "rgba(60,60,67,0.10)" }} />
-              <button
-                onClick={(e) => { e.stopPropagation(); handleMessage(); }}
-                className="active:opacity-80"
-                style={{
-                  flex: 1, height: 40, borderRadius: 10,
-                  background: "transparent", color: "#3C3C43",
-                  border: "none", cursor: "pointer",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
-                  fontSize: a11yPx(13), fontWeight: 500, letterSpacing: -0.05,
-                }}
-                aria-label="Message pupil"
-              >
-                <MessageSquare style={{ width: 15, height: 15, color: "#8E8E93" }} strokeWidth={2} />
-                Message
-              </button>
-            </div>
-          </div>
+            {/* Two-column header: avatar + info | divider | time + mini actions */}
+            <div style={{ display: "flex", alignItems: "stretch", gap: 12 }}>
+              {/* LEFT: avatar + pupil info */}
+              <div style={{ flex: 1, display: "flex", gap: 12, minWidth: 0 }}>
+                <div style={{
+                  width: 56, height: 56, borderRadius: "50%", flexShrink: 0,
+                  background: "linear-gradient(135deg, #4A6CF7, #2B4FD9)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  color: "#FFFFFF", fontSize: a11yPx(20), fontWeight: 700, letterSpacing: -0.5,
+                  overflow: "hidden",
+                }}>
+                  {pupilProfileImage ? (
+                    <img src={pupilProfileImage} alt={pupilName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    getInitials(pupilName)
+                  )}
+                </div>
+                <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
+                  <div style={{ fontSize: a11yPx(18), fontWeight: 700, color: "#000000", letterSpacing: -0.3, lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {toSentenceName(pupilName)}
+                  </div>
+                  <div style={{ fontSize: a11yPx(13), color: "#8A8A8E", letterSpacing: -0.05 }}>
+                    {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
+                  </div>
+                  {(pickupLocation || pickupPostcode) && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, color: "#3C3C43", minWidth: 0 }}>
+                      <MapPin style={{ width: 13, height: 13, flexShrink: 0, color: "#8A8A8E" }} strokeWidth={2} />
+                      <span style={{ fontSize: a11yPx(13), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {formattedPickupAddress || pickupPostcode || pickupLocation}
+                      </span>
+                    </div>
+                  )}
+                  <div style={{ marginTop: 2 }}>
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: 5,
+                      padding: "4px 10px", borderRadius: 999,
+                      background: minutesUntil <= 5 ? "rgba(255,59,48,0.10)" : minutesUntil <= 15 ? "rgba(255,149,0,0.12)" : "rgba(88,86,214,0.10)",
+                      color: minutesUntil <= 5 ? "#FF3B30" : minutesUntil <= 15 ? "#FF9500" : "#5856D6",
+                      fontSize: a11yPx(12), fontWeight: 600, letterSpacing: 0.1,
+                      fontVariantNumeric: "tabular-nums",
+                    }}>
+                      <Clock style={{ width: 11, height: 11 }} strokeWidth={2.4} />
+                      {minutesUntil <= 0 ? "Starting now" : `Starts in ${getCountdownText()}`}
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-          {/* PRIMARY CTA — single, state-based, full-width. No competing buttons nearby. */}
-          {(() => {
-            const inLesson = lessonStatus === "in_progress";
-            if (inLesson) {
+              {/* Vertical divider */}
+              <div style={{ width: 0.5, background: "#E5E5EA", alignSelf: "stretch" }} />
+
+              {/* RIGHT: time + mini call/navigate */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", justifyContent: "space-between", gap: 10, minWidth: 84 }}>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{
+                    fontSize: a11yPx(28), fontWeight: 700, letterSpacing: -0.8,
+                    color: "#000000", lineHeight: 1, fontVariantNumeric: "tabular-nums",
+                  }}>
+                    {formatTime24(startTime)}
+                  </div>
+                  <div style={{ fontSize: a11yPx(13), color: "#8A8A8E", marginTop: 4 }}>
+                    {getDateLabel()}
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleCall(); }}
+                    className="active:opacity-80"
+                    style={{
+                      width: 38, height: 38, borderRadius: "50%",
+                      background: "rgba(52,199,89,0.15)", border: "none", cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    }}
+                    aria-label="Call pupil"
+                  >
+                    <Phone style={{ width: 17, height: 17, color: "#34C759" }} strokeWidth={2.2} />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
+                    className="active:opacity-80"
+                    style={{
+                      width: 38, height: 38, borderRadius: "50%",
+                      background: "rgba(0,122,255,0.12)", border: "none", cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    }}
+                    aria-label="Navigate"
+                  >
+                    <Navigation style={{ width: 17, height: 17, color: "#007AFF" }} strokeWidth={2.2} />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* PRIMARY CTA — single, state-based, full-width */}
+            {(() => {
+              const inLesson = lessonStatus === "in_progress";
+              if (inLesson) {
+                return (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
+                    className="active:opacity-90"
+                    style={{
+                      width: "100%",
+                      background: "#FF3B30", color: "#FFFFFF",
+                      border: "none", borderRadius: 14, padding: "16px 16px",
+                      fontSize: a11yPx(17), fontWeight: 600, letterSpacing: -0.2,
+                      cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                      boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -6px rgba(255,59,48,0.35)",
+                    }}
+                  >
+                    <CheckCircle2 style={{ width: 18, height: 18 }} strokeWidth={2.4} />
+                    End lesson
+                  </button>
+                );
+              }
               return (
                 <button
-                  onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
+                    navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
+                  }}
                   className="active:opacity-90"
                   style={{
                     width: "100%",
-                    background: "#FF3B30", color: "#FFFFFF",
-                    border: "none", borderRadius: 14, padding: "14px 16px",
-                    fontSize: a11yPx(16), fontWeight: 600, letterSpacing: -0.2,
+                    background: "#1B5BFF", color: "#FFFFFF",
+                    border: "none", borderRadius: 14, padding: "16px 16px",
+                    fontSize: a11yPx(17), fontWeight: 600, letterSpacing: -0.2,
                     cursor: "pointer",
-                    display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -6px rgba(255,59,48,0.35)",
+                    display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 10,
+                    boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -6px rgba(27,91,255,0.35)",
                   }}
                 >
-                  <CheckCircle2 style={{ width: 17, height: 17 }} strokeWidth={2.4} />
-                  End lesson
+                  <Play style={{ width: 18, height: 18 }} strokeWidth={2.4} fill="#FFFFFF" />
+                  Start lesson
                 </button>
               );
-            }
-            return (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
-                  navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
-                }}
-                className="active:opacity-90"
-                style={{
-                  width: "100%",
-                  background: "#007AFF", color: "#FFFFFF",
-                  border: "none", borderRadius: 14, padding: "14px 16px",
-                  fontSize: a11yPx(16), fontWeight: 600, letterSpacing: -0.2,
-                  cursor: "pointer",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                  boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -6px rgba(0,122,255,0.35)",
-                }}
-              >
-                <Play style={{ width: 16, height: 16 }} strokeWidth={2.4} fill="#FFFFFF" />
-                Start lesson
-              </button>
-            );
-          })()}
+            })()}
+
+            {/* Quick action row: Navigate / Call / Message / Arrived */}
+            <div style={{ display: "flex", alignItems: "stretch", gap: 0 }}>
+              {[
+                { label: "Navigate", icon: Navigation, color: "#1B5BFF", onClick: handleNavigate },
+                { label: "Call", icon: Phone, color: "#34C759", onClick: handleCall },
+                { label: "Message", icon: MessageSquare, color: "#FF9500", onClick: handleMessage },
+                { label: "Arrived", icon: MapPin, color: "#FF3B30", onClick: handleArrived },
+              ].map((a, i, arr) => (
+                <React.Fragment key={a.label}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); a.onClick(); }}
+                    className="active:opacity-60"
+                    style={{
+                      flex: 1, background: "transparent", border: "none", cursor: "pointer",
+                      padding: "8px 4px",
+                      display: "inline-flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
+                    }}
+                    aria-label={a.label}
+                  >
+                    <a.icon style={{ width: 22, height: 22, color: a.color }} strokeWidth={2.1} />
+                    <span style={{ fontSize: a11yPx(12), fontWeight: 500, color: "#1C1C1E", letterSpacing: -0.05 }}>
+                      {a.label}
+                    </span>
+                  </button>
+                  {i < arr.length - 1 && (
+                    <div style={{ width: 0.5, background: "#E5E5EA", margin: "8px 0" }} />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+
+          {/* (Primary CTA is rendered inside the hero card above) */}
 
           {/* ── MAP PREVIEW (only when within 4h) ── */}
           {isWithin4h && pickupPostcode && (
