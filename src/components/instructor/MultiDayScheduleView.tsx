@@ -955,7 +955,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
               </div>
 
               {/* Day rows container */}
-              <div style={{ padding: "0 8px" }}>
+              <div style={{ padding: "0 0 4px", display: "flex", flexDirection: "column", gap: 10 }}>
                 {/* All-day externals first */}
                 {allDay.map((evt, aIdx) => {
                   const isExpanded = expandedEventId === evt.id;
