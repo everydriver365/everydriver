@@ -214,29 +214,31 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </button>
       </header>
 
-      {/* SECTION: Next lesson tile */}
-      <NextLessonTile
-        nextLesson={nextLesson}
-        expanded={nextLessonExpanded}
-        onToggleExpanded={() => setNextLessonExpanded((v) => !v)}
-        onOpen={() => {
-          if (nextLesson) {
-            navigate(`/instructor/pupils/${nextLesson.pupilId}?lesson=${nextLesson.lessonId}`);
-          }
-        }}
-        onCall={() => {
-          if (nextLesson?.pupilPhone) window.location.href = `tel:${nextLesson.pupilPhone}`;
-        }}
-        onNavigate={() => {
-          if (nextLesson?.pickupPostcode) {
-            window.open(
-              `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(nextLesson.pickupPostcode)}`,
-              "_blank",
-            );
-          }
-        }}
-        onAddLesson={() => navigate("/instructor/schedule?action=add")}
-      />
+      {/* SECTION: Next lesson tile (rich, with avatar / ETA / route recorder) */}
+      <section className="mt-4">
+        {instructorId && nextLesson ? (
+          <RichNextLessonTile instructorId={instructorId} />
+        ) : (
+          <div
+            className="bg-white rounded-[22px] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_28px_-12px_rgba(16,24,40,0.08)] overflow-hidden"
+            style={{ borderLeft: "3px solid #007AFF" }}
+          >
+            <div className="px-4 py-5 text-center">
+              <div className="text-[11px] font-semibold tracking-[0.06em] text-[#3C3C43]/55 uppercase mb-2">
+                Next lesson
+              </div>
+              <p className="text-[15px] font-medium text-[#1C1C1E]">No upcoming lesson</p>
+              <button
+                onClick={() => navigate("/instructor/schedule?action=add")}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#007AFF]/[0.08] text-[#007AFF] text-[13px] font-semibold px-3.5 py-1.5 active:bg-[#007AFF]/[0.14] transition-colors"
+              >
+                <Plus className="size-[14px]" />
+                Add lesson
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* SECTION 2: Needs attention — single card, 64px rows */}
       {attentionRows.length > 0 && (
