@@ -104,14 +104,11 @@ export default function DSM() {
 
   return (
     <div className="min-h-screen bg-[#F2F2F7]">
-      {/* Status bar spacer */}
-      <div className="h-[env(safe-area-inset-top,0px)]" />
-
       {/* Hero greeting */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="px-5 pt-6 pb-4"
+        className="px-5 pt-3 pb-4"
       >
         <p className="text-[15px] text-[#8E8E93] font-medium">{format(new Date(), "EEEE, d MMMM")}</p>
         <h1 className="text-[28px] font-bold text-[#1C1C1E] tracking-tight leading-tight mt-0.5">
