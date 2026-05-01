@@ -141,7 +141,7 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
     : 0;
 
   return (
-    <div className="pb-10" style={{ background: "#F7F6F3" }}>
+    <div className="pb-10 bg-[hsl(var(--dsm-page-bg,var(--dsm-bg)))]">
       {/* Top bar (logo + bell + avatar) is provided by InstructorPortalLayout's
           MobileBlueHeader. Do not render a second header here. */}
 

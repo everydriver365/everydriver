@@ -30,7 +30,7 @@ export function MobileBlueHeader({
   const { total: notifCount } = useCombinedNotificationCount(instructorId);
 
   return (
-    <header className="sticky top-0 z-40 bg-[hsl(var(--dsm-bg))]">
+    <header className="sticky top-0 z-40 bg-[hsl(var(--dsm-page-bg,var(--dsm-bg)))]">
       <div
         className="flex h-11 items-center justify-between px-5"
       >
