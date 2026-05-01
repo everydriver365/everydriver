@@ -253,7 +253,7 @@ export function HomeToolsHub() {
 
   useEffect(() => {
     const term = query.trim();
-    if (!instructor?.id || term.length < 2) {
+    if (!instructor?.id || term.length === 0) {
       setPupilSearchResults([]);
       setPupilsLoading(false);
       return;
