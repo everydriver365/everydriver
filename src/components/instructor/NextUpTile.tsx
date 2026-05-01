@@ -359,62 +359,160 @@ export function NextUpTile({
           }}
         >
           {/* ── Header (whole row tappable to expand) ── */}
-          <button
-            onClick={() => setExpanded(!expanded)}
-            aria-expanded={expanded}
-            aria-label={expanded ? "Hide lesson details" : "Show lesson details"}
-            className="active:opacity-80"
-            style={{
-              width: "100%", padding: 0, display: "flex", alignItems: "flex-start", gap: 12,
-              background: "transparent", border: "none", cursor: "pointer", textAlign: "left",
-              transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-            }}
-          >
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73", letterSpacing: 0.2, textTransform: "uppercase" }}>Up next</span>
-                {checkInStatus && (
-                  <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5 ml-1" />
-                )}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: a11yPx(16), fontWeight: 500, letterSpacing: -0.2, color: "#000000", lineHeight: 1.2 }}>
-                  {toSentenceName(pupilName)}
-                </span>
-                {totalUnreadBadge > 0 && (
-                  <span style={{
-                    minWidth: 18, height: 18, padding: "0 5px", borderRadius: 9,
-                    background: "#C8434F", color: "#fff", fontSize: a11yPx(11), fontWeight: 600,
-                    display: "inline-flex", alignItems: "center", justifyContent: "center",
-                    fontVariantNumeric: "tabular-nums",
-                  }}>{totalUnreadBadge}</span>
-                )}
-              </div>
-              <div style={{ fontSize: a11yPx(12), color: "#6E6E73", marginTop: 2 }}>
-                {`Standard lesson · ${formatHoursLong(durationMinutes)} · ${formatTime24(startTime)}`}
-              </div>
+          <div style={{ position: "relative" }}>
+            {/* Soft accent left border */}
+            <div
+              aria-hidden
+              style={{
+                position: "absolute", left: -16, top: -16, bottom: -16, width: 3,
+                background: "linear-gradient(180deg, #5856D6 0%, #007AFF 100%)",
+                borderTopLeftRadius: 14, borderBottomLeftRadius: 14, opacity: 0.9,
+              }}
+            />
+
+            {/* UP NEXT label */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+              <span style={{ fontSize: a11yPx(11), fontWeight: 600, color: "#5856D6", letterSpacing: 0.6, textTransform: "uppercase" }}>Up next</span>
+              {checkInStatus && (
+                <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5 ml-1" />
+              )}
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: a11yPx(18), fontWeight: 500, letterSpacing: -0.4, color: "#000000", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
-                  {formatTime24(startTime)}
+            <button
+              onClick={() => setExpanded(!expanded)}
+              aria-expanded={expanded}
+              aria-label={expanded ? "Hide lesson details" : "Show lesson details"}
+              className="active:opacity-80"
+              style={{
+                width: "100%", padding: 0, display: "flex", alignItems: "stretch", gap: 12,
+                background: "transparent", border: "none", cursor: "pointer", textAlign: "left",
+                transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+              }}
+            >
+              {/* LEFT: avatar + identity */}
+              <div style={{ flex: 1, minWidth: 0, display: "flex", gap: 12, alignItems: "flex-start" }}>
+                {/* Avatar */}
+                <div style={{ flexShrink: 0 }}>
+                  {pupilProfileImage ? (
+                    <img
+                      src={pupilProfileImage}
+                      alt={pupilName}
+                      style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", display: "block" }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: 44, height: 44, borderRadius: "50%",
+                      background: "linear-gradient(135deg, #5856D6 0%, #007AFF 100%)",
+                      color: "#fff", fontSize: a11yPx(15), fontWeight: 600,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      letterSpacing: 0.2,
+                    }}>
+                      {getInitials(pupilName)}
+                    </div>
+                  )}
                 </div>
-                <div style={{ fontSize: a11yPx(11), fontWeight: 400, color: "#6E6E73", marginTop: 4, fontVariantNumeric: "tabular-nums" }}>
-                  {minutesUntil <= 0 ? "Starting now" : `in ${getCountdownText()}`}
+
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: a11yPx(17), fontWeight: 600, letterSpacing: -0.3, color: "#000000", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {toSentenceName(pupilName)}
+                    </span>
+                    {totalUnreadBadge > 0 && (
+                      <span style={{
+                        minWidth: 18, height: 18, padding: "0 5px", borderRadius: 9,
+                        background: "#C8434F", color: "#fff", fontSize: a11yPx(11), fontWeight: 600,
+                        display: "inline-flex", alignItems: "center", justifyContent: "center",
+                        fontVariantNumeric: "tabular-nums",
+                      }}>{totalUnreadBadge}</span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: a11yPx(12), color: "#6E6E73", marginTop: 3 }}>
+                    {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
+                  </div>
+                  {(pickupPostcode || pickupLocation) && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4, color: "#6E6E73", minWidth: 0 }}>
+                      <MapPin style={{ width: 11, height: 11, flexShrink: 0 }} strokeWidth={2} />
+                      <span style={{ fontSize: a11yPx(11), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {pickupPostcode || pickupLocation}
+                      </span>
+                    </div>
+                  )}
+                  {/* Countdown pill */}
+                  <div style={{ marginTop: 8 }}>
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: 4,
+                      padding: "3px 8px", borderRadius: 999,
+                      background: minutesUntil <= 5 ? "rgba(255,59,48,0.12)" : minutesUntil <= 15 ? "rgba(255,149,0,0.12)" : "rgba(88,86,214,0.10)",
+                      color: minutesUntil <= 5 ? "#FF3B30" : minutesUntil <= 15 ? "#FF9500" : "#5856D6",
+                      fontSize: a11yPx(11), fontWeight: 600, letterSpacing: 0.1,
+                      fontVariantNumeric: "tabular-nums",
+                    }}>
+                      <Clock style={{ width: 11, height: 11 }} strokeWidth={2.2} />
+                      {minutesUntil <= 0 ? "Starting now" : `Starts in ${getCountdownText()}`}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <ChevronDown
-                aria-hidden
-                style={{
-                  width: 18, height: 18, color: "#6E6E73",
-                  transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                  transition: "transform 250ms cubic-bezier(0.2,0.7,0.2,1)",
-                }}
-                strokeWidth={1.5}
-              />
-            </div>
-          </button>
+
+              {/* Vertical divider */}
+              <div aria-hidden style={{ width: 1, background: "#E5E5EA", alignSelf: "stretch", margin: "0 2px" }} />
+
+              {/* RIGHT: time + actions */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", justifyContent: "space-between", gap: 10, flexShrink: 0, minWidth: 96 }}>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: a11yPx(26), fontWeight: 600, letterSpacing: -0.8, color: "#000000", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
+                    {formatTime24(startTime)}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 4, fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73", marginTop: 4 }}>
+                    <span>{formatMetaDate(lessonDate)}</span>
+                    <ChevronDown
+                      aria-hidden
+                      style={{
+                        width: 14, height: 14, color: "#6E6E73",
+                        transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+                        transition: "transform 250ms cubic-bezier(0.2,0.7,0.2,1)",
+                      }}
+                      strokeWidth={1.8}
+                    />
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div style={{ display: "flex", gap: 6 }}>
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => { e.stopPropagation(); handleCall(); }}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); handleCall(); } }}
+                    aria-label="Call pupil"
+                    style={{
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                      width: 34, height: 34, borderRadius: 999,
+                      background: "rgba(52,199,89,0.12)", color: "#34C759",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <Phone style={{ width: 15, height: 15 }} strokeWidth={2.2} />
+                  </span>
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); handleNavigate(); } }}
+                    aria-label="Navigate to pickup"
+                    style={{
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                      width: 34, height: 34, borderRadius: 999,
+                      background: "rgba(0,122,255,0.12)", color: "#007AFF",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <Navigation style={{ width: 15, height: 15 }} strokeWidth={2.2} />
+                  </span>
+                </div>
+              </div>
+            </button>
+          </div>
 
           {/* ── EXPANDED CONTENT (inside the same white card) ──
               When collapsed, ONLY the header above is visible. Tapping the
