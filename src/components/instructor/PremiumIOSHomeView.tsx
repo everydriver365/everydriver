@@ -164,8 +164,8 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
     green: "bg-[#34C759]/12 text-[#1F8E3F]",
   };
 
-  /* ---------------- Today's schedule (max 2 for premium feel) ------------ */
-  const previewLessons = (todayLessons || []).slice(0, 4);
+  /* ---------------- Today's schedule — show all of today's lessons ------- */
+  const previewLessons = todayLessons || [];
 
   /* ---------------- Smart suggestion ------------------------------------- */
   const firstGap = gapSuggestions?.find((d) => d.slots.length > 0)?.slots?.[0];
