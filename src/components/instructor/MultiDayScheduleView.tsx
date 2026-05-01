@@ -234,8 +234,8 @@ function formatDayHeader(d: Date): string {
 
 /** Hairline divider between rows within the same day. */
 function RowDivider() {
-  // Replaced by card spacing + shadow in the premium iOS layout
-  return <div style={{ height: 6 }} />;
+  // Spacing handled by parent gap — kept as a no-op for layout stability.
+  return null;
 }
 
 type RowStatus = "live" | "conflict" | "tentative" | null;
