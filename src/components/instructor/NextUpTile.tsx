@@ -534,14 +534,112 @@ export function NextUpTile({
             className="overflow-hidden"
             style={{ marginLeft: -16, marginRight: -16, marginBottom: -16 }}
           >
-          <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 14, borderTop: "0.5px solid #E5E5EA" }}>
+          <div style={{ padding: "18px 20px 4px", display: "flex", flexDirection: "column", gap: 18, borderTop: "0.5px solid #F2F2F7" }}>
+
+          {/* ── HERO: time as the headline ── */}
+          <div>
+            {/* Pupil + lesson type */}
+            <div style={{ fontSize: a11yPx(15), fontWeight: 600, color: "#000000", letterSpacing: -0.2, lineHeight: 1.2 }}>
+              {toSentenceName(pupilName)}
+            </div>
+            <div style={{ fontSize: a11yPx(12), color: "#8A8A8E", marginTop: 2 }}>
+              {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
+            </div>
+
+            {/* Time hero */}
+            <div style={{
+              marginTop: 14,
+              fontSize: a11yPx(48),
+              fontWeight: 700,
+              letterSpacing: -1.4,
+              color: "#000000",
+              lineHeight: 1,
+              fontVariantNumeric: "tabular-nums",
+            }}>
+              {formatTime24(startTime)}
+            </div>
+            <div style={{ fontSize: a11yPx(13), color: "#8A8A8E", marginTop: 6 }}>
+              {getDateLabel()} · starts in {getCountdownText()}
+            </div>
+
+            {/* Single-line location */}
+            {(pickupLocation || pickupPostcode) && (
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 14, color: "#3C3C43", minWidth: 0 }}>
+                <MapPin style={{ width: 13, height: 13, flexShrink: 0, color: "#8A8A8E" }} strokeWidth={2} />
+                <span style={{ fontSize: a11yPx(13), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {formattedPickupAddress || pickupPostcode || pickupLocation}
+                </span>
+              </div>
+            )}
+
+            {/* Starts-in pill */}
+            <div style={{ marginTop: 12 }}>
+              <span style={{
+                display: "inline-flex", alignItems: "center", gap: 5,
+                padding: "5px 11px", borderRadius: 999,
+                background: minutesUntil <= 5 ? "rgba(255,59,48,0.10)" : minutesUntil <= 15 ? "rgba(255,149,0,0.12)" : "rgba(0,122,255,0.10)",
+                color: minutesUntil <= 5 ? "#FF3B30" : minutesUntil <= 15 ? "#FF9500" : "#007AFF",
+                fontSize: a11yPx(12), fontWeight: 600, letterSpacing: 0.1,
+                fontVariantNumeric: "tabular-nums",
+              }}>
+                <Clock style={{ width: 11, height: 11 }} strokeWidth={2.4} />
+                {minutesUntil <= 0 ? "Starting now" : `Starts in ${getCountdownText()}`}
+              </span>
+            </div>
+          </div>
+
+          {/* ── PRIMARY ACTIONS: Navigate (primary) + Call / Message (icon) ── */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
+              className="active:opacity-90"
+              style={{
+                flex: 1, height: 48, borderRadius: 14,
+                background: "#007AFF", color: "#FFFFFF",
+                border: "none", cursor: "pointer",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                fontSize: a11yPx(15), fontWeight: 600, letterSpacing: -0.1,
+                transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+              }}
+              aria-label="Navigate"
+            >
+              <Navigation style={{ width: 17, height: 17 }} strokeWidth={2.2} />
+              Navigate
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleCall(); }}
+              className="active:opacity-80"
+              style={{
+                width: 48, height: 48, borderRadius: 14,
+                background: "rgba(120,120,128,0.10)", color: "#1C1C1E",
+                border: "none", cursor: "pointer",
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+              }}
+              aria-label="Call pupil"
+            >
+              <Phone style={{ width: 18, height: 18 }} strokeWidth={2.1} />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleMessage(); }}
+              className="active:opacity-80"
+              style={{
+                width: 48, height: 48, borderRadius: 14,
+                background: "rgba(120,120,128,0.10)", color: "#1C1C1E",
+                border: "none", cursor: "pointer",
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+              }}
+              aria-label="Message pupil"
+            >
+              <MessageSquare style={{ width: 18, height: 18 }} strokeWidth={2.1} />
+            </button>
+          </div>
 
           {/* ── MAP PREVIEW (only when within 4h) ── */}
           {isWithin4h && pickupPostcode && (
             <div
               style={{
                 position: "relative",
-                borderRadius: 10,
+                borderRadius: 14,
                 overflow: "hidden",
                 height: 140,
                 background: "#F2F2F7",
@@ -551,18 +649,14 @@ export function NextUpTile({
             </div>
           )}
 
-          {/* ── TRAVEL-TIME BAR (only when within 30 min and ETA known) ──
-                When running late, this bar doubles as the late warning and
-                exposes a single inline "Send ETA" action so we don't render
-                two competing late banners. */}
+          {/* ── TRAVEL-TIME BAR (only when within 30 min and ETA known) — kept for late-detection / Send ETA action ── */}
           {isImminent && etaMinutes > 0 && (
             <div
               style={{
                 display: "flex", alignItems: "center", gap: 10,
                 padding: "12px 14px",
                 background: travelBarBg,
-                borderRadius: 10,
-                border: "0.5px solid #E5E5EA",
+                borderRadius: 12,
               }}
             >
               <div style={{
@@ -603,46 +697,9 @@ export function NextUpTile({
             </div>
           )}
 
-          {/* ── ROUTE LIST (origin → destination) ── */}
-          {(pickupLocation || pickupPostcode) && (
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-              {/* Timeline column */}
-              <div style={{
-                flexShrink: 0, width: 14, display: "flex", flexDirection: "column",
-                alignItems: "center", paddingTop: 4,
-              }}>
-                <div style={{
-                  width: 10, height: 10, borderRadius: "50%", background: "#FFFFFF",
-                  border: "2px solid #2B7BC8",
-                }} />
-                <div style={{ width: 1.5, height: 20, background: "#E5E5EA", margin: "2px 0" }} />
-                <div style={{
-                  width: 10, height: 10, borderRadius: "50%", background: "#C8434F",
-                }} />
-              </div>
-
-              {/* Content column */}
-              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 8 }}>
-                {/* Origin */}
-                <div style={{ fontSize: a11yPx(12), color: "#6E6E73", lineHeight: 1.3 }}>
-                  Your location
-                </div>
-                {/* Destination */}
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", letterSpacing: -0.1, marginBottom: 1 }}>
-                    Pick up {toSentenceName(firstName)}
-                  </div>
-                  <div style={{ fontSize: a11yPx(11), color: "#6E6E73", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {formattedPickupAddress || "—"}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── BALANCE / RUNNING LATE NOTICES (preserved) ── */}
+          {/* ── BALANCE NOTICE (preserved) ── */}
           {effectiveBalance < 0 && (
-            <div style={{ padding: "8px 16px 0 16px" }}>
+            <div>
               <div style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
                 background: "rgba(255,59,48,0.10)", color: ios.red,
@@ -653,66 +710,6 @@ export function NextUpTile({
                 £{Math.abs(effectiveBalance).toFixed(0)} owed
               </div>
             </div>
-          )}
-
-          {/* Running-late warning is now consolidated into the travel-time
-              bar above (single combined warning + Send ETA action). */}
-
-          {/* ── ACTION ROW (4 columns) ── */}
-          <div style={{ paddingTop: 4 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-              {[
-                { icon: Navigation, label: "Navigate", accent: "#2B7BC8", tint: "#E6F1FB", action: (e: React.MouseEvent) => { e.stopPropagation(); handleNavigate(); } },
-                { icon: Phone, label: "Call", accent: "#3B8B3B", tint: "#E8F3E8", action: (e: React.MouseEvent) => { e.stopPropagation(); handleCall(); } },
-                { icon: MessageSquare, label: "Message", accent: "#B8801F", tint: "#FBF1DE", action: (e: React.MouseEvent) => { e.stopPropagation(); handleMessage(); } },
-                { icon: MapPin, label: "Arrived", accent: "#C8434F", tint: "#FBEAEC", action: (e: React.MouseEvent) => { e.stopPropagation(); handleArrived(); } },
-              ].map((btn) => (
-                <button
-                  key={btn.label}
-                  onClick={btn.action}
-                  className="active:opacity-80"
-                  style={{
-                    display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
-                    background: "transparent", border: "none", cursor: "pointer", padding: 0,
-                    transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-                  }}
-                  aria-label={btn.label}
-                >
-                  <span style={{
-                    width: "100%", maxWidth: 56, aspectRatio: "1 / 1",
-                    borderRadius: 10, background: btn.tint,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>
-                    <btn.icon style={{ width: 20, height: 20, color: btn.accent }} strokeWidth={2} fill="none" />
-                  </span>
-                  <span style={{ fontSize: a11yPx(11), fontWeight: 400, color: "#000000" }}>{btn.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* ── START TRACK (only when within 4h; full-width primary CTA) ── */}
-          {isImminent && !trackerDismissed && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
-              }}
-              className="active:opacity-90"
-              style={{
-                width: "100%",
-                background: "#C8434F", color: "#FFFFFF",
-                border: "none", borderRadius: 10,
-                padding: 13, fontSize: a11yPx(14), fontWeight: 500,
-                cursor: "pointer",
-                transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-              }}
-              title="Start tracking session for this lesson"
-            >
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FFFFFF", display: "inline-block" }} />
-              Start track
-            </button>
           )}
 
           {/* ── SECTION 1 — Lesson details ── */}
@@ -1013,7 +1010,7 @@ export function NextUpTile({
                   )}
                 </div>
 
-                {/* ── SECTION 3 — Start track CTA ── */}
+                {/* ── SECTION 3 — Start lesson CTA ── */}
                 {!trackerDismissed && (
                   <button
                     onClick={(e) => {
@@ -1022,16 +1019,17 @@ export function NextUpTile({
                     }}
                     className="active:opacity-90"
                     style={{
-                      width: "100%", background: "#2B7BC8", color: "#FFFFFF",
-                      border: "none", borderRadius: 10, padding: 13,
-                      fontSize: a11yPx(14), fontWeight: 500, cursor: "pointer",
+                      width: "100%", background: "#007AFF", color: "#FFFFFF",
+                      border: "none", borderRadius: 14, padding: 14,
+                      fontSize: a11yPx(15), fontWeight: 600, letterSpacing: -0.1,
+                      cursor: "pointer",
                       display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
                       marginBottom: 18,
                       transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
                     }}
                   >
-                    <span style={{ width: 14, height: 14, borderRadius: "50%", background: "#FFFFFF", display: "inline-block" }} />
-                    Start track
+                    <Play style={{ width: 16, height: 16 }} strokeWidth={2.4} fill="#FFFFFF" />
+                    Start lesson
                   </button>
                 )}
 
