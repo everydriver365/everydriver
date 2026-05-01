@@ -633,6 +633,7 @@ export function InstructorMobileHome({
                     durationMinutes={nextLesson.durationMinutes}
                     instructorId={instructorId}
                     checkInStatus={nextLesson.checkInStatus}
+              lessonStatus={(nextLesson as any).lessonStatus}
                     lastLessonPlan={nextLesson.lastLessonPlan}
                   />
                 )}
