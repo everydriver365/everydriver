@@ -179,13 +179,13 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
   /* ---------------- Render ----------------------------------------------- */
   return (
-    <div className="min-h-screen bg-[#F2F2F7] pb-32 px-5">
+    <div className="min-h-screen bg-[#F2F2F7] pb-32 px-4">
       {/* SECTION 1: Greeting / subtext / date pill — strict left-aligned vertical stack */}
-      <header className="pt-3">
-        <h1 className="text-[34px] leading-[1.05] font-bold tracking-tight text-[#1C1C1E] truncate">
+      <header className="pt-2">
+        <h1 className="text-[26px] leading-[1.05] font-bold tracking-tight text-[#1C1C1E] truncate">
           {greeting}
         </h1>
-        <p className="mt-2 text-[15px] font-medium text-[#3C3C43]/65 whitespace-nowrap overflow-hidden text-ellipsis">
+        <p className="mt-1 text-[13px] font-medium text-[#3C3C43]/65 whitespace-nowrap overflow-hidden text-ellipsis">
           <span>{lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today</span>
           {waitingCount > 0 && (
             <>
@@ -198,19 +198,19 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </p>
         <button
           onClick={() => navigate("/instructor/schedule")}
-          className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)] active:scale-[0.97] transition-transform"
+          className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)] active:scale-[0.97] transition-transform"
         >
-          <CalendarIcon className="size-[14px] text-[#3C3C43]/70" />
-          <span className="text-[13px] font-semibold text-[#1C1C1E]">
+          <CalendarIcon className="size-[12px] text-[#3C3C43]/70" />
+          <span className="text-[12px] font-semibold text-[#1C1C1E]">
             {format(new Date(), "EEE, d MMM yyyy")}
           </span>
-          <ChevronDown className="size-[13px] text-[#3C3C43]/55" />
+          <ChevronDown className="size-[12px] text-[#3C3C43]/55" />
         </button>
       </header>
 
-      {/* SECTION 2: Needs attention — single card, 72px rows */}
+      {/* SECTION 2: Needs attention — single card, 64px rows */}
       {attentionRows.length > 0 && (
-        <section className="mt-6">
+        <section className="mt-4">
           <Card>
             <div className="px-4 pt-4 pb-1">
               <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
@@ -223,7 +223,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                   <button
                     onClick={row.onClick}
                     className="w-full flex items-center gap-3 px-4 active:bg-black/[0.03] transition-colors text-left"
-                    style={{ height: 72 }}
+                    style={{ height: 64 }}
                   >
                     <div
                       className="size-10 rounded-[12px] flex items-center justify-center shrink-0"
@@ -258,7 +258,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
 
       {/* SECTION 3: Today's schedule */}
-      <section className="mt-5">
+      <section className="mt-4">
         <Card>
           <div className="flex items-center justify-between px-4 pt-4 pb-1">
             <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] leading-tight">
@@ -328,7 +328,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                         navigate(`/instructor/schedule?lessonId=${lesson.id}`)
                       }
                       className="w-full flex items-center gap-3 px-4 active:bg-black/[0.03] transition-colors text-left"
-                      style={{ height: 80 }}
+                      style={{ height: 68 }}
                     >
                       <div
                         className="w-[3px] h-12 rounded-full shrink-0"
@@ -383,21 +383,21 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
               })}
             </div>
           )}
-          <div className="px-4 pb-4 pt-3">
+          <div className="px-4 pb-3 pt-2">
             <button
               onClick={() => navigate("/instructor/schedule?action=add")}
-              className="w-full flex items-center justify-center gap-1.5 rounded-[12px] bg-[#007AFF]/[0.06] text-[14px] font-semibold text-[#007AFF] active:bg-[#007AFF]/[0.1] transition-colors"
-              style={{ height: 48 }}
+              className="w-full flex items-center justify-center gap-1.5 rounded-[10px] bg-[#007AFF]/[0.06] text-[13px] font-semibold text-[#007AFF] active:bg-[#007AFF]/[0.1] transition-colors"
+              style={{ height: 40 }}
             >
-              <Plus className="size-[17px]" />
+              <Plus className="size-[15px]" />
               Add lesson
             </button>
           </div>
         </Card>
       </section>
 
-      {/* SECTION 4: Quick actions — 4 tiles, single row, 88px */}
-      <section className="mt-5">
+      {/* SECTION 4: Quick actions — 4 tiles, single row */}
+      <section className="mt-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
             Quick actions
@@ -510,7 +510,7 @@ function QuickActionPill({
     <button
       onClick={onClick}
       className="flex flex-col items-center justify-center gap-1.5 px-1.5 rounded-[16px] active:scale-[0.97] transition-transform shadow-[0_1px_2px_rgba(16,24,40,0.04),0_6px_20px_-12px_rgba(16,24,40,0.08)]"
-      style={{ background: t.bg, color: t.fg, height: 88 }}
+      style={{ background: t.bg, color: t.fg, height: 72 }}
     >
       <span
         className="size-9 rounded-[11px] flex items-center justify-center shrink-0"
