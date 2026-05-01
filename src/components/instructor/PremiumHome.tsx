@@ -146,33 +146,30 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
           MobileBlueHeader. Do not render a second header here. */}
 
       {/* ---------------- Greeting + date pill ---------------- */}
-      <div className="px-5 pt-2 pb-4">
-        <div className="flex items-end justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="text-[32px] leading-[1.1] font-bold tracking-tight text-[#1C1C1E] whitespace-nowrap">
-              {greeting} <span className="inline-block">👋</span>
-            </h1>
-            <p className="mt-1 text-[14px] text-[#3C3C43]/70">
-              <span>
-                {lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today
-              </span>
-              {waitingCount > 0 && (
-                <>
-                  <span className="mx-1.5 text-[#3C3C43]/40">·</span>
-                  <span className="text-[#FF3B30] font-medium">
-                    {waitingCount} thing{waitingCount === 1 ? "" : "s"} waiting
-                  </span>
-                </>
-              )}
-            </p>
-          </div>
+      <div className="px-5 pt-1 pb-3">
+        <h1 className="text-[32px] leading-[1.1] font-bold tracking-tight text-[#1C1C1E]">
+          {greeting} <span className="inline-block">👋</span>
+        </h1>
+        <div className="mt-1.5 flex items-center justify-between gap-3">
+          <p className="text-[14px] text-[#3C3C43]/70 min-w-0 truncate">
+            <span>
+              {lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today
+            </span>
+            {waitingCount > 0 && (
+              <>
+                <span className="mx-1.5 text-[#3C3C43]/40">·</span>
+                <span className="text-[#FF3B30] font-medium">
+                  {waitingCount} thing{waitingCount === 1 ? "" : "s"} waiting
+                </span>
+              </>
+            )}
+          </p>
           <button
             onClick={() => navigate("/instructor/schedule")}
-            className="flex items-center gap-1.5 px-3 h-9 rounded-[10px] border border-black/10 bg-white text-[13px] font-medium text-[#1C1C1E] active:bg-black/[0.03] transition-colors shrink-0"
+            className="flex items-center gap-1.5 px-2.5 h-7 rounded-full border border-black/10 bg-white text-[12px] font-medium text-[#1C1C1E] active:bg-black/[0.03] transition-colors shrink-0"
           >
-            <Calendar className="size-[14px] text-[#3C3C43]/70" />
-            {format(today, "EEE, d MMM yyyy")}
-            <ChevronRight className="size-[14px] text-[#3C3C43]/50 rotate-90" />
+            <Calendar className="size-[12px] text-[#3C3C43]/70" />
+            {format(today, "EEE, d MMM")}
           </button>
         </div>
       </div>
