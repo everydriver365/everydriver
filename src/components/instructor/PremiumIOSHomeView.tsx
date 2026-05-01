@@ -179,65 +179,63 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
   /* ---------------- Render ----------------------------------------------- */
   return (
-    <div className="min-h-screen bg-[#F2F2F7] pb-32">
-      {/* 1. Header — greeting + date pill (DSM logo & bell live in MobileBlueHeader above) */}
-      <header className="px-6 pt-5 pb-5">
-        <h1 className="text-[32px] leading-[1.1] font-bold tracking-tight text-[#1C1C1E]">
+    <div className="min-h-screen bg-[#F2F2F7] pb-32 px-5">
+      {/* SECTION 1: Greeting / subtext / date pill — strict left-aligned vertical stack */}
+      <header className="pt-3">
+        <h1 className="text-[34px] leading-[1.05] font-bold tracking-tight text-[#1C1C1E] truncate">
           {greeting}
         </h1>
-        <div className="mt-2 flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-[15px] font-medium text-[#3C3C43]/65">
-            <span>{lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today</span>
-            {waitingCount > 0 && (
-              <>
-                <span className="mx-1.5 text-[#3C3C43]/40">·</span>
-                <span className="text-[#FF3B30] font-semibold">
-                  {waitingCount} thing{waitingCount === 1 ? "" : "s"} waiting
-                </span>
-              </>
-            )}
-          </p>
-          <button
-            onClick={() => navigate("/instructor/schedule")}
-            className="flex items-center gap-2 pl-3 pr-3 py-2 rounded-full bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)] active:scale-[0.97] transition-transform shrink-0"
-          >
-            <CalendarIcon className="size-[15px] text-[#3C3C43]/70" />
-            <span className="text-[14px] font-semibold text-[#1C1C1E]">
-              {format(new Date(), "EEE, d MMM yyyy")}
-            </span>
-            <ChevronDown className="size-[14px] text-[#3C3C43]/55" />
-          </button>
-        </div>
+        <p className="mt-2 text-[15px] font-medium text-[#3C3C43]/65 whitespace-nowrap overflow-hidden text-ellipsis">
+          <span>{lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today</span>
+          {waitingCount > 0 && (
+            <>
+              <span className="mx-1.5 text-[#3C3C43]/40">·</span>
+              <span className="text-[#FF3B30] font-semibold">
+                {waitingCount} thing{waitingCount === 1 ? "" : "s"} waiting
+              </span>
+            </>
+          )}
+        </p>
+        <button
+          onClick={() => navigate("/instructor/schedule")}
+          className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)] active:scale-[0.97] transition-transform"
+        >
+          <CalendarIcon className="size-[14px] text-[#3C3C43]/70" />
+          <span className="text-[13px] font-semibold text-[#1C1C1E]">
+            {format(new Date(), "EEE, d MMM yyyy")}
+          </span>
+          <ChevronDown className="size-[13px] text-[#3C3C43]/55" />
+        </button>
       </header>
 
-      {/* 2. Needs your attention (single card, compact rows) */}
+      {/* SECTION 2: Needs attention — single card, 72px rows */}
       {attentionRows.length > 0 && (
-        <section className="px-6 mb-5">
+        <section className="mt-6">
           <Card>
-            <div className="px-5 pt-4 pb-1">
+            <div className="px-4 pt-4 pb-1">
               <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
                 Needs your attention
               </h2>
             </div>
-            <div className="pt-1 pb-1">
+            <div>
               {attentionRows.map((row, i) => (
                 <div key={row.key}>
                   <button
                     onClick={row.onClick}
-                    className="w-full flex items-center gap-3 px-5 py-3 active:bg-black/[0.03] transition-colors text-left"
-                    style={{ minHeight: 76 }}
+                    className="w-full flex items-center gap-3 px-4 active:bg-black/[0.03] transition-colors text-left"
+                    style={{ height: 72 }}
                   >
                     <div
-                      className="size-11 rounded-[12px] flex items-center justify-center shrink-0"
+                      className="size-10 rounded-[12px] flex items-center justify-center shrink-0"
                       style={{ background: row.iconBg, color: row.iconFg }}
                     >
                       {row.icon}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[15.5px] font-semibold text-[#1C1C1E] tracking-tight truncate">
+                      <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight truncate">
                         {row.title}
                       </div>
-                      <div className="text-[13px] text-[#3C3C43]/65 mt-0.5 truncate">
+                      <div className="text-[12.5px] text-[#3C3C43]/65 mt-0.5 truncate">
                         {row.subtitle}
                       </div>
                     </div>
@@ -249,7 +247,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                     <ChevronRight className="size-[16px] text-[#3C3C43]/35 shrink-0" />
                   </button>
                   {i < attentionRows.length - 1 && (
-                    <div className="ml-[76px] border-t border-black/[0.05]" />
+                    <div className="ml-[68px] border-t border-black/[0.05]" />
                   )}
                 </div>
               ))}
@@ -257,6 +255,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
           </Card>
         </section>
       )}
+
 
       {/* 3. Today's schedule — main section, balanced */}
       <section className="px-6 mb-5">
