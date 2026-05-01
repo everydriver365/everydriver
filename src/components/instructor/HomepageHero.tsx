@@ -198,7 +198,7 @@ export function HomepageHero({
   ];
 
   return (
-    <div className="px-4 pt-4" style={{ fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', sans-serif" }}>
+    <div className="px-4 pt-2" style={{ fontFamily: "-apple-system, 'SF Pro Text', 'SF Pro Display', sans-serif" }}>
       <div
         style={{
           background: "#FFFFFF",
