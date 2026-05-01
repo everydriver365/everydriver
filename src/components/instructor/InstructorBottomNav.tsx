@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Home, CalendarDays, Crosshair, User, MoreHorizontal } from "lucide-react";
+import { Home, CalendarDays, Crosshair, User, LayoutGrid } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { haptics } from "@/lib/haptics";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -27,7 +27,7 @@ const navItems: NavItem[] = [
   { label: "Schedule", icon: CalendarDays, path: "/instructor/schedule", isSchedule: true },
   { label: "Track", icon: Crosshair, path: "/instructor/tracking", isTrack: true },
   { label: "Pupils", icon: User, path: "/instructor/pupils", showBadge: true },
-  { label: "More", icon: MoreHorizontal, path: "/instructor/menu", isMore: true },
+  { label: "Tools", icon: LayoutGrid, path: "/instructor/tools", isMore: true },
 ];
 
 interface InstructorBottomNavProps {
