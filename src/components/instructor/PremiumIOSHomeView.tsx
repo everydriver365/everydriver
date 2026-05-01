@@ -258,7 +258,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
 
       {/* SECTION 3: Today's schedule */}
-      <section className="mt-5">
+      <section className="mt-4">
         <Card>
           <div className="flex items-center justify-between px-4 pt-4 pb-1">
             <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] leading-tight">
