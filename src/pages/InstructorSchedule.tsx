@@ -280,7 +280,7 @@ export default function InstructorSchedule() {
               </div>
             </>
           ) : (
-            <>
+            <div className="flex items-center justify-between gap-2">
               <InstructorPageHeader
                 lucideIcon={Calendar}
                 title="Schedule"
@@ -323,7 +323,7 @@ export default function InstructorSchedule() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-            </>
+            </div>
           )}
           {syncProgressBar}
         </div>
