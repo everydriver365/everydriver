@@ -158,7 +158,7 @@ export function CompactHomeView({ instructorId, instructor }: CompactHomeViewPro
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       {/* Compact Header — greeting + date */}
-      <div className="px-5 pt-[calc(env(safe-area-inset-top)+16px)] pb-3">
+      <div className="px-5 pt-3 pb-3">
         <div className="flex items-center justify-between">
           <div>
             <motion.h1
