@@ -26,9 +26,9 @@ const FONT =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
 
 const C = {
-  bg: "#F4F7F6",
+  bg: "#F7F7F8",
   card: "#FFFFFF",
-  hairline: "#E7E8EB",
+  hairline: "#E9E9ED",
   text: "#0B0B0F",
   muted: "#6E6E73",
   subtle: "#9A9AA0",
@@ -36,19 +36,26 @@ const C = {
   green: "#2EA66B",
   amber: "#B8801F",
   red: "#C8434F",
-  surface: "#F2F2F4",
+  surface: "#F3F3F5",
 };
+
+const SHADOW_CARD =
+  "0 1px 2px rgba(16,24,40,0.03), 0 8px 24px -14px rgba(16,24,40,0.10)";
+const SHADOW_HOVER =
+  "0 1px 2px rgba(16,24,40,0.04), 0 14px 32px -16px rgba(16,24,40,0.14)";
+const RADIUS = 24;
+const TRANSITION = "all 180ms ease";
 
 /* ──────────────────────────── small atoms ──────────────────────────── */
 function SectionHeader({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
-    <div className="flex items-baseline justify-between px-1 mb-2 mt-5">
+    <div className="flex items-baseline justify-between px-1 mb-3 mt-2">
       <h2
         style={{
           fontFamily: FONT,
           fontSize: 13,
           fontWeight: 600,
-          letterSpacing: "0.6px",
+          letterSpacing: "0.5px",
           textTransform: "uppercase",
           color: C.muted,
         }}
@@ -60,18 +67,21 @@ function SectionHeader({ title, action }: { title: string; action?: React.ReactN
   );
 }
 
-function Card({ children, padding = 16, className = "" }: {
-  children: React.ReactNode; padding?: number; className?: string;
+function Card({ children, padding = 20, className = "", interactive = false }: {
+  children: React.ReactNode; padding?: number; className?: string; interactive?: boolean;
 }) {
   return (
     <div
       className={className}
+      onMouseEnter={interactive ? (e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = SHADOW_HOVER; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-1px)"; } : undefined}
+      onMouseLeave={interactive ? (e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = SHADOW_CARD; (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; } : undefined}
       style={{
         background: C.card,
-        borderRadius: 20,
+        borderRadius: RADIUS,
         padding,
-        boxShadow:
-          "0 1px 2px rgba(16,24,40,0.04), 0 6px 18px -10px rgba(16,24,40,0.08)",
+        border: `1px solid ${C.hairline}`,
+        boxShadow: SHADOW_CARD,
+        transition: TRANSITION,
       }}
     >
       {children}
@@ -84,18 +94,18 @@ function StatPill({ label, value, sub }: { label: string; value: string; sub?: s
     <div
       style={{
         background: C.card,
-        borderRadius: 16,
-        padding: "12px 12px",
-        boxShadow:
-          "0 1px 2px rgba(16,24,40,0.04), 0 6px 18px -10px rgba(16,24,40,0.08)",
+        borderRadius: 18,
+        padding: "14px 14px",
+        border: `1px solid ${C.hairline}`,
+        boxShadow: SHADOW_CARD,
         flex: 1,
         minWidth: 0,
       }}
     >
-      <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, fontWeight: 500, letterSpacing: "0.3px", textTransform: "uppercase" }}>
+      <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, fontWeight: 500, letterSpacing: "0.4px", textTransform: "uppercase" }}>
         {label}
       </div>
-      <div style={{ fontFamily: FONT, fontSize: 20, fontWeight: 700, color: C.text, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>
+      <div style={{ fontFamily: FONT, fontSize: 22, fontWeight: 700, color: C.text, marginTop: 6, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em" }}>
         {value}
       </div>
       {sub && (
@@ -115,34 +125,39 @@ function QuickAction({ icon: Icon, label, onClick, color = C.accent, disabled }:
       type="button"
       onClick={onClick}
       disabled={disabled}
+      onMouseDown={(e) => { if (!disabled) (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.96)"; }}
+      onMouseUp={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
       style={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: 6,
+        gap: 8,
         flex: 1,
         background: "transparent",
         border: "none",
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.4 : 1,
-        padding: 0,
+        padding: "4px 0",
+        transition: TRANSITION,
       }}
     >
       <div
         style={{
-          height: 44,
-          width: 44,
-          borderRadius: 22,
-          background: `${color}15`,
+          height: 52,
+          width: 52,
+          borderRadius: 26,
+          background: `${color}14`,
           color,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          transition: TRANSITION,
         }}
       >
-        <Icon size={20} />
+        <Icon size={22} />
       </div>
-      <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 500, color: C.text }}>
+      <span style={{ fontFamily: FONT, fontSize: 12, fontWeight: 500, color: C.text }}>
         {label}
       </span>
     </button>
@@ -162,8 +177,8 @@ function StatusDot({ status }: { status: string }) {
     <div
       style={{
         display: "inline-flex", alignItems: "center", gap: 6,
-        padding: "4px 10px", borderRadius: 999,
-        background: `${info.color}15`, color: info.color,
+        padding: "5px 11px", borderRadius: 999,
+        background: `${info.color}14`, color: info.color,
         fontFamily: FONT, fontSize: 12, fontWeight: 600,
       }}
     >
@@ -175,7 +190,7 @@ function StatusDot({ status }: { status: string }) {
 
 function Empty({ text }: { text: string }) {
   return (
-    <div style={{ fontFamily: FONT, fontSize: 13, color: C.subtle, textAlign: "center", padding: "16px 8px" }}>
+    <div style={{ fontFamily: FONT, fontSize: 14, color: C.subtle, textAlign: "center", padding: "20px 8px" }}>
       {text}
     </div>
   );
@@ -184,13 +199,13 @@ function Empty({ text }: { text: string }) {
 function Row({ icon: Icon, label, value }: { icon: any; label: string; value?: React.ReactNode }) {
   if (!value) return null;
   return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0" }}>
-      <div style={{ width: 28, height: 28, borderRadius: 14, background: C.surface, display: "flex", alignItems: "center", justifyContent: "center", color: C.muted, flexShrink: 0 }}>
-        <Icon size={14} />
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 0" }}>
+      <div style={{ width: 32, height: 32, borderRadius: 16, background: C.surface, display: "flex", alignItems: "center", justifyContent: "center", color: C.muted, flexShrink: 0 }}>
+        <Icon size={15} />
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.3px" }}>{label}</div>
-        <div style={{ fontFamily: FONT, fontSize: 14, color: C.text, fontWeight: 500, wordBreak: "break-word" }}>{value}</div>
+        <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.4px" }}>{label}</div>
+        <div style={{ fontFamily: FONT, fontSize: 15, color: C.text, fontWeight: 500, wordBreak: "break-word", marginTop: 2 }}>{value}</div>
       </div>
     </div>
   );
@@ -349,14 +364,14 @@ export default function PremiumPupilProfile() {
   }
 
   const Header = (
-    <div className="flex items-center justify-between" style={{ padding: "12px 4px" }}>
+    <div className="flex items-center justify-between" style={{ padding: "8px 4px 16px" }}>
       <button
         onClick={() => navigate(-1)}
         style={{
           display: "flex", alignItems: "center", gap: 4,
           background: "transparent", border: "none",
-          color: C.accent, fontFamily: FONT, fontSize: 15, fontWeight: 500,
-          cursor: "pointer", padding: 4,
+          color: C.accent, fontFamily: FONT, fontSize: 16, fontWeight: 500,
+          cursor: "pointer", padding: 6,
         }}
       >
         <ArrowLeft size={20} /> Pupils
@@ -364,11 +379,15 @@ export default function PremiumPupilProfile() {
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <button
           onClick={() => setEditOpen(true)}
+          onMouseDown={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.97)"; }}
+          onMouseUp={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
           style={{
-            background: C.card, border: "none", borderRadius: 12,
-            padding: "8px 12px", display: "flex", alignItems: "center", gap: 6,
-            fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.text,
-            boxShadow: "0 1px 2px rgba(16,24,40,0.06)", cursor: "pointer",
+            background: C.card, border: `1px solid ${C.hairline}`, borderRadius: 14,
+            padding: "9px 14px", display: "flex", alignItems: "center", gap: 6,
+            fontFamily: FONT, fontSize: 14, fontWeight: 600, color: C.text,
+            boxShadow: SHADOW_CARD, cursor: "pointer",
+            transition: TRANSITION,
           }}
         >
           <Edit3 size={14} /> Edit
@@ -378,29 +397,29 @@ export default function PremiumPupilProfile() {
   );
 
   const PupilCard = (
-    <Card padding={18}>
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+    <Card padding={22}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
         <PupilAvatar name={pupil.name} imageUrl={pupil.profile_image_url} size="lg" />
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{ fontFamily: FONT, fontSize: 20, fontWeight: 700, color: C.text }}>
+          <div style={{ fontFamily: FONT, fontSize: isMobile ? 24 : 26, fontWeight: 700, color: C.text, letterSpacing: "-0.02em", lineHeight: 1.15 }}>
             {pupil.name}
           </div>
-          <div style={{ marginTop: 4 }}>
+          <div style={{ marginTop: 8 }}>
             <StatusDot status={status} />
           </div>
         </div>
       </div>
 
       {(pupil.phone || pupil.postcode || pupil.address) && (
-        <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 6 }}>
+        <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 8 }}>
           {pupil.phone && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, color: C.muted, fontFamily: FONT, fontSize: 13 }}>
-              <Phone size={13} /> {pupil.phone}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, color: C.muted, fontFamily: FONT, fontSize: 14 }}>
+              <Phone size={14} /> {pupil.phone}
             </div>
           )}
           {(pupil.address || pupil.postcode) && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, color: C.muted, fontFamily: FONT, fontSize: 13 }}>
-              <MapPin size={13} />
+            <div style={{ display: "flex", alignItems: "center", gap: 10, color: C.muted, fontFamily: FONT, fontSize: 14 }}>
+              <MapPin size={14} />
               <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {[pupil.address, pupil.postcode].filter(Boolean).join(", ")}
               </span>
@@ -410,7 +429,7 @@ export default function PremiumPupilProfile() {
       )}
 
       <div style={{
-        marginTop: 16, paddingTop: 14,
+        marginTop: 20, paddingTop: 18,
         borderTop: `1px solid ${C.hairline}`,
         display: "flex", justifyContent: "space-between", gap: 8,
       }}>
@@ -423,7 +442,7 @@ export default function PremiumPupilProfile() {
   );
 
   const StatsRow = (
-    <div style={{ display: "flex", gap: 10 }}>
+    <div style={{ display: "flex", gap: 12 }}>
       <StatPill label="Lessons" value={String(stats?.totalLessons ?? 0)} />
       <StatPill label="Hours" value={(stats?.totalHours ?? 0).toFixed(1)} />
       <StatPill
@@ -440,25 +459,26 @@ export default function PremiumPupilProfile() {
 
   const ProgressOverview = (
     <Card>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
-        <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 600, color: C.text }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
+        <div style={{ fontFamily: FONT, fontSize: 17, fontWeight: 600, color: C.text, letterSpacing: "-0.01em" }}>
           Test readiness
         </div>
-        <div style={{ fontFamily: FONT, fontSize: 22, fontWeight: 700, color: C.text, fontVariantNumeric: "tabular-nums" }}>
+        <div style={{ fontFamily: FONT, fontSize: 26, fontWeight: 700, color: C.text, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>
           {progressPct != null ? `${progressPct}%` : "—"}
         </div>
       </div>
-      <div style={{ height: 8, background: C.surface, borderRadius: 4, overflow: "hidden" }}>
+      <div style={{ height: 10, background: C.surface, borderRadius: 999, overflow: "hidden" }}>
         <div
           style={{
             height: "100%",
             width: `${progressPct ?? 0}%`,
             background: progressPct != null && progressPct >= 70 ? C.green : C.accent,
+            borderRadius: 999,
             transition: "width 200ms ease",
           }}
         />
       </div>
-      <div style={{ marginTop: 8, fontFamily: FONT, fontSize: 12, color: C.muted }}>
+      <div style={{ marginTop: 12, fontFamily: FONT, fontSize: 13, color: C.muted }}>
         {progressPct == null
           ? "Progress not yet recorded"
           : progressPct >= 80
@@ -472,7 +492,7 @@ export default function PremiumPupilProfile() {
 
   const NextLesson = (
     <Card>
-      <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3px", marginBottom: 10 }}>
+      <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em", marginBottom: 10 }}>
         Next lesson
       </div>
       {stats?.nextLesson ? (
@@ -508,7 +528,7 @@ export default function PremiumPupilProfile() {
 
   const LastLesson = (
     <Card>
-      <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3px", marginBottom: 10 }}>
+      <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em", marginBottom: 10 }}>
         Last lesson
       </div>
       {stats?.lastLesson ? (
@@ -558,7 +578,7 @@ export default function PremiumPupilProfile() {
   const NotesCard = (
     <Card>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3px" }}>
+        <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em" }}>
           Notes
         </div>
         <button
@@ -613,7 +633,7 @@ export default function PremiumPupilProfile() {
   const DocumentsCard = (
     <Card>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3px" }}>
+        <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em" }}>
           Documents
         </div>
       </div>
@@ -656,7 +676,7 @@ export default function PremiumPupilProfile() {
   const PaymentsCard = (
     <Card>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3px" }}>
+        <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em" }}>
           Payments
         </div>
         <button
@@ -708,29 +728,32 @@ export default function PremiumPupilProfile() {
   const HistoryCard = (
     <button
       onClick={() => setHistoryOpen(true)}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.boxShadow = SHADOW_HOVER; (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)"; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.boxShadow = SHADOW_CARD; (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)"; }}
       style={{
-        width: "100%", textAlign: "left", padding: 16, border: "none",
-        background: C.card, borderRadius: 20,
-        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 18px -10px rgba(16,24,40,0.08)",
+        width: "100%", textAlign: "left", padding: 20, border: `1px solid ${C.hairline}`,
+        background: C.card, borderRadius: RADIUS,
+        boxShadow: SHADOW_CARD,
         cursor: "pointer",
         display: "flex", alignItems: "center", justifyContent: "space-between",
+        transition: TRANSITION,
       }}
     >
       <div>
-        <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 600, color: C.text }}>
+        <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 600, color: C.text, letterSpacing: "-0.01em" }}>
           Lesson history
         </div>
-        <div style={{ fontFamily: FONT, fontSize: 12, color: C.muted, marginTop: 2 }}>
+        <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, marginTop: 4 }}>
           {stats?.totalLessons ?? 0} completed · {(stats?.totalHours ?? 0).toFixed(1)}h total
         </div>
       </div>
-      <ChevronRight size={18} color={C.subtle} />
+      <ChevronRight size={20} color={C.subtle} />
     </button>
   );
 
   const DetailsCard = (
     <Card>
-      <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3px", marginBottom: 6 }}>
+      <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em", marginBottom: 6 }}>
         Pupil details
       </div>
       <Row icon={User} label="Date of birth" value={pupil.date_of_birth ? format(parseISO(pupil.date_of_birth), "d MMM yyyy") : null} />
@@ -746,15 +769,15 @@ export default function PremiumPupilProfile() {
   );
 
   const MobileLayout = (
-    <div style={{ background: C.bg, minHeight: "100vh", paddingBottom: 80, fontFamily: FONT }}>
-      <div style={{ padding: "0 14px" }}>
+    <div style={{ background: C.bg, minHeight: "100vh", paddingBottom: 96, fontFamily: FONT }}>
+      <div style={{ padding: "0 20px" }}>
         {Header}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {hasDebt && (
-            <Card padding={12} className="">
+            <Card padding={14} className="">
               <div style={{ display: "flex", alignItems: "center", gap: 10, color: C.amber }}>
                 <AlertCircle size={18} />
-                <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600 }}>
+                <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 600 }}>
                   £{Math.abs(balance).toFixed(2)} outstanding
                 </div>
               </div>
@@ -784,15 +807,15 @@ export default function PremiumPupilProfile() {
 
   const DesktopLayout = (
     <div style={{ background: C.bg, minHeight: "100vh", fontFamily: FONT }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "16px 24px 80px" }}>
+      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "24px 40px 96px" }}>
         {Header}
-        <div style={{ display: "grid", gridTemplateColumns: "360px 1fr", gap: 24, alignItems: "start" }}>
-          <div style={{ position: "sticky", top: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "380px 1fr", gap: 32, alignItems: "start" }}>
+          <div style={{ position: "sticky", top: 24, display: "flex", flexDirection: "column", gap: 16 }}>
             {hasDebt && (
-              <Card padding={12}>
+              <Card padding={14}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, color: C.amber }}>
                   <AlertCircle size={18} />
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>
                     £{Math.abs(balance).toFixed(2)} outstanding
                   </div>
                 </div>
@@ -805,12 +828,12 @@ export default function PremiumPupilProfile() {
             {NextLesson}
             {LastLesson}
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 820 }}>
             <SectionHeader title="Progress" />
             {ProgressOverview}
             <SectionHeader title="Lesson history" />
             {HistoryCard}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <div>
                 <SectionHeader title="Notes" />
                 {NotesCard}
