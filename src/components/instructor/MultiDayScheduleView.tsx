@@ -624,7 +624,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
     const toISO = endOfDay(addDays(startDate, DAYS_TO_LOAD - 1)).toISOString();
 
     try {
-      const [lessonsRes, externalRes, blocksRes] = await Promise.all([
+      const [lessonsRes, externalRes, blocksRes, historyRes] = await Promise.all([
         supabase
           .from("scheduled_lessons")
           .select(`
@@ -653,6 +653,12 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
           .eq("instructor_id", instructorId)
           .gte("start_datetime", fromISO)
           .lte("start_datetime", toISO),
+        supabase
+          .from("lesson_history")
+          .select("pupil_id, lesson_date, start_time")
+          .eq("instructor_id", instructorId)
+          .gte("lesson_date", from)
+          .lte("lesson_date", to),
       ]);
 
       const transformedLessons = (lessonsRes.data || []).map((l: any) => ({
