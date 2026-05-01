@@ -690,6 +690,18 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
       });
       setExternalEvents(events);
       setManualBlocks(blocksRes.data || []);
+
+      // Build a Set of EOL-completed keys from lesson_history
+      const eolSet = new Set<string>();
+      for (const row of (historyRes.data || []) as any[]) {
+        const pupilId = row.pupil_id;
+        const date = row.lesson_date;
+        const t: string | null = row.start_time;
+        if (!pupilId || !date || !t) continue;
+        const norm = t.length === 5 ? `${t}:00` : t;
+        eolSet.add(`${pupilId}|${date}|${norm}`);
+      }
+      setEolDoneKeys(eolSet);
     } catch (e) {
       console.error("Error fetching schedule data:", e);
     } finally {
