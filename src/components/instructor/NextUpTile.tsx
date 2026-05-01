@@ -1186,64 +1186,67 @@ export function NextUpTile({
                   </div>
                 </div>
 
-                {/* ── SECTION 4 — Update status (3 buttons) ── */}
-                <div style={{
-                  fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73",
-                  letterSpacing: 0.3, textTransform: "uppercase", margin: "0 0 8px",
-                }}>
-                  Update status
-                </div>
-                <div style={{
-                  display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                  gap: 6, marginBottom: 14,
-                }}>
-                  {/* Prep */}
-                  <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/pupils/${pupilId}?tab=progress`); }}
-                    style={{
-                      background: "#F1ECFA", border: "none", borderRadius: 10,
-                      padding: "10px 4px", cursor: "pointer",
-                      display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                    }}>
-                    <ClipboardList style={{ width: 18, height: 18, color: "#8A5BC9" }} strokeWidth={1.8} />
-                    <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#8A5BC9" }}>Prep</span>
-                  </button>
+                {/* ── SECTION B — Update status (neutral surface, coloured icons only) ── */}
+                <div>
+                  <div style={{
+                    fontSize: a11yPx(11), fontWeight: 600, color: "#6E6E73",
+                    letterSpacing: 0.4, textTransform: "uppercase", margin: "0 4px 10px",
+                  }}>
+                    Update status
+                  </div>
+                  <div style={{
+                    background: "#FFFFFF", borderRadius: 16, padding: 8,
+                    boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                    display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 4,
+                  }}>
+                    {/* Prep */}
+                    <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/pupils/${pupilId}?tab=progress`); }}
+                      style={{
+                        background: "transparent", border: "none", borderRadius: 10,
+                        padding: "10px 4px", cursor: "pointer",
+                        display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                      }}>
+                      <ClipboardList style={{ width: 18, height: 18, color: "#8A5BC9" }} strokeWidth={1.9} />
+                      <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#1C1C1E" }}>Prep</span>
+                    </button>
 
-                  {/* On the way */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button onClick={(e) => e.stopPropagation()}
-                        style={{
-                          background: "#E6F1FB", border: "none", borderRadius: 10,
-                          padding: "10px 4px", cursor: "pointer",
-                          display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                        }}>
-                        <Send style={{ width: 18, height: 18, color: "#2B7BC8" }} strokeWidth={1.8} />
-                        <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#2B7BC8" }}>On the way</span>
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="center" className="w-52">
-                      <DropdownMenuItem onClick={handleSendETA}>Send ETA Now</DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 5 minutes late. Sorry!`)}>Running 5 min late</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 10 minutes late. Sorry!`)}>Running 10 min late</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 15 minutes late. Sorry!`)}>Running 15 min late</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 20 minutes late. Sorry!`)}>Running 20 min late</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 30 minutes late. Sorry!`)}>Running 30 min late</DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, I'll call you as soon as I can!`)}>Call ASAP</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                    {/* On the way */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button onClick={(e) => e.stopPropagation()}
+                          style={{
+                            background: "transparent", border: "none", borderRadius: 10,
+                            padding: "10px 4px", cursor: "pointer",
+                            display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                          }}>
+                          <Send style={{ width: 18, height: 18, color: "#2B7BC8" }} strokeWidth={1.9} />
+                          <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#1C1C1E" }}>On the way</span>
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="center" className="w-52">
+                        <DropdownMenuItem onClick={handleSendETA}>Send ETA Now</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 5 minutes late. Sorry!`)}>Running 5 min late</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 10 minutes late. Sorry!`)}>Running 10 min late</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 15 minutes late. Sorry!`)}>Running 15 min late</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 20 minutes late. Sorry!`)}>Running 20 min late</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 30 minutes late. Sorry!`)}>Running 30 min late</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, I'll call you as soon as I can!`)}>Call ASAP</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
 
-                  {/* Running late */}
-                  <button onClick={(e) => { e.stopPropagation(); setLateSheetOpen(true); }}
-                    style={{
-                      background: "#FBF1DE", border: "none", borderRadius: 10,
-                      padding: "10px 4px", cursor: "pointer",
-                      display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                    }}>
-                    <Clock style={{ width: 18, height: 18, color: "#B8801F" }} strokeWidth={1.8} />
-                    <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#B8801F" }}>Running late</span>
-                  </button>
+                    {/* Running late */}
+                    <button onClick={(e) => { e.stopPropagation(); setLateSheetOpen(true); }}
+                      style={{
+                        background: "transparent", border: "none", borderRadius: 10,
+                        padding: "10px 4px", cursor: "pointer",
+                        display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                      }}>
+                      <Clock style={{ width: 18, height: 18, color: "#B8801F" }} strokeWidth={1.9} />
+                      <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#1C1C1E" }}>Running late</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* ── SECTION 5 — Reschedule + Cancel (lower hierarchy) ── */}
