@@ -973,6 +973,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         statusPill={null}
                         showChevron={false}
                         struck={false}
+                        kind="allday"
                         onClick={() => setExpandedEventId(isExpanded ? null : evt.id)}
                       />
                       {isExpanded && <ExternalDetails evt={evt} />}
