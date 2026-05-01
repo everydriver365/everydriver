@@ -442,7 +442,7 @@ export default function PremiumPupilProfile() {
   );
 
   const StatsRow = (
-    <div style={{ display: "flex", gap: 10 }}>
+    <div style={{ display: "flex", gap: 12 }}>
       <StatPill label="Lessons" value={String(stats?.totalLessons ?? 0)} />
       <StatPill label="Hours" value={(stats?.totalHours ?? 0).toFixed(1)} />
       <StatPill
@@ -459,25 +459,26 @@ export default function PremiumPupilProfile() {
 
   const ProgressOverview = (
     <Card>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
-        <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 600, color: C.text }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
+        <div style={{ fontFamily: FONT, fontSize: 17, fontWeight: 600, color: C.text, letterSpacing: "-0.01em" }}>
           Test readiness
         </div>
-        <div style={{ fontFamily: FONT, fontSize: 22, fontWeight: 700, color: C.text, fontVariantNumeric: "tabular-nums" }}>
+        <div style={{ fontFamily: FONT, fontSize: 26, fontWeight: 700, color: C.text, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>
           {progressPct != null ? `${progressPct}%` : "—"}
         </div>
       </div>
-      <div style={{ height: 8, background: C.surface, borderRadius: 4, overflow: "hidden" }}>
+      <div style={{ height: 10, background: C.surface, borderRadius: 999, overflow: "hidden" }}>
         <div
           style={{
             height: "100%",
             width: `${progressPct ?? 0}%`,
             background: progressPct != null && progressPct >= 70 ? C.green : C.accent,
+            borderRadius: 999,
             transition: "width 200ms ease",
           }}
         />
       </div>
-      <div style={{ marginTop: 8, fontFamily: FONT, fontSize: 12, color: C.muted }}>
+      <div style={{ marginTop: 12, fontFamily: FONT, fontSize: 13, color: C.muted }}>
         {progressPct == null
           ? "Progress not yet recorded"
           : progressPct >= 80
