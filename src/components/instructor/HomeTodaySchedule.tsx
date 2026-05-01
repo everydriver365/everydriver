@@ -148,6 +148,64 @@ function ChevronRight({ color = IOS.secondaryLabel, size = 12 }: { color?: strin
   );
 }
 
+function CheckTickIcon({ size = 14, color = IOS.systemGreen }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </svg>
+  );
+}
+
+/**
+ * Compact, subtle right-side status icons for a lesson row.
+ *  - Shows a small green ✓ for completed EOL
+ *  - Shows a small £ for completed payment
+ *  - Shows a small amber dot when a past lesson is missing EOL or payment
+ * Reserves consistent right-side width so it never clashes with the chevron.
+ */
+function RowStatusIcons({
+  eolDone,
+  paymentDone,
+  needsAttention,
+}: {
+  eolDone?: boolean;
+  paymentDone?: boolean;
+  needsAttention?: boolean;
+}) {
+  if (!eolDone && !paymentDone && !needsAttention) return null;
+  return (
+    <div
+      aria-label={[
+        eolDone ? "End-of-lesson complete" : null,
+        paymentDone ? "Payment recorded" : null,
+        needsAttention ? "Needs attention" : null,
+      ].filter(Boolean).join(", ")}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        flexShrink: 0,
+        minWidth: 20,
+      }}
+    >
+      {eolDone && <CheckTickIcon size={14} color={IOS.systemGreen} />}
+      {paymentDone && <PoundIcon size={14} color={IOS.secondaryLabel} strokeWidth={2.2} />}
+      {needsAttention && (
+        <span
+          title="Needs attention"
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            background: IOS.systemAmber,
+            display: "inline-block",
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
 // ----- Pills -----
 type PillKind = "done" | "live" | "conflict" | "review";
 
@@ -649,6 +707,12 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
               const showBannerAbove = lesson.id === firstConflictRowId;
               const showEOL = state === "completed" && lesson.status !== "cancelled";
               const eolDone = showEOL && isEOLComplete(lesson, eolDoneKeys);
+              // Right-side completion micro-indicators (shown on every row).
+              const paymentDoneRow = lesson.paymentStatus === "paid";
+              const eolDoneAny = isEOLComplete(lesson, eolDoneKeys) || lesson.status === "completed";
+              const isPastRow = !isTomorrow && nowSec >= endSec;
+              const rowNeedsAttention =
+                isPastRow && lesson.status !== "cancelled" && (!eolDoneAny || !paymentDoneRow);
               const lessonHref = `/instructor/pupils/${lesson.pupilId}`;
               const accentColor = isDrivingTest ? IOS.systemRed : IOS.systemBlue;
 
@@ -772,6 +836,11 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                       )}
                       {showEOL && <EOLPrompt onTap={() => openEOLWizard(lesson)} done={eolDone} />}
                     </div>
+                    <RowStatusIcons
+                      eolDone={eolDoneAny}
+                      paymentDone={paymentDoneRow}
+                      needsAttention={rowNeedsAttention}
+                    />
                   </Link>
                 ) : (
                   <Link
@@ -816,6 +885,11 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                         <div style={{ fontSize: 11, color: IOS.secondaryLabel, margin: 0 }}>{subtitleText}</div>
                       )}
                     </div>
+                    <RowStatusIcons
+                      eolDone={eolDoneAny}
+                      paymentDone={paymentDoneRow}
+                      needsAttention={rowNeedsAttention}
+                    />
                     <ChevronRight color={IOS.secondaryLabel} size={12} />
                   </Link>
                 );
