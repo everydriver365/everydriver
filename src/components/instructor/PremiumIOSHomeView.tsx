@@ -547,7 +547,7 @@ function QuickActionPill({
 }: {
   icon: React.ReactNode;
   label: string;
-  tone: "blue" | "green" | "amber" | "indigo";
+  tone: "blue" | "green" | "amber" | "indigo" | "neutral";
   onClick: () => void;
 }) {
   const tones: Record<string, { bg: string; fg: string; iconBg: string }> = {
@@ -555,12 +555,14 @@ function QuickActionPill({
     green: { bg: "#FFFFFF", fg: "#1C1C1E", iconBg: "#E6F8EC" },
     amber: { bg: "#FFFFFF", fg: "#1C1C1E", iconBg: "#FFF3DC" },
     indigo: { bg: "#FFFFFF", fg: "#1C1C1E", iconBg: "#ECEAFE" },
+    neutral: { bg: "#FFFFFF", fg: "#1C1C1E", iconBg: "#EFEFF4" },
   };
   const iconColors: Record<string, string> = {
     blue: "#007AFF",
     green: "#1F8E3F",
     amber: "#C46E00",
     indigo: "#5856D6",
+    neutral: "#3C3C43",
   };
   const t = tones[tone];
   return (
