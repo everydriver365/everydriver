@@ -535,16 +535,16 @@ function QuickActionPill({
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-3 px-4 rounded-[18px] active:scale-[0.98] transition-transform shadow-[0_1px_2px_rgba(16,24,40,0.04),0_6px_20px_-12px_rgba(16,24,40,0.08)]"
-      style={{ background: t.bg, color: t.fg, minHeight: 72 }}
+      className="flex flex-col items-center justify-center gap-1.5 px-1.5 rounded-[16px] active:scale-[0.97] transition-transform shadow-[0_1px_2px_rgba(16,24,40,0.04),0_6px_20px_-12px_rgba(16,24,40,0.08)]"
+      style={{ background: t.bg, color: t.fg, minHeight: 88 }}
     >
       <span
-        className="size-10 rounded-[12px] flex items-center justify-center shrink-0"
+        className="size-9 rounded-[11px] flex items-center justify-center shrink-0"
         style={{ background: t.iconBg, color: iconColors[tone] }}
       >
         {icon}
       </span>
-      <span className="text-[15px] font-semibold tracking-tight text-left leading-tight">
+      <span className="text-[11.5px] font-semibold tracking-tight text-center leading-tight">
         {label}
       </span>
     </button>
