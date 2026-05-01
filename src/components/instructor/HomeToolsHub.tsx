@@ -306,26 +306,6 @@ export function HomeToolsHub() {
             </div>
           </div>
 
-          {/* Pinned to Home */}
-          {pinnedToHome.length > 0 && (
-            <div style={{ marginTop: 24 }}>
-              <SectionLabel
-                action={
-                  <button type="button" onClick={() => navigate("/instructor/menu?tab=pinned")}
-                    style={{ background: "transparent", border: 0, color: "#007AFF", fontSize: 13, fontWeight: 500, padding: "0 4px", cursor: "pointer", textTransform: "none", letterSpacing: 0 }}>
-                    Manage
-                  </button>
-                }
-              >
-                Pinned to Home
-              </SectionLabel>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                {pinnedToHome.map((tile) => (
-                  <LargeToolCard key={tile.id} tile={tile} onPress={() => handleTap(tile)} locked={isLocked(tile)} />
-                ))}
-              </div>
-            </div>
-          )}
         </>
       )}
     </section>
