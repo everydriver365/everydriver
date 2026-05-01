@@ -13,7 +13,7 @@ import {
   endOfDay,
   differenceInMinutes,
 } from "date-fns";
-import { Loader2, MapPin, Video, ExternalLink, ChevronRight, User, CalendarDays, Clock, Hourglass, AlertCircle } from "lucide-react";
+import { Loader2, MapPin, Video, ExternalLink, ChevronRight, User, CalendarDays, Clock, Hourglass, AlertCircle, Check, PoundSterling, FileText } from "lucide-react";
 import { titleCaseName } from "@/lib/titleCase";
 import { supabase } from "@/integrations/supabase/client";
 import { ExpandableLessonCard } from "./ExpandableLessonCard";
@@ -281,6 +281,8 @@ function ScheduleListRow({
   struck,
   isOverdue,
   kind,
+  completion,
+  needsAttention,
   onClick,
 }: {
   timeText: string;
@@ -294,6 +296,8 @@ function ScheduleListRow({
   struck: boolean;
   isOverdue?: boolean;
   kind?: "lesson" | "external" | "block" | "allday";
+  completion?: { eol?: boolean; payment?: boolean; notes?: boolean };
+  needsAttention?: boolean;
   onClick?: () => void;
 }) {
   const Icon = kind === "lesson" ? User : CalendarDays;
@@ -474,6 +478,65 @@ function ScheduleListRow({
             </span>
           )}
           <StatusPill status={statusPill} />
+
+          {/* Completion micro-indicators / needs-attention dot — quiet, no labels, no backgrounds */}
+          {(completion?.eol || completion?.payment || completion?.notes || needsAttention) && (
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                marginTop: 2,
+              }}
+              aria-label={
+                needsAttention
+                  ? "Needs attention"
+                  : [
+                      completion?.eol ? "Lesson completed" : null,
+                      completion?.payment ? "Payment recorded" : null,
+                      completion?.notes ? "Notes added" : null,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")
+              }
+            >
+              {completion?.eol && (
+                <Check style={{ width: 12, height: 12, color: "#34C759", strokeWidth: 2.6 }} />
+              )}
+              {completion?.payment && (
+                <PoundSterling style={{ width: 12, height: 12, color: "#8E8E93", strokeWidth: 2.4 }} />
+              )}
+              {completion?.notes && (
+                <FileText style={{ width: 12, height: 12, color: "#8E8E93", strokeWidth: 2 }} />
+              )}
+              {needsAttention && (
+                <span
+                  title="Needs attention"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 3,
+                    color: "#B8801F",
+                    fontSize: 10.5,
+                    fontWeight: 600,
+                    letterSpacing: "-0.05px",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: "50%",
+                      background: "#FF9500",
+                      display: "inline-block",
+                    }}
+                  />
+                  Needs attention
+                </span>
+              )}
+            </div>
+          )}
+
           {showChevron && (
             <ChevronRight
               style={{ width: 14, height: 14, color: "#C7C7CC", flexShrink: 0, strokeWidth: 1.8 }}
@@ -1096,24 +1159,41 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                           onNoShow={handleNoShow}
                           sendingMessage={sendingMessage}
                           onDelete={handleDeleteLesson}
-                          renderCustomCollapsed={
-                            <ScheduleListRow
-                              timeText={formatTime(lesson.start_time)}
-                              durationText={durationStr}
-                              accentColor={accent}
-                              title={title}
-                              subtitle={subtitleParts[0]}
-                              metaLine={location || null}
-                              statusPill={status as any}
-                              showChevron={true}
-                              struck={false}
-                              kind="lesson"
-                              isOverdue={
-                                lesson.payment_status !== "paid" &&
-                                (lesson.pupil?.account_balance ?? 0) < 0
-                              }
-                            />
-                          }
+                          renderCustomCollapsed={(() => {
+                            // Compute completion + attention from existing data only
+                            const isCompleted = lesson.status === "completed";
+                            const paymentDone = lesson.payment_status === "paid" || (lesson.prepaid_hours_used ?? 0) > 0;
+                            const notesDone = !!(lesson.notes && lesson.notes.trim().length > 0);
+                            // Past = lesson end time before now
+                            const lessonStart = new Date(`${lesson.lesson_date}T${lesson.start_time}`);
+                            const lessonEnd = new Date(lessonStart.getTime() + (lesson.duration_minutes || 60) * 60000);
+                            const isPast = lessonEnd.getTime() < Date.now();
+                            const needsAttention = isPast && (!isCompleted || !paymentDone);
+                            return (
+                              <ScheduleListRow
+                                timeText={formatTime(lesson.start_time)}
+                                durationText={durationStr}
+                                accentColor={accent}
+                                title={title}
+                                subtitle={subtitleParts[0]}
+                                metaLine={location || null}
+                                statusPill={status as any}
+                                showChevron={true}
+                                struck={false}
+                                kind="lesson"
+                                isOverdue={
+                                  lesson.payment_status !== "paid" &&
+                                  (lesson.pupil?.account_balance ?? 0) < 0
+                                }
+                                completion={
+                                  isCompleted
+                                    ? { eol: true, payment: paymentDone, notes: notesDone }
+                                    : undefined
+                                }
+                                needsAttention={needsAttention}
+                              />
+                            );
+                          })()}
                         />,
                       );
                       if (i < lastTimelineIdx) elements.push(<RowDivider key={`d-${lesson.id}`} />);
