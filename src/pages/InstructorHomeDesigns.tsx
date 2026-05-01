@@ -21,6 +21,21 @@ interface DesignOption {
 
 const designs: DesignOption[] = [
   {
+    id: "premium-ios",
+    name: "Premium iOS",
+    subtitle: "Spacious & calm",
+    description: "Apple Calendar meets a premium business dashboard. Large touch targets, generous whitespace, attention card, today's schedule hero, four pill quick actions, smart suggestion, and earnings lower down.",
+    tags: ["Spacious", "Touch-first", "Calm"],
+    gradient: "from-blue-500 to-indigo-600",
+    mockupSections: [
+      { label: "Greeting + Subtitle", height: "h-12", color: "bg-blue-500/10" },
+      { label: "Needs Your Attention", height: "h-20", color: "bg-rose-500/10" },
+      { label: "Today's Schedule", height: "h-24", color: "bg-blue-500/8" },
+      { label: "Quick Actions", height: "h-12", color: "bg-emerald-500/10" },
+      { label: "Smart Suggestion + Earnings", height: "h-14", color: "bg-emerald-500/8" },
+    ],
+  },
+  {
     id: "dashboard",
     name: "Classic Dashboard",
     subtitle: "The original",
