@@ -405,7 +405,7 @@
     cursor: pointer;
   }
 
-
+  .dark {
     --background: 0 0% 7%;
     --hero-background: 220 47% 15%;
     --foreground: 0 0% 100%;
