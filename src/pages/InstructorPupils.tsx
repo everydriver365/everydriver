@@ -177,7 +177,7 @@ export default function InstructorPupils() {
   const [newPupilId, setNewPupilId] = useState<string | null>(null);
   const [showPostAddPayment, setShowPostAddPayment] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<"all" | PupilStatus>("all");
+  const [activeTab, setActiveTab] = useState<"all" | "needs_lesson" | "upcoming" | PupilStatus>("all");
   const [isLookingUpW3W, setIsLookingUpW3W] = useState(false);
   const [isPupilPickerOpen, setIsPupilPickerOpen] = useState(false);
   const [pendingPupilAction, setPendingPupilAction] = useState<"terms" | null>(null);
@@ -473,19 +473,46 @@ export default function InstructorPupils() {
     }
   };
 
+  const now = Date.now();
+  const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+  const isUpcoming = (p: Pupil) => {
+    if (!p.next_lesson) return false;
+    const t = new Date(p.next_lesson).getTime();
+    return !isNaN(t) && t >= now && t - now <= SEVEN_DAYS_MS;
+  };
+  const needsLesson = (p: Pupil) => {
+    const status = p.status || 'active';
+    if (status !== 'active') return false;
+    if (!p.next_lesson) return true;
+    const t = new Date(p.next_lesson).getTime();
+    return isNaN(t) || t < now;
+  };
+
   const filteredPupils = pupils.filter((pupil) => {
-    const matchesSearch =
-      pupil.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pupil.postcode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pupil.email?.toLowerCase().includes(searchQuery.toLowerCase());
+    const q = searchQuery.trim().toLowerCase();
+    const matchesSearch = !q || (
+      pupil.name.toLowerCase().includes(q) ||
+      pupil.postcode.toLowerCase().includes(q) ||
+      (pupil.email?.toLowerCase().includes(q) ?? false) ||
+      (pupil.phone?.toLowerCase().includes(q) ?? false) ||
+      (pupil.parent_phone?.toLowerCase().includes(q) ?? false) ||
+      (pupil.parent_name?.toLowerCase().includes(q) ?? false) ||
+      (pupil.address?.toLowerCase().includes(q) ?? false) ||
+      (pupil.what3words?.toLowerCase().includes(q) ?? false) ||
+      (pupil.notes?.toLowerCase().includes(q) ?? false)
+    );
+
+    if (!matchesSearch) return false;
 
     if (activeTab === "all") {
       const pupilStatus = pupil.status || 'active';
-      return matchesSearch && pupilStatus !== 'inactive' && pupilStatus !== 'archived';
+      return pupilStatus !== 'inactive' && pupilStatus !== 'archived';
     }
-    // Filter by the status field
+    if (activeTab === "needs_lesson") return needsLesson(pupil);
+    if (activeTab === "upcoming") return isUpcoming(pupil);
     const pupilStatus = pupil.status || 'active';
-    return matchesSearch && pupilStatus === activeTab;
+    return pupilStatus === activeTab;
   });
 
   const displayedPupils = pupilId ? filteredPupils.filter((p) => p.id === pupilId) : filteredPupils;
@@ -533,9 +560,14 @@ export default function InstructorPupils() {
   const getInitials = (name: string) =>
     name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
+  const needsLessonCount = pupils.filter(needsLesson).length;
+  const upcomingCount = pupils.filter(isUpcoming).length;
+
   const segmentOptions = [
     { value: "all" as const, label: "All" },
     { value: "active" as const, label: "Active" },
+    ...(needsLessonCount > 0 ? [{ value: "needs_lesson" as const, label: "Needs lesson" }] : []),
+    ...(upcomingCount > 0 ? [{ value: "upcoming" as const, label: "Upcoming" }] : []),
     { value: "passed" as const, label: "Passed" },
     ...(statusCounts.on_hold > 0 ? [{ value: "on_hold" as const, label: "Hold" }] : []),
     ...(statusCounts.inactive > 0 ? [{ value: "inactive" as const, label: "Inactive" }] : []),
@@ -572,16 +604,44 @@ export default function InstructorPupils() {
         <SearchInput
           value={searchQuery}
           onChange={setSearchQuery}
-          placeholder="Search pupils"
+          placeholder="Search name, phone, location, notes"
         />
 
-        {/* Filter */}
-        <SegmentedControl
-          value={activeTab}
-          options={segmentOptions}
-          onChange={(v) => setActiveTab(v as any)}
-          ariaLabel="Filter pupils"
-        />
+        {/* Filter pills — horizontally scrollable */}
+        <div
+          role="tablist"
+          aria-label="Filter pupils"
+          className="flex gap-2 overflow-x-auto scrollbar-none -mx-1 px-1"
+          style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+        >
+          {segmentOptions.map((opt) => {
+            const active = opt.value === activeTab;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setActiveTab(opt.value as any)}
+                className="shrink-0 transition-all"
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: 999,
+                  fontSize: 13,
+                  fontWeight: active ? 600 : 500,
+                  color: active ? "#FFFFFF" : "#3C3C43",
+                  background: active ? "#2B7BC8" : "#F2F2F4",
+                  border: "none",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+                }}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
 
         {/* Pupils List */}
         {displayedPupils.length === 0 ? (
