@@ -27,8 +27,8 @@ export function SectionLabel({ children, className, style }: SectionLabelProps) 
         style={{
           fontSize: 11,
           fontWeight: 500,
-          color: "#6E6E73",
-          letterSpacing: 0.3,
+          color: "var(--portal-text-secondary, #6E6E73)",
+          letterSpacing: 0.4,
           textTransform: "uppercase",
           fontFamily:
             '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
