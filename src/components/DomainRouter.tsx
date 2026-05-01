@@ -169,6 +169,12 @@ function isLearnerAllowedRoute(pathname: string): boolean {
   return LEARNER_ALLOWED_ROUTES.some(prefix => pathname.startsWith(prefix));
 }
 
+function isLearnerOnlyRoute(pathname: string): boolean {
+  return LEARNER_ALLOWED_ROUTES
+    .filter(prefix => !prefix.startsWith("/instructor"))
+    .some(prefix => pathname.startsWith(prefix));
+}
+
 /**
  * DomainRouter component handles cross-domain redirects
  * 
@@ -263,7 +269,7 @@ export function DomainRouter() {
         window.location.href = `https://driveforall.co.uk${fullPath}`;
         return;
       }
-      if (isLearnerAllowedRoute(pathname)) {
+      if (isLearnerOnlyRoute(pathname)) {
         console.log('[DomainRouter] Redirecting learner route from EveryDriver to Drive365:', fullPath);
         window.location.href = `https://drive365.co.uk${fullPath}`;
         return;
