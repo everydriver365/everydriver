@@ -53,6 +53,7 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
           pupils!inner (
             id,
             name,
+            phone,
             postcode,
             pickup_address,
             pickup_postcode,
