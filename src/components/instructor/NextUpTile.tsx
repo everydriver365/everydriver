@@ -1195,61 +1195,7 @@ export function NextUpTile({
                         </div>
                       )}
 
-                      {/* Start lesson CTA — integrated inside last-lesson card so it feels connected */}
-                      {!trackerDismissed && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
-                          }}
-                          className="active:opacity-90"
-                          style={{
-                            width: "100%", marginTop: 14,
-                            background: "#007AFF", color: "#FFFFFF",
-                            border: "none", borderRadius: 12, padding: "12px 14px",
-                            fontSize: a11yPx(15), fontWeight: 600, letterSpacing: -0.1,
-                            cursor: "pointer",
-                            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                            transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-                          }}
-                        >
-                          <Play style={{ width: 16, height: 16 }} strokeWidth={2.4} fill="#FFFFFF" />
-                          Start lesson
-                        </button>
-                      )}
                     </div>
-
-                    {/* In-progress / start lesson buttons preserved (only render when relevant) */}
-                    {minutesUntil <= 15 && (
-                      <button onClick={(e) => {
-                        e.stopPropagation();
-                        supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
-                        navigate(`/instructor/tracking?lesson=${lessonId}`);
-                      }}
-                      style={{
-                        width: "100%",
-                        background: "linear-gradient(135deg, #22c55e, #16a34a)",
-                        color: "#FFFFFF", border: "none", borderRadius: 12, padding: 13,
-                        fontSize: a11yPx(14), fontWeight: 600, cursor: "pointer",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(34,197,94,0.25)",
-                      }}>
-                        <Navigation style={{ width: 16, height: 16 }} /> Start Lesson
-                      </button>
-                    )}
-                    {minutesUntil <= 0 && (
-                      <button onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
-                        style={{
-                          width: "100%",
-                          background: "#FFFFFF", color: "hsl(var(--foreground))",
-                          border: "none", borderRadius: 12, padding: 13,
-                          fontSize: a11yPx(14), fontWeight: 600, cursor: "pointer",
-                          display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                          boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
-                        }}>
-                        <CheckCircle2 style={{ width: 16, height: 16 }} /> End Lesson
-                      </button>
-                    )}
 
                     {/* Lesson plan card (elevated) */}
                     {lastLessonPlan && (
