@@ -62,7 +62,7 @@ export function MobileBlueHeader({
               <ChevronLeft size={20} strokeWidth={1.7} color={ICON_COLOR} />
             </button>
           ) : null}
-          <img src={dsmLogo} alt="DSM" className="h-7 w-auto object-contain shrink-0" />
+          <img src={dsmLogo} alt="DSM" className="h-9 w-auto object-contain shrink-0" />
         </div>
 
         {/* Right: bell, +, avatar, menu */}
