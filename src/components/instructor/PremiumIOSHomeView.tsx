@@ -140,7 +140,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
   const greeting = getTimeOfDayGreeting(new Date(), firstName);
 
   const { data: todayOverview } = useTodayOverview(instructorId);
-  const { data: nextLesson } = useNextLessonDetails(instructorId);
+  
   const { data: todayLessons } = useTodayRemainingLessons(instructorId);
   const { data: gapSuggestions } = useRealGapSlots(instructorId);
   const { data: comparison } = useLastWeekComparison(instructorId);
