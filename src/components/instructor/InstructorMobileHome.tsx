@@ -111,6 +111,7 @@ import { CompactHomeView } from "@/components/instructor/CompactHomeView";
 import { BestMateHomeView } from "@/components/instructor/BestMateHomeView";
 import { MissionControlHomeView } from "@/components/instructor/MissionControlHomeView";
 import { WidgetsHomeView } from "@/components/instructor/WidgetsHomeView";
+import { PremiumIOSHomeView } from "@/components/instructor/PremiumIOSHomeView";
 
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { HomeTodaySchedule } from "@/components/instructor/HomeTodaySchedule";
