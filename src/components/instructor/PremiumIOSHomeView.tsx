@@ -17,8 +17,6 @@ import {
   Calendar as CalendarIcon,
   MapPin,
   MoreHorizontal,
-  Phone,
-  Navigation,
 } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
