@@ -560,9 +560,14 @@ export default function InstructorPupils() {
   const getInitials = (name: string) =>
     name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
+  const needsLessonCount = pupils.filter(needsLesson).length;
+  const upcomingCount = pupils.filter(isUpcoming).length;
+
   const segmentOptions = [
     { value: "all" as const, label: "All" },
     { value: "active" as const, label: "Active" },
+    ...(needsLessonCount > 0 ? [{ value: "needs_lesson" as const, label: "Needs lesson" }] : []),
+    ...(upcomingCount > 0 ? [{ value: "upcoming" as const, label: "Upcoming" }] : []),
     { value: "passed" as const, label: "Passed" },
     ...(statusCounts.on_hold > 0 ? [{ value: "on_hold" as const, label: "Hold" }] : []),
     ...(statusCounts.inactive > 0 ? [{ value: "inactive" as const, label: "Inactive" }] : []),
