@@ -22,8 +22,8 @@ import {
  * badge is anchored on the bell, sized to the tile-system spec and ringed
  * with the header background colour so it reads cleanly in either theme.
  *
- * Sticky positioning + `env(safe-area-inset-top)` padding mirror the
- * previous header's behaviour exactly — only the visual layer changes.
+ * Sticky positioning with a compact row; the native/app shell owns the
+ * status-bar safe area so we do not add another spacer here.
  */
 
 type IconProps = SVGProps<SVGSVGElement> & { size?: number };
@@ -212,10 +212,6 @@ export function AppHeader({
         borderBottom: `0.5px solid ${palette.border}`,
       }}
     >
-      {/* iOS safe-area inset */}
-      <div
-        style={{ paddingTop: "env(safe-area-inset-top)", background: palette.bg }}
-      />
       <div
         style={{
           display: "flex",
