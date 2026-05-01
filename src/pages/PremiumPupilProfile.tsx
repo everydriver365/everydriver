@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { format, formatDistanceToNow, parseISO } from "date-fns";
@@ -855,7 +856,13 @@ export default function PremiumPupilProfile() {
 
   return (
     <InstructorPortalLayout>
-      {isMobile ? MobileLayout : DesktopLayout}
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+      >
+        {isMobile ? MobileLayout : DesktopLayout}
+      </motion.div>
 
       <EditPupilSheet
         open={editOpen}

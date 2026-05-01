@@ -718,10 +718,12 @@ export function PupilCardStack({
           </div>
         )}
         {/* Collapsed Card — premium tile system */}
-        <button
+        <motion.button
           onClick={handleCardClick}
+          whileTap={{ scale: 0.98, opacity: 0.92 }}
+          transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
           className="w-full text-left flex items-center"
-          style={{ padding: 14, gap: 12, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif' }}
+          style={{ padding: 14, gap: 12, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif', background: "transparent", border: "none" }}
         >
           {/* Deterministic avatar */}
           <div className="relative shrink-0" style={{ width: 44, height: 44 }}>
@@ -871,7 +873,7 @@ export function PupilCardStack({
             )}
             <ChevronRight size={14} strokeWidth={1.6} color="#C7C7CC" />
           </div>
-        </button>
+        </motion.button>
 
         {/* Subtle divider */}
 
