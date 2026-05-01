@@ -921,7 +921,7 @@ export function NextUpTile({
                         );
                       })()}
                     </div>
-                  </>
+                  </div>
                 )}
 
                 {/* ── SECTION 2.5 — Last lesson (read-only summary) ── */}
