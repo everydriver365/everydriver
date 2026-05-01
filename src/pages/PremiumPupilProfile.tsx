@@ -936,7 +936,7 @@ export default function PremiumPupilProfile() {
       style={{
         background: C.card,
         borderRadius: 22,
-        padding: "14px 8px",
+        padding: "12px 8px",
         boxShadow: SHADOW_CARD,
         display: "flex",
         justifyContent: "space-between",
@@ -963,7 +963,7 @@ export default function PremiumPupilProfile() {
       style={{
         background: C.card,
         borderRadius: RADIUS,
-        padding: 20,
+        padding: "16px 18px",
         boxShadow: isPriority
           ? "0 4px 16px rgba(43,123,200,0.10), 0 1px 2px rgba(16,24,40,0.04)"
           : SHADOW_CARD,
@@ -981,8 +981,8 @@ export default function PremiumPupilProfile() {
       </div>
       <div
         style={{
-          marginTop: 6,
-          fontFamily: FONT, fontSize: 20, fontWeight: 700,
+          marginTop: 4,
+          fontFamily: FONT, fontSize: 19, fontWeight: 700,
           color: C.text, letterSpacing: "-0.02em", lineHeight: 1.25,
         }}
       >
@@ -990,16 +990,16 @@ export default function PremiumPupilProfile() {
       </div>
 
       {insight.bullets.length > 0 && (
-        <ul style={{ marginTop: 12, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
+        <ul style={{ marginTop: 8, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 4 }}>
           {insight.bullets.map((b, i) => (
             <li
               key={i}
               style={{
                 display: "flex", alignItems: "flex-start", gap: 8,
-                fontFamily: FONT, fontSize: 14, color: C.text, lineHeight: 1.45,
+                fontFamily: FONT, fontSize: 14, color: C.text, lineHeight: 1.4,
               }}
             >
-              <span style={{ width: 4, height: 4, borderRadius: 2, background: C.subtle, marginTop: 9, flexShrink: 0 }} />
+              <span style={{ width: 4, height: 4, borderRadius: 2, background: C.subtle, marginTop: 8, flexShrink: 0 }} />
               <span>{b}</span>
             </li>
           ))}
@@ -1009,28 +1009,28 @@ export default function PremiumPupilProfile() {
       {insight.recommendation && (
         <div
           style={{
-            marginTop: 14, padding: "12px 14px",
-            background: C.surface, borderRadius: 14,
+            marginTop: 10, padding: "10px 12px",
+            background: C.surface, borderRadius: 12,
             display: "flex", alignItems: "center", gap: 10,
           }}
         >
           <div
             style={{
-              width: 28, height: 28, borderRadius: 14,
+              width: 26, height: 26, borderRadius: 13,
               background: `${C.accent}14`, color: C.accent,
               display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
             }}
           >
             <CalendarPlus size={14} />
           </div>
-          <div style={{ fontFamily: FONT, fontSize: 13.5, fontWeight: 500, color: C.text, lineHeight: 1.4 }}>
+          <div style={{ fontFamily: FONT, fontSize: 13.5, fontWeight: 500, color: C.text, lineHeight: 1.35 }}>
             {insight.recommendation}
           </div>
         </div>
       )}
 
       {insight.tags.length > 0 && (
-        <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: 6 }}>
+        <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>
           {insight.tags.map((t) => {
             const tone = toneMap[t.tone];
             return (
@@ -1071,7 +1071,7 @@ export default function PremiumPupilProfile() {
         <div key={m.label} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <div
             style={{
-              fontFamily: FONT, fontSize: 20, fontWeight: 700,
+              fontFamily: FONT, fontSize: 18, fontWeight: 700,
               color: C.text, letterSpacing: "-0.02em",
               fontVariantNumeric: "tabular-nums", lineHeight: 1.1,
             }}
@@ -1095,11 +1095,15 @@ export default function PremiumPupilProfile() {
     <div style={{ background: C.bg, minHeight: "100vh", paddingBottom: 96, fontFamily: FONT }}>
       <div style={{ padding: "0 20px" }}>
         {Header}
-        <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
+        {/* Tightly grouped hero → actions → insight → stats */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {MobileHero}
           {MobileActions}
           {SmartInsight}
           {MobileMetrics}
+        </div>
+        {/* Sections below get a bit more air */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 22, marginTop: 24 }}>
           <SectionHeader title="Lessons" />
           {NextLesson}
           {LastLesson}
