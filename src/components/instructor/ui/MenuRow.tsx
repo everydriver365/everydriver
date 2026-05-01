@@ -52,7 +52,7 @@ export function MenuRow({
     ? DESTRUCTIVE_FG
     : isActive
       ? ACTIVE_FG
-      : "#000000";
+      : "var(--portal-text, #000000)";
   const resolvedIconBg = isActive ? "#FFFFFF" : iconBackground;
   const resolvedIconColor = isActive ? ACTIVE_FG : iconColor;
 
