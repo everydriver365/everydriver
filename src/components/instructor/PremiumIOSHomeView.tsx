@@ -453,37 +453,36 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </div>
       </section>
 
-      {/* 5. Smart suggestion — single full-width card */}
+      {/* 5. Smart suggestion — green tinted card with green CTA */}
       {firstGap && !suggestionDismissed && gapMins > 0 && (
         <section className="px-6 mb-7">
-          <div className="rounded-[20px] p-6 relative overflow-hidden bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_28px_-12px_rgba(16,24,40,0.08)]">
+          <div className="rounded-[20px] px-5 py-4 relative overflow-hidden bg-[#E9F8EE] border border-[#34C759]/20">
             <button
               onClick={() => setSuggestionDismissed(true)}
-              className="absolute top-4 right-4 size-8 rounded-full bg-black/[0.04] flex items-center justify-center active:scale-95 transition-transform"
+              className="absolute top-3 right-3 size-7 rounded-full flex items-center justify-center active:scale-95 transition-transform"
               aria-label="Dismiss"
             >
-              <X className="size-[15px] text-[#3C3C43]/55" />
+              <X className="size-[16px] text-[#3C3C43]/55" />
             </button>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="size-7 rounded-full bg-[#34C759]/12 flex items-center justify-center">
-                <Sparkles className="size-[15px] text-[#1F8E3F]" />
+            <div className="flex items-center gap-3 pr-7">
+              <div className="size-11 rounded-[12px] bg-white flex items-center justify-center shrink-0 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+                <CalendarIcon className="size-[20px] text-[#1F8E3F]" />
               </div>
-              <span className="text-[12px] font-semibold uppercase tracking-[0.06em] text-[#1F8E3F]">
-                Smart suggestion
-              </span>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[15.5px] font-semibold tracking-tight text-[#1C1C1E] leading-snug">
+                  You have a {gapMins} min gap at {firstGap.startTime.slice(0, 5)}
+                </h3>
+                <p className="text-[13px] text-[#3C3C43]/70 mt-0.5 leading-snug">
+                  Fill it with a new lesson and boost your earnings.
+                </p>
+              </div>
+              <button
+                onClick={() => navigate("/instructor/schedule?view=gaps")}
+                className="shrink-0 px-4 py-2.5 rounded-[12px] bg-[#1F8E3F] text-white text-[13.5px] font-semibold active:opacity-85 transition-opacity shadow-[0_1px_2px_rgba(16,24,40,0.08)]"
+              >
+                Add lesson
+              </button>
             </div>
-            <h3 className="text-[22px] font-semibold tracking-tight text-[#1C1C1E] leading-tight pr-8">
-              You have a {gapMins} min gap at {firstGap.startTime.slice(0, 5)}
-            </h3>
-            <p className="text-[15px] text-[#3C3C43]/70 mt-2 leading-relaxed">
-              Fill it with a new lesson and boost your earnings.
-            </p>
-            <button
-              onClick={() => navigate("/instructor/schedule?view=gaps")}
-              className="mt-5 w-full py-4 rounded-[14px] bg-[#1C1C1E] text-white text-[16px] font-semibold active:opacity-85 transition-opacity"
-            >
-              Fill slot
-            </button>
           </div>
         </section>
       )}
