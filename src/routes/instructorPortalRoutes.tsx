@@ -11,6 +11,7 @@ const InstructorPupils = lazy(() => import("@/pages/InstructorPupils"));
 const InstructorSchedule = lazy(() => import("@/pages/InstructorSchedule"));
 const InstructorDiary = lazy(() => import("@/pages/InstructorDiary"));
 const InstructorMenu = lazy(() => import("@/pages/InstructorMenu"));
+const InstructorTools = lazy(() => import("@/pages/InstructorTools"));
 const InstructorSettings = lazy(() => import("@/pages/InstructorSettings"));
 const InstructorSettingsCategory = lazy(() => import("@/pages/InstructorSettingsCategory"));
 const InstructorNotifications = lazy(() => import("@/pages/InstructorNotifications"));
@@ -143,6 +144,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/course-planner" element={<CoursePlannerPage />} />
     <Route path="/instructor/diary" element={<InstructorDiary />} />
     <Route path="/instructor/menu" element={<InstructorMenu />} />
+    <Route path="/instructor/tools" element={<InstructorTools />} />
     <Route path="/instructor/settings" element={<InstructorSettings />} />
     <Route path="/instructor/settings/whatsapp" element={<InstructorWhatsAppSettings />} />
     <Route path="/instructor/settings/whatsapp/templates" element={<InstructorWhatsAppTemplates />} />
