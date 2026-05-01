@@ -705,52 +705,56 @@ export function NextUpTile({
               </span>
             </div>
 
-            {/* Primary actions: Navigate + Call/Message — integrated, not floating */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+            {/* Secondary actions: Navigate / Call / Message — inline, neutral, no competing primary */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
               <button
                 onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
-                className="active:opacity-90"
+                className="active:opacity-80"
                 style={{
-                  flex: 1, height: 48, borderRadius: 14,
-                  background: "#007AFF", color: "#FFFFFF",
+                  flex: 1, height: 40, borderRadius: 10,
+                  background: "transparent", color: "#3C3C43",
                   border: "none", cursor: "pointer",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                  fontSize: a11yPx(15), fontWeight: 600, letterSpacing: -0.1,
-                  transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  fontSize: a11yPx(13), fontWeight: 500, letterSpacing: -0.05,
                 }}
                 aria-label="Navigate"
               >
-                <Navigation style={{ width: 17, height: 17 }} strokeWidth={2.2} />
+                <Navigation style={{ width: 15, height: 15, color: "#8E8E93" }} strokeWidth={2} />
                 Navigate
               </button>
+              <div style={{ width: 1, height: 20, background: "rgba(60,60,67,0.10)" }} />
               <button
                 onClick={(e) => { e.stopPropagation(); handleCall(); }}
                 className="active:opacity-80"
                 style={{
-                  width: 48, height: 48, borderRadius: 14,
-                  background: "rgba(120,120,128,0.10)", color: "#1C1C1E",
+                  flex: 1, height: 40, borderRadius: 10,
+                  background: "transparent", color: "#3C3C43",
                   border: "none", cursor: "pointer",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  fontSize: a11yPx(13), fontWeight: 500, letterSpacing: -0.05,
                 }}
                 aria-label="Call pupil"
               >
-                <Phone style={{ width: 18, height: 18 }} strokeWidth={2.1} />
+                <Phone style={{ width: 15, height: 15, color: "#8E8E93" }} strokeWidth={2} />
+                Call
               </button>
+              <div style={{ width: 1, height: 20, background: "rgba(60,60,67,0.10)" }} />
               <button
                 onClick={(e) => { e.stopPropagation(); handleMessage(); }}
                 className="active:opacity-80"
                 style={{
-                  width: 48, height: 48, borderRadius: 14,
-                  background: "rgba(120,120,128,0.10)", color: "#1C1C1E",
+                  flex: 1, height: 40, borderRadius: 10,
+                  background: "transparent", color: "#3C3C43",
                   border: "none", cursor: "pointer",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  fontSize: a11yPx(13), fontWeight: 500, letterSpacing: -0.05,
                 }}
                 aria-label="Message pupil"
               >
-                <MessageSquare style={{ width: 18, height: 18 }} strokeWidth={2.1} />
+                <MessageSquare style={{ width: 15, height: 15, color: "#8E8E93" }} strokeWidth={2} />
+                Message
               </button>
             </div>
-          </div>
 
           {/* ── MAP PREVIEW (only when within 4h) ── */}
           {isWithin4h && pickupPostcode && (
