@@ -32,8 +32,12 @@ export function MobileBlueHeader({
   const navigate = useNavigate();
   const { total: notifCount } = useCombinedNotificationCount(instructorId);
 
-  const bg =
-    surface === "white" ? "#FFFFFF" : "hsl(var(--dsm-page-bg,var(--dsm-bg)))";
+  // Header and the safe-area zone always share the page background, so the
+  // top of every screen reads as one continuous surface (no white block, no
+  // grey panel, no border). The `surface` prop is kept for API compatibility
+  // but no longer changes the colour.
+  void surface;
+  const bg = "hsl(var(--dsm-page-bg,var(--dsm-bg)))";
 
   return (
     <header
