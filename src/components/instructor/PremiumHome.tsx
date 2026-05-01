@@ -141,17 +141,17 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
     : 0;
 
   return (
-    <div className="pb-8" style={{ background: "#F7F6F3" }}>
+    <div className="pb-10" style={{ background: "#F7F6F3" }}>
       {/* Top bar (logo + bell + avatar) is provided by InstructorPortalLayout's
           MobileBlueHeader. Do not render a second header here. */}
 
       {/* ---------------- Greeting + date pill ---------------- */}
-      <div className="px-5 pt-0 pb-3">
-        <h1 className="text-[32px] leading-[1.1] font-bold tracking-tight text-[#1C1C1E]">
+      <div className="px-6 pt-4 pb-5">
+        <h1 className="text-[36px] leading-[1.05] font-bold tracking-tight text-[#1C1C1E]">
           {greeting} <span className="inline-block">👋</span>
         </h1>
-        <div className="mt-1.5 flex items-center justify-between gap-3">
-          <p className="text-[14px] text-[#3C3C43]/70 min-w-0 truncate">
+        <div className="mt-2.5 flex items-center justify-between gap-3">
+          <p className="text-[15px] text-[#3C3C43]/70 min-w-0 truncate">
             <span>
               {lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today
             </span>
@@ -166,9 +166,9 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
           </p>
           <button
             onClick={() => navigate("/instructor/schedule")}
-            className="flex items-center gap-1.5 px-2.5 h-7 rounded-full border border-black/10 bg-white text-[12px] font-medium text-[#1C1C1E] active:bg-black/[0.03] transition-colors shrink-0"
+            className="flex items-center gap-1.5 px-3 h-9 rounded-full border border-black/[0.08] bg-white text-[13px] font-medium text-[#1C1C1E] active:bg-black/[0.03] transition-colors shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
           >
-            <Calendar className="size-[12px] text-[#3C3C43]/70" />
+            <Calendar className="size-[13px] text-[#3C3C43]/70" />
             {format(today, "EEE, d MMM")}
           </button>
         </div>
@@ -176,41 +176,41 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
 
       {/* ---------------- Needs your attention ---------------- */}
       {attention.length > 0 && (
-        <section className="px-5 mb-5">
-          <h2 className="text-[15px] font-semibold tracking-tight text-[#1C1C1E] mb-2.5">
+        <section className="px-6 mb-7">
+          <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] mb-3">
             Needs your attention
           </h2>
-          <div className="rounded-[18px] border border-black/[0.06] bg-white overflow-hidden">
+          <div className="rounded-[24px] border border-black/[0.05] bg-white overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
             {attention.map((row, i) => (
               <div key={row.key}>
                 <button
                   onClick={row.onClick}
-                  className="w-full flex items-center gap-3.5 px-4 py-3.5 active:bg-black/[0.03] transition-colors text-left"
-                  style={{ minHeight: 72 }}
+                  className="w-full flex items-center gap-4 px-5 py-4 active:bg-black/[0.03] transition-colors text-left"
+                  style={{ minHeight: 92 }}
                 >
                   <div
-                    className="size-11 rounded-[12px] flex items-center justify-center shrink-0"
+                    className="size-12 rounded-[14px] flex items-center justify-center shrink-0"
                     style={{ background: row.iconBg, color: row.iconFg }}
                   >
                     {row.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight truncate">
+                    <div className="text-[16px] font-semibold text-[#1C1C1E] tracking-tight truncate">
                       {row.title}
                     </div>
-                    <div className="text-[12.5px] text-[#3C3C43]/65 mt-0.5 truncate">
+                    <div className="text-[13px] text-[#3C3C43]/65 mt-0.5 truncate">
                       {row.subtitle}
                     </div>
                   </div>
                   <span
-                    className={`text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0 ${pillCls[row.tone]}`}
+                    className={`text-[12px] font-bold px-3 py-1 rounded-full shrink-0 ${pillCls[row.tone]}`}
                   >
                     {row.pill}
                   </span>
-                  <ChevronRight className="size-[16px] text-[#3C3C43]/35 shrink-0" />
+                  <ChevronRight className="size-[18px] text-[#3C3C43]/35 shrink-0" />
                 </button>
                 {i < attention.length - 1 && (
-                  <div className="ml-[72px] border-t border-black/[0.05]" />
+                  <div className="ml-[80px] border-t border-black/[0.05]" />
                 )}
               </div>
             ))}
@@ -219,20 +219,20 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
       )}
 
       {/* ---------------- Today's schedule ---------------- */}
-      <section className="px-5 mb-6">
+      <section className="px-6 mb-7">
         <div className="flex items-center justify-between mb-3.5">
           <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
             Today's schedule
           </h2>
           <button
             onClick={() => navigate("/instructor/schedule")}
-            className="text-[13px] font-medium text-[#007AFF] active:opacity-60 transition-opacity"
+            className="text-[14px] font-medium text-[#007AFF] active:opacity-60 transition-opacity"
           >
             View full schedule ›
           </button>
         </div>
 
-        <div className="rounded-[20px] border border-black/[0.06] bg-white overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+        <div className="rounded-[24px] border border-black/[0.05] bg-white overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
           {previewLessons.length === 0 ? (
             <div className="px-5 py-12 text-center">
               <p className="text-[15px] text-[#3C3C43]/65">
@@ -349,79 +349,71 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
         </div>
       </section>
 
-      {/* ---------------- Quick actions (horizontal chips) ---------------- */}
-      <section className="px-5 mb-5">
-        <div className="flex items-center justify-between mb-2.5">
-          <h2 className="text-[15px] font-semibold tracking-tight text-[#1C1C1E]">
+      {/* ---------------- Quick actions (4-tile grid) ---------------- */}
+      <section className="px-6 mb-7">
+        <div className="flex items-center justify-between mb-3.5">
+          <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
             Quick actions
           </h2>
           <button
             onClick={() => navigate("/instructor/account?tab=quick-actions")}
-            className="text-[13px] font-medium text-[#007AFF] active:opacity-60 transition-opacity"
+            className="text-[14px] font-medium text-[#007AFF] active:opacity-60 transition-opacity"
           >
             Edit
           </button>
         </div>
-        <div className="-mx-5 px-5 overflow-x-auto scrollbar-none">
-          <div className="flex gap-2.5 pb-1">
-            <ActionChip
-              icon={<CalendarPlus className="size-[18px]" />}
-              label="Add lesson"
-              tone="blue"
-              onClick={() => navigate("/instructor/schedule?action=add")}
-            />
-            <ActionChip
-              icon={<PoundSterling className="size-[18px]" />}
-              label="Take payment"
-              tone="green"
-              onClick={onPaymentClick}
-            />
-            <ActionChip
-              icon={<MessageCircle className="size-[18px]" />}
-              label="Message"
-              tone="indigo"
-              onClick={() => navigate("/instructor/messages")}
-            />
-            <ActionChip
-              icon={<Clock className="size-[18px]" />}
-              label="Fill gap"
-              tone="amber"
-              onClick={() => navigate("/instructor/schedule?view=gaps")}
-            />
-            <ActionChip
-              icon={<MoreHorizontal className="size-[18px]" />}
-              label="More"
-              tone="grey"
-              onClick={() => navigate("/instructor/account?tab=quick-actions")}
-            />
-          </div>
+        <div className="grid grid-cols-4 gap-3">
+          <ActionTile
+            icon={<CalendarPlus className="size-[20px]" />}
+            label="Add lesson"
+            tone="blue"
+            onClick={() => navigate("/instructor/schedule?action=add")}
+          />
+          <ActionTile
+            icon={<PoundSterling className="size-[20px]" />}
+            label="Take payment"
+            tone="green"
+            onClick={onPaymentClick}
+          />
+          <ActionTile
+            icon={<MessageCircle className="size-[20px]" />}
+            label="Message"
+            tone="indigo"
+            onClick={() => navigate("/instructor/messages")}
+          />
+          <ActionTile
+            icon={<Clock className="size-[20px]" />}
+            label="Fill gap"
+            tone="amber"
+            onClick={() => navigate("/instructor/schedule?view=gaps")}
+          />
         </div>
       </section>
 
-      {/* ---------------- Smart suggestion (soft grey card) ---------------- */}
+      {/* ---------------- Smart suggestion (soft card) ---------------- */}
       {firstGap && !suggestionDismissed && gapMins > 0 && (
-        <section className="px-5">
-          <div className="rounded-[18px] bg-[#F5F6F8] p-4 flex items-start gap-3.5 relative">
-            <div className="size-10 rounded-[12px] bg-white flex items-center justify-center shrink-0 mt-0.5 border border-black/[0.04]">
-              <CalendarCheck className="size-[18px] text-[#1F8E3F]" />
+        <section className="px-6">
+          <div className="rounded-[24px] bg-white border border-black/[0.05] shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-5 flex items-start gap-4 relative">
+            <div className="size-12 rounded-[14px] bg-[#E2F5E8] flex items-center justify-center shrink-0 mt-0.5">
+              <CalendarCheck className="size-[20px] text-[#1F8E3F]" />
             </div>
             <div className="flex-1 min-w-0 pr-7">
-              <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight">
+              <div className="text-[16px] font-semibold text-[#1C1C1E] tracking-tight">
                 You have a {gapMins} min gap at {firstGap.startTime.slice(0, 5)}
               </div>
-              <p className="text-[12.5px] text-[#3C3C43]/70 mt-1 leading-snug">
+              <p className="text-[13.5px] text-[#3C3C43]/70 mt-1 leading-snug">
                 Fill it with a new lesson and boost your earnings.
               </p>
             </div>
             <button
               onClick={() => navigate("/instructor/schedule?view=gaps")}
-              className="shrink-0 self-center px-4 h-10 rounded-[12px] bg-[#34C759] text-white text-[13px] font-semibold active:opacity-85 transition-opacity"
+              className="shrink-0 self-center px-5 h-11 rounded-[14px] bg-[#34C759] text-white text-[14px] font-semibold active:opacity-85 transition-opacity"
             >
               Add lesson
             </button>
             <button
               onClick={() => setSuggestionDismissed(true)}
-              className="absolute top-2.5 right-2.5 size-6 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+              className="absolute top-3 right-3 size-6 rounded-full flex items-center justify-center active:scale-95 transition-transform"
               aria-label="Dismiss"
             >
               <X className="size-[14px] text-[#3C3C43]/45" />
@@ -434,10 +426,10 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
 }
 
 /* -------------------------------------------------------------------------- */
-/* ActionChip                                                                 */
+/* ActionTile (4-up grid, large pastel square)                                */
 /* -------------------------------------------------------------------------- */
 
-function ActionChip({
+function ActionTile({
   icon,
   label,
   tone,
@@ -459,13 +451,13 @@ function ActionChip({
   return (
     <button
       onClick={onClick}
-      className="shrink-0 flex flex-col items-start justify-between rounded-[16px] px-3.5 py-3 active:scale-[0.97] transition-transform"
-      style={{ background: t.bg, color: t.fg, width: 96, minHeight: 76 }}
+      className="aspect-square flex flex-col items-start justify-between rounded-[22px] p-3 active:scale-[0.97] transition-transform"
+      style={{ background: t.bg, color: t.fg, minHeight: 88 }}
     >
-      <span className="size-7 rounded-full bg-white/70 flex items-center justify-center">
+      <span className="size-9 rounded-full bg-white/80 flex items-center justify-center">
         {icon}
       </span>
-      <span className="text-[12.5px] font-semibold tracking-tight leading-tight text-left mt-2">
+      <span className="text-[13px] font-semibold tracking-tight leading-tight text-left">
         {label}
       </span>
     </button>
