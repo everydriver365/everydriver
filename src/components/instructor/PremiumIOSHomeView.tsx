@@ -440,7 +440,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
       {/* 5. Smart suggestion — green tinted card with green CTA */}
       {firstGap && !suggestionDismissed && gapMins > 0 && (
-        <section className="px-6 mb-7">
+        <section className="mt-5">
           <div className="rounded-[20px] px-5 py-4 relative overflow-hidden bg-[#E9F8EE] border border-[#34C759]/20">
             <button
               onClick={() => setSuggestionDismissed(true)}
