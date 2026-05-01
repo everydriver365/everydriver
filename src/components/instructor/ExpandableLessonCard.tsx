@@ -245,49 +245,12 @@ export function ExpandableLessonCard({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className={cn(
-          "rounded-2xl border overflow-hidden relative",
-          colorPreset.bg,
-          colorPreset.border,
+          "rounded-2xl overflow-hidden relative",
+          renderCustomCollapsed ? "bg-transparent" : cn("border", colorPreset.bg, colorPreset.border),
           isDragging && "cursor-grabbing"
         )}
       >
-        {/* Overdue corner ribbon */}
-        {isPaymentOverdue && (
-          <div
-            aria-label="Payment overdue"
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              width: 52,
-              height: 52,
-              overflow: "hidden",
-              pointerEvents: "none",
-              zIndex: 6,
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                transform: "rotate(45deg)",
-                background: "linear-gradient(135deg, #FF6B6B, #FF3B30)",
-                color: "#FFFFFF",
-                fontSize: 7,
-                fontWeight: 700,
-                letterSpacing: 0.3,
-                textAlign: "center",
-                lineHeight: "14px",
-                width: 78,
-                top: 9,
-                right: -26,
-                boxShadow: "0 2px 5px rgba(255,59,48,0.35)",
-                fontFamily: "Inter, sans-serif",
-              }}
-            >
-              OVERDUE
-            </div>
-          </div>
-        )}
+        {/* Overdue is now surfaced as a small pill inside the row, not a corner ribbon. */}
 
         {/* Color picker button */}
         {onColorChange && (
@@ -329,15 +292,7 @@ export function ExpandableLessonCard({
           className="w-full text-left"
         >
           {renderCustomCollapsed ? (
-            <div className="relative">
-              {renderCustomCollapsed}
-              <ChevronDown
-                className={cn(
-                  "absolute top-1/2 -translate-y-1/2 right-3 h-4 w-4 text-muted-foreground shrink-0 transition-transform pointer-events-none",
-                  isExpanded && "rotate-180"
-                )}
-              />
-            </div>
+            <div className="relative">{renderCustomCollapsed}</div>
           ) : (
             <div className="px-3 py-2 flex gap-3 items-center">
               <span className="text-sm font-bold text-foreground min-w-[44px]">{formatTime(lesson.start_time)}</span>

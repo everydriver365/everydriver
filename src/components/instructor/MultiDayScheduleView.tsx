@@ -13,7 +13,7 @@ import {
   endOfDay,
   differenceInMinutes,
 } from "date-fns";
-import { Loader2, MapPin, Video, ExternalLink, ChevronRight } from "lucide-react";
+import { Loader2, MapPin, Video, ExternalLink, ChevronRight, User, CalendarDays, Clock, Hourglass, AlertCircle } from "lucide-react";
 import { titleCaseName } from "@/lib/titleCase";
 import { supabase } from "@/integrations/supabase/client";
 import { ExpandableLessonCard } from "./ExpandableLessonCard";
@@ -234,8 +234,8 @@ function formatDayHeader(d: Date): string {
 
 /** Hairline divider between rows within the same day. */
 function RowDivider() {
-  // Replaced by card spacing + shadow in the premium iOS layout
-  return <div style={{ height: 6 }} />;
+  // Spacing handled by parent gap — kept as a no-op for layout stability.
+  return null;
 }
 
 type RowStatus = "live" | "conflict" | "tentative" | null;
@@ -275,9 +275,12 @@ function ScheduleListRow({
   accentColor,
   title,
   subtitle,
+  metaLine,
   statusPill,
   showChevron,
   struck,
+  isOverdue,
+  kind,
   onClick,
 }: {
   timeText: string;
@@ -285,11 +288,15 @@ function ScheduleListRow({
   accentColor: string;
   title: string;
   subtitle?: string | null;
+  metaLine?: string | null;
   statusPill: RowStatus;
   showChevron: boolean;
   struck: boolean;
+  isOverdue?: boolean;
+  kind?: "lesson" | "external" | "block" | "allday";
   onClick?: () => void;
 }) {
+  const Icon = kind === "lesson" ? User : CalendarDays;
   return (
     <button
       type="button"
@@ -297,12 +304,12 @@ function ScheduleListRow({
       style={{
         display: "flex",
         alignItems: "stretch",
-        gap: 14,
+        gap: 12,
         width: "100%",
         textAlign: "left",
         background: "transparent",
         border: "none",
-        padding: "14px 6px",
+        padding: 0,
         cursor: "pointer",
         fontFamily: FONT_STACK,
       }}
@@ -311,17 +318,17 @@ function ScheduleListRow({
       <div
         style={{
           flexShrink: 0,
-          minWidth: 56,
+          minWidth: 54,
           display: "flex",
           flexDirection: "column",
           alignItems: "flex-end",
-          justifyContent: "center",
-          paddingTop: 2,
+          justifyContent: "flex-start",
+          paddingTop: 14,
         }}
       >
         <span
           style={{
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: 600,
             color: "#000000",
             letterSpacing: "-0.3px",
@@ -356,11 +363,11 @@ function ScheduleListRow({
           alignItems: "center",
           gap: 12,
           background: "#FFFFFF",
-          borderRadius: 16,
-          padding: "14px 14px 14px 12px",
-          minHeight: 72,
+          borderRadius: 22,
+          padding: "16px 16px 16px 18px",
+          minHeight: 100,
           boxShadow:
-            "0 1px 2px rgba(16,24,40,0.04), 0 6px 18px -10px rgba(16,24,40,0.08)",
+            "0 1px 2px rgba(16,24,40,0.04), 0 8px 24px -12px rgba(16,24,40,0.10)",
           position: "relative",
           overflow: "hidden",
         }}
@@ -370,19 +377,35 @@ function ScheduleListRow({
           style={{
             position: "absolute",
             left: 0,
-            top: 10,
-            bottom: 10,
+            top: 14,
+            bottom: 14,
             width: 4,
             borderRadius: 4,
             backgroundColor: accentColor,
           }}
         />
 
+        {/* Event-type icon */}
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 12,
+            background: `${accentColor}14`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Icon style={{ width: 17, height: 17, color: accentColor, strokeWidth: 2 }} />
+        </div>
+
         {/* Title + subtitle */}
-        <div style={{ flex: 1, minWidth: 0, paddingLeft: 6 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 15.5,
+              fontSize: 16,
               fontWeight: 600,
               color: "#000000",
               letterSpacing: "-0.2px",
@@ -407,22 +430,88 @@ function ScheduleListRow({
                 textOverflow: "ellipsis",
                 textDecoration: struck ? "line-through" : "none",
                 lineHeight: 1.3,
+                fontWeight: 500,
               }}
             >
               {subtitle}
             </div>
           )}
+          {metaLine && (
+            <div
+              style={{
+                fontSize: 11.5,
+                color: "#8E8E93",
+                marginTop: 3,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {metaLine}
+            </div>
+          )}
         </div>
 
-        <StatusPill status={statusPill} />
-
-        {showChevron && (
-          <ChevronRight
-            style={{ width: 14, height: 14, color: "#C7C7CC", flexShrink: 0, strokeWidth: 1.8 }}
-          />
-        )}
+        {/* Trailing badges */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
+          {isOverdue && (
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 3,
+                background: "#FFE5E5",
+                color: "#C8434F",
+                borderRadius: 999,
+                padding: "3px 8px",
+                fontSize: 9.5,
+                fontWeight: 700,
+                letterSpacing: "0.4px",
+              }}
+            >
+              OVERDUE
+            </span>
+          )}
+          <StatusPill status={statusPill} />
+          {showChevron && (
+            <ChevronRight
+              style={{ width: 14, height: 14, color: "#C7C7CC", flexShrink: 0, strokeWidth: 1.8 }}
+            />
+          )}
+        </div>
       </div>
     </button>
+  );
+}
+
+/** Format minutes into "Xh", "Ym", or "Xh Ym" — short variant for summary. */
+function formatHm(mins: number): string {
+  if (!mins || mins <= 0) return "0h";
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
+
+/** Single stat tile inside the today summary strip. */
+function SummaryStat({ icon, value, label, tint }: {
+  icon: React.ReactNode;
+  value: string;
+  label: string;
+  tint: string;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 4, color: tint }}>
+        {icon}
+        <span style={{ fontSize: 17, fontWeight: 700, color: "#000000", letterSpacing: "-0.3px", fontVariantNumeric: "tabular-nums" }}>
+          {value}
+        </span>
+      </div>
+      <div style={{ fontSize: 11, fontWeight: 500, color: "#8E8E93", marginTop: 2 }}>{label}</div>
+    </div>
   );
 }
 
@@ -699,6 +788,59 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
     [dayData],
   );
 
+  // Today summary strip — uses already-fetched data, no extra queries.
+  const todaySummary = useMemo(() => {
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    const todayLessons = lessons.filter((l) => l.lesson_date === todayStr);
+    const lessonCount = todayLessons.length;
+    const scheduledMins = todayLessons.reduce(
+      (sum, l) => sum + (l.duration_minutes || 0),
+      0,
+    );
+
+    // Free gap time today: sum of gaps between consecutive timeline items 8am–8pm,
+    // bounded so we don't count overnight time.
+    const today = dayData.find((d) => d.dateStr === todayStr);
+    let freeMins = 0;
+    if (today) {
+      const items = today.timeline.map((t) => {
+        const startStr =
+          t.kind === "lesson"
+            ? t.data.start_time
+            : t.kind === "external"
+              ? format(parseISO(t.data.start_time), "HH:mm")
+              : format(parseISO(t.data.start_datetime), "HH:mm");
+        const endStr =
+          t.kind === "lesson"
+            ? getEndTime(t.data.start_time, t.data.duration_minutes)
+            : t.kind === "external"
+              ? format(parseISO(t.data.end_time), "HH:mm")
+              : format(parseISO(t.data.end_datetime), "HH:mm");
+        const toMin = (s: string) => {
+          const [h, m] = s.split(":").map(Number);
+          return h * 60 + m;
+        };
+        return { s: toMin(startStr), e: toMin(endStr) };
+      });
+      const dayStart = 8 * 60;
+      const dayEnd = 20 * 60;
+      const sorted = [...items].sort((a, b) => a.s - b.s);
+      let cursor = dayStart;
+      for (const it of sorted) {
+        if (it.e <= dayStart || it.s >= dayEnd) continue;
+        if (it.s > cursor) freeMins += it.s - cursor;
+        cursor = Math.max(cursor, it.e);
+      }
+      if (cursor < dayEnd) freeMins += dayEnd - cursor;
+    }
+
+    const overdueCount = todayLessons.filter(
+      (l) => l.payment_status !== "paid" && (l.pupil?.account_balance ?? 0) < 0,
+    ).length;
+
+    return { lessonCount, scheduledMins, freeMins, overdueCount };
+  }, [lessons, dayData]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16" style={{ backgroundColor: "transparent" }}>
@@ -710,23 +852,55 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   return (
     <div
       style={{
-        backgroundColor: "#F2F2F4",
+        backgroundColor: "#F7F7F8",
         color: "#1F1F1F",
         fontFamily: FONT_STACK,
         paddingBottom: 96,
         minHeight: "100%",
       }}
     >
-      {/* Single white card containing day-grouped sections */}
-      <div
-        style={{
-          margin: "12px 16px 0",
-          backgroundColor: "#FFFFFF",
-          borderRadius: 12,
-          overflow: "hidden",
-          border: "0.5px solid #E5E5EA",
-        }}
-      >
+      {/* Summary strip — uses existing data only */}
+      <div style={{ padding: "8px 16px 4px" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+            gap: 0,
+            background: "#FFFFFF",
+            borderRadius: 18,
+            padding: "12px 6px",
+            boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -10px rgba(16,24,40,0.08)",
+          }}
+        >
+          <SummaryStat
+            icon={<CalendarDays style={{ width: 14, height: 14 }} />}
+            value={String(todaySummary.lessonCount)}
+            label="Lessons"
+            tint="#2B7BC8"
+          />
+          <SummaryStat
+            icon={<Clock style={{ width: 14, height: 14 }} />}
+            value={formatHm(todaySummary.scheduledMins)}
+            label="Scheduled"
+            tint="#3B8B3B"
+          />
+          <SummaryStat
+            icon={<Hourglass style={{ width: 14, height: 14 }} />}
+            value={formatHm(todaySummary.freeMins)}
+            label="Free"
+            tint="#8A5BC9"
+          />
+          <SummaryStat
+            icon={<AlertCircle style={{ width: 14, height: 14 }} />}
+            value={String(todaySummary.overdueCount)}
+            label="Overdue"
+            tint={todaySummary.overdueCount > 0 ? "#C8434F" : "#8E8E93"}
+          />
+        </div>
+      </div>
+
+      {/* Day-grouped timeline sections (no big white wrapper — let cards float) */}
+      <div>
         {dayData.map(({ day, dateStr, timeline, allDay }, idx) => {
           const today = isToday(day);
 
@@ -750,18 +924,8 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
           const hasContent = timeline.length > 0 || allDay.length > 0;
 
           return (
-            <div key={dateStr}>
-              {/* Inter-day separator (skip before the very first day) */}
-              {idx > 0 && (
-                <div
-                  style={{
-                    height: 4,
-                    backgroundColor: "#F2F2F4",
-                  }}
-                />
-              )}
-
-              {/* Day header (sticky) */}
+            <div key={dateStr} style={{ padding: "12px 16px 4px" }}>
+              {/* Day header */}
               <div
                 id={`schedule-day-${dateStr}`}
                 ref={today ? todayRef : undefined}
@@ -769,19 +933,21 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                   position: "sticky",
                   top: 0,
                   zIndex: 5,
-                  backgroundColor: "#FFFFFF",
-                  padding: "10px 16px 6px",
-                  borderBottom: "0.5px solid transparent",
+                  backgroundColor: "#F7F7F8",
+                  padding: "8px 4px 10px",
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 8,
                 }}
               >
                 <h3
                   style={{
                     margin: 0,
-                    fontSize: 11,
-                    fontWeight: 500,
-                    color: today ? "#2B7BC8" : "#6E6E73",
-                    letterSpacing: "0.3px",
-                    textTransform: "uppercase",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: today ? "#2B7BC8" : "#1C1C1E",
+                    letterSpacing: "-0.1px",
+                    textTransform: "none",
                   }}
                 >
                   {formatDayHeader(day)}
@@ -789,7 +955,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
               </div>
 
               {/* Day rows container */}
-              <div style={{ padding: "0 8px" }}>
+              <div style={{ padding: "0 0 4px", display: "flex", flexDirection: "column", gap: 10 }}>
                 {/* All-day externals first */}
                 {allDay.map((evt, aIdx) => {
                   const isExpanded = expandedEventId === evt.id;
@@ -807,6 +973,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         statusPill={null}
                         showChevron={false}
                         struck={false}
+                        kind="allday"
                         onClick={() => setExpandedEventId(isExpanded ? null : evt.id)}
                       />
                       {isExpanded && <ExternalDetails evt={evt} />}
@@ -825,37 +992,41 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         key="now-indicator"
                         style={{
                           display: "flex",
-                          gap: 8,
-                          padding: "6px 8px",
+                          gap: 10,
+                          padding: "2px 4px",
                           alignItems: "center",
                         }}
                       >
-                        <div
-                          style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: "50%",
-                            backgroundColor: "#C8434F",
-                            flexShrink: 0,
-                          }}
-                        />
                         <span
                           style={{
                             fontSize: 11,
-                            fontWeight: 500,
-                            color: "#C8434F",
-                            letterSpacing: "0.2px",
+                            fontWeight: 700,
+                            color: "#FF3B30",
+                            letterSpacing: "0.4px",
                             fontVariantNumeric: "tabular-nums",
+                            textTransform: "uppercase",
+                            minWidth: 54,
+                            textAlign: "right",
                           }}
                         >
-                          {nowTimeStr}
+                          Now {nowTimeStr}
                         </span>
                         <div
                           style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: "50%",
+                            backgroundColor: "#FF3B30",
+                            flexShrink: 0,
+                            boxShadow: "0 0 0 3px rgba(255,59,48,0.18)",
+                          }}
+                        />
+                        <div
+                          style={{
                             flex: 1,
-                            height: 1,
-                            backgroundColor: "#C8434F",
-                            opacity: 0.3,
+                            height: 1.5,
+                            background: "linear-gradient(90deg, #FF3B30, rgba(255,59,48,0.05))",
+                            borderRadius: 1,
                           }}
                         />
                       </div>,
@@ -931,10 +1102,16 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                               durationText={durationStr}
                               accentColor={accent}
                               title={title}
-                              subtitle={subtitleParts.join(" · ")}
+                              subtitle={subtitleParts[0]}
+                              metaLine={location || null}
                               statusPill={status as any}
                               showChevron={true}
                               struck={false}
+                              kind="lesson"
+                              isOverdue={
+                                lesson.payment_status !== "paid" &&
+                                (lesson.pupil?.account_balance ?? 0) < 0
+                              }
                             />
                           }
                         />,
@@ -963,6 +1140,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                             statusPill={null}
                             showChevron={false}
                             struck={false}
+                            kind="external"
                             onClick={() => setExpandedEventId(isExpanded ? null : evt.id)}
                           />
                           {isExpanded && <ExternalDetails evt={evt} />}
@@ -992,6 +1170,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                             statusPill={null}
                             showChevron={true}
                             struck={false}
+                            kind="block"
                             onClick={() => setExpandedEventId(isExpanded ? null : `block-${block.id}`)}
                           />
                           {isExpanded && (
@@ -1030,7 +1209,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         const fmt = (mins: number) =>
                           `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
                         elements.push(
-                          <div key={`gap-${i}`} style={{ padding: "8px 8px" }}>
+                          <div key={`gap-${i}`} style={{ paddingLeft: 66 }}>
                             <GapFillCard
                               instructorId={instructorId}
                               instructorName={instructorName}
