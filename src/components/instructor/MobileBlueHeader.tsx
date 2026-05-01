@@ -101,7 +101,7 @@ export function MobileBlueHeader({
             style={{ width: 32, height: 32 }}
             aria-label="Quick actions"
           >
-            <Plus size={20} strokeWidth={1.8} color={ICON_COLOR} />
+            <Plus size={18} strokeWidth={1.7} color={ICON_COLOR} />
           </button>
           <button
             onClick={() => navigate("/instructor/profile")}
