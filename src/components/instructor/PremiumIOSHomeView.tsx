@@ -23,6 +23,7 @@ import {
 import { useState } from "react";
 import { format } from "date-fns";
 import { HomeToolsHub } from "@/components/instructor/HomeToolsHub";
+import { NextLessonTile as RichNextLessonTile } from "@/components/instructor/NextLessonTile";
 
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
