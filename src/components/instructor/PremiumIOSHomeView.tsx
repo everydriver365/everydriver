@@ -328,7 +328,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                         navigate(`/instructor/schedule?lessonId=${lesson.id}`)
                       }
                       className="w-full flex items-center gap-3 px-4 active:bg-black/[0.03] transition-colors text-left"
-                      style={{ height: 80 }}
+                      style={{ height: 68 }}
                     >
                       <div
                         className="w-[3px] h-12 rounded-full shrink-0"
