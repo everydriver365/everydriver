@@ -873,7 +873,7 @@ export function PupilCardStack({
             )}
             <ChevronRight size={14} strokeWidth={1.6} color="#C7C7CC" />
           </div>
-        </button>
+        </motion.button>
 
         {/* Subtle divider */}
 
