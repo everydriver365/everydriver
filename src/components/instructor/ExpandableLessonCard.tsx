@@ -251,43 +251,7 @@ export function ExpandableLessonCard({
           isDragging && "cursor-grabbing"
         )}
       >
-        {/* Overdue corner ribbon */}
-        {isPaymentOverdue && (
-          <div
-            aria-label="Payment overdue"
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              width: 52,
-              height: 52,
-              overflow: "hidden",
-              pointerEvents: "none",
-              zIndex: 6,
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                transform: "rotate(45deg)",
-                background: "linear-gradient(135deg, #FF6B6B, #FF3B30)",
-                color: "#FFFFFF",
-                fontSize: 7,
-                fontWeight: 700,
-                letterSpacing: 0.3,
-                textAlign: "center",
-                lineHeight: "14px",
-                width: 78,
-                top: 9,
-                right: -26,
-                boxShadow: "0 2px 5px rgba(255,59,48,0.35)",
-                fontFamily: "Inter, sans-serif",
-              }}
-            >
-              OVERDUE
-            </div>
-          </div>
-        )}
+        {/* Overdue is now surfaced as a small pill inside the row, not a corner ribbon. */}
 
         {/* Color picker button */}
         {onColorChange && (
