@@ -29,14 +29,10 @@ export function MobileBlueHeader({
   const navigate = useNavigate();
   const { total: notifCount } = useCombinedNotificationCount(instructorId);
 
-  // Transparent so the page's off-white background flows behind the header
-  const bgStyle = { background: "transparent" };
-
   return (
-    <header className="sticky top-0 z-40" style={{ background: "#F7F6F3" }}>
+    <header className="sticky top-0 z-40 bg-[hsl(var(--dsm-bg))]">
       <div
-        className="flex items-center justify-between"
-        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 6px)", paddingBottom: 6, paddingLeft: 20, paddingRight: 20, ...bgStyle }}
+        className="flex h-11 items-center justify-between px-5"
       >
         {/* Left: DSM logo (or back) */}
         <div className="flex items-center gap-2">

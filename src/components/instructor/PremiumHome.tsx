@@ -146,7 +146,7 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
           MobileBlueHeader. Do not render a second header here. */}
 
       {/* ---------------- Greeting + date pill ---------------- */}
-      <div className="px-5 pt-1 pb-3">
+      <div className="px-5 pt-0 pb-3">
         <h1 className="text-[32px] leading-[1.1] font-bold tracking-tight text-[#1C1C1E]">
           {greeting} <span className="inline-block">👋</span>
         </h1>
