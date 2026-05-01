@@ -160,7 +160,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
       subtitle: "Suggested pupils available",
       pillTone: "green",
       pillLabel: String(totalGapSlots),
-      onClick: () => navigate("/instructor/schedule?view=gaps"),
+      onClick: () => navigate("/instructor/gaps"),
     });
   }
 
@@ -498,7 +498,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
             icon={<Clock className="size-[20px]" />}
             label="Fill gap"
             tone="amber"
-            onClick={() => navigate("/instructor/schedule?view=gaps")}
+            onClick={() => navigate("/instructor/gaps")}
           />
         </div>
       </section>
