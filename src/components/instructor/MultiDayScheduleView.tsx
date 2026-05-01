@@ -1102,10 +1102,16 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                               durationText={durationStr}
                               accentColor={accent}
                               title={title}
-                              subtitle={subtitleParts.join(" · ")}
+                              subtitle={subtitleParts[0]}
+                              metaLine={location || null}
                               statusPill={status as any}
                               showChevron={true}
                               struck={false}
+                              kind="lesson"
+                              isOverdue={
+                                lesson.payment_status !== "paid" &&
+                                (lesson.pupil?.account_balance ?? 0) < 0
+                              }
                             />
                           }
                         />,
