@@ -354,16 +354,31 @@ export default function InstructorMenu() {
 
   const menuSections: { title: string; items: MenuItem[] }[] = [
     {
-      title: "Quick actions",
+      title: "General",
       items: [
         { icon: CheckSquare, label: "To Do", description: "Task list", gateKey: "todos", path: "/instructor/todos", tintBg: "#E8ECF1", tintColor: "#2A394F" },
         { icon: MessageCircle, label: "Messages", description: "Chat with pupils", gateKey: "messages", path: "/instructor/messages", tintBg: "#ECFDF5", tintColor: "#059669" },
         { icon: Briefcase, label: "Job offers", description: "Pending jobs", gateKey: "jobs", path: "/instructor/jobs", tintBg: "#EDE9FE", tintColor: "#5B21B6" },
         { icon: CalendarPlus, label: "New bookings", description: "Pending schedule", gateKey: "pending-scheduling", path: "/instructor/pending-scheduling", tintBg: "#FEF3C7", tintColor: "#92400E" },
+      ],
+    },
+    {
+      title: "Payments",
+      items: [
         { icon: QrCode, label: "Take Payment", description: "QR code payment", gateKey: "pay", path: "/instructor/pay", tintBg: "#ECFDF5", tintColor: "#059669" },
+        { icon: Receipt, label: "Expenses", description: "Track costs", gateKey: "expenses", path: "/instructor/expenses", tintBg: "#FEF3C7", tintColor: "#92400E" },
+      ],
+    },
+    {
+      title: "Tracking & Vehicle",
+      items: [
         { icon: Car, label: "Live Tracking", description: "GPS tracking", gateKey: "tracking", path: "/instructor/tracking", tintBg: "#DBEAFE", tintColor: "#1E40AF" },
         { icon: Navigation, label: "Find My Car", description: "Car location", gateKey: "find-my-car", path: "/instructor/find-my-car", tintBg: "#FEF2F2", tintColor: "#DC2626" },
-        { icon: Receipt, label: "Expenses", description: "Track costs", gateKey: "expenses", path: "/instructor/expenses", tintBg: "#FEF3C7", tintColor: "#92400E" },
+      ],
+    },
+    {
+      title: "Business",
+      items: [
         { icon: Award, label: "Test Swap", description: "Request or swap a test", gateKey: "test-requests", path: "/instructor/test-requests", tintBg: "#FEF3C7", tintColor: "#92400E" },
       ],
     },
