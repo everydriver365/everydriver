@@ -1170,6 +1170,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                             statusPill={null}
                             showChevron={true}
                             struck={false}
+                            kind="block"
                             onClick={() => setExpandedEventId(isExpanded ? null : `block-${block.id}`)}
                           />
                           {isExpanded && (
