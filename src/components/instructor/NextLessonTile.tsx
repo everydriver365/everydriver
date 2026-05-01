@@ -22,6 +22,7 @@ interface NextLesson {
   pupil: {
     id: string;
     name: string;
+    phone: string | null;
     postcode: string;
     pickup_address: string | null;
     pickup_postcode: string | null;
