@@ -342,6 +342,8 @@ export default function PremiumPupilProfile() {
   const { data: stats } = usePupilLessonStats(pupilId);
   const { data: notes = [] } = usePupilNotes(pupilId);
   const { data: documents = [] } = usePupilDocuments(pupilId);
+  const { data: terms } = usePupilTermsStatus(pupilId);
+  const termsState = terms?.state ?? "required";
 
   const [editOpen, setEditOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
