@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -114,6 +115,7 @@ function smartScore(p: Pupil): number {
 }
 
 export function PupilSplitPane({ instructorId }: PupilSplitPaneProps) {
+  const navigate = useNavigate();
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -310,7 +312,7 @@ export function PupilSplitPane({ instructorId }: PupilSplitPaneProps) {
 
                   const handleClick = () => {
                     if (selectMode) toggleSelected(pupil.id);
-                    else setSelectedPupil(pupil);
+                    else navigate(`/instructor/pupils/${pupil.id}`);
                   };
 
                   return (

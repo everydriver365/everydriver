@@ -626,11 +626,7 @@ export function PupilCardStack({
 
   const handleCardClick = () => {
     haptics.selection();
-    if (isMobile) {
-      setIsExpanded(true);
-    } else {
-      setIsExpanded(!isExpanded);
-    }
+    navigate(`/instructor/pupils/${pupil.id}`);
   };
 
   // Calculate balance state from real-time account_balance
