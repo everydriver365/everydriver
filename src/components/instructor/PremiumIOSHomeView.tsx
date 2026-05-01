@@ -393,117 +393,162 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
             </div>
           ) : (
             <div className="pt-1">
-              {previewLessons.map((lesson, i) => {
-                const initials = (lesson.pupilName || "?")
-                  .split(" ")
-                  .map((n: string) => n[0])
-                  .join("")
-                  .slice(0, 2)
-                  .toUpperCase();
-                const isCompleted = lesson.status === "completed";
-                const isInProgress = lesson.status === "in_progress";
-                const owesAmount =
-                  !isCompleted &&
-                  lesson.paymentStatus !== "paid" &&
-                  typeof lesson.amountDue === "number" &&
-                  lesson.amountDue > 0
-                    ? lesson.amountDue
-                    : 0;
-                // For non-completed / non-live lessons, show "Owed £X" pill if
-                // payment is outstanding; otherwise show no pill (Upcoming removed).
-                const statusTone: "green" | "blue" | "red" | null = isCompleted
-                  ? "green"
-                  : isInProgress
-                  ? "blue"
-                  : owesAmount > 0
-                  ? "red"
-                  : null;
-                const statusLabel = isCompleted
-                  ? "Done"
-                  : isInProgress
-                  ? "Live"
-                  : owesAmount > 0
-                  ? `Owed £${owesAmount % 1 === 0 ? owesAmount.toFixed(0) : owesAmount.toFixed(2)}`
-                  : null;
-                const statusClasses =
-                  statusTone === "green"
-                    ? "bg-[#34C759]/12 text-[#1F8E3F]"
-                    : statusTone === "blue"
-                    ? "bg-[#007AFF]/12 text-[#007AFF]"
-                    : statusTone === "red"
-                    ? "bg-[#FF3B30]/12 text-[#FF3B30]"
-                    : "";
-                const accentColor =
-                  statusTone === "green"
-                    ? "#34C759"
-                    : statusTone === "blue"
-                    ? "#007AFF"
-                    : "#007AFF";
-                const durationLabel = lesson.durationMinutes
-                  ? `${lesson.durationMinutes >= 60 ? Math.floor(lesson.durationMinutes / 60) + "h " : ""}${lesson.durationMinutes % 60 ? (lesson.durationMinutes % 60) + "m" : ""}`.trim() || "--"
-                  : "--";
-                return (
-                  <div key={lesson.id || i}>
-                    <button
-                      onClick={() =>
-                        navigate(`/instructor/schedule?lessonId=${lesson.id}`)
-                      }
-                      className="w-full flex items-center gap-3 px-4 active:bg-black/[0.03] transition-colors text-left"
-                      style={{ height: 68 }}
-                    >
-                      <div
-                        className="w-[3px] h-12 rounded-full shrink-0"
-                        style={{ backgroundColor: accentColor }}
-                      />
-                      <div className="w-[54px] shrink-0">
-                        <div className="text-[18px] font-bold tracking-tight text-[#1C1C1E] tabular-nums leading-none">
-                          {lesson.startTime?.slice(0, 5) || "--:--"}
-                        </div>
-                        <div className="text-[12px] font-medium text-[#3C3C43]/55 mt-1 tabular-nums">
-                          {durationLabel}
-                        </div>
-                      </div>
-                      <div className="size-10 rounded-full bg-[#E5E5EA] text-[#3C3C43] flex items-center justify-center text-[13px] font-semibold shrink-0 overflow-hidden">
-                        {lesson.pupilProfileImageUrl ? (
-                          <img
-                            src={lesson.pupilProfileImageUrl}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          initials
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight truncate">
-                          {lesson.pupilName || "Pupil"}
-                        </div>
-                        <div className="flex items-center gap-1 mt-0.5 min-w-0">
-                          <MapPin className="size-[12px] text-[#3C3C43]/55 shrink-0" />
-                          <div className="text-[12.5px] text-[#3C3C43]/65 truncate">
-                            {[
-                              lesson.lessonType || "Lesson",
-                              lesson.pickupLocation || lesson.pickupPostcode,
-                            ]
-                              .filter(Boolean)
-                              .join(" · ")}
-                          </div>
-                        </div>
-                      </div>
-                      {statusLabel && (
-                        <span
-                          className={`text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${statusClasses}`}
-                        >
-                          {statusLabel}
-                        </span>
-                      )}
-                    </button>
-                    {i < previewLessons.length - 1 && (
-                      <div className="ml-[80px] mr-4 border-t border-black/[0.05]" />
-                    )}
+              {(() => {
+                const now = new Date();
+                const nowMin = now.getHours() * 60 + now.getMinutes();
+                const lessonMin = (l: any) => {
+                  const [h, m] = (l.startTime || "00:00").split(":").map(Number);
+                  return (h || 0) * 60 + (m || 0);
+                };
+                const lessonEndMin = (l: any) =>
+                  lessonMin(l) + (l.durationMinutes || 60);
+
+                // Find first upcoming index for the "Now" indicator
+                let nowInsertIndex = -1;
+                for (let i = 0; i < previewLessons.length; i++) {
+                  if (lessonMin(previewLessons[i]) >= nowMin) {
+                    nowInsertIndex = i;
+                    break;
+                  }
+                }
+                // Only show if current time falls within today's schedule window
+                const firstStart = previewLessons.length ? lessonMin(previewLessons[0]) : Infinity;
+                const lastEnd = previewLessons.length
+                  ? lessonEndMin(previewLessons[previewLessons.length - 1])
+                  : -Infinity;
+                const showNowMarker = nowMin >= firstStart && nowMin <= lastEnd;
+
+                const NowMarker = (
+                  <div className="flex items-center gap-2 px-4 py-1.5">
+                    <div className="size-1.5 rounded-full bg-[#FF3B30]" />
+                    <div className="flex-1 h-px bg-[#FF3B30]/40" />
+                    <span className="text-[10.5px] font-bold tracking-wide uppercase text-[#FF3B30] tabular-nums">
+                      Now {format(now, "HH:mm")}
+                    </span>
                   </div>
                 );
-              })}
+
+                return previewLessons.map((lesson, i) => {
+                  const initials = (lesson.pupilName || "?")
+                    .split(" ")
+                    .map((n: string) => n[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase();
+                  const isCompleted = lesson.status === "completed";
+                  const isInProgress = lesson.status === "in_progress";
+                  const isPast = !isCompleted && !isInProgress && lessonEndMin(lesson) < nowMin;
+                  const owesAmount =
+                    !isCompleted &&
+                    lesson.paymentStatus !== "paid" &&
+                    typeof lesson.amountDue === "number" &&
+                    lesson.amountDue > 0
+                      ? lesson.amountDue
+                      : 0;
+                  const statusTone: "green" | "blue" | "red" | null = isCompleted
+                    ? "green"
+                    : isInProgress
+                    ? "blue"
+                    : owesAmount > 0
+                    ? "red"
+                    : null;
+                  const statusLabel = isCompleted
+                    ? "Done"
+                    : isInProgress
+                    ? "Live"
+                    : owesAmount > 0
+                    ? `Owed £${owesAmount % 1 === 0 ? owesAmount.toFixed(0) : owesAmount.toFixed(2)}`
+                    : null;
+                  const statusClasses =
+                    statusTone === "green"
+                      ? "bg-[#34C759]/12 text-[#1F8E3F]"
+                      : statusTone === "blue"
+                      ? "bg-[#007AFF]/12 text-[#007AFF]"
+                      : statusTone === "red"
+                      ? "bg-[#FF3B30]/12 text-[#FF3B30]"
+                      : "";
+                  const accentColor =
+                    statusTone === "green"
+                      ? "#34C759"
+                      : statusTone === "blue"
+                      ? "#007AFF"
+                      : "#007AFF";
+                  const durationLabel = lesson.durationMinutes
+                    ? `${lesson.durationMinutes >= 60 ? Math.floor(lesson.durationMinutes / 60) + "h " : ""}${lesson.durationMinutes % 60 ? (lesson.durationMinutes % 60) + "m" : ""}`.trim() || "--"
+                    : "--";
+
+                  // Dim past, faintly emphasize live
+                  const rowOpacity = isPast || isCompleted ? "opacity-55" : "";
+                  const rowBg = isInProgress ? "bg-[#007AFF]/[0.04]" : "";
+
+                  return (
+                    <div key={lesson.id || i}>
+                      {showNowMarker && i === nowInsertIndex && NowMarker}
+                      <button
+                        onClick={() =>
+                          navigate(`/instructor/schedule?lessonId=${lesson.id}`)
+                        }
+                        className={`w-full flex items-center gap-3 px-4 active:bg-black/[0.03] transition-colors text-left ${rowBg} ${rowOpacity}`}
+                        style={{ height: 68 }}
+                      >
+                        <div
+                          className="w-[3px] h-12 rounded-full shrink-0"
+                          style={{ backgroundColor: accentColor }}
+                        />
+                        <div className="w-[54px] shrink-0">
+                          <div className="text-[18px] font-bold tracking-tight text-[#1C1C1E] tabular-nums leading-none">
+                            {lesson.startTime?.slice(0, 5) || "--:--"}
+                          </div>
+                          <div className="text-[12px] font-medium text-[#3C3C43]/55 mt-1 tabular-nums">
+                            {durationLabel}
+                          </div>
+                        </div>
+                        <div className="size-10 rounded-full bg-[#E5E5EA] text-[#3C3C43] flex items-center justify-center text-[13px] font-semibold shrink-0 overflow-hidden">
+                          {lesson.pupilProfileImageUrl ? (
+                            <img
+                              src={lesson.pupilProfileImageUrl}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            initials
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight truncate">
+                            {lesson.pupilName || "Pupil"}
+                          </div>
+                          <div className="flex items-center gap-1 mt-0.5 min-w-0">
+                            <MapPin className="size-[12px] text-[#3C3C43]/55 shrink-0" />
+                            <div className="text-[12.5px] text-[#3C3C43]/65 truncate">
+                              {[
+                                lesson.lessonType || "Lesson",
+                                lesson.pickupLocation || lesson.pickupPostcode,
+                              ]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </div>
+                          </div>
+                        </div>
+                        {statusLabel && (
+                          <span
+                            className={`text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${statusClasses}`}
+                          >
+                            {statusLabel}
+                          </span>
+                        )}
+                      </button>
+                      {i < previewLessons.length - 1 && (
+                        <div className="ml-[80px] mr-4 border-t border-black/[0.05]" />
+                      )}
+                      {showNowMarker &&
+                        nowInsertIndex === -1 &&
+                        i === previewLessons.length - 1 &&
+                        NowMarker}
+                    </div>
+                  );
+                });
+              })()}
             </div>
           )}
           <div className="px-4 pb-3 pt-2">
