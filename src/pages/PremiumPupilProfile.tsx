@@ -49,13 +49,13 @@ const TRANSITION = "all 180ms ease";
 /* ──────────────────────────── small atoms ──────────────────────────── */
 function SectionHeader({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
-    <div className="flex items-baseline justify-between px-1 mb-2 mt-5">
+    <div className="flex items-baseline justify-between px-1 mb-3 mt-2">
       <h2
         style={{
           fontFamily: FONT,
           fontSize: 13,
           fontWeight: 600,
-          letterSpacing: "0.6px",
+          letterSpacing: "0.5px",
           textTransform: "uppercase",
           color: C.muted,
         }}
@@ -67,18 +67,21 @@ function SectionHeader({ title, action }: { title: string; action?: React.ReactN
   );
 }
 
-function Card({ children, padding = 16, className = "" }: {
-  children: React.ReactNode; padding?: number; className?: string;
+function Card({ children, padding = 20, className = "", interactive = false }: {
+  children: React.ReactNode; padding?: number; className?: string; interactive?: boolean;
 }) {
   return (
     <div
       className={className}
+      onMouseEnter={interactive ? (e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = SHADOW_HOVER; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-1px)"; } : undefined}
+      onMouseLeave={interactive ? (e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = SHADOW_CARD; (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; } : undefined}
       style={{
         background: C.card,
-        borderRadius: 20,
+        borderRadius: RADIUS,
         padding,
-        boxShadow:
-          "0 1px 2px rgba(16,24,40,0.04), 0 6px 18px -10px rgba(16,24,40,0.08)",
+        border: `1px solid ${C.hairline}`,
+        boxShadow: SHADOW_CARD,
+        transition: TRANSITION,
       }}
     >
       {children}
@@ -91,18 +94,18 @@ function StatPill({ label, value, sub }: { label: string; value: string; sub?: s
     <div
       style={{
         background: C.card,
-        borderRadius: 16,
-        padding: "12px 12px",
-        boxShadow:
-          "0 1px 2px rgba(16,24,40,0.04), 0 6px 18px -10px rgba(16,24,40,0.08)",
+        borderRadius: 18,
+        padding: "14px 14px",
+        border: `1px solid ${C.hairline}`,
+        boxShadow: SHADOW_CARD,
         flex: 1,
         minWidth: 0,
       }}
     >
-      <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, fontWeight: 500, letterSpacing: "0.3px", textTransform: "uppercase" }}>
+      <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, fontWeight: 500, letterSpacing: "0.4px", textTransform: "uppercase" }}>
         {label}
       </div>
-      <div style={{ fontFamily: FONT, fontSize: 20, fontWeight: 700, color: C.text, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>
+      <div style={{ fontFamily: FONT, fontSize: 22, fontWeight: 700, color: C.text, marginTop: 6, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em" }}>
         {value}
       </div>
       {sub && (
@@ -122,34 +125,39 @@ function QuickAction({ icon: Icon, label, onClick, color = C.accent, disabled }:
       type="button"
       onClick={onClick}
       disabled={disabled}
+      onMouseDown={(e) => { if (!disabled) (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.96)"; }}
+      onMouseUp={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
       style={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: 6,
+        gap: 8,
         flex: 1,
         background: "transparent",
         border: "none",
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.4 : 1,
-        padding: 0,
+        padding: "4px 0",
+        transition: TRANSITION,
       }}
     >
       <div
         style={{
-          height: 44,
-          width: 44,
-          borderRadius: 22,
-          background: `${color}15`,
+          height: 52,
+          width: 52,
+          borderRadius: 26,
+          background: `${color}14`,
           color,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          transition: TRANSITION,
         }}
       >
-        <Icon size={20} />
+        <Icon size={22} />
       </div>
-      <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 500, color: C.text }}>
+      <span style={{ fontFamily: FONT, fontSize: 12, fontWeight: 500, color: C.text }}>
         {label}
       </span>
     </button>
@@ -169,8 +177,8 @@ function StatusDot({ status }: { status: string }) {
     <div
       style={{
         display: "inline-flex", alignItems: "center", gap: 6,
-        padding: "4px 10px", borderRadius: 999,
-        background: `${info.color}15`, color: info.color,
+        padding: "5px 11px", borderRadius: 999,
+        background: `${info.color}14`, color: info.color,
         fontFamily: FONT, fontSize: 12, fontWeight: 600,
       }}
     >
@@ -182,7 +190,7 @@ function StatusDot({ status }: { status: string }) {
 
 function Empty({ text }: { text: string }) {
   return (
-    <div style={{ fontFamily: FONT, fontSize: 13, color: C.subtle, textAlign: "center", padding: "16px 8px" }}>
+    <div style={{ fontFamily: FONT, fontSize: 14, color: C.subtle, textAlign: "center", padding: "20px 8px" }}>
       {text}
     </div>
   );
@@ -191,13 +199,13 @@ function Empty({ text }: { text: string }) {
 function Row({ icon: Icon, label, value }: { icon: any; label: string; value?: React.ReactNode }) {
   if (!value) return null;
   return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0" }}>
-      <div style={{ width: 28, height: 28, borderRadius: 14, background: C.surface, display: "flex", alignItems: "center", justifyContent: "center", color: C.muted, flexShrink: 0 }}>
-        <Icon size={14} />
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 0" }}>
+      <div style={{ width: 32, height: 32, borderRadius: 16, background: C.surface, display: "flex", alignItems: "center", justifyContent: "center", color: C.muted, flexShrink: 0 }}>
+        <Icon size={15} />
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.3px" }}>{label}</div>
-        <div style={{ fontFamily: FONT, fontSize: 14, color: C.text, fontWeight: 500, wordBreak: "break-word" }}>{value}</div>
+        <div style={{ fontFamily: FONT, fontSize: 11, color: C.muted, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.4px" }}>{label}</div>
+        <div style={{ fontFamily: FONT, fontSize: 15, color: C.text, fontWeight: 500, wordBreak: "break-word", marginTop: 2 }}>{value}</div>
       </div>
     </div>
   );
