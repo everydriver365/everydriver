@@ -220,8 +220,14 @@ export function HomeToolsHub() {
       });
       return;
     }
+    if (trimmed) persistRecent(query);
     navigate(tile.route);
   };
+
+  const suggestedTools = useMemo(
+    () => QUICK_ACCESS_TILES.slice(0, 6),
+    [],
+  );
 
   const frequentlyUsed = useMemo(
     () => pinnedIds.map((id) => QUICK_ACCESS_TILES_BY_ID[id]).filter(Boolean).slice(0, 6) as QuickAccessTile[],
