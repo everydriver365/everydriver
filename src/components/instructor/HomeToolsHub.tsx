@@ -95,6 +95,41 @@ function LargeToolCard({ tile, onPress, locked }: { tile: QuickAccessTile; onPre
   );
 }
 
+function PrimaryToolCard({ tile, onPress, locked }: { tile: QuickAccessTile; onPress: () => void; locked?: boolean }) {
+  const palette = TILE_TONE[tile.tone];
+  const Icon = tile.icon;
+  return (
+    <motion.button
+      type="button"
+      whileTap={{ scale: 0.97 }}
+      onClick={onPress}
+      aria-label={tile.title}
+      style={{
+        background: "#FFFFFF", borderRadius: 22, padding: "18px 16px",
+        height: 130, display: "flex", flexDirection: "column",
+        alignItems: "flex-start", justifyContent: "space-between",
+        textAlign: "left", width: "100%", cursor: "pointer",
+        opacity: locked ? 0.55 : 1, border: 0,
+        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 8px 24px -10px rgba(16,24,40,0.10)",
+      }}
+    >
+      <div style={{ width: 44, height: 44, borderRadius: 13, background: palette.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Icon size={22} strokeWidth={1.8} color={palette.fg} />
+      </div>
+      <div style={{ width: "100%" }}>
+        <div style={{ fontSize: 15, fontWeight: 600, color: "#000", letterSpacing: "-0.2px", lineHeight: 1.2 }}>
+          {tile.title}
+        </div>
+        {tile.subtitle && (
+          <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 3, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical" }}>
+            {tile.subtitle}
+          </div>
+        )}
+      </div>
+    </motion.button>
+  );
+}
+
 function CategoryRow({ category, count, expanded, onPress }: { category: Category; count: number; expanded: boolean; onPress: () => void }) {
   const palette = TILE_TONE[category.tone];
   const Icon = category.icon;
