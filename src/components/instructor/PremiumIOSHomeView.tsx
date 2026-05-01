@@ -24,6 +24,7 @@ import { HomeToolsHub } from "@/components/instructor/HomeToolsHub";
 import { NextUpTile } from "@/components/instructor/NextUpTile";
 
 import { useTodayOverview } from "@/hooks/useTodayOverview";
+import { useInstructorProfile } from "@/hooks/useInstructorProfile";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
@@ -94,6 +95,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
   const { messageCount, pendingJobsCount } = useCombinedNotificationCount(instructorId);
   const homeActions = useHomeActions(instructorId);
   const { data: nextLesson } = useNextLessonDetails(instructorId);
+  const { data: instructorProfile } = useInstructorProfile(instructorId);
 
   const [suggestionDismissed, setSuggestionDismissed] = useState(false);
 
@@ -505,39 +507,59 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
       <HomeToolsHub />
 
 
-      {/* 5. Smart suggestion — green tinted card with green CTA */}
-      {firstGap && !suggestionDismissed && gapMins > 0 && (
-        <section className="mt-5">
-          <div className="rounded-[20px] px-5 py-4 relative overflow-hidden bg-[#E9F8EE] border border-[#34C759]/20">
-            <button
-              onClick={() => setSuggestionDismissed(true)}
-              className="absolute top-3 right-3 size-7 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-              aria-label="Dismiss"
-            >
-              <X className="size-[16px] text-[#3C3C43]/55" />
-            </button>
-            <div className="flex items-center gap-3 pr-7">
-              <div className="size-11 rounded-[12px] bg-white flex items-center justify-center shrink-0 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-                <CalendarIcon className="size-[20px] text-[#1F8E3F]" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[15.5px] font-semibold tracking-tight text-[#1C1C1E] leading-snug">
-                  You have a {gapMins} min gap at {firstGap.startTime.slice(0, 5)}
-                </h3>
-                <p className="text-[13px] text-[#3C3C43]/70 mt-0.5 leading-snug">
-                  Fill it with a new lesson and boost your earnings.
-                </p>
+      {/* 5. Gap filler — subtle white card with light green tint + green accent */}
+      {firstGap && !suggestionDismissed && gapMins > 0 && (() => {
+        const startLabel = firstGap.startTime.slice(0, 5);
+        const endLabel = firstGap.endTime.slice(0, 5);
+        const hourly = instructorProfile?.hourly_rate ?? 0;
+        const potential = hourly > 0 ? Math.round((gapMins / 60) * hourly) : 0;
+        return (
+          <section className="mt-5">
+            <div className="rounded-[22px] p-5 relative overflow-hidden bg-gradient-to-br from-[#F1FBF4] to-white border border-[#34C759]/15 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_28px_-12px_rgba(16,24,40,0.06)]">
+              <button
+                onClick={() => setSuggestionDismissed(true)}
+                className="absolute top-3 right-3 size-7 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+                aria-label="Dismiss"
+              >
+                <X className="size-[16px] text-[#3C3C43]/55" />
+              </button>
+              <div className="flex items-start gap-3 pr-7">
+                <div className="size-10 rounded-[12px] bg-[#E6F8EC] flex items-center justify-center shrink-0">
+                  <CalendarIcon className="size-[18px] text-[#1F8E3F]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[11px] font-semibold tracking-wide uppercase text-[#1F8E3F]">
+                    Gap opportunity
+                  </div>
+                  <h3 className="mt-0.5 text-[15.5px] font-semibold tracking-tight text-[#1C1C1E] leading-snug">
+                    You have a {gapMins} min gap at {startLabel}
+                  </h3>
+                  <div className="mt-1 flex items-center gap-2 flex-wrap">
+                    <span className="inline-flex items-center gap-1 text-[12.5px] font-medium text-[#3C3C43]/70">
+                      <Clock className="size-[12px]" />
+                      {startLabel} → {endLabel}
+                    </span>
+                    {potential > 0 && (
+                      <>
+                        <span className="text-[#3C3C43]/30">·</span>
+                        <span className="text-[12.5px] font-semibold text-[#1F8E3F]">
+                          +£{potential} potential
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
               <button
                 onClick={() => navigate("/instructor/schedule?view=gaps")}
-                className="shrink-0 px-4 py-2.5 rounded-[12px] bg-[#1F8E3F] text-white text-[13.5px] font-semibold active:opacity-85 transition-opacity shadow-[0_1px_2px_rgba(16,24,40,0.08)]"
+                className="mt-4 w-full h-11 rounded-[12px] bg-[#1F8E3F] text-white text-[14px] font-semibold active:opacity-85 transition-opacity shadow-[0_1px_2px_rgba(16,24,40,0.08)]"
               >
-                Add lesson
+                Fill slot
               </button>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        );
+      })()}
 
     </div>
   );
