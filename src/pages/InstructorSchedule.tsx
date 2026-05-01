@@ -156,21 +156,79 @@ export default function InstructorSchedule() {
     <InstructorPortalLayout>
       <div
         className="h-full flex flex-col"
-        style={{ backgroundColor: viewMode === 'list' && isMobile ? "#F2F2F4" : "transparent", margin: "-16px -16px 0", padding: viewMode === 'list' && isMobile ? "0" : "0 20px" }}
+        style={{ backgroundColor: viewMode === 'list' && isMobile ? "#F7F7F8" : "transparent", margin: "-16px -16px 0", padding: viewMode === 'list' && isMobile ? "0" : "0 20px" }}
       >
         {/* Header */}
         <div
-          className="flex items-center justify-between gap-2 sticky top-0 z-20 pt-3 pb-2"
-          style={{ backgroundColor: viewMode === 'list' && isMobile ? "#F2F2F4" : "transparent", position: "relative", padding: viewMode === 'list' && isMobile ? "12px 20px 8px" : undefined }}
+          className="sticky top-0 z-20"
+          style={{ backgroundColor: viewMode === 'list' && isMobile ? "#F7F7F8" : "transparent", position: "relative", padding: isMobile ? "16px 20px 10px" : "12px 0 8px" }}
         >
           {isMobile ? (
             <>
-              {/* Mobile toggle: Calendar / Schedule */}
+              {/* Top row: Month title + subtitle, avatar right */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                <div style={{ minWidth: 0 }}>
+                  <h1 style={{
+                    margin: 0,
+                    fontSize: 26,
+                    fontWeight: 700,
+                    color: "#000000",
+                    letterSpacing: "-0.5px",
+                    lineHeight: 1.1,
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif',
+                  }}>
+                    {new Date().toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
+                  </h1>
+                  <div style={{
+                    marginTop: 4,
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: "#6E6E73",
+                    letterSpacing: "-0.1px",
+                  }}>
+                    {new Date().toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })} · Today
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                  <button
+                    onClick={handleSync}
+                    disabled={isSyncing}
+                    style={{
+                      width: 38, height: 38, display: "flex",
+                      alignItems: "center", justifyContent: "center",
+                      borderRadius: "50%", border: "none",
+                      background: "transparent", cursor: "pointer",
+                      color: "#6E6E73",
+                    }}
+                    aria-label="Sync calendar"
+                  >
+                    <RefreshCw style={{ width: 18, height: 18, ...(isSyncing ? { animation: "spin 1s linear infinite" } : {}) }} />
+                  </button>
+                  <button
+                    onClick={() => navigate("/instructor/profile")}
+                    className="flex items-center justify-center rounded-full overflow-hidden bg-[hsl(var(--dsm-tile-icon-bg))] border border-[hsl(var(--dsm-border))]"
+                    style={{ width: 36, height: 36 }}
+                    aria-label="Profile"
+                  >
+                    {instructor?.profile_image_url ? (
+                      <img src={instructor.profile_image_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "#1C1C1E" }}>
+                        {(instructor?.name || "I").charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* iOS-style segmented pill: Calendar / Schedule */}
               <div
                 style={{
-                  display: "flex",
-                  backgroundColor: "#FFFFFF",
-                  border: "0.5px solid #E5E5EA",
+                  marginTop: 14,
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 4,
+                  backgroundColor: "rgba(118,118,128,0.12)",
                   padding: 3,
                   borderRadius: 10,
                 }}
@@ -180,14 +238,17 @@ export default function InstructorSchedule() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 4,
-                    padding: "5px 10px",
+                    justifyContent: "center",
+                    gap: 6,
+                    padding: "7px 0",
                     borderRadius: 8,
                     fontSize: 13,
-                    fontWeight: 500,
-                    transition: "all 0.2s",
+                    fontWeight: viewMode === 'month' ? 600 : 500,
+                    border: "none",
+                    transition: "all 0.18s ease",
+                    cursor: "pointer",
                     ...(viewMode === 'month'
-                      ? { backgroundColor: "#F2F2F4", color: "#000000" }
+                      ? { backgroundColor: "#FFFFFF", color: "#000000", boxShadow: "0 1px 2px rgba(0,0,0,0.06), 0 3px 8px rgba(0,0,0,0.04)" }
                       : { backgroundColor: "transparent", color: "#6E6E73" }),
                   }}
                 >
@@ -199,61 +260,22 @@ export default function InstructorSchedule() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 4,
-                    padding: "5px 10px",
+                    justifyContent: "center",
+                    gap: 6,
+                    padding: "7px 0",
                     borderRadius: 8,
                     fontSize: 13,
-                    fontWeight: 500,
-                    transition: "all 0.2s",
+                    fontWeight: viewMode === 'list' ? 600 : 500,
+                    border: "none",
+                    transition: "all 0.18s ease",
+                    cursor: "pointer",
                     ...(viewMode === 'list'
-                      ? { backgroundColor: "#F2F2F4", color: "#000000" }
+                      ? { backgroundColor: "#FFFFFF", color: "#000000", boxShadow: "0 1px 2px rgba(0,0,0,0.06), 0 3px 8px rgba(0,0,0,0.04)" }
                       : { backgroundColor: "transparent", color: "#6E6E73" }),
                   }}
                 >
                   <List style={{ width: 14, height: 14 }} />
                   Schedule
-                </button>
-              </div>
-
-              {/* Center: SCHEDULE label + month */}
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 11, fontWeight: 500, color: "#6E6E73", textTransform: "uppercase", letterSpacing: "0.3px" }}>
-                  Schedule
-                </div>
-                <div style={{ fontSize: 18, fontWeight: 500, color: "#000000", letterSpacing: "-0.3px" }}>
-                  {new Date().toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
-                </div>
-              </div>
-
-              {/* Sync + avatar */}
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <button
-                  onClick={handleSync}
-                  disabled={isSyncing}
-                  style={{
-                    width: 38, height: 38, display: "flex",
-                    alignItems: "center", justifyContent: "center",
-                    borderRadius: "50%", border: "none",
-                    background: "transparent", cursor: "pointer",
-                    color: "#6E6E73",
-                  }}
-                  aria-label="Sync calendar"
-                >
-                  <RefreshCw style={{ width: 18, height: 18, ...(isSyncing ? { animation: "spin 1s linear infinite" } : {}) }} />
-                </button>
-                <button
-                  onClick={() => navigate("/instructor/profile")}
-                  className="flex items-center justify-center rounded-full overflow-hidden bg-[hsl(var(--dsm-tile-icon-bg))] border border-[hsl(var(--dsm-border))]"
-                  style={{ width: 32, height: 32 }}
-                  aria-label="Profile"
-                >
-                  {instructor?.profile_image_url ? (
-                    <img src={instructor.profile_image_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <span style={{ fontSize: 12, fontWeight: 600, color: "#1C1C1E" }}>
-                      {(instructor?.name || "I").charAt(0).toUpperCase()}
-                    </span>
-                  )}
                 </button>
               </div>
             </>
