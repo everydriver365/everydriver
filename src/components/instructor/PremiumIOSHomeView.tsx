@@ -655,8 +655,14 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                   <CalendarIcon className="size-[18px] text-[#1F8E3F]" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[11px] font-semibold tracking-wide uppercase text-[#1F8E3F]">
-                    Gap opportunity
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <div className="text-[11px] font-semibold tracking-wide uppercase text-[#1F8E3F]">
+                      Gap opportunity
+                    </div>
+                    <span className="inline-flex items-center gap-1 px-1.5 py-[2px] rounded-full bg-white text-[#1F8E3F] text-[10px] font-bold tracking-wide uppercase border border-[#34C759]/25">
+                      <Sparkles className="size-[10px]" />
+                      Best match
+                    </span>
                   </div>
                   <h3 className="mt-0.5 text-[15.5px] font-semibold tracking-tight text-[#1C1C1E] leading-snug">
                     You have a {gapMins} min gap at {startLabel}
