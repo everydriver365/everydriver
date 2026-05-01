@@ -180,23 +180,32 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
   /* ---------------- Render ----------------------------------------------- */
   return (
     <div className="min-h-screen bg-[#F2F2F7] pb-32">
-      {/* 1. Header — compact, balanced */}
-      <header className="px-6 pt-6 pb-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-[28px] leading-[1.15] font-bold tracking-tight text-[#1C1C1E] truncate">
-              {greeting}
-            </h1>
-            <p className="mt-1 text-[14px] text-[#3C3C43]/65 font-medium">
-              {subParts.join(" · ")}
-            </p>
-          </div>
+      {/* 1. Header — greeting + date pill (DSM logo & bell live in MobileBlueHeader above) */}
+      <header className="px-6 pt-5 pb-5">
+        <h1 className="text-[32px] leading-[1.1] font-bold tracking-tight text-[#1C1C1E]">
+          {greeting}
+        </h1>
+        <div className="mt-2 flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-[15px] font-medium text-[#3C3C43]/65">
+            <span>{lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today</span>
+            {waitingCount > 0 && (
+              <>
+                <span className="mx-1.5 text-[#3C3C43]/40">·</span>
+                <span className="text-[#FF3B30] font-semibold">
+                  {waitingCount} thing{waitingCount === 1 ? "" : "s"} waiting
+                </span>
+              </>
+            )}
+          </p>
           <button
-            onClick={() => navigate("/instructor/notifications")}
-            className="size-10 rounded-full bg-white flex items-center justify-center active:scale-95 transition-transform shadow-[0_1px_2px_rgba(0,0,0,0.04)] shrink-0"
-            aria-label="Notifications"
+            onClick={() => navigate("/instructor/schedule")}
+            className="flex items-center gap-2 pl-3 pr-3 py-2 rounded-full bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)] active:scale-[0.97] transition-transform shrink-0"
           >
-            <Bell className="size-[18px] text-[#1C1C1E]" />
+            <CalendarIcon className="size-[15px] text-[#3C3C43]/70" />
+            <span className="text-[14px] font-semibold text-[#1C1C1E]">
+              {format(new Date(), "EEE, d MMM yyyy")}
+            </span>
+            <ChevronDown className="size-[14px] text-[#3C3C43]/55" />
           </button>
         </div>
       </header>
