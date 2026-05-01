@@ -187,6 +187,26 @@ export function HomeToolsHub() {
   const features = subscription?.features || [];
   const [query, setQuery] = useState("");
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem("instructor.toolsRecentSearches");
+      return raw ? (JSON.parse(raw) as string[]).slice(0, 5) : [];
+    } catch {
+      return [];
+    }
+  });
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const persistRecent = (term: string) => {
+    const t = term.trim();
+    if (!t) return;
+    setRecentSearches((prev) => {
+      const next = [t, ...prev.filter((x) => x.toLowerCase() !== t.toLowerCase())].slice(0, 5);
+      try { localStorage.setItem("instructor.toolsRecentSearches", JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
 
   const { pinnedIds } = useInstructorPinnedTiles(instructor?.id);
 
