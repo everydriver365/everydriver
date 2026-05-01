@@ -604,16 +604,44 @@ export default function InstructorPupils() {
         <SearchInput
           value={searchQuery}
           onChange={setSearchQuery}
-          placeholder="Search pupils"
+          placeholder="Search name, phone, location, notes"
         />
 
-        {/* Filter */}
-        <SegmentedControl
-          value={activeTab}
-          options={segmentOptions}
-          onChange={(v) => setActiveTab(v as any)}
-          ariaLabel="Filter pupils"
-        />
+        {/* Filter pills — horizontally scrollable */}
+        <div
+          role="tablist"
+          aria-label="Filter pupils"
+          className="flex gap-2 overflow-x-auto scrollbar-none -mx-1 px-1"
+          style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+        >
+          {segmentOptions.map((opt) => {
+            const active = opt.value === activeTab;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setActiveTab(opt.value as any)}
+                className="shrink-0 transition-all"
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: 999,
+                  fontSize: 13,
+                  fontWeight: active ? 600 : 500,
+                  color: active ? "#FFFFFF" : "#3C3C43",
+                  background: active ? "#2B7BC8" : "#F2F2F4",
+                  border: "none",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+                }}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
 
         {/* Pupils List */}
         {displayedPupils.length === 0 ? (
