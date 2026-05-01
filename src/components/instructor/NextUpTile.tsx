@@ -43,7 +43,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Construction, Ban, Smartphone } from "lucide-react";
+import { Construction, Ban, Smartphone, CloudRain, Eye } from "lucide-react";
+import { SmartPromptsStrip, type SmartPrompt } from "./SmartPromptsStrip";
 
 const TRACKER_DISMISSED_KEY = "tracker_reminder_dismissed";
 const TRACKER_DATE_KEY = "tracker_reminder_date";
