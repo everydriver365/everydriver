@@ -534,37 +534,40 @@ export function NextUpTile({
             className="overflow-hidden"
             style={{ marginLeft: -16, marginRight: -16, marginBottom: -16 }}
           >
-          <div style={{ padding: "18px 20px 4px", display: "flex", flexDirection: "column", gap: 18, borderTop: "0.5px solid #F2F2F7" }}>
+          <div style={{ padding: "20px 16px 20px", display: "flex", flexDirection: "column", gap: 24, borderTop: "0.5px solid #E5E5EA", background: "#F2F2F7" }}>
 
-          {/* ── HERO: time as the headline ── */}
-          <div>
+          {/* ── HERO + PRIMARY ACTIONS card (elevated) ── */}
+          <div style={{
+            background: "#FFFFFF", borderRadius: 18, padding: 18,
+            boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+            display: "flex", flexDirection: "column", gap: 16,
+          }}>
             {/* Pupil + lesson type */}
-            <div style={{ fontSize: a11yPx(15), fontWeight: 600, color: "#000000", letterSpacing: -0.2, lineHeight: 1.2 }}>
-              {toSentenceName(pupilName)}
-            </div>
-            <div style={{ fontSize: a11yPx(12), color: "#8A8A8E", marginTop: 2 }}>
-              {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
+            <div>
+              <div style={{ fontSize: a11yPx(15), fontWeight: 600, color: "#000000", letterSpacing: -0.2, lineHeight: 1.2 }}>
+                {toSentenceName(pupilName)}
+              </div>
+              <div style={{ fontSize: a11yPx(12), color: "#8A8A8E", marginTop: 2 }}>
+                {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
+              </div>
             </div>
 
             {/* Time hero */}
-            <div style={{
-              marginTop: 14,
-              fontSize: a11yPx(48),
-              fontWeight: 700,
-              letterSpacing: -1.4,
-              color: "#000000",
-              lineHeight: 1,
-              fontVariantNumeric: "tabular-nums",
-            }}>
-              {formatTime24(startTime)}
-            </div>
-            <div style={{ fontSize: a11yPx(13), color: "#8A8A8E", marginTop: 6 }}>
-              {getDateLabel()} · starts in {getCountdownText()}
+            <div>
+              <div style={{
+                fontSize: a11yPx(48), fontWeight: 700, letterSpacing: -1.4,
+                color: "#000000", lineHeight: 1, fontVariantNumeric: "tabular-nums",
+              }}>
+                {formatTime24(startTime)}
+              </div>
+              <div style={{ fontSize: a11yPx(13), color: "#8A8A8E", marginTop: 6 }}>
+                {getDateLabel()} · starts in {getCountdownText()}
+              </div>
             </div>
 
             {/* Single-line location */}
             {(pickupLocation || pickupPostcode) && (
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 14, color: "#3C3C43", minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#3C3C43", minWidth: 0 }}>
                 <MapPin style={{ width: 13, height: 13, flexShrink: 0, color: "#8A8A8E" }} strokeWidth={2} />
                 <span style={{ fontSize: a11yPx(13), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {formattedPickupAddress || pickupPostcode || pickupLocation}
@@ -573,7 +576,7 @@ export function NextUpTile({
             )}
 
             {/* Starts-in pill */}
-            <div style={{ marginTop: 12 }}>
+            <div>
               <span style={{
                 display: "inline-flex", alignItems: "center", gap: 5,
                 padding: "5px 11px", borderRadius: 999,
@@ -586,52 +589,52 @@ export function NextUpTile({
                 {minutesUntil <= 0 ? "Starting now" : `Starts in ${getCountdownText()}`}
               </span>
             </div>
-          </div>
 
-          {/* ── PRIMARY ACTIONS: Navigate (primary) + Call / Message (icon) ── */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button
-              onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
-              className="active:opacity-90"
-              style={{
-                flex: 1, height: 48, borderRadius: 14,
-                background: "#007AFF", color: "#FFFFFF",
-                border: "none", cursor: "pointer",
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                fontSize: a11yPx(15), fontWeight: 600, letterSpacing: -0.1,
-                transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-              }}
-              aria-label="Navigate"
-            >
-              <Navigation style={{ width: 17, height: 17 }} strokeWidth={2.2} />
-              Navigate
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); handleCall(); }}
-              className="active:opacity-80"
-              style={{
-                width: 48, height: 48, borderRadius: 14,
-                background: "rgba(120,120,128,0.10)", color: "#1C1C1E",
-                border: "none", cursor: "pointer",
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-              }}
-              aria-label="Call pupil"
-            >
-              <Phone style={{ width: 18, height: 18 }} strokeWidth={2.1} />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); handleMessage(); }}
-              className="active:opacity-80"
-              style={{
-                width: 48, height: 48, borderRadius: 14,
-                background: "rgba(120,120,128,0.10)", color: "#1C1C1E",
-                border: "none", cursor: "pointer",
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-              }}
-              aria-label="Message pupil"
-            >
-              <MessageSquare style={{ width: 18, height: 18 }} strokeWidth={2.1} />
-            </button>
+            {/* Primary actions: Navigate + Call/Message — integrated, not floating */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
+                className="active:opacity-90"
+                style={{
+                  flex: 1, height: 48, borderRadius: 14,
+                  background: "#007AFF", color: "#FFFFFF",
+                  border: "none", cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  fontSize: a11yPx(15), fontWeight: 600, letterSpacing: -0.1,
+                  transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+                }}
+                aria-label="Navigate"
+              >
+                <Navigation style={{ width: 17, height: 17 }} strokeWidth={2.2} />
+                Navigate
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleCall(); }}
+                className="active:opacity-80"
+                style={{
+                  width: 48, height: 48, borderRadius: 14,
+                  background: "rgba(120,120,128,0.10)", color: "#1C1C1E",
+                  border: "none", cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                }}
+                aria-label="Call pupil"
+              >
+                <Phone style={{ width: 18, height: 18 }} strokeWidth={2.1} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleMessage(); }}
+                className="active:opacity-80"
+                style={{
+                  width: 48, height: 48, borderRadius: 14,
+                  background: "rgba(120,120,128,0.10)", color: "#1C1C1E",
+                  border: "none", cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                }}
+                aria-label="Message pupil"
+              >
+                <MessageSquare style={{ width: 18, height: 18 }} strokeWidth={2.1} />
+              </button>
+            </div>
           </div>
 
           {/* ── MAP PREVIEW (only when within 4h) ── */}
@@ -712,51 +715,55 @@ export function NextUpTile({
             </div>
           )}
 
-          {/* ── SECTION 1 — Lesson details ── */}
-                <div style={{
-                  fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73",
-                  letterSpacing: 0.3, textTransform: "uppercase", margin: "0 0 8px",
+          {/* ── SECTION 1 — Lesson details (elevated card) ── */}
+          <div>
+            <div style={{
+              fontSize: a11yPx(11), fontWeight: 600, color: "#6E6E73",
+              letterSpacing: 0.4, textTransform: "uppercase", margin: "0 4px 10px",
+            }}>
+              Lesson details
+            </div>
+            <div style={{
+              background: "#FFFFFF", borderRadius: 16, padding: 4,
+              boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+              display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            }}>
+              {[
+                { icon: Clock, label: "Duration", value: formatDuration() },
+                { icon: PoundSterling, label: "Lesson fee", value: `£${expectedEarnings.toFixed(0)}` },
+              ].map((stat, i) => (
+                <div key={stat.label} style={{
+                  padding: 14,
+                  borderLeft: i === 1 ? "0.5px solid #E5E5EA" : "none",
                 }}>
-                  Lesson details
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                    <stat.icon style={{ width: 12, height: 12, color: "#6E6E73" }} strokeWidth={2} />
+                    <span style={{
+                      fontSize: a11yPx(10), color: "#6E6E73", letterSpacing: 0.2,
+                    }}>{stat.label}</span>
+                  </div>
+                  <div style={{
+                    fontSize: a11yPx(18), fontWeight: 600, color: "#000000",
+                    letterSpacing: -0.3, margin: 0,
+                  }}>{stat.value}</div>
                 </div>
-                <div style={{
-                  display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                  gap: 8, marginBottom: 18,
-                }}>
-                  {[
-                    { icon: Clock, label: "Duration", value: formatDuration() },
-                    { icon: PoundSterling, label: "Lesson fee", value: `£${expectedEarnings.toFixed(0)}` },
-                  ].map((stat) => (
-                    <div key={stat.label} style={{
-                      background: "#F8FAFB", border: "0.5px solid #E5E5EA",
-                      borderRadius: 10, padding: 12,
-                    }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                        <stat.icon style={{ width: 12, height: 12, color: "#6E6E73" }} strokeWidth={2} />
-                        <span style={{
-                          fontSize: a11yPx(10), color: "#6E6E73", letterSpacing: 0.2,
-                        }}>{stat.label}</span>
-                      </div>
-                      <div style={{
-                        fontSize: a11yPx(18), fontWeight: 500, color: "#000000",
-                        letterSpacing: -0.3, margin: 0,
-                      }}>{stat.value}</div>
-                    </div>
-                  ))}
-                </div>
+              ))}
+            </div>
+          </div>
 
-                {/* ── SECTION 2 — Conditions ── */}
+                {/* ── SECTION 2 — Conditions (elevated card) ── */}
                 {(etaMinutes > 0 || currentWeather || primaryDevice) && (
-                  <>
+                  <div>
                     <div style={{
-                      fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73",
-                      letterSpacing: 0.3, textTransform: "uppercase", margin: "0 0 8px",
+                      fontSize: a11yPx(11), fontWeight: 600, color: "#6E6E73",
+                      letterSpacing: 0.4, textTransform: "uppercase", margin: "0 4px 10px",
                     }}>
                       Conditions
                     </div>
                     <div style={{
-                      background: "#FFFFFF", border: "0.5px solid #E5E5EA",
-                      borderRadius: 10, marginBottom: 18, overflow: "hidden",
+                      background: "#FFFFFF", borderRadius: 16,
+                      boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                      overflow: "hidden",
                     }}>
                       {/* Drive row — derives severity from HERE traffic + late detection,
                           NOT the unrelated drivingAlerts feed. */}
@@ -914,313 +921,332 @@ export function NextUpTile({
                         );
                       })()}
                     </div>
-                  </>
+                  </div>
                 )}
 
-                {/* ── SECTION 2.5 — Last lesson (read-only summary) ── */}
-                <div style={{
-                  fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73",
-                  letterSpacing: 0.3, textTransform: "uppercase", margin: "0 0 8px",
-                }}>
-                  Last lesson
-                </div>
-                <div style={{
-                  background: "#FFFFFF", border: "0.5px solid #E5E5EA",
-                  borderRadius: 12, padding: 14, marginBottom: 18,
-                }}>
-                  {lastLesson ? (
-                    (() => {
-                      const dateStr = (() => {
-                        try {
-                          const d = parseISO(lastLesson.lesson_date as string);
-                          const rel = formatDistanceToNowStrict(d, { addSuffix: true });
-                          return `${rel} · ${format(d, "EEE d MMM")}`;
-                        } catch { return String(lastLesson.lesson_date); }
-                      })();
-                      const skills: string[] = Array.isArray((lastLesson as any).skills_practiced)
-                        ? (lastLesson as any).skills_practiced.filter(Boolean)
-                        : [];
-                      const note: string | null = (lastLesson as any).notes || null;
-                      const rating: number | null = (lastLesson as any).rating || null;
-                      return (
-                        <>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                            <div style={{
-                              width: 32, height: 32, borderRadius: 8, background: "#F1ECFA",
-                              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                            }}>
-                              <BookOpen style={{ width: 16, height: 16, color: "#8A5BC9" }} strokeWidth={2} />
-                            </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000" }}>
-                                {dateStr}
+                {/* ── SECTION A — Lesson context (grouped: Last lesson + CTA + payment + unread) ── */}
+                <div>
+                  <div style={{
+                    fontSize: a11yPx(11), fontWeight: 600, color: "#6E6E73",
+                    letterSpacing: 0.4, textTransform: "uppercase", margin: "0 4px 10px",
+                  }}>
+                    Lesson
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    {/* Last lesson card (elevated) */}
+                    <div style={{
+                      background: "#FFFFFF", borderRadius: 16, padding: 16,
+                      boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                    }}>
+                      {lastLesson ? (
+                        (() => {
+                          const dateStr = (() => {
+                            try {
+                              const d = parseISO(lastLesson.lesson_date as string);
+                              const rel = formatDistanceToNowStrict(d, { addSuffix: true });
+                              return `${rel} · ${format(d, "EEE d MMM")}`;
+                            } catch { return String(lastLesson.lesson_date); }
+                          })();
+                          const skills: string[] = Array.isArray((lastLesson as any).skills_practiced)
+                            ? (lastLesson as any).skills_practiced.filter(Boolean)
+                            : [];
+                          const note: string | null = (lastLesson as any).notes || null;
+                          const rating: number | null = (lastLesson as any).rating || null;
+                          return (
+                            <>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                                <div style={{
+                                  width: 32, height: 32, borderRadius: 8, background: "#F1ECFA",
+                                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                                }}>
+                                  <BookOpen style={{ width: 16, height: 16, color: "#8A5BC9" }} strokeWidth={2} />
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73", letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 1 }}>
+                                    Last lesson
+                                  </div>
+                                  <div style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000" }}>
+                                    {dateStr}
+                                  </div>
+                                  {rating != null && rating > 0 && (
+                                    <div style={{ fontSize: a11yPx(11), color: "#6E6E73", marginTop: 1 }}>
+                                      Rating: {"★".repeat(rating)}{"☆".repeat(Math.max(0, 5 - rating))}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                              {rating != null && rating > 0 && (
-                                <div style={{ fontSize: a11yPx(11), color: "#6E6E73", marginTop: 1 }}>
-                                  Rating: {"★".repeat(rating)}{"☆".repeat(Math.max(0, 5 - rating))}
+                              {skills.length > 0 && (
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: note ? 10 : 0 }}>
+                                  {skills.slice(0, 6).map((s, i) => (
+                                    <span key={i} style={{
+                                      fontSize: a11yPx(11), color: "#5856D6",
+                                      background: "rgba(88,86,214,0.10)",
+                                      padding: "3px 8px", borderRadius: 999,
+                                    }}>{s}</span>
+                                  ))}
+                                  {skills.length > 6 && (
+                                    <span style={{ fontSize: a11yPx(11), color: "#6E6E73", padding: "3px 4px" }}>
+                                      +{skills.length - 6} more
+                                    </span>
+                                  )}
                                 </div>
                               )}
-                            </div>
-                          </div>
-                          {skills.length > 0 && (
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: note ? 10 : 0 }}>
-                              {skills.slice(0, 6).map((s, i) => (
-                                <span key={i} style={{
-                                  fontSize: a11yPx(11), color: "#5856D6",
-                                  background: "rgba(88,86,214,0.10)",
-                                  padding: "3px 8px", borderRadius: 999,
-                                }}>{s}</span>
-                              ))}
-                              {skills.length > 6 && (
-                                <span style={{ fontSize: a11yPx(11), color: "#6E6E73", padding: "3px 4px" }}>
-                                  +{skills.length - 6} more
-                                </span>
+                              {note && (
+                                <div style={{
+                                  fontSize: a11yPx(12), color: "#3C3C43", lineHeight: 1.45,
+                                  display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical",
+                                  overflow: "hidden",
+                                }}>
+                                  {note}
+                                </div>
                               )}
-                            </div>
-                          )}
-                          {note && (
-                            <div style={{
-                              fontSize: a11yPx(12), color: "#3C3C43", lineHeight: 1.45,
-                              display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical",
-                              overflow: "hidden",
-                            }}>
-                              {note}
-                            </div>
-                          )}
-                          {!skills.length && !note && (
-                            <div style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>
-                              No notes recorded for the last lesson.
-                            </div>
-                          )}
-                        </>
-                      );
-                    })()
-                  ) : (
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{
-                        width: 32, height: 32, borderRadius: 8, background: "#F2F2F7",
-                        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                      }}>
-                        <BookOpen style={{ width: 16, height: 16, color: "#8E8E93" }} strokeWidth={2} />
-                      </div>
-                      <div style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>
-                        No previous lessons yet
-                      </div>
+                              {!skills.length && !note && (
+                                <div style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>
+                                  No notes recorded for the last lesson.
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()
+                      ) : (
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div style={{
+                            width: 32, height: 32, borderRadius: 8, background: "#F2F2F7",
+                            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                          }}>
+                            <BookOpen style={{ width: 16, height: 16, color: "#8E8E93" }} strokeWidth={2} />
+                          </div>
+                          <div style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>
+                            No previous lessons yet
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Start lesson CTA — integrated inside last-lesson card so it feels connected */}
+                      {!trackerDismissed && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
+                          }}
+                          className="active:opacity-90"
+                          style={{
+                            width: "100%", marginTop: 14,
+                            background: "#007AFF", color: "#FFFFFF",
+                            border: "none", borderRadius: 12, padding: "12px 14px",
+                            fontSize: a11yPx(15), fontWeight: 600, letterSpacing: -0.1,
+                            cursor: "pointer",
+                            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                            transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+                          }}
+                        >
+                          <Play style={{ width: 16, height: 16 }} strokeWidth={2.4} fill="#FFFFFF" />
+                          Start lesson
+                        </button>
+                      )}
                     </div>
-                  )}
+
+                    {/* In-progress / start lesson buttons preserved (only render when relevant) */}
+                    {minutesUntil <= 15 && (
+                      <button onClick={(e) => {
+                        e.stopPropagation();
+                        supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
+                        navigate(`/instructor/tracking?lesson=${lessonId}`);
+                      }}
+                      style={{
+                        width: "100%",
+                        background: "linear-gradient(135deg, #22c55e, #16a34a)",
+                        color: "#FFFFFF", border: "none", borderRadius: 12, padding: 13,
+                        fontSize: a11yPx(14), fontWeight: 600, cursor: "pointer",
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(34,197,94,0.25)",
+                      }}>
+                        <Navigation style={{ width: 16, height: 16 }} /> Start Lesson
+                      </button>
+                    )}
+                    {minutesUntil <= 0 && (
+                      <button onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
+                        style={{
+                          width: "100%",
+                          background: "#FFFFFF", color: "hsl(var(--foreground))",
+                          border: "none", borderRadius: 12, padding: 13,
+                          fontSize: a11yPx(14), fontWeight: 600, cursor: "pointer",
+                          display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                          boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                        }}>
+                        <CheckCircle2 style={{ width: 16, height: 16 }} /> End Lesson
+                      </button>
+                    )}
+
+                    {/* Lesson plan card (elevated) */}
+                    {lastLessonPlan && (
+                      <div style={{
+                        display: "flex", alignItems: "flex-start", gap: 12,
+                        padding: 14, borderRadius: 16, background: "#FFFFFF",
+                        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                      }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: 8, background: "#F1ECFA",
+                          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        }}>
+                          <BookOpen style={{ width: 16, height: 16, color: "#8A5BC9" }} strokeWidth={2} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{
+                            fontSize: a11yPx(10), fontWeight: 500, color: "#6E6E73",
+                            letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 2,
+                          }}>Lesson plan</div>
+                          <p style={{
+                            fontSize: a11yPx(12), color: "#000000", margin: 0,
+                            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+                          }}>{lastLessonPlan}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Payment card (elevated) */}
+                    {noBalance && (
+                      <div style={{
+                        display: "flex", alignItems: "center", gap: 12,
+                        padding: 14, borderRadius: 16,
+                        background: "#FFFFFF",
+                        boxShadow: paymentDue
+                          ? "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(239,68,68,0.18)"
+                          : "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                      }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: 8,
+                          background: paymentDue ? "rgba(239,68,68,0.12)" : "rgba(251,191,36,0.12)",
+                          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        }}>
+                          <Banknote style={{ width: 16, height: 16, color: paymentDue ? "#dc2626" : "#d97706" }} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", margin: 0 }}>
+                            {paymentDue ? `£${Math.abs(effectiveBalance).toFixed(0)} payment due` : "No balance remaining"}
+                          </p>
+                          <p style={{ fontSize: a11yPx(11), color: "#6E6E73", margin: "1px 0 0" }}>Collect before or after lesson</p>
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/take-payment?pupil=${pupilId}`); }}
+                          style={{
+                            flexShrink: 0, padding: "8px 12px", borderRadius: 8,
+                            background: paymentDue ? "#ef4444" : "#d97706",
+                            color: "#FFFFFF", fontSize: a11yPx(11), fontWeight: 600,
+                            border: "none", cursor: "pointer",
+                          }}>
+                          Collect
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Unread cards (elevated) */}
+                    {hasUnread && (
+                      <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/messages`); }}
+                        style={{
+                          width: "100%",
+                          display: "flex", alignItems: "center", gap: 12,
+                          padding: 14, borderRadius: 16, background: "#FFFFFF",
+                          boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                          border: "none", textAlign: "left", cursor: "pointer",
+                        }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: 8, background: "rgba(249,115,22,0.12)",
+                          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        }}>
+                          <MessageCircle style={{ width: 16, height: 16, color: "#f97316" }} />
+                        </div>
+                        <span style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", flex: 1 }}>
+                          {pupilUnreadCount} unread from {firstName}
+                        </span>
+                        <ChevronRight style={{ width: 14, height: 14, color: "#6E6E73" }} />
+                      </button>
+                    )}
+
+                    {adminUnreadCount > 0 && (
+                      <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor-app/admin-chat`); }}
+                        style={{
+                          width: "100%",
+                          display: "flex", alignItems: "center", gap: 12,
+                          padding: 14, borderRadius: 16, background: "#FFFFFF",
+                          boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                          border: "none", textAlign: "left", cursor: "pointer",
+                        }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: 8, background: "rgba(249,115,22,0.12)",
+                          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        }}>
+                          <Mail style={{ width: 16, height: 16, color: "#f97316" }} />
+                        </div>
+                        <span style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", flex: 1 }}>
+                          {adminUnreadCount} admin note{adminUnreadCount !== 1 ? "s" : ""} about {firstName}
+                        </span>
+                        <ChevronRight style={{ width: 14, height: 14, color: "#6E6E73" }} />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                {/* ── SECTION 3 — Start lesson CTA ── */}
-                {!trackerDismissed && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
-                    }}
-                    className="active:opacity-90"
-                    style={{
-                      width: "100%", background: "#007AFF", color: "#FFFFFF",
-                      border: "none", borderRadius: 14, padding: 14,
-                      fontSize: a11yPx(15), fontWeight: 600, letterSpacing: -0.1,
-                      cursor: "pointer",
-                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                      marginBottom: 18,
-                      transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-                    }}
-                  >
-                    <Play style={{ width: 16, height: 16 }} strokeWidth={2.4} fill="#FFFFFF" />
-                    Start lesson
-                  </button>
-                )}
-
-                {/* In-progress / start lesson buttons preserved (only render when relevant) */}
-                {minutesUntil <= 15 && (
-                  <button onClick={(e) => {
-                    e.stopPropagation();
-                    supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
-                    navigate(`/instructor/tracking?lesson=${lessonId}`);
-                  }}
-                  style={{
-                    width: "100%", marginBottom: 14,
-                    background: "linear-gradient(135deg, #22c55e, #16a34a)",
-                    color: "#FFFFFF", border: "none", borderRadius: 10, padding: 13,
-                    fontSize: a11yPx(14), fontWeight: 600, cursor: "pointer",
-                    display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                  }}>
-                    <Navigation style={{ width: 16, height: 16 }} /> Start Lesson
-                  </button>
-                )}
-                {minutesUntil <= 0 && (
-                  <button onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
-                    style={{
-                      width: "100%", marginBottom: 14,
-                      background: "rgba(0,0,0,0.06)", color: "hsl(var(--foreground))",
-                      border: "none", borderRadius: 10, padding: 13,
-                      fontSize: a11yPx(14), fontWeight: 600, cursor: "pointer",
-                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    }}>
-                    <CheckCircle2 style={{ width: 16, height: 16 }} /> End Lesson
-                  </button>
-                )}
-
-                {/* Lesson Plan / Payment / Unread preserved */}
-                {lastLessonPlan && (
+                {/* ── SECTION B — Update status (neutral surface, coloured icons only) ── */}
+                <div>
                   <div style={{
-                    display: "flex", alignItems: "flex-start", gap: 12,
-                    padding: 12, borderRadius: 10, background: "#F8FAFB",
-                    border: "0.5px solid #E5E5EA", marginBottom: 14,
+                    fontSize: a11yPx(11), fontWeight: 600, color: "#6E6E73",
+                    letterSpacing: 0.4, textTransform: "uppercase", margin: "0 4px 10px",
                   }}>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: 8, background: "#F1ECFA",
-                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                    }}>
-                      <BookOpen style={{ width: 16, height: 16, color: "#8A5BC9" }} strokeWidth={2} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        fontSize: a11yPx(10), fontWeight: 500, color: "#6E6E73",
-                        letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 2,
-                      }}>Lesson plan</div>
-                      <p style={{
-                        fontSize: a11yPx(12), color: "#000000", margin: 0,
-                        display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
-                      }}>{lastLessonPlan}</p>
-                    </div>
+                    Update status
                   </div>
-                )}
-
-                {noBalance && (
                   <div style={{
-                    display: "flex", alignItems: "center", gap: 12,
-                    padding: 12, borderRadius: 10, marginBottom: 14,
-                    background: paymentDue ? "rgba(239,68,68,0.08)" : "rgba(251,191,36,0.08)",
-                    border: `0.5px solid ${paymentDue ? "rgba(239,68,68,0.2)" : "rgba(251,191,36,0.2)"}`,
+                    background: "#FFFFFF", borderRadius: 16, padding: 8,
+                    boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                    display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 4,
                   }}>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: 8,
-                      background: paymentDue ? "rgba(239,68,68,0.15)" : "rgba(251,191,36,0.15)",
-                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                    }}>
-                      <Banknote style={{ width: 16, height: 16, color: paymentDue ? "#dc2626" : "#d97706" }} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", margin: 0 }}>
-                        {paymentDue ? `£${Math.abs(effectiveBalance).toFixed(0)} payment due` : "No balance remaining"}
-                      </p>
-                      <p style={{ fontSize: a11yPx(11), color: "#6E6E73", margin: "1px 0 0" }}>Collect before or after lesson</p>
-                    </div>
-                    <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/take-payment?pupil=${pupilId}`); }}
+                    {/* Prep */}
+                    <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/pupils/${pupilId}?tab=progress`); }}
                       style={{
-                        flexShrink: 0, padding: "8px 12px", borderRadius: 8,
-                        background: paymentDue ? "#ef4444" : "#d97706",
-                        color: "#FFFFFF", fontSize: a11yPx(11), fontWeight: 600,
-                        border: "none", cursor: "pointer",
+                        background: "transparent", border: "none", borderRadius: 10,
+                        padding: "10px 4px", cursor: "pointer",
+                        display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                       }}>
-                      Collect
+                      <ClipboardList style={{ width: 18, height: 18, color: "#8A5BC9" }} strokeWidth={1.9} />
+                      <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#1C1C1E" }}>Prep</span>
+                    </button>
+
+                    {/* On the way */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button onClick={(e) => e.stopPropagation()}
+                          style={{
+                            background: "transparent", border: "none", borderRadius: 10,
+                            padding: "10px 4px", cursor: "pointer",
+                            display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                          }}>
+                          <Send style={{ width: 18, height: 18, color: "#2B7BC8" }} strokeWidth={1.9} />
+                          <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#1C1C1E" }}>On the way</span>
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="center" className="w-52">
+                        <DropdownMenuItem onClick={handleSendETA}>Send ETA Now</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 5 minutes late. Sorry!`)}>Running 5 min late</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 10 minutes late. Sorry!`)}>Running 10 min late</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 15 minutes late. Sorry!`)}>Running 15 min late</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 20 minutes late. Sorry!`)}>Running 20 min late</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 30 minutes late. Sorry!`)}>Running 30 min late</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, I'll call you as soon as I can!`)}>Call ASAP</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    {/* Running late */}
+                    <button onClick={(e) => { e.stopPropagation(); setLateSheetOpen(true); }}
+                      style={{
+                        background: "transparent", border: "none", borderRadius: 10,
+                        padding: "10px 4px", cursor: "pointer",
+                        display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                      }}>
+                      <Clock style={{ width: 18, height: 18, color: "#B8801F" }} strokeWidth={1.9} />
+                      <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#1C1C1E" }}>Running late</span>
                     </button>
                   </div>
-                )}
-
-                {hasUnread && (
-                  <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/messages`); }}
-                    style={{
-                      width: "100%", marginBottom: 14,
-                      display: "flex", alignItems: "center", gap: 12,
-                      padding: 12, borderRadius: 10, background: "#F8FAFB",
-                      border: "0.5px solid #E5E5EA", textAlign: "left", cursor: "pointer",
-                    }}>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: 8, background: "rgba(249,115,22,0.12)",
-                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                    }}>
-                      <MessageCircle style={{ width: 16, height: 16, color: "#f97316" }} />
-                    </div>
-                    <span style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", flex: 1 }}>
-                      {pupilUnreadCount} unread from {firstName}
-                    </span>
-                    <ChevronRight style={{ width: 14, height: 14, color: "#6E6E73" }} />
-                  </button>
-                )}
-
-                {adminUnreadCount > 0 && (
-                  <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor-app/admin-chat`); }}
-                    style={{
-                      width: "100%", marginBottom: 14,
-                      display: "flex", alignItems: "center", gap: 12,
-                      padding: 12, borderRadius: 10, background: "#F8FAFB",
-                      border: "0.5px solid #E5E5EA", textAlign: "left", cursor: "pointer",
-                    }}>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: 8, background: "rgba(249,115,22,0.12)",
-                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                    }}>
-                      <Mail style={{ width: 16, height: 16, color: "#f97316" }} />
-                    </div>
-                    <span style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", flex: 1 }}>
-                      {adminUnreadCount} admin note{adminUnreadCount !== 1 ? "s" : ""} about {firstName}
-                    </span>
-                    <ChevronRight style={{ width: 14, height: 14, color: "#6E6E73" }} />
-                  </button>
-                )}
-
-                {/* ── SECTION 4 — Update status (3 buttons) ── */}
-                <div style={{
-                  fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73",
-                  letterSpacing: 0.3, textTransform: "uppercase", margin: "0 0 8px",
-                }}>
-                  Update status
-                </div>
-                <div style={{
-                  display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                  gap: 6, marginBottom: 14,
-                }}>
-                  {/* Prep */}
-                  <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/pupils/${pupilId}?tab=progress`); }}
-                    style={{
-                      background: "#F1ECFA", border: "none", borderRadius: 10,
-                      padding: "10px 4px", cursor: "pointer",
-                      display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                    }}>
-                    <ClipboardList style={{ width: 18, height: 18, color: "#8A5BC9" }} strokeWidth={1.8} />
-                    <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#8A5BC9" }}>Prep</span>
-                  </button>
-
-                  {/* On the way */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button onClick={(e) => e.stopPropagation()}
-                        style={{
-                          background: "#E6F1FB", border: "none", borderRadius: 10,
-                          padding: "10px 4px", cursor: "pointer",
-                          display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                        }}>
-                        <Send style={{ width: 18, height: 18, color: "#2B7BC8" }} strokeWidth={1.8} />
-                        <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#2B7BC8" }}>On the way</span>
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="center" className="w-52">
-                      <DropdownMenuItem onClick={handleSendETA}>Send ETA Now</DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 5 minutes late. Sorry!`)}>Running 5 min late</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 10 minutes late. Sorry!`)}>Running 10 min late</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 15 minutes late. Sorry!`)}>Running 15 min late</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 20 minutes late. Sorry!`)}>Running 20 min late</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 30 minutes late. Sorry!`)}>Running 30 min late</DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, I'll call you as soon as I can!`)}>Call ASAP</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
-                  {/* Running late */}
-                  <button onClick={(e) => { e.stopPropagation(); setLateSheetOpen(true); }}
-                    style={{
-                      background: "#FBF1DE", border: "none", borderRadius: 10,
-                      padding: "10px 4px", cursor: "pointer",
-                      display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                    }}>
-                    <Clock style={{ width: 18, height: 18, color: "#B8801F" }} strokeWidth={1.8} />
-                    <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#B8801F" }}>Running late</span>
-                  </button>
                 </div>
 
                 {/* ── SECTION 5 — Reschedule + Cancel (lower hierarchy) ── */}
