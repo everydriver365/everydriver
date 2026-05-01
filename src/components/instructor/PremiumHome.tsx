@@ -1,15 +1,20 @@
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 import {
   ChevronRight,
   Plus,
+  Bell,
+  Calendar,
   Briefcase,
   MessageSquare,
-  Clock,
+  CalendarCheck,
   CalendarPlus,
   PoundSterling,
   MessageCircle,
-  Sparkles,
+  Clock,
+  MoreHorizontal,
   X,
+  MapPin,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -19,6 +24,7 @@ import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
 import { useHomeActions } from "@/components/instructor/WarmHomeTiles";
 import { getTimeOfDayGreeting } from "@/lib/composeStatusSubtitle";
+import dsmLogo from "@/assets/dsm-logo.png";
 
 interface Props {
   instructorId: string | undefined;
@@ -31,18 +37,17 @@ interface Props {
 }
 
 /**
- * PremiumHome — strict iOS, single column, oversized.
- * Sections (in order, large gaps between):
- *   1. Header
- *   2. Needs attention (single card, 3 stacked rows)
- *   3. Today's schedule (max 3 lessons, hero)
- *   4. Quick actions (exactly 4 stacked pills)
- *   5. ONE final card — Smart suggestion (fallback to nothing if no gap)
+ * PremiumHome — iOS-styled instructor mobile home, modelled on the
+ * approved reference design (single column, branded header, attention
+ * card with coloured pills, avatar schedule rows with coloured time
+ * rails, horizontally-scrollable quick action chips and a soft grey
+ * smart suggestion banner).
  */
 export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props) {
   const navigate = useNavigate();
   const firstName = instructor?.name?.split(" ")[0] || "Instructor";
   const greeting = getTimeOfDayGreeting(new Date(), firstName);
+  const today = new Date();
 
   const { data: todayOverview } = useTodayOverview(instructorId);
   const { data: todayLessons } = useTodayRemainingLessons(instructorId);
@@ -52,16 +57,15 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
 
   const [suggestionDismissed, setSuggestionDismissed] = useState(false);
 
-  /* ------------- Header subtitle ------------- */
+  /* ---------------- Subtitle counts ---------------- */
   const lessonsToday = todayOverview?.lessonCount ?? 0;
   const waitingCount = homeActions.length;
-  const sub: string[] = [
-    `${lessonsToday} lesson${lessonsToday === 1 ? "" : "s"} today`,
-  ];
-  if (waitingCount > 0)
-    sub.push(`${waitingCount} thing${waitingCount === 1 ? "" : "s"} waiting`);
 
-  /* ------------- Attention rows (max 3) ------------- */
+  /* ---------------- Notifications badge ---------------- */
+  const notifBadge = messageCount + pendingJobsCount;
+  const notifLabel = notifBadge > 9 ? "9+" : String(notifBadge);
+
+  /* ---------------- Attention rows ---------------- */
   const totalGapSlots =
     gapSuggestions?.reduce((sum, day) => sum + day.slots.length, 0) ?? 0;
 
@@ -81,23 +85,23 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
   if (pendingJobsCount > 0)
     attention.push({
       key: "jobs",
-      iconBg: "#FFE5E1",
+      iconBg: "#FFEDEA",
       iconFg: "#FF3B30",
-      icon: <Briefcase className="size-[24px]" />,
+      icon: <Briefcase className="size-[20px]" />,
       title: `${pendingJobsCount} new job offer${pendingJobsCount === 1 ? "" : "s"}`,
-      subtitle: "Tap to review and respond",
+      subtitle: "Respond now · +1 more",
       tone: "red",
-      pill: String(pendingJobsCount),
+      pill: "NEW",
       onClick: () => navigate("/instructor/jobs"),
     });
   if (messageCount > 0)
     attention.push({
       key: "messages",
-      iconBg: "#FFF1D6",
+      iconBg: "#FFF1E0",
       iconFg: "#C46E00",
-      icon: <MessageSquare className="size-[24px]" />,
+      icon: <MessageSquare className="size-[20px]" />,
       title: `${messageCount} urgent message${messageCount === 1 ? "" : "s"}`,
-      subtitle: "Replies waiting from pupils",
+      subtitle: "Reply to your pupils",
       tone: "amber",
       pill: String(messageCount),
       onClick: () => navigate("/instructor/messages"),
@@ -105,26 +109,28 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
   if (totalGapSlots > 0)
     attention.push({
       key: "gaps",
-      iconBg: "#DCF7E4",
+      iconBg: "#E2F5E8",
       iconFg: "#1F8E3F",
-      icon: <Clock className="size-[24px]" />,
+      icon: <CalendarCheck className="size-[20px]" />,
       title: `${totalGapSlots} open slot${totalGapSlots === 1 ? "" : "s"} to fill`,
-      subtitle: "Suggested pupils available",
+      subtitle: "Boost your earnings",
       tone: "green",
       pill: String(totalGapSlots),
       onClick: () => navigate("/instructor/schedule?view=gaps"),
     });
 
   const pillCls: Record<Tone, string> = {
-    red: "bg-[#FF3B30]/10 text-[#FF3B30]",
-    amber: "bg-[#FF9500]/12 text-[#C46E00]",
-    green: "bg-[#34C759]/12 text-[#1F8E3F]",
+    red: "bg-[#FFE3DE] text-[#FF3B30]",
+    amber: "bg-[#FFE9C9] text-[#C46E00]",
+    green: "bg-[#D6F3DD] text-[#1F8E3F]",
   };
 
-  /* ------------- Today's schedule (max 3) ------------- */
-  const previewLessons = (todayLessons || []).slice(0, 3);
+  /* ---------------- Today's schedule (max 4) ---------------- */
+  const previewLessons = (todayLessons || []).slice(0, 4);
+  // Color rail per row, cycled in reference order
+  const rails = ["#007AFF", "#34C759", "#007AFF", "#34C759"];
 
-  /* ------------- Smart suggestion ------------- */
+  /* ---------------- Smart suggestion ---------------- */
   const firstGap = gapSuggestions?.find((d) => d.slots.length > 0)?.slots?.[0];
   const gapMins = firstGap
     ? (() => {
@@ -135,83 +141,145 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
     : 0;
 
   return (
-    <div className="min-h-screen bg-[#F2F2F7] pb-24">
-      {/* 1. Header — oversized, lots of breathing room */}
-      <header className="px-7 pt-16 pb-12">
-        <h1 className="text-[34px] leading-[1.05] font-bold tracking-tight text-[#1C1C1E]">
-          {greeting}
-        </h1>
-        <p className="mt-3 text-[16px] text-[#3C3C43]/65 font-medium">
-          {sub.join(" · ")}
-        </p>
-      </header>
+    <div className="min-h-screen bg-white pb-8">
+      {/* ---------------- Top bar: logo + bell + avatar ---------------- */}
+      <div className="px-5 pt-4 pb-2 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <img src={dsmLogo} alt="DSM" className="h-7 w-auto" />
+          <div className="leading-tight">
+            <div className="text-[13px] font-semibold text-[#1C1C1E] tracking-tight">
+              Driving School
+            </div>
+            <div className="text-[11px] text-[#3C3C43]/60 -mt-0.5">Manager</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => navigate("/instructor/notifications")}
+            className="relative size-10 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+            aria-label="Notifications"
+          >
+            <Bell className="size-[22px] text-[#1C1C1E]" />
+            {notifBadge > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 px-1.5 rounded-full bg-[#FF3B30] text-white text-[10px] font-bold flex items-center justify-center">
+                {notifLabel}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => navigate("/instructor/account")}
+            className="size-10 rounded-full overflow-hidden bg-[#E5E5EA] flex items-center justify-center"
+            aria-label="Account"
+          >
+            {instructor?.profile_image_url ? (
+              <img
+                src={instructor.profile_image_url}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-[14px] font-semibold text-[#3C3C43]">
+                {firstName.charAt(0)}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
 
-      {/* 2. Needs attention — one full-width card, max 3 stacked rows */}
+      {/* ---------------- Greeting + date pill ---------------- */}
+      <div className="px-5 pt-3 pb-4">
+        <div className="flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-[26px] leading-[1.15] font-bold tracking-tight text-[#1C1C1E]">
+              {greeting} <span className="inline-block">👋</span>
+            </h1>
+            <p className="mt-1 text-[14px] text-[#3C3C43]/70">
+              <span>
+                {lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today
+              </span>
+              {waitingCount > 0 && (
+                <>
+                  <span className="mx-1.5 text-[#3C3C43]/40">·</span>
+                  <span className="text-[#FF3B30] font-medium">
+                    {waitingCount} thing{waitingCount === 1 ? "" : "s"} waiting
+                  </span>
+                </>
+              )}
+            </p>
+          </div>
+          <button
+            onClick={() => navigate("/instructor/schedule")}
+            className="flex items-center gap-1.5 px-3 h-9 rounded-[10px] border border-black/10 bg-white text-[13px] font-medium text-[#1C1C1E] active:bg-black/[0.03] transition-colors shrink-0"
+          >
+            <Calendar className="size-[14px] text-[#3C3C43]/70" />
+            {format(today, "EEE, d MMM yyyy")}
+            <ChevronRight className="size-[14px] text-[#3C3C43]/50 rotate-90" />
+          </button>
+        </div>
+      </div>
+
+      {/* ---------------- Needs your attention ---------------- */}
       {attention.length > 0 && (
-        <section className="px-5 mb-12">
-          <FullCard>
-            <div className="px-7 pt-6 pb-2">
-              <h2 className="text-[22px] font-semibold tracking-tight text-[#1C1C1E]">
-                Needs your attention
-              </h2>
-            </div>
-            <div className="pt-3 pb-3">
-              {attention.map((row, i) => (
-                <div key={row.key}>
-                  <button
-                    onClick={row.onClick}
-                    className="w-full flex items-center gap-5 px-7 py-5 active:bg-black/[0.03] transition-colors text-left"
-                    style={{ minHeight: 88 }}
+        <section className="px-5 mb-5">
+          <h2 className="text-[15px] font-semibold tracking-tight text-[#1C1C1E] mb-2.5">
+            Needs your attention
+          </h2>
+          <div className="rounded-[18px] border border-black/[0.06] bg-white overflow-hidden">
+            {attention.map((row, i) => (
+              <div key={row.key}>
+                <button
+                  onClick={row.onClick}
+                  className="w-full flex items-center gap-3.5 px-4 py-3.5 active:bg-black/[0.03] transition-colors text-left"
+                  style={{ minHeight: 72 }}
+                >
+                  <div
+                    className="size-11 rounded-[12px] flex items-center justify-center shrink-0"
+                    style={{ background: row.iconBg, color: row.iconFg }}
                   >
-                    <div
-                      className="size-14 rounded-[16px] flex items-center justify-center shrink-0"
-                      style={{ background: row.iconBg, color: row.iconFg }}
-                    >
-                      {row.icon}
+                    {row.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight truncate">
+                      {row.title}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[18px] font-semibold text-[#1C1C1E] tracking-tight truncate">
-                        {row.title}
-                      </div>
-                      <div className="text-[14px] text-[#3C3C43]/65 mt-1 truncate">
-                        {row.subtitle}
-                      </div>
+                    <div className="text-[12.5px] text-[#3C3C43]/65 mt-0.5 truncate">
+                      {row.subtitle}
                     </div>
-                    <span
-                      className={`text-[13px] font-semibold px-3 py-1 rounded-full shrink-0 ${pillCls[row.tone]}`}
-                    >
-                      {row.pill}
-                    </span>
-                    <ChevronRight className="size-[20px] text-[#3C3C43]/35 shrink-0" />
-                  </button>
-                  {i < attention.length - 1 && (
-                    <div className="ml-[100px] border-t border-black/[0.05]" />
-                  )}
-                </div>
-              ))}
-            </div>
-          </FullCard>
+                  </div>
+                  <span
+                    className={`text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0 ${pillCls[row.tone]}`}
+                  >
+                    {row.pill}
+                  </span>
+                  <ChevronRight className="size-[16px] text-[#3C3C43]/35 shrink-0" />
+                </button>
+                {i < attention.length - 1 && (
+                  <div className="ml-[72px] border-t border-black/[0.05]" />
+                )}
+              </div>
+            ))}
+          </div>
         </section>
       )}
 
-      {/* 3. Today's schedule — DOMINANT hero */}
-      <section className="px-5 mb-12">
-        <FullCard>
-          <div className="flex items-end justify-between px-7 pt-7 pb-5">
-            <h2 className="text-[24px] font-semibold tracking-tight text-[#1C1C1E]">
-              Today's schedule
-            </h2>
-            <button
-              onClick={() => navigate("/instructor/schedule")}
-              className="text-[16px] font-medium text-[#007AFF] active:opacity-60 transition-opacity"
-            >
-              View all
-            </button>
-          </div>
+      {/* ---------------- Today's schedule ---------------- */}
+      <section className="px-5 mb-5">
+        <div className="flex items-center justify-between mb-2.5">
+          <h2 className="text-[15px] font-semibold tracking-tight text-[#1C1C1E]">
+            Today's schedule
+          </h2>
+          <button
+            onClick={() => navigate("/instructor/schedule")}
+            className="text-[13px] font-medium text-[#007AFF] active:opacity-60 transition-opacity"
+          >
+            View full schedule ›
+          </button>
+        </div>
 
+        <div className="rounded-[18px] border border-black/[0.06] bg-white overflow-hidden">
           {previewLessons.length === 0 ? (
-            <div className="px-7 py-16 text-center">
-              <p className="text-[17px] text-[#3C3C43]/65">
+            <div className="px-5 py-10 text-center">
+              <p className="text-[14px] text-[#3C3C43]/65">
                 No lessons scheduled today
               </p>
             </div>
@@ -226,19 +294,23 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
                   .toUpperCase();
                 const tone =
                   lesson.status === "completed"
-                    ? "bg-[#34C759]/12 text-[#1F8E3F]"
+                    ? "bg-[#D6F3DD] text-[#1F8E3F]"
                     : lesson.status === "in_progress"
-                    ? "bg-[#007AFF]/12 text-[#007AFF]"
-                    : "bg-black/[0.06] text-[#3C3C43]/75";
+                    ? "bg-[#D7E9FF] text-[#007AFF]"
+                    : i % 2 === 0
+                    ? "bg-[#D7E9FF] text-[#007AFF]"
+                    : "bg-[#D6F3DD] text-[#1F8E3F]";
                 const label =
                   lesson.status === "completed"
                     ? "Done"
                     : lesson.status === "in_progress"
                     ? "Live"
-                    : "Booked";
+                    : i % 2 === 0
+                    ? "Upcoming"
+                    : "Confirmed";
                 const dur = lesson.durationMinutes;
                 const durLabel = dur
-                  ? `${dur >= 60 ? Math.floor(dur / 60) + "h " : ""}${dur % 60 ? (dur % 60) + "m" : ""}`.trim() || "--"
+                  ? `${dur >= 60 ? Math.floor(dur / 60) + "h" : ""}${dur % 60 ? " " + (dur % 60) + "m" : dur >= 60 ? "" : ""}`.trim() || "--"
                   : "--";
 
                 return (
@@ -247,18 +319,25 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
                       onClick={() =>
                         navigate(`/instructor/schedule?lessonId=${lesson.id}`)
                       }
-                      className="w-full flex items-center gap-5 px-7 py-6 active:bg-black/[0.03] transition-colors text-left"
-                      style={{ minHeight: 112 }}
+                      className="w-full flex items-stretch gap-3 pr-4 py-3 active:bg-black/[0.03] transition-colors text-left"
+                      style={{ minHeight: 76 }}
                     >
-                      <div className="w-[72px] shrink-0">
-                        <div className="text-[24px] font-bold tracking-tight text-[#1C1C1E] tabular-nums leading-none">
+                      {/* Coloured rail */}
+                      <div
+                        className="w-1 rounded-r-full ml-0 my-1"
+                        style={{ background: rails[i % rails.length] }}
+                      />
+                      {/* Time + duration */}
+                      <div className="w-[58px] shrink-0 self-center">
+                        <div className="text-[16px] font-bold tracking-tight text-[#1C1C1E] tabular-nums leading-none">
                           {lesson.startTime?.slice(0, 5) || "--:--"}
                         </div>
-                        <div className="text-[14px] text-[#3C3C43]/60 mt-1.5 tabular-nums">
+                        <div className="text-[11.5px] text-[#3C3C43]/55 mt-1 tabular-nums">
                           {durLabel}
                         </div>
                       </div>
-                      <div className="size-14 rounded-full bg-[#E5E5EA] text-[#3C3C43] flex items-center justify-center text-[16px] font-semibold shrink-0 overflow-hidden">
+                      {/* Avatar */}
+                      <div className="size-11 rounded-full bg-[#E5E5EA] text-[#3C3C43] flex items-center justify-center text-[13px] font-semibold shrink-0 overflow-hidden self-center">
                         {lesson.pupilProfileImageUrl ? (
                           <img
                             src={lesson.pupilProfileImageUrl}
@@ -269,27 +348,32 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
                           initials
                         )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[19px] font-semibold text-[#1C1C1E] tracking-tight truncate">
+                      {/* Pupil + meta */}
+                      <div className="flex-1 min-w-0 self-center">
+                        <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight truncate">
                           {lesson.pupilName || "Pupil"}
                         </div>
-                        <div className="text-[14px] text-[#3C3C43]/65 mt-1.5 truncate">
-                          {[
-                            lesson.lessonType || "Lesson",
-                            lesson.pickupLocation || lesson.pickupPostcode,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
+                        <div className="text-[12px] text-[#3C3C43]/65 mt-0.5 truncate flex items-center gap-1">
+                          <MapPin className="size-[11px] text-[#3C3C43]/45 shrink-0" />
+                          <span className="truncate">
+                            {[
+                              lesson.lessonType || "Standard lesson",
+                              lesson.pickupLocation || lesson.pickupPostcode,
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </span>
                         </div>
                       </div>
                       <span
-                        className={`text-[12px] font-semibold px-2.5 py-1 rounded-full shrink-0 ${tone}`}
+                        className={`text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0 self-center ${tone}`}
                       >
                         {label}
                       </span>
+                      <ChevronRight className="size-[14px] text-[#3C3C43]/35 shrink-0 self-center" />
                     </button>
                     {i < previewLessons.length - 1 && (
-                      <div className="ml-[124px] border-t border-black/[0.05]" />
+                      <div className="ml-[88px] border-t border-black/[0.05]" />
                     )}
                   </div>
                 );
@@ -297,81 +381,94 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
             </div>
           )}
 
-          <div className="border-t border-black/[0.05]">
+          <div className="px-3 pb-3 pt-1">
             <button
               onClick={() => navigate("/instructor/schedule?action=add")}
-              className="w-full flex items-center justify-center gap-2 py-6 text-[17px] font-semibold text-[#007AFF] active:bg-black/[0.03] transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] bg-[#F2F4F7] text-[14px] font-semibold text-[#007AFF] active:bg-[#E9ECF1] transition-colors"
             >
-              <Plus className="size-[20px]" />
+              <Plus className="size-[16px]" />
               Add lesson
             </button>
           </div>
-        </FullCard>
-      </section>
-
-      {/* 4. Quick actions — exactly 4 large stacked pills, no grid */}
-      <section className="px-5 mb-12">
-        <h2 className="text-[22px] font-semibold tracking-tight text-[#1C1C1E] mb-5 px-2">
-          Quick actions
-        </h2>
-        <div className="space-y-3">
-          <ActionPill
-            icon={<CalendarPlus className="size-[22px]" />}
-            label="Add lesson"
-            tone="blue"
-            onClick={() => navigate("/instructor/schedule?action=add")}
-          />
-          <ActionPill
-            icon={<PoundSterling className="size-[22px]" />}
-            label="Take payment"
-            tone="green"
-            onClick={onPaymentClick}
-          />
-          <ActionPill
-            icon={<MessageCircle className="size-[22px]" />}
-            label="Message"
-            tone="indigo"
-            onClick={() => navigate("/instructor/messages")}
-          />
-          <ActionPill
-            icon={<Clock className="size-[22px]" />}
-            label="Fill gap"
-            tone="amber"
-            onClick={() => navigate("/instructor/schedule?view=gaps")}
-          />
         </div>
       </section>
 
-      {/* 5. ONE final card — Smart suggestion (only when present) */}
+      {/* ---------------- Quick actions (horizontal chips) ---------------- */}
+      <section className="px-5 mb-5">
+        <div className="flex items-center justify-between mb-2.5">
+          <h2 className="text-[15px] font-semibold tracking-tight text-[#1C1C1E]">
+            Quick actions
+          </h2>
+          <button
+            onClick={() => navigate("/instructor/account?tab=quick-actions")}
+            className="text-[13px] font-medium text-[#007AFF] active:opacity-60 transition-opacity"
+          >
+            Edit
+          </button>
+        </div>
+        <div className="-mx-5 px-5 overflow-x-auto scrollbar-none">
+          <div className="flex gap-2.5 pb-1">
+            <ActionChip
+              icon={<CalendarPlus className="size-[18px]" />}
+              label="Add lesson"
+              tone="blue"
+              onClick={() => navigate("/instructor/schedule?action=add")}
+            />
+            <ActionChip
+              icon={<PoundSterling className="size-[18px]" />}
+              label="Take payment"
+              tone="green"
+              onClick={onPaymentClick}
+            />
+            <ActionChip
+              icon={<MessageCircle className="size-[18px]" />}
+              label="Message"
+              tone="indigo"
+              onClick={() => navigate("/instructor/messages")}
+            />
+            <ActionChip
+              icon={<Clock className="size-[18px]" />}
+              label="Fill gap"
+              tone="amber"
+              onClick={() => navigate("/instructor/schedule?view=gaps")}
+            />
+            <ActionChip
+              icon={<MoreHorizontal className="size-[18px]" />}
+              label="More"
+              tone="grey"
+              onClick={() => navigate("/instructor/account?tab=quick-actions")}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- Smart suggestion (soft grey card) ---------------- */}
       {firstGap && !suggestionDismissed && gapMins > 0 && (
         <section className="px-5">
-          <div className="rounded-[24px] p-7 relative overflow-hidden bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_28px_-12px_rgba(16,24,40,0.08)]">
-            <button
-              onClick={() => setSuggestionDismissed(true)}
-              className="absolute top-5 right-5 size-9 rounded-full bg-black/[0.04] flex items-center justify-center active:scale-95 transition-transform"
-              aria-label="Dismiss"
-            >
-              <X className="size-[16px] text-[#3C3C43]/55" />
-            </button>
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="size-8 rounded-full bg-[#34C759]/12 flex items-center justify-center">
-                <Sparkles className="size-[16px] text-[#1F8E3F]" />
-              </div>
-              <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#1F8E3F]">
-                Smart suggestion
-              </span>
+          <div className="rounded-[18px] bg-[#F5F6F8] p-4 flex items-start gap-3.5 relative">
+            <div className="size-10 rounded-[12px] bg-white flex items-center justify-center shrink-0 mt-0.5 border border-black/[0.04]">
+              <CalendarCheck className="size-[18px] text-[#1F8E3F]" />
             </div>
-            <h3 className="text-[24px] font-semibold tracking-tight text-[#1C1C1E] leading-tight pr-10">
-              You have a {gapMins} min gap at {firstGap.startTime.slice(0, 5)}
-            </h3>
-            <p className="text-[16px] text-[#3C3C43]/70 mt-3 leading-relaxed">
-              Fill it with a new lesson and boost your earnings.
-            </p>
+            <div className="flex-1 min-w-0 pr-7">
+              <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight">
+                You have a {gapMins} min gap at {firstGap.startTime.slice(0, 5)}
+              </div>
+              <p className="text-[12.5px] text-[#3C3C43]/70 mt-1 leading-snug">
+                Fill it with a new lesson and boost your earnings.
+              </p>
+            </div>
             <button
               onClick={() => navigate("/instructor/schedule?view=gaps")}
-              className="mt-6 w-full py-5 rounded-[16px] bg-[#1C1C1E] text-white text-[17px] font-semibold active:opacity-85 transition-opacity"
+              className="shrink-0 self-center px-4 h-10 rounded-[12px] bg-[#34C759] text-white text-[13px] font-semibold active:opacity-85 transition-opacity"
             >
-              Fill slot
+              Add lesson
+            </button>
+            <button
+              onClick={() => setSuggestionDismissed(true)}
+              className="absolute top-2.5 right-2.5 size-6 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+              aria-label="Dismiss"
+            >
+              <X className="size-[14px] text-[#3C3C43]/45" />
             </button>
           </div>
         </section>
@@ -381,26 +478,10 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
 }
 
 /* -------------------------------------------------------------------------- */
-/* Local primitives                                                           */
+/* ActionChip                                                                 */
 /* -------------------------------------------------------------------------- */
 
-function FullCard({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div
-      className={`bg-white rounded-[24px] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_10px_32px_-14px_rgba(16,24,40,0.08)] overflow-hidden ${className}`}
-    >
-      {children}
-    </div>
-  );
-}
-
-function ActionPill({
+function ActionChip({
   icon,
   label,
   tone,
@@ -408,32 +489,29 @@ function ActionPill({
 }: {
   icon: React.ReactNode;
   label: string;
-  tone: "blue" | "green" | "amber" | "indigo";
+  tone: "blue" | "green" | "amber" | "indigo" | "grey";
   onClick: () => void;
 }) {
-  const tones: Record<string, { iconBg: string; iconFg: string }> = {
-    blue: { iconBg: "#E8F1FF", iconFg: "#007AFF" },
-    green: { iconBg: "#E6F8EC", iconFg: "#1F8E3F" },
-    amber: { iconBg: "#FFF3DC", iconFg: "#C46E00" },
-    indigo: { iconBg: "#ECEAFE", iconFg: "#5856D6" },
+  const tones: Record<string, { bg: string; fg: string }> = {
+    blue: { bg: "#E8F1FF", fg: "#007AFF" },
+    green: { bg: "#E2F5E8", fg: "#1F8E3F" },
+    amber: { bg: "#FFEFD6", fg: "#C46E00" },
+    indigo: { bg: "#ECEAFE", fg: "#5856D6" },
+    grey: { bg: "#EFEFF1", fg: "#3C3C43" },
   };
   const t = tones[tone];
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-5 px-6 rounded-[20px] bg-white active:scale-[0.99] transition-transform shadow-[0_1px_2px_rgba(16,24,40,0.04),0_6px_20px_-12px_rgba(16,24,40,0.08)]"
-      style={{ minHeight: 84 }}
+      className="shrink-0 flex flex-col items-start justify-between rounded-[16px] px-3.5 py-3 active:scale-[0.97] transition-transform"
+      style={{ background: t.bg, color: t.fg, width: 96, minHeight: 76 }}
     >
-      <span
-        className="size-12 rounded-[14px] flex items-center justify-center shrink-0"
-        style={{ background: t.iconBg, color: t.iconFg }}
-      >
+      <span className="size-7 rounded-full bg-white/70 flex items-center justify-center">
         {icon}
       </span>
-      <span className="flex-1 text-left text-[18px] font-semibold tracking-tight text-[#1C1C1E]">
+      <span className="text-[12.5px] font-semibold tracking-tight leading-tight text-left mt-2">
         {label}
       </span>
-      <ChevronRight className="size-[20px] text-[#3C3C43]/35 shrink-0" />
     </button>
   );
 }
