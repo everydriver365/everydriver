@@ -26,31 +26,53 @@ async function geocodePostcode(postcode: string): Promise<GeocodeResult | null> 
   }
 }
 
+function haversineMiles(from: GeocodeResult, to: GeocodeResult): number {
+  const R = 3958.7613; // Earth radius in miles
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(to.lat - from.lat);
+  const dLng = toRad(to.lng - from.lng);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(from.lat)) * Math.cos(toRad(to.lat)) * Math.sin(dLng / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 async function calculateRoute(
   from: GeocodeResult,
   to: GeocodeResult
-): Promise<{ distanceMiles: number; durationMinutes: number } | null> {
+): Promise<{ distanceMiles: number; durationMinutes: number; estimated?: boolean }> {
+  // Try OSRM with timeout; fall back to haversine on any failure
   try {
-    // Use free OSRM routing API
     const url = `https://router.project-osrm.org/route/v1/driving/${from.lng},${from.lat};${to.lng},${to.lat}?overview=false`;
-    const res = await fetch(url);
-    if (!res.ok) {
-      console.error("OSRM error:", res.status, await res.text());
-      return null;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.code === "Ok" && data.routes?.length > 0) {
+        const route = data.routes[0];
+        return {
+          distanceMiles: route.distance / 1609.344,
+          durationMinutes: Math.round(route.duration / 60),
+        };
+      }
+    } else {
+      console.warn("OSRM unavailable:", res.status);
     }
-    const data = await res.json();
-    if (data.code === "Ok" && data.routes?.length > 0) {
-      const route = data.routes[0];
-      return {
-        distanceMiles: (route.distance / 1609.344),
-        durationMinutes: Math.round(route.duration / 60),
-      };
-    }
-    return null;
   } catch (e) {
-    console.error("Route calc error:", e);
-    return null;
+    console.warn("OSRM failed, using haversine fallback:", (e as Error).message);
   }
+
+  // Haversine fallback: straight-line distance * 1.3 road factor, ~30mph avg
+  const straight = haversineMiles(from, to);
+  const distanceMiles = straight * 1.3;
+  return {
+    distanceMiles,
+    durationMinutes: Math.round((distanceMiles / 30) * 60),
+    estimated: true,
+  };
 }
 
 serve(async (req) => {
@@ -99,12 +121,6 @@ serve(async (req) => {
     }
 
     const routeResult = await calculateRoute(fromCoords, toCoords);
-    if (!routeResult) {
-      return new Response(
-        JSON.stringify({ error: "Could not calculate route" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
 
     const returnDistance =
       instructor_home_postcode && to_postcode !== instructor_home_postcode
@@ -114,6 +130,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
+        estimated: routeResult.estimated ?? false,
         from_postcode,
         to_postcode: destinationPostcode,
         one_way_miles: Number(routeResult.distanceMiles.toFixed(1)),
