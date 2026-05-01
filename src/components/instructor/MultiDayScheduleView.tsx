@@ -303,13 +303,13 @@ function ScheduleListRow({
       onClick={onClick}
       style={{
         display: "flex",
-        alignItems: "center",
-        gap: 12,
+        alignItems: "stretch",
+        gap: 14,
         width: "100%",
         textAlign: "left",
         background: "transparent",
         border: "none",
-        padding: "12px 8px",
+        padding: "14px 6px",
         cursor: "pointer",
         fontFamily: FONT_STACK,
       }}
@@ -318,20 +318,23 @@ function ScheduleListRow({
       <div
         style={{
           flexShrink: 0,
-          minWidth: 50,
+          minWidth: 56,
           display: "flex",
           flexDirection: "column",
           alignItems: "flex-end",
+          justifyContent: "center",
+          paddingTop: 2,
         }}
       >
         <span
           style={{
-            fontSize: 14,
-            fontWeight: 500,
+            fontSize: 18,
+            fontWeight: 600,
             color: "#000000",
-            letterSpacing: "-0.1px",
+            letterSpacing: "-0.3px",
             fontVariantNumeric: "tabular-nums",
             textDecoration: struck ? "line-through" : "none",
+            lineHeight: 1.1,
           }}
         >
           {timeText}
@@ -339,10 +342,11 @@ function ScheduleListRow({
         {durationText && (
           <span
             style={{
-              fontSize: 11,
-              color: "#6E6E73",
-              marginTop: 1,
+              fontSize: 11.5,
+              color: "#8E8E93",
+              marginTop: 4,
               fontVariantNumeric: "tabular-nums",
+              fontWeight: 500,
             }}
           >
             {durationText}
@@ -350,58 +354,81 @@ function ScheduleListRow({
         )}
       </div>
 
-      {/* Source colour bar */}
+      {/* Card with left accent border */}
       <div
         style={{
-          flexShrink: 0,
-          width: 3,
-          height: 36,
-          borderRadius: 2,
-          backgroundColor: accentColor,
+          flex: 1,
+          minWidth: 0,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          background: "#FFFFFF",
+          borderRadius: 16,
+          padding: "14px 14px 14px 12px",
+          minHeight: 72,
+          boxShadow:
+            "0 1px 2px rgba(16,24,40,0.04), 0 6px 18px -10px rgba(16,24,40,0.08)",
+          position: "relative",
+          overflow: "hidden",
         }}
-      />
-
-      {/* Title + subtitle */}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      >
+        {/* Coloured left border */}
         <div
           style={{
-            fontSize: 14,
-            fontWeight: 500,
-            color: "#000000",
-            letterSpacing: "-0.1px",
-            margin: "0 0 1px",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            textDecoration: struck ? "line-through" : "none",
+            position: "absolute",
+            left: 0,
+            top: 10,
+            bottom: 10,
+            width: 4,
+            borderRadius: 4,
+            backgroundColor: accentColor,
           }}
-        >
-          {title}
-        </div>
-        {subtitle && (
+        />
+
+        {/* Title + subtitle */}
+        <div style={{ flex: 1, minWidth: 0, paddingLeft: 6 }}>
           <div
             style={{
-              fontSize: 12,
-              color: "#6E6E73",
-              margin: 0,
+              fontSize: 15.5,
+              fontWeight: 600,
+              color: "#000000",
+              letterSpacing: "-0.2px",
+              margin: "0 0 3px",
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
               textDecoration: struck ? "line-through" : "none",
+              lineHeight: 1.2,
             }}
           >
-            {subtitle}
+            {title}
           </div>
+          {subtitle && (
+            <div
+              style={{
+                fontSize: 12.5,
+                color: "#6E6E73",
+                margin: 0,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                textDecoration: struck ? "line-through" : "none",
+                lineHeight: 1.3,
+              }}
+            >
+              {subtitle}
+            </div>
+          )}
+        </div>
+
+        <StatusPill status={statusPill} />
+
+        {showChevron && (
+          <ChevronRight
+            style={{ width: 14, height: 14, color: "#C7C7CC", flexShrink: 0, strokeWidth: 1.8 }}
+          />
         )}
       </div>
-
-      <StatusPill status={statusPill} />
-
-      {showChevron && (
-        <ChevronRight
-          style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0, strokeWidth: 1.6 }}
-        />
-      )}
     </button>
   );
 }
