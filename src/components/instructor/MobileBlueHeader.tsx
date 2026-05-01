@@ -123,7 +123,7 @@ export function MobileBlueHeader({
             style={{ width: 32, height: 32 }}
             aria-label="Menu"
           >
-            <Menu size={20} strokeWidth={1.8} color={ICON_COLOR} />
+            <Menu size={18} strokeWidth={1.7} color={ICON_COLOR} />
           </button>
         </div>
       </div>
