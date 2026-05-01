@@ -14,7 +14,7 @@ export interface AppearanceSettings {
 const QUERY_KEY = "instructor-appearance";
 
 const defaultAppearance: AppearanceSettings = {
-  layoutStyle: "premium-ios",
+  layoutStyle: "premium",
   heroImageUrl: null,
   wallpaperColor: null,
 };
@@ -43,7 +43,7 @@ export function useInstructorAppearance(instructorId: string | undefined) {
         const rawColor = data.wallpaper_color as string | null;
         const normalizedColor = rawColor?.toUpperCase() === "#E8F1FE" ? null : rawColor;
         return {
-          layoutStyle: (data.home_layout_style as LayoutStyle) || "premium-ios",
+          layoutStyle: (data.home_layout_style as LayoutStyle) || "premium",
           heroImageUrl: data.hero_image_url as string | null,
           wallpaperColor: normalizedColor,
         };
