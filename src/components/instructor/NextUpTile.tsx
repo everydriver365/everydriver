@@ -673,9 +673,9 @@ export function NextUpTile({
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="overflow-hidden"
-            style={{ marginLeft: -16, marginRight: -16, marginBottom: -16 }}
+            style={{ marginLeft: 0, marginRight: 0, marginBottom: -16, marginTop: 4 }}
           >
-          <div style={{ padding: "20px 16px 20px", display: "flex", flexDirection: "column", gap: 24, borderTop: "0.5px solid #E5E5EA", background: "#F2F2F7" }}>
+          <div style={{ padding: "20px 0 20px", display: "flex", flexDirection: "column", gap: 24, borderTop: "0.5px solid #E5E5EA", background: "transparent" }}>
 
           {/* ── HERO + PRIMARY ACTIONS card (elevated) ── */}
           <div style={{
