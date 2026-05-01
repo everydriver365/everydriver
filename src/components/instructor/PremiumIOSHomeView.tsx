@@ -21,7 +21,7 @@ import {
 import { useState } from "react";
 import { format } from "date-fns";
 import { HomeToolsHub } from "@/components/instructor/HomeToolsHub";
-import { NextLessonTile as RichNextLessonTile } from "@/components/instructor/NextLessonTile";
+import { NextUpTile } from "@/components/instructor/NextUpTile";
 
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
@@ -215,7 +215,24 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
       {/* SECTION: Next lesson tile (rich, with avatar / ETA / route recorder) */}
       <section className="mt-4">
         {instructorId && nextLesson ? (
-          <RichNextLessonTile instructorId={instructorId} />
+          <NextUpTile
+            lessonId={nextLesson.lessonId}
+            pupilId={nextLesson.pupilId}
+            pupilName={nextLesson.pupilName}
+            pupilProfileImage={nextLesson.pupilProfileImage}
+            pupilPhone={nextLesson.pupilPhone}
+            lessonDate={nextLesson.lessonDate}
+            pickupPostcode={nextLesson.pickupPostcode}
+            pickupLocation={nextLesson.pickupLocation}
+            startTime={nextLesson.startTime}
+            minutesUntil={nextLesson.minutesUntil}
+            accountBalance={nextLesson.accountBalance}
+            prepaidHours={nextLesson.prepaidHours}
+            durationMinutes={nextLesson.durationMinutes}
+            instructorId={instructorId}
+            checkInStatus={nextLesson.checkInStatus}
+            lastLessonPlan={nextLesson.lastLessonPlan}
+          />
         ) : (
           <div
             className="bg-white rounded-[22px] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_28px_-12px_rgba(16,24,40,0.08)] overflow-hidden"
