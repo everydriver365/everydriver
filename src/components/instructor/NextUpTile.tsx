@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { format, parse, isToday, isTomorrow, parseISO } from "date-fns";
+import { format, parse, isToday, isTomorrow, parseISO, formatDistanceToNowStrict } from "date-fns";
 import { a11yPx } from "@/lib/a11yScale";
 import {
   Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, ChevronDown,
@@ -13,7 +13,7 @@ import { useAdminUnreadForPupil } from "@/hooks/useAdminUnreadForPupil";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { EndLessonWizard } from "./EndLessonWizard";
@@ -154,6 +154,26 @@ export function NextUpTile({
       });
   }, [instructorId]);
   const expectedEarnings = (durationMinutes / 60) * hourlyRate;
+
+  // Last completed lesson for this pupil — read-only summary shown in expanded view.
+  const { data: lastLesson } = useQuery({
+    queryKey: ["next-up-tile-last-lesson", instructorId, pupilId],
+    enabled: !!instructorId && !!pupilId && expanded,
+    staleTime: 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("lesson_history")
+        .select("lesson_date, start_time, duration_minutes, skills_practiced, notes, rating")
+        .eq("instructor_id", instructorId!)
+        .eq("pupil_id", pupilId)
+        .order("lesson_date", { ascending: false })
+        .order("start_time", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) return null;
+      return data;
+    },
+  });
   const { currentWeather, alerts: drivingAlerts } = useDrivingAlerts(instructorId);
   const { devices } = useVehicleHealth();
   const trafficAlerts = drivingAlerts.filter(a => a.type === "traffic" || a.type === "road");
@@ -899,6 +919,99 @@ export function NextUpTile({
                     </div>
                   </>
                 )}
+
+                {/* ── SECTION 2.5 — Last lesson (read-only summary) ── */}
+                <div style={{
+                  fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73",
+                  letterSpacing: 0.3, textTransform: "uppercase", margin: "0 0 8px",
+                }}>
+                  Last lesson
+                </div>
+                <div style={{
+                  background: "#FFFFFF", border: "0.5px solid #E5E5EA",
+                  borderRadius: 12, padding: 14, marginBottom: 18,
+                }}>
+                  {lastLesson ? (
+                    (() => {
+                      const dateStr = (() => {
+                        try {
+                          const d = parseISO(lastLesson.lesson_date as string);
+                          const rel = formatDistanceToNowStrict(d, { addSuffix: true });
+                          return `${rel} · ${format(d, "EEE d MMM")}`;
+                        } catch { return String(lastLesson.lesson_date); }
+                      })();
+                      const skills: string[] = Array.isArray((lastLesson as any).skills_practiced)
+                        ? (lastLesson as any).skills_practiced.filter(Boolean)
+                        : [];
+                      const note: string | null = (lastLesson as any).notes || null;
+                      const rating: number | null = (lastLesson as any).rating || null;
+                      return (
+                        <>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                            <div style={{
+                              width: 32, height: 32, borderRadius: 8, background: "#F1ECFA",
+                              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                            }}>
+                              <BookOpen style={{ width: 16, height: 16, color: "#8A5BC9" }} strokeWidth={2} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000" }}>
+                                {dateStr}
+                              </div>
+                              {rating != null && rating > 0 && (
+                                <div style={{ fontSize: a11yPx(11), color: "#6E6E73", marginTop: 1 }}>
+                                  Rating: {"★".repeat(rating)}{"☆".repeat(Math.max(0, 5 - rating))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          {skills.length > 0 && (
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: note ? 10 : 0 }}>
+                              {skills.slice(0, 6).map((s, i) => (
+                                <span key={i} style={{
+                                  fontSize: a11yPx(11), color: "#5856D6",
+                                  background: "rgba(88,86,214,0.10)",
+                                  padding: "3px 8px", borderRadius: 999,
+                                }}>{s}</span>
+                              ))}
+                              {skills.length > 6 && (
+                                <span style={{ fontSize: a11yPx(11), color: "#6E6E73", padding: "3px 4px" }}>
+                                  +{skills.length - 6} more
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          {note && (
+                            <div style={{
+                              fontSize: a11yPx(12), color: "#3C3C43", lineHeight: 1.45,
+                              display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                            }}>
+                              {note}
+                            </div>
+                          )}
+                          {!skills.length && !note && (
+                            <div style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>
+                              No notes recorded for the last lesson.
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{
+                        width: 32, height: 32, borderRadius: 8, background: "#F2F2F7",
+                        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                      }}>
+                        <BookOpen style={{ width: 16, height: 16, color: "#8E8E93" }} strokeWidth={2} />
+                      </div>
+                      <div style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>
+                        No previous lessons yet
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* ── SECTION 3 — Start track CTA ── */}
                 {!trackerDismissed && (
