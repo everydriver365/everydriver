@@ -244,16 +244,15 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </section>
       )}
 
-      {/* 3. Today's schedule — HERO (premium, spacious) */}
-      <section className="px-6 mb-8">
-        <Card className="shadow-[0_2px_4px_rgba(16,24,40,0.04),0_16px_40px_-12px_rgba(16,24,40,0.12)]">
-          {/* Larger header */}
-          <div className="flex items-center justify-between px-7 pt-7 pb-2">
-            <div>
-              <h2 className="text-[26px] font-bold tracking-tight text-[#1C1C1E] leading-tight">
+      {/* 3. Today's schedule — main section, balanced */}
+      <section className="px-6 mb-5">
+        <Card>
+          <div className="flex items-center justify-between px-5 pt-4 pb-1">
+            <div className="min-w-0">
+              <h2 className="text-[19px] font-bold tracking-tight text-[#1C1C1E] leading-tight">
                 Today's schedule
               </h2>
-              <p className="text-[14px] text-[#3C3C43]/60 mt-1">
+              <p className="text-[13px] text-[#3C3C43]/60 mt-0.5">
                 {previewLessons.length === 0
                   ? "Nothing booked yet"
                   : `${lessonsToday} lesson${lessonsToday === 1 ? "" : "s"} planned`}
@@ -261,27 +260,27 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
             </div>
             <button
               onClick={() => navigate("/instructor/schedule")}
-              className="flex items-center gap-1 text-[15px] font-semibold text-[#007AFF] active:opacity-60 transition-opacity shrink-0 ml-3"
+              className="flex items-center gap-0.5 text-[14px] font-semibold text-[#007AFF] active:opacity-60 transition-opacity shrink-0 ml-2"
             >
               View all
-              <ChevronRight className="size-[16px]" />
+              <ChevronRight className="size-[15px]" />
             </button>
           </div>
 
           {previewLessons.length === 0 ? (
-            <div className="px-7 pt-6 pb-10 text-center">
-              <div className="size-14 rounded-full bg-[#F2F2F7] flex items-center justify-center mx-auto mb-4">
-                <CalendarPlus className="size-[26px] text-[#3C3C43]/50" />
+            <div className="px-5 pt-3 pb-6 text-center">
+              <div className="size-12 rounded-full bg-[#F2F2F7] flex items-center justify-center mx-auto mb-3">
+                <CalendarPlus className="size-[22px] text-[#3C3C43]/50" />
               </div>
-              <p className="text-[17px] font-medium text-[#1C1C1E]">
+              <p className="text-[15px] font-medium text-[#1C1C1E]">
                 No lessons scheduled today
               </p>
-              <p className="text-[14px] text-[#3C3C43]/60 mt-1">
+              <p className="text-[13px] text-[#3C3C43]/60 mt-0.5">
                 Add one to get started
               </p>
             </div>
           ) : (
-            <div className="pt-3 pb-2">
+            <div className="pt-2 pb-1">
               {previewLessons.map((lesson, i) => {
                 const initials = (lesson.pupilName || "?")
                   .split(" ")
@@ -322,24 +321,24 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                       onClick={() =>
                         navigate(`/instructor/schedule?lessonId=${lesson.id}`)
                       }
-                      className="w-full flex items-stretch gap-4 px-7 py-5 active:bg-black/[0.03] transition-colors text-left"
+                      className="w-full flex items-center gap-3 px-5 py-3 active:bg-black/[0.03] transition-colors text-left"
                     >
                       {/* Accent bar */}
                       <div
-                        className="w-[3px] rounded-full shrink-0 self-stretch"
+                        className="w-[3px] h-12 rounded-full shrink-0"
                         style={{ backgroundColor: accentColor }}
                       />
                       {/* Time block */}
-                      <div className="w-[72px] shrink-0 flex flex-col justify-center">
-                        <div className="text-[28px] font-bold tracking-tight text-[#1C1C1E] tabular-nums leading-none">
+                      <div className="w-[58px] shrink-0">
+                        <div className="text-[20px] font-bold tracking-tight text-[#1C1C1E] tabular-nums leading-none">
                           {lesson.startTime?.slice(0, 5) || "--:--"}
                         </div>
-                        <div className="text-[13px] font-medium text-[#3C3C43]/55 mt-1.5 tabular-nums">
+                        <div className="text-[12px] font-medium text-[#3C3C43]/55 mt-1 tabular-nums">
                           {durationLabel}
                         </div>
                       </div>
                       {/* Avatar */}
-                      <div className="size-14 rounded-full bg-[#E5E5EA] text-[#3C3C43] flex items-center justify-center text-[16px] font-semibold shrink-0 overflow-hidden self-center">
+                      <div className="size-11 rounded-full bg-[#E5E5EA] text-[#3C3C43] flex items-center justify-center text-[14px] font-semibold shrink-0 overflow-hidden">
                         {lesson.pupilProfileImageUrl ? (
                           <img
                             src={lesson.pupilProfileImageUrl}
@@ -351,11 +350,11 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                         )}
                       </div>
                       {/* Pupil + meta */}
-                      <div className="flex-1 min-w-0 flex flex-col justify-center">
-                        <div className="text-[18px] font-semibold text-[#1C1C1E] tracking-tight truncate">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[15px] font-semibold text-[#1C1C1E] tracking-tight break-words">
                           {lesson.pupilName || "Pupil"}
                         </div>
-                        <div className="text-[14px] text-[#3C3C43]/65 mt-1 truncate">
+                        <div className="text-[12.5px] text-[#3C3C43]/65 mt-0.5 truncate">
                           {[
                             lesson.lessonType || "Lesson",
                             lesson.pickupLocation || lesson.pickupPostcode,
@@ -363,16 +362,15 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                             .filter(Boolean)
                             .join(" · ")}
                         </div>
-                        <span
-                          className={`inline-flex self-start text-[11px] font-semibold px-2 py-0.5 rounded-full mt-2 ${statusClasses}`}
-                        >
-                          {statusLabel}
-                        </span>
                       </div>
-                      <ChevronRight className="size-[18px] text-[#3C3C43]/35 shrink-0 self-center" />
+                      <span
+                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${statusClasses}`}
+                      >
+                        {statusLabel}
+                      </span>
                     </button>
                     {i < previewLessons.length - 1 && (
-                      <div className="ml-[112px] mr-7 border-t border-black/[0.05]" />
+                      <div className="ml-[88px] mr-5 border-t border-black/[0.05]" />
                     )}
                   </div>
                 );
@@ -382,9 +380,9 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
           <div className="border-t border-black/[0.05]">
             <button
               onClick={() => navigate("/instructor/schedule?action=add")}
-              className="w-full flex items-center justify-center gap-2 py-6 text-[16px] font-semibold text-[#007AFF] active:bg-black/[0.03] transition-colors"
+              className="w-full flex items-center justify-center gap-1.5 py-3.5 text-[14px] font-semibold text-[#007AFF] active:bg-black/[0.03] transition-colors"
             >
-              <Plus className="size-[20px]" />
+              <Plus className="size-[17px]" />
               Add lesson
             </button>
           </div>
