@@ -1105,7 +1105,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                               subtitle={subtitleParts[0]}
                               metaLine={location || null}
                               statusPill={status as any}
-                              showChevron={true}
+                              showChevron={false}
                               struck={false}
                               kind="lesson"
                               isOverdue={
