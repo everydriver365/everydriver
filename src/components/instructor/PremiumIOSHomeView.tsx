@@ -263,6 +263,57 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         )}
       </section>
 
+      {/* Smart inline alert: leave-soon prompt for next lesson (uses existing data) */}
+      {(() => {
+        if (!nextLesson) return null;
+        const m = nextLesson.minutesUntil;
+        // Only relevant when next lesson is today and within the next ~45 min
+        if (m <= 0 || m > 45) return null;
+        const hhmm = (nextLesson.startTime || "").slice(0, 5);
+        const label =
+          m <= 15
+            ? `Leave now for your ${hhmm} lesson`
+            : `Leave in ${m - 10} min for your ${hhmm} lesson`;
+        return (
+          <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-[14px] bg-[#FFF6E0] text-[#8A5A00]">
+            <Clock className="size-[14px] shrink-0" />
+            <span className="text-[12.5px] font-medium leading-snug">{label}</span>
+          </div>
+        );
+      })()}
+
+      {/* Contextual nudges (conditional, subtle) */}
+      {(() => {
+        const nudges: Array<{ key: string; icon: React.ReactNode; label: string; onClick?: () => void }> = [];
+        const testTomorrow = (tomorrowLessons || []).find((l: any) => {
+          const t = (l.lessonType || "").toLowerCase();
+          return t.includes("test");
+        });
+        if (testTomorrow) {
+          nudges.push({
+            key: "test-tomorrow",
+            icon: <GraduationCap className="size-[14px]" />,
+            label: `Pupil test tomorrow — ${testTomorrow.pupilName || "review prep"}`,
+            onClick: () => navigate("/instructor/schedule"),
+          });
+        }
+        if (!nudges.length) return null;
+        return (
+          <div className="mt-3 flex flex-col gap-2">
+            {nudges.map((n) => (
+              <button
+                key={n.key}
+                onClick={n.onClick}
+                className="flex items-center gap-2 px-3 py-2 rounded-[14px] bg-[#EEF4FF] text-[#1A4FB8] active:opacity-80 transition-opacity text-left"
+              >
+                <span className="shrink-0">{n.icon}</span>
+                <span className="text-[12.5px] font-medium leading-snug truncate">{n.label}</span>
+              </button>
+            ))}
+          </div>
+        );
+      })()}
+
       {/* SECTION 2: Needs attention — single card, 64px rows */}
       {attentionRows.length > 0 && (
         <section className="mt-4">
