@@ -1360,3 +1360,54 @@ export default function InstructorLiveSession() {
     </InstructorPortalLayout>
   );
 }
+
+interface SecondaryToolProps {
+  icon: React.ReactNode;
+  bg: string;
+  label: string;
+  onClick: () => void;
+}
+
+function SecondaryTool({ icon, bg, label, onClick }: SecondaryToolProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        background: "#FFFFFF",
+        border: "0.5px solid #E5E5EA",
+        borderRadius: 14,
+        padding: "12px 8px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        cursor: "pointer",
+        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+        transition: "transform 150ms",
+      }}
+      onPointerDown={(e) => (e.currentTarget.style.transform = "scale(0.97)")}
+      onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+      onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+    >
+      <span
+        aria-hidden
+        style={{
+          width: 30,
+          height: 30,
+          borderRadius: 9,
+          background: bg,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {icon}
+      </span>
+      <span style={{ fontSize: 11, fontWeight: 500, color: "#000", letterSpacing: -0.1 }}>
+        {label}
+      </span>
+    </button>
+  );
+}
