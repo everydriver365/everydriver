@@ -398,7 +398,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     label,
     active = false,
     destructive = false,
-    index = 0,
     onClick,
     children,
   }: {
@@ -410,30 +409,36 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     onClick: () => void;
     children?: ReactNode;
   }) => {
-    const tint = drawerIconTint(index);
     return (
       <button
         type="button"
         onClick={onClick}
         className={cn(
-          "relative flex w-full items-center gap-3 rounded-[8px] px-2 py-2 text-left transition-colors",
-          active ? "bg-[hsl(var(--dsm-tint-blue-bg))]" : "hover:bg-[hsl(var(--dsm-card)/0.72)]"
+          "relative flex w-full items-center gap-3 rounded-[10px] px-2.5 py-2 text-left transition-colors",
+          active
+            ? "bg-[hsl(var(--dsm-tint-blue-bg)/0.85)]"
+            : "hover:bg-[hsl(var(--dsm-card)/0.6)] active:bg-[hsl(var(--dsm-card)/0.8)]"
         )}
       >
-        <span
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px]"
-          style={{ backgroundColor: active ? "hsl(var(--dsm-card))" : destructive ? "hsl(var(--dsm-tint-red-bg))" : tint.bg }}
-        >
-          <Icon
-            className="h-[18px] w-[18px]"
-            strokeWidth={1.8}
-            style={{ color: active ? "hsl(var(--dsm-tint-blue-fg))" : destructive ? "hsl(var(--dsm-tint-red-fg))" : tint.fg }}
-          />
-        </span>
+        <Icon
+          className="h-[18px] w-[18px] shrink-0"
+          strokeWidth={1.8}
+          style={{
+            color: active
+              ? "hsl(var(--dsm-tint-blue-fg))"
+              : destructive
+                ? "hsl(var(--dsm-tint-red-fg))"
+                : "hsl(var(--dsm-text-secondary))",
+          }}
+        />
         <span
           className={cn(
-            "min-w-0 flex-1 truncate text-[14px] font-medium leading-5 tracking-normal",
-            active ? "text-[hsl(var(--dsm-tint-blue-fg))]" : destructive ? "text-[hsl(var(--dsm-tint-red-fg))]" : "text-[hsl(var(--dsm-text))]"
+            "min-w-0 flex-1 truncate text-[14.5px] leading-5 tracking-[-0.1px]",
+            active
+              ? "font-semibold text-[hsl(var(--dsm-tint-blue-fg))]"
+              : destructive
+                ? "font-medium text-[hsl(var(--dsm-tint-red-fg))]"
+                : "font-medium text-[hsl(var(--dsm-text))]"
           )}
         >
           {label}
@@ -442,6 +447,48 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
       </button>
     );
   };
+
+  const DrawerSectionLabel = ({ children }: { children: ReactNode }) => (
+    <div className="px-2.5 pt-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.6px] text-[hsl(var(--dsm-text-secondary)/0.75)]">
+      {children}
+    </div>
+  );
+
+  // Friendly label override (sentence case, shorter)
+  const friendlyLabel = (label: string) =>
+    label === "Test Results" ? "Test results"
+    : label === "Test Swap" ? "Test swap"
+    : label === "GPS Tracking" ? "GPS tracking"
+    : label === "Contact Admin" ? "Contact admin"
+    : label === "Visitor Chats" ? "Visitor chats"
+    : label === "Fill Gaps" ? "Fill gaps"
+    : label === "Saved Routes" ? "Saved routes"
+    : label === "Mini Website" ? "Mini website"
+    : label;
+
+  // Curated drawer sections (routes & items unchanged — just re-ordered/grouped)
+  const drawerPrimaryHrefs = ["/instructor", "/instructor/schedule", "/instructor/pupils", "/instructor/pay"];
+  const drawerSecondaryHrefs = [
+    "/instructor/availability",
+    "/instructor/pending-scheduling",
+    "/instructor/test-results",
+    "/instructor/test-requests",
+    "/instructor/jobs",
+  ];
+  const drawerPrimary = drawerPrimaryHrefs
+    .map((h) => sidebarLinks.find((l) => l.href === h))
+    .filter(Boolean) as typeof sidebarLinks;
+  const drawerSecondary = drawerSecondaryHrefs
+    .map((h) => sidebarLinks.find((l) => l.href === h))
+    .filter(Boolean) as typeof sidebarLinks;
+  const usedHrefs = new Set([...drawerPrimaryHrefs, ...drawerSecondaryHrefs]);
+  // Preserve original group order for the rest
+  const drawerExtraGroups = sidebarGroups
+    .map((g) => ({
+      label: g.label,
+      items: g.items.filter((i) => !usedHrefs.has(i.href)),
+    }))
+    .filter((g) => g.items.length > 0);
 
   if (loading) {
     return (
