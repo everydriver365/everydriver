@@ -12,16 +12,18 @@ const RED = "#C8434F";
 
 export function HomeGreeting({ greeting, statusSubtitle, statusParts }: HomeGreetingProps) {
   return (
-    <div style={{ padding: "6px 20px 0", marginBottom: 32 }}>
+    <div style={{ padding: "6px 20px 0", marginBottom: 32, overflow: "visible" }}>
       <h1
         style={{
           fontSize: 30,
           fontWeight: 500,
           color: "#000000",
           letterSpacing: "-0.6px",
-          lineHeight: 1.3,
-          margin: "0 0 6px",
-          paddingBottom: 4,
+          lineHeight: 1.4,
+          margin: "0 0 8px",
+          paddingBottom: 6,
+          overflow: "visible",
+          minHeight: "1.4em",
         }}
       >
         {greeting}
