@@ -89,6 +89,7 @@ interface NextUpTileProps {
   durationMinutes?: number;
   instructorId?: string;
   checkInStatus?: string | null;
+  lessonStatus?: string | null;
   lastLessonPlan?: string | null;
 }
 
