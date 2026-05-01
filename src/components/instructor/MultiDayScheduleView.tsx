@@ -281,6 +281,8 @@ function ScheduleListRow({
   struck,
   isOverdue,
   kind,
+  completion,
+  needsAttention,
   onClick,
 }: {
   timeText: string;
@@ -294,6 +296,8 @@ function ScheduleListRow({
   struck: boolean;
   isOverdue?: boolean;
   kind?: "lesson" | "external" | "block" | "allday";
+  completion?: { eol?: boolean; payment?: boolean; notes?: boolean };
+  needsAttention?: boolean;
   onClick?: () => void;
 }) {
   const Icon = kind === "lesson" ? User : CalendarDays;
