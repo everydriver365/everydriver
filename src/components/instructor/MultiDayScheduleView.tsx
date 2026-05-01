@@ -594,6 +594,9 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   const [instructorName, setInstructorName] = useState<string>("Your instructor");
   const [lessonForText, setLessonForText] = useState<ScheduledLesson | null>(null);
   const [bufferMinutes, setBufferMinutes] = useState<number>(0);
+  // Set of `${pupil_id}|${lesson_date}|${HH:MM:SS}` keys for lessons whose
+  // end-of-lesson procedure has been recorded in lesson_history.
+  const [eolDoneKeys, setEolDoneKeys] = useState<Set<string>>(new Set());
 
   // Default travel allowance applied symmetrically when surfacing fill-gap slots
   // (overridden by real ETA in the per-pupil text flow).
@@ -621,7 +624,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
     const toISO = endOfDay(addDays(startDate, DAYS_TO_LOAD - 1)).toISOString();
 
     try {
-      const [lessonsRes, externalRes, blocksRes] = await Promise.all([
+      const [lessonsRes, externalRes, blocksRes, historyRes] = await Promise.all([
         supabase
           .from("scheduled_lessons")
           .select(`
@@ -650,6 +653,12 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
           .eq("instructor_id", instructorId)
           .gte("start_datetime", fromISO)
           .lte("start_datetime", toISO),
+        supabase
+          .from("lesson_history")
+          .select("pupil_id, lesson_date, start_time")
+          .eq("instructor_id", instructorId)
+          .gte("lesson_date", from)
+          .lte("lesson_date", to),
       ]);
 
       const transformedLessons = (lessonsRes.data || []).map((l: any) => ({
@@ -681,6 +690,18 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
       });
       setExternalEvents(events);
       setManualBlocks(blocksRes.data || []);
+
+      // Build a Set of EOL-completed keys from lesson_history
+      const eolSet = new Set<string>();
+      for (const row of (historyRes.data || []) as any[]) {
+        const pupilId = row.pupil_id;
+        const date = row.lesson_date;
+        const t: string | null = row.start_time;
+        if (!pupilId || !date || !t) continue;
+        const norm = t.length === 5 ? `${t}:00` : t;
+        eolSet.add(`${pupilId}|${date}|${norm}`);
+      }
+      setEolDoneKeys(eolSet);
     } catch (e) {
       console.error("Error fetching schedule data:", e);
     } finally {
@@ -733,6 +754,16 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
           event: "*",
           schema: "public",
           table: "instructor_manual_blocks",
+          filter: `instructor_id=eq.${instructorId}`,
+        },
+        trigger,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "lesson_history",
           filter: `instructor_id=eq.${instructorId}`,
         },
         trigger,
@@ -1160,15 +1191,22 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                           sendingMessage={sendingMessage}
                           onDelete={handleDeleteLesson}
                           renderCustomCollapsed={(() => {
-                            // Compute completion + attention from existing data only
-                            const isCompleted = lesson.status === "completed";
+                            // Compute completion + attention from existing data only.
+                            // EOL is "done" when a lesson_history row exists for this
+                            // pupil/date/time, or status is completed.
+                            const startNorm = lesson.start_time.length === 5
+                              ? `${lesson.start_time}:00`
+                              : lesson.start_time;
+                            const eolKey = `${lesson.pupil?.id}|${lesson.lesson_date}|${startNorm}`;
+                            const eolDone = eolDoneKeys.has(eolKey) || lesson.status === "completed";
                             const paymentDone = lesson.payment_status === "paid" || (lesson.prepaid_hours_used ?? 0) > 0;
                             const notesDone = !!(lesson.notes && lesson.notes.trim().length > 0);
                             // Past = lesson end time before now
                             const lessonStart = new Date(`${lesson.lesson_date}T${lesson.start_time}`);
                             const lessonEnd = new Date(lessonStart.getTime() + (lesson.duration_minutes || 60) * 60000);
                             const isPast = lessonEnd.getTime() < Date.now();
-                            const needsAttention = isPast && (!isCompleted || !paymentDone);
+                            const needsAttention = isPast && (!eolDone || !paymentDone);
+                            const showCompletion = eolDone || paymentDone || notesDone;
                             return (
                               <ScheduleListRow
                                 timeText={formatTime(lesson.start_time)}
@@ -1186,8 +1224,8 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                                   (lesson.pupil?.account_balance ?? 0) < 0
                                 }
                                 completion={
-                                  isCompleted
-                                    ? { eol: true, payment: paymentDone, notes: notesDone }
+                                  showCompletion
+                                    ? { eol: eolDone, payment: paymentDone, notes: notesDone }
                                     : undefined
                                 }
                                 needsAttention={needsAttention}
