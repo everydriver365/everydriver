@@ -43,14 +43,14 @@ export function MobileBlueHeader({
     <header
       className="sticky top-0 z-40"
       style={{
-        // Push content clear of the iOS status bar — but no more than that.
-        // Logo row sits 8–12px below the status bar on notched devices and
-        // directly at the top on web/Android.
-        paddingTop: "env(safe-area-inset-top, 0px)",
+        // The native/app shell already owns the status-bar safe area. Adding
+        // env(safe-area-inset-top) here duplicates it and creates the grey
+        // blank banner above the Home header.
+        paddingTop: 0,
         backgroundColor: bg,
       }}
     >
-      <div className="flex h-11 items-center justify-between px-5">
+      <div className="flex h-12 items-center justify-between px-5">
         {/* Left: DSM logo + wordmark (or back) */}
         <div className="flex items-center gap-2.5 min-w-0">
           {showBackButton ? (
