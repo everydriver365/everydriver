@@ -218,6 +218,13 @@
     position: relative;
     z-index: 1;
   }
+  /* Paint the body + safe-area zone the same as the instructor shell so
+     there is no grey strip above the sticky mobile header. Scoped via
+     :has() so it only activates while the instructor portal is mounted. */
+  html:has(.ios-instructor),
+  body:has(.ios-instructor) {
+    background-color: hsl(var(--dsm-bg, 35 17% 96%));
+  }
 
   .dark {
     --background: 0 0% 7%;
