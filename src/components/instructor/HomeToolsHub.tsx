@@ -324,6 +324,11 @@ export function HomeToolsHub() {
     : [];
   const totalSearchResults = searchResults.length + pupilSearchResults.length;
 
+  const handlePupilTap = (pupil: PupilSearchResult) => {
+    if (trimmed) persistRecent(query);
+    navigate(`/instructor/pupils/${pupil.id}`);
+  };
+
   const SectionLabel = ({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) => (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 4px 10px" }}>
       <h2 style={{
@@ -429,19 +434,36 @@ export function HomeToolsHub() {
               boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
             }}
           >
-            {searchResults.length === 0 ? (
+            {pupilsLoading && totalSearchResults === 0 ? (
+              <div style={{ padding: 22, textAlign: "center", color: "#8E8E93", fontSize: 13.5 }}>
+                Searching pupils…
+              </div>
+            ) : totalSearchResults === 0 ? (
               <div style={{ padding: 22, textAlign: "center", color: "#8E8E93", fontSize: 13.5 }}>
                 No matches for "{query}"
               </div>
             ) : (
-              searchResults.map((tile, i) => (
-                <div key={tile.id}>
-                  <SearchResultRow tile={tile} onPress={() => handleTap(tile)} />
-                  {i < searchResults.length - 1 && (
-                    <div style={{ marginLeft: 56, height: 0.5, background: "#E5E5EA" }} />
-                  )}
-                </div>
-              ))
+              <>
+                {pupilSearchResults.map((pupil, i) => (
+                  <div key={`pupil-${pupil.id}`}>
+                    <PupilSearchResultRow pupil={pupil} onPress={() => handlePupilTap(pupil)} />
+                    {i < totalSearchResults - 1 && (
+                      <div style={{ marginLeft: 56, height: 0.5, background: "#E5E5EA" }} />
+                    )}
+                  </div>
+                ))}
+                {searchResults.map((tile, i) => {
+                  const resultIndex = pupilSearchResults.length + i;
+                  return (
+                    <div key={tile.id}>
+                      <SearchResultRow tile={tile} onPress={() => handleTap(tile)} />
+                      {resultIndex < totalSearchResults - 1 && (
+                        <div style={{ marginLeft: 56, height: 0.5, background: "#E5E5EA" }} />
+                      )}
+                    </div>
+                  );
+                })}
+              </>
             )}
           </motion.div>
         ) : searchFocused ? (
