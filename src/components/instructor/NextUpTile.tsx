@@ -715,38 +715,41 @@ export function NextUpTile({
             </div>
           )}
 
-          {/* ── SECTION 1 — Lesson details ── */}
-                <div style={{
-                  fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73",
-                  letterSpacing: 0.3, textTransform: "uppercase", margin: "0 0 8px",
+          {/* ── SECTION 1 — Lesson details (elevated card) ── */}
+          <div>
+            <div style={{
+              fontSize: a11yPx(11), fontWeight: 600, color: "#6E6E73",
+              letterSpacing: 0.4, textTransform: "uppercase", margin: "0 4px 10px",
+            }}>
+              Lesson details
+            </div>
+            <div style={{
+              background: "#FFFFFF", borderRadius: 16, padding: 4,
+              boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+              display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            }}>
+              {[
+                { icon: Clock, label: "Duration", value: formatDuration() },
+                { icon: PoundSterling, label: "Lesson fee", value: `£${expectedEarnings.toFixed(0)}` },
+              ].map((stat, i) => (
+                <div key={stat.label} style={{
+                  padding: 14,
+                  borderLeft: i === 1 ? "0.5px solid #E5E5EA" : "none",
                 }}>
-                  Lesson details
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                    <stat.icon style={{ width: 12, height: 12, color: "#6E6E73" }} strokeWidth={2} />
+                    <span style={{
+                      fontSize: a11yPx(10), color: "#6E6E73", letterSpacing: 0.2,
+                    }}>{stat.label}</span>
+                  </div>
+                  <div style={{
+                    fontSize: a11yPx(18), fontWeight: 600, color: "#000000",
+                    letterSpacing: -0.3, margin: 0,
+                  }}>{stat.value}</div>
                 </div>
-                <div style={{
-                  display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                  gap: 8, marginBottom: 18,
-                }}>
-                  {[
-                    { icon: Clock, label: "Duration", value: formatDuration() },
-                    { icon: PoundSterling, label: "Lesson fee", value: `£${expectedEarnings.toFixed(0)}` },
-                  ].map((stat) => (
-                    <div key={stat.label} style={{
-                      background: "#F8FAFB", border: "0.5px solid #E5E5EA",
-                      borderRadius: 10, padding: 12,
-                    }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                        <stat.icon style={{ width: 12, height: 12, color: "#6E6E73" }} strokeWidth={2} />
-                        <span style={{
-                          fontSize: a11yPx(10), color: "#6E6E73", letterSpacing: 0.2,
-                        }}>{stat.label}</span>
-                      </div>
-                      <div style={{
-                        fontSize: a11yPx(18), fontWeight: 500, color: "#000000",
-                        letterSpacing: -0.3, margin: 0,
-                      }}>{stat.value}</div>
-                    </div>
-                  ))}
-                </div>
+              ))}
+            </div>
+          </div>
 
                 {/* ── SECTION 2 — Conditions ── */}
                 {(etaMinutes > 0 || currentWeather || primaryDevice) && (
