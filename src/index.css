@@ -228,7 +228,184 @@
     background-color: hsl(var(--dsm-page-bg, var(--dsm-bg, 35 17% 96%)));
   }
 
-  .dark {
+  /* ===== Unified Portal Design System (instructor mobile) =====
+     One coherent visual language across every instructor screen.
+     Scoped to .instructor-portal so it cannot leak into pupil/marketing surfaces.
+     All tokens additive — existing --dsm-* tokens above remain untouched. */
+  .instructor-portal {
+    /* Spacing scale */
+    --portal-space-xs: 8px;
+    --portal-space-sm: 12px;
+    --portal-space-md: 16px;
+    --portal-space-lg: 20px;
+    --portal-space-xl: 24px;
+
+    /* Radii */
+    --portal-radius-sm: 12px;
+    --portal-radius-md: 16px;
+    --portal-radius-lg: 22px;
+    --portal-radius-xl: 24px;
+
+    /* Surfaces */
+    --portal-surface: #FFFFFF;
+    --portal-surface-soft: #F7F8FA;
+    --portal-hairline: rgba(0, 0, 0, 0.06);
+    --portal-hairline-strong: rgba(0, 0, 0, 0.10);
+
+    /* Text */
+    --portal-text: #0B0B0F;
+    --portal-text-secondary: #6E6E73;
+    --portal-text-tertiary: #A1A1AA;
+
+    /* Single accent — locked to instructor blue */
+    --portal-accent: #2B7BC8;
+    --portal-accent-soft: #E6F1FB;
+    --portal-accent-strong: #1F2C4A;
+
+    /* Semantic — used sparingly */
+    --portal-success: #1F8A4D;
+    --portal-success-soft: #E8F5EC;
+    --portal-danger: #C8434F;
+    --portal-danger-soft: #FFE8EA;
+    --portal-warning: #B0680B;
+    --portal-warning-soft: #FFF1DA;
+
+    /* Soft shadow — single elevation token */
+    --portal-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.05);
+    --portal-shadow-pressed: 0 0 0 rgba(0, 0, 0, 0);
+
+    /* Motion */
+    --portal-press-duration: 180ms;
+    --portal-press-scale: 0.98;
+  }
+  .instructor-portal.dsm-dark {
+    --portal-surface: #161A22;
+    --portal-surface-soft: #11141B;
+    --portal-hairline: rgba(255, 255, 255, 0.08);
+    --portal-hairline-strong: rgba(255, 255, 255, 0.14);
+    --portal-text: #ECEEF2;
+    --portal-text-secondary: #9AA1AE;
+    --portal-text-tertiary: #6B7280;
+    --portal-accent-soft: rgba(43, 123, 200, 0.18);
+    --portal-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.30);
+  }
+
+  /* Card — soft, single elevation, no nested borders */
+  .instructor-portal .portal-card {
+    background: var(--portal-surface);
+    border-radius: var(--portal-radius-lg);
+    box-shadow: var(--portal-shadow);
+    overflow: hidden;
+  }
+  .instructor-portal .portal-card--flat {
+    background: var(--portal-surface);
+    border-radius: var(--portal-radius-lg);
+    border: 0.5px solid var(--portal-hairline);
+    box-shadow: none;
+    overflow: hidden;
+  }
+  .instructor-portal .portal-card--soft {
+    background: var(--portal-surface-soft);
+    border-radius: var(--portal-radius-lg);
+    box-shadow: none;
+    overflow: hidden;
+  }
+
+  /* Flat list rows — for data/settings screens */
+  .instructor-portal .portal-list {
+    background: var(--portal-surface);
+    border-radius: var(--portal-radius-lg);
+    box-shadow: var(--portal-shadow);
+    overflow: hidden;
+  }
+  .instructor-portal .portal-list > .portal-row + .portal-row,
+  .instructor-portal .portal-list > * + .portal-row {
+    border-top: 0.5px solid var(--portal-hairline);
+  }
+  .instructor-portal .portal-row {
+    display: flex;
+    align-items: center;
+    gap: var(--portal-space-sm);
+    padding: 12px 14px;
+    min-height: 48px;
+  }
+
+  /* Section headers — uppercase muted eyebrow */
+  .instructor-portal .portal-section-header {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--portal-text-secondary);
+    padding: 0 var(--portal-space-xs);
+    margin: 0 0 var(--portal-space-sm);
+  }
+
+  /* Universal tap interaction — applies to every button inside the portal,
+     creating the unified 0.98 press feedback at 180ms across the entire app.
+     Opt out per-element with data-no-press. */
+  .instructor-portal button:not(:disabled):not([data-no-press]),
+  .instructor-portal [role="button"]:not([aria-disabled="true"]):not([data-no-press]) {
+    transition: transform var(--portal-press-duration) ease,
+                background-color 200ms ease,
+                color 200ms ease,
+                border-color 200ms ease,
+                box-shadow 200ms ease,
+                opacity 200ms ease;
+  }
+  .instructor-portal button:not(:disabled):not([data-no-press]):active,
+  .instructor-portal [role="button"]:not([aria-disabled="true"]):not([data-no-press]):active {
+    transform: scale(var(--portal-press-scale));
+  }
+
+  /* Soften legacy bright tinted icon backgrounds inside the portal, so the
+     multi-colour icon system reads as part of one calmer palette. */
+  .instructor-portal [class*="bg-blue-100"],
+  .instructor-portal [class*="bg-green-100"],
+  .instructor-portal [class*="bg-amber-100"],
+  .instructor-portal [class*="bg-yellow-100"],
+  .instructor-portal [class*="bg-purple-100"],
+  .instructor-portal [class*="bg-rose-100"],
+  .instructor-portal [class*="bg-red-100"],
+  .instructor-portal [class*="bg-orange-100"] {
+    filter: saturate(0.85);
+  }
+
+  /* Typography rhythm — quiet body text, semibold headings */
+  .instructor-portal h1 { font-weight: 600; letter-spacing: -0.4px; }
+  .instructor-portal h2 { font-weight: 600; letter-spacing: -0.3px; }
+  .instructor-portal h3 { font-weight: 600; letter-spacing: -0.2px; }
+
+  /* Primary / secondary action helpers — opt-in by class name */
+  .instructor-portal .portal-btn-primary {
+    background: var(--portal-accent);
+    color: #FFFFFF;
+    border: none;
+    border-radius: var(--portal-radius-lg);
+    padding: 16px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.1px;
+    box-shadow: 0 6px 20px -8px rgba(43, 123, 200, 0.55);
+    cursor: pointer;
+  }
+  .instructor-portal .portal-btn-primary:disabled {
+    background: #B8C4D6;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+  .instructor-portal .portal-btn-secondary {
+    background: var(--portal-surface);
+    color: var(--portal-text);
+    border: 0.5px solid var(--portal-hairline-strong);
+    border-radius: var(--portal-radius-lg);
+    padding: 14px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+
     --background: 0 0% 7%;
     --hero-background: 220 47% 15%;
     --foreground: 0 0% 100%;
