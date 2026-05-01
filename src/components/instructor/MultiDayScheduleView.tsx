@@ -13,7 +13,7 @@ import {
   endOfDay,
   differenceInMinutes,
 } from "date-fns";
-import { Loader2, MapPin, Video, ExternalLink, ChevronRight } from "lucide-react";
+import { Loader2, MapPin, Video, ExternalLink, ChevronRight, User, CalendarDays, Clock, Hourglass, AlertCircle } from "lucide-react";
 import { titleCaseName } from "@/lib/titleCase";
 import { supabase } from "@/integrations/supabase/client";
 import { ExpandableLessonCard } from "./ExpandableLessonCard";
