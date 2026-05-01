@@ -337,9 +337,9 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                         </div>
                       </div>
                       <div className="size-11 rounded-full bg-[#E5E5EA] text-[#3C3C43] flex items-center justify-center text-[14px] font-semibold shrink-0 overflow-hidden">
-                        {(lesson as any).pupilProfileImage ? (
+                        {lesson.pupilProfileImageUrl ? (
                           <img
-                            src={(lesson as any).pupilProfileImage}
+                            src={lesson.pupilProfileImageUrl}
                             alt=""
                             className="w-full h-full object-cover"
                           />
