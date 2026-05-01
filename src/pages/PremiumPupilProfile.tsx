@@ -1095,11 +1095,15 @@ export default function PremiumPupilProfile() {
     <div style={{ background: C.bg, minHeight: "100vh", paddingBottom: 96, fontFamily: FONT }}>
       <div style={{ padding: "0 20px" }}>
         {Header}
-        <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
+        {/* Tightly grouped hero → actions → insight → stats */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {MobileHero}
           {MobileActions}
           {SmartInsight}
           {MobileMetrics}
+        </div>
+        {/* Sections below get a bit more air */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 22, marginTop: 24 }}>
           <SectionHeader title="Lessons" />
           {NextLesson}
           {LastLesson}
