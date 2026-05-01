@@ -125,8 +125,8 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
     green: "bg-[#D6F3DD] text-[#1F8E3F]",
   };
 
-  /* ---------------- Today's schedule (max 2 in preview) ---------------- */
-  const previewLessons = (todayLessons || []).slice(0, 2);
+  /* ---------------- Today's schedule (max 4) ---------------- */
+  const previewLessons = (todayLessons || []).slice(0, 4);
   // Color rail per row, cycled in reference order
   const rails = ["#007AFF", "#34C759", "#007AFF", "#34C759"];
 
@@ -349,9 +349,9 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
         </div>
       </section>
 
-      {/* ---------------- Quick actions (4-tile grid) ---------------- */}
-      <section className="px-6 mb-7">
-        <div className="flex items-center justify-between mb-3.5">
+      {/* ---------------- Quick actions (horizontal chips) ---------------- */}
+      <section className="mb-7">
+        <div className="flex items-center justify-between mb-3.5 px-6">
           <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
             Quick actions
           </h2>
@@ -362,39 +362,47 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
             Edit
           </button>
         </div>
-        <div className="grid grid-cols-4 gap-3">
-          <ActionTile
-            icon={<CalendarPlus className="size-[20px]" />}
-            label="Add lesson"
-            tone="blue"
-            onClick={() => navigate("/instructor/schedule?action=add")}
-          />
-          <ActionTile
-            icon={<PoundSterling className="size-[20px]" />}
-            label="Take payment"
-            tone="green"
-            onClick={onPaymentClick}
-          />
-          <ActionTile
-            icon={<MessageCircle className="size-[20px]" />}
-            label="Message"
-            tone="indigo"
-            onClick={() => navigate("/instructor/messages")}
-          />
-          <ActionTile
-            icon={<Clock className="size-[20px]" />}
-            label="Fill gap"
-            tone="amber"
-            onClick={() => navigate("/instructor/schedule?view=gaps")}
-          />
+        <div className="overflow-x-auto scrollbar-none">
+          <div className="flex gap-3 px-6 pb-1">
+            <ActionTile
+              icon={<CalendarPlus className="size-[22px]" />}
+              label="Add lesson"
+              tone="blue"
+              onClick={() => navigate("/instructor/schedule?action=add")}
+            />
+            <ActionTile
+              icon={<PoundSterling className="size-[22px]" />}
+              label="Take payment"
+              tone="green"
+              onClick={onPaymentClick}
+            />
+            <ActionTile
+              icon={<MessageCircle className="size-[22px]" />}
+              label="Message"
+              tone="indigo"
+              onClick={() => navigate("/instructor/messages")}
+            />
+            <ActionTile
+              icon={<Clock className="size-[22px]" />}
+              label="Fill gap"
+              tone="amber"
+              onClick={() => navigate("/instructor/schedule?view=gaps")}
+            />
+            <ActionTile
+              icon={<MoreHorizontal className="size-[22px]" />}
+              label="More"
+              tone="grey"
+              onClick={() => navigate("/instructor/account?tab=quick-actions")}
+            />
+          </div>
         </div>
       </section>
 
-      {/* ---------------- Smart suggestion (soft card) ---------------- */}
+      {/* ---------------- Smart suggestion (soft green card) ---------------- */}
       {firstGap && !suggestionDismissed && gapMins > 0 && (
         <section className="px-6">
-          <div className="rounded-[24px] bg-white border border-black/[0.05] shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-5 flex items-start gap-4 relative">
-            <div className="size-12 rounded-[14px] bg-[#E2F5E8] flex items-center justify-center shrink-0 mt-0.5">
+          <div className="rounded-[24px] bg-[#EFF7F1] border border-[#D6EADD] p-5 flex items-start gap-4 relative">
+            <div className="size-12 rounded-[14px] bg-white flex items-center justify-center shrink-0 mt-0.5 border border-[#CFE6D6]">
               <CalendarCheck className="size-[20px] text-[#1F8E3F]" />
             </div>
             <div className="flex-1 min-w-0 pr-7">
@@ -451,13 +459,13 @@ function ActionTile({
   return (
     <button
       onClick={onClick}
-      className="aspect-square flex flex-col items-start justify-between rounded-[22px] p-3 active:scale-[0.97] transition-transform"
-      style={{ background: t.bg, color: t.fg, minHeight: 88 }}
+      className="shrink-0 flex items-center gap-2.5 rounded-[18px] pl-3 pr-4 active:scale-[0.97] transition-transform"
+      style={{ background: t.bg, color: t.fg, height: 64, minWidth: 132 }}
     >
-      <span className="size-9 rounded-full bg-white/80 flex items-center justify-center">
+      <span className="size-9 rounded-full bg-white/85 flex items-center justify-center shrink-0">
         {icon}
       </span>
-      <span className="text-[13px] font-semibold tracking-tight leading-tight text-left">
+      <span className="text-[13.5px] font-semibold tracking-tight leading-tight text-left">
         {label}
       </span>
     </button>
