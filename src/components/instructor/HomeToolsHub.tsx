@@ -7,6 +7,7 @@ import {
   PoundSterling, BarChart3, Car, Briefcase, type LucideIcon,
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import {
   QUICK_ACCESS_TILES,
   QUICK_ACCESS_TILES_BY_ID,
@@ -26,6 +27,19 @@ interface Category {
   icon: LucideIcon;
   tone: TileTone;
   tileIds: string[];
+}
+
+interface PupilSearchResult {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  postcode: string | null;
+  address: string | null;
+  parent_name: string | null;
+  parent_phone: string | null;
+  lessons_completed: number | null;
+  progress: number | null;
 }
 
 const CATEGORIES: Category[] = [
@@ -181,6 +195,31 @@ function SearchResultRow({ tile, onPress }: { tile: QuickAccessTile; onPress: ()
   );
 }
 
+function PupilSearchResultRow({ pupil, onPress }: { pupil: PupilSearchResult; onPress: () => void }) {
+  const palette = TILE_TONE.green;
+  const subtitleParts = [
+    pupil.phone,
+    pupil.postcode,
+    `${pupil.lessons_completed || 0} lessons`,
+  ].filter(Boolean);
+
+  return (
+    <button type="button" onClick={onPress}
+      style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", background: "#FFFFFF", width: "100%", textAlign: "left", border: 0, cursor: "pointer" }}>
+      <div style={{ width: 30, height: 30, borderRadius: 9, background: palette.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Users size={15} strokeWidth={1.8} color={palette.fg} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14.5, color: "#000", fontWeight: 500 }}>{pupil.name}</div>
+        <div style={{ fontSize: 12, color: "#8E8E93", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {subtitleParts.join(" · ") || pupil.email || pupil.address || "Pupil"}
+        </div>
+      </div>
+      <ChevronRight size={15} color="#C7C7CC" />
+    </button>
+  );
+}
+
 export function HomeToolsHub() {
   const navigate = useNavigate();
   const { instructor, subscription } = useInstructorAuth();
@@ -188,6 +227,8 @@ export function HomeToolsHub() {
   const [query, setQuery] = useState("");
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [pupilSearchResults, setPupilSearchResults] = useState<PupilSearchResult[]>([]);
+  const [pupilsLoading, setPupilsLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
       const raw = localStorage.getItem("instructor.toolsRecentSearches");
