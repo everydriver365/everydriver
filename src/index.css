@@ -133,6 +133,7 @@
   .instructor-portal,
   .dsm-instructor {
     --dsm-bg: 0 0% 92%;             /* #EAEAEA */
+    --dsm-page-bg: 40 20% 96%;      /* #F7F6F3 */
     --background: 0 0% 92%;         /* match for bg-background pages */
     --dsm-card: 0 0% 100%;          /* #FFFFFF */
     --dsm-text: 217 51% 12%;        /* #0F1B2D */
@@ -157,6 +158,7 @@
   .instructor-portal.dsm-dark,
   .dsm-instructor.dsm-dark {
     --dsm-bg: 217 51% 12%;          /* #0F1B2D */
+    --dsm-page-bg: 217 51% 12%;
     --dsm-card: 217 38% 14%;        /* #162035 */
     --dsm-text: 217 100% 95%;       /* #E8F0FF */
     --dsm-text-secondary: 215 27% 40%; /* #4A6280 */
@@ -223,7 +225,7 @@
      :has() so it only activates while the instructor portal is mounted. */
   html:has(.ios-instructor),
   body:has(.ios-instructor) {
-    background-color: hsl(var(--dsm-bg, 35 17% 96%));
+    background-color: hsl(var(--dsm-page-bg, var(--dsm-bg, 35 17% 96%)));
   }
 
   .dark {
