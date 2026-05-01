@@ -187,11 +187,14 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
   return (
     <div className="min-h-screen bg-[#F2F2F7] pb-32 px-4">
       {/* SECTION 1: Greeting / subtext / date pill — strict left-aligned vertical stack */}
-      <header className="pt-2">
+      <header style={{ paddingTop: 6 }}>
         <h1 className="text-[26px] leading-[1.05] font-bold tracking-tight text-[#1C1C1E] truncate">
           {greeting}
         </h1>
-        <p className="mt-1 text-[13px] font-medium text-[#3C3C43]/65 whitespace-nowrap overflow-hidden text-ellipsis">
+        <p
+          className="text-[13px] font-medium text-[#3C3C43]/65 whitespace-nowrap overflow-hidden text-ellipsis"
+          style={{ marginTop: 6 }}
+        >
           <span>{lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today</span>
           {expectedEarnings > 0 && (
             <>
@@ -210,7 +213,8 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </p>
         <button
           onClick={() => navigate("/instructor/schedule")}
-          className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)] active:scale-[0.97] transition-transform"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)] active:scale-[0.97] transition-transform"
+          style={{ marginTop: 10, marginLeft: -2 }}
         >
           <CalendarIcon className="size-[12px] text-[#3C3C43]/70" />
           <span className="text-[12px] font-semibold text-[#1C1C1E]">
