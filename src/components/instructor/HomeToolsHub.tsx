@@ -7,6 +7,7 @@ import {
   PoundSterling, BarChart3, Car, Briefcase, type LucideIcon,
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import {
   QUICK_ACCESS_TILES,
   QUICK_ACCESS_TILES_BY_ID,
@@ -26,6 +27,19 @@ interface Category {
   icon: LucideIcon;
   tone: TileTone;
   tileIds: string[];
+}
+
+interface PupilSearchResult {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  postcode: string | null;
+  address: string | null;
+  parent_name: string | null;
+  parent_phone: string | null;
+  lessons_completed: number | null;
+  progress: number | null;
 }
 
 const CATEGORIES: Category[] = [
@@ -181,6 +195,31 @@ function SearchResultRow({ tile, onPress }: { tile: QuickAccessTile; onPress: ()
   );
 }
 
+function PupilSearchResultRow({ pupil, onPress }: { pupil: PupilSearchResult; onPress: () => void }) {
+  const palette = TILE_TONE.green;
+  const subtitleParts = [
+    pupil.phone,
+    pupil.postcode,
+    `${pupil.lessons_completed || 0} lessons`,
+  ].filter(Boolean);
+
+  return (
+    <button type="button" onClick={onPress}
+      style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", background: "#FFFFFF", width: "100%", textAlign: "left", border: 0, cursor: "pointer" }}>
+      <div style={{ width: 30, height: 30, borderRadius: 9, background: palette.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Users size={15} strokeWidth={1.8} color={palette.fg} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14.5, color: "#000", fontWeight: 500 }}>{pupil.name}</div>
+        <div style={{ fontSize: 12, color: "#8E8E93", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {subtitleParts.join(" · ") || pupil.email || pupil.address || "Pupil"}
+        </div>
+      </div>
+      <ChevronRight size={15} color="#C7C7CC" />
+    </button>
+  );
+}
+
 export function HomeToolsHub() {
   const navigate = useNavigate();
   const { instructor, subscription } = useInstructorAuth();
@@ -188,6 +227,8 @@ export function HomeToolsHub() {
   const [query, setQuery] = useState("");
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [pupilSearchResults, setPupilSearchResults] = useState<PupilSearchResult[]>([]);
+  const [pupilsLoading, setPupilsLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
       const raw = localStorage.getItem("instructor.toolsRecentSearches");
@@ -209,6 +250,43 @@ export function HomeToolsHub() {
   };
 
   const { pinnedIds } = useInstructorPinnedTiles(instructor?.id);
+
+  useEffect(() => {
+    const term = query.trim();
+    if (!instructor?.id || term.length === 0) {
+      setPupilSearchResults([]);
+      setPupilsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    const timeout = window.setTimeout(async () => {
+      setPupilsLoading(true);
+      const pattern = `%${term}%`;
+      const { data, error } = await supabase
+        .from("pupils")
+        .select("id, name, email, phone, postcode, address, parent_name, parent_phone, lessons_completed, progress")
+        .eq("instructor_id", instructor.id)
+        .is("deleted_at", null)
+        .or(`name.ilike.${pattern},email.ilike.${pattern},phone.ilike.${pattern},postcode.ilike.${pattern},address.ilike.${pattern},parent_name.ilike.${pattern},parent_phone.ilike.${pattern}`)
+        .order("name", { ascending: true })
+        .limit(8);
+
+      if (cancelled) return;
+      if (error) {
+        console.error("Error searching pupils:", error);
+        setPupilSearchResults([]);
+      } else {
+        setPupilSearchResults((data || []) as PupilSearchResult[]);
+      }
+      setPupilsLoading(false);
+    }, 180);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
+  }, [query, instructor?.id]);
 
   const isLocked = (tile: QuickAccessTile) =>
     tile.requiredFeature ? !features.includes(tile.requiredFeature) : false;
@@ -244,6 +322,12 @@ export function HomeToolsHub() {
         (t) => t.title.toLowerCase().includes(trimmed) || t.subtitle.toLowerCase().includes(trimmed),
       )
     : [];
+  const totalSearchResults = searchResults.length + pupilSearchResults.length;
+
+  const handlePupilTap = (pupil: PupilSearchResult) => {
+    if (trimmed) persistRecent(query);
+    navigate(`/instructor/pupils/${pupil.id}`);
+  };
 
   const SectionLabel = ({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) => (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 4px 10px" }}>
@@ -350,19 +434,36 @@ export function HomeToolsHub() {
               boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
             }}
           >
-            {searchResults.length === 0 ? (
+            {pupilsLoading && totalSearchResults === 0 ? (
+              <div style={{ padding: 22, textAlign: "center", color: "#8E8E93", fontSize: 13.5 }}>
+                Searching pupils…
+              </div>
+            ) : totalSearchResults === 0 ? (
               <div style={{ padding: 22, textAlign: "center", color: "#8E8E93", fontSize: 13.5 }}>
                 No matches for "{query}"
               </div>
             ) : (
-              searchResults.map((tile, i) => (
-                <div key={tile.id}>
-                  <SearchResultRow tile={tile} onPress={() => handleTap(tile)} />
-                  {i < searchResults.length - 1 && (
-                    <div style={{ marginLeft: 56, height: 0.5, background: "#E5E5EA" }} />
-                  )}
-                </div>
-              ))
+              <>
+                {pupilSearchResults.map((pupil, i) => (
+                  <div key={`pupil-${pupil.id}`}>
+                    <PupilSearchResultRow pupil={pupil} onPress={() => handlePupilTap(pupil)} />
+                    {i < totalSearchResults - 1 && (
+                      <div style={{ marginLeft: 56, height: 0.5, background: "#E5E5EA" }} />
+                    )}
+                  </div>
+                ))}
+                {searchResults.map((tile, i) => {
+                  const resultIndex = pupilSearchResults.length + i;
+                  return (
+                    <div key={tile.id}>
+                      <SearchResultRow tile={tile} onPress={() => handleTap(tile)} />
+                      {resultIndex < totalSearchResults - 1 && (
+                        <div style={{ marginLeft: 56, height: 0.5, background: "#E5E5EA" }} />
+                      )}
+                    </div>
+                  );
+                })}
+              </>
             )}
           </motion.div>
         ) : searchFocused ? (
