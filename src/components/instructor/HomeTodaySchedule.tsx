@@ -885,6 +885,11 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                         <div style={{ fontSize: 11, color: IOS.secondaryLabel, margin: 0 }}>{subtitleText}</div>
                       )}
                     </div>
+                    <RowStatusIcons
+                      eolDone={eolDoneAny}
+                      paymentDone={paymentDoneRow}
+                      needsAttention={rowNeedsAttention}
+                    />
                     <ChevronRight color={IOS.secondaryLabel} size={12} />
                   </Link>
                 );
