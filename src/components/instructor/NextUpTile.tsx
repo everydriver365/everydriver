@@ -751,18 +751,19 @@ export function NextUpTile({
             </div>
           </div>
 
-                {/* ── SECTION 2 — Conditions ── */}
+                {/* ── SECTION 2 — Conditions (elevated card) ── */}
                 {(etaMinutes > 0 || currentWeather || primaryDevice) && (
-                  <>
+                  <div>
                     <div style={{
-                      fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73",
-                      letterSpacing: 0.3, textTransform: "uppercase", margin: "0 0 8px",
+                      fontSize: a11yPx(11), fontWeight: 600, color: "#6E6E73",
+                      letterSpacing: 0.4, textTransform: "uppercase", margin: "0 4px 10px",
                     }}>
                       Conditions
                     </div>
                     <div style={{
-                      background: "#FFFFFF", border: "0.5px solid #E5E5EA",
-                      borderRadius: 10, marginBottom: 18, overflow: "hidden",
+                      background: "#FFFFFF", borderRadius: 16,
+                      boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                      overflow: "hidden",
                     }}>
                       {/* Drive row — derives severity from HERE traffic + late detection,
                           NOT the unrelated drivingAlerts feed. */}
