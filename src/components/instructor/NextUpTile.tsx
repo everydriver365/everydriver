@@ -814,6 +814,12 @@ export function NextUpTile({
             </div>
           )}
 
+          {/* ── SMART PROMPTS — real-time assistant strip ──
+              Sits directly under the main lesson card, before secondary
+              details. Shows up to 2 prioritised, contextual prompts.
+              Renders nothing when there's nothing important to say. */}
+          <SmartPromptsStrip prompts={smartPrompts} />
+
           {/* ── BALANCE NOTICE (preserved) ── */}
           {effectiveBalance < 0 && (
             <div>
