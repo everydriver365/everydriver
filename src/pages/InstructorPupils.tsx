@@ -653,60 +653,78 @@ export default function InstructorPupils() {
             </p>
           </div>
         ) : (
-          <div className="space-y-[10px]">
-            {displayedPupils.map((pupil, idx) => (
-              <motion.div
-                key={pupil.id}
-                id={`pupil-card-${pupil.id}`}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: "spring", stiffness: 350, damping: 25, delay: idx * 0.03 }}
-              >
-                <PupilCardStack
-                  pupil={pupil}
-                  defaultExpanded={expandedPupilId === pupil.id}
-                  onEdit={handleEditPupil}
-                  onDelete={handleDeletePupil}
-                  onViewHistory={(p) => {
-                    setSelectedPupil(p);
-                    setIsHistoryOpen(true);
-                  }}
-                  onViewReport={(p) => {
-                    setSelectedPupil(p);
-                    setIsDrivingReportOpen(true);
-                  }}
-                  onViewTerms={(p) => {
-                    setSelectedPupil(p);
-                    setIsTermsModalOpen(true);
-                  }}
-                  onStartChat={(p) => {
-                    navigate(`/instructor/messages?pupilId=${p.id}`);
-                  }}
-                  onRecordTestResult={(p, isMock) => {
-                    setSelectedPupil(p);
-                    setTestFormIsMock(isMock);
-                    setIsTestFormOpen(true);
-                  }}
-                  onViewTestHistory={(p) => {
-                    setSelectedPupil(p);
-                    setIsTestHistoryOpen(true);
-                  }}
-                  onStatusChange={(pupilId, newStatus) => {
-                    setPupils(prevPupils => 
-                      prevPupils.map(p => 
-                        p.id === pupilId ? { ...p, status: newStatus } : p
-                      )
-                    );
-                  }}
-                  hasSignedTerms={pupilSignatures[pupil.id] || false}
-                  instructorId={instructorId}
-                  instructorName={instructor?.name}
-                  isTracking={isTracking(pupil.id)}
-                  paymentQrUrl={getActivePaymentQrUrl(instructor)}
-                  commissionPayer={instructor?.commission_payer}
-                />
-              </motion.div>
-            ))}
+          <div className="space-y-3">
+            {(() => {
+              // Detect duplicate display names so cards can show a small disambiguator.
+              const nameCount = new Map<string, number>();
+              displayedPupils.forEach((p) => {
+                const k = (p.name || "").trim().toLowerCase();
+                nameCount.set(k, (nameCount.get(k) || 0) + 1);
+              });
+              return displayedPupils.map((pupil, idx) => {
+                const dupKey = (pupil.name || "").trim().toLowerCase();
+                const isDup = (nameCount.get(dupKey) || 0) > 1;
+                const suffix = isDup
+                  ? (pupil.address?.split(",")[0]?.trim() || pupil.postcode || null)
+                  : null;
+                const priority = isUpcoming(pupil) || needsLesson(pupil) || (pupil.account_balance ?? 0) < 0;
+                return (
+                  <motion.div
+                    key={pupil.id}
+                    id={`pupil-card-${pupil.id}`}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: "spring", stiffness: 350, damping: 25, delay: idx * 0.03 }}
+                  >
+                    <PupilCardStack
+                      pupil={pupil}
+                      defaultExpanded={expandedPupilId === pupil.id}
+                      nameSuffix={suffix}
+                      priority={priority}
+                      onEdit={handleEditPupil}
+                      onDelete={handleDeletePupil}
+                      onViewHistory={(p) => {
+                        setSelectedPupil(p);
+                        setIsHistoryOpen(true);
+                      }}
+                      onViewReport={(p) => {
+                        setSelectedPupil(p);
+                        setIsDrivingReportOpen(true);
+                      }}
+                      onViewTerms={(p) => {
+                        setSelectedPupil(p);
+                        setIsTermsModalOpen(true);
+                      }}
+                      onStartChat={(p) => {
+                        navigate(`/instructor/messages?pupilId=${p.id}`);
+                      }}
+                      onRecordTestResult={(p, isMock) => {
+                        setSelectedPupil(p);
+                        setTestFormIsMock(isMock);
+                        setIsTestFormOpen(true);
+                      }}
+                      onViewTestHistory={(p) => {
+                        setSelectedPupil(p);
+                        setIsTestHistoryOpen(true);
+                      }}
+                      onStatusChange={(pupilId, newStatus) => {
+                        setPupils(prevPupils =>
+                          prevPupils.map(p =>
+                            p.id === pupilId ? { ...p, status: newStatus } : p
+                          )
+                        );
+                      }}
+                      hasSignedTerms={pupilSignatures[pupil.id] || false}
+                      instructorId={instructorId}
+                      instructorName={instructor?.name}
+                      isTracking={isTracking(pupil.id)}
+                      paymentQrUrl={getActivePaymentQrUrl(instructor)}
+                      commissionPayer={instructor?.commission_payer}
+                    />
+                  </motion.div>
+                );
+              });
+            })()}
           </div>
         )}
         
