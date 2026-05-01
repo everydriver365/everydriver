@@ -142,81 +142,8 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
 
   return (
     <div className="min-h-screen bg-white pb-8">
-      {/* ---------------- Top bar: logo + bell + avatar ---------------- */}
-      <div className="px-5 pt-4 pb-2 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <img src={dsmLogo} alt="DSM" className="h-7 w-auto" />
-          <div className="leading-tight">
-            <div className="text-[13px] font-semibold text-[#1C1C1E] tracking-tight">
-              Driving School
-            </div>
-            <div className="text-[11px] text-[#3C3C43]/60 -mt-0.5">Manager</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => navigate("/instructor/notifications")}
-            className="relative size-10 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-            aria-label="Notifications"
-          >
-            <Bell className="size-[22px] text-[#1C1C1E]" />
-            {notifBadge > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 px-1.5 rounded-full bg-[#FF3B30] text-white text-[10px] font-bold flex items-center justify-center">
-                {notifLabel}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => navigate("/instructor/account")}
-            className="size-10 rounded-full overflow-hidden bg-[#E5E5EA] flex items-center justify-center"
-            aria-label="Account"
-          >
-            {instructor?.profile_image_url ? (
-              <img
-                src={instructor.profile_image_url}
-                alt=""
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span className="text-[14px] font-semibold text-[#3C3C43]">
-                {firstName.charAt(0)}
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* ---------------- Greeting + date pill ---------------- */}
-      <div className="px-5 pt-3 pb-4">
-        <div className="flex items-end justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="text-[26px] leading-[1.15] font-bold tracking-tight text-[#1C1C1E]">
-              {greeting} <span className="inline-block">👋</span>
-            </h1>
-            <p className="mt-1 text-[14px] text-[#3C3C43]/70">
-              <span>
-                {lessonsToday} lesson{lessonsToday === 1 ? "" : "s"} today
-              </span>
-              {waitingCount > 0 && (
-                <>
-                  <span className="mx-1.5 text-[#3C3C43]/40">·</span>
-                  <span className="text-[#FF3B30] font-medium">
-                    {waitingCount} thing{waitingCount === 1 ? "" : "s"} waiting
-                  </span>
-                </>
-              )}
-            </p>
-          </div>
-          <button
-            onClick={() => navigate("/instructor/schedule")}
-            className="flex items-center gap-1.5 px-3 h-9 rounded-[10px] border border-black/10 bg-white text-[13px] font-medium text-[#1C1C1E] active:bg-black/[0.03] transition-colors shrink-0"
-          >
-            <Calendar className="size-[14px] text-[#3C3C43]/70" />
-            {format(today, "EEE, d MMM yyyy")}
-            <ChevronRight className="size-[14px] text-[#3C3C43]/50 rotate-90" />
-          </button>
-        </div>
-      </div>
+      {/* Top bar (logo + bell + avatar) is provided by InstructorPortalLayout's
+          MobileBlueHeader. Do not render a second header here. */}
 
       {/* ---------------- Needs your attention ---------------- */}
       {attention.length > 0 && (
