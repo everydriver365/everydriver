@@ -73,7 +73,7 @@ export function MobileBlueHeader({
             style={{ width: 32, height: 32 }}
             aria-label="Notifications"
           >
-            <Bell size={18} strokeWidth={1.7} color={ICON_COLOR} />
+            <Bell size={20} strokeWidth={1.7} color={ICON_COLOR} />
             {notifCount > 0 && (
               <span
                 className="absolute flex items-center justify-center"
@@ -101,7 +101,7 @@ export function MobileBlueHeader({
             style={{ width: 32, height: 32 }}
             aria-label="Quick actions"
           >
-            <Plus size={18} strokeWidth={1.7} color={ICON_COLOR} />
+            <Plus size={20} strokeWidth={1.7} color={ICON_COLOR} />
           </button>
           <button
             onClick={() => navigate("/instructor/profile")}
@@ -123,7 +123,7 @@ export function MobileBlueHeader({
             style={{ width: 32, height: 32 }}
             aria-label="Menu"
           >
-            <Menu size={18} strokeWidth={1.7} color={ICON_COLOR} />
+            <Menu size={20} strokeWidth={1.7} color={ICON_COLOR} />
           </button>
         </div>
       </div>
