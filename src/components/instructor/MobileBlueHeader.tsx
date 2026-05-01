@@ -30,7 +30,19 @@ export function MobileBlueHeader({
   const { total: notifCount } = useCombinedNotificationCount(instructorId);
 
   return (
-    <header className="sticky top-0 z-40 bg-[hsl(var(--dsm-page-bg,var(--dsm-bg)))]">
+    <header
+      className="sticky top-0 z-40"
+      style={{
+        // Extend header into the status-bar safe area so it reads as one
+        // continuous surface with the page background (no dark/black bar,
+        // no grey panel, no border, no shadow).
+        paddingTop: "env(safe-area-inset-top, 0px)",
+        // Very subtle top gradient: slightly darker → page bg. Barely visible.
+        backgroundImage:
+          "linear-gradient(to bottom, hsl(var(--dsm-page-bg,var(--dsm-bg))) 0%, hsl(var(--dsm-page-bg,var(--dsm-bg))) 100%)",
+        backgroundColor: "hsl(var(--dsm-page-bg,var(--dsm-bg)))",
+      }}
+    >
       <div className="flex h-12 items-center justify-between px-5">
         {/* Left: DSM logo + wordmark (or back) */}
         <div className="flex items-center gap-2.5 min-w-0">
