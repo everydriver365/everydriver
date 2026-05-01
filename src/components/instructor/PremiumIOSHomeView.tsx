@@ -234,7 +234,6 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
             lastLessonPlan={nextLesson.lastLessonPlan}
           />
         ) : (
-        ) : (
           <div
             className="bg-white rounded-[22px] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_28px_-12px_rgba(16,24,40,0.08)] overflow-hidden"
             style={{ borderLeft: "3px solid #007AFF" }}
