@@ -924,251 +924,267 @@ export function NextUpTile({
                   </div>
                 )}
 
-                {/* ── SECTION 2.5 — Last lesson (elevated card) ── */}
-                <div style={{
-                  fontSize: a11yPx(11), fontWeight: 600, color: "#6E6E73",
-                  letterSpacing: 0.4, textTransform: "uppercase", margin: "0 4px 10px",
-                }}>
-                  Last lesson
-                </div>
-                <div style={{
-                  background: "#FFFFFF", borderRadius: 16, padding: 16,
-                  boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
-                }}>
-                  {lastLesson ? (
-                    (() => {
-                      const dateStr = (() => {
-                        try {
-                          const d = parseISO(lastLesson.lesson_date as string);
-                          const rel = formatDistanceToNowStrict(d, { addSuffix: true });
-                          return `${rel} · ${format(d, "EEE d MMM")}`;
-                        } catch { return String(lastLesson.lesson_date); }
-                      })();
-                      const skills: string[] = Array.isArray((lastLesson as any).skills_practiced)
-                        ? (lastLesson as any).skills_practiced.filter(Boolean)
-                        : [];
-                      const note: string | null = (lastLesson as any).notes || null;
-                      const rating: number | null = (lastLesson as any).rating || null;
-                      return (
-                        <>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                            <div style={{
-                              width: 32, height: 32, borderRadius: 8, background: "#F1ECFA",
-                              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                            }}>
-                              <BookOpen style={{ width: 16, height: 16, color: "#8A5BC9" }} strokeWidth={2} />
-                            </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000" }}>
-                                {dateStr}
+                {/* ── SECTION A — Lesson context (grouped: Last lesson + CTA + payment + unread) ── */}
+                <div>
+                  <div style={{
+                    fontSize: a11yPx(11), fontWeight: 600, color: "#6E6E73",
+                    letterSpacing: 0.4, textTransform: "uppercase", margin: "0 4px 10px",
+                  }}>
+                    Lesson
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    {/* Last lesson card (elevated) */}
+                    <div style={{
+                      background: "#FFFFFF", borderRadius: 16, padding: 16,
+                      boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                    }}>
+                      {lastLesson ? (
+                        (() => {
+                          const dateStr = (() => {
+                            try {
+                              const d = parseISO(lastLesson.lesson_date as string);
+                              const rel = formatDistanceToNowStrict(d, { addSuffix: true });
+                              return `${rel} · ${format(d, "EEE d MMM")}`;
+                            } catch { return String(lastLesson.lesson_date); }
+                          })();
+                          const skills: string[] = Array.isArray((lastLesson as any).skills_practiced)
+                            ? (lastLesson as any).skills_practiced.filter(Boolean)
+                            : [];
+                          const note: string | null = (lastLesson as any).notes || null;
+                          const rating: number | null = (lastLesson as any).rating || null;
+                          return (
+                            <>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                                <div style={{
+                                  width: 32, height: 32, borderRadius: 8, background: "#F1ECFA",
+                                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                                }}>
+                                  <BookOpen style={{ width: 16, height: 16, color: "#8A5BC9" }} strokeWidth={2} />
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73", letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 1 }}>
+                                    Last lesson
+                                  </div>
+                                  <div style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000" }}>
+                                    {dateStr}
+                                  </div>
+                                  {rating != null && rating > 0 && (
+                                    <div style={{ fontSize: a11yPx(11), color: "#6E6E73", marginTop: 1 }}>
+                                      Rating: {"★".repeat(rating)}{"☆".repeat(Math.max(0, 5 - rating))}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                              {rating != null && rating > 0 && (
-                                <div style={{ fontSize: a11yPx(11), color: "#6E6E73", marginTop: 1 }}>
-                                  Rating: {"★".repeat(rating)}{"☆".repeat(Math.max(0, 5 - rating))}
+                              {skills.length > 0 && (
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: note ? 10 : 0 }}>
+                                  {skills.slice(0, 6).map((s, i) => (
+                                    <span key={i} style={{
+                                      fontSize: a11yPx(11), color: "#5856D6",
+                                      background: "rgba(88,86,214,0.10)",
+                                      padding: "3px 8px", borderRadius: 999,
+                                    }}>{s}</span>
+                                  ))}
+                                  {skills.length > 6 && (
+                                    <span style={{ fontSize: a11yPx(11), color: "#6E6E73", padding: "3px 4px" }}>
+                                      +{skills.length - 6} more
+                                    </span>
+                                  )}
                                 </div>
                               )}
-                            </div>
-                          </div>
-                          {skills.length > 0 && (
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: note ? 10 : 0 }}>
-                              {skills.slice(0, 6).map((s, i) => (
-                                <span key={i} style={{
-                                  fontSize: a11yPx(11), color: "#5856D6",
-                                  background: "rgba(88,86,214,0.10)",
-                                  padding: "3px 8px", borderRadius: 999,
-                                }}>{s}</span>
-                              ))}
-                              {skills.length > 6 && (
-                                <span style={{ fontSize: a11yPx(11), color: "#6E6E73", padding: "3px 4px" }}>
-                                  +{skills.length - 6} more
-                                </span>
+                              {note && (
+                                <div style={{
+                                  fontSize: a11yPx(12), color: "#3C3C43", lineHeight: 1.45,
+                                  display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical",
+                                  overflow: "hidden",
+                                }}>
+                                  {note}
+                                </div>
                               )}
-                            </div>
-                          )}
-                          {note && (
-                            <div style={{
-                              fontSize: a11yPx(12), color: "#3C3C43", lineHeight: 1.45,
-                              display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical",
-                              overflow: "hidden",
-                            }}>
-                              {note}
-                            </div>
-                          )}
-                          {!skills.length && !note && (
-                            <div style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>
-                              No notes recorded for the last lesson.
-                            </div>
-                          )}
-                        </>
-                      );
-                    })()
-                  ) : (
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{
-                        width: 32, height: 32, borderRadius: 8, background: "#F2F2F7",
-                        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                      }}>
-                        <BookOpen style={{ width: 16, height: 16, color: "#8E8E93" }} strokeWidth={2} />
-                      </div>
-                      <div style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>
-                        No previous lessons yet
-                      </div>
-                    </div>
-                  )}
-                </div>
+                              {!skills.length && !note && (
+                                <div style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>
+                                  No notes recorded for the last lesson.
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()
+                      ) : (
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div style={{
+                            width: 32, height: 32, borderRadius: 8, background: "#F2F2F7",
+                            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                          }}>
+                            <BookOpen style={{ width: 16, height: 16, color: "#8E8E93" }} strokeWidth={2} />
+                          </div>
+                          <div style={{ fontSize: a11yPx(12), color: "#6E6E73" }}>
+                            No previous lessons yet
+                          </div>
+                        </div>
+                      )}
 
-                {/* ── SECTION 3 — Start lesson CTA ── */}
-                {!trackerDismissed && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
-                    }}
-                    className="active:opacity-90"
-                    style={{
-                      width: "100%", background: "#007AFF", color: "#FFFFFF",
-                      border: "none", borderRadius: 14, padding: 14,
-                      fontSize: a11yPx(15), fontWeight: 600, letterSpacing: -0.1,
-                      cursor: "pointer",
-                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                      marginBottom: 18,
-                      transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
-                    }}
-                  >
-                    <Play style={{ width: 16, height: 16 }} strokeWidth={2.4} fill="#FFFFFF" />
-                    Start lesson
-                  </button>
-                )}
+                      {/* Start lesson CTA — integrated inside last-lesson card so it feels connected */}
+                      {!trackerDismissed && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
+                          }}
+                          className="active:opacity-90"
+                          style={{
+                            width: "100%", marginTop: 14,
+                            background: "#007AFF", color: "#FFFFFF",
+                            border: "none", borderRadius: 12, padding: "12px 14px",
+                            fontSize: a11yPx(15), fontWeight: 600, letterSpacing: -0.1,
+                            cursor: "pointer",
+                            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                            transition: "opacity 150ms cubic-bezier(0.2,0.7,0.2,1)",
+                          }}
+                        >
+                          <Play style={{ width: 16, height: 16 }} strokeWidth={2.4} fill="#FFFFFF" />
+                          Start lesson
+                        </button>
+                      )}
+                    </div>
 
-                {/* In-progress / start lesson buttons preserved (only render when relevant) */}
-                {minutesUntil <= 15 && (
-                  <button onClick={(e) => {
-                    e.stopPropagation();
-                    supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
-                    navigate(`/instructor/tracking?lesson=${lessonId}`);
-                  }}
-                  style={{
-                    width: "100%", marginBottom: 14,
-                    background: "linear-gradient(135deg, #22c55e, #16a34a)",
-                    color: "#FFFFFF", border: "none", borderRadius: 10, padding: 13,
-                    fontSize: a11yPx(14), fontWeight: 600, cursor: "pointer",
-                    display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                  }}>
-                    <Navigation style={{ width: 16, height: 16 }} /> Start Lesson
-                  </button>
-                )}
-                {minutesUntil <= 0 && (
-                  <button onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
-                    style={{
-                      width: "100%", marginBottom: 14,
-                      background: "rgba(0,0,0,0.06)", color: "hsl(var(--foreground))",
-                      border: "none", borderRadius: 10, padding: 13,
-                      fontSize: a11yPx(14), fontWeight: 600, cursor: "pointer",
-                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    }}>
-                    <CheckCircle2 style={{ width: 16, height: 16 }} /> End Lesson
-                  </button>
-                )}
-
-                {/* Lesson Plan / Payment / Unread preserved */}
-                {lastLessonPlan && (
-                  <div style={{
-                    display: "flex", alignItems: "flex-start", gap: 12,
-                    padding: 12, borderRadius: 10, background: "#F8FAFB",
-                    border: "0.5px solid #E5E5EA", marginBottom: 14,
-                  }}>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: 8, background: "#F1ECFA",
-                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                    }}>
-                      <BookOpen style={{ width: 16, height: 16, color: "#8A5BC9" }} strokeWidth={2} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        fontSize: a11yPx(10), fontWeight: 500, color: "#6E6E73",
-                        letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 2,
-                      }}>Lesson plan</div>
-                      <p style={{
-                        fontSize: a11yPx(12), color: "#000000", margin: 0,
-                        display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
-                      }}>{lastLessonPlan}</p>
-                    </div>
-                  </div>
-                )}
-
-                {noBalance && (
-                  <div style={{
-                    display: "flex", alignItems: "center", gap: 12,
-                    padding: 12, borderRadius: 10, marginBottom: 14,
-                    background: paymentDue ? "rgba(239,68,68,0.08)" : "rgba(251,191,36,0.08)",
-                    border: `0.5px solid ${paymentDue ? "rgba(239,68,68,0.2)" : "rgba(251,191,36,0.2)"}`,
-                  }}>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: 8,
-                      background: paymentDue ? "rgba(239,68,68,0.15)" : "rgba(251,191,36,0.15)",
-                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                    }}>
-                      <Banknote style={{ width: 16, height: 16, color: paymentDue ? "#dc2626" : "#d97706" }} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", margin: 0 }}>
-                        {paymentDue ? `£${Math.abs(effectiveBalance).toFixed(0)} payment due` : "No balance remaining"}
-                      </p>
-                      <p style={{ fontSize: a11yPx(11), color: "#6E6E73", margin: "1px 0 0" }}>Collect before or after lesson</p>
-                    </div>
-                    <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/take-payment?pupil=${pupilId}`); }}
+                    {/* In-progress / start lesson buttons preserved (only render when relevant) */}
+                    {minutesUntil <= 15 && (
+                      <button onClick={(e) => {
+                        e.stopPropagation();
+                        supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(() => {});
+                        navigate(`/instructor/tracking?lesson=${lessonId}`);
+                      }}
                       style={{
-                        flexShrink: 0, padding: "8px 12px", borderRadius: 8,
-                        background: paymentDue ? "#ef4444" : "#d97706",
-                        color: "#FFFFFF", fontSize: a11yPx(11), fontWeight: 600,
-                        border: "none", cursor: "pointer",
+                        width: "100%",
+                        background: "linear-gradient(135deg, #22c55e, #16a34a)",
+                        color: "#FFFFFF", border: "none", borderRadius: 12, padding: 13,
+                        fontSize: a11yPx(14), fontWeight: 600, cursor: "pointer",
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(34,197,94,0.25)",
                       }}>
-                      Collect
-                    </button>
+                        <Navigation style={{ width: 16, height: 16 }} /> Start Lesson
+                      </button>
+                    )}
+                    {minutesUntil <= 0 && (
+                      <button onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
+                        style={{
+                          width: "100%",
+                          background: "#FFFFFF", color: "hsl(var(--foreground))",
+                          border: "none", borderRadius: 12, padding: 13,
+                          fontSize: a11yPx(14), fontWeight: 600, cursor: "pointer",
+                          display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                          boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                        }}>
+                        <CheckCircle2 style={{ width: 16, height: 16 }} /> End Lesson
+                      </button>
+                    )}
+
+                    {/* Lesson plan card (elevated) */}
+                    {lastLessonPlan && (
+                      <div style={{
+                        display: "flex", alignItems: "flex-start", gap: 12,
+                        padding: 14, borderRadius: 16, background: "#FFFFFF",
+                        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                      }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: 8, background: "#F1ECFA",
+                          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        }}>
+                          <BookOpen style={{ width: 16, height: 16, color: "#8A5BC9" }} strokeWidth={2} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{
+                            fontSize: a11yPx(10), fontWeight: 500, color: "#6E6E73",
+                            letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 2,
+                          }}>Lesson plan</div>
+                          <p style={{
+                            fontSize: a11yPx(12), color: "#000000", margin: 0,
+                            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+                          }}>{lastLessonPlan}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Payment card (elevated) */}
+                    {noBalance && (
+                      <div style={{
+                        display: "flex", alignItems: "center", gap: 12,
+                        padding: 14, borderRadius: 16,
+                        background: "#FFFFFF",
+                        boxShadow: paymentDue
+                          ? "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(239,68,68,0.18)"
+                          : "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                      }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: 8,
+                          background: paymentDue ? "rgba(239,68,68,0.12)" : "rgba(251,191,36,0.12)",
+                          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        }}>
+                          <Banknote style={{ width: 16, height: 16, color: paymentDue ? "#dc2626" : "#d97706" }} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", margin: 0 }}>
+                            {paymentDue ? `£${Math.abs(effectiveBalance).toFixed(0)} payment due` : "No balance remaining"}
+                          </p>
+                          <p style={{ fontSize: a11yPx(11), color: "#6E6E73", margin: "1px 0 0" }}>Collect before or after lesson</p>
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/take-payment?pupil=${pupilId}`); }}
+                          style={{
+                            flexShrink: 0, padding: "8px 12px", borderRadius: 8,
+                            background: paymentDue ? "#ef4444" : "#d97706",
+                            color: "#FFFFFF", fontSize: a11yPx(11), fontWeight: 600,
+                            border: "none", cursor: "pointer",
+                          }}>
+                          Collect
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Unread cards (elevated) */}
+                    {hasUnread && (
+                      <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/messages`); }}
+                        style={{
+                          width: "100%",
+                          display: "flex", alignItems: "center", gap: 12,
+                          padding: 14, borderRadius: 16, background: "#FFFFFF",
+                          boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                          border: "none", textAlign: "left", cursor: "pointer",
+                        }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: 8, background: "rgba(249,115,22,0.12)",
+                          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        }}>
+                          <MessageCircle style={{ width: 16, height: 16, color: "#f97316" }} />
+                        </div>
+                        <span style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", flex: 1 }}>
+                          {pupilUnreadCount} unread from {firstName}
+                        </span>
+                        <ChevronRight style={{ width: 14, height: 14, color: "#6E6E73" }} />
+                      </button>
+                    )}
+
+                    {adminUnreadCount > 0 && (
+                      <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor-app/admin-chat`); }}
+                        style={{
+                          width: "100%",
+                          display: "flex", alignItems: "center", gap: 12,
+                          padding: 14, borderRadius: 16, background: "#FFFFFF",
+                          boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                          border: "none", textAlign: "left", cursor: "pointer",
+                        }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: 8, background: "rgba(249,115,22,0.12)",
+                          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        }}>
+                          <Mail style={{ width: 16, height: 16, color: "#f97316" }} />
+                        </div>
+                        <span style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", flex: 1 }}>
+                          {adminUnreadCount} admin note{adminUnreadCount !== 1 ? "s" : ""} about {firstName}
+                        </span>
+                        <ChevronRight style={{ width: 14, height: 14, color: "#6E6E73" }} />
+                      </button>
+                    )}
                   </div>
-                )}
-
-                {hasUnread && (
-                  <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/messages`); }}
-                    style={{
-                      width: "100%", marginBottom: 14,
-                      display: "flex", alignItems: "center", gap: 12,
-                      padding: 12, borderRadius: 10, background: "#F8FAFB",
-                      border: "0.5px solid #E5E5EA", textAlign: "left", cursor: "pointer",
-                    }}>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: 8, background: "rgba(249,115,22,0.12)",
-                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                    }}>
-                      <MessageCircle style={{ width: 16, height: 16, color: "#f97316" }} />
-                    </div>
-                    <span style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", flex: 1 }}>
-                      {pupilUnreadCount} unread from {firstName}
-                    </span>
-                    <ChevronRight style={{ width: 14, height: 14, color: "#6E6E73" }} />
-                  </button>
-                )}
-
-                {adminUnreadCount > 0 && (
-                  <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor-app/admin-chat`); }}
-                    style={{
-                      width: "100%", marginBottom: 14,
-                      display: "flex", alignItems: "center", gap: 12,
-                      padding: 12, borderRadius: 10, background: "#F8FAFB",
-                      border: "0.5px solid #E5E5EA", textAlign: "left", cursor: "pointer",
-                    }}>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: 8, background: "rgba(249,115,22,0.12)",
-                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                    }}>
-                      <Mail style={{ width: 16, height: 16, color: "#f97316" }} />
-                    </div>
-                    <span style={{ fontSize: a11yPx(13), fontWeight: 500, color: "#000000", flex: 1 }}>
-                      {adminUnreadCount} admin note{adminUnreadCount !== 1 ? "s" : ""} about {firstName}
-                    </span>
-                    <ChevronRight style={{ width: 14, height: 14, color: "#6E6E73" }} />
-                  </button>
-                )}
+                </div>
 
                 {/* ── SECTION 4 — Update status (3 buttons) ── */}
                 <div style={{
