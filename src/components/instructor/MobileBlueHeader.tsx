@@ -24,12 +24,16 @@ export function MobileBlueHeader({
   instructorId,
   profileImageUrl,
   showBackButton = false,
+  surface = "page",
   onBack,
   onPlus,
   onMenu,
 }: Props) {
   const navigate = useNavigate();
   const { total: notifCount } = useCombinedNotificationCount(instructorId);
+
+  const bg =
+    surface === "white" ? "#FFFFFF" : "hsl(var(--dsm-page-bg,var(--dsm-bg)))";
 
   return (
     <header
@@ -39,7 +43,7 @@ export function MobileBlueHeader({
         // Logo row sits 8–12px below the status bar on notched devices and
         // directly at the top on web/Android.
         paddingTop: "env(safe-area-inset-top, 0px)",
-        backgroundColor: "hsl(var(--dsm-page-bg,var(--dsm-bg)))",
+        backgroundColor: bg,
       }}
     >
       <div className="flex h-11 items-center justify-between px-5">
