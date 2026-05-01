@@ -26,9 +26,9 @@ const FONT =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
 
 const C = {
-  bg: "#F4F7F6",
+  bg: "#F7F7F8",
   card: "#FFFFFF",
-  hairline: "#E7E8EB",
+  hairline: "#E9E9ED",
   text: "#0B0B0F",
   muted: "#6E6E73",
   subtle: "#9A9AA0",
@@ -36,8 +36,15 @@ const C = {
   green: "#2EA66B",
   amber: "#B8801F",
   red: "#C8434F",
-  surface: "#F2F2F4",
+  surface: "#F3F3F5",
 };
+
+const SHADOW_CARD =
+  "0 1px 2px rgba(16,24,40,0.03), 0 8px 24px -14px rgba(16,24,40,0.10)";
+const SHADOW_HOVER =
+  "0 1px 2px rgba(16,24,40,0.04), 0 14px 32px -16px rgba(16,24,40,0.14)";
+const RADIUS = 24;
+const TRANSITION = "all 180ms ease";
 
 /* ──────────────────────────── small atoms ──────────────────────────── */
 function SectionHeader({ title, action }: { title: string; action?: React.ReactNode }) {
