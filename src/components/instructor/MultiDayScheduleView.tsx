@@ -1209,7 +1209,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         const fmt = (mins: number) =>
                           `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
                         elements.push(
-                          <div key={`gap-${i}`} style={{ padding: "8px 8px" }}>
+                          <div key={`gap-${i}`} style={{ paddingLeft: 66 }}>
                             <GapFillCard
                               instructorId={instructorId}
                               instructorName={instructorName}
