@@ -339,36 +339,22 @@ export function NextUpTile({
         }
       `}</style>
 
-      <div className="" style={{ padding: "0 16px", fontFamily: iosFont, WebkitFontSmoothing: "antialiased" }}>
-        {/* ── Premium card ── */}
+      <div style={{ fontFamily: iosFont, WebkitFontSmoothing: "antialiased" }}>
+        {/* ── Card — matches other home widgets (white, rounded-[20px], soft shadow) ── */}
         <div
+          className="bg-white rounded-[20px] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_28px_-12px_rgba(16,24,40,0.08)]"
           style={{
-            background: "#FFFFFF",
-            border: "0.5px solid #E5E5EA",
-            boxShadow: "none",
-            borderRadius: 14,
             overflow: "hidden",
             padding: 16,
             display: "flex",
             flexDirection: "column",
             gap: 14,
             position: "relative",
-            maxWidth: 440,
-            margin: "0 auto",
             width: "100%",
           }}
         >
           {/* ── Header (whole row tappable to expand) ── */}
           <div style={{ position: "relative" }}>
-            {/* Soft accent left border */}
-            <div
-              aria-hidden
-              style={{
-                position: "absolute", left: -16, top: -16, bottom: -16, width: 3,
-                background: "linear-gradient(180deg, #5856D6 0%, #007AFF 100%)",
-                borderTopLeftRadius: 14, borderBottomLeftRadius: 14, opacity: 0.9,
-              }}
-            />
 
             {/* UP NEXT label */}
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
