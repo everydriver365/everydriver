@@ -44,14 +44,6 @@ export function MobileBlueHeader({
             </button>
           ) : null}
           <img src={dsmLogo} alt="DSM" className="h-7 w-auto object-contain shrink-0" />
-          <div className="min-w-0 leading-tight">
-            <div className="text-[14px] font-semibold text-[hsl(var(--dsm-text))] truncate">
-              Driving School
-            </div>
-            <div className="text-[11px] text-[hsl(var(--dsm-text-secondary))] -mt-0.5">
-              Manager
-            </div>
-          </div>
         </div>
 
         {/* Right: bell, +, avatar, menu */}
