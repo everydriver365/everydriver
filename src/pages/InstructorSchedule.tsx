@@ -224,25 +224,37 @@ export default function InstructorSchedule() {
                 </div>
               </div>
 
-              {/* Sync button */}
-              <button
-                onClick={handleSync}
-                disabled={isSyncing}
-                style={{
-                  width: 38,
-                  height: 38,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: "50%",
-                  border: "none",
-                  background: "transparent",
-                  cursor: "pointer",
-                  color: "#6E6E73",
-                }}
-              >
-                <RefreshCw style={{ width: 18, height: 18, ...(isSyncing ? { animation: "spin 1s linear infinite" } : {}) }} />
-              </button>
+              {/* Sync + avatar */}
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <button
+                  onClick={handleSync}
+                  disabled={isSyncing}
+                  style={{
+                    width: 38, height: 38, display: "flex",
+                    alignItems: "center", justifyContent: "center",
+                    borderRadius: "50%", border: "none",
+                    background: "transparent", cursor: "pointer",
+                    color: "#6E6E73",
+                  }}
+                  aria-label="Sync calendar"
+                >
+                  <RefreshCw style={{ width: 18, height: 18, ...(isSyncing ? { animation: "spin 1s linear infinite" } : {}) }} />
+                </button>
+                <button
+                  onClick={() => navigate("/instructor/profile")}
+                  className="flex items-center justify-center rounded-full overflow-hidden bg-[hsl(var(--dsm-tile-icon-bg))] border border-[hsl(var(--dsm-border))]"
+                  style={{ width: 32, height: 32 }}
+                  aria-label="Profile"
+                >
+                  {instructor?.profile_image_url ? (
+                    <img src={instructor.profile_image_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "#1C1C1E" }}>
+                      {(instructor?.name || "I").charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </button>
+              </div>
             </>
           ) : (
             <>
