@@ -607,8 +607,8 @@ export default function InstructorPupils() {
         <div
           role="tablist"
           aria-label="Filter pupils"
-          className="flex gap-2 overflow-x-auto scrollbar-none -mx-1 px-1"
-          style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+          className="flex gap-2.5 overflow-x-auto scrollbar-none -mx-1 px-1"
+          style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch", paddingTop: 2, paddingBottom: 2 }}
         >
           {segmentOptions.map((opt) => {
             const active = opt.value === activeTab;
@@ -621,7 +621,7 @@ export default function InstructorPupils() {
                 onClick={() => setActiveTab(opt.value as any)}
                 className="shrink-0 transition-all"
                 style={{
-                  padding: "8px 14px",
+                  padding: "9px 16px",
                   borderRadius: 999,
                   fontSize: 13,
                   fontWeight: active ? 600 : 500,
@@ -631,6 +631,7 @@ export default function InstructorPupils() {
                   cursor: "pointer",
                   whiteSpace: "nowrap",
                   fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+                  boxShadow: active ? "0 2px 6px rgba(43,123,200,0.25)" : "none",
                 }}
               >
                 {opt.label}
