@@ -1071,7 +1071,7 @@ export default function PremiumPupilProfile() {
         <div key={m.label} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <div
             style={{
-              fontFamily: FONT, fontSize: 20, fontWeight: 700,
+              fontFamily: FONT, fontSize: 18, fontWeight: 700,
               color: C.text, letterSpacing: "-0.02em",
               fontVariantNumeric: "tabular-nums", lineHeight: 1.1,
             }}
