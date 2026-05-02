@@ -805,11 +805,11 @@ export function NextUpTile({
             </div>
 
             {/* Header row: pupil name (left) | time + date (right) */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14 }}>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{
-                  fontSize: a11yPx(20), fontWeight: 600, color: "#000000",
-                  letterSpacing: -0.4, lineHeight: 1.15,
+                  fontSize: a11yPx(28), lineHeight: "34px", fontWeight: 800, color: "#050505",
+                  letterSpacing: -0.6,
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                 }}>
                   {toSentenceName(pupilName)}
@@ -817,34 +817,33 @@ export function NextUpTile({
               </div>
               <div style={{ textAlign: "right", flexShrink: 0 }}>
                 <div style={{
-                  fontSize: a11yPx(22), fontWeight: 600, letterSpacing: -0.6,
-                  color: "#000000", lineHeight: 1, fontVariantNumeric: "tabular-nums",
+                  fontSize: a11yPx(34), lineHeight: "38px", fontWeight: 800, letterSpacing: -0.8,
+                  color: "#050505", fontVariantNumeric: "tabular-nums",
                 }}>
                   {formatTime24(startTime)}
                 </div>
-                <div style={{ fontSize: a11yPx(12), color: "#8A8A8E", marginTop: 4 }}>
+                <div style={{ fontSize: a11yPx(16), color: "#8A8A8E", marginTop: 2, fontWeight: 500 }}>
                   {getDateLabel()}
                 </div>
               </div>
             </div>
 
-            {/* Secondary info: lesson type · duration, then location */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <div style={{ fontSize: a11yPx(13), color: "#3C3C43", letterSpacing: -0.05 }}>
+            {/* Secondary info: lesson type · duration, location, countdown */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ fontSize: a11yPx(17), color: "#3C3C43", fontWeight: 500, letterSpacing: -0.1 }}>
                 {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
               </div>
               {(pickupLocation || pickupPostcode) && (
-                <div style={{ display: "flex", alignItems: "center", gap: 5, color: "#8A8A8E", minWidth: 0 }}>
-                  <MapPin style={{ width: 13, height: 13, flexShrink: 0 }} strokeWidth={2} />
-                  <span style={{ fontSize: a11yPx(13), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#8A8A8E", minWidth: 0 }}>
+                  <MapPin style={{ width: 18, height: 18, flexShrink: 0, color: "#8A8A8E" }} strokeWidth={2} />
+                  <span style={{ fontSize: a11yPx(16), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {formattedPickupAddress || pickupPostcode || pickupLocation}
                   </span>
                 </div>
               )}
-              {/* Tertiary: countdown as plain muted text */}
-              <div style={{ display: "flex", alignItems: "center", gap: 5, color: "#8A8A8E" }}>
-                <Clock style={{ width: 12, height: 12 }} strokeWidth={2 } />
-                <span style={{ fontSize: a11yPx(13), fontVariantNumeric: "tabular-nums" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#8A8A8E" }}>
+                <Clock style={{ width: 18, height: 18, color: "#8A8A8E" }} strokeWidth={2} />
+                <span style={{ fontSize: a11yPx(16), fontVariantNumeric: "tabular-nums" }}>
                   {minutesUntil <= 0 ? "Starting now" : `Starts in ${getCountdownText()}`}
                 </span>
               </div>
