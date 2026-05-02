@@ -17,6 +17,7 @@ interface PupilRow {
   phone: string | null;
   email: string | null;
   account_balance: number | null;
+  home_postcode: string | null;
 }
 
 const renderTemplate = (tpl: string, name: string, amount: string) =>
