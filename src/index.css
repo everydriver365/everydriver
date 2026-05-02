@@ -242,11 +242,25 @@
     --portal-space-lg: 20px;
     --portal-space-xl: 24px;
 
-    /* Radii */
-    --portal-radius-sm: 12px;
-    --portal-radius-md: 16px;
-    --portal-radius-lg: 22px;
-    --portal-radius-xl: 24px;
+    /* Radii — sharpened iOS premium scale (Nov 2026 pass).
+       Cards/buttons/inputs collapse to a tight 10–12px range; sheets stay at
+       16px; nav floats at 22px; pills remain fully rounded. Legacy aliases
+       (sm/md/lg/xl) are retargeted so every consumer of the system sharpens
+       at once without code edits. */
+    --portal-radius-card: 12px;
+    --portal-radius-icon: 12px;
+    --portal-radius-button: 12px;
+    --portal-radius-control: 12px;
+    --portal-radius-input: 12px;
+    --portal-radius-sheet: 16px;
+    --portal-radius-nav: 22px;
+    --portal-radius-pill: 999px;
+
+    /* Legacy aliases — retargeted to the sharper scale */
+    --portal-radius-sm: 10px;
+    --portal-radius-md: 12px;
+    --portal-radius-lg: 12px;
+    --portal-radius-xl: 16px;
 
     /* Surfaces */
     --portal-surface: #FFFFFF;
@@ -295,20 +309,20 @@
   /* Card — soft, single elevation, no nested borders */
   .instructor-portal .portal-card {
     background: var(--portal-surface);
-    border-radius: var(--portal-radius-lg);
+    border-radius: var(--portal-radius-card);
     box-shadow: var(--portal-shadow);
     overflow: hidden;
   }
   .instructor-portal .portal-card--flat {
     background: var(--portal-surface);
-    border-radius: var(--portal-radius-lg);
+    border-radius: var(--portal-radius-card);
     border: 0.5px solid var(--portal-hairline);
     box-shadow: none;
     overflow: hidden;
   }
   .instructor-portal .portal-card--soft {
     background: var(--portal-surface-soft);
-    border-radius: var(--portal-radius-lg);
+    border-radius: var(--portal-radius-card);
     box-shadow: none;
     overflow: hidden;
   }
@@ -316,7 +330,7 @@
   /* Flat list rows — for data/settings screens */
   .instructor-portal .portal-list {
     background: var(--portal-surface);
-    border-radius: var(--portal-radius-lg);
+    border-radius: var(--portal-radius-card);
     box-shadow: var(--portal-shadow);
     overflow: hidden;
   }
@@ -378,12 +392,68 @@
   .instructor-portal h2 { font-weight: 600; letter-spacing: -0.3px; }
   .instructor-portal h3 { font-weight: 600; letter-spacing: -0.2px; }
 
+  /* ===== Global radius sharpening pass (Nov 2026) =====
+     Caps oversized corner radii on legacy cards/tiles/buttons inside the
+     instructor portal so the whole app reads at the new 10–14px scale.
+     Pills, avatars, the bottom nav, the FAB, sheets and overlays opt out
+     via more specific selectors / higher-specificity rules below.
+
+     Visual change only — no markup, no logic, no DOM mutations. */
+
+  /* Cap large Tailwind radii on cards/tiles to 12px */
+  .instructor-portal :where(.rounded-2xl, .rounded-3xl) {
+    border-radius: var(--portal-radius-card) !important;
+  }
+  /* Cap arbitrary large radii (rounded-[16px]..rounded-[32px]) */
+  .instructor-portal :where(
+    [class*="rounded-[16px]"],
+    [class*="rounded-[18px]"],
+    [class*="rounded-[20px]"],
+    [class*="rounded-[22px]"],
+    [class*="rounded-[24px]"],
+    [class*="rounded-[26px]"],
+    [class*="rounded-[28px]"],
+    [class*="rounded-[30px]"],
+    [class*="rounded-[32px]"]
+  ) {
+    border-radius: var(--portal-radius-card) !important;
+  }
+  /* Soften medium-large rounded buttons/inputs */
+  .instructor-portal :where(.rounded-xl) {
+    border-radius: var(--portal-radius-button) !important;
+  }
+
+  /* Opt-outs — keep these elements at their intended radius.
+     Higher specificity than the :where() rules above. */
+  .instructor-portal .portal-pill,
+  .instructor-portal .portal-badge,
+  .instructor-portal [data-radius="pill"],
+  .instructor-portal .rounded-full,
+  .instructor-portal [class*="rounded-full"] {
+    border-radius: var(--portal-radius-pill) !important;
+  }
+  /* Bottom nav floating bar — keep its softer 22px */
+  .instructor-portal [data-radius="nav"],
+  .instructor-portal .portal-bottom-nav {
+    border-radius: var(--portal-radius-nav) !important;
+  }
+  /* Sheets / dialogs — keep 16px */
+  .instructor-portal [data-radius="sheet"],
+  .instructor-portal .portal-sheet {
+    border-radius: var(--portal-radius-sheet) !important;
+  }
+  /* Explicit caller override always wins */
+  .instructor-portal [data-radius="card"]   { border-radius: var(--portal-radius-card) !important; }
+  .instructor-portal [data-radius="button"] { border-radius: var(--portal-radius-button) !important; }
+  .instructor-portal [data-radius="icon"]   { border-radius: var(--portal-radius-icon) !important; }
+  .instructor-portal [data-radius="input"]  { border-radius: var(--portal-radius-input) !important; }
+
   /* Primary / secondary action helpers — opt-in by class name */
   .instructor-portal .portal-btn-primary {
     background: var(--portal-accent);
     color: #FFFFFF;
     border: none;
-    border-radius: var(--portal-radius-lg);
+    border-radius: var(--portal-radius-button);
     padding: 16px 20px;
     font-size: 15px;
     font-weight: 600;
@@ -400,7 +470,7 @@
     background: var(--portal-surface);
     color: var(--portal-text);
     border: 0.5px solid var(--portal-hairline-strong);
-    border-radius: var(--portal-radius-lg);
+    border-radius: var(--portal-radius-button);
     padding: 14px 18px;
     font-size: 14px;
     font-weight: 600;
