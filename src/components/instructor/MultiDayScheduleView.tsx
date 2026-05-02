@@ -1259,6 +1259,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                                     : undefined
                                 }
                                 needsAttention={needsAttention}
+                                checkInStatus={isPast ? null : (lesson as any).check_in_status}
                               />
                             );
                           })()}
