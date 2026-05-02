@@ -313,6 +313,11 @@ export function SatNavLiveMap({
     };
   }, [ready]);
 
+  // When the active session changes, ensure the next fix re-frames the map.
+  useEffect(() => {
+    isFirstFixRef.current = true;
+  }, [sessionId]);
+
   // Load historical trail + subscribe to new GPS points for active sessions
   useEffect(() => {
     if (!ready || !mapRef.current || !sessionId || trailLoadedRef.current === sessionId) return;
