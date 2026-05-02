@@ -127,21 +127,28 @@ export function FloatingSessionTimer({
 
           {speedLimitMph != null && (
             <div
-              className={`flex flex-col items-center justify-center rounded-full border-[3px] bg-white shrink-0 ${
-                isOver ? "border-red-500" : "border-[#1c1c1e]"
-              }`}
-              style={{ width: 52, height: 52 }}
+              className="flex items-center justify-center rounded-full bg-white shrink-0"
+              style={{
+                width: 56,
+                height: 56,
+                border: "6px solid #C8102E", // UK road-sign red
+                boxShadow: isOver
+                  ? "0 0 0 2px rgba(220,38,38,0.35)"
+                  : "0 1px 2px rgba(0,0,0,0.15)",
+              }}
               aria-label={`Speed limit ${speedLimitMph} mph`}
+              role="img"
             >
               <span
-                className={`text-[18px] leading-none font-bold tabular-nums ${
-                  isOver ? "text-red-500" : "text-[#1c1c1e]"
-                }`}
+                className="font-bold tabular-nums text-black leading-none"
+                style={{
+                  fontSize: speedLimitMph >= 100 ? 16 : 20,
+                  fontFamily:
+                    '"Transport", -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                  letterSpacing: -0.5,
+                }}
               >
                 {speedLimitMph}
-              </span>
-              <span className="text-[7px] font-bold uppercase tracking-wider text-[#71717A] mt-0.5">
-                limit
               </span>
             </div>
           )}
