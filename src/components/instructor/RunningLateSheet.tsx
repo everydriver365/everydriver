@@ -244,7 +244,7 @@ export function RunningLateSheet({
           text: `Hi ${firstName}, I'm running late — here's a quick voice message:`,
         });
         try {
-          onMarkRunningLate?.();
+          onMarkRunningLate?.(null, null);
         } catch (e) {
           console.error(e);
         }
