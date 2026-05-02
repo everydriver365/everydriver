@@ -293,7 +293,7 @@ export function SatNavLiveMap({
       pathRef.current = trail;
 
       if (latitude != null && longitude != null) {
-        pathRef.current.push(new google.maps.LatLng(latitude, longitude));
+        appendTrailPoint(latitude, longitude);
       }
 
       renderPolylines();
