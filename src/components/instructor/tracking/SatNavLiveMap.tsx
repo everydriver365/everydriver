@@ -545,6 +545,9 @@ export function SatNavLiveMap({
     camHeadingRef.current = 0;
     camTiltRef.current = 0;
     lastAutoZoomRef.current = null;
+    overspeedSinceRef.current = null;
+    underspeedSinceRef.current = null;
+    setOverspeedActive(false);
   }, [sessionId]);
 
   // Load historical trail + subscribe to new GPS points for active sessions
