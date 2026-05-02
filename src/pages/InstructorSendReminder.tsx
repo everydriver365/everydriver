@@ -54,7 +54,7 @@ export default function InstructorSendReminder() {
         const [{ data: list }, { data: i }] = await Promise.all([
           supabase
             .from("pupils")
-            .select("id, name, phone, email, account_balance")
+            .select("id, name, phone, email, account_balance, home_postcode")
             .eq("instructor_id", instructorId)
             .is("deleted_at", null)
             .lt("account_balance", 0)
@@ -69,7 +69,7 @@ export default function InstructorSendReminder() {
         const [{ data: p }, { data: i }] = await Promise.all([
           supabase
             .from("pupils")
-            .select("id, name, phone, email, account_balance")
+            .select("id, name, phone, email, account_balance, home_postcode")
             .eq("id", pupilIdParam)
             .maybeSingle(),
           instructorPromise,
