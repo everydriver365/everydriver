@@ -93,7 +93,7 @@ export function SatNavLiveMap({
     fillOpacity: 1,
     strokeColor: "white",
     strokeWeight: 3,
-    scale: fullscreen ? 3.6 : 3.0,
+    scale: fullscreen ? 2.4 : 2.2,
     rotation: rotation,
     anchor: new google.maps.Point(0, 0),
   }), [fullscreen]);
@@ -335,7 +335,7 @@ export function SatNavLiveMap({
             const scale = Math.pow(2, zoom);
             const worldPx = projection.fromLatLngToPoint(latLng);
             if (worldPx) {
-              const offsetY = div.clientHeight * 0.20;
+              const offsetY = div.clientHeight * 0.30;
               const shiftedY = worldPx.y - offsetY / scale;
               const shifted = new google.maps.Point(worldPx.x, shiftedY);
               const shiftedLatLng = projection.fromPointToLatLng(shifted);
