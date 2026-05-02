@@ -51,6 +51,8 @@ export function SatNavLiveMap({
   const snapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const snapInFlightRef = useRef<boolean>(false);
   const snapDirtyRef = useRef<boolean>(false);
+  const [snapStatus, setSnapStatus] = useState<"idle" | "syncing" | "snapped" | "raw">("idle");
+  const [lastFixLabel, setLastFixLabel] = useState<string | null>(null);
 
   // Render whichever path is freshest (snapped if available, else raw) into both polylines
   const renderPolylines = useCallback(() => {
@@ -77,6 +79,7 @@ export function SatNavLiveMap({
       const window = raw.slice(-100).map((p) => ({ lat: p.lat(), lng: p.lng() }));
       snapInFlightRef.current = true;
       snapDirtyRef.current = false;
+      setSnapStatus("syncing");
       try {
         const snapped = await callSnapToRoad(window);
         if (snapped && snapped.length >= 2) {
@@ -89,9 +92,13 @@ export function SatNavLiveMap({
             ...snapped.map((p) => new google.maps.LatLng(p.lat, p.lng)),
           ];
           renderPolylines();
+          setSnapStatus("snapped");
+        } else {
+          setSnapStatus("raw");
         }
       } catch (err) {
         console.warn("[SatNavLiveMap] snap-to-road failed, falling back to raw:", err);
+        setSnapStatus("raw");
       } finally {
         snapInFlightRef.current = false;
         // If new fixes arrived during the request, schedule another pass
@@ -107,6 +114,20 @@ export function SatNavLiveMap({
     ? formatDistanceToNowStrict(new Date(lastSeenAt), { addSuffix: true })
     : null;
   const hasPosition = latitude !== null && longitude !== null;
+
+  // Tick the "last fix" label every second so the indicator stays accurate
+  useEffect(() => {
+    if (!lastSeenAt) { setLastFixLabel(null); return; }
+    const update = () => {
+      const ageSec = Math.max(0, Math.round((Date.now() - new Date(lastSeenAt).getTime()) / 1000));
+      if (ageSec < 60) setLastFixLabel(`${ageSec}s ago`);
+      else if (ageSec < 3600) setLastFixLabel(`${Math.round(ageSec / 60)}m ago`);
+      else setLastFixLabel(`${Math.round(ageSec / 3600)}h ago`);
+    };
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, [lastSeenAt]);
 
   const speedMph = speedKmh != null ? Math.round(speedKmh * 0.621371) : null;
   const speedLimitMph = speedLimitKmh != null ? Math.round(speedLimitKmh * 0.621371) : null;
@@ -406,7 +427,7 @@ export function SatNavLiveMap({
           <div ref={mapDivRef} className="absolute inset-0 z-0" />
           {hasPosition ? (
             <>
-              <div className="absolute top-0 left-0 right-0 z-10 flex items-center px-3 py-2.5" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+              <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 py-2.5" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
                 <div>
                   {isLive ? (
                     <span style={{ background: "#0f9e75", color: "white", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 20, display: "inline-flex", alignItems: "center", gap: 5 }}>
@@ -420,6 +441,7 @@ export function SatNavLiveMap({
                     <Badge variant="secondary" className="gap-1 text-[10px]">{lastSeenLabel}</Badge>
                   ) : null}
                 </div>
+                <SnapStatusPill status={snapStatus} lastFixLabel={lastFixLabel} />
               </div>
               <div className="absolute bottom-0 left-0 right-0 z-10 px-3 py-3" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
                 <div style={{ paddingBottom: 8, marginBottom: 10, borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
@@ -493,9 +515,12 @@ export function SatNavLiveMap({
             <Badge variant="secondary" className="gap-1 text-[10px]">{lastSeenLabel}</Badge>
           ) : null}
         </div>
-        <p style={{ fontSize: 13, fontWeight: 600, color: "#1c1c1e" }} className="truncate ml-3 flex-1 text-right">
-          {roadName || "Awaiting location…"}
-        </p>
+        <div className="flex items-center gap-2 ml-3 flex-1 justify-end min-w-0">
+          <SnapStatusPill status={snapStatus} lastFixLabel={lastFixLabel} />
+          <p style={{ fontSize: 13, fontWeight: 600, color: "#1c1c1e" }} className="truncate text-right">
+            {roadName || "Awaiting location…"}
+          </p>
+        </div>
       </div>
 
       {/* Map */}
@@ -538,5 +563,47 @@ export function SatNavLiveMap({
       </div>
 
     </div>
+  );
+}
+
+function SnapStatusPill({ status, lastFixLabel }: { status: "idle" | "syncing" | "snapped" | "raw"; lastFixLabel: string | null }) {
+  const config = {
+    idle:    { dot: "#c7c7cc", label: "Waiting" },
+    syncing: { dot: "#f59e0b", label: "Syncing" },
+    snapped: { dot: "#0f9e75", label: "Snapped" },
+    raw:     { dot: "#8e8e93", label: "Raw GPS" },
+  }[status];
+  return (
+    <span
+      title={`Trail status: ${config.label}${lastFixLabel ? ` · last fix ${lastFixLabel}` : ""}`}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 5,
+        background: "rgba(0,0,0,0.04)",
+        border: "1px solid rgba(0,0,0,0.06)",
+        borderRadius: 20,
+        padding: "3px 8px",
+        fontSize: 10,
+        fontWeight: 600,
+        color: "#3a3a3c",
+        whiteSpace: "nowrap",
+        flexShrink: 0,
+      }}
+    >
+      <span
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: "50%",
+          background: config.dot,
+        }}
+        className={status === "syncing" ? "animate-pulse" : ""}
+      />
+      {config.label}
+      {lastFixLabel && (
+        <span style={{ color: "#8e8e93", fontWeight: 500 }}>· {lastFixLabel}</span>
+      )}
+    </span>
   );
 }
