@@ -290,9 +290,23 @@ export function NextUpTile({
   const handleMessage = () => { if (pupilPhone) { const a = document.createElement("a"); a.href = `sms:${pupilPhone}`; a.click(); } };
   const sendSMS = (msg: string) => { if (pupilPhone) { const a = document.createElement("a"); a.href = `sms:${pupilPhone}?body=${encodeURIComponent(msg)}`; a.click(); } };
   const handleSendETA = () => {
+    // Compute arrival clock time from live drive-time ETA (current car
+    // location → pickup postcode via useTrafficETA).
+    const etaClock = etaMinutes && etaMinutes > 0
+      ? format(new Date(Date.now() + etaMinutes * 60000), "HH:mm")
+      : null;
+    const message = etaClock
+      ? `Hi ${firstName}, on the way — ETA ${etaClock}.`
+      : `Hi ${firstName}, on the way.`;
+    sendSMS(message);
     supabase.from("scheduled_lessons").update({ status: "en_route" }).eq("id", lessonId).then(() => {});
     supabase.functions.invoke("notify-pupil", { body: { pupilId, type: "en_route" } }).catch(() => {});
-    sendSMS(etaText ? `Hi ${firstName}, I'm on my way! My estimated arrival time is ${etaText}.` : `Hi ${firstName}, I'm on my way to you now!`);
+    try { haptics.medium(); } catch {}
+    setLocalStatus("en_route");
+    setStatusBanner({ kind: "en_route", etaText: etaClock, delayMinutes: null });
+    queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] });
+    queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+    toast.success(etaClock ? `On the way · ETA ${etaClock}` : "On the way");
   };
   const handleCancelled = () => { queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] }); queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] }); };
   const getEndTime = () => { try { const p = parse(startTime, "HH:mm:ss", new Date()); return format(new Date(p.getTime() + durationMinutes * 60000), "HH:mm:ss"); } catch { return undefined; } };
