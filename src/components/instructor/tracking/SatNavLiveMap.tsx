@@ -614,10 +614,8 @@ export function SatNavLiveMap({
         });
       }
 
-      const center = vectorReadyRef.current
-        ? (offsetCenterForLowerThird(map, { lat: latitude, lng: longitude }, camHeadingRef.current) ?? { lat: latitude, lng: longitude })
-        : { lat: latitude, lng: longitude };
-      map.setCenter(center);
+      // Keep the vehicle pointer centred (no lower-third offset).
+      map.setCenter({ lat: latitude, lng: longitude });
       requestAnimationFrame(() => { suppressFollowOffRef.current = false; });
 
       const seed = { lat: latitude, lng: longitude, heading: headingNow, t: now };
@@ -826,14 +824,9 @@ export function SatNavLiveMap({
         // the user hasn't taken over with a drag/zoom. Card-mode map stays
         // free for the user to explore.
         if (fullscreenRef.current && followModeRef.current) {
-          // Offset so the vehicle sits ~28% from the bottom of the viewport,
-          // accounting for current camera heading (in screen-space).
-          const offset = vectorReadyRef.current
-            ? offsetCenterForLowerThird(map, { lat, lng }, camHeadingRef.current)
-            : null;
-          const center = offset ?? { lat, lng };
+          // Keep the vehicle pointer centred on screen.
           suppressFollowOffRef.current = true;
-          map.panTo(center);
+          map.panTo({ lat, lng });
           // Release suppression after the next frame — panTo fires its events synchronously
           requestAnimationFrame(() => { suppressFollowOffRef.current = false; });
         }
