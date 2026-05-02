@@ -191,6 +191,7 @@ export function SatNavLiveMap({
       }
 
       polylineRef.current?.setPath(pathRef.current);
+      polylineCasingRef.current?.setPath(pathRef.current);
 
       // Only fit bounds if not fullscreen (fullscreen auto-follows)
       if (!fullscreen) {
