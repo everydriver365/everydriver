@@ -35,6 +35,7 @@ export function SatNavLiveMap({
   const [ready, setReady] = useState(false);
   const [mapError, setMapError] = useState(false);
   const trailLoadedRef = useRef<string | null>(null);
+  const isFirstFixRef = useRef<boolean>(true);
 
   // Follow mode — when true (default), camera tracks the vehicle in fullscreen.
   // User drag/zoom turns it off and surfaces a "Re-centre" button.
