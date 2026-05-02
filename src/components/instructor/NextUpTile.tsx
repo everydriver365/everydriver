@@ -1643,9 +1643,30 @@ export function NextUpTile({
             handleCancelled();
           }} />
       )}
-      <RunningLateSheet open={lateSheetOpen} onOpenChange={setLateSheetOpen}
-        pupilName={pupilName} pupilPhone={pupilPhone} startTime={startTime}
-        etaMinutes={etaMinutes} />
+      <RunningLateSheet
+        open={lateSheetOpen}
+        onOpenChange={setLateSheetOpen}
+        pupilName={pupilName}
+        pupilPhone={pupilPhone}
+        startTime={startTime}
+        etaMinutes={etaMinutes}
+        onMarkOnWay={(etaText) => {
+          // Persist server status; ignore failure (UI already optimistic)
+          supabase.from("scheduled_lessons").update({ status: "en_route" }).eq("id", lessonId).then(() => {});
+          supabase.functions.invoke("notify-pupil", { body: { pupilId, type: "en_route" } }).catch(() => {});
+          setLocalStatus("en_route");
+          setStatusBanner({ kind: "en_route", etaText, delayMinutes: null });
+          queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] });
+          queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+        }}
+        onMarkRunningLate={(delayMinutes, newEtaText) => {
+          supabase.from("scheduled_lessons").update({ status: "late" }).eq("id", lessonId).then(() => {});
+          setLocalStatus("late");
+          setStatusBanner({ kind: "late", etaText: newEtaText, delayMinutes });
+          queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] });
+          queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+        }}
+      />
 
       {/* Traffic Alerts Modal */}
       <Dialog open={trafficModalOpen} onOpenChange={setTrafficModalOpen}>
