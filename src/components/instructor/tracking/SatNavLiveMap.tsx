@@ -957,7 +957,7 @@ export function SatNavLiveMap({
                 style={{
                   left: 0,
                   right: 0,
-                  bottom: "calc(env(safe-area-inset-bottom, 0px) + 150px)",
+                  bottom: "calc(env(safe-area-inset-bottom, 0px) + 210px)",
                 }}
               >
                 <div
