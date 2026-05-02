@@ -960,48 +960,48 @@ export function NextUpTile({
               // sits directly under the pupil address in the hero card.
               void isEarly;
               return (
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {/* Primary action row — Navigate / Call / Text */}
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 12 }}>
+                  {/* Primary action row — Nav / Call / Text (premium iOS hero buttons) */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr 1fr", gap: 12 }}>
                     <button onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
                       className="active:scale-[0.98]"
                       style={{
-                        background: "#1B5BFF", color: "#FFFFFF",
-                        border: "none", borderRadius: 16, height: 50,
+                        background: "#2563FF", color: "#FFFFFF",
+                        border: "none", borderRadius: 20, height: 58,
                         cursor: "pointer", transition: "transform 0.15s ease, opacity 0.15s ease",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
-                        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 8px 18px -8px rgba(27,91,255,0.4)",
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                        boxShadow: "0 12px 22px rgba(37,99,255,0.28)",
                       }}
                       aria-label="Navigate to pickup"
                     >
-                      <Navigation style={{ width: 16, height: 16 }} strokeWidth={2.4} />
-                      <span style={{ fontSize: a11yPx(14), fontWeight: 600, letterSpacing: -0.1 }}>Nav</span>
+                      <Navigation style={{ width: 18, height: 18, color: "#FFFFFF" }} strokeWidth={2.4} />
+                      <span style={{ fontSize: a11yPx(17), fontWeight: 800, letterSpacing: -0.1 }}>Nav</span>
                     </button>
                     <button onClick={(e) => { e.stopPropagation(); handleCall(); }}
                       className="active:scale-[0.98]"
                       style={{
-                        background: "rgba(52,199,89,0.12)", color: "#1C7A3E",
-                        border: "none", borderRadius: 16, height: 50,
+                        background: "#E8F7EE", color: "#168347",
+                        border: "none", borderRadius: 20, height: 58,
                         cursor: "pointer", transition: "transform 0.15s ease, opacity 0.15s ease",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
                       }}
                       aria-label="Call pupil"
                     >
-                      <Phone style={{ width: 16, height: 16, color: "#1C7A3E" }} strokeWidth={2.3} />
-                      <span style={{ fontSize: a11yPx(14), fontWeight: 600, letterSpacing: -0.1 }}>Call</span>
+                      <Phone style={{ width: 18, height: 18, color: "#168347" }} strokeWidth={2.3} />
+                      <span style={{ fontSize: a11yPx(17), fontWeight: 800, letterSpacing: -0.1 }}>Call</span>
                     </button>
                     <button onClick={(e) => { e.stopPropagation(); handleMessage(); }}
                       className="active:scale-[0.98]"
                       style={{
-                        background: "rgba(43,123,200,0.12)", color: "#1F5C99",
-                        border: "none", borderRadius: 16, height: 50,
+                        background: "#EAF3FB", color: "#1F5F96",
+                        border: "none", borderRadius: 20, height: 58,
                         cursor: "pointer", transition: "transform 0.15s ease, opacity 0.15s ease",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
                       }}
                       aria-label="Text pupil"
                     >
-                      <MessageSquare style={{ width: 16, height: 16, color: "#1F5C99" }} strokeWidth={2.3} />
-                      <span style={{ fontSize: a11yPx(14), fontWeight: 600, letterSpacing: -0.1 }}>Text</span>
+                      <MessageSquare style={{ width: 18, height: 18, color: "#1F5F96" }} strokeWidth={2.3} />
+                      <span style={{ fontSize: a11yPx(17), fontWeight: 800, letterSpacing: -0.1 }}>Text</span>
                     </button>
                   </div>
 
