@@ -959,17 +959,41 @@ export function SatNavLiveMap({
                 }}
               />
 
-              {/* Top bar — signal pill (left). Snap is demoted to a small
-                  icon-only indicator stacked on the right (rendered below). */}
+              {/* Top bar — signal pill + (when offline) connection alert,
+                  stacked vertically on the left. */}
               <div
-                className="absolute z-10 flex items-center px-3"
+                className="absolute z-10 flex items-start px-3"
                 style={{
                   top: "calc(env(safe-area-inset-top, 0px) + 10px)",
                   left: 0,
-                  right: 0,
                 }}
               >
-                <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} />
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
+                  <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} />
+                  {!realtimeConnected && (
+                    <div
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "5px 10px",
+                        borderRadius: 999,
+                        background: "rgba(255, 59, 48, 0.92)",
+                        border: "1px solid rgba(255,255,255,0.18)",
+                        color: "white",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        letterSpacing: 0.1,
+                        lineHeight: 1,
+                        boxShadow: "0 4px 12px rgba(255,59,48,0.32)",
+                      }}
+                      role="alert"
+                    >
+                      <span aria-hidden="true" style={{ fontSize: 11 }}>⚠︎</span>
+                      No connection
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* REC pill — top-right of the map, mirrors signal pill on the left. */}
