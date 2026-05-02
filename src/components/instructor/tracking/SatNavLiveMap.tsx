@@ -52,6 +52,56 @@ export function SatNavLiveMap({
   const snapInFlightRef = useRef<boolean>(false);
   const snapDirtyRef = useRef<boolean>(false);
 
+  // Render whichever path is freshest (snapped if available, else raw) into both polylines
+  const renderPolylines = useCallback(() => {
+    const display = snappedPathRef.current.length >= 2
+      ? snappedPathRef.current
+      : pathRef.current;
+    polylineRef.current?.setPath(display);
+    polylineCasingRef.current?.setPath(display);
+  }, []);
+
+  // Debounced Snap-to-Roads call — aligns the trail to actual road geometry
+  const requestSnap = useCallback(() => {
+    snapDirtyRef.current = true;
+    if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
+    snapTimerRef.current = setTimeout(async () => {
+      if (snapInFlightRef.current) {
+        // Re-arm — another call already running, retry shortly after it finishes
+        snapTimerRef.current = setTimeout(() => requestSnap(), 1200);
+        return;
+      }
+      const raw = pathRef.current;
+      if (raw.length < 2) return;
+      // Snap-to-Roads accepts max 100 points per call — use trailing window
+      const window = raw.slice(-100).map((p) => ({ lat: p.lat(), lng: p.lng() }));
+      snapInFlightRef.current = true;
+      snapDirtyRef.current = false;
+      try {
+        const snapped = await callSnapToRoad(window);
+        if (snapped && snapped.length >= 2) {
+          // If we used a trailing window, prepend the older raw points so the
+          // entire historic trail still renders (older portion stays as raw).
+          const headCount = Math.max(0, raw.length - window.length);
+          const head = headCount > 0 ? raw.slice(0, headCount) : [];
+          snappedPathRef.current = [
+            ...head,
+            ...snapped.map((p) => new google.maps.LatLng(p.lat, p.lng)),
+          ];
+          renderPolylines();
+        }
+      } catch (err) {
+        console.warn("[SatNavLiveMap] snap-to-road failed, falling back to raw:", err);
+      } finally {
+        snapInFlightRef.current = false;
+        // If new fixes arrived during the request, schedule another pass
+        if (snapDirtyRef.current) {
+          snapTimerRef.current = setTimeout(() => requestSnap(), 800);
+        }
+      }
+    }, 1200); // wait 1.2s after the last fix before snapping
+  }, [renderPolylines]);
+
   const isLive = lastSeenAt && (Date.now() - new Date(lastSeenAt).getTime() < 30000);
   const lastSeenLabel = lastSeenAt
     ? formatDistanceToNowStrict(new Date(lastSeenAt), { addSuffix: true })
