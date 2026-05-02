@@ -19,7 +19,8 @@ import {
   Palette,
   Repeat,
   Zap,
-  Send
+  Send,
+  User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -598,6 +599,22 @@ export function ExpandableLessonCard({
                   >
                     <Radio className="h-3.5 w-3.5" />
                     Start Track for {lesson.pupil?.name?.split(" ")[0] || "pupil"}
+                  </Button>
+                )}
+
+                {/* View full pupil profile */}
+                {lesson.pupil?.id && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full h-9 gap-1.5 text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/instructor/pupils/${lesson.pupil.id}`);
+                    }}
+                  >
+                    <User className="h-3.5 w-3.5 text-[#0075c9]" />
+                    View {lesson.pupil?.name?.split(" ")[0] || "pupil"}'s profile
                   </Button>
                 )}
 

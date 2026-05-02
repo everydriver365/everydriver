@@ -1217,6 +1217,41 @@ export function NextUpTile({
                 </div>
               ))}
             </div>
+
+            {/* View full pupil profile */}
+            {pupilId && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); navigate(`/instructor/pupils/${pupilId}`); }}
+                style={{
+                  marginTop: 8,
+                  width: "100%",
+                  background: "#FFFFFF",
+                  border: "none",
+                  borderRadius: 14,
+                  padding: "12px 14px",
+                  display: "flex", alignItems: "center", gap: 10,
+                  boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+                  cursor: "pointer", textAlign: "left",
+                }}
+              >
+                <div style={{
+                  width: 28, height: 28, borderRadius: 8,
+                  background: "rgba(43,123,200,0.10)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  flexShrink: 0,
+                }}>
+                  <Eye style={{ width: 14, height: 14, color: "#2B7BC8" }} strokeWidth={2} />
+                </div>
+                <span style={{
+                  flex: 1, fontSize: a11yPx(13), fontWeight: 500, color: "#000000",
+                  letterSpacing: -0.1,
+                }}>
+                  View {firstName}'s full profile
+                </span>
+                <ChevronRight style={{ width: 16, height: 16, color: "#8E8E93" }} strokeWidth={2} />
+              </button>
+            )}
           </div>
 
                 {/* ── SECTION 2 — Conditions (elevated card) ── */}
