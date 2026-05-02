@@ -862,7 +862,7 @@ export function NextUpTile({
                       aria-label="Navigate to pickup"
                     >
                       <Navigation style={{ width: 16, height: 16 }} strokeWidth={2.4} />
-                      <span style={{ fontSize: a11yPx(14), fontWeight: 600, letterSpacing: -0.1 }}>Navigate</span>
+                      <span style={{ fontSize: a11yPx(14), fontWeight: 600, letterSpacing: -0.1 }}>Nav</span>
                     </button>
                     <button onClick={(e) => { e.stopPropagation(); handleCall(); }}
                       className="active:scale-[0.98]"
