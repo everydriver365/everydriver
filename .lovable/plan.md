@@ -1,48 +1,84 @@
-# Stop the blue pointer bouncing & clean up the trail line
+# SatNavLiveMap polish pass
 
-## What's happening today
+Targeted edits to `src/components/instructor/tracking/SatNavLiveMap.tsx`. No other files change. All existing behavior (Snap-to-Roads, realtime trail, road name, speed/limit, ignition, fullscreen layout, live badge, Google Maps loading) is preserved.
 
-In `SatNavLiveMap.tsx`, every GPS fix is treated as truth:
+## 1. Marker rotation bug (animation loop, ~line 434)
 
-- The "should add to trail" threshold is ~0.5 m, well below normal GPS jitter (3–10 m) — so noisy fixes zig-zag the blue line.
-- When the car is stationary, GPS heading drifts randomly, and we feed it straight into the map's heading, so the marker visually spins in place.
-- A single bad fix (e.g. a 100 m jump) is drawn as a straight spike across the map.
-- The Snap-to-Roads call is fed all of that jitter, so even the "snapped" line inherits the noise.
+Currently:
+```ts
+marker.setIcon(getArrowIcon(0, isActiveRef.current));
+```
+Replace with the interpolated heading from the lerp above:
+```ts
+marker.setIcon(getArrowIcon(hd, isActiveRef.current));
+```
+Now the arrow visually rotates smoothly between fixes.
 
-## Fix
+## 2. Conditional camera follow (animation loop, ~line 442)
 
-Add three guards inside the GPS-fix effect, and adjust the trail/snap behaviour accordingly. All thresholds match the existing project rule of "3 m jitter filtering" used elsewhere in the GPS pipeline.
+Wrap the `panTo` so dragging works in card mode:
+```ts
+if (fullscreenRef.current) {
+  const latLng = new google.maps.LatLng(lat, lng);
+  map.panTo(latLng);
+}
+```
+Fullscreen still locks to the vehicle; card mode lets the user pan/zoom freely.
 
-### 1. Stationary gate (kills bouncing while parked)
+## 3. Icon scaling via ref (`getArrowIcon`, ~lines 167–176)
 
-- Treat speed `< 3 km/h` (~walking) as "not moving".
-- While not moving:
-  - Don't update the map's `heading` from the GPS heading — hold the previous value.
-  - Don't append new points to the trail polyline.
-  - Don't trigger a Snap-to-Roads request.
-- Marker still moves to the new lat/lng so it stays accurate, but it no longer twitches because we re-anchor `from` and `target` to the same point.
+Switch the `scale` to read `fullscreenRef.current` so changing fullscreen at runtime updates the icon size, and drop `fullscreen` from the `useCallback` deps to keep the callback identity stable:
+```ts
+const getArrowIcon = useCallback((rotation: number, active: boolean): google.maps.Symbol => ({
+  path: "M 0,-12 L -7,11 L 0,6 L 7,11 Z",
+  fillColor: active ? "#2563eb" : "#9ca3af",
+  fillOpacity: 1,
+  strokeColor: "white",
+  strokeWeight: 3,
+  scale: fullscreenRef.current ? 2.4 : 2.2,
+  rotation,
+  anchor: new google.maps.Point(0, 0),
+}), []);
+```
+Blue/grey active styling and white outline are unchanged.
 
-### 2. Jitter gate (clean trail line)
+## 4. `appendTrailPoint` dedupe helper
 
-- Compute distance from the previous accepted fix in metres (haversine).
-- Only append to `pathRef.current` when `distance >= 3 m`.
-- Replaces the current `0.000005°` lat/lng tolerance.
+Add a small helper near the other refs/utilities (above the `useEffect`s that mutate `pathRef.current`):
+```ts
+const appendTrailPoint = useCallback((lat: number, lng: number): boolean => {
+  const last = pathRef.current[pathRef.current.length - 1];
+  if (last && Math.abs(last.lat() - lat) < 0.000005 && Math.abs(last.lng() - lng) < 0.000005) {
+    return false;
+  }
+  pathRef.current.push(new google.maps.LatLng(lat, lng));
+  return true;
+}, []);
+```
 
-### 3. Outlier gate (no map-spanning spikes)
+Use it in three places (replacing the existing raw `pathRef.current.push(...)` calls), keeping all surrounding logic (`renderPolylines`, `requestSnap`, the realtime subscription guard, the movement filter) intact:
 
-- If a new fix is `> 200 m` from the previous one **and** the gap since the last fix is `< 15 s`, reject it as a teleport (return early without updating any state).
-- Real signal-loss recoveries (>15 s gap) are still accepted so we don't get stuck.
+- Historical trail loader (~line 280): `appendTrailPoint(latitude, longitude);`
+- Realtime INSERT handler (~line 311): replace push with `if (appendTrailPoint(p.latitude, p.longitude)) { renderPolylines(); requestSnap(); }` — note the existing 0.000005 distance check there can be removed since the helper covers it.
+- New-fix branch (~line 394): `if (appendTrailPoint(latitude, longitude)) { renderPolylines(); requestSnap(); }` — preserved inside the existing `movingFastEnough && metresFromPrev >= 3` gate.
 
-### 4. Snap-to-Roads only on clean input
+Snap-to-Roads, realtime trail, and polyline rendering keep working — the helper only suppresses near-duplicate pushes.
 
-Because Snap-to-Roads is now only called when a point passes the jitter + stationary + outlier gates, the snapped line will be much closer to the real road geometry without further changes.
+## 5. "Miles today" in the bottom bar
 
-## Files
+`dailyMiles` already exists (line 135) but is unused. In the card-mode bottom bar (between the speed-limit roundel and the engine status, after the spacer split), add an iOS-style metric:
 
-- `src/components/instructor/tracking/SatNavLiveMap.tsx` — update the GPS-fix `useEffect` (currently lines ~321–364) to add the three guards above, and add `speedKmh` to its dependency list.
+```tsx
+{dailyMiles != null && (
+  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+    <span style={{ fontSize: 15, fontWeight: 600, color: "#1c1c1e", lineHeight: 1 }} className="tabular-nums">
+      {dailyMiles}
+    </span>
+    <span style={{ fontSize: 11, color: "#8e8e93", marginTop: 2 }}>miles today</span>
+  </div>
+)}
+```
+Subtle, matches existing typography (SF-style sizes, `#8e8e93` secondary, tabular-nums). Placed before the engine status so the engine indicator stays at the far right.
 
-## Out of scope
-
-- No changes to the marker icon, snap edge function, polling cadence, or DB schema.
-- No changes to the historical trail loader (it already uses recorded points, not live jitter).
-- No mobile layout changes outside this component.
+## Out of scope / unchanged
+Supabase table names, Google Maps loader, Snap-to-Roads logic, live badge, road name banner, speed and speed-limit display, ignition status, and the overall fullscreen vs card layout structure are not touched.

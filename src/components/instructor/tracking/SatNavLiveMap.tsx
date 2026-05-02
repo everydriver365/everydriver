@@ -170,10 +170,26 @@ export function SatNavLiveMap({
     fillOpacity: 1,
     strokeColor: "white",
     strokeWeight: 3,
-    scale: fullscreen ? 2.4 : 2.2,
-    rotation: rotation,
+    scale: fullscreenRef.current ? 2.4 : 2.2,
+    rotation,
     anchor: new google.maps.Point(0, 0),
-  }), [fullscreen]);
+  }), []);
+
+  // Append a point to the trail polyline, suppressing near-duplicate fixes
+  // (~0.5m at UK latitudes). Returns true if the point was actually added so
+  // callers can decide whether to re-render / re-snap.
+  const appendTrailPoint = useCallback((lat: number, lng: number): boolean => {
+    const last = pathRef.current[pathRef.current.length - 1];
+    if (
+      last &&
+      Math.abs(last.lat() - lat) < 0.000005 &&
+      Math.abs(last.lng() - lng) < 0.000005
+    ) {
+      return false;
+    }
+    pathRef.current.push(new google.maps.LatLng(lat, lng));
+    return true;
+  }, []);
 
   // Init map once SDK is ready
   useEffect(() => {
@@ -277,7 +293,7 @@ export function SatNavLiveMap({
       pathRef.current = trail;
 
       if (latitude != null && longitude != null) {
-        pathRef.current.push(new google.maps.LatLng(latitude, longitude));
+        appendTrailPoint(latitude, longitude);
       }
 
       renderPolylines();
@@ -302,13 +318,7 @@ export function SatNavLiveMap({
       }, (payload) => {
         const p = payload.new as any;
         if (!Number.isFinite(p.latitude) || !Number.isFinite(p.longitude)) return;
-        const newPt = new google.maps.LatLng(p.latitude, p.longitude);
-        const lastPt = pathRef.current[pathRef.current.length - 1];
-        const shouldAdd = !lastPt ||
-          Math.abs(lastPt.lat() - p.latitude) > 0.000005 ||
-          Math.abs(lastPt.lng() - p.longitude) > 0.000005;
-        if (shouldAdd) {
-          pathRef.current.push(newPt);
+        if (appendTrailPoint(p.latitude, p.longitude)) {
           renderPolylines();
           requestSnap();
         }
@@ -391,11 +401,12 @@ export function SatNavLiveMap({
     // prevents stationary drift from drawing erratic lines and ensures
     // Snap-to-Roads only ever sees clean input.
     if (movingFastEnough && metresFromPrev >= 3) {
-      pathRef.current.push(new google.maps.LatLng(latitude, longitude));
-      renderPolylines();
-      requestSnap();
+      if (appendTrailPoint(latitude, longitude)) {
+        renderPolylines();
+        requestSnap();
+      }
     }
-  }, [latitude, longitude, heading, speedKmh, isActive, getArrowIcon, renderPolylines, requestSnap]);
+  }, [latitude, longitude, heading, speedKmh, isActive, getArrowIcon, renderPolylines, requestSnap, appendTrailPoint]);
 
   // Continuous animation loop — interpolates marker between fixes at 60fps
   useEffect(() => {
@@ -431,16 +442,19 @@ export function SatNavLiveMap({
         const hd = lerpAngle(from.heading, target.heading, e);
 
         marker.setPosition({ lat, lng });
-        marker.setIcon(getArrowIcon(0, isActiveRef.current));
+        marker.setIcon(getArrowIcon(hd, isActiveRef.current));
 
         // Heading-up: rotate map smoothly
         if (typeof (map as any).setHeading === "function") {
           (map as any).setHeading(hd);
         }
 
-        // Camera follow — keep marker centered at all times
-        const latLng = new google.maps.LatLng(lat, lng);
-        map.panTo(latLng);
+        // Camera follow — only auto-pan in fullscreen sat-nav mode so users
+        // can drag/explore the card-mode map without it snapping back.
+        if (fullscreenRef.current) {
+          const latLng = new google.maps.LatLng(lat, lng);
+          map.panTo(latLng);
+        }
       }
 
       animRef.current = requestAnimationFrame(tick);
@@ -576,6 +590,16 @@ export function SatNavLiveMap({
 
         {/* Spacer */}
         <div style={{ flex: 1 }} />
+
+        {/* Miles today */}
+        {dailyMiles != null && (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: "#1c1c1e", lineHeight: 1 }} className="tabular-nums">
+              {dailyMiles}
+            </span>
+            <span style={{ fontSize: 11, color: "#8e8e93", marginTop: 2 }}>miles today</span>
+          </div>
+        )}
 
         {/* Engine status */}
         {ignitionOn != null && (
