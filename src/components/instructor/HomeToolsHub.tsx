@@ -226,6 +226,7 @@ export function HomeToolsHub() {
   const features = subscription?.features || [];
   const [query, setQuery] = useState("");
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [browseOpen, setBrowseOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [pupilSearchResults, setPupilSearchResults] = useState<PupilSearchResult[]>([]);
   const [pupilsLoading, setPupilsLoading] = useState(false);
@@ -549,95 +550,138 @@ export function HomeToolsHub() {
             </div>
           )}
 
-          {/* Categories */}
+          {/* Browse all tools (collapsed Categories) */}
           <div style={{ marginTop: 24 }}>
-            <SectionLabel>Categories</SectionLabel>
             <div style={{
               background: "#FFFFFF", borderRadius: 18, overflow: "hidden",
               boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
             }}>
-              {CATEGORIES.map((cat, i) => {
-                const validTiles = cat.tileIds.filter((id) => QUICK_ACCESS_TILES_BY_ID[id]);
-                const expanded = openCategory === cat.id;
-                return (
-                  <div key={cat.id}>
-                    <CategoryRow
-                      category={cat} count={validTiles.length} expanded={expanded}
-                      onPress={() => setOpenCategory((prev) => (prev === cat.id ? null : cat.id))}
-                    />
-                    <AnimatePresence initial={false}>
-                      {expanded && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.22 }}
-                          style={{ overflow: "hidden", background: "#F7F7F9", borderTop: "0.5px solid #E5E5EA" }}
-                        >
-                          <div style={{ padding: "20px 16px 22px" }}>
-                            {/* Category sub-header */}
-                            <div style={{ marginBottom: 16, padding: "0 2px" }}>
-                              <div style={{ fontSize: 11, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase", letterSpacing: "0.4px" }}>
-                                {validTiles.length} tool{validTiles.length === 1 ? "" : "s"}
-                              </div>
-                            </div>
-
-                            {/* Primary tools — first 3 as larger cards */}
-                            {validTiles.length > 0 && (() => {
-                              const primary = validTiles.slice(0, 3);
-                              const rest = validTiles.slice(3);
-                              return (
-                                <>
-                                  <div style={{ fontSize: 11, fontWeight: 600, color: "#6E6E73", textTransform: "uppercase", letterSpacing: "0.4px", margin: "0 2px 10px" }}>
-                                    Primary
-                                  </div>
-                                  <div style={{ display: "grid", gridTemplateColumns: primary.length === 1 ? "1fr" : "1fr 1fr", gap: 12, marginBottom: rest.length > 0 ? 24 : 0 }}>
-                                    {primary.map((id) => {
-                                      const tile = QUICK_ACCESS_TILES_BY_ID[id];
-                                      return (
-                                        <PrimaryToolCard
-                                          key={id}
-                                          tile={tile}
-                                          onPress={() => handleTap(tile)}
-                                          locked={isLocked(tile)}
-                                        />
-                                      );
-                                    })}
-                                  </div>
-
-                                  {rest.length > 0 && (
-                                    <>
-                                      <div style={{ fontSize: 11, fontWeight: 600, color: "#6E6E73", textTransform: "uppercase", letterSpacing: "0.4px", margin: "0 2px 10px" }}>
-                                        All tools
-                                      </div>
-                                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                                        {rest.map((id) => {
-                                          const tile = QUICK_ACCESS_TILES_BY_ID[id];
-                                          return (
-                                            <LargeToolCard
-                                              key={id}
-                                              tile={tile}
-                                              onPress={() => handleTap(tile)}
-                                              locked={isLocked(tile)}
-                                            />
-                                          );
-                                        })}
-                                      </div>
-                                    </>
-                                  )}
-                                </>
-                              );
-                            })()}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                    {i < CATEGORIES.length - 1 && (
-                      <div style={{ marginLeft: 62, height: 0.5, background: "#E5E5EA" }} />
-                    )}
+              <button
+                type="button"
+                onClick={() => setBrowseOpen((v) => !v)}
+                aria-expanded={browseOpen}
+                aria-label={browseOpen ? "Hide all tools" : "Browse all tools"}
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", gap: 12,
+                  padding: "14px 16px", background: "transparent", border: 0,
+                  cursor: "pointer", textAlign: "left",
+                }}
+              >
+                <div style={{
+                  width: 34, height: 34, borderRadius: 9, background: "#F2F2F4",
+                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                }}>
+                  <Briefcase size={17} strokeWidth={1.8} color="#6E6E73" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 15, fontWeight: 500, color: "#000000", letterSpacing: "-0.1px" }}>
+                    Browse all tools
                   </div>
-                );
-              })}
+                  <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 1 }}>
+                    {QUICK_ACCESS_TILES.length} across {CATEGORIES.length} categories
+                  </div>
+                </div>
+                <motion.div
+                  animate={{ rotate: browseOpen ? 90 : 0 }}
+                  transition={{ duration: 0.2 }}
+                  style={{ display: "flex", alignItems: "center" }}
+                >
+                  <ChevronRight size={18} strokeWidth={1.8} color="#C7C7CC" />
+                </motion.div>
+              </button>
+
+              <AnimatePresence initial={false}>
+                {browseOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.22 }}
+                    style={{ overflow: "hidden", borderTop: "0.5px solid #E5E5EA" }}
+                  >
+                    {CATEGORIES.map((cat, i) => {
+                      const validTiles = cat.tileIds.filter((id) => QUICK_ACCESS_TILES_BY_ID[id]);
+                      const expanded = openCategory === cat.id;
+                      return (
+                        <div key={cat.id}>
+                          <CategoryRow
+                            category={cat} count={validTiles.length} expanded={expanded}
+                            onPress={() => setOpenCategory((prev) => (prev === cat.id ? null : cat.id))}
+                          />
+                          <AnimatePresence initial={false}>
+                            {expanded && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.22 }}
+                                style={{ overflow: "hidden", background: "#F7F7F9", borderTop: "0.5px solid #E5E5EA" }}
+                              >
+                                <div style={{ padding: "20px 16px 22px" }}>
+                                  <div style={{ marginBottom: 16, padding: "0 2px" }}>
+                                    <div style={{ fontSize: 11, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase", letterSpacing: "0.4px" }}>
+                                      {validTiles.length} tool{validTiles.length === 1 ? "" : "s"}
+                                    </div>
+                                  </div>
+
+                                  {validTiles.length > 0 && (() => {
+                                    const primary = validTiles.slice(0, 3);
+                                    const rest = validTiles.slice(3);
+                                    return (
+                                      <>
+                                        <div style={{ fontSize: 11, fontWeight: 600, color: "#6E6E73", textTransform: "uppercase", letterSpacing: "0.4px", margin: "0 2px 10px" }}>
+                                          Primary
+                                        </div>
+                                        <div style={{ display: "grid", gridTemplateColumns: primary.length === 1 ? "1fr" : "1fr 1fr", gap: 12, marginBottom: rest.length > 0 ? 24 : 0 }}>
+                                          {primary.map((id) => {
+                                            const tile = QUICK_ACCESS_TILES_BY_ID[id];
+                                            return (
+                                              <PrimaryToolCard
+                                                key={id}
+                                                tile={tile}
+                                                onPress={() => handleTap(tile)}
+                                                locked={isLocked(tile)}
+                                              />
+                                            );
+                                          })}
+                                        </div>
+
+                                        {rest.length > 0 && (
+                                          <>
+                                            <div style={{ fontSize: 11, fontWeight: 600, color: "#6E6E73", textTransform: "uppercase", letterSpacing: "0.4px", margin: "0 2px 10px" }}>
+                                              All tools
+                                            </div>
+                                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                                              {rest.map((id) => {
+                                                const tile = QUICK_ACCESS_TILES_BY_ID[id];
+                                                return (
+                                                  <LargeToolCard
+                                                    key={id}
+                                                    tile={tile}
+                                                    onPress={() => handleTap(tile)}
+                                                    locked={isLocked(tile)}
+                                                  />
+                                                );
+                                              })}
+                                            </div>
+                                          </>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                          {i < CATEGORIES.length - 1 && (
+                            <div style={{ marginLeft: 62, height: 0.5, background: "#E5E5EA" }} />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
