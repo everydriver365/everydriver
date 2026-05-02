@@ -127,9 +127,10 @@ export function SatNavLiveMap({
 
   // Tick the "last fix" label every second so the indicator stays accurate
   useEffect(() => {
-    if (!lastSeenAt) { setLastFixLabel(null); return; }
+    if (!lastSeenAt) { setLastFixLabel(null); setLastFixAgeSec(null); return; }
     const update = () => {
       const ageSec = Math.max(0, Math.round((Date.now() - new Date(lastSeenAt).getTime()) / 1000));
+      setLastFixAgeSec(ageSec);
       if (ageSec < 60) setLastFixLabel(`${ageSec}s ago`);
       else if (ageSec < 3600) setLastFixLabel(`${Math.round(ageSec / 60)}m ago`);
       else setLastFixLabel(`${Math.round(ageSec / 3600)}h ago`);
@@ -138,6 +139,15 @@ export function SatNavLiveMap({
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
   }, [lastSeenAt]);
+
+  // Premium signal status — derived from lastFix age, drives the pill UI
+  type SignalStatus = "waiting" | "live" | "delayed" | "weak" | "lost";
+  const signalStatus: SignalStatus =
+    lastFixAgeSec == null ? "waiting"
+    : lastFixAgeSec < 15 ? "live"
+    : lastFixAgeSec < 30 ? "delayed"
+    : lastFixAgeSec < 90 ? "weak"
+    : "lost";
 
   const speedMph = speedKmh != null ? Math.round(speedKmh * 0.621371) : null;
   const speedLimitMph = speedLimitKmh != null ? Math.round(speedLimitKmh * 0.621371) : null;
