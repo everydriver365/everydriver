@@ -115,6 +115,20 @@ export function SatNavLiveMap({
     : null;
   const hasPosition = latitude !== null && longitude !== null;
 
+  // Tick the "last fix" label every second so the indicator stays accurate
+  useEffect(() => {
+    if (!lastSeenAt) { setLastFixLabel(null); return; }
+    const update = () => {
+      const ageSec = Math.max(0, Math.round((Date.now() - new Date(lastSeenAt).getTime()) / 1000));
+      if (ageSec < 60) setLastFixLabel(`${ageSec}s ago`);
+      else if (ageSec < 3600) setLastFixLabel(`${Math.round(ageSec / 60)}m ago`);
+      else setLastFixLabel(`${Math.round(ageSec / 3600)}h ago`);
+    };
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, [lastSeenAt]);
+
   const speedMph = speedKmh != null ? Math.round(speedKmh * 0.621371) : null;
   const speedLimitMph = speedLimitKmh != null ? Math.round(speedLimitKmh * 0.621371) : null;
   const isOverSpeed = speedKmh != null && speedLimitKmh != null && speedKmh > speedLimitKmh;
