@@ -332,12 +332,17 @@ export function SatNavLiveMap({
     trailLoadedRef.current = sessionId;
 
     (async () => {
+      // Trail line is no longer rendered, so we only need *just enough*
+      // history to seed the marker's anchor before realtime takes over.
+      // Last 5 minutes / 50 rows is plenty at 1Hz.
+      const since = new Date(Date.now() - 5 * 60 * 1000).toISOString();
       const { data: points } = await supabase
         .from("telematics_gps_points")
         .select("latitude, longitude")
         .eq("telematics_id", sessionId)
+        .gte("recorded_at", since)
         .order("recorded_at", { ascending: true })
-        .limit(500);
+        .limit(50);
 
       if (!points || points.length === 0 || !mapRef.current) return;
 
