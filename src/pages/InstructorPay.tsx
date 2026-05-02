@@ -61,6 +61,8 @@ interface QuickAction {
 export default function InstructorPay() {
   const { instructor: authInstructor } = useInstructorAuth();
   const instructorId = authInstructor?.id;
+  const [searchParams] = useSearchParams();
+  const reminderPupilId = searchParams.get("pupilId");
 
   const { data: earnings, isLoading } = useDailyEarnings(instructorId);
   const [resolvedQrUrl, setResolvedQrUrl] = useState<string | null>(null);
