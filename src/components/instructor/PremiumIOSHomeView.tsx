@@ -607,7 +607,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </Card>
       </section>
 
-      {/* SECTION 4: Quick actions — 4 tiles, single row */}
+      {/* SECTION 4: Quick actions — 2 rows of 4 tiles */}
       <section className="mt-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
@@ -668,7 +668,44 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
             if (hour < 11) order = ["add", "message", "gap", "payment"];
             else if (hour < 16) order = ["gap", "message", "add", "payment"];
             else order = ["payment", "message", "add", "gap"];
-            return order.map((k) => actions[k]);
+            const secondRow = (
+              <>
+                <QuickActionPill
+                  key="schedule"
+                  icon={<CalendarDays className="size-[20px]" />}
+                  label="Schedule"
+                  tone="blue"
+                  onClick={() => navigate("/instructor/schedule")}
+                />
+                <QuickActionPill
+                  key="pupils"
+                  icon={<Users className="size-[20px]" />}
+                  label="Pupils"
+                  tone="indigo"
+                  onClick={() => navigate("/instructor/pupils")}
+                />
+                <QuickActionPill
+                  key="earnings"
+                  icon={<Wallet className="size-[20px]" />}
+                  label="Earnings"
+                  tone="green"
+                  onClick={() => navigate("/instructor/earnings")}
+                />
+                <QuickActionPill
+                  key="tests"
+                  icon={<ClipboardCheck className="size-[20px]" />}
+                  label="Tests"
+                  tone="amber"
+                  onClick={() => navigate("/instructor/tests")}
+                />
+              </>
+            );
+            return (
+              <>
+                {order.map((k) => actions[k])}
+                {secondRow}
+              </>
+            );
           })()}
         </div>
       </section>
