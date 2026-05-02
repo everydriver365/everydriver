@@ -712,22 +712,22 @@ export function NextUpTile({
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="overflow-hidden"
-            style={{ marginLeft: 0, marginRight: 0, marginBottom: -16, marginTop: 4 }}
+            style={{ marginLeft: 0, marginRight: 0, marginTop: 4 }}
           >
-          <div style={{ padding: "22px 0 20px", display: "flex", flexDirection: "column", gap: 24, borderTop: "1px solid rgba(15,23,42,0.08)", background: "transparent" }}>
+          <div style={{ padding: "12px 0 16px", display: "flex", flexDirection: "column", gap: 14, borderTop: "0.5px solid #E5E5EA", background: "transparent" }}>
 
-          {/* ── HERO + PRIMARY ACTIONS card (premium iOS) ── */}
+          {/* ── HERO + PRIMARY ACTIONS card (flat schedule-style) ── */}
           <div style={{
-            background: "#FFFFFF", borderRadius: 26, padding: 24,
-            border: "1px solid rgba(15,23,42,0.06)",
-            boxShadow: "0 14px 34px rgba(15,23,42,0.07)",
-            display: "flex", flexDirection: "column", gap: 18,
+            background: "#FFFFFF", borderRadius: 12, padding: 14,
+            border: "0.5px solid #E5E5EA",
+            display: "flex", flexDirection: "column", gap: 12,
+            position: "relative",
           }}>
             {/* UP NEXT label — premium small caps, soft blue */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
               <span style={{
-                fontSize: a11yPx(12), fontWeight: 700, color: "#8BB9F2",
-                letterSpacing: 1.3, textTransform: "uppercase",
+                fontSize: a11yPx(11), fontWeight: 700, color: "#8A8A8E",
+                letterSpacing: 1, textTransform: "uppercase",
               }}>
                 Up next
               </span>
@@ -735,9 +735,9 @@ export function NextUpTile({
                 const isPending = !checkInStatus || checkInStatus === "pending";
                 const canNudge = isPending && !!pupilPhone;
                 const pillBase: React.CSSProperties = {
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  borderRadius: 999, padding: "7px 12px",
-                  fontSize: a11yPx(13), fontWeight: 700, letterSpacing: 0.1,
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  borderRadius: 999, padding: "4px 10px",
+                  fontSize: a11yPx(12), fontWeight: 600, letterSpacing: 0.05,
                 };
                 if (nudgeSentAt) {
                   return (
@@ -746,7 +746,7 @@ export function NextUpTile({
                       background: "#E3F6EA", color: "#1F7A3F",
                       border: "1px solid rgba(31,122,63,0.12)",
                     }}>
-                      <CheckCircle2 style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                      <CheckCircle2 style={{ width: 12, height: 12, strokeWidth: 2.2 }} />
                       Reminder sent
                     </span>
                   );
@@ -773,7 +773,7 @@ export function NextUpTile({
                         transition: "transform 120ms cubic-bezier(0.2,0.7,0.2,1)",
                       }}
                     >
-                      <Clock style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                      <Clock style={{ width: 12, height: 12, strokeWidth: 2.2 }} />
                       Awaiting confirmation · Tap to nudge
                     </button>
                   );
@@ -781,7 +781,7 @@ export function NextUpTile({
                 if (checkInStatus === "confirmed") {
                   return (
                     <span style={{ ...pillBase, background: "#E3F6EA", color: "#1F7A3F", border: "1px solid rgba(31,122,63,0.12)" }}>
-                      <CheckCircle2 style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                      <CheckCircle2 style={{ width: 12, height: 12, strokeWidth: 2.2 }} />
                       Confirmed
                     </span>
                   );
@@ -789,7 +789,7 @@ export function NextUpTile({
                 if (checkInStatus === "declined" || checkInStatus === "cancelled") {
                   return (
                     <span style={{ ...pillBase, background: "#FCE4E4", color: "#9A1F1F", border: "1px solid rgba(154,31,31,0.12)" }}>
-                      <AlertTriangle style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                      <AlertTriangle style={{ width: 12, height: 12, strokeWidth: 2.2 }} />
                       {checkInStatus === "declined" ? "Declined" : "Cancelled"}
                     </span>
                   );
@@ -797,19 +797,25 @@ export function NextUpTile({
                 // pending without phone — amber awaiting
                 return (
                   <span style={{ ...pillBase, background: "#FFF3D6", color: "#A15A10", border: "1px solid rgba(161,90,16,0.12)" }}>
-                    <Clock style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                    <Clock style={{ width: 12, height: 12, strokeWidth: 2.2 }} />
                     Awaiting confirmation
                   </span>
                 );
               })()}
             </div>
 
+            {/* Thin coloured accent bar (matches Schedule lesson rows) */}
+            <div aria-hidden style={{
+              position: "absolute", left: 0, top: 10, bottom: 10, width: 3,
+              background: "#2B7BC8", borderRadius: 2,
+            }} />
+
             {/* Header row: pupil name (left) | time + date (right) */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{
-                  fontSize: a11yPx(28), lineHeight: "34px", fontWeight: 800, color: "#050505",
-                  letterSpacing: -0.6,
+                  fontSize: a11yPx(20), lineHeight: "24px", fontWeight: 700, color: "#000000",
+                  letterSpacing: -0.3,
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                 }}>
                   {toSentenceName(pupilName)}
@@ -817,33 +823,33 @@ export function NextUpTile({
               </div>
               <div style={{ textAlign: "right", flexShrink: 0 }}>
                 <div style={{
-                  fontSize: a11yPx(34), lineHeight: "38px", fontWeight: 800, letterSpacing: -0.8,
-                  color: "#050505", fontVariantNumeric: "tabular-nums",
+                  fontSize: a11yPx(22), lineHeight: "26px", fontWeight: 700, letterSpacing: -0.3,
+                  color: "#000000", fontVariantNumeric: "tabular-nums",
                 }}>
                   {formatTime24(startTime)}
                 </div>
-                <div style={{ fontSize: a11yPx(16), color: "#8A8A8E", marginTop: 2, fontWeight: 500 }}>
+                <div style={{ fontSize: a11yPx(13), color: "#8A8A8E", marginTop: 1, fontWeight: 500 }}>
                   {getDateLabel()}
                 </div>
               </div>
             </div>
 
             {/* Secondary info: lesson type · duration, location, countdown */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <div style={{ fontSize: a11yPx(17), color: "#3C3C43", fontWeight: 500, letterSpacing: -0.1 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ fontSize: a11yPx(13), color: "#3C3C43", fontWeight: 500, letterSpacing: -0.05 }}>
                 {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
               </div>
               {(pickupLocation || pickupPostcode) && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#8A8A8E", minWidth: 0 }}>
-                  <MapPin style={{ width: 18, height: 18, flexShrink: 0, color: "#8A8A8E" }} strokeWidth={2} />
-                  <span style={{ fontSize: a11yPx(16), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#8A8A8E", minWidth: 0 }}>
+                  <MapPin style={{ width: 14, height: 14, flexShrink: 0, color: "#8A8A8E" }} strokeWidth={2} />
+                  <span style={{ fontSize: a11yPx(13), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {formattedPickupAddress || pickupPostcode || pickupLocation}
                   </span>
                 </div>
               )}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#8A8A8E" }}>
-                <Clock style={{ width: 18, height: 18, color: "#8A8A8E" }} strokeWidth={2} />
-                <span style={{ fontSize: a11yPx(16), fontVariantNumeric: "tabular-nums" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#8A8A8E" }}>
+                <Clock style={{ width: 14, height: 14, color: "#8A8A8E" }} strokeWidth={2} />
+                <span style={{ fontSize: a11yPx(13), fontVariantNumeric: "tabular-nums" }}>
                   {minutesUntil <= 0 ? "Starting now" : `Starts in ${getCountdownText()}`}
                 </span>
               </div>
