@@ -33,7 +33,16 @@ export function SatNavLiveMap({
   const polylineCasingRef = useRef<google.maps.Polyline | null>(null);
   const pathRef = useRef<google.maps.LatLng[]>([]);
   const [ready, setReady] = useState(false);
+  const [mapError, setMapError] = useState(false);
   const trailLoadedRef = useRef<string | null>(null);
+
+  // Follow mode — when true (default), camera tracks the vehicle in fullscreen.
+  // User drag/zoom turns it off and surfaces a "Re-centre" button.
+  const [followMode, setFollowMode] = useState(true);
+  const followModeRef = useRef<boolean>(true);
+  followModeRef.current = followMode;
+  const mapListenersRef = useRef<google.maps.MapsEventListener[]>([]);
+  const suppressFollowOffRef = useRef<boolean>(false);
 
   // Smoothing/interpolation refs
   const animRef = useRef<number | null>(null);
@@ -53,6 +62,7 @@ export function SatNavLiveMap({
   const snapDirtyRef = useRef<boolean>(false);
   const [snapStatus, setSnapStatus] = useState<"idle" | "syncing" | "snapped" | "raw">("idle");
   const [lastFixLabel, setLastFixLabel] = useState<string | null>(null);
+  const [lastFixAgeSec, setLastFixAgeSec] = useState<number | null>(null);
 
   // Render whichever path is freshest (snapped if available, else raw) into both polylines
   const renderPolylines = useCallback(() => {
