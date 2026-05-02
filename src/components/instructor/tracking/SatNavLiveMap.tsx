@@ -297,7 +297,60 @@ export function SatNavLiveMap({
     anchor: new google.maps.Point(0, 0),
   }), []);
 
-  // Append a point to the trail polyline, suppressing near-duplicate fixes
+  // ── Sat-nav camera helpers ──────────────────────────────────────────────
+  // Zoom adapts to speed so the driver sees an appropriate amount of road.
+  const zoomForSpeed = useCallback((speedKmh: number | null): number => {
+    if (speedKmh == null) return 17;
+    if (speedKmh < 20) return 18;
+    if (speedKmh < 60) return 17;
+    if (speedKmh < 100) return 16;
+    return 15;
+  }, []);
+
+  // Shortest signed angular delta in degrees from `from` to `to` in [-180, 180].
+  const shortestAngleDelta = useCallback((from: number, to: number): number => {
+    return ((to - from + 540) % 360) - 180;
+  }, []);
+
+  // Given a target lat/lng, return a centre that places the target ~28% from
+  // the bottom of the viewport, accounting for the current camera heading so
+  // the offset is always "ahead" of the vehicle in screen-space.
+  const offsetCenterForLowerThird = useCallback((
+    map: google.maps.Map,
+    target: { lat: number; lng: number },
+    cameraHeadingDeg: number,
+  ): { lat: number; lng: number } | null => {
+    const proj = map.getProjection();
+    const zoom = map.getZoom();
+    if (!proj || zoom == null) return null;
+
+    const targetPt = proj.fromLatLngToPoint(new google.maps.LatLng(target));
+    if (!targetPt) return null;
+
+    const scale = Math.pow(2, zoom);
+    const div = map.getDiv() as HTMLElement;
+    const heightPx = div.clientHeight;
+    if (!heightPx) return null;
+
+    // Centre at 50%, target at 72% from top → push centre forward by 22%.
+    const offsetPx = heightPx * 0.22;
+
+    const headingRad = (cameraHeadingDeg * Math.PI) / 180;
+    const dxPx = Math.sin(headingRad) * offsetPx;
+    const dyPx = -Math.cos(headingRad) * offsetPx; // y inverted in screen coords
+
+    const dxWorld = dxPx / scale / 256;
+    const dyWorld = dyPx / scale / 256;
+
+    const centerPt = new google.maps.Point(
+      targetPt.x - dxWorld,
+      targetPt.y - dyWorld,
+    );
+    const centerLatLng = proj.fromPointToLatLng(centerPt);
+    return centerLatLng
+      ? { lat: centerLatLng.lat(), lng: centerLatLng.lng() }
+      : null;
+  }, []);
   // (~0.5m at UK latitudes). Returns true if the point was actually added so
   // callers can decide whether to re-render / re-snap.
   const appendTrailPoint = useCallback((lat: number, lng: number): boolean => {
