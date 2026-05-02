@@ -94,6 +94,7 @@ function ToggleList({ toggles, instructorId }: { toggles: FeatureToggle[]; instr
                   checked={currentValue}
                   onCheckedChange={(v) => handleToggle(toggle.key, v)}
                   disabled={isSaving}
+                  className="data-[state=checked]:bg-[#34C759]"
                 />
               </div>
             </div>
