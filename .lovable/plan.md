@@ -1,84 +1,68 @@
-# SatNavLiveMap polish pass
+## Goal
 
-Targeted edits to `src/components/instructor/tracking/SatNavLiveMap.tsx`. No other files change. All existing behavior (Snap-to-Roads, realtime trail, road name, speed/limit, ignition, fullscreen layout, live badge, Google Maps loading) is preserved.
+On the instructor mobile **Schedule** tab (the "List" view at `MultiDayScheduleView`), make every entry **look identical** to the rows shown under the **Calendar** tab's selected-day panel (`MobileMonthCalendarView`), without changing any behaviour, data, or interactions.
 
-## 1. Marker rotation bug (animation loop, ~line 434)
+## What "look the same" means (visual spec, taken directly from the Calendar view)
 
-Currently:
-```ts
-marker.setIcon(getArrowIcon(0, isActiveRef.current));
-```
-Replace with the interpolated heading from the lerp above:
-```ts
-marker.setIcon(getArrowIcon(hd, isActiveRef.current));
-```
-Now the arrow visually rotates smoothly between fixes.
+Each row becomes a flat, compact line — no elevated card, no large icon tile, no oversized time. Reference: lines 582–700 of `src/components/instructor/MobileMonthCalendarView.tsx`.
 
-## 2. Conditional camera follow (animation loop, ~line 442)
+- Row layout: `time column · 3px coloured bar · title/subtitle · optional chevron`
+- Time column: `min-width 50px`, right-aligned, `14px / 500` black time, `11px` grey duration underneath, tabular-nums
+- Coloured bar: `width 3px`, `height 36px`, `borderRadius 2px`, colour = current `accentColor` per row (lesson blue `#2B7BC8`, driving test red `#C8434F`, external = Google colour, block = category colour)
+- Title: `14px / 500` black, single line, ellipsis
+- Subtitle: `12px` grey `#6E6E73`, single line, ellipsis
+- Chevron: `12px`, grey `#6E6E73`, only when the row is tappable for details
+- Row padding: `12px 8px`, `gap 12px`
+- Day's rows wrapped in a single white container: `background #FFFFFF`, `borderRadius 12px`, `border 0.5px solid #E5E5EA`, `padding 0 8px`, hairline divider `0.5px #E5E5EA` (with `margin 0 8px`) **between** rows only
+- Font stack: `-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif`
 
-Wrap the `panTo` so dragging works in card mode:
-```ts
-if (fullscreenRef.current) {
-  const latLng = new google.maps.LatLng(lat, lng);
-  map.panTo(latLng);
-}
-```
-Fullscreen still locks to the vehicle; card mode lets the user pan/zoom freely.
+## Behaviour kept exactly as-is (do not touch)
 
-## 3. Icon scaling via ref (`getArrowIcon`, ~lines 167–176)
+- `MultiDayScheduleView` props, data fetching, the 365-day window, sticky day headers, day grouping, "today" highlight, scroll-to-today, sync, refresh key
+- The `ExpandableLessonCard` wrapper for lessons (so all current actions — Navigate, Call, Text, On the way, Cancel, Reschedule, No-show, Delete, expand/collapse — keep working). We only swap **what is rendered inside `renderCustomCollapsed`**.
+- All-day externals, timed externals, and manual blocks keep their current `onClick` toggling `expandedEventId`, the expanded `ExternalDetails` panel, and the block notes panel — only the collapsed row visual changes.
+- The **Now** indicator, **Gap Filler** card (`GapFillCard`), **empty-day** placeholder, sticky day header, summary widget, FAB, sheets and dialogs are unchanged.
+- All status / completion information keeps being shown, just rendered in the new compact form (see "Mapping" below).
 
-Switch the `scale` to read `fullscreenRef.current` so changing fullscreen at runtime updates the icon size, and drop `fullscreen` from the `useCallback` deps to keep the callback identity stable:
-```ts
-const getArrowIcon = useCallback((rotation: number, active: boolean): google.maps.Symbol => ({
-  path: "M 0,-12 L -7,11 L 0,6 L 7,11 Z",
-  fillColor: active ? "#2563eb" : "#9ca3af",
-  fillOpacity: 1,
-  strokeColor: "white",
-  strokeWeight: 3,
-  scale: fullscreenRef.current ? 2.4 : 2.2,
-  rotation,
-  anchor: new google.maps.Point(0, 0),
-}), []);
-```
-Blue/grey active styling and white outline are unchanged.
+## Mapping current row info → new compact row
 
-## 4. `appendTrailPoint` dedupe helper
+The new row supports two slots beyond title/subtitle: a single trailing **micro-chip** (text/icon, ≤1 piece), and the chevron. Mapping:
 
-Add a small helper near the other refs/utilities (above the `useEffect`s that mutate `pathRef.current`):
-```ts
-const appendTrailPoint = useCallback((lat: number, lng: number): boolean => {
-  const last = pathRef.current[pathRef.current.length - 1];
-  if (last && Math.abs(last.lat() - lat) < 0.000005 && Math.abs(last.lng() - lng) < 0.000005) {
-    return false;
-  }
-  pathRef.current.push(new google.maps.LatLng(lat, lng));
-  return true;
-}, []);
-```
+- Pupil name → `title` (driving test keeps the `· driving test` suffix, same as today and same as Calendar view)
+- Lesson type + location joined with ` · ` → `subtitle` (matches Calendar view at lines 545–548 of `MobileMonthCalendarView.tsx`)
+- Duration → small line under time (already in spec)
+- Trailing area, in priority order (only the highest-priority one shown to keep the row a single line, matching Calendar):
+  1. `LIVE` pill (red) — when lesson is in progress
+  2. `OVERDUE` pill (red) — when payment overdue
+  3. `Needs attention` dot (`#FF9500`) — when past lesson missing EOL/payment
+  4. `EOL` amber clock — past lesson, EOL pending
+  5. `£` amber — past lesson, payment pending
+  6. Tentative pill — when status is tentative
+  7. Check-in badge — when set and lesson not past
+  8. Quiet success ticks (`✓` green for EOL done, grey `£` for paid, grey notes icon) — collapsed into one trailing icon row, **only if no higher-priority item present**
+- Chevron: shown for lesson, block; hidden for all-day and timed externals (matches Calendar view rules)
 
-Use it in three places (replacing the existing raw `pathRef.current.push(...)` calls), keeping all surrounding logic (`renderPolylines`, `requestSnap`, the realtime subscription guard, the movement filter) intact:
+This preserves every signal currently surfaced; it just compresses badges into a single trailing slot so the row stays a single tight line like the Calendar view.
 
-- Historical trail loader (~line 280): `appendTrailPoint(latitude, longitude);`
-- Realtime INSERT handler (~line 311): replace push with `if (appendTrailPoint(p.latitude, p.longitude)) { renderPolylines(); requestSnap(); }` — note the existing 0.000005 distance check there can be removed since the helper covers it.
-- New-fix branch (~line 394): `if (appendTrailPoint(latitude, longitude)) { renderPolylines(); requestSnap(); }` — preserved inside the existing `movingFastEnough && metresFromPrev >= 3` gate.
+## Files to change
 
-Snap-to-Roads, realtime trail, and polyline rendering keep working — the helper only suppresses near-duplicate pushes.
+1. **`src/components/instructor/MultiDayScheduleView.tsx`**
+   - Replace the `ScheduleListRow` component body with the compact row markup from `MobileMonthCalendarView.tsx` (lines 592–700), parameterised so it still accepts every existing prop (`timeText`, `durationText`, `accentColor`, `title`, `subtitle`, `metaLine`, `statusPill`, `showChevron`, `kind`, `isOverdue`, `completion`, `needsAttention`, `checkInStatus`, `onClick`).
+   - Drop the per-row elevated white card / shadow / 36×36 icon tile / 22px radius / 100px min-height. The day's rows are wrapped together in a single bordered container instead.
+   - Remove `RowDivider`'s no-op usage at the call sites and instead render the inline `0.5px #E5E5EA` hairline between rows (same as Calendar) inside a new per-day wrapper.
+   - Wrap each day's rendered rows (all-day, timeline lessons/externals/blocks, gap fillers, now indicator, empty placeholder) in the new white rounded container. Gap fillers and the Now indicator render as their own rows inside the container with the same hairline rules as Calendar.
+   - Keep `ExpandableLessonCard` wrapping lesson rows; only its `renderCustomCollapsed` now returns the new compact `ScheduleListRow`. All expand/action behaviour is unchanged.
 
-## 5. "Miles today" in the bottom bar
+2. No changes to `MobileMonthCalendarView.tsx`, `scheduleGoogleStyle.ts`, `ExpandableLessonCard`, `GapFillCard`, hooks, queries, data shapes, or routes.
 
-`dailyMiles` already exists (line 135) but is unused. In the card-mode bottom bar (between the speed-limit roundel and the engine status, after the spacer split), add an iOS-style metric:
+## Out of scope
 
-```tsx
-{dailyMiles != null && (
-  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-    <span style={{ fontSize: 15, fontWeight: 600, color: "#1c1c1e", lineHeight: 1 }} className="tabular-nums">
-      {dailyMiles}
-    </span>
-    <span style={{ fontSize: 11, color: "#8e8e93", marginTop: 2 }}>miles today</span>
-  </div>
-)}
-```
-Subtle, matches existing typography (SF-style sizes, `#8e8e93` secondary, tabular-nums). Placed before the engine status so the engine indicator stays at the far right.
+- Desktop Calendar / Schedule views (`InstructorCalendar`, `GoogleStyleScheduleView`)
+- Month grid itself
+- Any logic, query, RLS, or data change
 
-## Out of scope / unchanged
-Supabase table names, Google Maps loader, Snap-to-Roads logic, live badge, road name banner, speed and speed-limit display, ignition status, and the overall fullscreen vs card layout structure are not touched.
+## Acceptance
+
+- Open Schedule → List on mobile: every lesson, external event, block, all-day item, gap filler, and Now indicator renders in the same flat compact style as the Calendar tab's day panel.
+- Tapping a lesson row still opens the existing `ExpandableLessonCard` actions; tapping an external/block still expands details; gap filler still offers the slot; sync, FAB, sheets, completion indicators, and check-in badges still appear (now in the trailing slot).
+- Sticky day headers, "today" colour, and scroll-to-today still work.
