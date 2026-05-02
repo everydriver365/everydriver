@@ -397,7 +397,7 @@
     background: var(--portal-accent);
     color: #FFFFFF;
     border: none;
-    border-radius: var(--portal-radius-lg);
+    border-radius: var(--portal-radius-button);
     padding: 16px 20px;
     font-size: 15px;
     font-weight: 600;
@@ -414,7 +414,7 @@
     background: var(--portal-surface);
     color: var(--portal-text);
     border: 0.5px solid var(--portal-hairline-strong);
-    border-radius: var(--portal-radius-lg);
+    border-radius: var(--portal-radius-button);
     padding: 14px 18px;
     font-size: 14px;
     font-weight: 600;
