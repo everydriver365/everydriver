@@ -421,22 +421,22 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
       {/* SECTION 3: Today's schedule */}
       <section className="mt-4">
-        <Card>
-          <div className="flex items-center justify-between px-4 pt-4 pb-3">
-            <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] leading-tight">
-              Schedule
-            </h2>
+        <SectionLabel
+          action={
             <button
               onClick={() => navigate("/instructor/schedule")}
-              className="flex items-center gap-0.5 text-[14px] font-semibold text-[#007AFF] active:opacity-60 transition-opacity shrink-0 ml-2"
+              className="flex items-center gap-0.5 text-[12px] font-semibold text-[#007AFF] active:opacity-60 transition-opacity shrink-0"
             >
               View all
-              <ChevronRight className="size-[15px]" />
+              <ChevronRight className="size-[13px]" />
             </button>
-          </div>
-
+          }
+        >
+          Schedule
+        </SectionLabel>
+        <Card>
           {/* Today / Tomorrow segmented control */}
-          <div className="px-4 pb-2">
+          <div className="px-4 pt-3 pb-2">
             <div
               role="tablist"
               aria-label="Schedule day"
