@@ -248,29 +248,12 @@ export function SatNavLiveMap({
 
     mapRef.current = map;
 
-    // Two-tone route polyline (Waze/Google nav style)
-    polylineCasingRef.current = new google.maps.Polyline({
-      map,
-      path: [],
-      strokeColor: "#1e3a8a",
-      strokeOpacity: 0.9,
-      strokeWeight: 9,
-      zIndex: 1,
-    });
-    polylineRef.current = new google.maps.Polyline({
-      map,
-      path: [],
-      strokeColor: "#3b82f6",
-      strokeOpacity: 1,
-      strokeWeight: 6,
-      zIndex: 2,
-    });
+    // Trail polylines intentionally not added to the map — we only show the
+    // current vehicle position. Snap/realtime data is still tracked in refs.
 
     if (hasPosition) {
       const pos = new google.maps.LatLng(latitude!, longitude!);
       pathRef.current = [pos];
-      polylineRef.current.setPath(pathRef.current);
-      polylineCasingRef.current.setPath(pathRef.current);
 
       markerRef.current = new google.maps.Marker({
         position: center,
