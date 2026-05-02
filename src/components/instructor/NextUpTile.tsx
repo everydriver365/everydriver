@@ -716,37 +716,46 @@ export function NextUpTile({
           >
           <div style={{ padding: "22px 0 20px", display: "flex", flexDirection: "column", gap: 24, borderTop: "1px solid rgba(15,23,42,0.08)", background: "transparent" }}>
 
-          {/* ── HERO + PRIMARY ACTIONS card (premium iOS) ── */}
+          {/* ── HERO CARD — native iOS UIKit grouped table view style ── */}
           <div style={{
-            background: "#FFFFFF", borderRadius: 26, padding: 24,
-            border: "1px solid rgba(15,23,42,0.06)",
-            boxShadow: "0 14px 34px rgba(15,23,42,0.07)",
-            display: "flex", flexDirection: "column", gap: 18,
+            background: "#FFFFFF",
+            borderRadius: 13,
+            overflow: "hidden",
+            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif',
           }}>
-            {/* UP NEXT label — premium small caps, soft blue */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-              <span style={{
-                fontSize: a11yPx(12), fontWeight: 700, color: "#8BB9F2",
-                letterSpacing: 1.3, textTransform: "uppercase",
-              }}>
-                Up next
-              </span>
+            {/* ── 1. STATUS ROW — pulsing amber dot + Awaiting badge / Today ── */}
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "12px 16px",
+            }}>
               {(() => {
                 const isPending = !checkInStatus || checkInStatus === "pending";
                 const canNudge = isPending && !!pupilPhone;
-                const pillBase: React.CSSProperties = {
+                const badgeBase: React.CSSProperties = {
                   display: "inline-flex", alignItems: "center", gap: 6,
-                  borderRadius: 999, padding: "7px 12px",
-                  fontSize: a11yPx(13), fontWeight: 700, letterSpacing: 0.1,
+                  padding: "4px 10px", borderRadius: 6,
+                  fontSize: 13, fontWeight: 500, letterSpacing: -0.08,
+                  border: "none",
                 };
+                const Dot = ({ color, pulse }: { color: string; pulse?: boolean }) => (
+                  <span style={{ position: "relative", width: 8, height: 8, display: "inline-block" }}>
+                    {pulse && (
+                      <span aria-hidden style={{
+                        position: "absolute", inset: 0, borderRadius: "50%",
+                        background: color, opacity: 0.45,
+                        animation: "ios-halo-pulse 1.6s ease-out infinite",
+                      }} />
+                    )}
+                    <span style={{
+                      position: "absolute", inset: 0, borderRadius: "50%",
+                      background: color,
+                    }} />
+                  </span>
+                );
                 if (nudgeSentAt) {
                   return (
-                    <span aria-label="Reminder sent" style={{
-                      ...pillBase,
-                      background: "#E3F6EA", color: "#1F7A3F",
-                      border: "1px solid rgba(31,122,63,0.12)",
-                    }}>
-                      <CheckCircle2 style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                    <span style={{ ...badgeBase, background: "transparent", color: "#34C759" }}>
+                      <Dot color="#34C759" />
                       Reminder sent
                     </span>
                   );
@@ -764,129 +773,120 @@ export function NextUpTile({
                         toast.success("Reminder sent");
                       }}
                       aria-label="Send confirmation reminder to pupil"
-                      className="active:scale-95"
                       style={{
-                        ...pillBase,
-                        background: "#FFF3D6", color: "#A15A10",
-                        border: "1px solid rgba(161,90,16,0.12)",
+                        ...badgeBase,
+                        background: "#fff3cd", color: "#9a6700",
                         cursor: "pointer",
-                        transition: "transform 120ms cubic-bezier(0.2,0.7,0.2,1)",
                       }}
                     >
-                      <Clock style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
-                      Awaiting confirmation · Tap to nudge
+                      <Dot color="#d4a017" pulse />
+                      Awaiting confirmation
                     </button>
                   );
                 }
                 if (checkInStatus === "confirmed") {
                   return (
-                    <span style={{ ...pillBase, background: "#E3F6EA", color: "#1F7A3F", border: "1px solid rgba(31,122,63,0.12)" }}>
-                      <CheckCircle2 style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                    <span style={{ ...badgeBase, background: "transparent", color: "#34C759" }}>
+                      <Dot color="#34C759" />
                       Confirmed
                     </span>
                   );
                 }
                 if (checkInStatus === "declined" || checkInStatus === "cancelled") {
                   return (
-                    <span style={{ ...pillBase, background: "#FCE4E4", color: "#9A1F1F", border: "1px solid rgba(154,31,31,0.12)" }}>
-                      <AlertTriangle style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                    <span style={{ ...badgeBase, background: "transparent", color: "#ff3b30" }}>
+                      <Dot color="#ff3b30" />
                       {checkInStatus === "declined" ? "Declined" : "Cancelled"}
                     </span>
                   );
                 }
-                // pending without phone — amber awaiting
                 return (
-                  <span style={{ ...pillBase, background: "#FFF3D6", color: "#A15A10", border: "1px solid rgba(161,90,16,0.12)" }}>
-                    <Clock style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                  <span style={{ ...badgeBase, background: "#fff3cd", color: "#9a6700" }}>
+                    <Dot color="#d4a017" pulse />
                     Awaiting confirmation
                   </span>
                 );
               })()}
+              <span style={{ fontSize: 13, color: "#6e6e73", letterSpacing: -0.08 }}>
+                {getDateLabel()}
+              </span>
             </div>
 
-            {/* Header row: pupil name (left) | time + date (right) */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14 }}>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{
-                  fontSize: a11yPx(28), lineHeight: "34px", fontWeight: 800, color: "#050505",
-                  letterSpacing: -0.6,
-                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                }}>
-                  {toSentenceName(pupilName)}
-                </div>
+            {/* ── 2. NAME + TIME ROW ── */}
+            <div style={{
+              display: "flex", alignItems: "baseline", justifyContent: "space-between",
+              padding: "0 16px 10px", gap: 12,
+            }}>
+              <div style={{
+                fontSize: 22, fontWeight: 700, color: "#000000",
+                letterSpacing: -0.4, minWidth: 0,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>
+                {toSentenceName(pupilName)}
               </div>
-              <div style={{ textAlign: "right", flexShrink: 0 }}>
-                <div style={{
-                  fontSize: a11yPx(34), lineHeight: "38px", fontWeight: 800, letterSpacing: -0.8,
-                  color: "#050505", fontVariantNumeric: "tabular-nums",
-                }}>
-                  {formatTime24(startTime)}
-                </div>
-                <div style={{ fontSize: a11yPx(16), color: "#8A8A8E", marginTop: 2, fontWeight: 500 }}>
-                  {getDateLabel()}
-                </div>
+              <div style={{
+                fontSize: 28, fontWeight: 700, color: "#000000",
+                letterSpacing: -0.6, fontVariantNumeric: "tabular-nums",
+                flexShrink: 0,
+              }}>
+                {formatTime24(startTime)}
               </div>
             </div>
 
-            {/* Secondary info: lesson type · duration, location, countdown */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <div style={{ fontSize: a11yPx(17), color: "#3C3C43", fontWeight: 500, letterSpacing: -0.1 }}>
-                {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
+            {/* ── 3. META ROWS — thin SVG icons ── */}
+            <div style={{ padding: "0 16px 14px", display: "flex", flexDirection: "column", gap: 7 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#6e6e73" }}>
+                <Car style={{ width: 15, height: 15, color: "#6e6e73", flexShrink: 0 }} strokeWidth={1.6} />
+                <span style={{ fontSize: 15, color: "#6e6e73", letterSpacing: -0.1 }}>
+                  {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
+                </span>
               </div>
               {(pickupLocation || pickupPostcode) && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#8A8A8E", minWidth: 0 }}>
-                  <MapPin style={{ width: 18, height: 18, flexShrink: 0, color: "#8A8A8E" }} strokeWidth={2} />
-                  <span style={{ fontSize: a11yPx(16), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#6e6e73", minWidth: 0 }}>
+                  <MapPin style={{ width: 15, height: 15, color: "#6e6e73", flexShrink: 0 }} strokeWidth={1.6} />
+                  <span style={{
+                    fontSize: 15, color: "#6e6e73", letterSpacing: -0.1,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>
                     {formattedPickupAddress || pickupPostcode || pickupLocation}
                   </span>
                 </div>
               )}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#8A8A8E" }}>
-                <Clock style={{ width: 18, height: 18, color: "#8A8A8E" }} strokeWidth={2} />
-                <span style={{ fontSize: a11yPx(16), fontVariantNumeric: "tabular-nums" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Clock style={{ width: 15, height: 15, color: "#007aff", flexShrink: 0 }} strokeWidth={1.6} />
+                <span style={{ fontSize: 15, color: "#007aff", letterSpacing: -0.1, fontVariantNumeric: "tabular-nums" }}>
                   {minutesUntil <= 0 ? "Starting now" : `Starts in ${getCountdownText()}`}
                 </span>
               </div>
             </div>
 
-            {/* ── STATE-BASED ACTION SYSTEM ──
-              EARLY     (>60 min) : no primary CTA, no quick row (mini call/navigate already shown top-right)
-              MID       (15–60 min): no primary CTA, full quick action row (Navigate/Call/Message/Arrived)
-              STARTING  (0–15 min) : full-width Start lesson, no quick row
-              IN_LESSON           : full-width End lesson, no quick row
-              All handlers (handleCall/handleMessage/handleNavigate/handleArrived/start/end) preserved.
-            */}
-            {(() => {
-              // Single source of truth for action visibility — also unit-tested
-              // via src/components/instructor/__tests__/nextUpTileState.test.ts
-              const vis = getNextUpVisibility(minutesUntil, lessonStatus);
-              const inLesson = vis.showEndLessonButton;
-              const isStartingNow = vis.showStartLessonButton;
-              const isMid = vis.showQuickActionRow;
-              const isEarly = vis.state === "early";
+            {/* ── 4. HAIRLINE SEPARATOR ── */}
+            <div style={{ height: 0.5, background: "#c6c6c8", width: "100%" }} />
 
-              if (inLesson) {
+            {/* ── STATE-DRIVEN PRIMARY ACTION (preserved logic) ──
+                Keep Start / End lesson behaviour for STARTING / IN_LESSON states;
+                show the 3-button native action row for EARLY / MID. */}
+            {(() => {
+              const vis = getNextUpVisibility(minutesUntil, lessonStatus);
+              if (vis.showEndLessonButton) {
                 return (
                   <button
                     onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
-                    className="active:opacity-90"
+                    className="active:opacity-70"
                     style={{
-                      width: "100%",
-                      background: "#FF3B30", color: "#FFFFFF",
-                      border: "none", borderRadius: 14, padding: "16px 16px",
-                      fontSize: a11yPx(17), fontWeight: 600, letterSpacing: -0.2,
+                      width: "100%", background: "transparent", color: "#ff3b30",
+                      border: "none", padding: "14px 16px",
+                      fontSize: 17, fontWeight: 600, letterSpacing: -0.2,
                       cursor: "pointer",
                       display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                      boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -6px rgba(255,59,48,0.35)",
                     }}
                   >
-                    <CheckCircle2 style={{ width: 18, height: 18 }} strokeWidth={2.4} />
+                    <CheckCircle2 style={{ width: 18, height: 18 }} strokeWidth={1.8} />
                     End lesson
                   </button>
                 );
               }
-
-              if (isStartingNow) {
+              if (vis.showStartLessonButton) {
                 return (
                   <button
                     onClick={(e) => {
@@ -898,216 +898,159 @@ export function NextUpTile({
                           toast.success("Lesson started", { description: pupilName ? `${pupilName} • good luck!` : "Good luck!" });
                         }
                       });
-                      // Only auto-launch the live tracker when the instructor has
-                      // opted in via Settings → Auto-start tracker for every lesson.
                       if (autoStartTracker) {
                         navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
                       }
                     }}
-                    className="active:opacity-90"
+                    className="active:opacity-70"
                     style={{
-                      width: "100%",
-                      background: "#1B5BFF", color: "#FFFFFF",
-                      border: "none", borderRadius: 14, padding: "16px 16px",
-                      fontSize: a11yPx(17), fontWeight: 600, letterSpacing: -0.2,
+                      width: "100%", background: "transparent", color: "#007aff",
+                      border: "none", padding: "14px 16px",
+                      fontSize: 17, fontWeight: 600, letterSpacing: -0.2,
                       cursor: "pointer",
-                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 10,
-                      boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -6px rgba(27,91,255,0.35)",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
                     }}
                   >
-                    <Play style={{ width: 18, height: 18 }} strokeWidth={2.4} fill="#FFFFFF" />
+                    <Play style={{ width: 18, height: 18 }} strokeWidth={1.8} fill="#007aff" />
                     Start lesson
                   </button>
                 );
               }
 
-              if (isMid) {
-                // Subtle quick action row — secondary, not primary
-                return (
-                  <div style={{ display: "flex", alignItems: "stretch", gap: 0 }}>
-                    {[
-                      { label: "Navigate", icon: Navigation, color: "#1B5BFF", onClick: handleNavigate },
-                      { label: "Call", icon: Phone, color: "#34C759", onClick: handleCall },
-                      { label: "Message", icon: MessageSquare, color: "#FF9500", onClick: handleMessage },
-                      { label: "Arrived", icon: MapPin, color: "#FF3B30", onClick: handleArrived },
-                    ].map((a, i, arr) => (
-                      <React.Fragment key={a.label}>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); a.onClick(); }}
-                          className="active:opacity-60"
-                          style={{
-                            flex: 1, background: "transparent", border: "none", cursor: "pointer",
-                            padding: "8px 4px",
-                            display: "inline-flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
-                          }}
-                          aria-label={a.label}
-                        >
-                          <a.icon style={{ width: 22, height: 22, color: a.color }} strokeWidth={2.1} />
-                          <span style={{ fontSize: a11yPx(12), fontWeight: 500, color: "#1C1C1E", letterSpacing: -0.05 }}>
-                            {a.label}
-                          </span>
-                        </button>
-                        {i < arr.length - 1 && (
-                          <div style={{ width: 0.5, background: "#E5E5EA", margin: "8px 0" }} />
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </div>
-                );
-              }
-
-              // EARLY state: unified control system — primary action row + segmented status,
-              // sits directly under the pupil address in the hero card.
-              void isEarly;
+              // EARLY / MID — three equal action buttons (Navigate / Call / Text)
+              const actions: { label: string; icon: typeof Navigation; circleBg: string; onClick: () => void; ariaLabel: string }[] = [
+                { label: "Navigate", icon: Navigation, circleBg: "#007aff", onClick: handleNavigate, ariaLabel: "Navigate to pickup" },
+                { label: "Call", icon: Phone, circleBg: "#34c759", onClick: handleCall, ariaLabel: "Call pupil" },
+                { label: "Text", icon: MessageSquare, circleBg: "#007aff", onClick: handleMessage, ariaLabel: "Text pupil" },
+              ];
               return (
-                <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 12 }}>
-                  {/* Primary action row — Nav / Call / Text (premium iOS hero buttons) */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr 1fr", gap: 12 }}>
-                    <button onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
-                      className="active:scale-[0.98]"
-                      style={{
-                        background: "#2563FF", color: "#FFFFFF",
-                        border: "none", borderRadius: 20, height: 58,
-                        cursor: "pointer", transition: "transform 0.15s ease, opacity 0.15s ease",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                        boxShadow: "0 12px 22px rgba(37,99,255,0.28)",
-                      }}
-                      aria-label="Navigate to pickup"
-                    >
-                      <Navigation style={{ width: 18, height: 18, color: "#FFFFFF" }} strokeWidth={2.4} />
-                      <span style={{ fontSize: a11yPx(17), fontWeight: 800, letterSpacing: -0.1 }}>Nav</span>
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); handleCall(); }}
-                      className="active:scale-[0.98]"
-                      style={{
-                        background: "#E8F7EE", color: "#168347",
-                        border: "none", borderRadius: 20, height: 58,
-                        cursor: "pointer", transition: "transform 0.15s ease, opacity 0.15s ease",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                      }}
-                      aria-label="Call pupil"
-                    >
-                      <Phone style={{ width: 18, height: 18, color: "#168347" }} strokeWidth={2.3} />
-                      <span style={{ fontSize: a11yPx(17), fontWeight: 800, letterSpacing: -0.1 }}>Call</span>
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); handleMessage(); }}
-                      className="active:scale-[0.98]"
-                      style={{
-                        background: "#EAF3FB", color: "#1F5F96",
-                        border: "none", borderRadius: 20, height: 58,
-                        cursor: "pointer", transition: "transform 0.15s ease, opacity 0.15s ease",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                      }}
-                      aria-label="Text pupil"
-                    >
-                      <MessageSquare style={{ width: 18, height: 18, color: "#1F5F96" }} strokeWidth={2.3} />
-                      <span style={{ fontSize: a11yPx(17), fontWeight: 800, letterSpacing: -0.1 }}>Text</span>
-                    </button>
-                  </div>
-
-                  {/* Inline status banner — appears immediately after the user
-                      sends an ETA / late update from the bottom sheet. Subtle,
-                      animated, no popups. */}
-                  <AnimatePresence initial={false}>
-                    {statusBanner && (
-                      <motion.div
-                        key={statusBanner.kind + (statusBanner.etaText || "") + (statusBanner.delayMinutes ?? "")}
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        transition={{ duration: 0.22, ease: [0.2, 0.7, 0.2, 1] }}
+                <div style={{ display: "flex", alignItems: "stretch", padding: "10px 0" }}>
+                  {actions.map((a, i) => (
+                    <React.Fragment key={a.label}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); a.onClick(); }}
+                        aria-label={a.ariaLabel}
+                        className="active:opacity-60"
                         style={{
-                          display: "flex", alignItems: "center", gap: 8,
-                          padding: "8px 12px", borderRadius: 12,
-                          background: statusBanner.kind === "en_route" ? "#E6F1FB" : "#FBF1DE",
-                          color: statusBanner.kind === "en_route" ? "#1F5C99" : "#A8731A",
-                          fontSize: a11yPx(12), fontWeight: 600, letterSpacing: -0.05,
+                          flex: 1, background: "transparent", border: "none",
+                          padding: "8px 4px", cursor: "pointer",
+                          display: "inline-flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
                         }}
                       >
-                        {statusBanner.kind === "en_route" ? (
-                          <Send style={{ width: 14, height: 14 }} strokeWidth={2.3} />
-                        ) : (
-                          <Clock style={{ width: 14, height: 14 }} strokeWidth={2.3} />
-                        )}
-                        <span>
-                          {statusBanner.kind === "en_route"
-                            ? `On the way${statusBanner.etaText ? ` · ETA ${statusBanner.etaText}` : ""}`
-                            : `Running late${statusBanner.delayMinutes ? ` · +${statusBanner.delayMinutes} min` : ""}${statusBanner.etaText ? ` · New ETA ${statusBanner.etaText}` : ""}`}
+                        <span style={{
+                          width: 32, height: 32, borderRadius: "50%",
+                          background: a.circleBg,
+                          display: "inline-flex", alignItems: "center", justifyContent: "center",
+                          flexShrink: 0,
+                        }}>
+                          <a.icon style={{ width: 16, height: 16, color: "#FFFFFF" }} strokeWidth={2} />
                         </span>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                        <span style={{
+                          fontSize: 13, fontWeight: 400, color: "#007aff", letterSpacing: -0.08,
+                        }}>
+                          {a.label}
+                        </span>
+                      </button>
+                      {i < actions.length - 1 && (
+                        <div aria-hidden style={{ width: 0.5, background: "#c6c6c8", margin: "6px 0" }} />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+              );
+            })()}
 
-                  {/* Unified segmented status control */}
-                  {(() => {
-                    const rawNorm = (lessonStatus || "").toLowerCase();
-                    // Optimistic local overlay wins until the next refetch
-                    // brings the server status into agreement.
-                    const norm = localStatus
-                      ? (localStatus === "en_route" ? "en_route" : "late")
-                      : rawNorm;
-                    const segments = [
-                      { id: "prep", label: "Prep", icon: ClipboardList,
-                        active: norm === "prep" || norm === "preparing",
-                        activeBg: "#6E6E73", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
-                        onClick: () => navigate(`/instructor/pupils/${pupilId}?tab=progress`) },
-                      { id: "on_the_way", label: "On the way", icon: Send,
-                        active: norm === "en_route" || norm === "on_the_way",
-                        activeBg: "#2B7BC8", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
-                        onClick: () => handleSendETA() },
-                      { id: "late", label: "Running late", icon: Clock,
-                        active: norm === "late" || norm === "running_late",
-                        activeBg: "#E08E1A", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
-                        onClick: () => setLateSheetOpen(true) },
-                      { id: "here", label: "Here", icon: MapPin,
-                        active: norm === "arrived" || norm === "here",
-                        activeBg: "#34C759", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
-                        onClick: () => handleArrived() },
-                    ];
-                    const segmentStyle = (s: typeof segments[number]): React.CSSProperties => ({
-                      flex: 1, minWidth: 0,
-                      background: s.active ? "#FFFFFF" : "transparent",
-                      color: s.active ? "#2563FF" : "#63666D",
-                      border: "none", borderRadius: 16,
-                      padding: "8px 4px", minHeight: 64,
-                      cursor: "pointer",
-                      display: "inline-flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
-                      transition: "background 0.2s ease, color 0.2s ease, transform 0.15s ease",
-                      boxShadow: s.active ? "0 6px 14px rgba(15,23,42,0.08)" : "none",
-                    });
+            {/* ── 6. HAIRLINE SEPARATOR ── */}
+            <div style={{ height: 0.5, background: "#c6c6c8", width: "100%" }} />
+
+            {/* Inline status banner (kept — appears after sending ETA / late update) */}
+            <AnimatePresence initial={false}>
+              {statusBanner && (
+                <motion.div
+                  key={statusBanner.kind + (statusBanner.etaText || "") + (statusBanner.delayMinutes ?? "")}
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.22, ease: [0.2, 0.7, 0.2, 1] }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "8px 16px",
+                    background: "transparent",
+                    color: statusBanner.kind === "en_route" ? "#007aff" : "#9a6700",
+                    fontSize: 13, fontWeight: 500, letterSpacing: -0.08,
+                    borderBottom: "0.5px solid #c6c6c8",
+                  }}
+                >
+                  {statusBanner.kind === "en_route" ? (
+                    <Send style={{ width: 14, height: 14 }} strokeWidth={1.8} />
+                  ) : (
+                    <Clock style={{ width: 14, height: 14 }} strokeWidth={1.8} />
+                  )}
+                  <span>
+                    {statusBanner.kind === "en_route"
+                      ? `On the way${statusBanner.etaText ? ` · ETA ${statusBanner.etaText}` : ""}`
+                      : `Running late${statusBanner.delayMinutes ? ` · +${statusBanner.delayMinutes} min` : ""}${statusBanner.etaText ? ` · New ETA ${statusBanner.etaText}` : ""}`}
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* ── 7. FOUR-ITEM STATUS STRIP — Prep / On the way / Running late / Here ── */}
+            {(() => {
+              const rawNorm = (lessonStatus || "").toLowerCase();
+              const norm = localStatus
+                ? (localStatus === "en_route" ? "en_route" : "late")
+                : rawNorm;
+              const segments = [
+                { id: "prep", label: "Prep", icon: ClipboardList,
+                  active: norm === "prep" || norm === "preparing",
+                  onClick: () => navigate(`/instructor/pupils/${pupilId}?tab=progress`) },
+                { id: "on_the_way", label: "On the way", icon: Send,
+                  active: norm === "en_route" || norm === "on_the_way",
+                  onClick: () => handleSendETA() },
+                { id: "late", label: "Running late", icon: Clock,
+                  active: norm === "late" || norm === "running_late",
+                  onClick: () => setLateSheetOpen(true) },
+                { id: "here", label: "Here", icon: MapPin,
+                  active: norm === "arrived" || norm === "here",
+                  onClick: () => handleArrived() },
+              ];
+              return (
+                <div style={{
+                  display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
+                  background: "#f9f9f9",
+                }}>
+                  {segments.map((s, i) => {
+                    const Icon = s.icon;
+                    const tint = s.active ? "#007aff" : "#6e6e73";
                     return (
-                      <div style={{
-                        display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
-                        background: "#EEF1F5", borderRadius: 22,
-                        padding: "12px 10px", gap: 4,
-                      }}>
-                        {segments.map((s) => {
-                          const Icon = s.icon;
-                          const inner = (
-                            <>
-                              <Icon style={{ width: 22, height: 22, color: s.active ? "#2563FF" : "#63666D" }} strokeWidth={2.1} />
-                              <span style={{
-                                fontSize: a11yPx(13), fontWeight: 700, letterSpacing: -0.05,
-                                lineHeight: 1.15, textAlign: "center",
-                                color: s.active ? "#2563FF" : "#63666D",
-                                display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-                                overflow: "hidden", maxWidth: "100%", wordBreak: "break-word",
-                              }}>{s.label}</span>
-                            </>
-                          );
-                          return (
-                            <button key={s.id}
-                              onClick={(e) => { e.stopPropagation(); s.onClick?.(); }}
-                              className="active:scale-[0.97]"
-                              style={segmentStyle(s)}
-                              aria-label={s.label} aria-pressed={s.active}>
-                              {inner}
-                            </button>
-                          );
-                        })}
-                      </div>
+                      <React.Fragment key={s.id}>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); s.onClick?.(); }}
+                          className="active:opacity-60"
+                          style={{
+                            background: "transparent", border: "none", cursor: "pointer",
+                            padding: "12px 4px",
+                            display: "inline-flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5,
+                            position: "relative",
+                          }}
+                          aria-label={s.label} aria-pressed={s.active}
+                        >
+                          <Icon style={{ width: 18, height: 18, color: tint }} strokeWidth={1.6} />
+                          <span style={{
+                            fontSize: 11, fontWeight: 400, color: tint, letterSpacing: -0.05,
+                            lineHeight: 1.2, textAlign: "center",
+                          }}>{s.label}</span>
+                          {i < segments.length - 1 && (
+                            <span aria-hidden style={{
+                              position: "absolute", right: 0, top: 8, bottom: 8,
+                              width: 0.5, background: "#c6c6c8",
+                            }} />
+                          )}
+                        </button>
+                      </React.Fragment>
                     );
-                  })()}
+                  })}
                 </div>
               );
             })()}
