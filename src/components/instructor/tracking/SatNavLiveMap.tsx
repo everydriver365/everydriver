@@ -855,15 +855,66 @@ function SnapStatusPill({ status, lastFixLabel }: { status: "idle" | "syncing" |
 
 type SignalStatusValue = "waiting" | "live" | "delayed" | "weak" | "lost";
 
-function SignalStatusPill({ status, lastFixLabel }: { status: SignalStatusValue; lastFixLabel: string | null }) {
-  const config: Record<SignalStatusValue, { dot: string; label: string; bg: string; fg: string; pulse: boolean }> = {
+function SignalStatusPill({ status, lastFixLabel, dark = false }: { status: SignalStatusValue; lastFixLabel: string | null; dark?: boolean }) {
+  // Light variant — used in card mode on white surfaces.
+  const lightConfig: Record<SignalStatusValue, { dot: string; label: string; bg: string; fg: string; pulse: boolean }> = {
     waiting: { dot: "#c7c7cc", label: "Waiting",     bg: "rgba(0,0,0,0.04)",         fg: "#3a3a3c", pulse: false },
-    live:    { dot: "#0f9e75", label: "Live",        bg: "rgba(15,158,117,0.12)",    fg: "#0a7558", pulse: true  },
-    delayed: { dot: "#f59e0b", label: "Delayed",     bg: "rgba(245,158,11,0.14)",    fg: "#a25c00", pulse: false },
-    weak:    { dot: "#ff8a3d", label: "Weak GPS",    bg: "rgba(255,138,61,0.14)",    fg: "#a14310", pulse: false },
-    lost:    { dot: "#e24b4a", label: "Signal Lost", bg: "rgba(226,75,74,0.12)",     fg: "#a02c2b", pulse: false },
+    live:    { dot: "#34C759", label: "Live",        bg: "rgba(52,199,89,0.12)",     fg: "#1a7d3a", pulse: true  },
+    delayed: { dot: "#FFCC00", label: "Delayed",     bg: "rgba(255,204,0,0.16)",     fg: "#8a6a00", pulse: false },
+    weak:    { dot: "#FF9500", label: "Weak GPS",    bg: "rgba(255,149,0,0.14)",     fg: "#a14310", pulse: false },
+    lost:    { dot: "#FF3B30", label: "Signal Lost", bg: "rgba(255,59,48,0.12)",     fg: "#a02c2b", pulse: false },
   };
-  const c = config[status];
+  // Dark glass variant — used in fullscreen sat-nav mode.
+  const darkConfig: Record<SignalStatusValue, { dot: string; label: string; fg: string; pulse: boolean }> = {
+    waiting: { dot: "#8E8E93", label: "Waiting",     fg: "rgba(255,255,255,0.7)", pulse: false },
+    live:    { dot: "#34C759", label: "Live",        fg: "#34C759",               pulse: true  },
+    delayed: { dot: "#FFCC00", label: "Delayed",     fg: "#FFCC00",               pulse: false },
+    weak:    { dot: "#FF9500", label: "Weak GPS",    fg: "#FF9500",               pulse: false },
+    lost:    { dot: "#FF3B30", label: "Signal Lost", fg: "#FF3B30",               pulse: false },
+  };
+
+  if (dark) {
+    const c = darkConfig[status];
+    return (
+      <span
+        title={`Signal: ${c.label}${lastFixLabel ? ` · last fix ${lastFixLabel}` : ""}`}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          background: "rgba(20,20,22,0.62)",
+          backdropFilter: "blur(14px) saturate(180%)",
+          WebkitBackdropFilter: "blur(14px) saturate(180%)",
+          border: "0.5px solid rgba(255,255,255,0.18)",
+          borderRadius: 20,
+          padding: "5px 11px",
+          fontSize: 11,
+          fontWeight: 700,
+          color: c.fg,
+          whiteSpace: "nowrap",
+          flexShrink: 0,
+          boxShadow: "0 4px 14px rgba(0,0,0,0.35)",
+        }}
+      >
+        <span
+          style={{
+            width: 7,
+            height: 7,
+            borderRadius: "50%",
+            background: c.dot,
+            boxShadow: status === "live" ? `0 0 8px ${c.dot}, 0 0 0 3px rgba(52,199,89,0.18)` : "none",
+          }}
+          className={c.pulse ? "animate-pulse" : ""}
+        />
+        {c.label}
+        {lastFixLabel && status !== "live" && (
+          <span style={{ color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>· {lastFixLabel}</span>
+        )}
+      </span>
+    );
+  }
+
+  const c = lightConfig[status];
   return (
     <span
       title={`Signal: ${c.label}${lastFixLabel ? ` · last fix ${lastFixLabel}` : ""}`}
@@ -883,7 +934,13 @@ function SignalStatusPill({ status, lastFixLabel }: { status: SignalStatusValue;
       }}
     >
       <span
-        style={{ width: 7, height: 7, borderRadius: "50%", background: c.dot }}
+        style={{
+          width: 7,
+          height: 7,
+          borderRadius: "50%",
+          background: c.dot,
+          boxShadow: status === "live" ? `0 0 6px ${c.dot}` : "none",
+        }}
         className={c.pulse ? "animate-pulse" : ""}
       />
       {c.label}
