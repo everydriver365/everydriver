@@ -68,6 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const twilioAuthTokenForVerify = Deno.env.get("TWILIO_AUTH_TOKEN") || "";
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Parse Twilio webhook data (application/x-www-form-urlencoded)
@@ -75,15 +76,19 @@ const handler = async (req: Request): Promise<Response> => {
     let from: string | null = null;
     let body: string | null = null;
     let messageSid: string | null = null;
+    let paramsForVerify: Record<string, string> = {};
+    let rawBodyText: string | null = null;
 
     if (contentType.includes("application/x-www-form-urlencoded")) {
-      const text = await req.text();
-      const params = new URLSearchParams(text);
+      rawBodyText = await req.text();
+      const params = new URLSearchParams(rawBodyText);
+      params.forEach((v, k) => { paramsForVerify[k] = v; });
       from = params.get("From");
       body = params.get("Body")?.toLowerCase().trim() || null;
       messageSid = params.get("MessageSid");
     } else if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
+      formData.forEach((v, k) => { paramsForVerify[k] = String(v); });
       from = formData.get("From") as string;
       body = (formData.get("Body") as string)?.toLowerCase().trim() || null;
       messageSid = formData.get("MessageSid") as string;
@@ -97,6 +102,28 @@ const handler = async (req: Request): Promise<Response> => {
       } catch {
         console.log("Could not parse request body");
       }
+    }
+
+    // Verify Twilio signature for form-encoded/multipart requests (the formats Twilio uses).
+    // Reject any unsigned or mismatched request — prevents spoofed SMS bookings.
+    if (!twilioAuthTokenForVerify) {
+      console.error("TWILIO_AUTH_TOKEN not configured — rejecting webhook");
+      return new Response("Forbidden", { status: 403, headers: corsHeaders });
+    }
+    const twilioSignature = req.headers.get("x-twilio-signature") || "";
+    const webhookUrl = `${supabaseUrl}/functions/v1/twilio-webhook`;
+    const sigValid = await verifyTwilioSignature(
+      twilioAuthTokenForVerify,
+      webhookUrl,
+      paramsForVerify,
+      twilioSignature,
+    );
+    if (!sigValid) {
+      console.error("Invalid Twilio signature — rejecting webhook", {
+        provided: twilioSignature ? "present" : "missing",
+        from,
+      });
+      return new Response("Forbidden", { status: 403, headers: corsHeaders });
     }
 
     console.log(`Received SMS from ${from}: "${body}"`);
