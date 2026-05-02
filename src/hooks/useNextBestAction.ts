@@ -99,9 +99,7 @@ export function useNextBestAction(instructorId: string | undefined): NextBestAct
         return {
           rank: 1,
           title: `Chase £${debt.amount.toFixed(0)} from ${debt.pupilName}`,
-          subtitle: debt.lastLessonDate
-            ? `Last lesson ${format(new Date(debt.lastLessonDate), "EEE d MMM")}`
-            : "Outstanding balance",
+          subtitle: "Outstanding balance",
           icon: PoundSterling,
           tone: "amber",
           iconBg: "rgba(184,128,31,0.10)",
