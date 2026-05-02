@@ -982,8 +982,18 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                 </h3>
               </div>
 
-              {/* Day rows container */}
-              <div style={{ padding: "0 0 4px", display: "flex", flexDirection: "column", gap: 10 }}>
+              {/* Day rows container — flat white card matching Calendar tab */}
+              <div
+                style={{
+                  backgroundColor: hasContent ? "#FFFFFF" : "transparent",
+                  borderRadius: 12,
+                  border: hasContent ? "0.5px solid #E5E5EA" : "none",
+                  overflow: "hidden",
+                  padding: hasContent ? "0 8px" : 0,
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
                 {/* All-day externals first */}
                 {allDay.map((evt, aIdx) => {
                   const isExpanded = expandedEventId === evt.id;
