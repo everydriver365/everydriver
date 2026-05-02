@@ -233,10 +233,17 @@ function formatDayHeader(d: Date): string {
   return `${base}${yearSuffix}${suffix}`;
 }
 
-/** Hairline divider between rows within the same day. */
+/** Hairline divider between rows within the same day — matches Calendar tab. */
 function RowDivider() {
-  // Spacing handled by parent gap — kept as a no-op for layout stability.
-  return null;
+  return (
+    <div
+      style={{
+        height: 0.5,
+        backgroundColor: "#E5E5EA",
+        margin: "0 8px",
+      }}
+    />
+  );
 }
 
 type RowStatus = "live" | "conflict" | "tentative" | null;
@@ -269,7 +276,7 @@ function StatusPill({ status }: { status: RowStatus }) {
   );
 }
 
-/** Compact tappable lesson/event row used in the new Schedule list view. */
+/** Compact tappable lesson/event row — visually identical to the Calendar tab rows. */
 function ScheduleListRow({
   timeText,
   durationText,
@@ -303,21 +310,83 @@ function ScheduleListRow({
   checkInStatus?: string | null;
   onClick?: () => void;
 }) {
-  const Icon = kind === "lesson" ? User : CalendarDays;
+  // Combine subtitle + metaLine into one ellipsised line (compact Calendar look).
+  const subtitleCombined = [subtitle, metaLine].filter(Boolean).join(" · ") || null;
+
+  // Pick a single trailing micro-indicator in priority order so the row stays one line.
+  let trailing: React.ReactNode = null;
+  if (statusPill === "live") {
+    trailing = <StatusPill status="live" />;
+  } else if (isOverdue) {
+    trailing = (
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          background: "#FFE5E5",
+          color: "#C8434F",
+          borderRadius: 999,
+          padding: "2px 7px",
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: "0.3px",
+          flexShrink: 0,
+        }}
+      >
+        OVERDUE
+      </span>
+    );
+  } else if (needsAttention) {
+    trailing = (
+      <span
+        style={{
+          width: 7,
+          height: 7,
+          borderRadius: "50%",
+          background: "#FF9500",
+          display: "inline-block",
+          flexShrink: 0,
+        }}
+        aria-label="Needs attention"
+      />
+    );
+  } else if (completion?.eolPending) {
+    trailing = (
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 2, color: "#B8801F", fontSize: 10, fontWeight: 700 }}>
+        <Clock style={{ width: 11, height: 11, strokeWidth: 2.4 }} />
+        EOL
+      </span>
+    );
+  } else if (completion?.paymentPending) {
+    trailing = <PoundSterling style={{ width: 12, height: 12, color: "#B8801F", strokeWidth: 2.6, flexShrink: 0 }} />;
+  } else if (statusPill === "tentative") {
+    trailing = <StatusPill status="tentative" />;
+  } else if (checkInStatus && kind === "lesson") {
+    trailing = <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5" />;
+  } else if (completion?.eol || completion?.payment || completion?.notes) {
+    trailing = (
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+        {completion?.eol && <Check style={{ width: 12, height: 12, color: "#34C759", strokeWidth: 2.6 }} />}
+        {completion?.payment && <PoundSterling style={{ width: 12, height: 12, color: "#8E8E93", strokeWidth: 2.4 }} />}
+        {completion?.notes && <FileText style={{ width: 12, height: 12, color: "#8E8E93", strokeWidth: 2 }} />}
+      </span>
+    );
+  }
+
   return (
     <button
       type="button"
       onClick={onClick}
       style={{
         display: "flex",
-        alignItems: "stretch",
+        alignItems: "center",
         gap: 12,
         width: "100%",
         textAlign: "left",
         background: "transparent",
         border: "none",
-        padding: 0,
-        cursor: "pointer",
+        padding: "12px 8px",
+        cursor: onClick ? "pointer" : "default",
         fontFamily: FONT_STACK,
       }}
     >
@@ -325,23 +394,20 @@ function ScheduleListRow({
       <div
         style={{
           flexShrink: 0,
-          minWidth: 54,
+          minWidth: 50,
           display: "flex",
           flexDirection: "column",
           alignItems: "flex-end",
-          justifyContent: "flex-start",
-          paddingTop: 14,
         }}
       >
         <span
           style={{
-            fontSize: 17,
-            fontWeight: 600,
+            fontSize: 14,
+            fontWeight: 500,
             color: "#000000",
-            letterSpacing: "-0.3px",
+            letterSpacing: "-0.1px",
             fontVariantNumeric: "tabular-nums",
             textDecoration: struck ? "line-through" : "none",
-            lineHeight: 1.1,
           }}
         >
           {timeText}
@@ -349,11 +415,10 @@ function ScheduleListRow({
         {durationText && (
           <span
             style={{
-              fontSize: 11.5,
-              color: "#8E8E93",
-              marginTop: 4,
+              fontSize: 11,
+              color: "#6E6E73",
+              marginTop: 1,
               fontVariantNumeric: "tabular-nums",
-              fontWeight: 500,
             }}
           >
             {durationText}
@@ -361,217 +426,58 @@ function ScheduleListRow({
         )}
       </div>
 
-      {/* Card with left accent border */}
+      {/* Source colour bar */}
       <div
         style={{
-          flex: 1,
-          minWidth: 0,
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          background: "#FFFFFF",
-          borderRadius: 22,
-          padding: "16px 16px 16px 18px",
-          minHeight: 100,
-          boxShadow:
-            "0 1px 2px rgba(16,24,40,0.04), 0 8px 24px -12px rgba(16,24,40,0.10)",
-          position: "relative",
-          overflow: "hidden",
+          flexShrink: 0,
+          width: 3,
+          height: 36,
+          borderRadius: 2,
+          backgroundColor: accentColor,
         }}
-      >
-        {/* Coloured left border */}
-        <div
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 14,
-            bottom: 14,
-            width: 4,
-            borderRadius: 4,
-            backgroundColor: accentColor,
-          }}
-        />
+      />
 
-        {/* Event-type icon */}
+      {/* Title + subtitle */}
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            width: 36,
-            height: 36,
-            borderRadius: 12,
-            background: `${accentColor}14`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
+            fontSize: 14,
+            fontWeight: 500,
+            color: "#000000",
+            letterSpacing: "-0.1px",
+            margin: "0 0 1px",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            textDecoration: struck ? "line-through" : "none",
           }}
         >
-          <Icon style={{ width: 17, height: 17, color: accentColor, strokeWidth: 2 }} />
+          {title}
         </div>
-
-        {/* Title + subtitle */}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        {subtitleCombined && (
           <div
             style={{
-              fontSize: 16,
-              fontWeight: 600,
-              color: "#000000",
-              letterSpacing: "-0.2px",
-              margin: "0 0 3px",
+              fontSize: 12,
+              color: "#6E6E73",
+              margin: 0,
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
               textDecoration: struck ? "line-through" : "none",
-              lineHeight: 1.2,
             }}
           >
-            {title}
+            {subtitleCombined}
           </div>
-          {subtitle && (
-            <div
-              style={{
-                fontSize: 12.5,
-                color: "#6E6E73",
-                margin: 0,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                textDecoration: struck ? "line-through" : "none",
-                lineHeight: 1.3,
-                fontWeight: 500,
-              }}
-            >
-              {subtitle}
-            </div>
-          )}
-          {metaLine && (
-            <div
-              style={{
-                fontSize: 11.5,
-                color: "#8E8E93",
-                marginTop: 3,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              {metaLine}
-            </div>
-          )}
-        </div>
-
-        {/* Trailing badges */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
-          {isOverdue && (
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 3,
-                background: "#FFE5E5",
-                color: "#C8434F",
-                borderRadius: 999,
-                padding: "3px 8px",
-                fontSize: 9.5,
-                fontWeight: 700,
-                letterSpacing: "0.4px",
-              }}
-            >
-              OVERDUE
-            </span>
-          )}
-          {checkInStatus && kind === "lesson" && (
-            <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5" />
-          )}
-          <StatusPill status={statusPill} />
-
-          {/* Completion micro-indicators / needs-attention dot — quiet, no labels, no backgrounds */}
-          {(completion?.eol || completion?.payment || completion?.notes || completion?.eolPending || completion?.paymentPending || needsAttention) && (
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                marginTop: 2,
-              }}
-              aria-label={
-                needsAttention
-                  ? "Needs attention"
-                  : [
-                      completion?.eol ? "Lesson completed" : null,
-                      completion?.eolPending ? "End-of-lesson pending" : null,
-                      completion?.payment ? "Payment recorded" : null,
-                      completion?.paymentPending ? "Payment pending" : null,
-                      completion?.notes ? "Notes added" : null,
-                    ]
-                      .filter(Boolean)
-                      .join(", ")
-              }
-            >
-              {completion?.eol && (
-                <Check style={{ width: 12, height: 12, color: "#34C759", strokeWidth: 2.6 }} />
-              )}
-              {completion?.eolPending && !completion?.eol && (
-                <span
-                  title="End-of-lesson not completed"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 2,
-                    color: "#B8801F",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    letterSpacing: "-0.05px",
-                  }}
-                >
-                  <Clock style={{ width: 11, height: 11, color: "#B8801F", strokeWidth: 2.4 }} />
-                  EOL
-                </span>
-              )}
-              {completion?.payment && (
-                <PoundSterling style={{ width: 12, height: 12, color: "#8E8E93", strokeWidth: 2.4 }} />
-              )}
-              {completion?.paymentPending && !completion?.payment && (
-                <PoundSterling style={{ width: 12, height: 12, color: "#B8801F", strokeWidth: 2.6 }} />
-              )}
-              {completion?.notes && (
-                <FileText style={{ width: 12, height: 12, color: "#8E8E93", strokeWidth: 2 }} />
-              )}
-              {needsAttention && (
-                <span
-                  title="Needs attention"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 3,
-                    color: "#B8801F",
-                    fontSize: 10.5,
-                    fontWeight: 600,
-                    letterSpacing: "-0.05px",
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 7,
-                      height: 7,
-                      borderRadius: "50%",
-                      background: "#FF9500",
-                      display: "inline-block",
-                    }}
-                  />
-                  Needs attention
-                </span>
-              )}
-            </div>
-          )}
-
-          {showChevron && (
-            <ChevronRight
-              style={{ width: 14, height: 14, color: "#C7C7CC", flexShrink: 0, strokeWidth: 1.8 }}
-            />
-          )}
-        </div>
+        )}
       </div>
+
+      {trailing && <div style={{ flexShrink: 0 }}>{trailing}</div>}
+
+      {showChevron && (
+        <ChevronRight
+          style={{ width: 12, height: 12, color: "#6E6E73", flexShrink: 0, strokeWidth: 1.6 }}
+        />
+      )}
     </button>
   );
 }
@@ -1076,8 +982,18 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                 </h3>
               </div>
 
-              {/* Day rows container */}
-              <div style={{ padding: "0 0 4px", display: "flex", flexDirection: "column", gap: 10 }}>
+              {/* Day rows container — flat white card matching Calendar tab */}
+              <div
+                style={{
+                  backgroundColor: hasContent ? "#FFFFFF" : "transparent",
+                  borderRadius: 12,
+                  border: hasContent ? "0.5px solid #E5E5EA" : "none",
+                  overflow: "hidden",
+                  padding: hasContent ? "0 8px" : 0,
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
                 {/* All-day externals first */}
                 {allDay.map((evt, aIdx) => {
                   const isExpanded = expandedEventId === evt.id;
@@ -1358,7 +1274,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                         const fmt = (mins: number) =>
                           `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
                         elements.push(
-                          <div key={`gap-${i}`} style={{ paddingLeft: 66 }}>
+                          <div key={`gap-${i}`} style={{ padding: "8px 8px" }}>
                             <GapFillCard
                               instructorId={instructorId}
                               instructorName={instructorName}
