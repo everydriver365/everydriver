@@ -50,6 +50,27 @@ export default function InstructorSendReminder() {
   const [recipientSearch, setRecipientSearch] = useState("");
   const [minBalance, setMinBalance] = useState<number>(0);
   const [includeFee, setIncludeFee] = useState(false);
+  const [focusedPupilId, setFocusedPupilId] = useState<string | null>(null);
+  const recipientRowRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  const focusPupilInRecipients = (id: string) => {
+    haptics.selection();
+    setEditingRecipients(true);
+    setRecipientSearch("");
+    setMinBalance(0);
+    setFocusedPupilId(id);
+    // Scroll after sheet renders
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const el = recipientRowRefs.current[id];
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 60);
+    });
+    // Clear highlight after a moment
+    window.setTimeout(() => {
+      setFocusedPupilId((cur) => (cur === id ? null : cur));
+    }, 2400);
+  };
 
   // Platform fee config (for "balance + Service Fee" preview)
   const tierConfig = useInstructorTierConfig(instructorId);
