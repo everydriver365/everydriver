@@ -480,6 +480,9 @@ function ScheduleListRow({
               OVERDUE
             </span>
           )}
+          {checkInStatus && kind === "lesson" && (
+            <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5" />
+          )}
           <StatusPill status={statusPill} />
 
           {/* Completion micro-indicators / needs-attention dot — quiet, no labels, no backgrounds */}
