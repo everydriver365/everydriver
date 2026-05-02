@@ -392,6 +392,62 @@
   .instructor-portal h2 { font-weight: 600; letter-spacing: -0.3px; }
   .instructor-portal h3 { font-weight: 600; letter-spacing: -0.2px; }
 
+  /* ===== Global radius sharpening pass (Nov 2026) =====
+     Caps oversized corner radii on legacy cards/tiles/buttons inside the
+     instructor portal so the whole app reads at the new 10–14px scale.
+     Pills, avatars, the bottom nav, the FAB, sheets and overlays opt out
+     via more specific selectors / higher-specificity rules below.
+
+     Visual change only — no markup, no logic, no DOM mutations. */
+
+  /* Cap large Tailwind radii on cards/tiles to 12px */
+  .instructor-portal :where(.rounded-2xl, .rounded-3xl) {
+    border-radius: var(--portal-radius-card) !important;
+  }
+  /* Cap arbitrary large radii (rounded-[16px]..rounded-[32px]) */
+  .instructor-portal :where(
+    [class*="rounded-[16px]"],
+    [class*="rounded-[18px]"],
+    [class*="rounded-[20px]"],
+    [class*="rounded-[22px]"],
+    [class*="rounded-[24px]"],
+    [class*="rounded-[26px]"],
+    [class*="rounded-[28px]"],
+    [class*="rounded-[30px]"],
+    [class*="rounded-[32px]"]
+  ) {
+    border-radius: var(--portal-radius-card) !important;
+  }
+  /* Soften medium-large rounded buttons/inputs */
+  .instructor-portal :where(.rounded-xl) {
+    border-radius: var(--portal-radius-button) !important;
+  }
+
+  /* Opt-outs — keep these elements at their intended radius.
+     Higher specificity than the :where() rules above. */
+  .instructor-portal .portal-pill,
+  .instructor-portal .portal-badge,
+  .instructor-portal [data-radius="pill"],
+  .instructor-portal .rounded-full,
+  .instructor-portal [class*="rounded-full"] {
+    border-radius: var(--portal-radius-pill) !important;
+  }
+  /* Bottom nav floating bar — keep its softer 22px */
+  .instructor-portal [data-radius="nav"],
+  .instructor-portal .portal-bottom-nav {
+    border-radius: var(--portal-radius-nav) !important;
+  }
+  /* Sheets / dialogs — keep 16px */
+  .instructor-portal [data-radius="sheet"],
+  .instructor-portal .portal-sheet {
+    border-radius: var(--portal-radius-sheet) !important;
+  }
+  /* Explicit caller override always wins */
+  .instructor-portal [data-radius="card"]   { border-radius: var(--portal-radius-card) !important; }
+  .instructor-portal [data-radius="button"] { border-radius: var(--portal-radius-button) !important; }
+  .instructor-portal [data-radius="icon"]   { border-radius: var(--portal-radius-icon) !important; }
+  .instructor-portal [data-radius="input"]  { border-radius: var(--portal-radius-input) !important; }
+
   /* Primary / secondary action helpers — opt-in by class name */
   .instructor-portal .portal-btn-primary {
     background: var(--portal-accent);
