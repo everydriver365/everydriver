@@ -257,8 +257,8 @@ export function SatNavLiveMap({
         pathRef.current.push(new google.maps.LatLng(latitude, longitude));
       }
 
-      polylineRef.current?.setPath(pathRef.current);
-      polylineCasingRef.current?.setPath(pathRef.current);
+      renderPolylines();
+      requestSnap();
 
       // Only fit bounds if not fullscreen (fullscreen auto-follows)
       if (!fullscreen) {
@@ -286,8 +286,8 @@ export function SatNavLiveMap({
           Math.abs(lastPt.lng() - p.longitude) > 0.000005;
         if (shouldAdd) {
           pathRef.current.push(newPt);
-          polylineRef.current?.setPath(pathRef.current);
-          polylineCasingRef.current?.setPath(pathRef.current);
+          renderPolylines();
+          requestSnap();
         }
       })
       .subscribe();
