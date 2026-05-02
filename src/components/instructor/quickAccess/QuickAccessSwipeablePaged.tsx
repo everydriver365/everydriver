@@ -13,7 +13,8 @@ import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { useInstructorPeriodStats } from "@/hooks/useInstructorPeriodStats";
 
-const TILES_PER_PAGE = 6;
+// 2 columns × 2 rows per page on mobile.
+const TILES_PER_PAGE = 4;
 
 interface Props {
   instructorId?: string;
