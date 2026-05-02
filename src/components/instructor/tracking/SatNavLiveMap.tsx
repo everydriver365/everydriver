@@ -401,11 +401,12 @@ export function SatNavLiveMap({
     // prevents stationary drift from drawing erratic lines and ensures
     // Snap-to-Roads only ever sees clean input.
     if (movingFastEnough && metresFromPrev >= 3) {
-      pathRef.current.push(new google.maps.LatLng(latitude, longitude));
-      renderPolylines();
-      requestSnap();
+      if (appendTrailPoint(latitude, longitude)) {
+        renderPolylines();
+        requestSnap();
+      }
     }
-  }, [latitude, longitude, heading, speedKmh, isActive, getArrowIcon, renderPolylines, requestSnap]);
+  }, [latitude, longitude, heading, speedKmh, isActive, getArrowIcon, renderPolylines, requestSnap, appendTrailPoint]);
 
   // Continuous animation loop — interpolates marker between fixes at 60fps
   useEffect(() => {
