@@ -651,17 +651,18 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
       {/* SECTION 4: Quick actions — 2 rows of 4 tiles */}
       <section className="mt-4">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
-            Quick actions
-          </h2>
-          <button
-            onClick={() => navigate("/instructor/settings?tab=appearance")}
-            className="text-[14px] font-semibold text-[#007AFF] active:opacity-60 transition-opacity"
-          >
-            Edit
-          </button>
-        </div>
+        <SectionLabel
+          action={
+            <button
+              onClick={() => navigate("/instructor/settings?tab=appearance")}
+              className="text-[12px] font-semibold text-[#007AFF] active:opacity-60 transition-opacity"
+            >
+              Edit
+            </button>
+          }
+        >
+          Quick actions
+        </SectionLabel>
         <div className="grid grid-cols-4 gap-2">
           {(() => {
             const actions = {
