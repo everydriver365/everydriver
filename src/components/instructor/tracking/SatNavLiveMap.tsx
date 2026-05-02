@@ -36,6 +36,24 @@ export function SatNavLiveMap({
   const [ready, setReady] = useState(false);
   const [mapError, setMapError] = useState(false);
   const trailLoadedRef = useRef<string | null>(null);
+
+  // Client-side reverse-geocode fallback. The poller normally stamps
+  // `last_road_name` on gps_devices, but there's a few-second lag on first
+  // fix and the field can be blank/"Unnamed Road" on minor lanes. We fill
+  // those gaps here so the bottom panel always shows something useful.
+  const [fallbackRoadName, setFallbackRoadName] = useState<string | null>(null);
+  const lastGeocodeAtRef = useRef<number>(0);
+  const lastGeocodePosRef = useRef<{ lat: number; lng: number } | null>(null);
+  const geocoderRef = useRef<google.maps.Geocoder | null>(null);
+
+  // Treat upstream value as "missing" if null/empty/whitespace/"Unnamed Road"
+  const upstreamRoadName =
+    typeof roadName === "string" &&
+    roadName.trim().length > 0 &&
+    !/^unnamed\s+road$/i.test(roadName.trim())
+      ? roadName.trim()
+      : null;
+  const displayRoadName = upstreamRoadName || fallbackRoadName;
   const isFirstFixRef = useRef<boolean>(true);
   // Wall-clock timestamp of the last accepted fix — used to derive an
   // adaptive tween duration that matches the true cadence of the device.
