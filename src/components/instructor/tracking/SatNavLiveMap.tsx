@@ -51,6 +51,8 @@ export function SatNavLiveMap({
   const snapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const snapInFlightRef = useRef<boolean>(false);
   const snapDirtyRef = useRef<boolean>(false);
+  const [snapStatus, setSnapStatus] = useState<"idle" | "syncing" | "snapped" | "raw">("idle");
+  const [lastFixLabel, setLastFixLabel] = useState<string | null>(null);
 
   // Render whichever path is freshest (snapped if available, else raw) into both polylines
   const renderPolylines = useCallback(() => {
