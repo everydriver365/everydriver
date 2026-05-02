@@ -842,6 +842,9 @@ export function SatNavLiveMap({
   // Re-centre — restores follow mode and pans the map back to the vehicle.
   const handleRecentre = useCallback(() => {
     setFollowMode(true);
+    // Force the next fix to re-apply auto-zoom; the rAF loop will smoothly
+    // tilt + rotate back into sat-nav view automatically.
+    lastAutoZoomRef.current = null;
     const map = mapRef.current;
     const target = targetPosRef.current;
     if (map && target) {
