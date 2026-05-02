@@ -4,7 +4,7 @@ import { a11yPx } from "@/lib/a11yScale";
 import {
   Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, ChevronDown,
   Send, Play, MapPin, Calendar, ClipboardList,
-  Hourglass, PoundSterling, MessageCircle, AlertTriangle, CheckCircle2,
+  Hourglass, PoundSterling, MessageCircle, AlertTriangle, CheckCircle2, Check, XCircle,
   Thermometer, Battery, Wifi, BookOpen, Banknote, ChevronRight, Mail,
 } from "lucide-react";
 import { PostcodeMapPreview } from "@/components/instructor/PostcodeMapPreview";
