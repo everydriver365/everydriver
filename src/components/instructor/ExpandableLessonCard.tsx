@@ -602,6 +602,22 @@ export function ExpandableLessonCard({
                   </Button>
                 )}
 
+                {/* View full pupil profile */}
+                {lesson.pupil?.id && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full h-9 gap-1.5 text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/instructor/pupils/${lesson.pupil.id}`);
+                    }}
+                  >
+                    <User className="h-3.5 w-3.5 text-[#0075c9]" />
+                    View {lesson.pupil?.name?.split(" ")[0] || "pupil"}'s profile
+                  </Button>
+                )}
+
                 {/* Secondary Actions */}
                 <div className="flex gap-2 pt-2 border-t border-border/50">
                   <Button
