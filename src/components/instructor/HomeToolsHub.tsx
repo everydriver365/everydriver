@@ -226,6 +226,7 @@ export function HomeToolsHub() {
   const features = subscription?.features || [];
   const [query, setQuery] = useState("");
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [browseOpen, setBrowseOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [pupilSearchResults, setPupilSearchResults] = useState<PupilSearchResult[]>([]);
   const [pupilsLoading, setPupilsLoading] = useState(false);
