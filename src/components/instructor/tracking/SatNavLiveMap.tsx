@@ -30,6 +30,7 @@ export function SatNavLiveMap({
   const mapRef = useRef<google.maps.Map | null>(null);
   const markerRef = useRef<google.maps.Marker | null>(null);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
+  const polylineCasingRef = useRef<google.maps.Polyline | null>(null);
   const pathRef = useRef<google.maps.LatLng[]>([]);
   const [ready, setReady] = useState(false);
   const trailLoadedRef = useRef<string | null>(null);
