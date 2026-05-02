@@ -843,10 +843,41 @@ export function NextUpTile({
                 );
               }
 
-              // EARLY state: rely on the inline mini call/navigate icons in the header.
-              // Render nothing here to keep the card minimal.
+              // EARLY state: simple bottom action row — primary Navigate + secondary Call icon.
               void isEarly;
-              return null;
+              return (
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
+                    className="active:opacity-90"
+                    style={{
+                      flex: 1,
+                      background: "#1B5BFF", color: "#FFFFFF",
+                      border: "none", borderRadius: 14, padding: "14px 16px",
+                      fontSize: a11yPx(16), fontWeight: 600, letterSpacing: -0.2,
+                      cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                      boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -6px rgba(27,91,255,0.30)",
+                    }}
+                    aria-label="Navigate"
+                  >
+                    <Navigation style={{ width: 17, height: 17 }} strokeWidth={2.4} />
+                    Navigate
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleCall(); }}
+                    className="active:opacity-80"
+                    style={{
+                      width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+                      background: "#F2F3F5", border: "none", cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    }}
+                    aria-label="Call pupil"
+                  >
+                    <Phone style={{ width: 18, height: 18, color: "#34C759" }} strokeWidth={2.2} />
+                  </button>
+                </div>
+              );
             })()}
           </div>
 
