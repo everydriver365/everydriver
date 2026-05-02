@@ -53,6 +53,45 @@ export function FloatingSessionTimer({
   const speedColor = paused ? "#71717A" : isOver ? "#FF3B30" : "#1C1C1E";
   const headlineName = pupilName || (isTestRoute ? "Test route" : "Lesson");
 
+  // Hold-to-confirm End button — 800ms press to commit, release cancels.
+  const HOLD_DURATION_MS = 800;
+  const [endHoldProgress, setEndHoldProgress] = useState(0);
+  const endHoldStartRef = useRef<number | null>(null);
+  const endHoldRafRef = useRef<number | null>(null);
+  const endHoldFiredRef = useRef<boolean>(false);
+
+  const cancelEndHold = useCallback(() => {
+    if (endHoldRafRef.current != null) {
+      cancelAnimationFrame(endHoldRafRef.current);
+      endHoldRafRef.current = null;
+    }
+    endHoldStartRef.current = null;
+    setEndHoldProgress(0);
+  }, []);
+
+  const startEndHold = useCallback(() => {
+    if (isStopping) return;
+    endHoldFiredRef.current = false;
+    endHoldStartRef.current = performance.now();
+    const tick = (now: number) => {
+      const start = endHoldStartRef.current;
+      if (start == null) return;
+      const elapsed = now - start;
+      const p = Math.min(1, elapsed / HOLD_DURATION_MS);
+      setEndHoldProgress(p);
+      if (p >= 1) {
+        endHoldFiredRef.current = true;
+        cancelEndHold();
+        onStop();
+        return;
+      }
+      endHoldRafRef.current = requestAnimationFrame(tick);
+    };
+    endHoldRafRef.current = requestAnimationFrame(tick);
+  }, [cancelEndHold, isStopping, onStop]);
+
+  useEffect(() => () => cancelEndHold(), [cancelEndHold]);
+
   return (
     <motion.div
       className="fixed left-3 right-3 z-40"
