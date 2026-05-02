@@ -187,8 +187,51 @@ export function SatNavLiveMap({
 
   const speedMph = speedKmh != null ? Math.round(speedKmh * 0.621371) : null;
   const speedLimitMph = speedLimitKmh != null ? Math.round(speedLimitKmh * 0.621371) : null;
-  const isOverSpeed = speedKmh != null && speedLimitKmh != null && speedKmh > speedLimitKmh;
   const dailyMiles = dailyDistanceKm != null ? Math.round(dailyDistanceKm * 0.621371) : null;
+
+  // Sustained-overspeed hysteresis: 2s on, 1s off — kills mph-jitter flicker.
+  const overspeedSinceRef = useRef<number | null>(null);
+  const underspeedSinceRef = useRef<number | null>(null);
+  const [overspeedActive, setOverspeedActive] = useState(false);
+
+  // Track latest heading for direction-aware road label without re-running effects.
+  const headingRef = useRef<number>(0);
+  if (typeof heading === "number" && Number.isFinite(heading)) headingRef.current = heading;
+
+  // Browser ↔ Supabase realtime connection state. False = no live updates flowing.
+  const [realtimeConnected, setRealtimeConnected] = useState(true);
+
+  // 1Hz tick — drives both UI staleness labels and the overspeed hysteresis.
+  const [, setNowTick] = useState(0);
+  useEffect(() => {
+    const t = window.setInterval(() => {
+      const now = Date.now();
+      setNowTick(now);
+
+      const rawOver = (() => {
+        if (speedKmh == null) return false;
+        if (speedLimitKmh != null) return speedKmh > speedLimitKmh + 0.5;
+        if (speedLimitMph != null && speedMph != null) return speedMph > speedLimitMph;
+        return false;
+      })();
+
+      if (rawOver) {
+        underspeedSinceRef.current = null;
+        if (overspeedSinceRef.current == null) overspeedSinceRef.current = now;
+        if (!overspeedActive && now - overspeedSinceRef.current >= 2000) {
+          setOverspeedActive(true);
+        }
+      } else {
+        overspeedSinceRef.current = null;
+        if (underspeedSinceRef.current == null) underspeedSinceRef.current = now;
+        if (overspeedActive && now - underspeedSinceRef.current >= 1000) {
+          setOverspeedActive(false);
+        }
+      }
+    }, 1000);
+    return () => window.clearInterval(t);
+  }, [speedKmh, speedLimitKmh, speedLimitMph, speedMph, overspeedActive]);
+
 
   // Load Google Maps SDK
   useEffect(() => {
