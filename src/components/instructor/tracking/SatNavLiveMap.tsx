@@ -190,9 +190,19 @@ export function SatNavLiveMap({
     fillColor: active ? "#0A84FF" : "#8E8E93",
     fillOpacity: 1,
     strokeColor: "#FFFFFF",
-    strokeWeight: 3,
-    scale: fullscreenRef.current ? (active ? 2.6 : 2.2) : (active ? 2.4 : 2.0),
+    strokeWeight: 2,
+    scale: active ? 1.6 : 1.2,
     rotation,
+    anchor: new google.maps.Point(0, 0),
+  }), []);
+
+  // Soft drop-shadow icon under the arrow for legibility on light roads
+  const getShadowIcon = useCallback((active: boolean): google.maps.Symbol => ({
+    path: google.maps.SymbolPath.CIRCLE,
+    fillColor: "#000000",
+    fillOpacity: 0.18,
+    strokeOpacity: 0,
+    scale: active ? 11 : 9,
     anchor: new google.maps.Point(0, 0),
   }), []);
 
