@@ -62,6 +62,16 @@ export function SatNavLiveMap({
   // and read by the rAF loop as `expected`. Defaults to 900 before any fix.
   const tweenMsRef = useRef<number>(900);
 
+  // Sat-nav camera state — separate from marker so we can smooth it more
+  // aggressively (a jittery rotating world is nausea-inducing).
+  const camHeadingRef = useRef<number>(0);
+  const camTiltRef = useRef<number>(0);
+  // True only when the map was created with a vector mapId (required for
+  // tilt + heading). Otherwise we fall back to flat raster behaviour.
+  const vectorReadyRef = useRef<boolean>(false);
+  // Last auto-zoom value we applied, so we don't re-set zoom every fix.
+  const lastAutoZoomRef = useRef<number | null>(null);
+
   // Follow mode — when true (default), camera tracks the vehicle in fullscreen.
   // User drag/zoom turns it off and surfaces a "Re-centre" button.
   const [followMode, setFollowMode] = useState(true);
@@ -210,6 +220,16 @@ export function SatNavLiveMap({
     return () => { released = true; document.removeEventListener("visibilitychange", onVis); wakeLock?.release?.().catch(() => {}); };
   }, [fullscreen]);
 
+  // When fullscreen exits, drop the camera back to flat north-up so the
+  // card-mode map doesn't stay tilted/rotated.
+  useEffect(() => {
+    if (!fullscreen && mapRef.current && vectorReadyRef.current) {
+      mapRef.current.moveCamera({ heading: 0, tilt: 0 });
+      camHeadingRef.current = 0;
+      camTiltRef.current = 0;
+    }
+  }, [fullscreen]);
+
   // Client-side reverse-geocode fallback for the road name. Runs only when
   // the upstream `roadName` prop is empty/Unnamed AND we have a position.
   // Throttled to once every 6s, and skips if the vehicle hasn't moved >25 m
@@ -287,7 +307,60 @@ export function SatNavLiveMap({
     anchor: new google.maps.Point(0, 0),
   }), []);
 
-  // Append a point to the trail polyline, suppressing near-duplicate fixes
+  // ── Sat-nav camera helpers ──────────────────────────────────────────────
+  // Zoom adapts to speed so the driver sees an appropriate amount of road.
+  const zoomForSpeed = useCallback((speedKmh: number | null): number => {
+    if (speedKmh == null) return 17;
+    if (speedKmh < 20) return 18;
+    if (speedKmh < 60) return 17;
+    if (speedKmh < 100) return 16;
+    return 15;
+  }, []);
+
+  // Shortest signed angular delta in degrees from `from` to `to` in [-180, 180].
+  const shortestAngleDelta = useCallback((from: number, to: number): number => {
+    return ((to - from + 540) % 360) - 180;
+  }, []);
+
+  // Given a target lat/lng, return a centre that places the target ~28% from
+  // the bottom of the viewport, accounting for the current camera heading so
+  // the offset is always "ahead" of the vehicle in screen-space.
+  const offsetCenterForLowerThird = useCallback((
+    map: google.maps.Map,
+    target: { lat: number; lng: number },
+    cameraHeadingDeg: number,
+  ): { lat: number; lng: number } | null => {
+    const proj = map.getProjection();
+    const zoom = map.getZoom();
+    if (!proj || zoom == null) return null;
+
+    const targetPt = proj.fromLatLngToPoint(new google.maps.LatLng(target));
+    if (!targetPt) return null;
+
+    const scale = Math.pow(2, zoom);
+    const div = map.getDiv() as HTMLElement;
+    const heightPx = div.clientHeight;
+    if (!heightPx) return null;
+
+    // Centre at 50%, target at 72% from top → push centre forward by 22%.
+    const offsetPx = heightPx * 0.22;
+
+    const headingRad = (cameraHeadingDeg * Math.PI) / 180;
+    const dxPx = Math.sin(headingRad) * offsetPx;
+    const dyPx = -Math.cos(headingRad) * offsetPx; // y inverted in screen coords
+
+    const dxWorld = dxPx / scale / 256;
+    const dyWorld = dyPx / scale / 256;
+
+    const centerPt = new google.maps.Point(
+      targetPt.x - dxWorld,
+      targetPt.y - dyWorld,
+    );
+    const centerLatLng = proj.fromPointToLatLng(centerPt);
+    return centerLatLng
+      ? { lat: centerLatLng.lat(), lng: centerLatLng.lng() }
+      : null;
+  }, []);
   // (~0.5m at UK latitudes). Returns true if the point was actually added so
   // callers can decide whether to re-render / re-snap.
   const appendTrailPoint = useCallback((lat: number, lng: number): boolean => {
@@ -322,20 +395,31 @@ export function SatNavLiveMap({
       mapDivRef.current.style.background = "#F2F2F7";
     }
 
-    const map = new google.maps.Map(mapDivRef.current, {
+    // Vector mapId enables tilt + heading-up rotation. When provided we use
+    // it (and skip inline `styles`, which Google ignores for vector maps —
+    // styling lives in Cloud Console against that map ID). When absent we
+    // fall back to the styled raster map (no tilt, no rotation) so the
+    // component still works.
+    const mapId = (import.meta as any).env?.VITE_GOOGLE_MAPS_MAP_ID as string | undefined;
+    const mapOptions: google.maps.MapOptions = {
       center,
       zoom: fullscreen ? 18.5 : 17,
-      tilt: fullscreen ? 30 : 0,
-      heading: heading ?? 0,
+      tilt: 0,
+      heading: 0,
       disableDefaultUI: true,
       gestureHandling: "greedy",
       mapTypeId: "roadmap",
       clickableIcons: false,
       keyboardShortcuts: false,
       backgroundColor: "#F2F2F7",
-      styles: navStyles,
-      // Note: no mapId — required so inline `styles` above are honoured
-    });
+    };
+    if (mapId) {
+      (mapOptions as any).mapId = mapId;
+    } else {
+      mapOptions.styles = navStyles;
+    }
+    const map = new google.maps.Map(mapDivRef.current, mapOptions);
+    vectorReadyRef.current = !!mapId;
 
     mapRef.current = map;
 
@@ -364,13 +448,28 @@ export function SatNavLiveMap({
     // User gesture detection — turn off follow mode when the user drags or
     // zooms the map. We only listen to `dragstart` (true user gesture) and
     // `zoom_changed` because `center_changed` also fires from our own panTo.
+    const dropToFlat = () => {
+      if (vectorReadyRef.current && mapRef.current) {
+        mapRef.current.moveCamera({ heading: 0, tilt: 0 });
+        camHeadingRef.current = 0;
+        camTiltRef.current = 0;
+      }
+    };
     const onDragStart = () => {
       if (suppressFollowOffRef.current) return;
-      if (followModeRef.current) setFollowMode(false);
+      if (followModeRef.current) {
+        setFollowMode(false);
+        if (fullscreenRef.current) dropToFlat();
+      }
     };
     const onZoomChanged = () => {
       if (suppressFollowOffRef.current) return;
-      if (followModeRef.current) setFollowMode(false);
+      if (followModeRef.current) {
+        setFollowMode(false);
+        if (fullscreenRef.current) dropToFlat();
+      }
+      // User took zoom control — clear so Re-centre re-applies auto-zoom.
+      lastAutoZoomRef.current = null;
     };
     mapListenersRef.current.push(map.addListener("dragstart", onDragStart));
     mapListenersRef.current.push(map.addListener("zoom_changed", onZoomChanged));
@@ -398,6 +497,9 @@ export function SatNavLiveMap({
   useEffect(() => {
     isFirstFixRef.current = true;
     lastFixAtRef.current = 0;
+    camHeadingRef.current = 0;
+    camTiltRef.current = 0;
+    lastAutoZoomRef.current = null;
   }, [sessionId]);
 
   // Load historical trail + subscribe to new GPS points for active sessions
@@ -472,6 +574,15 @@ export function SatNavLiveMap({
     // could leave the marker off-screen until the next fix arrives.
     if (isFirstFixRef.current) {
       const headingNow = heading ?? 0;
+      const initialZoom = zoomForSpeed(speedKmh ?? null);
+      lastAutoZoomRef.current = initialZoom;
+
+      // For vector + fullscreen + follow, the world is rotated to heading-up,
+      // so the on-screen arrow direction must be compensated to ~0°.
+      const useSatNavCam =
+        fullscreenRef.current && followModeRef.current && vectorReadyRef.current;
+      const screenHeading = useSatNavCam ? 0 : headingNow;
+
       if (!markerRef.current) {
         markerShadowRef.current = new google.maps.Marker({
           position: { lat: latitude, lng: longitude },
@@ -483,17 +594,30 @@ export function SatNavLiveMap({
         markerRef.current = new google.maps.Marker({
           position: { lat: latitude, lng: longitude },
           map,
-          icon: getArrowIcon(headingNow, isActive),
+          icon: getArrowIcon(screenHeading, isActive),
           zIndex: 999,
         });
       } else {
         markerRef.current.setPosition({ lat: latitude, lng: longitude });
-        markerRef.current.setIcon(getArrowIcon(headingNow, isActive));
+        markerRef.current.setIcon(getArrowIcon(screenHeading, isActive));
         markerShadowRef.current?.setPosition({ lat: latitude, lng: longitude });
       }
       suppressFollowOffRef.current = true;
-      map.setCenter({ lat: latitude, lng: longitude });
-      map.setZoom(17);
+      map.setZoom(initialZoom);
+
+      if (useSatNavCam) {
+        camHeadingRef.current = headingNow;
+        camTiltRef.current = isActiveRef.current ? 50 : 0;
+        map.moveCamera({
+          heading: camHeadingRef.current,
+          tilt: camTiltRef.current,
+        });
+      }
+
+      const center = vectorReadyRef.current
+        ? (offsetCenterForLowerThird(map, { lat: latitude, lng: longitude }, camHeadingRef.current) ?? { lat: latitude, lng: longitude })
+        : { lat: latitude, lng: longitude };
+      map.setCenter(center);
       requestAnimationFrame(() => { suppressFollowOffRef.current = false; });
 
       const seed = { lat: latitude, lng: longitude, heading: headingNow, t: now };
@@ -504,6 +628,17 @@ export function SatNavLiveMap({
       pathRef.current = [new google.maps.LatLng(latitude, longitude)];
       isFirstFixRef.current = false;
       return;
+    }
+
+    // ── Auto-zoom by speed (fullscreen + follow only) ────────────────────
+    if (fullscreenRef.current && followModeRef.current && map) {
+      const targetZoom = zoomForSpeed(speedKmh ?? null);
+      if (lastAutoZoomRef.current !== targetZoom) {
+        suppressFollowOffRef.current = true;
+        map.setZoom(targetZoom);
+        lastAutoZoomRef.current = targetZoom;
+        requestAnimationFrame(() => { suppressFollowOffRef.current = false; });
+      }
     }
 
     // ── Jitter / outlier guards ───────────────────────────────────────────
@@ -662,22 +797,43 @@ export function SatNavLiveMap({
         const lng = lerp(from.lng, target.lng, e);
         const hd = lerpAngle(from.heading, target.heading, e);
 
+        const satNavCam =
+          fullscreenRef.current && followModeRef.current && vectorReadyRef.current;
+
         marker.setPosition({ lat, lng });
-        marker.setIcon(getArrowIcon(hd, isActiveRef.current));
+        // When the world is rotated heading-up, Google rotates marker symbols
+        // *with* the world. Compensate by subtracting camera heading so the
+        // arrow stays pointing roughly up the screen (and leans into turns
+        // while the camera catches up).
+        const screenHeading = satNavCam ? hd - camHeadingRef.current : hd;
+        marker.setIcon(getArrowIcon(screenHeading, isActiveRef.current));
         markerShadowRef.current?.setPosition({ lat, lng });
 
-        // Heading-up: rotate map smoothly
-        if (typeof (map as any).setHeading === "function") {
-          (map as any).setHeading(hd);
+        // Sat-nav camera: smoothly tilt + rotate to heading-up. Heavier
+        // smoothing than the marker — a jittery world is nausea-inducing.
+        if (satNavCam) {
+          const camDelta = ((hd - camHeadingRef.current + 540) % 360) - 180;
+          camHeadingRef.current = (camHeadingRef.current + camDelta * 0.08 + 360) % 360;
+          const targetTilt = isActiveRef.current ? 50 : 0;
+          camTiltRef.current += (targetTilt - camTiltRef.current) * 0.05;
+          (map as any).moveCamera({
+            heading: camHeadingRef.current,
+            tilt: camTiltRef.current,
+          });
         }
 
         // Camera follow — only auto-pan in fullscreen sat-nav mode AND when
         // the user hasn't taken over with a drag/zoom. Card-mode map stays
         // free for the user to explore.
         if (fullscreenRef.current && followModeRef.current) {
-          const latLng = new google.maps.LatLng(lat, lng);
+          // Offset so the vehicle sits ~28% from the bottom of the viewport,
+          // accounting for current camera heading (in screen-space).
+          const offset = vectorReadyRef.current
+            ? offsetCenterForLowerThird(map, { lat, lng }, camHeadingRef.current)
+            : null;
+          const center = offset ?? { lat, lng };
           suppressFollowOffRef.current = true;
-          map.panTo(latLng);
+          map.panTo(center);
           // Release suppression after the next frame — panTo fires its events synchronously
           requestAnimationFrame(() => { suppressFollowOffRef.current = false; });
         }
@@ -696,6 +852,9 @@ export function SatNavLiveMap({
   // Re-centre — restores follow mode and pans the map back to the vehicle.
   const handleRecentre = useCallback(() => {
     setFollowMode(true);
+    // Force the next fix to re-apply auto-zoom; the rAF loop will smoothly
+    // tilt + rotate back into sat-nav view automatically.
+    lastAutoZoomRef.current = null;
     const map = mapRef.current;
     const target = targetPosRef.current;
     if (map && target) {
