@@ -46,6 +46,12 @@ export function SatNavLiveMap({
   isActiveRef.current = isActive;
   fullscreenRef.current = fullscreen;
 
+  // Snap-to-Roads refs
+  const snappedPathRef = useRef<google.maps.LatLng[]>([]); // road-aligned trail
+  const snapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const snapInFlightRef = useRef<boolean>(false);
+  const snapDirtyRef = useRef<boolean>(false);
+
   const isLive = lastSeenAt && (Date.now() - new Date(lastSeenAt).getTime() < 30000);
   const lastSeenLabel = lastSeenAt
     ? formatDistanceToNowStrict(new Date(lastSeenAt), { addSuffix: true })
