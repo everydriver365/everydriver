@@ -756,7 +756,7 @@ export function NextUpTile({
                       }}
                     >
                       <Clock style={{ width: 11, height: 11, strokeWidth: 2.4 }} />
-                      Awaiting · Tap to nudge
+                      Awaiting confirmation · Tap to nudge
                     </button>
                   );
                 }
