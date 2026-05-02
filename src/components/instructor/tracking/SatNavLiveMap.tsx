@@ -239,68 +239,131 @@ export function SatNavLiveMap({
     return () => { supabase.removeChannel(channel); };
   }, [ready, sessionId, fullscreen]);
 
-  // Update marker, polyline, heading-up rotation, and auto-follow
+  // Update target position on each new GPS fix + maintain rolling fix-interval estimate
   useEffect(() => {
     const map = mapRef.current;
     if (!map || latitude == null || longitude == null) return;
 
-    const pos = { lat: latitude, lng: longitude };
-    const latLng = new google.maps.LatLng(latitude, longitude);
-    const rotation = heading ?? 0;
+    const now = performance.now();
+    const rotation = heading ?? targetPosRef.current?.heading ?? 0;
 
-    // Heading-up: rotate the map so vehicle always faces up
-    if (typeof (map as any).setHeading === "function") {
-      (map as any).setHeading(rotation);
+    // Track interval between real fixes (clamped 1500–6000ms) for self-tuning smoothing
+    if (lastFixTsRef.current != null) {
+      const gap = now - lastFixTsRef.current;
+      if (gap > 200 && gap < 15000) {
+        fixGapsRef.current.push(gap);
+        if (fixGapsRef.current.length > 3) fixGapsRef.current.shift();
+      }
     }
+    lastFixTsRef.current = now;
 
-    // Update or create arrow marker
-    if (markerRef.current) {
-      markerRef.current.setPosition(pos);
-      markerRef.current.setIcon(getArrowIcon(0, isActive));
-    } else {
+    // Seed marker on first fix
+    if (!markerRef.current) {
       markerRef.current = new google.maps.Marker({
-        position: pos,
+        position: { lat: latitude, lng: longitude },
         map,
         icon: getArrowIcon(0, isActive),
+        zIndex: 999,
       });
     }
 
-    // Append to route polyline (top + casing kept in sync)
+    // Set up interpolation: from = current displayed pos, target = new fix
+    const currentDisplayed = targetPosRef.current ?? { lat: latitude, lng: longitude, heading: rotation, t: now };
+    fromPosRef.current = { ...currentDisplayed, t: now };
+    targetPosRef.current = { lat: latitude, lng: longitude, heading: rotation, t: now };
+
+    // Append to route polyline (top + casing kept in sync) — real fixes only
     const lastPt = pathRef.current[pathRef.current.length - 1];
     const shouldAdd = !lastPt ||
       Math.abs(lastPt.lat() - latitude) > 0.000005 ||
       Math.abs(lastPt.lng() - longitude) > 0.000005;
-
     if (shouldAdd) {
-      pathRef.current.push(latLng);
+      pathRef.current.push(new google.maps.LatLng(latitude, longitude));
       polylineRef.current?.setPath(pathRef.current);
       polylineCasingRef.current?.setPath(pathRef.current);
     }
+  }, [latitude, longitude, heading, isActive, getArrowIcon]);
 
-    // Off-centre camera (fullscreen only): place vehicle ~30% from bottom so
-    // road *ahead* is visible. Computed in pixel space then converted back.
-    if (fullscreen) {
-      const projection = map.getProjection();
-      const div = mapDivRef.current;
-      if (projection && div) {
-        const zoom = map.getZoom() ?? 18;
-        const scale = Math.pow(2, zoom);
-        const worldPx = projection.fromLatLngToPoint(latLng);
-        if (worldPx) {
-          // Shift target downward in screen space so vehicle sits lower in viewport.
-          const offsetY = div.clientHeight * 0.20; // 20% downward = arrow ~30% from bottom
-          const shiftedY = worldPx.y - offsetY / scale;
-          const shifted = new google.maps.Point(worldPx.x, shiftedY);
-          const shiftedLatLng = projection.fromPointToLatLng(shifted);
-          if (shiftedLatLng) {
-            map.panTo(shiftedLatLng);
-            return;
+  // Continuous animation loop — interpolates marker between fixes at 60fps
+  useEffect(() => {
+    if (!ready) return;
+
+    const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+    const lerpAngle = (a: number, b: number, t: number) => {
+      let diff = ((b - a + 540) % 360) - 180; // shortest arc
+      return a + diff * t;
+    };
+
+    const tick = () => {
+      const map = mapRef.current;
+      const marker = markerRef.current;
+      const from = fromPosRef.current;
+      const target = targetPosRef.current;
+
+      if (map && marker && from && target) {
+        // Estimate fix cadence (avg of last few real gaps), clamped 1500–6000ms
+        const gaps = fixGapsRef.current;
+        const avgGap = gaps.length > 0
+          ? gaps.reduce((s, g) => s + g, 0) / gaps.length
+          : 2500;
+        const expected = Math.max(1500, Math.min(6000, avgGap));
+
+        const elapsed = performance.now() - target.t;
+        const t = Math.max(0, Math.min(1, elapsed / expected));
+        const e = easeInOut(t);
+
+        const lat = lerp(from.lat, target.lat, e);
+        const lng = lerp(from.lng, target.lng, e);
+        const hd = lerpAngle(from.heading, target.heading, e);
+
+        marker.setPosition({ lat, lng });
+        marker.setIcon(getArrowIcon(0, isActiveRef.current));
+
+        // Heading-up: rotate map smoothly
+        if (typeof (map as any).setHeading === "function") {
+          (map as any).setHeading(hd);
+        }
+
+        // Camera follow — off-center in fullscreen, centered otherwise
+        const latLng = new google.maps.LatLng(lat, lng);
+        if (fullscreenRef.current) {
+          const projection = map.getProjection();
+          const div = mapDivRef.current;
+          if (projection && div) {
+            const zoom = map.getZoom() ?? 18;
+            const scale = Math.pow(2, zoom);
+            const worldPx = projection.fromLatLngToPoint(latLng);
+            if (worldPx) {
+              const offsetY = div.clientHeight * 0.20;
+              const shiftedY = worldPx.y - offsetY / scale;
+              const shifted = new google.maps.Point(worldPx.x, shiftedY);
+              const shiftedLatLng = projection.fromPointToLatLng(shifted);
+              if (shiftedLatLng) {
+                map.panTo(shiftedLatLng);
+              } else {
+                map.panTo(latLng);
+              }
+            } else {
+              map.panTo(latLng);
+            }
+          } else {
+            map.panTo(latLng);
           }
+        } else {
+          map.panTo(latLng);
         }
       }
-    }
-    map.panTo(pos);
-  }, [latitude, longitude, heading, isActive, getArrowIcon, fullscreen]);
+
+      animRef.current = requestAnimationFrame(tick);
+    };
+
+    animRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (animRef.current != null) cancelAnimationFrame(animRef.current);
+      animRef.current = null;
+    };
+  }, [ready, getArrowIcon]);
 
   // Fullscreen mode — keep existing behavior
   if (fullscreen) {
