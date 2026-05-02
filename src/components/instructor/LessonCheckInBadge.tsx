@@ -23,7 +23,7 @@ export function LessonCheckInBadge({ status, className }: LessonCheckInBadgeProp
     },
     pending: {
       icon: Clock,
-      label: "Awaiting",
+      label: "Awaiting confirmation",
       className: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400",
     },
   }[status] || null;
