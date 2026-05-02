@@ -284,6 +284,7 @@ function ScheduleListRow({
   kind,
   completion,
   needsAttention,
+  checkInStatus,
   onClick,
 }: {
   timeText: string;
@@ -299,6 +300,7 @@ function ScheduleListRow({
   kind?: "lesson" | "external" | "block" | "allday";
   completion?: { eol?: boolean; payment?: boolean; notes?: boolean; eolPending?: boolean; paymentPending?: boolean };
   needsAttention?: boolean;
+  checkInStatus?: string | null;
   onClick?: () => void;
 }) {
   const Icon = kind === "lesson" ? User : CalendarDays;
