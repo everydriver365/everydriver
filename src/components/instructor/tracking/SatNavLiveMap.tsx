@@ -978,6 +978,7 @@ export function SatNavLiveMap({
                     paddingBottom: 10,
                     marginBottom: 10,
                     borderBottom: "1px solid rgba(0,0,0,0.06)",
+                    minHeight: 22,
                   }}
                   title={displayRoadName || "Locating road"}
                 >
