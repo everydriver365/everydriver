@@ -1077,18 +1077,19 @@ export function NextUpTile({
                     });
                     return (
                       <div style={{
-                        display: "flex", alignItems: "stretch",
-                        background: "#EEF1F6", borderRadius: 18,
-                        padding: 4, gap: 2,
+                        display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
+                        background: "#EEF1F5", borderRadius: 22,
+                        padding: "12px 10px", gap: 4,
                       }}>
                         {segments.map((s) => {
                           const Icon = s.icon;
                           const inner = (
                             <>
-                              <Icon style={{ width: 16, height: 16 }} strokeWidth={2.1} />
+                              <Icon style={{ width: 22, height: 22, color: s.active ? "#2563FF" : "#63666D" }} strokeWidth={2.1} />
                               <span style={{
-                                fontSize: a11yPx(11), fontWeight: 600, letterSpacing: -0.05,
+                                fontSize: a11yPx(13), fontWeight: 700, letterSpacing: -0.05,
                                 lineHeight: 1.15, textAlign: "center",
+                                color: s.active ? "#2563FF" : "#63666D",
                                 display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
                                 overflow: "hidden", maxWidth: "100%", wordBreak: "break-word",
                               }}>{s.label}</span>
