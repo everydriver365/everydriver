@@ -319,9 +319,11 @@ export function SatNavLiveMap({
     };
   }, [ready]);
 
-  // When the active session changes, ensure the next fix re-frames the map.
+  // When the active session changes, ensure the next fix re-frames the map
+  // and the cadence estimator restarts from a clean slate.
   useEffect(() => {
     isFirstFixRef.current = true;
+    lastFixAtRef.current = 0;
   }, [sessionId]);
 
   // Load historical trail + subscribe to new GPS points for active sessions
