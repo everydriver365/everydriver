@@ -236,35 +236,59 @@ export function RunningLateSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-2xl pb-safe">
-        <SheetHeader className="pb-4">
-          <SheetTitle className="text-left">Running Late?</SheetTitle>
+      <SheetContent
+        side="bottom"
+        className="rounded-t-[28px] border-0 p-0 pb-safe bg-[#F4F7F6] shadow-[0_-8px_40px_rgba(0,0,0,0.12)]"
+      >
+        {/* Drag handle */}
+        <div className="flex justify-center pt-2.5 pb-1">
+          <div className="w-9 h-[5px] rounded-full bg-[#D1D5DB]" />
+        </div>
+
+        <SheetHeader className="px-5 pt-2 pb-4">
+          <SheetTitle className="text-left text-[17px] font-semibold text-[#0F172A]">
+            Running late
+          </SheetTitle>
         </SheetHeader>
 
-        <div className="space-y-4">
+        <div className="px-5 pb-5 space-y-5">
           {/* Quick Messages */}
           <div>
-            <p className="text-xs text-muted-foreground mb-2 font-medium">Quick Messages</p>
+            <p className="text-[11px] uppercase tracking-wide text-[#6B7280] mb-2 font-semibold">
+              Quick messages
+            </p>
             <div className="grid grid-cols-2 gap-2">
               {presets.map((msg) => {
                 const isActive = activeId === msg.id;
+                const isAmber = msg.id === "traffic" || msg.id === "update";
+                const iconColor = isActive && sendState === "sent"
+                  ? "text-emerald-500"
+                  : isAmber
+                    ? "text-amber-500"
+                    : "text-[#2B7BC8]";
                 return (
-                  <Button
+                  <button
                     key={msg.id}
-                    variant="outline"
-                    className="h-auto py-3 px-3 justify-start gap-2 text-left"
+                    type="button"
                     onClick={() => sendNow(msg.id, msg.message)}
                     disabled={!pupilPhone || isBusy}
+                    className={`group h-auto py-3 px-3 rounded-[16px] border text-left flex items-start gap-2 transition-all
+                      bg-white border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.04)]
+                      hover:border-[#2B7BC8]/30 active:bg-[#2B7BC8]/5 active:border-[#2B7BC8]/40
+                      disabled:opacity-50 disabled:pointer-events-none
+                      ${isActive ? "bg-[#2B7BC8]/5 border-[#2B7BC8]/40" : ""}`}
                   >
                     {isActive && sendState === "sending" ? (
-                      <Loader2 className="h-4 w-4 shrink-0 text-primary animate-spin" />
+                      <Loader2 className={`h-4 w-4 shrink-0 mt-0.5 animate-spin text-[#2B7BC8]`} />
                     ) : isActive && sendState === "sent" ? (
-                      <Check className="h-4 w-4 shrink-0 text-emerald-500" />
+                      <Check className="h-4 w-4 shrink-0 mt-0.5 text-emerald-500" />
                     ) : (
-                      <msg.icon className="h-4 w-4 shrink-0 text-primary" />
+                      <msg.icon className={`h-4 w-4 shrink-0 mt-0.5 ${iconColor}`} />
                     )}
-                    <span className="text-xs leading-tight">{msg.label}</span>
-                  </Button>
+                    <span className="text-[13px] leading-tight text-[#0F172A] font-medium">
+                      {msg.label}
+                    </span>
+                  </button>
                 );
               })}
             </div>
@@ -272,21 +296,23 @@ export function RunningLateSheet({
 
           {/* Custom Message */}
           <div>
-            <p className="text-xs text-muted-foreground mb-2 font-medium">Custom Message</p>
+            <p className="text-[11px] uppercase tracking-wide text-[#6B7280] mb-2 font-semibold">
+              Custom message
+            </p>
             <div className="relative">
               <Textarea
                 placeholder={`Hi ${firstName}, …`}
                 value={customMessage}
                 onChange={(e) => setCustomMessage(e.target.value)}
-                className="min-h-[72px] text-sm resize-none pr-12"
+                className="min-h-[80px] text-[14px] resize-none pr-12 rounded-[16px] bg-white border border-[#E5E7EB] text-[#0F172A] placeholder:text-[#9CA3AF] shadow-[0_1px_2px_rgba(0,0,0,0.04)] focus-visible:ring-1 focus-visible:ring-[#2B7BC8]/40 focus-visible:border-[#2B7BC8]/40"
                 disabled={isBusy}
               />
-              <Button
-                size="icon"
-                className="absolute bottom-2 right-2 h-9 w-9 rounded-full"
+              <button
+                type="button"
                 onClick={() => sendNow("custom", customMessage.trim())}
                 disabled={!customMessage.trim() || !pupilPhone || isBusy}
                 aria-label="Send custom message"
+                className="absolute bottom-2 right-2 h-9 w-9 rounded-full flex items-center justify-center bg-[#2B7BC8] text-white shadow-[0_2px_6px_rgba(43,123,200,0.35)] disabled:opacity-40 disabled:shadow-none active:scale-95 transition-transform"
               >
                 {activeId === "custom" && sendState === "sending" ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -295,13 +321,15 @@ export function RunningLateSheet({
                 ) : (
                   <Send className="h-4 w-4" />
                 )}
-              </Button>
+              </button>
             </div>
           </div>
 
           {/* Voice Note */}
           <div>
-            <p className="text-xs text-muted-foreground mb-2 font-medium">Voice Note</p>
+            <p className="text-[11px] uppercase tracking-wide text-[#6B7280] mb-2 font-semibold">
+              Voice note
+            </p>
             <AnimatePresence mode="wait">
               {!audioBlob ? (
                 <motion.div
@@ -310,9 +338,8 @@ export function RunningLateSheet({
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
-                  <Button
-                    variant={isRecording ? "destructive" : "outline"}
-                    className={`w-full h-12 gap-2 ${isRecording ? "animate-pulse" : ""}`}
+                  <button
+                    type="button"
                     onPointerDown={(e) => {
                       e.preventDefault();
                       if (!isRecording) startRecording();
@@ -325,14 +352,17 @@ export function RunningLateSheet({
                       if (isRecording) stopRecording();
                     }}
                     onClick={() => {
-                      // Tap fallback: toggle if pointer events didn't fire
                       if (isRecording) stopRecording();
                       else if (!mediaRecorderRef.current) startRecording();
                     }}
+                    className={`w-full h-12 rounded-[16px] border flex items-center justify-center gap-2 text-[14px] font-medium transition-all shadow-[0_1px_2px_rgba(0,0,0,0.04)]
+                      ${isRecording
+                        ? "bg-red-50 border-red-200 text-red-600 animate-pulse"
+                        : "bg-white border-[#E5E7EB] text-[#0F172A] active:bg-[#2B7BC8]/5"}`}
                   >
-                    <Mic className="h-4 w-4" />
+                    <Mic className={`h-4 w-4 ${isRecording ? "text-red-600" : "text-[#2B7BC8]"}`} />
                     {isRecording ? `Recording… ${formatTime(recordingTime)}` : "Hold to record"}
-                  </Button>
+                  </button>
                 </motion.div>
               ) : (
                 <motion.div
@@ -342,17 +372,27 @@ export function RunningLateSheet({
                   exit={{ opacity: 0 }}
                   className="flex items-center gap-2"
                 >
-                  <div className="flex-1 bg-muted rounded-2xl px-3 py-2 flex items-center gap-2">
-                    <Mic className="h-4 w-4 text-primary" />
-                    <span className="text-sm">Voice note ({formatTime(recordingTime)})</span>
+                  <div className="flex-1 bg-white border border-[#E5E7EB] rounded-[16px] px-3 py-2.5 flex items-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                    <Mic className="h-4 w-4 text-[#2B7BC8]" />
+                    <span className="text-[13px] text-[#0F172A]">Voice note ({formatTime(recordingTime)})</span>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={cancelRecording} aria-label="Cancel voice note">
+                  <button
+                    type="button"
+                    onClick={cancelRecording}
+                    aria-label="Cancel voice note"
+                    className="h-10 w-10 rounded-full flex items-center justify-center text-[#6B7280] hover:bg-black/5 active:bg-black/10"
+                  >
                     <X className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" onClick={sendVoiceNote} className="gap-1" disabled={isBusy}>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={sendVoiceNote}
+                    disabled={isBusy}
+                    className="h-10 px-4 rounded-full bg-[#2B7BC8] text-white text-[13px] font-semibold flex items-center gap-1.5 shadow-[0_2px_6px_rgba(43,123,200,0.35)] disabled:opacity-40 active:scale-95 transition-transform"
+                  >
                     <Send className="h-3.5 w-3.5" />
                     Send
-                  </Button>
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -366,7 +406,7 @@ export function RunningLateSheet({
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="text-xs text-center text-emerald-600 font-medium"
+                className="text-[12px] text-center text-emerald-600 font-medium"
               >
                 Message sent
               </motion.p>
@@ -377,7 +417,7 @@ export function RunningLateSheet({
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="text-xs text-center text-destructive font-medium"
+                className="text-[12px] text-center text-red-600 font-medium"
               >
                 {errorMsg}
               </motion.p>
@@ -385,7 +425,7 @@ export function RunningLateSheet({
           </AnimatePresence>
 
           {!pupilPhone && (
-            <p className="text-xs text-destructive text-center">
+            <p className="text-[12px] text-red-600 text-center">
               No phone number available for this pupil
             </p>
           )}
