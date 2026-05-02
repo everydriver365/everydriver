@@ -41,6 +41,7 @@ export default function InstructorSendReminder() {
   const [channel, setChannel] = useState<Channel>("sms");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [confirmingBulk, setConfirmingBulk] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [editingRecipients, setEditingRecipients] = useState(false);
   const [recipientSearch, setRecipientSearch] = useState("");
@@ -218,7 +219,7 @@ export default function InstructorSendReminder() {
     }
   };
 
-  const handleSend = async () => {
+  const dispatchSend = async () => {
     if (!instructorId || sending) return;
     if (!message.trim() || selectedPupils.length === 0) return;
     haptics.selection();
@@ -238,7 +239,6 @@ export default function InstructorSendReminder() {
       else failed++;
     }
 
-    // Single summary toast (no modal)
     const parts: string[] = [];
     if (sent > 0) parts.push(`Sent to ${sent}`);
     if (skippedNoPhone > 0) parts.push(`skipped ${skippedNoPhone} (no phone)`);
@@ -246,7 +246,18 @@ export default function InstructorSendReminder() {
     if (sent > 0) toast.success(parts.join(" · "));
     else toast.error(parts.join(" · ") || "Nothing sent");
 
+    setConfirmingBulk(false);
     navigate(-1);
+  };
+
+  const handleSend = () => {
+    if (!message.trim() || selectedPupils.length === 0 || sending) return;
+    if (isBulk) {
+      haptics.selection();
+      setConfirmingBulk(true);
+    } else {
+      void dispatchSend();
+    }
   };
 
   const toggleRecipient = (id: string) => {
@@ -754,6 +765,129 @@ export default function InstructorSendReminder() {
           </div>
         </div>
       )}
+
+      {/* Bulk confirmation sheet */}
+      {confirmingBulk && (() => {
+        const channelLabel =
+          channel === "sms" ? "SMS" : channel === "whatsapp" ? "WhatsApp" : "In-app";
+        const needsPhone = channel === "sms" || channel === "whatsapp";
+        const willSend = needsPhone
+          ? selectedPupils.filter((p) => !!p.phone)
+          : selectedPupils;
+        const skipped = needsPhone
+          ? selectedPupils.filter((p) => !p.phone)
+          : [];
+        const total = willSend.reduce(
+          (sum, p) => sum + Math.abs(p.account_balance || 0),
+          0
+        );
+
+        return (
+          <div
+            className="fixed inset-0 z-[60] flex items-end justify-center"
+            onClick={() => !sending && setConfirmingBulk(false)}
+          >
+            <div className="absolute inset-0 bg-black/40" />
+            <div
+              className="relative w-full max-w-lg bg-white rounded-t-3xl pb-[max(env(safe-area-inset-bottom),16px)]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-4 pt-4 pb-2">
+                <h2 className="text-[17px] font-bold text-[#1c1c1e]">
+                  Confirm send
+                </h2>
+                <button
+                  type="button"
+                  disabled={sending}
+                  onClick={() => setConfirmingBulk(false)}
+                  className="h-9 w-9 rounded-full flex items-center justify-center hover:bg-black/5 disabled:opacity-40"
+                  aria-label="Close"
+                >
+                  <X size={18} color="#1c1c1e" />
+                </button>
+              </div>
+
+              <div className="px-4 pb-3 space-y-2">
+                {/* Will send */}
+                <div
+                  className="rounded-2xl p-3 flex items-center justify-between"
+                  style={{
+                    background: "linear-gradient(135deg, #ECFDF5 0%, #FFFFFF 70%)",
+                    border: "1px solid rgba(16,185,129,0.20)",
+                  }}
+                >
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#047857]">
+                      Will send via {channelLabel}
+                    </p>
+                    <p className="mt-0.5 text-[15px] font-semibold text-[#1c1c1e]">
+                      {willSend.length} pupil{willSend.length !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                  <p className="text-[18px] font-bold text-[#047857] tabular-nums">
+                    £{total.toFixed(2)}
+                  </p>
+                </div>
+
+                {/* Skipped */}
+                {skipped.length > 0 && (
+                  <div
+                    className="rounded-2xl p-3"
+                    style={{
+                      background: "#FFFBEB",
+                      border: "1px solid rgba(245,158,11,0.25)",
+                    }}
+                  >
+                    <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#B45309]">
+                      Will skip · no phone
+                    </p>
+                    <p className="mt-0.5 text-[13px] text-[#1c1c1e]">
+                      {skipped
+                        .slice(0, 4)
+                        .map((p) => p.name.split(" ")[0])
+                        .join(", ")}
+                      {skipped.length > 4 ? ` +${skipped.length - 4} more` : ""}
+                    </p>
+                  </div>
+                )}
+
+                <p className="text-[12px] text-[#71717A] px-1">
+                  Each message is personalised with the pupil&apos;s name and balance.
+                  This action cannot be undone.
+                </p>
+              </div>
+
+              <div className="px-4 pt-1 flex gap-2">
+                <button
+                  type="button"
+                  disabled={sending}
+                  onClick={() => setConfirmingBulk(false)}
+                  className="flex-1 h-12 rounded-2xl bg-[#F4F4F5] text-[#1c1c1e] text-[15px] font-semibold active:scale-[0.98] transition disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={sending || willSend.length === 0}
+                  onClick={() => void dispatchSend()}
+                  className={cn(
+                    "flex-1 h-12 rounded-2xl text-white text-[15px] font-bold flex items-center justify-center gap-2 shadow-[0_8px_24px_rgba(13,27,46,0.25)] active:scale-[0.98] transition",
+                    "bg-gradient-to-br from-[#0d1b2e] to-[#1c2b4a]",
+                    (sending || willSend.length === 0) && "opacity-60"
+                  )}
+                >
+                  {sending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                  Send {willSend.length}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </InstructorPortalLayout>
   );
 }
