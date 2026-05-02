@@ -379,6 +379,45 @@ export function SatNavLiveMap({
 
     const now = performance.now();
 
+    // ── First-fix handling ────────────────────────────────────────────────
+    // On the very first fix for this session, frame the map on the vehicle
+    // immediately and skip any tween. Without this, an initialCenter prop
+    // could leave the marker off-screen until the next fix arrives.
+    if (isFirstFixRef.current) {
+      const headingNow = heading ?? 0;
+      if (!markerRef.current) {
+        markerShadowRef.current = new google.maps.Marker({
+          position: { lat: latitude, lng: longitude },
+          map,
+          icon: getShadowIcon(isActive),
+          zIndex: 998,
+          clickable: false,
+        });
+        markerRef.current = new google.maps.Marker({
+          position: { lat: latitude, lng: longitude },
+          map,
+          icon: getArrowIcon(headingNow, isActive),
+          zIndex: 999,
+        });
+      } else {
+        markerRef.current.setPosition({ lat: latitude, lng: longitude });
+        markerRef.current.setIcon(getArrowIcon(headingNow, isActive));
+        markerShadowRef.current?.setPosition({ lat: latitude, lng: longitude });
+      }
+      suppressFollowOffRef.current = true;
+      map.setCenter({ lat: latitude, lng: longitude });
+      map.setZoom(17);
+      requestAnimationFrame(() => { suppressFollowOffRef.current = false; });
+
+      const seed = { lat: latitude, lng: longitude, heading: headingNow, t: now };
+      fromPosRef.current = seed;
+      targetPosRef.current = seed;
+      lastFixTsRef.current = now;
+      pathRef.current = [new google.maps.LatLng(latitude, longitude)];
+      isFirstFixRef.current = false;
+      return;
+    }
+
     // ── Jitter / outlier guards ───────────────────────────────────────────
     // 1. Stationary detection — speed < 3 km/h ≈ walking pace. GPS heading is
     //    meaningless at low speed and "stationary drift" causes the most
@@ -421,8 +460,15 @@ export function SatNavLiveMap({
     }
     lastFixTsRef.current = now;
 
-    // Seed marker on first fix
+    // Seed marker on first fix (defensive — should already exist after first-fix block)
     if (!markerRef.current) {
+      markerShadowRef.current = new google.maps.Marker({
+        position: { lat: latitude, lng: longitude },
+        map,
+        icon: getShadowIcon(isActive),
+        zIndex: 998,
+        clickable: false,
+      });
       markerRef.current = new google.maps.Marker({
         position: { lat: latitude, lng: longitude },
         map,
@@ -431,14 +477,30 @@ export function SatNavLiveMap({
       });
     }
 
-    // Set up interpolation: from = current displayed pos, target = new fix.
-    // While stationary, re-anchor `from` to `target` so the marker doesn't
-    // visibly twitch between near-identical fixes.
-    const currentDisplayed = targetPosRef.current ?? { lat: latitude, lng: longitude, heading: rotation, t: now };
-    fromPosRef.current = movingFastEnough
-      ? { ...currentDisplayed, t: now }
-      : { lat: latitude, lng: longitude, heading: rotation, t: now };
-    targetPosRef.current = { lat: latitude, lng: longitude, heading: rotation, t: now };
+    // ── Jump rejection (>500 m): snap, don't tween ───────────────────────
+    // The "from" point of the next tween must be the *previous animation's
+    // destination* (targetPosRef before this update), not the marker's
+    // current mid-tween position — otherwise the marker ping-pongs.
+    const fromBase = targetPosRef.current ?? (() => {
+      const p = markerRef.current?.getPosition();
+      return p ? { lat: p.lat(), lng: p.lng(), heading: rotation, t: now } : null;
+    })();
+
+    if (fromBase && metresFromPrev > 500) {
+      // GPS spike or out-of-order row — snap directly, clear tween state
+      markerRef.current.setPosition({ lat: latitude, lng: longitude });
+      markerRef.current.setIcon(getArrowIcon(rotation, isActive));
+      markerShadowRef.current?.setPosition({ lat: latitude, lng: longitude });
+      const snapped = { lat: latitude, lng: longitude, heading: rotation, t: now };
+      fromPosRef.current = snapped;
+      targetPosRef.current = snapped;
+    } else {
+      // Normal tween: from = previous tween destination (or marker fallback)
+      fromPosRef.current = fromBase
+        ? (movingFastEnough ? { ...fromBase, t: now } : { lat: latitude, lng: longitude, heading: rotation, t: now })
+        : { lat: latitude, lng: longitude, heading: rotation, t: now };
+      targetPosRef.current = { lat: latitude, lng: longitude, heading: rotation, t: now };
+    }
 
     // Append to trail polyline only when moving AND we've travelled ≥3 m from
     // the last accepted fix. This is the single most important filter — it
