@@ -139,6 +139,20 @@ export function NextUpTile({
   }, [nudgeSentAt]);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [lateSheetOpen, setLateSheetOpen] = useState(false);
+  // Optimistic status overlay so the segmented control + banner update
+  // instantly when the user fires an action from the sheet, without
+  // waiting for the next refetch round-trip.
+  const [localStatus, setLocalStatus] = useState<"en_route" | "late" | null>(null);
+  const [statusBanner, setStatusBanner] = useState<{
+    kind: "en_route" | "late";
+    etaText: string | null;
+    delayMinutes: number | null;
+  } | null>(null);
+  // Reset overlays when we move to a different lesson
+  useEffect(() => {
+    setLocalStatus(null);
+    setStatusBanner(null);
+  }, [lessonId]);
   const [showGPSRecorder, setShowGPSRecorder] = useState(false);
   const [trafficModalOpen, setTrafficModalOpen] = useState(false);
   const [trackerDismissed, setTrackerDismissed] = useState<boolean>(() => isTrackerDismissed(lessonId));
