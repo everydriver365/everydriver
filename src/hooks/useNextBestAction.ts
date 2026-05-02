@@ -59,10 +59,10 @@ export function useNextBestAction(instructorId: string | undefined): NextBestAct
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       const { data } = await supabase
         .from("pupils")
-        .select("id, name, balance, last_lesson_date")
+        .select("id, name, account_balance")
         .eq("instructor_id", instructorId)
-        .lt("balance", -2000) // balance stored in pence; -2000 = -£20
-        .order("balance", { ascending: true })
+        .lt("account_balance", -20) // owes more than £20
+        .order("account_balance", { ascending: true })
         .limit(1);
       if (cancelled) return;
       const row = data?.[0] as any;
@@ -73,8 +73,8 @@ export function useNextBestAction(instructorId: string | undefined): NextBestAct
       setDebt({
         pupilId: row.id,
         pupilName: row.name,
-        amount: Math.abs(Number(row.balance) / 100),
-        lastLessonDate: row.last_lesson_date ?? null,
+        amount: Math.abs(Number(row.account_balance)),
+        lastLessonDate: null,
       });
     })();
     return () => {
