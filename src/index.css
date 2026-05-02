@@ -334,27 +334,6 @@
     box-shadow: var(--portal-shadow);
     overflow: hidden;
   }
-  .instructor-portal .portal-card--flat {
-    background: var(--portal-surface);
-    border-radius: var(--portal-radius-lg);
-    border: 0.5px solid var(--portal-hairline);
-    box-shadow: none;
-    overflow: hidden;
-  }
-  .instructor-portal .portal-card--soft {
-    background: var(--portal-surface-soft);
-    border-radius: var(--portal-radius-lg);
-    box-shadow: none;
-    overflow: hidden;
-  }
-
-  /* Flat list rows — for data/settings screens */
-  .instructor-portal .portal-list {
-    background: var(--portal-surface);
-    border-radius: var(--portal-radius-lg);
-    box-shadow: var(--portal-shadow);
-    overflow: hidden;
-  }
   .instructor-portal .portal-list > .portal-row + .portal-row,
   .instructor-portal .portal-list > * + .portal-row {
     border-top: 0.5px solid var(--portal-hairline);
