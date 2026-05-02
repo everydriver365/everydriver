@@ -242,11 +242,25 @@
     --portal-space-lg: 20px;
     --portal-space-xl: 24px;
 
-    /* Radii */
-    --portal-radius-sm: 12px;
-    --portal-radius-md: 16px;
-    --portal-radius-lg: 22px;
-    --portal-radius-xl: 24px;
+    /* Radii — sharpened iOS premium scale (Nov 2026 pass).
+       Cards/buttons/inputs collapse to a tight 10–12px range; sheets stay at
+       16px; nav floats at 22px; pills remain fully rounded. Legacy aliases
+       (sm/md/lg/xl) are retargeted so every consumer of the system sharpens
+       at once without code edits. */
+    --portal-radius-card: 12px;
+    --portal-radius-icon: 12px;
+    --portal-radius-button: 12px;
+    --portal-radius-control: 12px;
+    --portal-radius-input: 12px;
+    --portal-radius-sheet: 16px;
+    --portal-radius-nav: 22px;
+    --portal-radius-pill: 999px;
+
+    /* Legacy aliases — retargeted to the sharper scale */
+    --portal-radius-sm: 10px;
+    --portal-radius-md: 12px;
+    --portal-radius-lg: 12px;
+    --portal-radius-xl: 16px;
 
     /* Surfaces */
     --portal-surface: #FFFFFF;
