@@ -970,28 +970,63 @@ export function NextUpTile({
                     </button>
                   </div>
 
+                  {/* Inline status banner — appears immediately after the user
+                      sends an ETA / late update from the bottom sheet. Subtle,
+                      animated, no popups. */}
+                  <AnimatePresence initial={false}>
+                    {statusBanner && (
+                      <motion.div
+                        key={statusBanner.kind + (statusBanner.etaText || "") + (statusBanner.delayMinutes ?? "")}
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.22, ease: [0.2, 0.7, 0.2, 1] }}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 8,
+                          padding: "8px 12px", borderRadius: 12,
+                          background: statusBanner.kind === "en_route" ? "#E6F1FB" : "#FBF1DE",
+                          color: statusBanner.kind === "en_route" ? "#1F5C99" : "#A8731A",
+                          fontSize: a11yPx(12), fontWeight: 600, letterSpacing: -0.05,
+                        }}
+                      >
+                        {statusBanner.kind === "en_route" ? (
+                          <Send style={{ width: 14, height: 14 }} strokeWidth={2.3} />
+                        ) : (
+                          <Clock style={{ width: 14, height: 14 }} strokeWidth={2.3} />
+                        )}
+                        <span>
+                          {statusBanner.kind === "en_route"
+                            ? `On the way${statusBanner.etaText ? ` · ETA ${statusBanner.etaText}` : ""}`
+                            : `Running late${statusBanner.delayMinutes ? ` · +${statusBanner.delayMinutes} min` : ""}${statusBanner.etaText ? ` · New ETA ${statusBanner.etaText}` : ""}`}
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   {/* Unified segmented status control */}
                   {(() => {
-                    const norm = (lessonStatus || "").toLowerCase();
+                    const rawNorm = (lessonStatus || "").toLowerCase();
+                    // Optimistic local overlay wins until the next refetch
+                    // brings the server status into agreement.
+                    const norm = localStatus
+                      ? (localStatus === "en_route" ? "en_route" : "late")
+                      : rawNorm;
                     const segments = [
                       { id: "prep", label: "Prep", icon: ClipboardList,
                         active: norm === "prep" || norm === "preparing",
                         activeBg: "#6E6E73", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
-                        isDropdown: false as const,
                         onClick: () => navigate(`/instructor/pupils/${pupilId}?tab=progress`) },
                       { id: "on_the_way", label: "On the way", icon: Send,
                         active: norm === "en_route" || norm === "on_the_way",
                         activeBg: "#2B7BC8", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
-                        isDropdown: true as const },
+                        onClick: () => setLateSheetOpen(true) },
                       { id: "late", label: "Running late", icon: Clock,
                         active: norm === "late" || norm === "running_late",
                         activeBg: "#E08E1A", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
-                        isDropdown: false as const,
                         onClick: () => setLateSheetOpen(true) },
                       { id: "here", label: "Here", icon: MapPin,
                         active: norm === "arrived" || norm === "here",
                         activeBg: "#34C759", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
-                        isDropdown: false as const,
                         onClick: () => handleArrived() },
                     ];
                     const segmentStyle = (s: typeof segments[number]): React.CSSProperties => ({
