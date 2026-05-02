@@ -335,8 +335,8 @@ export function SatNavLiveMap({
       Math.abs(lastPt.lng() - longitude) > 0.000005;
     if (shouldAdd) {
       pathRef.current.push(new google.maps.LatLng(latitude, longitude));
-      polylineRef.current?.setPath(pathRef.current);
-      polylineCasingRef.current?.setPath(pathRef.current);
+      renderPolylines();
+      requestSnap();
     }
   }, [latitude, longitude, heading, isActive, getArrowIcon]);
 
