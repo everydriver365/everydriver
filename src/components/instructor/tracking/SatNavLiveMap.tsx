@@ -787,22 +787,43 @@ export function SatNavLiveMap({
         const lng = lerp(from.lng, target.lng, e);
         const hd = lerpAngle(from.heading, target.heading, e);
 
+        const satNavCam =
+          fullscreenRef.current && followModeRef.current && vectorReadyRef.current;
+
         marker.setPosition({ lat, lng });
-        marker.setIcon(getArrowIcon(hd, isActiveRef.current));
+        // When the world is rotated heading-up, Google rotates marker symbols
+        // *with* the world. Compensate by subtracting camera heading so the
+        // arrow stays pointing roughly up the screen (and leans into turns
+        // while the camera catches up).
+        const screenHeading = satNavCam ? hd - camHeadingRef.current : hd;
+        marker.setIcon(getArrowIcon(screenHeading, isActiveRef.current));
         markerShadowRef.current?.setPosition({ lat, lng });
 
-        // Heading-up: rotate map smoothly
-        if (typeof (map as any).setHeading === "function") {
-          (map as any).setHeading(hd);
+        // Sat-nav camera: smoothly tilt + rotate to heading-up. Heavier
+        // smoothing than the marker — a jittery world is nausea-inducing.
+        if (satNavCam) {
+          const camDelta = ((hd - camHeadingRef.current + 540) % 360) - 180;
+          camHeadingRef.current = (camHeadingRef.current + camDelta * 0.08 + 360) % 360;
+          const targetTilt = isActiveRef.current ? 50 : 0;
+          camTiltRef.current += (targetTilt - camTiltRef.current) * 0.05;
+          (map as any).moveCamera({
+            heading: camHeadingRef.current,
+            tilt: camTiltRef.current,
+          });
         }
 
         // Camera follow — only auto-pan in fullscreen sat-nav mode AND when
         // the user hasn't taken over with a drag/zoom. Card-mode map stays
         // free for the user to explore.
         if (fullscreenRef.current && followModeRef.current) {
-          const latLng = new google.maps.LatLng(lat, lng);
+          // Offset so the vehicle sits ~28% from the bottom of the viewport,
+          // accounting for current camera heading (in screen-space).
+          const offset = vectorReadyRef.current
+            ? offsetCenterForLowerThird(map, { lat, lng }, camHeadingRef.current)
+            : null;
+          const center = offset ?? { lat, lng };
           suppressFollowOffRef.current = true;
-          map.panTo(latLng);
+          map.panTo(center);
           // Release suppression after the next frame — panTo fires its events synchronously
           requestAnimationFrame(() => { suppressFollowOffRef.current = false; });
         }
