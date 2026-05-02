@@ -324,7 +324,38 @@ export function SatNavLiveMap({
     if (!map || latitude == null || longitude == null) return;
 
     const now = performance.now();
-    const rotation = heading ?? targetPosRef.current?.heading ?? 0;
+
+    // ── Jitter / outlier guards ───────────────────────────────────────────
+    // 1. Stationary detection — speed < 3 km/h ≈ walking pace. GPS heading is
+    //    meaningless at low speed and "stationary drift" causes the most
+    //    visible bouncing of the marker and trail.
+    const movingFastEnough = (speedKmh ?? 0) >= 3;
+
+    // 2. Distance from the previous accepted fix (haversine, metres) — used
+    //    both to reject sub-3m jitter and to flag unrealistic teleports.
+    const prev = targetPosRef.current;
+    let metresFromPrev = 0;
+    if (prev) {
+      const R = 6371000;
+      const dLat = (latitude - prev.lat) * Math.PI / 180;
+      const dLng = (longitude - prev.lng) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(prev.lat * Math.PI / 180) * Math.cos(latitude * Math.PI / 180) *
+        Math.sin(dLng / 2) ** 2;
+      metresFromPrev = 2 * R * Math.asin(Math.sqrt(a));
+    }
+
+    // 3. Outlier gate — reject teleports >200m unless we genuinely lost signal
+    //    for >15s (in which case it's a real reacquisition).
+    const tooFar = prev != null && metresFromPrev > 200 &&
+      (lastFixTsRef.current == null || (now - lastFixTsRef.current) < 15000);
+    if (tooFar) return;
+
+    // Heading: only adopt a new heading when actually moving; otherwise hold
+    // the previous heading so the map doesn't spin while parked.
+    const rotation = movingFastEnough
+      ? (heading ?? prev?.heading ?? 0)
+      : (prev?.heading ?? heading ?? 0);
 
     // Track interval between real fixes (clamped 1500–6000ms) for self-tuning smoothing
     if (lastFixTsRef.current != null) {
@@ -346,22 +377,25 @@ export function SatNavLiveMap({
       });
     }
 
-    // Set up interpolation: from = current displayed pos, target = new fix
+    // Set up interpolation: from = current displayed pos, target = new fix.
+    // While stationary, re-anchor `from` to `target` so the marker doesn't
+    // visibly twitch between near-identical fixes.
     const currentDisplayed = targetPosRef.current ?? { lat: latitude, lng: longitude, heading: rotation, t: now };
-    fromPosRef.current = { ...currentDisplayed, t: now };
+    fromPosRef.current = movingFastEnough
+      ? { ...currentDisplayed, t: now }
+      : { lat: latitude, lng: longitude, heading: rotation, t: now };
     targetPosRef.current = { lat: latitude, lng: longitude, heading: rotation, t: now };
 
-    // Append to route polyline (top + casing kept in sync) — real fixes only
-    const lastPt = pathRef.current[pathRef.current.length - 1];
-    const shouldAdd = !lastPt ||
-      Math.abs(lastPt.lat() - latitude) > 0.000005 ||
-      Math.abs(lastPt.lng() - longitude) > 0.000005;
-    if (shouldAdd) {
+    // Append to trail polyline only when moving AND we've travelled ≥3 m from
+    // the last accepted fix. This is the single most important filter — it
+    // prevents stationary drift from drawing erratic lines and ensures
+    // Snap-to-Roads only ever sees clean input.
+    if (movingFastEnough && metresFromPrev >= 3) {
       pathRef.current.push(new google.maps.LatLng(latitude, longitude));
       renderPolylines();
       requestSnap();
     }
-  }, [latitude, longitude, heading, isActive, getArrowIcon, renderPolylines, requestSnap]);
+  }, [latitude, longitude, heading, speedKmh, isActive, getArrowIcon, renderPolylines, requestSnap]);
 
   // Continuous animation loop — interpolates marker between fixes at 60fps
   useEffect(() => {
