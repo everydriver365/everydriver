@@ -105,10 +105,13 @@ export function useNextBestAction(instructorId: string | undefined): NextBestAct
           rank: 1,
           title: `Chase £${debt.amount.toFixed(0)} from ${debt.pupilName}`,
           subtitle: "Outstanding balance",
+          verb: "Chase",
           icon: PoundSterling,
           tone: "amber",
           iconBg: "rgba(184,128,31,0.10)",
           iconFg: "#B8801F",
+          cardBg: "#FFF8EC",
+          cardBorder: "rgba(184,128,31,0.22)",
           onPress: () => navigate(`/instructor/pay?pupilId=${debt.pupilId}`),
           snoozeKey: key,
         };
