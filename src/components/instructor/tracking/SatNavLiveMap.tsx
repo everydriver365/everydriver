@@ -422,9 +422,12 @@ export function SatNavLiveMap({
                 </div>
               </div>
               <div className="absolute bottom-0 left-0 right-0 z-10 px-3 py-3" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "#1c1c1e", marginBottom: 6 }} className="truncate">
-                  {roadName || "Awaiting location…"}
-                </p>
+                <div style={{ paddingBottom: 8, marginBottom: 10, borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: "#8e8e93", textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 2 }}>Current road</p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: "#1c1c1e", lineHeight: 1.25 }} className="truncate">
+                    {roadName || "Awaiting location…"}
+                  </p>
+                </div>
                 <div className="flex items-end justify-between">
                   <div className="flex items-end gap-2.5">
                     <div className="text-center">
