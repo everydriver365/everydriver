@@ -186,11 +186,11 @@ export function SatNavLiveMap({
 
   const getArrowIcon = useCallback((rotation: number, active: boolean): google.maps.Symbol => ({
     path: "M 0,-12 L -7,11 L 0,6 L 7,11 Z",
-    fillColor: active ? "#2563eb" : "#9ca3af",
+    fillColor: active ? "#0A84FF" : "#8E8E93",
     fillOpacity: 1,
-    strokeColor: "white",
+    strokeColor: "#FFFFFF",
     strokeWeight: 3,
-    scale: fullscreenRef.current ? 2.4 : 2.2,
+    scale: fullscreenRef.current ? (active ? 2.6 : 2.2) : (active ? 2.4 : 2.0),
     rotation,
     anchor: new google.maps.Point(0, 0),
   }), []);
