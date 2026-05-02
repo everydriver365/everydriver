@@ -112,6 +112,14 @@ export function OwesMoneyCard({ pupils, instructorId, instructorName, paymentLin
             </p>
           </div>
         </div>
+        {debtors.length > 1 && (
+          <Link
+            to="/instructor/send-reminder?bulk=1"
+            className="text-xs font-semibold text-rose-700 dark:text-rose-400 bg-rose-100 dark:bg-rose-900/30 hover:bg-rose-200 dark:hover:bg-rose-900/50 rounded-full px-3 py-1.5 transition active:scale-95"
+          >
+            Remind all
+          </Link>
+        )}
       </div>
 
       {/* Debtor list */}
