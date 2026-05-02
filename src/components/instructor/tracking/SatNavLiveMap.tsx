@@ -820,7 +820,7 @@ export function SatNavLiveMap({
                     marginBottom: 10,
                     borderBottom: "1px solid rgba(0,0,0,0.06)",
                   }}
-                  title={roadName || "Locating road"}
+                  title={displayRoadName || "Locating road"}
                 >
                   <span aria-hidden="true" style={{ fontSize: 14, color: "rgba(60,60,67,0.55)", lineHeight: 1, flexShrink: 0 }}>◉</span>
                   {roadName ? (
