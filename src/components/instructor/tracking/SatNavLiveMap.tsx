@@ -22,6 +22,13 @@ interface SatNavLiveMapProps {
   className?: string;
 }
 
+const COMPASS_LABELS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+function headingToCardinal(heading: number): string {
+  const norm = ((heading % 360) + 360) % 360;
+  const idx = Math.round(norm / 45) % 8;
+  return COMPASS_LABELS[idx];
+}
+
 export function SatNavLiveMap({
   latitude, longitude, heading, speedKmh, speedLimitKmh, roadName,
   lastSeenAt, isActive, sessionId, ignitionOn, dailyDistanceKm,
@@ -187,8 +194,51 @@ export function SatNavLiveMap({
 
   const speedMph = speedKmh != null ? Math.round(speedKmh * 0.621371) : null;
   const speedLimitMph = speedLimitKmh != null ? Math.round(speedLimitKmh * 0.621371) : null;
-  const isOverSpeed = speedKmh != null && speedLimitKmh != null && speedKmh > speedLimitKmh;
   const dailyMiles = dailyDistanceKm != null ? Math.round(dailyDistanceKm * 0.621371) : null;
+
+  // Sustained-overspeed hysteresis: 2s on, 1s off — kills mph-jitter flicker.
+  const overspeedSinceRef = useRef<number | null>(null);
+  const underspeedSinceRef = useRef<number | null>(null);
+  const [overspeedActive, setOverspeedActive] = useState(false);
+
+  // Track latest heading for direction-aware road label without re-running effects.
+  const headingRef = useRef<number>(0);
+  if (typeof heading === "number" && Number.isFinite(heading)) headingRef.current = heading;
+
+  // Browser ↔ Supabase realtime connection state. False = no live updates flowing.
+  const [realtimeConnected, setRealtimeConnected] = useState(true);
+
+  // 1Hz tick — drives both UI staleness labels and the overspeed hysteresis.
+  const [, setNowTick] = useState(0);
+  useEffect(() => {
+    const t = window.setInterval(() => {
+      const now = Date.now();
+      setNowTick(now);
+
+      const rawOver = (() => {
+        if (speedKmh == null) return false;
+        if (speedLimitKmh != null) return speedKmh > speedLimitKmh + 0.5;
+        if (speedLimitMph != null && speedMph != null) return speedMph > speedLimitMph;
+        return false;
+      })();
+
+      if (rawOver) {
+        underspeedSinceRef.current = null;
+        if (overspeedSinceRef.current == null) overspeedSinceRef.current = now;
+        if (!overspeedActive && now - overspeedSinceRef.current >= 2000) {
+          setOverspeedActive(true);
+        }
+      } else {
+        overspeedSinceRef.current = null;
+        if (underspeedSinceRef.current == null) underspeedSinceRef.current = now;
+        if (overspeedActive && now - underspeedSinceRef.current >= 1000) {
+          setOverspeedActive(false);
+        }
+      }
+    }, 1000);
+    return () => window.clearInterval(t);
+  }, [speedKmh, speedLimitKmh, speedLimitMph, speedMph, overspeedActive]);
+
 
   // Load Google Maps SDK
   useEffect(() => {
@@ -267,21 +317,34 @@ export function SatNavLiveMap({
       (results, status) => {
         if (cancelled) return;
         if (status !== "OK" || !results || results.length === 0) return;
-        // Prefer a result that has a `route` component (an actual road),
-        // else fall back to the first formatted address line.
-        let road: string | null = null;
-        for (const r of results) {
-          const route = r.address_components?.find((c) => c.types.includes("route"));
-          if (route?.long_name && !/^unnamed\s+road$/i.test(route.long_name)) {
-            road = route.long_name;
-            break;
-          }
-        }
-        if (!road) {
+
+        const components = results.flatMap((r) => r.address_components ?? []);
+
+        const route = components.find((a) => a.types.includes("route"))?.long_name;
+        const locality =
+          components.find((a) => a.types.includes("postal_town"))?.long_name ||
+          components.find((a) => a.types.includes("locality"))?.long_name ||
+          components.find((a) => a.types.includes("administrative_area_level_2"))?.long_name;
+
+        let label: string | null = null;
+        if (route && !/^unnamed\s+road$/i.test(route)) {
+          // Major routes (M-roads, A-roads) → cardinal direction.
+          // Named streets → nearby locality.
+          const isMajorRoute = /^[MA]\d/i.test(route);
+          const suffix = isMajorRoute
+            ? headingToCardinal(headingRef.current) + "bound"
+            : locality;
+          label = suffix ? `${route} · ${suffix}` : route;
+        } else if (locality) {
+          label = locality;
+        } else {
+          // Last-ditch — first segment of formatted address.
           const first = results[0].formatted_address?.split(",")[0]?.trim();
-          if (first && !/^unnamed\s+road$/i.test(first)) road = first;
+          if (first && !/^unnamed\s+road$/i.test(first)) label = first;
         }
-        if (road) setFallbackRoadName(road);
+
+        // Don't clobber a previously-good label with nothing — better stale than blank.
+        if (label) setFallbackRoadName(label);
       }
     );
     return () => { cancelled = true; };
@@ -502,6 +565,9 @@ export function SatNavLiveMap({
     camHeadingRef.current = 0;
     camTiltRef.current = 0;
     lastAutoZoomRef.current = null;
+    overspeedSinceRef.current = null;
+    underspeedSinceRef.current = null;
+    setOverspeedActive(false);
   }, [sessionId]);
 
   // Load historical trail + subscribe to new GPS points for active sessions
@@ -558,7 +624,13 @@ export function SatNavLiveMap({
           requestSnap();
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          setRealtimeConnected(true);
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          setRealtimeConnected(false);
+        }
+      });
 
     return () => { supabase.removeChannel(channel); };
   }, [ready, sessionId, fullscreen]);
@@ -907,17 +979,41 @@ export function SatNavLiveMap({
                 }}
               />
 
-              {/* Top bar — signal pill (left). Snap is demoted to a small
-                  icon-only indicator stacked on the right (rendered below). */}
+              {/* Top bar — signal pill + (when offline) connection alert,
+                  stacked vertically on the left. */}
               <div
-                className="absolute z-10 flex items-center px-3"
+                className="absolute z-10 flex items-start px-3"
                 style={{
                   top: "calc(env(safe-area-inset-top, 0px) + 10px)",
                   left: 0,
-                  right: 0,
                 }}
               >
-                <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} />
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
+                  <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} />
+                  {!realtimeConnected && (
+                    <div
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "5px 10px",
+                        borderRadius: 999,
+                        background: "rgba(255, 59, 48, 0.92)",
+                        border: "1px solid rgba(255,255,255,0.18)",
+                        color: "white",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        letterSpacing: 0.1,
+                        lineHeight: 1,
+                        boxShadow: "0 4px 12px rgba(255,59,48,0.32)",
+                      }}
+                      role="alert"
+                    >
+                      <span aria-hidden="true" style={{ fontSize: 11 }}>⚠︎</span>
+                      No connection
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* REC pill — top-right of the map, mirrors signal pill on the left. */}
@@ -1030,7 +1126,7 @@ export function SatNavLiveMap({
               )}
 
               {/* Overspeed banner — sits above the FloatingSessionTimer card */}
-              {isOverSpeed && speedMph != null && speedLimitMph != null && (
+              {overspeedActive && speedMph != null && speedLimitMph != null && (
                 <div
                   className="absolute left-3 right-3 z-20"
                   style={{
@@ -1082,8 +1178,33 @@ export function SatNavLiveMap({
       }}
     >
       {/* Top bar: Signal status + road name */}
-      <div style={{ background: "white", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} />
+      <div style={{ background: "white", padding: "10px 16px", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+          <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} />
+          {!realtimeConnected && (
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "4px 8px",
+                borderRadius: 999,
+                background: "rgba(255, 59, 48, 0.92)",
+                border: "1px solid rgba(255,255,255,0.18)",
+                color: "white",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: 0.1,
+                lineHeight: 1,
+                boxShadow: "0 4px 12px rgba(255,59,48,0.32)",
+              }}
+              role="alert"
+            >
+              <span aria-hidden="true" style={{ fontSize: 10 }}>⚠︎</span>
+              No connection
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-2 ml-3 flex-1 justify-end min-w-0">
           <SnapStatusPill status={snapStatus} lastFixLabel={lastFixLabel} />
           <p style={{ fontSize: 13, fontWeight: 600, color: "#1c1c1e" }} className="truncate text-right">
@@ -1112,7 +1233,7 @@ export function SatNavLiveMap({
       <div style={{ background: "white", padding: "12px 16px", display: "flex", alignItems: "center", gap: 16 }}>
         {/* Speed */}
         <div>
-          <span style={{ fontSize: 28, fontWeight: 700, color: isOverSpeed ? "#e24b4a" : "#1c1c1e", lineHeight: 1 }} className={`tabular-nums ${isOverSpeed ? "animate-pulse" : ""}`}>
+          <span style={{ fontSize: 28, fontWeight: 700, color: overspeedActive ? "#e24b4a" : "#1c1c1e", lineHeight: 1 }} className={`tabular-nums ${overspeedActive ? "animate-pulse" : ""}`}>
             {speedMph ?? 0}
           </span>
           <p style={{ fontSize: 12, color: "#8e8e93", marginTop: 2 }}>mph</p>
