@@ -648,9 +648,11 @@ export function SatNavLiveMap({
 
           {hasPosition && !mapError ? (
             <>
-              {/* Top bar — signal pill + road name pill, light glass */}
+              {/* Top bar — signal pill (left) + snap status (right). The
+                  road name has moved into the bottom sat-nav panel where the
+                  driver's eyes already are (TomTom/CarPlay convention). */}
               <div
-                className="absolute z-10 flex items-center gap-2 px-3"
+                className="absolute z-10 flex items-center justify-between gap-2 px-3"
                 style={{
                   top: "calc(env(safe-area-inset-top, 0px) + 10px)",
                   left: 0,
@@ -658,29 +660,6 @@ export function SatNavLiveMap({
                 }}
               >
                 <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} />
-                <div
-                  className="flex-1 truncate"
-                  style={{
-                    background: "rgba(255,255,255,0.72)",
-                    backdropFilter: "blur(18px) saturate(180%)",
-                    WebkitBackdropFilter: "blur(18px) saturate(180%)",
-                    border: "1px solid rgba(0,0,0,0.06)",
-                    borderRadius: 14,
-                    padding: "7px 12px",
-                    color: "#1C1C1E",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    lineHeight: 1.25,
-                    boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
-                    textAlign: "center",
-                    maxWidth: "60%",
-                    margin: "0 auto",
-                  }}
-                  title={roadName || "Awaiting location"}
-                >
-                  <span style={{ color: "rgba(60,60,67,0.6)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6, marginRight: 6 }}>On</span>
-                  <span className="truncate">{roadName || "Awaiting location…"}</span>
-                </div>
                 <SnapStatusPill status={snapStatus} lastFixLabel={lastFixLabel} />
               </div>
 
