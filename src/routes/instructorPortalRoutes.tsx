@@ -165,6 +165,7 @@ export const instructorPortalRoutes = (
     {/* Finance & payments — gated */}
     <Route path="/instructor/pay" element={<InstructorPay />} />
     <Route path="/instructor/take-payment" element={<InstructorTakePayment />} />
+    <Route path="/instructor/send-reminder" element={<InstructorSendReminder />} />
     <Route path="/instructor/income" element={<InstructorIncome />} />
     <Route path="/instructor/expenses" element={<Gated feature="expense_tracking" label="Expenses"><InstructorExpenses /></Gated>} />
     <Route path="/instructor/accounts" element={<Gated feature="payment_tracking" label="Accounts"><InstructorAccounts /></Gated>} />
