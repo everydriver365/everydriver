@@ -33,7 +33,16 @@ export function SatNavLiveMap({
   const polylineCasingRef = useRef<google.maps.Polyline | null>(null);
   const pathRef = useRef<google.maps.LatLng[]>([]);
   const [ready, setReady] = useState(false);
+  const [mapError, setMapError] = useState(false);
   const trailLoadedRef = useRef<string | null>(null);
+
+  // Follow mode — when true (default), camera tracks the vehicle in fullscreen.
+  // User drag/zoom turns it off and surfaces a "Re-centre" button.
+  const [followMode, setFollowMode] = useState(true);
+  const followModeRef = useRef<boolean>(true);
+  followModeRef.current = followMode;
+  const mapListenersRef = useRef<google.maps.MapsEventListener[]>([]);
+  const suppressFollowOffRef = useRef<boolean>(false);
 
   // Smoothing/interpolation refs
   const animRef = useRef<number | null>(null);
@@ -53,6 +62,7 @@ export function SatNavLiveMap({
   const snapDirtyRef = useRef<boolean>(false);
   const [snapStatus, setSnapStatus] = useState<"idle" | "syncing" | "snapped" | "raw">("idle");
   const [lastFixLabel, setLastFixLabel] = useState<string | null>(null);
+  const [lastFixAgeSec, setLastFixAgeSec] = useState<number | null>(null);
 
   // Render whichever path is freshest (snapped if available, else raw) into both polylines
   const renderPolylines = useCallback(() => {
@@ -117,9 +127,10 @@ export function SatNavLiveMap({
 
   // Tick the "last fix" label every second so the indicator stays accurate
   useEffect(() => {
-    if (!lastSeenAt) { setLastFixLabel(null); return; }
+    if (!lastSeenAt) { setLastFixLabel(null); setLastFixAgeSec(null); return; }
     const update = () => {
       const ageSec = Math.max(0, Math.round((Date.now() - new Date(lastSeenAt).getTime()) / 1000));
+      setLastFixAgeSec(ageSec);
       if (ageSec < 60) setLastFixLabel(`${ageSec}s ago`);
       else if (ageSec < 3600) setLastFixLabel(`${Math.round(ageSec / 60)}m ago`);
       else setLastFixLabel(`${Math.round(ageSec / 3600)}h ago`);
@@ -128,6 +139,15 @@ export function SatNavLiveMap({
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
   }, [lastSeenAt]);
+
+  // Premium signal status — derived from lastFix age, drives the pill UI
+  type SignalStatus = "waiting" | "live" | "delayed" | "weak" | "lost";
+  const signalStatus: SignalStatus =
+    lastFixAgeSec == null ? "waiting"
+    : lastFixAgeSec < 15 ? "live"
+    : lastFixAgeSec < 30 ? "delayed"
+    : lastFixAgeSec < 90 ? "weak"
+    : "lost";
 
   const speedMph = speedKmh != null ? Math.round(speedKmh * 0.621371) : null;
   const speedLimitMph = speedLimitKmh != null ? Math.round(speedLimitKmh * 0.621371) : null;
@@ -140,11 +160,12 @@ export function SatNavLiveMap({
     (async () => {
       try {
         const key = await fetchGoogleMapsKey();
-        if (!key || cancelled) return;
+        if (!key || cancelled) { if (!cancelled) setMapError(true); return; }
         await loadGoogleMaps(key);
-        if (!cancelled) setReady(true);
+        if (!cancelled) { setReady(true); setMapError(false); }
       } catch (e) {
         console.error("Failed to load Google Maps for SatNavLiveMap:", e);
+        if (!cancelled) setMapError(true);
       }
     })();
     return () => { cancelled = true; };
@@ -260,7 +281,23 @@ export function SatNavLiveMap({
       });
     }
 
+    // User gesture detection — turn off follow mode when the user drags or
+    // zooms the map. We only listen to `dragstart` (true user gesture) and
+    // `zoom_changed` because `center_changed` also fires from our own panTo.
+    const onDragStart = () => {
+      if (suppressFollowOffRef.current) return;
+      if (followModeRef.current) setFollowMode(false);
+    };
+    const onZoomChanged = () => {
+      if (suppressFollowOffRef.current) return;
+      if (followModeRef.current) setFollowMode(false);
+    };
+    mapListenersRef.current.push(map.addListener("dragstart", onDragStart));
+    mapListenersRef.current.push(map.addListener("zoom_changed", onZoomChanged));
+
     return () => {
+      mapListenersRef.current.forEach((l) => l.remove());
+      mapListenersRef.current = [];
       markerRef.current?.setMap(null);
       markerRef.current = null;
       polylineRef.current?.setMap(null);
@@ -400,13 +437,16 @@ export function SatNavLiveMap({
     // the last accepted fix. This is the single most important filter — it
     // prevents stationary drift from drawing erratic lines and ensures
     // Snap-to-Roads only ever sees clean input.
-    if (movingFastEnough && metresFromPrev >= 3) {
+    // Also gate by ignition: if we explicitly know the engine is off, don't
+    // append. If ignitionOn is null/undefined we don't block (legacy behaviour).
+    const ignitionAllowsTrail = ignitionOn !== false;
+    if (movingFastEnough && metresFromPrev >= 3 && ignitionAllowsTrail) {
       if (appendTrailPoint(latitude, longitude)) {
         renderPolylines();
         requestSnap();
       }
     }
-  }, [latitude, longitude, heading, speedKmh, isActive, getArrowIcon, renderPolylines, requestSnap, appendTrailPoint]);
+  }, [latitude, longitude, heading, speedKmh, isActive, ignitionOn, getArrowIcon, renderPolylines, requestSnap, appendTrailPoint]);
 
   // Continuous animation loop — interpolates marker between fixes at 60fps
   useEffect(() => {
@@ -449,11 +489,15 @@ export function SatNavLiveMap({
           (map as any).setHeading(hd);
         }
 
-        // Camera follow — only auto-pan in fullscreen sat-nav mode so users
-        // can drag/explore the card-mode map without it snapping back.
-        if (fullscreenRef.current) {
+        // Camera follow — only auto-pan in fullscreen sat-nav mode AND when
+        // the user hasn't taken over with a drag/zoom. Card-mode map stays
+        // free for the user to explore.
+        if (fullscreenRef.current && followModeRef.current) {
           const latLng = new google.maps.LatLng(lat, lng);
+          suppressFollowOffRef.current = true;
           map.panTo(latLng);
+          // Release suppression after the next frame — panTo fires its events synchronously
+          requestAnimationFrame(() => { suppressFollowOffRef.current = false; });
         }
       }
 
@@ -467,31 +511,41 @@ export function SatNavLiveMap({
     };
   }, [ready, getArrowIcon]);
 
-  // Fullscreen mode — keep existing behavior
+  // Re-centre — restores follow mode and pans the map back to the vehicle.
+  const handleRecentre = useCallback(() => {
+    setFollowMode(true);
+    const map = mapRef.current;
+    const target = targetPosRef.current;
+    if (map && target) {
+      suppressFollowOffRef.current = true;
+      map.panTo({ lat: target.lat, lng: target.lng });
+      requestAnimationFrame(() => { suppressFollowOffRef.current = false; });
+    }
+  }, []);
+
+  // Fullscreen mode — premium sat-nav layout
   if (fullscreen) {
     return (
       <div className={className} style={{ overflow: "hidden" }}>
         <div className="relative" style={{ height: "100%", width: "100%" }}>
           <div ref={mapDivRef} className="absolute inset-0 z-0" />
-          {hasPosition ? (
+
+          {mapError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-[6] px-6 text-center" style={{ background: "rgba(242,242,247,0.95)" }}>
+              <p style={{ fontSize: 16, fontWeight: 600, color: "#1c1c1e" }}>Map unavailable</p>
+              <p style={{ fontSize: 13, color: "#8e8e93", marginTop: 4 }}>Unable to load live map right now.</p>
+            </div>
+          )}
+
+          {hasPosition && !mapError ? (
             <>
+              {/* Top bar — signal status + snap status */}
               <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 py-2.5" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-                <div>
-                  {isLive ? (
-                    <span style={{ background: "#0f9e75", color: "white", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 20, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
-                      </span>
-                      Live
-                    </span>
-                  ) : lastSeenLabel ? (
-                    <Badge variant="secondary" className="gap-1 text-[10px]">{lastSeenLabel}</Badge>
-                  ) : null}
-                </div>
+                <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} />
                 <SnapStatusPill status={snapStatus} lastFixLabel={lastFixLabel} />
               </div>
-              {/* Road name banner — sits just below the top status bar so it's never covered by the floating session timer */}
+
+              {/* Road name banner */}
               <div
                 className="absolute left-3 right-3 z-20"
                 style={{
@@ -515,12 +569,125 @@ export function SatNavLiveMap({
                   {roadName || "Awaiting location…"}
                 </span>
               </div>
+
+              {/* Re-centre button — appears when user has dragged/zoomed */}
+              {!followMode && (
+                <button
+                  type="button"
+                  onClick={handleRecentre}
+                  className="absolute z-20"
+                  style={{
+                    right: 14,
+                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 200px)",
+                    background: "rgba(255,255,255,0.92)",
+                    backdropFilter: "blur(14px)",
+                    WebkitBackdropFilter: "blur(14px)",
+                    border: "0.5px solid rgba(0,0,0,0.08)",
+                    borderRadius: 999,
+                    padding: "9px 14px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#2563eb",
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.18)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    cursor: "pointer",
+                  }}
+                >
+                  <span style={{ fontSize: 14, lineHeight: 1 }}>◎</span>
+                  Re-centre
+                </button>
+              )}
+
+              {/* Overspeed warning — sits above the bottom panel */}
+              {isOverSpeed && speedMph != null && speedLimitMph != null && (
+                <div
+                  className="absolute left-3 right-3 z-20"
+                  style={{
+                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 156px)",
+                    background: "linear-gradient(180deg, rgba(226,75,74,0.96), rgba(200,55,55,0.96))",
+                    color: "white",
+                    borderRadius: 14,
+                    padding: "10px 14px",
+                    boxShadow: "0 8px 24px rgba(226,75,74,0.35)",
+                    border: "0.5px solid rgba(255,255,255,0.18)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                  }}
+                >
+                  <span style={{ fontSize: 18, lineHeight: 1 }}>⚠</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.25 }} className="truncate flex-1">
+                    Over speed limit · {speedMph} mph in a {speedLimitMph} zone
+                  </span>
+                </div>
+              )}
+
+              {/* Bottom sat-nav panel */}
+              <div
+                className="absolute left-3 right-3 z-10"
+                style={{
+                  bottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
+                  background: "rgba(255,255,255,0.88)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                  border: "0.5px solid rgba(0,0,0,0.06)",
+                  borderRadius: 22,
+                  padding: "14px 18px",
+                  boxShadow: "0 12px 32px rgba(0,0,0,0.18)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 16,
+                }}
+              >
+                {/* Speed */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                  <span
+                    style={{ fontSize: 36, fontWeight: 700, color: isOverSpeed ? "#e24b4a" : "#1c1c1e", lineHeight: 1 }}
+                    className={`tabular-nums ${isOverSpeed ? "animate-pulse" : ""}`}
+                  >
+                    {speedMph ?? 0}
+                  </span>
+                  <span style={{ fontSize: 11, color: "#8e8e93", marginTop: 2, textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 600 }}>mph</span>
+                </div>
+
+                {/* Speed limit roundel */}
+                {speedLimitMph != null && speedLimitMph > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                    <div style={{ width: 46, height: 46, border: "3px solid #e24b4a", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: "white" }}>
+                      <span style={{ fontSize: 17, fontWeight: 700, color: "#e24b4a" }} className="tabular-nums">{speedLimitMph}</span>
+                    </div>
+                    <span style={{ fontSize: 10, color: "#8e8e93", textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 600 }}>limit</span>
+                  </div>
+                )}
+
+                <div style={{ flex: 1 }} />
+
+                {/* Miles today */}
+                {dailyMiles != null && (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                    <span style={{ fontSize: 17, fontWeight: 700, color: "#1c1c1e", lineHeight: 1 }} className="tabular-nums">
+                      {dailyMiles}
+                    </span>
+                    <span style={{ fontSize: 10, color: "#8e8e93", marginTop: 2, textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 600 }}>miles today</span>
+                  </div>
+                )}
+
+                {/* Engine */}
+                {ignitionOn != null && (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
+                    <span style={{ width: 9, height: 9, borderRadius: "50%", background: ignitionOn ? "#0f9e75" : "#c7c7cc", boxShadow: ignitionOn ? "0 0 6px rgba(15,158,117,0.5)" : "none" }} />
+                    <span style={{ fontSize: 10, color: "#8e8e93", textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 600 }}>{ignitionOn ? "Engine On" : "Engine Off"}</span>
+                  </div>
+                )}
+              </div>
             </>
-          ) : (
+          ) : !mapError ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center z-[5]" style={{ background: "rgba(242,242,247,0.8)" }}>
               <p style={{ fontSize: 14, color: "#8e8e93" }}>No position data yet</p>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     );
@@ -538,21 +705,9 @@ export function SatNavLiveMap({
         background: "white",
       }}
     >
-      {/* Top bar: Live badge + address */}
+      {/* Top bar: Signal status + road name */}
       <div style={{ background: "white", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div>
-          {isLive ? (
-            <span style={{ background: "#0f9e75", color: "white", fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 20, display: "inline-flex", alignItems: "center", gap: 5 }}>
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
-              </span>
-              Live
-            </span>
-          ) : lastSeenLabel ? (
-            <Badge variant="secondary" className="gap-1 text-[10px]">{lastSeenLabel}</Badge>
-          ) : null}
-        </div>
+        <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} />
         <div className="flex items-center gap-2 ml-3 flex-1 justify-end min-w-0">
           <SnapStatusPill status={snapStatus} lastFixLabel={lastFixLabel} />
           <p style={{ fontSize: 13, fontWeight: 600, color: "#1c1c1e" }} className="truncate text-right">
@@ -564,7 +719,13 @@ export function SatNavLiveMap({
       {/* Map */}
       <div className="relative" style={{ height: "45vh", minHeight: 240 }}>
         <div ref={mapDivRef} className="absolute inset-0 z-0" />
-        {!hasPosition && (
+        {mapError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-[6] px-6 text-center" style={{ background: "rgba(242,242,247,0.95)" }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "#1c1c1e" }}>Map unavailable</p>
+            <p style={{ fontSize: 12, color: "#8e8e93", marginTop: 4 }}>Unable to load live map right now.</p>
+          </div>
+        )}
+        {!hasPosition && !mapError && (
           <div className="absolute inset-0 flex flex-col items-center justify-center z-[5]" style={{ background: "rgba(242,242,247,0.8)" }}>
             <p style={{ fontSize: 14, color: "#8e8e93" }}>No position data yet</p>
           </div>
@@ -650,6 +811,47 @@ function SnapStatusPill({ status, lastFixLabel }: { status: "idle" | "syncing" |
       />
       {config.label}
       {lastFixLabel && (
+        <span style={{ color: "#8e8e93", fontWeight: 500 }}>· {lastFixLabel}</span>
+      )}
+    </span>
+  );
+}
+
+type SignalStatusValue = "waiting" | "live" | "delayed" | "weak" | "lost";
+
+function SignalStatusPill({ status, lastFixLabel }: { status: SignalStatusValue; lastFixLabel: string | null }) {
+  const config: Record<SignalStatusValue, { dot: string; label: string; bg: string; fg: string; pulse: boolean }> = {
+    waiting: { dot: "#c7c7cc", label: "Waiting",     bg: "rgba(0,0,0,0.04)",         fg: "#3a3a3c", pulse: false },
+    live:    { dot: "#0f9e75", label: "Live",        bg: "rgba(15,158,117,0.12)",    fg: "#0a7558", pulse: true  },
+    delayed: { dot: "#f59e0b", label: "Delayed",     bg: "rgba(245,158,11,0.14)",    fg: "#a25c00", pulse: false },
+    weak:    { dot: "#ff8a3d", label: "Weak GPS",    bg: "rgba(255,138,61,0.14)",    fg: "#a14310", pulse: false },
+    lost:    { dot: "#e24b4a", label: "Signal Lost", bg: "rgba(226,75,74,0.12)",     fg: "#a02c2b", pulse: false },
+  };
+  const c = config[status];
+  return (
+    <span
+      title={`Signal: ${c.label}${lastFixLabel ? ` · last fix ${lastFixLabel}` : ""}`}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        background: c.bg,
+        border: "1px solid rgba(0,0,0,0.06)",
+        borderRadius: 20,
+        padding: "4px 10px",
+        fontSize: 11,
+        fontWeight: 700,
+        color: c.fg,
+        whiteSpace: "nowrap",
+        flexShrink: 0,
+      }}
+    >
+      <span
+        style={{ width: 7, height: 7, borderRadius: "50%", background: c.dot }}
+        className={c.pulse ? "animate-pulse" : ""}
+      />
+      {c.label}
+      {lastFixLabel && status !== "live" && (
         <span style={{ color: "#8e8e93", fontWeight: 500 }}>· {lastFixLabel}</span>
       )}
     </span>
