@@ -79,6 +79,7 @@ export function SatNavLiveMap({
       const window = raw.slice(-100).map((p) => ({ lat: p.lat(), lng: p.lng() }));
       snapInFlightRef.current = true;
       snapDirtyRef.current = false;
+      setSnapStatus("syncing");
       try {
         const snapped = await callSnapToRoad(window);
         if (snapped && snapped.length >= 2) {
@@ -91,9 +92,13 @@ export function SatNavLiveMap({
             ...snapped.map((p) => new google.maps.LatLng(p.lat, p.lng)),
           ];
           renderPolylines();
+          setSnapStatus("snapped");
+        } else {
+          setSnapStatus("raw");
         }
       } catch (err) {
         console.warn("[SatNavLiveMap] snap-to-road failed, falling back to raw:", err);
+        setSnapStatus("raw");
       } finally {
         snapInFlightRef.current = false;
         // If new fixes arrived during the request, schedule another pass
