@@ -1073,7 +1073,7 @@ export function SatNavLiveMap({
               )}
 
               {/* Overspeed banner — sits above the FloatingSessionTimer card */}
-              {isOverSpeed && speedMph != null && speedLimitMph != null && (
+              {overspeedActive && speedMph != null && speedLimitMph != null && (
                 <div
                   className="absolute left-3 right-3 z-20"
                   style={{
@@ -1155,7 +1155,7 @@ export function SatNavLiveMap({
       <div style={{ background: "white", padding: "12px 16px", display: "flex", alignItems: "center", gap: 16 }}>
         {/* Speed */}
         <div>
-          <span style={{ fontSize: 28, fontWeight: 700, color: isOverSpeed ? "#e24b4a" : "#1c1c1e", lineHeight: 1 }} className={`tabular-nums ${isOverSpeed ? "animate-pulse" : ""}`}>
+          <span style={{ fontSize: 28, fontWeight: 700, color: overspeedActive ? "#e24b4a" : "#1c1c1e", lineHeight: 1 }} className={`tabular-nums ${overspeedActive ? "animate-pulse" : ""}`}>
             {speedMph ?? 0}
           </span>
           <p style={{ fontSize: 12, color: "#8e8e93", marginTop: 2 }}>mph</p>
