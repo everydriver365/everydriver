@@ -26,6 +26,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { HomeToolsHub } from "@/components/instructor/HomeToolsHub";
 import { NextUpTile } from "@/components/instructor/NextUpTile";
+import { DoThisNextCard } from "@/components/instructor/DoThisNextCard";
 
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useInstructorProfile } from "@/hooks/useInstructorProfile";
