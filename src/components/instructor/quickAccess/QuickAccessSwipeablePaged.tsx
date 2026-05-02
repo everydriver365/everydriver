@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { QUICK_ACCESS_TILES, QUICK_ACCESS_TILES_BY_ID, QuickAccessTile, TileTone } from "./tileRegistry";
-import { RichTileCard, PersistentSearchBar } from "./QuickAccessTiles";
+import { CompactTile, PersistentSearchBar } from "./QuickAccessTiles";
 import { CustomizeTilesSheet } from "./CustomizeTilesSheet";
 import { useInstructorPinnedTiles } from "@/hooks/useInstructorPinnedTiles";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
@@ -13,7 +13,7 @@ import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { useInstructorPeriodStats } from "@/hooks/useInstructorPeriodStats";
 
-const TILES_PER_PAGE = 6;
+const TILES_PER_PAGE = 8;
 
 interface Props {
   instructorId?: string;
@@ -181,14 +181,14 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
 
   const renderTile = (tile: QuickAccessTile) => {
     const m = richMeta(tile.id);
+    const alertCount = m.badge ? Number(m.badge.label) || undefined : undefined;
     return (
-      <RichTileCard
+      <CompactTile
         key={tile.id}
         icon={tile.icon}
         tone={tile.tone}
-        title={tile.title}
-        subtitle={m.subtitle ?? tile.subtitle}
-        badge={m.badge}
+        label={tile.title}
+        alertCount={alertCount}
         locked={isLocked(tile)}
         onPress={() => onTilePress(tile)}
       />
@@ -256,8 +256,8 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-              gap: 8,
+              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+              gap: 12,
             }}
           >
             {filtered.map(renderTile)}
@@ -285,9 +285,10 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
                   width: "100%",
                   scrollSnapAlign: "start",
                   display: "grid",
-                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
                   gridAutoRows: "min-content",
-                  gap: 8,
+                  rowGap: 14,
+                  columnGap: 8,
                 }}
               >
                 {pageTiles.map(renderTile)}
