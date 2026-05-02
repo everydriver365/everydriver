@@ -368,7 +368,10 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
       {/* "Do this next" — single contextual action card. Hidden when a lesson is imminent. */}
       {(!nextLesson || nextLesson.minutesUntil > 45) && (
-        <DoThisNextCard instructorId={instructorId} />
+        <section className="mt-4">
+          <SectionLabel>Do this next</SectionLabel>
+          <DoThisNextCard instructorId={instructorId} />
+        </section>
       )}
 
       {/* SECTION 2: Needs attention — single card, 64px rows */}
