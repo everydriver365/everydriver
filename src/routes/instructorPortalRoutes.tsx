@@ -33,6 +33,7 @@ const InstructorTestSlotFinder = lazy(() => import("@/pages/InstructorTestSlotFi
 // Finance & payments
 const InstructorPay = lazy(() => import("@/pages/InstructorPay"));
 const InstructorTakePayment = lazy(() => import("@/pages/InstructorTakePayment"));
+const InstructorSendReminder = lazy(() => import("@/pages/InstructorSendReminder"));
 const InstructorIncome = lazy(() => import("@/pages/InstructorIncome"));
 const InstructorExpenses = lazy(() => import("@/pages/InstructorExpenses"));
 const InstructorAccounts = lazy(() => import("@/pages/InstructorAccounts"));
