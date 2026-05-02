@@ -564,6 +564,15 @@ export function SatNavLiveMap({
     // could leave the marker off-screen until the next fix arrives.
     if (isFirstFixRef.current) {
       const headingNow = heading ?? 0;
+      const initialZoom = zoomForSpeed(speedKmh ?? null);
+      lastAutoZoomRef.current = initialZoom;
+
+      // For vector + fullscreen + follow, the world is rotated to heading-up,
+      // so the on-screen arrow direction must be compensated to ~0°.
+      const useSatNavCam =
+        fullscreenRef.current && followModeRef.current && vectorReadyRef.current;
+      const screenHeading = useSatNavCam ? 0 : headingNow;
+
       if (!markerRef.current) {
         markerShadowRef.current = new google.maps.Marker({
           position: { lat: latitude, lng: longitude },
@@ -575,17 +584,30 @@ export function SatNavLiveMap({
         markerRef.current = new google.maps.Marker({
           position: { lat: latitude, lng: longitude },
           map,
-          icon: getArrowIcon(headingNow, isActive),
+          icon: getArrowIcon(screenHeading, isActive),
           zIndex: 999,
         });
       } else {
         markerRef.current.setPosition({ lat: latitude, lng: longitude });
-        markerRef.current.setIcon(getArrowIcon(headingNow, isActive));
+        markerRef.current.setIcon(getArrowIcon(screenHeading, isActive));
         markerShadowRef.current?.setPosition({ lat: latitude, lng: longitude });
       }
       suppressFollowOffRef.current = true;
-      map.setCenter({ lat: latitude, lng: longitude });
-      map.setZoom(17);
+      map.setZoom(initialZoom);
+
+      if (useSatNavCam) {
+        camHeadingRef.current = headingNow;
+        camTiltRef.current = isActiveRef.current ? 50 : 0;
+        map.moveCamera({
+          heading: camHeadingRef.current,
+          tilt: camTiltRef.current,
+        });
+      }
+
+      const center = vectorReadyRef.current
+        ? (offsetCenterForLowerThird(map, { lat: latitude, lng: longitude }, camHeadingRef.current) ?? { lat: latitude, lng: longitude })
+        : { lat: latitude, lng: longitude };
+      map.setCenter(center);
       requestAnimationFrame(() => { suppressFollowOffRef.current = false; });
 
       const seed = { lat: latitude, lng: longitude, heading: headingNow, t: now };
@@ -596,6 +618,17 @@ export function SatNavLiveMap({
       pathRef.current = [new google.maps.LatLng(latitude, longitude)];
       isFirstFixRef.current = false;
       return;
+    }
+
+    // ── Auto-zoom by speed (fullscreen + follow only) ────────────────────
+    if (fullscreenRef.current && followModeRef.current && map) {
+      const targetZoom = zoomForSpeed(speedKmh ?? null);
+      if (lastAutoZoomRef.current !== targetZoom) {
+        suppressFollowOffRef.current = true;
+        map.setZoom(targetZoom);
+        lastAutoZoomRef.current = targetZoom;
+        requestAnimationFrame(() => { suppressFollowOffRef.current = false; });
+      }
     }
 
     // ── Jitter / outlier guards ───────────────────────────────────────────
