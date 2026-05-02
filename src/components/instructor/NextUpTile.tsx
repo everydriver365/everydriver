@@ -20,6 +20,7 @@ import { EndLessonWizard } from "./EndLessonWizard";
 import { RunningLateSheet } from "./RunningLateSheet";
 import { supabase } from "@/integrations/supabase/client";
 import { LessonRouteRecorder } from "./LessonRouteRecorder";
+import { getNextUpVisibility } from "./nextUpTileState";
 
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
@@ -797,10 +798,13 @@ export function NextUpTile({
               All handlers (handleCall/handleMessage/handleNavigate/handleArrived/start/end) preserved.
             */}
             {(() => {
-              const inLesson = lessonStatus === "in_progress";
-              const isStartingNow = !inLesson && minutesUntil <= 15;
-              const isMid = !inLesson && minutesUntil > 15 && minutesUntil <= 60;
-              const isEarly = !inLesson && minutesUntil > 60;
+              // Single source of truth for action visibility — also unit-tested
+              // via src/components/instructor/__tests__/nextUpTileState.test.ts
+              const vis = getNextUpVisibility(minutesUntil, lessonStatus);
+              const inLesson = vis.showEndLessonButton;
+              const isStartingNow = vis.showStartLessonButton;
+              const isMid = vis.showQuickActionRow;
+              const isEarly = vis.state === "early";
 
               if (inLesson) {
                 return (
