@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, Route, Square, Play, AlertTriangle } from "lucide-react";
+import { Play, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 
@@ -14,6 +14,8 @@ interface FloatingSessionTimerProps {
   speedMph?: number | null;
   /** Posted limit in mph (rounded). Null if unknown. */
   speedLimitMph?: number | null;
+  /** Current road name (or null while geocoder resolves). */
+  roadName?: string | null;
   /** True when no movement detected for the configured idle window. */
   paused?: boolean;
   /** Called when instructor taps Resume — clears the paused-overlay (no backend change). */
@@ -31,6 +33,7 @@ export function FloatingSessionTimer({
   isStopping,
   speedMph = null,
   speedLimitMph = null,
+  roadName = null,
   paused = false,
   onResume,
   alertCount = 0,
@@ -46,136 +49,218 @@ export function FloatingSessionTimer({
   };
 
   const isOver = !paused && speedMph != null && speedLimitMph != null && speedMph > speedLimitMph;
-  const speedColor = paused ? "#71717A" : isOver ? "#DC2626" : "#1c1c1e";
+  const speedColor = paused ? "#71717A" : isOver ? "#FF3B30" : "#1C1C1E";
+  const headlineName = pupilName || (isTestRoute ? "Test route" : "Lesson");
 
   return (
     <motion.div
-      className="fixed bottom-4 left-3 right-3 z-40"
+      className="fixed left-3 right-3 z-40"
+      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 14px)" }}
       initial={{ y: 120, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 120, opacity: 0 }}
       transition={{ type: "spring", damping: 26, stiffness: 320 }}
     >
-      <div className="bg-card/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-border overflow-hidden">
-        {/* Top row: status + pupil + alert chip */}
-        <div className="flex items-center gap-2 px-4 pt-3">
-          <AnimatePresence mode="wait" initial={false}>
-            {paused ? (
-              <motion.div
-                key="paused"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.18 }}
-                className="flex items-center gap-1.5 shrink-0"
+      <div
+        style={{
+          background: "linear-gradient(180deg, rgba(255,255,255,0.82) 0%, rgba(245,245,247,0.82) 100%)",
+          backdropFilter: "blur(24px) saturate(180%)",
+          WebkitBackdropFilter: "blur(24px) saturate(180%)",
+          border: "1px solid rgba(0,0,0,0.06)",
+          borderRadius: 22,
+          boxShadow: "0 1px 0 rgba(255,255,255,0.8) inset, 0 18px 40px rgba(0,0,0,0.12)",
+          padding: "14px 18px",
+        }}
+      >
+        {/* ── Row 1: HEADLINE — speed cluster · roundel · session block ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          {/* a) Speed cluster */}
+          <div style={{ minWidth: 0, flex: "0 0 auto", maxWidth: "55%" }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+              <motion.span
+                key={speedMph ?? "—"}
+                initial={{ opacity: 0.4, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.15 }}
+                style={{
+                  fontSize: 56,
+                  fontWeight: 800,
+                  color: speedColor,
+                  lineHeight: 0.95,
+                  letterSpacing: -1.5,
+                  fontVariantNumeric: "tabular-nums",
+                }}
               >
-                <span className="w-2 h-2 rounded-full bg-amber-500" />
-                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
-                  Paused
-                </span>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="rec"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.18 }}
-                className="flex items-center gap-1.5 shrink-0"
+                {paused ? 0 : speedMph != null ? speedMph : "—"}
+              </motion.span>
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "rgba(60,60,67,0.55)",
+                  textTransform: "uppercase",
+                  letterSpacing: 0.6,
+                }}
               >
-                <motion.div
-                  className="w-2 h-2 rounded-full bg-red-500"
-                  animate={{ opacity: [1, 0.4, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                />
-                <span className="text-[10px] font-bold uppercase tracking-wider text-red-500">
-                  REC
-                </span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <span className="text-[13px] font-semibold text-foreground truncate min-w-0 flex-1">
-            {pupilName || (isTestRoute ? "Test route" : "Lesson")}
-          </span>
-
-          {alertCount > 0 && (
-            <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-red-500/10 text-red-600 text-[10px] font-semibold px-2 py-0.5">
-              <AlertTriangle className="h-3 w-3" />
-              {alertCount}
-            </span>
-          )}
-        </div>
-
-        {/* Middle row: BIG speed + limit pill */}
-        <div className="flex items-end justify-between gap-3 px-4 pt-1.5 pb-1">
-          <div className="flex items-baseline gap-2 min-w-0">
-            <motion.span
-              key={speedMph ?? "—"}
-              initial={{ opacity: 0.4, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.15 }}
-              className="text-[44px] leading-none font-bold tabular-nums tracking-tight"
-              style={{ color: speedColor }}
+                mph
+              </span>
+            </div>
+            {/* Road name — sits directly under speed, like CarPlay */}
+            <div
+              title={roadName || undefined}
+              style={{
+                marginTop: 4,
+                fontSize: 12,
+                fontWeight: roadName ? 600 : 500,
+                color: roadName ? "rgba(60,60,67,0.7)" : "rgba(60,60,67,0.4)",
+                fontStyle: roadName ? "normal" : "italic",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                lineHeight: 1.2,
+                letterSpacing: -0.05,
+              }}
             >
-              {paused ? 0 : speedMph != null ? speedMph : "—"}
-            </motion.span>
-            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-              mph
-            </span>
+              {roadName || "Locating road…"}
+            </div>
           </div>
 
+          {/* b) Speed-limit roundel (no label) */}
           {speedLimitMph != null && (
             <div
-              className="flex items-center justify-center rounded-full bg-white shrink-0"
               style={{
                 width: 56,
                 height: 56,
-                border: "6px solid #C8102E", // UK road-sign red
+                flex: "0 0 auto",
+                borderRadius: "50%",
+                border: "5px solid #E11D2A",
+                background: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 boxShadow: isOver
-                  ? "0 0 0 2px rgba(220,38,38,0.35)"
-                  : "0 1px 2px rgba(0,0,0,0.15)",
+                  ? "0 0 0 2px rgba(220,38,38,0.35), 0 4px 14px rgba(0,0,0,0.12)"
+                  : "0 4px 14px rgba(0,0,0,0.12)",
               }}
               aria-label={`Speed limit ${speedLimitMph} mph`}
               role="img"
             >
               <span
-                className="font-bold tabular-nums text-black leading-none"
                 style={{
-                  fontSize: speedLimitMph >= 100 ? 16 : 20,
-                  fontFamily:
-                    '"Transport", -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                  fontSize: speedLimitMph >= 100 ? 17 : 22,
+                  fontWeight: 800,
+                  color: "#1C1C1E",
                   letterSpacing: -0.5,
+                  fontVariantNumeric: "tabular-nums",
+                  lineHeight: 1,
                 }}
               >
                 {speedLimitMph}
               </span>
             </div>
           )}
+
+          {/* c) Student / session block — fills remaining space, right aligned */}
+          <div
+            style={{
+              flex: 1,
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              gap: 4,
+            }}
+          >
+            <div
+              style={{
+                width: "100%",
+                fontSize: 17,
+                fontWeight: 700,
+                color: "#1C1C1E",
+                textAlign: "right",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                letterSpacing: -0.2,
+                lineHeight: 1.15,
+              }}
+              title={headlineName}
+            >
+              {headlineName}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 12,
+                fontWeight: 600,
+                color: "rgba(60,60,67,0.7)",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {paused ? (
+                <>
+                  <span
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: "50%",
+                      background: "#F59E0B",
+                      display: "inline-block",
+                    }}
+                  />
+                  <span style={{ color: "#B45309", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.4, fontSize: 11 }}>Paused</span>
+                </>
+              ) : (
+                <>
+                  <motion.span
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: "50%",
+                      background: "#FF3B30",
+                      display: "inline-block",
+                    }}
+                    animate={{ opacity: [1, 0.4, 1] }}
+                    transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  <span style={{ color: "#FF3B30", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.4, fontSize: 11 }}>REC</span>
+                </>
+              )}
+              <span style={{ color: "rgba(60,60,67,0.35)" }}>·</span>
+              <span>{formatElapsedTime(elapsedSeconds)}</span>
+              <span style={{ color: "rgba(60,60,67,0.35)" }}>·</span>
+              <span>
+                {distanceMiles.toFixed(1)}
+                <span style={{ fontWeight: 500, color: "rgba(60,60,67,0.55)", marginLeft: 2 }}>mi</span>
+              </span>
+              {alertCount > 0 && (
+                <>
+                  <span style={{ color: "rgba(60,60,67,0.35)" }}>·</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 3, color: "#DC2626" }}>
+                    <AlertTriangle className="h-3 w-3" />
+                    {alertCount}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Bottom row: stats + actions */}
-        <div className="flex items-center gap-3 px-4 py-3 border-t border-border/60 mt-1">
-          <div className="flex items-center gap-1.5 shrink-0">
-            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-[15px] font-bold text-foreground tabular-nums">
-              {formatElapsedTime(elapsedSeconds)}
-            </span>
-          </div>
-
-          <div className="h-4 w-px bg-border" />
-
-          <div className="flex items-center gap-1.5 shrink-0">
-            <Route className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-[15px] font-bold text-foreground tabular-nums">
-              {distanceMiles.toFixed(1)}
-              <span className="text-[11px] font-normal text-muted-foreground ml-0.5">
-                mi
-              </span>
-            </span>
-          </div>
-
-          <div className="flex-1" />
+        {/* ── Row 2: ACTION BAR ─────────────────────────────────────────── */}
+        <div
+          style={{
+            marginTop: 12,
+            paddingTop: 10,
+            borderTop: "1px solid rgba(0,0,0,0.06)",
+            minHeight: 36,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <div style={{ flex: 1 }} />
 
           <AnimatePresence mode="popLayout" initial={false}>
             {paused && onResume && (
@@ -188,7 +273,7 @@ export function FloatingSessionTimer({
               >
                 <Button
                   size="sm"
-                  className="h-9 px-4 rounded-2xl font-semibold text-xs bg-[#1c1c1e] hover:bg-[#1c1c1e]/90 text-white"
+                  className="h-9 px-4 rounded-full font-semibold text-xs bg-[#1c1c1e] hover:bg-[#1c1c1e]/90 text-white"
                   onClick={onResume}
                 >
                   <Play className="h-3.5 w-3.5 mr-1" />
@@ -198,22 +283,46 @@ export function FloatingSessionTimer({
             )}
           </AnimatePresence>
 
-          <Button
-            variant="destructive"
-            size="sm"
-            className="h-9 px-4 rounded-2xl font-semibold text-xs shrink-0"
+          {/* End — pill, gradient red, no icon */}
+          <button
+            type="button"
             onClick={onStop}
             disabled={isStopping}
+            style={{
+              height: 36,
+              minWidth: 96,
+              padding: "0 18px",
+              borderRadius: 999,
+              border: 0,
+              background: "linear-gradient(180deg, #FF453A 0%, #E11D2A 100%)",
+              color: "white",
+              fontSize: 14,
+              fontWeight: 700,
+              letterSpacing: 0.2,
+              cursor: isStopping ? "default" : "pointer",
+              boxShadow: "0 4px 12px rgba(225,29,42,0.32)",
+              opacity: isStopping ? 0.7 : 1,
+              transition: "transform 120ms ease, box-shadow 120ms ease",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+            }}
+            onMouseDown={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.96)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 2px 8px rgba(225,29,42,0.32)";
+            }}
+            onMouseUp={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(225,29,42,0.32)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(225,29,42,0.32)";
+            }}
           >
-            {isStopping ? (
-              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <>
-                <Square className="h-3.5 w-3.5 mr-1" />
-                End
-              </>
-            )}
-          </Button>
+            {isStopping ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : "End"}
+          </button>
         </div>
       </div>
     </motion.div>
