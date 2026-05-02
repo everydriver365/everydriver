@@ -199,7 +199,7 @@ export function FloatingSessionTimer({
                 fontVariantNumeric: "tabular-nums",
               }}
             >
-              {paused ? (
+              {paused && (
                 <>
                   <span
                     style={{
@@ -211,24 +211,9 @@ export function FloatingSessionTimer({
                     }}
                   />
                   <span style={{ color: "#B45309", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.4, fontSize: 11 }}>Paused</span>
-                </>
-              ) : (
-                <>
-                  <motion.span
-                    style={{
-                      width: 7,
-                      height: 7,
-                      borderRadius: "50%",
-                      background: "#FF3B30",
-                      display: "inline-block",
-                    }}
-                    animate={{ opacity: [1, 0.4, 1] }}
-                    transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-                  />
-                  <span style={{ color: "#FF3B30", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.4, fontSize: 11 }}>REC</span>
+                  <span style={{ color: "rgba(60,60,67,0.35)" }}>·</span>
                 </>
               )}
-              <span style={{ color: "rgba(60,60,67,0.35)" }}>·</span>
               <span>{formatElapsedTime(elapsedSeconds)}</span>
               <span style={{ color: "rgba(60,60,67,0.35)" }}>·</span>
               <span>
