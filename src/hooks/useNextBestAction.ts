@@ -13,10 +13,15 @@ export interface NextBestAction {
   rank: number;
   title: string;
   subtitle: string;
+  verb: string;
   icon: LucideIcon;
   tone: NextActionTone;
   iconBg: string;
   iconFg: string;
+  /** Soft tinted background gradient start for the hero card. */
+  cardBg: string;
+  /** Hairline border tint. */
+  cardBorder: string;
   onPress: () => void;
   snoozeKey: string;
 }
