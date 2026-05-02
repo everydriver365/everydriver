@@ -1002,13 +1002,15 @@ function SignalStatusPill({ status, lastFixLabel, dark = false }: { status: Sign
         display: "inline-flex",
         alignItems: "center",
         gap: 6,
-        background: c.bg,
+        background: "rgba(255,255,255,0.72)",
+        backdropFilter: "blur(14px) saturate(180%)",
+        WebkitBackdropFilter: "blur(14px) saturate(180%)",
         border: "1px solid rgba(0,0,0,0.06)",
         borderRadius: 20,
         padding: "4px 10px",
         fontSize: 11,
         fontWeight: 700,
-        color: c.fg,
+        color: "#1C1C1E",
         whiteSpace: "nowrap",
         flexShrink: 0,
       }}
@@ -1019,13 +1021,13 @@ function SignalStatusPill({ status, lastFixLabel, dark = false }: { status: Sign
           height: 7,
           borderRadius: "50%",
           background: c.dot,
-          boxShadow: status === "live" ? `0 0 6px ${c.dot}` : "none",
+          boxShadow: status === "live" ? `0 0 0 4px rgba(52,199,89,0.2)` : "none",
         }}
         className={c.pulse ? "animate-pulse" : ""}
       />
       {c.label}
       {lastFixLabel && status !== "live" && (
-        <span style={{ color: "#8e8e93", fontWeight: 500 }}>· {lastFixLabel}</span>
+        <span style={{ color: "rgba(60,60,67,0.6)", fontWeight: 500 }}>· {lastFixLabel}</span>
       )}
     </span>
   );
