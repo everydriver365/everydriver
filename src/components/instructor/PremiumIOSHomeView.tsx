@@ -26,6 +26,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { HomeToolsHub } from "@/components/instructor/HomeToolsHub";
 import { NextUpTile } from "@/components/instructor/NextUpTile";
+import { DoThisNextCard } from "@/components/instructor/DoThisNextCard";
 
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useInstructorProfile } from "@/hooks/useInstructorProfile";
@@ -327,6 +328,11 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
           </div>
         );
       })()}
+
+      {/* "Do this next" — single contextual action card. Hidden when a lesson is imminent. */}
+      {(!nextLesson || nextLesson.minutesUntil > 45) && (
+        <DoThisNextCard instructorId={instructorId} />
+      )}
 
       {/* SECTION 2: Needs attention — single card, 64px rows */}
       {attentionRows.length > 0 && (
