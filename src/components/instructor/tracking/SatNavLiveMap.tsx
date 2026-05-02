@@ -970,7 +970,7 @@ export function SatNavLiveMap({
         <div className="flex items-center gap-2 ml-3 flex-1 justify-end min-w-0">
           <SnapStatusPill status={snapStatus} lastFixLabel={lastFixLabel} />
           <p style={{ fontSize: 13, fontWeight: 600, color: "#1c1c1e" }} className="truncate text-right">
-            {roadName || "Awaiting location…"}
+            {displayRoadName || "Awaiting location…"}
           </p>
         </div>
       </div>
