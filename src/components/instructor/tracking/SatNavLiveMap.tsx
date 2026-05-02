@@ -170,10 +170,26 @@ export function SatNavLiveMap({
     fillOpacity: 1,
     strokeColor: "white",
     strokeWeight: 3,
-    scale: fullscreen ? 2.4 : 2.2,
-    rotation: rotation,
+    scale: fullscreenRef.current ? 2.4 : 2.2,
+    rotation,
     anchor: new google.maps.Point(0, 0),
-  }), [fullscreen]);
+  }), []);
+
+  // Append a point to the trail polyline, suppressing near-duplicate fixes
+  // (~0.5m at UK latitudes). Returns true if the point was actually added so
+  // callers can decide whether to re-render / re-snap.
+  const appendTrailPoint = useCallback((lat: number, lng: number): boolean => {
+    const last = pathRef.current[pathRef.current.length - 1];
+    if (
+      last &&
+      Math.abs(last.lat() - lat) < 0.000005 &&
+      Math.abs(last.lng() - lng) < 0.000005
+    ) {
+      return false;
+    }
+    pathRef.current.push(new google.maps.LatLng(lat, lng));
+    return true;
+  }, []);
 
   // Init map once SDK is ready
   useEffect(() => {
