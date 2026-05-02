@@ -443,39 +443,29 @@ export function SatNavLiveMap({
                 </div>
                 <SnapStatusPill status={snapStatus} lastFixLabel={lastFixLabel} />
               </div>
-              <div className="absolute bottom-0 left-0 right-0 z-10 px-3 py-3" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
-                <div style={{ paddingBottom: 8, marginBottom: 10, borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-                  <p style={{ fontSize: 11, fontWeight: 600, color: "#8e8e93", textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 2 }}>Current road</p>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: "#1c1c1e", lineHeight: 1.25 }} className="truncate">
-                    {roadName || "Awaiting location…"}
-                  </p>
-                </div>
-                <div className="flex items-end justify-between">
-                  <div className="flex items-end gap-2.5">
-                    <div className="text-center">
-                      <span style={{ fontSize: 48, fontWeight: 700, color: isOverSpeed ? "#e24b4a" : "#1c1c1e", lineHeight: 1 }} className={`tabular-nums ${isOverSpeed ? "animate-pulse" : ""}`}>
-                        {speedMph ?? 0}
-                      </span>
-                      <p style={{ fontSize: 12, color: "#8e8e93", marginTop: 2 }}>mph</p>
-                    </div>
-                    {speedLimitMph != null && speedLimitMph > 0 && (
-                      <div style={{ width: 44, height: 44, border: "3px solid #e24b4a", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <span style={{ fontSize: 16, fontWeight: 700, color: "#e24b4a" }} className="tabular-nums">{speedLimitMph}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-end gap-0.5">
-                    {ignitionOn != null && (
-                      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                        <span style={{ width: 8, height: 8, borderRadius: "50%", background: ignitionOn ? "#0f9e75" : "#c7c7cc" }} />
-                        <span style={{ fontSize: 12, color: "#8e8e93" }}>{ignitionOn ? "Engine On" : "Engine Off"}</span>
-                      </div>
-                    )}
-                    {dailyMiles != null && dailyMiles > 0 && (
-                      <span style={{ fontSize: 10, fontWeight: 500, color: "#8e8e93" }}>Today: {dailyMiles} mi</span>
-                    )}
-                  </div>
-                </div>
+              {/* Road name banner — sits just below the top status bar so it's never covered by the floating session timer */}
+              <div
+                className="absolute left-3 right-3 z-20"
+                style={{
+                  top: 56,
+                  background: "rgba(28,28,30,0.88)",
+                  color: "white",
+                  borderRadius: 14,
+                  padding: "8px 14px",
+                  boxShadow: "0 6px 20px rgba(0,0,0,0.18)",
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: 0.6, flexShrink: 0 }}>
+                  On
+                </span>
+                <span style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.25 }} className="truncate flex-1">
+                  {roadName || "Awaiting location…"}
+                </span>
               </div>
             </>
           ) : (
