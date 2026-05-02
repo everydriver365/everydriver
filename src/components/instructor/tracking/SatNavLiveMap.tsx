@@ -64,13 +64,12 @@ export function SatNavLiveMap({
   const [lastFixLabel, setLastFixLabel] = useState<string | null>(null);
   const [lastFixAgeSec, setLastFixAgeSec] = useState<number | null>(null);
 
-  // Render whichever path is freshest (snapped if available, else raw) into both polylines
+  // Trail line removed — show vehicle position only. Refs/snap pipeline are
+  // kept intact (so realtime + snap-to-roads logic keeps working in the
+  // background), but no polyline is rendered to the map.
   const renderPolylines = useCallback(() => {
-    const display = snappedPathRef.current.length >= 2
-      ? snappedPathRef.current
-      : pathRef.current;
-    polylineRef.current?.setPath(display);
-    polylineCasingRef.current?.setPath(display);
+    polylineRef.current?.setPath([]);
+    polylineCasingRef.current?.setPath([]);
   }, []);
 
   // Debounced Snap-to-Roads call — aligns the trail to actual road geometry
