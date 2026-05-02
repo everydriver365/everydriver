@@ -273,6 +273,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
       {/* SECTION: Next lesson tile (rich, with avatar / ETA / route recorder) */}
       <section className="mt-4">
+        {instructorId && nextLesson && <SectionLabel>Up next</SectionLabel>}
         {instructorId && nextLesson ? (
           <NextUpTile
             lessonId={nextLesson.lessonId}
