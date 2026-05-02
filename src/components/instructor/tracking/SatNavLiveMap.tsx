@@ -266,6 +266,13 @@ export function SatNavLiveMap({
       const pos = new google.maps.LatLng(latitude!, longitude!);
       pathRef.current = [pos];
 
+      markerShadowRef.current = new google.maps.Marker({
+        position: center,
+        map,
+        icon: getShadowIcon(isActive),
+        zIndex: 998,
+        clickable: false,
+      });
       markerRef.current = new google.maps.Marker({
         position: center,
         map,
