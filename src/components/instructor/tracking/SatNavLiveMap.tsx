@@ -816,3 +816,44 @@ function SnapStatusPill({ status, lastFixLabel }: { status: "idle" | "syncing" |
     </span>
   );
 }
+
+type SignalStatusValue = "waiting" | "live" | "delayed" | "weak" | "lost";
+
+function SignalStatusPill({ status, lastFixLabel }: { status: SignalStatusValue; lastFixLabel: string | null }) {
+  const config: Record<SignalStatusValue, { dot: string; label: string; bg: string; fg: string; pulse: boolean }> = {
+    waiting: { dot: "#c7c7cc", label: "Waiting",     bg: "rgba(0,0,0,0.04)",         fg: "#3a3a3c", pulse: false },
+    live:    { dot: "#0f9e75", label: "Live",        bg: "rgba(15,158,117,0.12)",    fg: "#0a7558", pulse: true  },
+    delayed: { dot: "#f59e0b", label: "Delayed",     bg: "rgba(245,158,11,0.14)",    fg: "#a25c00", pulse: false },
+    weak:    { dot: "#ff8a3d", label: "Weak GPS",    bg: "rgba(255,138,61,0.14)",    fg: "#a14310", pulse: false },
+    lost:    { dot: "#e24b4a", label: "Signal Lost", bg: "rgba(226,75,74,0.12)",     fg: "#a02c2b", pulse: false },
+  };
+  const c = config[status];
+  return (
+    <span
+      title={`Signal: ${c.label}${lastFixLabel ? ` · last fix ${lastFixLabel}` : ""}`}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        background: c.bg,
+        border: "1px solid rgba(0,0,0,0.06)",
+        borderRadius: 20,
+        padding: "4px 10px",
+        fontSize: 11,
+        fontWeight: 700,
+        color: c.fg,
+        whiteSpace: "nowrap",
+        flexShrink: 0,
+      }}
+    >
+      <span
+        style={{ width: 7, height: 7, borderRadius: "50%", background: c.dot }}
+        className={c.pulse ? "animate-pulse" : ""}
+      />
+      {c.label}
+      {lastFixLabel && status !== "live" && (
+        <span style={{ color: "#8e8e93", fontWeight: 500 }}>· {lastFixLabel}</span>
+      )}
+    </span>
+  );
+}
