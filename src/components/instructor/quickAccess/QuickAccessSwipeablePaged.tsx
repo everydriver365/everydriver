@@ -181,14 +181,14 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
 
   const renderTile = (tile: QuickAccessTile) => {
     const m = richMeta(tile.id);
+    const alertCount = m.badge ? Number(m.badge.label) || undefined : undefined;
     return (
-      <RichTileCard
+      <CompactTile
         key={tile.id}
         icon={tile.icon}
         tone={tile.tone}
-        title={tile.title}
-        subtitle={m.subtitle ?? tile.subtitle}
-        badge={m.badge}
+        label={tile.title}
+        alertCount={alertCount}
         locked={isLocked(tile)}
         onPress={() => onTilePress(tile)}
       />
