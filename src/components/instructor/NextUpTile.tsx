@@ -530,13 +530,11 @@ export function NextUpTile({
           {/* ── Header (whole row tappable to expand) ── */}
           <div style={{ position: "relative" }}>
 
-            {/* UP NEXT label — hidden when expanded (the expanded hero shows its own pill) */}
-            {!expanded && (
+            {/* UP NEXT label moved to parent SectionLabel above the tile.
+                Keep just the check-in badge here when collapsed. */}
+            {!expanded && checkInStatus && (
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
-                <span style={{ fontSize: a11yPx(11), fontWeight: 600, color: "#5856D6", letterSpacing: 0.6, textTransform: "uppercase" }}>Up next</span>
-                {checkInStatus && (
-                  <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5 ml-1" />
-                )}
+                <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5" />
               </div>
             )}
 
