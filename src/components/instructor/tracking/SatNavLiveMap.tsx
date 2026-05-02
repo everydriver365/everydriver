@@ -300,6 +300,8 @@ export function SatNavLiveMap({
       mapListenersRef.current = [];
       markerRef.current?.setMap(null);
       markerRef.current = null;
+      markerShadowRef.current?.setMap(null);
+      markerShadowRef.current = null;
       polylineRef.current?.setMap(null);
       polylineRef.current = null;
       polylineCasingRef.current?.setMap(null);
