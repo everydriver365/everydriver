@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict } from "date-fns";
-import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
+import { fetchGoogleMapsKey, loadGoogleMaps, callSnapToRoad } from "@/lib/googleMapsLoader";
 import { supabase } from "@/integrations/supabase/client";
 
 interface SatNavLiveMapProps {
