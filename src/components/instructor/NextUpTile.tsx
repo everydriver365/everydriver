@@ -1033,7 +1033,7 @@ export function NextUpTile({
                       { id: "on_the_way", label: "On the way", icon: Send,
                         active: norm === "en_route" || norm === "on_the_way",
                         activeBg: "#2B7BC8", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
-                        onClick: () => setLateSheetOpen(true) },
+                        onClick: () => handleSendETA() },
                       { id: "late", label: "Running late", icon: Clock,
                         active: norm === "late" || norm === "running_late",
                         activeBg: "#E08E1A", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
