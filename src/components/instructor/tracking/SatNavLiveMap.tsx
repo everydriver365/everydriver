@@ -575,12 +575,10 @@ export function SatNavLiveMap({
       const target = targetPosRef.current;
 
       if (map && marker && from && target) {
-        // Estimate fix cadence (avg of last few real gaps), clamped 1500–6000ms
-        const gaps = fixGapsRef.current;
-        const avgGap = gaps.length > 0
-          ? gaps.reduce((s, g) => s + g, 0) / gaps.length
-          : 2500;
-        const expected = Math.max(1500, Math.min(6000, avgGap));
+        // Adaptive tween duration — set per-segment by applyFix from the
+        // real wall-clock gap between fixes, clamped to [250ms, 1200ms].
+        // Defaults to 900ms before the first fix has been processed.
+        const expected = tweenMsRef.current || 900;
 
         const elapsed = performance.now() - target.t;
         const t = Math.max(0, Math.min(1, elapsed / expected));
