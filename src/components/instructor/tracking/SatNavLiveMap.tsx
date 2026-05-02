@@ -491,6 +491,32 @@ export function SatNavLiveMap({
       });
     }
 
+    // ── Adaptive tween duration ──────────────────────────────────────────
+    // Use the wall-clock gap between the previous accepted fix and this one
+    // to size the tween. ~80% of the gap, clamped to [250ms, 1200ms].
+    //   • At 1Hz: ~800ms (smooth, no lag).
+    //   • At 5s gap: capped at 1200ms (still smooth).
+    //   • At 10s+: capped at 1200ms so the marker rests between hops rather
+    //     than crawling across stale ground.
+    const nowMs = Date.now();
+    const gapMs = lastFixAtRef.current ? nowMs - lastFixAtRef.current : 900;
+    lastFixAtRef.current = nowMs;
+    const tweenMs = Math.max(250, Math.min(1200, gapMs * 0.8));
+    tweenMsRef.current = tweenMs;
+
+    // ── Small-movement short-circuit (<3 m): snap, don't tween ───────────
+    // Kills the "drifting while stationary" effect when GPS jitter delivers
+    // a tiny move. Reuses metresFromPrev — no second haversine.
+    if (prev && metresFromPrev < 3) {
+      markerRef.current.setPosition({ lat: latitude, lng: longitude });
+      markerRef.current.setIcon(getArrowIcon(rotation, isActive));
+      markerShadowRef.current?.setPosition({ lat: latitude, lng: longitude });
+      const snapped = { lat: latitude, lng: longitude, heading: rotation, t: now };
+      fromPosRef.current = snapped;
+      targetPosRef.current = snapped;
+      return;
+    }
+
     // ── Jump rejection (>500 m): snap, don't tween ───────────────────────
     // The "from" point of the next tween must be the *previous animation's
     // destination* (targetPosRef before this update), not the marker's
