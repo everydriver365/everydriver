@@ -231,6 +231,8 @@ export function SatNavLiveMap({
       polylineCasingRef.current?.setMap(null);
       polylineCasingRef.current = null;
       pathRef.current = [];
+      snappedPathRef.current = [];
+      if (snapTimerRef.current) { clearTimeout(snapTimerRef.current); snapTimerRef.current = null; }
       mapRef.current = null;
     };
   }, [ready]);
