@@ -379,10 +379,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         <section className="mt-4">
           <SectionLabel>Needs your attention</SectionLabel>
           <Card>
-            <div>
-              {/* heading moved to SectionLabel above */}
-            </div>
-            <div>
+            <div className="py-1">
               {attentionRows.map((row, i) => (
                 <div key={row.key}>
                   <button
