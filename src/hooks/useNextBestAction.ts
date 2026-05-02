@@ -129,10 +129,13 @@ export function useNextBestAction(instructorId: string | undefined): NextBestAct
             rank: 2,
             title: "Respond to swap offer",
             subtitle: `Expires in ~${remaining}h`,
+            verb: "Respond",
             icon: ArrowLeftRight,
             tone: "blue",
             iconBg: "rgba(43,123,200,0.10)",
             iconFg: "#2B7BC8",
+            cardBg: "#EFF6FF",
+            cardBorder: "rgba(43,123,200,0.22)",
             onPress: () => navigate("/instructor/test-requests"),
             snoozeKey: key,
           };
