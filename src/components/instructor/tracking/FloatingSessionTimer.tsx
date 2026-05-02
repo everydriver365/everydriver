@@ -308,12 +308,17 @@ export function FloatingSessionTimer({
             )}
           </AnimatePresence>
 
-          {/* End — pill, gradient red, no icon */}
+          {/* End — hold-to-confirm pill (800ms). Release before commit cancels. */}
           <button
             type="button"
-            onClick={onStop}
+            onPointerDown={startEndHold}
+            onPointerUp={cancelEndHold}
+            onPointerLeave={cancelEndHold}
+            onPointerCancel={cancelEndHold}
             disabled={isStopping}
+            aria-label="Hold to end session"
             style={{
+              position: "relative",
               height: 36,
               minWidth: 96,
               padding: "0 18px",
@@ -327,26 +332,37 @@ export function FloatingSessionTimer({
               cursor: isStopping ? "default" : "pointer",
               boxShadow: "0 4px 12px rgba(225,29,42,0.32)",
               opacity: isStopping ? 0.7 : 1,
-              transition: "transform 120ms ease, box-shadow 120ms ease",
+              transform: endHoldProgress > 0 ? "scale(0.96)" : "scale(1)",
+              transition: "transform 120ms ease-out, box-shadow 120ms ease",
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
               gap: 6,
-            }}
-            onMouseDown={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.96)";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 2px 8px rgba(225,29,42,0.32)";
-            }}
-            onMouseUp={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(225,29,42,0.32)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(225,29,42,0.32)";
+              overflow: "hidden",
+              touchAction: "none",
             }}
           >
-            {isStopping ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : "End"}
+            <span
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "rgba(255,255,255,0.22)",
+                transformOrigin: "left center",
+                transform: `scaleX(${endHoldProgress})`,
+                transition: endHoldProgress === 0 ? "transform 200ms ease-out" : "none",
+                pointerEvents: "none",
+              }}
+            />
+            <span style={{ position: "relative", zIndex: 1, display: "inline-flex", alignItems: "center", gap: 6 }}>
+              {isStopping ? (
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+              ) : endHoldProgress > 0 && endHoldProgress < 1 ? (
+                "Hold…"
+              ) : (
+                "End"
+              )}
+            </span>
           </button>
         </div>
       </div>
