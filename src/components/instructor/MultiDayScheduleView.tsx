@@ -233,10 +233,17 @@ function formatDayHeader(d: Date): string {
   return `${base}${yearSuffix}${suffix}`;
 }
 
-/** Hairline divider between rows within the same day. */
+/** Hairline divider between rows within the same day — matches Calendar tab. */
 function RowDivider() {
-  // Spacing handled by parent gap — kept as a no-op for layout stability.
-  return null;
+  return (
+    <div
+      style={{
+        height: 0.5,
+        backgroundColor: "#E5E5EA",
+        margin: "0 8px",
+      }}
+    />
+  );
 }
 
 type RowStatus = "live" | "conflict" | "tentative" | null;
