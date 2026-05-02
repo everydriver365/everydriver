@@ -328,6 +328,11 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         );
       })()}
 
+      {/* "Do this next" — single contextual action card. Hidden when a lesson is imminent. */}
+      {(!nextLesson || nextLesson.minutesUntil > 45) && (
+        <DoThisNextCard instructorId={instructorId} />
+      )}
+
       {/* SECTION 2: Needs attention — single card, 64px rows */}
       {attentionRows.length > 0 && (
         <section className="mt-4">
