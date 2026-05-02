@@ -1384,132 +1384,146 @@ export function NextUpTile({
                   </div>
                 </div>
 
-                {/* ── SECTION B — Control panel: Primary actions → divider → Status pills ── */}
-                <div>
-                  {/* Primary action row — equal width, consistent height */}
+                {/* ── SECTION B — Unified control system: Primary actions + segmented status ── */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  {/* Primary action row — 50px height, 16px radius, equal width */}
                   <div style={{
                     display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8,
                   }}>
-                    {/* Navigate (primary) */}
+                    {/* Navigate (primary blue) */}
                     <button onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
-                      className="active:opacity-90"
+                      className="active:scale-[0.98]"
                       style={{
                         background: "#1B5BFF", color: "#FFFFFF",
-                        border: "none", borderRadius: 12, height: 44,
-                        cursor: "pointer",
+                        border: "none", borderRadius: 16, height: 50,
+                        cursor: "pointer", transition: "transform 0.15s ease, opacity 0.15s ease",
                         display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
-                        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 14px -6px rgba(27,91,255,0.35)",
+                        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 8px 18px -8px rgba(27,91,255,0.4)",
                       }}
                       aria-label="Navigate to pickup"
                     >
-                      <Navigation style={{ width: 15, height: 15 }} strokeWidth={2.4} />
-                      <span style={{ fontSize: a11yPx(13), fontWeight: 600, letterSpacing: -0.1 }}>Navigate</span>
+                      <Navigation style={{ width: 16, height: 16 }} strokeWidth={2.4} />
+                      <span style={{ fontSize: a11yPx(14), fontWeight: 600, letterSpacing: -0.1 }}>Navigate</span>
                     </button>
-                    {/* Call (soft) */}
+                    {/* Call (soft green) */}
                     <button onClick={(e) => { e.stopPropagation(); handleCall(); }}
-                      className="active:opacity-80"
+                      className="active:scale-[0.98]"
                       style={{
-                        background: "#F2F3F5", color: "#1C1C1E",
-                        border: "none", borderRadius: 12, height: 44,
-                        cursor: "pointer",
+                        background: "rgba(52,199,89,0.12)", color: "#1C7A3E",
+                        border: "none", borderRadius: 16, height: 50,
+                        cursor: "pointer", transition: "transform 0.15s ease, opacity 0.15s ease",
                         display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
                       }}
                       aria-label="Call pupil"
                     >
-                      <Phone style={{ width: 15, height: 15, color: "#34C759" }} strokeWidth={2.2} />
-                      <span style={{ fontSize: a11yPx(13), fontWeight: 600, letterSpacing: -0.1 }}>Call</span>
+                      <Phone style={{ width: 16, height: 16, color: "#1C7A3E" }} strokeWidth={2.3} />
+                      <span style={{ fontSize: a11yPx(14), fontWeight: 600, letterSpacing: -0.1 }}>Call</span>
                     </button>
-                    {/* Text (soft) */}
+                    {/* Text (soft blue/grey) */}
                     <button onClick={(e) => { e.stopPropagation(); handleMessage(); }}
-                      className="active:opacity-80"
+                      className="active:scale-[0.98]"
                       style={{
-                        background: "#F2F3F5", color: "#1C1C1E",
-                        border: "none", borderRadius: 12, height: 44,
-                        cursor: "pointer",
+                        background: "rgba(43,123,200,0.12)", color: "#1F5C99",
+                        border: "none", borderRadius: 16, height: 50,
+                        cursor: "pointer", transition: "transform 0.15s ease, opacity 0.15s ease",
                         display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
                       }}
                       aria-label="Text pupil"
                     >
-                      <MessageSquare style={{ width: 15, height: 15, color: "#FF9500" }} strokeWidth={2.2} />
-                      <span style={{ fontSize: a11yPx(13), fontWeight: 600, letterSpacing: -0.1 }}>Text</span>
+                      <MessageSquare style={{ width: 16, height: 16, color: "#1F5C99" }} strokeWidth={2.3} />
+                      <span style={{ fontSize: a11yPx(14), fontWeight: 600, letterSpacing: -0.1 }}>Text</span>
                     </button>
                   </div>
 
-                  {/* Subtle divider with breathing room */}
-                  <div style={{ height: 0.5, background: "#E5E5EA", margin: "18px 0" }} />
-
-                  {/* Status label */}
-                  <div style={{
-                    fontSize: a11yPx(11), fontWeight: 500, color: "#8A8A8E",
-                    letterSpacing: 0.3, textTransform: "uppercase", margin: "0 4px 10px",
-                  }}>
-                    Status
-                  </div>
-
-                  {/* Status pill row — wraps if needed */}
+                  {/* Unified segmented status control */}
                   {(() => {
                     const norm = (lessonStatus || "").toLowerCase();
-                    const statusItems = [
+                    const segments = [
                       {
                         id: "prep",
                         label: "Prep",
+                        icon: ClipboardList,
                         active: norm === "prep" || norm === "preparing",
-                        accent: "#8A5BC9",
-                        onClick: () => navigate(`/instructor/pupils/${pupilId}?tab=progress`),
+                        activeBg: "#6E6E73",
+                        activeFg: "#FFFFFF",
+                        inactiveFg: "#6E6E73",
                         isDropdown: false as const,
+                        onClick: () => navigate(`/instructor/pupils/${pupilId}?tab=progress`),
                       },
                       {
                         id: "on_the_way",
                         label: "On the way",
+                        icon: Send,
                         active: norm === "en_route" || norm === "on_the_way",
-                        accent: "#2B7BC8",
+                        activeBg: "#2B7BC8",
+                        activeFg: "#FFFFFF",
+                        inactiveFg: "#6E6E73",
                         isDropdown: true as const,
                       },
                       {
                         id: "late",
                         label: "Running late",
+                        icon: Clock,
                         active: norm === "late" || norm === "running_late",
-                        accent: "#B8801F",
-                        onClick: () => setLateSheetOpen(true),
+                        activeBg: "#E08E1A",
+                        activeFg: "#FFFFFF",
+                        inactiveFg: "#6E6E73",
                         isDropdown: false as const,
+                        onClick: () => setLateSheetOpen(true),
                       },
                       {
                         id: "here",
                         label: "Here",
+                        icon: MapPin,
                         active: norm === "arrived" || norm === "here",
-                        accent: "#34C759",
-                        onClick: () => handleArrived(),
+                        activeBg: "#34C759",
+                        activeFg: "#FFFFFF",
+                        inactiveFg: "#6E6E73",
                         isDropdown: false as const,
+                        onClick: () => handleArrived(),
                       },
                     ];
 
-                    const pillStyle = (active: boolean, accent: string): React.CSSProperties => ({
-                      borderRadius: 999,
-                      padding: "8px 14px",
-                      minHeight: 34,
-                      border: active ? "none" : "0.5px solid #E5E5EA",
-                      background: active ? accent : "#FFFFFF",
-                      color: active ? "#FFFFFF" : "#1C1C1E",
-                      opacity: active ? 1 : 0.85,
-                      fontSize: a11yPx(12),
-                      fontWeight: 600,
-                      letterSpacing: -0.05,
+                    const segmentStyle = (s: typeof segments[number]): React.CSSProperties => ({
+                      flex: 1, minWidth: 0,
+                      background: s.active ? s.activeBg : "transparent",
+                      color: s.active ? s.activeFg : s.inactiveFg,
+                      border: "none", borderRadius: 14,
+                      padding: "8px 4px", minHeight: 52,
                       cursor: "pointer",
-                      display: "inline-flex", alignItems: "center", justifyContent: "center",
-                      transition: "background 0.15s ease, opacity 0.15s ease",
+                      display: "inline-flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3,
+                      transition: "background 0.2s ease, color 0.2s ease, transform 0.15s ease",
+                      boxShadow: s.active ? "0 1px 2px rgba(16,24,40,0.06), 0 4px 10px -4px rgba(16,24,40,0.12)" : "none",
                     });
 
                     return (
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                        {statusItems.map((s) => {
+                      <div style={{
+                        display: "flex", alignItems: "stretch",
+                        background: "#EEF1F6", borderRadius: 18,
+                        padding: 4, gap: 2,
+                      }}>
+                        {segments.map((s) => {
+                          const Icon = s.icon;
+                          const inner = (
+                            <>
+                              <Icon style={{ width: 16, height: 16 }} strokeWidth={2.1} />
+                              <span style={{
+                                fontSize: a11yPx(11), fontWeight: 600, letterSpacing: -0.05,
+                                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%",
+                              }}>
+                                {s.label}
+                              </span>
+                            </>
+                          );
                           if (s.isDropdown) {
                             return (
                               <DropdownMenu key={s.id}>
                                 <DropdownMenuTrigger asChild>
                                   <button onClick={(e) => e.stopPropagation()}
-                                    className="active:opacity-70"
-                                    style={pillStyle(s.active, s.accent)}>
-                                    {s.label}
+                                    className="active:scale-[0.97]"
+                                    style={segmentStyle(s)}
+                                    aria-label={s.label}>
+                                    {inner}
                                   </button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="center" className="w-52">
@@ -1529,9 +1543,11 @@ export function NextUpTile({
                           return (
                             <button key={s.id}
                               onClick={(e) => { e.stopPropagation(); s.onClick?.(); }}
-                              className="active:opacity-70"
-                              style={pillStyle(s.active, s.accent)}>
-                              {s.label}
+                              className="active:scale-[0.97]"
+                              style={segmentStyle(s)}
+                              aria-label={s.label}
+                              aria-pressed={s.active}>
+                              {inner}
                             </button>
                           );
                         })}
