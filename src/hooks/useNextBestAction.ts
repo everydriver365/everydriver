@@ -13,10 +13,15 @@ export interface NextBestAction {
   rank: number;
   title: string;
   subtitle: string;
+  verb: string;
   icon: LucideIcon;
   tone: NextActionTone;
   iconBg: string;
   iconFg: string;
+  /** Soft tinted background gradient start for the hero card. */
+  cardBg: string;
+  /** Hairline border tint. */
+  cardBorder: string;
   onPress: () => void;
   snoozeKey: string;
 }
@@ -100,10 +105,13 @@ export function useNextBestAction(instructorId: string | undefined): NextBestAct
           rank: 1,
           title: `Chase £${debt.amount.toFixed(0)} from ${debt.pupilName}`,
           subtitle: "Outstanding balance",
+          verb: "Chase",
           icon: PoundSterling,
           tone: "amber",
           iconBg: "rgba(184,128,31,0.10)",
           iconFg: "#B8801F",
+          cardBg: "#FFF8EC",
+          cardBorder: "rgba(184,128,31,0.22)",
           onPress: () => navigate(`/instructor/pay?pupilId=${debt.pupilId}`),
           snoozeKey: key,
         };
@@ -121,10 +129,13 @@ export function useNextBestAction(instructorId: string | undefined): NextBestAct
             rank: 2,
             title: "Respond to swap offer",
             subtitle: `Expires in ~${remaining}h`,
+            verb: "Respond",
             icon: ArrowLeftRight,
             tone: "blue",
             iconBg: "rgba(43,123,200,0.10)",
             iconFg: "#2B7BC8",
+            cardBg: "#EFF6FF",
+            cardBorder: "rgba(43,123,200,0.22)",
             onPress: () => navigate("/instructor/test-requests"),
             snoozeKey: key,
           };
@@ -143,10 +154,13 @@ export function useNextBestAction(instructorId: string | undefined): NextBestAct
           rank: 3,
           title: `Offer ${format(new Date(usefulGap.date), "EEE d MMM")} gap`,
           subtitle: `${usefulGap.suggestedPupils.length} pupil${usefulGap.suggestedPupils.length === 1 ? "" : "s"} could fill it`,
+          verb: "Offer",
           icon: CalendarPlus,
           tone: "green",
           iconBg: "rgba(59,139,59,0.10)",
           iconFg: "#3B8B3B",
+          cardBg: "#EEF7EE",
+          cardBorder: "rgba(59,139,59,0.22)",
           onPress: () => navigate("/instructor/gaps"),
           snoozeKey: key,
         };
@@ -162,10 +176,13 @@ export function useNextBestAction(instructorId: string | undefined): NextBestAct
           rank: 4,
           title: `Re-engage ${atRisk.pupilName}`,
           subtitle: atRisk.factors[0] ?? "At risk of dropping off",
+          verb: "Re-engage",
           icon: UserCheck,
           tone: "purple",
           iconBg: "rgba(138,91,201,0.10)",
           iconFg: "#8A5BC9",
+          cardBg: "#F5EFFB",
+          cardBorder: "rgba(138,91,201,0.22)",
           onPress: () => navigate(`/instructor/pupils/${atRisk.pupilId}`),
           snoozeKey: key,
         };

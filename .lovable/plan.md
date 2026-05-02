@@ -1,56 +1,64 @@
 ## Goal
-Make the home-page section labels consistent. Right now:
+Make the **"Do this next"** card visually pop so it reads as the *primary* CTA on the home screen — instead of looking like just another white card sitting between "Up next" and "Needs your attention".
 
-- **"Do this next"** uses a tiny 11px uppercase grey label *above* its card (iOS-style section header).
-- **"Needs your attention"** and **"Schedule"** use a large 17px bold heading *inside* the card.
+The uppercase `DO THIS NEXT` label above the card stays unchanged (peer of the other section labels). Only the card itself gets the hero treatment.
 
-This is jarring and makes "Do this next" look like a category label rather than a sibling section.
+## Visual changes (per-tone)
 
-## Decision
-**Standardise on the small uppercase label above the card** for all three sections — that's the iOS-consistency pattern already documented in memory (`mem://style/ios-consistency-patterns`: "uppercase section headers"). It also keeps card interiors cleaner and gives the screen a clearer rhythm.
+The priority engine already returns a `tone` (amber/blue/green/purple) per action. We'll use it to drive a tinted hero card:
+
+| Tone | Trigger | Card gradient | Solid icon fill | Verb pill |
+|---|---|---|---|---|
+| amber | Debt | `#FFF8EC → #FFFFFF` | `#B8801F` / white glyph | `Chase` |
+| blue | Swap offer | `#EFF6FF → #FFFFFF` | `#2B7BC8` / white glyph | `Respond` |
+| green | Gap fill | `#EEF7EE → #FFFFFF` | `#3B8B3B` / white glyph | `Offer` |
+| purple | Re-engage | `#F5EFFB → #FFFFFF` | `#8A5BC9` / white glyph | `Re-engage` |
+
+Card itself:
 
 ```text
-DO THIS NEXT
-[ tinted hero card ]
-
-NEEDS YOUR ATTENTION
-[ white card · rows ]
-
-SCHEDULE                          View all ›
-[ white card · today/tomorrow tabs · rows ]
+┌─ tinted gradient · 1px tone/20% border · same rounded-22 ──┐
+│  ╭──╮                                                       │
+│  │💷│  Chase £45 from Sarah               ┌─────┐  ›        │
+│  ╰──╯  Outstanding balance                │Chase│           │
+└────────────────────────────────────────────┴─────┘──────────┘
 ```
 
-## Changes (all in `src/components/instructor/PremiumIOSHomeView.tsx`)
+Specifics:
 
-1. **Extract a `<SectionLabel>` helper** at the top of the file — one component renders the 11px / 600 / `#8E8E93` / `0.4px` tracking / `uppercase` label with `margin: 0 2px 8px`, optional right-side action slot (for "View all").
-2. **Needs your attention section (lines ~338–383)**:
-   - Remove the inner `<div className="px-4 pt-4 pb-1">…<h2>Needs your attention</h2></div>` heading block.
-   - Render `<SectionLabel>Needs your attention</SectionLabel>` *above* the `<Card>`.
-   - Adjust the first row's top padding (the card no longer has the heading taking that space) — drop `pt-4` from the inner container so the first row sits flush.
-3. **Schedule section (lines ~386–400)**:
-   - Replace the inner `<h2>Schedule</h2>` + "View all" header row with `<SectionLabel action={<ViewAllButton/>}>Schedule</SectionLabel>` above the card.
-   - Tighten the segmented Today/Tomorrow control's top padding inside the card now that the heading row is gone.
-4. **Do this next** stays exactly as-is structurally — but the label is moved out of `DoThisNextCard.tsx` into the parent so all three sections use the same `<SectionLabel>` component. The card itself becomes label-less.
-   - Edit `src/components/instructor/DoThisNextCard.tsx`: remove the inline "Do this next" header `<div>` and the wrapping `<section>` margin — just render the card.
-   - Edit `PremiumIOSHomeView.tsx` (line ~333): wrap the `<DoThisNextCard>` in `<section className="mt-4"><SectionLabel>Do this next</SectionLabel><DoThisNextCard … /></section>`.
+1. **Background**: `linear-gradient(135deg, {tone-soft} 0%, #FFFFFF 70%)` instead of pure white. Subtle but immediately distinct from the flat white siblings on `#F4F7F6` page bg.
+2. **Border**: 1px solid `{tone}/20%` for a hairline coloured edge.
+3. **Icon tile**: 44×44 (up from 40), solid `{iconFg}` fill (was 10% wash), white glyph at strokeWidth 2.
+4. **Title**: bump from 15px/600 to **16.5px/700**, letter-spacing `-0.2px` (kept tight, not larger than "Up next" pupil name to maintain hierarchy).
+5. **Verb pill**: small rounded pill (`{tone}/14% bg`, `{iconFg}` text, 11px/700, `Chase`/`Respond`/`Offer`/`Re-engage`) sitting between the text block and the chevron.
+6. **One-shot pulse**: a 1.6s ease-out ring expansion behind the icon tile on mount only (CSS keyframes). Skipped when `prefers-reduced-motion: reduce`.
+7. **Snooze button (✕)**: shrunk to a tiny 13px control top-right, lower-contrast — stops competing with the verb pill / chevron.
 
-## Visual spec for `<SectionLabel>`
-```text
-font-size: 11px
-font-weight: 600
-color: #8E8E93
-text-transform: uppercase
-letter-spacing: 0.4px
-margin: 0 2px 8px
-display: flex; justify-content: space-between; align-items: baseline
-```
-Right-side `action` slot styled as `text-[12px] font-semibold text-[#007AFF]` to keep the existing "View all ›" affordance.
+## Code changes
+
+**`src/hooks/useNextBestAction.ts`** — extend `NextBestAction` interface with three fields per branch:
+- `verb: string` (already mapped above)
+- `cardBg: string` (gradient start hex)
+- `cardBorder: string` (border colour)
+
+Set them per rank in the existing `useMemo`. No new queries.
+
+**`src/components/instructor/DoThisNextCard.tsx`** — restyle the existing button:
+- Replace flat `background: #FFFFFF` with `linear-gradient(135deg, ${action.cardBg} 0%, #FFFFFF 70%)`.
+- Add `border: 1px solid ${action.cardBorder}`.
+- Bump icon tile to 44px, swap to solid `action.iconFg` fill with white glyph.
+- Bump title to 16.5px/700.
+- Insert verb pill before the snooze + chevron group.
+- Wrap icon tile in a relatively-positioned span with an absolute `::after` pseudo-ring driven by a keyframe (one-shot via `animationFillMode: forwards` and a state guard so it only plays once per mount).
+- Add a small `<style>` block (or inline keyframes via a styled span) registering `@keyframes dtn-pulse` once. Use a unique class so it doesn't collide.
+- Honour `@media (prefers-reduced-motion: reduce)` to disable the pulse.
 
 ## Out of scope
-- No change to card interiors, row layout, icons or data.
-- No mobile layout restructure (per Core memory rule) — only the heading element moves.
-- "Do this next" tinted-hero styling from the prior plan is unaffected; this is purely about label parity.
+- No change to the priority engine logic or data sources.
+- No change to gating in `PremiumIOSHomeView.tsx`.
+- No change to the `SectionLabel` style — label stays grey to keep all five home sections visually equal at the heading level. The card carries all the emphasis.
+- No mobile layout restructure.
 
 ## Files
-- Edit: `src/components/instructor/PremiumIOSHomeView.tsx` — add `SectionLabel`, restructure three section headers.
-- Edit: `src/components/instructor/DoThisNextCard.tsx` — remove the internal label/section wrapper.
+- Edit: `src/hooks/useNextBestAction.ts` — add `verb`, `cardBg`, `cardBorder` to each returned action.
+- Edit: `src/components/instructor/DoThisNextCard.tsx` — apply hero styling, verb pill, one-shot pulse, smaller snooze.
