@@ -482,64 +482,199 @@ export default function InstructorSendReminder() {
                 <X size={18} color="#1c1c1e" />
               </button>
             </div>
-            <div className="px-4 pb-2 flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  haptics.selection();
-                  setSelectedIds(new Set(pupils.map((p) => p.id)));
-                }}
-                className="text-[12px] font-semibold text-[#1c1c1e] bg-[#F4F4F5] rounded-full px-3 py-1.5"
-              >
-                Select all
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  haptics.selection();
-                  setSelectedIds(new Set());
-                }}
-                className="text-[12px] font-semibold text-[#1c1c1e] bg-[#F4F4F5] rounded-full px-3 py-1.5"
-              >
-                Clear
-              </button>
-              <div className="ml-auto text-[12px] text-[#71717A]">
-                {selectedIds.size}/{pupils.length}
-              </div>
-            </div>
-            <div className="overflow-y-auto px-2 pb-2">
-              {pupils.map((p) => {
-                const checked = selectedIds.has(p.id);
-                const amt = Math.abs(p.account_balance || 0).toFixed(2);
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => toggleRecipient(p.id)}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-black/5 active:scale-[0.99] transition text-left"
-                  >
-                    <div
-                      className={cn(
-                        "h-6 w-6 rounded-md flex items-center justify-center border-2 transition",
-                        checked
-                          ? "bg-[#1c1c1e] border-[#1c1c1e]"
-                          : "bg-white border-[#D4D4D8]"
+            {(() => {
+              const q = recipientSearch.trim().toLowerCase();
+              const filtered = pupils.filter((p) => {
+                const owed = Math.abs(p.account_balance || 0);
+                if (owed < minBalance) return false;
+                if (!q) return true;
+                const pc = getPostcode(p).toLowerCase();
+                return p.name.toLowerCase().includes(q) || pc.includes(q);
+              });
+
+              // Postcode chip options (outward codes, top 6 by frequency)
+              const counts = new Map<string, number>();
+              for (const p of pupils) {
+                const out = postcodeOutward(getPostcode(p));
+                if (out) counts.set(out, (counts.get(out) || 0) + 1);
+              }
+              const postcodeChips = [...counts.entries()]
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 6)
+                .map(([code]) => code);
+
+              const balanceChips = [
+                { label: "Any", val: 0 },
+                { label: "£20+", val: 20 },
+                { label: "£50+", val: 50 },
+                { label: "£100+", val: 100 },
+              ];
+
+              return (
+                <>
+                  {/* Search */}
+                  <div className="px-4 pb-2">
+                    <div className="relative">
+                      <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-[#71717A]"
+                      />
+                      <input
+                        type="text"
+                        value={recipientSearch}
+                        onChange={(e) => setRecipientSearch(e.target.value)}
+                        placeholder="Search name or postcode"
+                        className="w-full h-10 pl-9 pr-9 rounded-xl bg-[#F4F4F5] text-[14px] text-[#1c1c1e] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#1c1c1e]/10"
+                      />
+                      {recipientSearch && (
+                        <button
+                          type="button"
+                          onClick={() => setRecipientSearch("")}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full flex items-center justify-center hover:bg-black/5"
+                          aria-label="Clear search"
+                        >
+                          <X size={14} color="#71717A" />
+                        </button>
                       )}
+                    </div>
+                  </div>
+
+                  {/* Min balance chips */}
+                  <div className="px-4 pb-2 flex gap-1.5 overflow-x-auto no-scrollbar">
+                    {balanceChips.map((c) => {
+                      const active = minBalance === c.val;
+                      return (
+                        <button
+                          key={c.label}
+                          type="button"
+                          onClick={() => {
+                            haptics.selection();
+                            setMinBalance(c.val);
+                          }}
+                          className={cn(
+                            "shrink-0 text-[12px] font-semibold rounded-full px-3 py-1.5 transition active:scale-95",
+                            active
+                              ? "bg-[#1c1c1e] text-white"
+                              : "bg-[#F4F4F5] text-[#1c1c1e]"
+                          )}
+                        >
+                          {c.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Postcode chips */}
+                  {postcodeChips.length > 0 && (
+                    <div className="px-4 pb-2 flex gap-1.5 overflow-x-auto no-scrollbar">
+                      {postcodeChips.map((pc) => {
+                        const active =
+                          recipientSearch.trim().toUpperCase() === pc;
+                        return (
+                          <button
+                            key={pc}
+                            type="button"
+                            onClick={() => {
+                              haptics.selection();
+                              setRecipientSearch(active ? "" : pc);
+                            }}
+                            className={cn(
+                              "shrink-0 text-[12px] font-semibold rounded-full px-3 py-1.5 transition active:scale-95 border",
+                              active
+                                ? "bg-[#1c1c1e] text-white border-[#1c1c1e]"
+                                : "bg-white text-[#1c1c1e] border-[#E4E4E7]"
+                            )}
+                          >
+                            {pc}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Bulk actions row (operate on filtered set) */}
+                  <div className="px-4 pb-2 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        haptics.selection();
+                        setSelectedIds((prev) => {
+                          const next = new Set(prev);
+                          filtered.forEach((p) => next.add(p.id));
+                          return next;
+                        });
+                      }}
+                      className="text-[12px] font-semibold text-[#1c1c1e] bg-[#F4F4F5] rounded-full px-3 py-1.5"
                     >
-                      {checked && <Check size={14} color="white" strokeWidth={3} />}
+                      Select shown ({filtered.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        haptics.selection();
+                        setSelectedIds((prev) => {
+                          const next = new Set(prev);
+                          filtered.forEach((p) => next.delete(p.id));
+                          return next;
+                        });
+                      }}
+                      className="text-[12px] font-semibold text-[#1c1c1e] bg-[#F4F4F5] rounded-full px-3 py-1.5"
+                    >
+                      Clear shown
+                    </button>
+                    <div className="ml-auto text-[12px] text-[#71717A]">
+                      {selectedIds.size}/{pupils.length}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-semibold text-[#1c1c1e] truncate">
-                        {p.name}
-                      </p>
-                      <p className="text-[11.5px] text-[#71717A]">
-                        £{amt} owed{!p.phone ? " · no phone" : ""}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+                  </div>
+
+                  {/* List */}
+                  <div className="overflow-y-auto px-2 pb-2 flex-1">
+                    {filtered.length === 0 ? (
+                      <div className="text-center text-[13px] text-[#71717A] py-8">
+                        No pupils match these filters.
+                      </div>
+                    ) : (
+                      filtered.map((p) => {
+                        const checked = selectedIds.has(p.id);
+                        const amt = Math.abs(p.account_balance || 0).toFixed(2);
+                        const pc = getPostcode(p);
+                        return (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => toggleRecipient(p.id)}
+                            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-black/5 active:scale-[0.99] transition text-left"
+                          >
+                            <div
+                              className={cn(
+                                "h-6 w-6 rounded-md flex items-center justify-center border-2 transition",
+                                checked
+                                  ? "bg-[#1c1c1e] border-[#1c1c1e]"
+                                  : "bg-white border-[#D4D4D8]"
+                              )}
+                            >
+                              {checked && (
+                                <Check size={14} color="white" strokeWidth={3} />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[14px] font-semibold text-[#1c1c1e] truncate">
+                                {p.name}
+                              </p>
+                              <p className="text-[11.5px] text-[#71717A] truncate">
+                                £{amt} owed
+                                {pc ? ` · ${pc.toUpperCase()}` : ""}
+                                {!p.phone ? " · no phone" : ""}
+                              </p>
+                            </div>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </>
+              );
+            })()}
             <div className="px-4 pt-2">
               <button
                 type="button"
