@@ -723,29 +723,30 @@ export function NextUpTile({
             boxShadow: "0 14px 34px rgba(15,23,42,0.07)",
             display: "flex", flexDirection: "column", gap: 18,
           }}>
-            {/* UP NEXT label — small, soft blue, tight to top */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            {/* UP NEXT label — premium small caps, soft blue */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
               <span style={{
-                fontSize: a11yPx(10), fontWeight: 600, color: "#7AA7E8",
-                letterSpacing: 0.8, textTransform: "uppercase",
+                fontSize: a11yPx(12), fontWeight: 700, color: "#8BB9F2",
+                letterSpacing: 1.3, textTransform: "uppercase",
               }}>
                 Up next
               </span>
               {(() => {
                 const isPending = !checkInStatus || checkInStatus === "pending";
                 const canNudge = isPending && !!pupilPhone;
+                const pillBase: React.CSSProperties = {
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  borderRadius: 999, padding: "7px 12px",
+                  fontSize: a11yPx(13), fontWeight: 700, letterSpacing: 0.1,
+                };
                 if (nudgeSentAt) {
                   return (
-                    <span
-                      aria-label="Reminder sent"
-                      style={{
-                        display: "inline-flex", alignItems: "center", gap: 4,
-                        background: "#E8F5EE", color: "#1F7A3F",
-                        borderRadius: 999, padding: "3px 8px",
-                        fontSize: 10, fontWeight: 600, letterSpacing: 0.1,
-                      }}
-                    >
-                      <CheckCircle2 style={{ width: 11, height: 11, strokeWidth: 2.4 }} />
+                    <span aria-label="Reminder sent" style={{
+                      ...pillBase,
+                      background: "#E3F6EA", color: "#1F7A3F",
+                      border: "1px solid rgba(31,122,63,0.12)",
+                    }}>
+                      <CheckCircle2 style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
                       Reminder sent
                     </span>
                   );
@@ -765,27 +766,40 @@ export function NextUpTile({
                       aria-label="Send confirmation reminder to pupil"
                       className="active:scale-95"
                       style={{
-                        display: "inline-flex", alignItems: "center", gap: 4,
-                        background: "#FFF4E0", color: "#A8731A",
-                        border: "none", borderRadius: 999, padding: "3px 8px",
-                        fontSize: 10, fontWeight: 600, letterSpacing: 0.1,
+                        ...pillBase,
+                        background: "#FFF3D6", color: "#A15A10",
+                        border: "1px solid rgba(161,90,16,0.12)",
                         cursor: "pointer",
                         transition: "transform 120ms cubic-bezier(0.2,0.7,0.2,1)",
                       }}
                     >
-                      <Clock style={{ width: 11, height: 11, strokeWidth: 2.4 }} />
+                      <Clock style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
                       Awaiting confirmation · Tap to nudge
                     </button>
                   );
                 }
-                if (checkInStatus) {
+                if (checkInStatus === "confirmed") {
                   return (
-                    <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5" />
+                    <span style={{ ...pillBase, background: "#E3F6EA", color: "#1F7A3F", border: "1px solid rgba(31,122,63,0.12)" }}>
+                      <CheckCircle2 style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                      Confirmed
+                    </span>
                   );
                 }
-                // pending without phone — show plain Awaiting badge
+                if (checkInStatus === "declined" || checkInStatus === "cancelled") {
+                  return (
+                    <span style={{ ...pillBase, background: "#FCE4E4", color: "#9A1F1F", border: "1px solid rgba(154,31,31,0.12)" }}>
+                      <AlertTriangle style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                      {checkInStatus === "declined" ? "Declined" : "Cancelled"}
+                    </span>
+                  );
+                }
+                // pending without phone — amber awaiting
                 return (
-                  <LessonCheckInBadge status="pending" className="text-[10px] py-0 px-1.5 h-5" />
+                  <span style={{ ...pillBase, background: "#FFF3D6", color: "#A15A10", border: "1px solid rgba(161,90,16,0.12)" }}>
+                    <Clock style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                    Awaiting confirmation
+                  </span>
                 );
               })()}
             </div>
