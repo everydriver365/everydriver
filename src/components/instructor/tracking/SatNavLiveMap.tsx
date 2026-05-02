@@ -385,20 +385,31 @@ export function SatNavLiveMap({
       mapDivRef.current.style.background = "#F2F2F7";
     }
 
-    const map = new google.maps.Map(mapDivRef.current, {
+    // Vector mapId enables tilt + heading-up rotation. When provided we use
+    // it (and skip inline `styles`, which Google ignores for vector maps —
+    // styling lives in Cloud Console against that map ID). When absent we
+    // fall back to the styled raster map (no tilt, no rotation) so the
+    // component still works.
+    const mapId = (import.meta as any).env?.VITE_GOOGLE_MAPS_MAP_ID as string | undefined;
+    const mapOptions: google.maps.MapOptions = {
       center,
       zoom: fullscreen ? 18.5 : 17,
-      tilt: fullscreen ? 30 : 0,
-      heading: heading ?? 0,
+      tilt: 0,
+      heading: 0,
       disableDefaultUI: true,
       gestureHandling: "greedy",
       mapTypeId: "roadmap",
       clickableIcons: false,
       keyboardShortcuts: false,
       backgroundColor: "#F2F2F7",
-      styles: navStyles,
-      // Note: no mapId — required so inline `styles` above are honoured
-    });
+    };
+    if (mapId) {
+      (mapOptions as any).mapId = mapId;
+    } else {
+      mapOptions.styles = navStyles;
+    }
+    const map = new google.maps.Map(mapDivRef.current, mapOptions);
+    vectorReadyRef.current = !!mapId;
 
     mapRef.current = map;
 
