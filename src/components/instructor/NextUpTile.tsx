@@ -130,6 +130,13 @@ export function NextUpTile({
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [nudgeSentAt, setNudgeSentAt] = useState<number | null>(null);
+  // Auto-clear "Reminder sent" chip back to Awaiting after ~3s
+  useEffect(() => {
+    if (!nudgeSentAt) return;
+    const t = setTimeout(() => setNudgeSentAt(null), 3000);
+    return () => clearTimeout(t);
+  }, [nudgeSentAt]);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [lateSheetOpen, setLateSheetOpen] = useState(false);
   const [showGPSRecorder, setShowGPSRecorder] = useState(false);
@@ -692,6 +699,63 @@ export function NextUpTile({
               }}>
                 Up next
               </span>
+              {(() => {
+                const isPending = !checkInStatus || checkInStatus === "pending";
+                const canNudge = isPending && !!pupilPhone;
+                if (nudgeSentAt) {
+                  return (
+                    <span
+                      aria-label="Reminder sent"
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 4,
+                        background: "#E8F5EE", color: "#1F7A3F",
+                        borderRadius: 999, padding: "3px 8px",
+                        fontSize: 10, fontWeight: 600, letterSpacing: 0.1,
+                      }}
+                    >
+                      <CheckCircle2 style={{ width: 11, height: 11, strokeWidth: 2.4 }} />
+                      Reminder sent
+                    </span>
+                  );
+                }
+                if (canNudge) {
+                  return (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        try { haptics.medium(); } catch {}
+                        const firstName = (pupilName || "").split(" ")[0];
+                        sendSMS(`Hi ${firstName}, just confirming your driving lesson at ${formatTime24(startTime)}. Please reply to confirm — thanks!`);
+                        setNudgeSentAt(Date.now());
+                        toast.success("Reminder sent");
+                      }}
+                      aria-label="Send confirmation reminder to pupil"
+                      className="active:scale-95"
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 4,
+                        background: "#FFF4E0", color: "#A8731A",
+                        border: "none", borderRadius: 999, padding: "3px 8px",
+                        fontSize: 10, fontWeight: 600, letterSpacing: 0.1,
+                        cursor: "pointer",
+                        transition: "transform 120ms cubic-bezier(0.2,0.7,0.2,1)",
+                      }}
+                    >
+                      <Clock style={{ width: 11, height: 11, strokeWidth: 2.4 }} />
+                      Awaiting · Tap to nudge
+                    </button>
+                  );
+                }
+                if (checkInStatus) {
+                  return (
+                    <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5" />
+                  );
+                }
+                // pending without phone — show plain Awaiting badge
+                return (
+                  <LessonCheckInBadge status="pending" className="text-[10px] py-0 px-1.5 h-5" />
+                );
+              })()}
             </div>
 
             {/* Header row: pupil name (left) | time + date (right) */}

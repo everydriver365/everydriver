@@ -24,6 +24,7 @@ import { CancelLessonDialog } from "./CancelLessonDialog";
 import { AddLessonSheet } from "./AddLessonSheet";
 import { triggerAutomations } from "@/utils/triggerAutomations";
 import { toast } from "@/hooks/use-toast";
+import { LessonCheckInBadge } from "./LessonCheckInBadge";
 import {
   CATEGORY_STYLES,
   categoriseEvent,
@@ -283,6 +284,7 @@ function ScheduleListRow({
   kind,
   completion,
   needsAttention,
+  checkInStatus,
   onClick,
 }: {
   timeText: string;
@@ -298,6 +300,7 @@ function ScheduleListRow({
   kind?: "lesson" | "external" | "block" | "allday";
   completion?: { eol?: boolean; payment?: boolean; notes?: boolean; eolPending?: boolean; paymentPending?: boolean };
   needsAttention?: boolean;
+  checkInStatus?: string | null;
   onClick?: () => void;
 }) {
   const Icon = kind === "lesson" ? User : CalendarDays;
@@ -476,6 +479,9 @@ function ScheduleListRow({
             >
               OVERDUE
             </span>
+          )}
+          {checkInStatus && kind === "lesson" && (
+            <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5" />
           )}
           <StatusPill status={statusPill} />
 
@@ -1253,6 +1259,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                                     : undefined
                                 }
                                 needsAttention={needsAttention}
+                                checkInStatus={isPast ? null : (lesson as any).check_in_status}
                               />
                             );
                           })()}
