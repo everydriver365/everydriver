@@ -836,7 +836,7 @@ export function SatNavLiveMap({
                         flex: 1,
                       }}
                     >
-                      {roadName}
+                      {displayRoadName}
                     </span>
                   ) : (
                     <span
