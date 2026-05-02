@@ -202,7 +202,7 @@ export function HomepageHero({
       <div
         style={{
           background: "#FFFFFF",
-          borderRadius: 20,
+          borderRadius: 12,
           boxShadow: "0 4px 24px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
           overflow: "hidden",
         }}
@@ -240,7 +240,7 @@ export function HomepageHero({
                         textTransform: "uppercase" as const,
                         backgroundColor: "rgba(31,134,255,0.12)",
                         padding: "4px 10px",
-                        borderRadius: 20,
+                        borderRadius: 12,
                       }}
                     >
                       {slide.label}
@@ -320,7 +320,7 @@ export function HomepageHero({
               className="flex flex-col items-center rounded-2xl py-2 px-1 cursor-pointer"
               style={{
                 backgroundColor: stat.highlight ? stat.tileBg : stat.tileBg,
-                borderRadius: 16,
+                borderRadius: 12,
               }}
             >
                 <div

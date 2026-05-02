@@ -27,7 +27,7 @@ export function DesktopNavigationCard({
   const content = (
     <div
       className="flex items-center gap-4 p-4 bg-card shadow-premium hover:shadow-premium-lg transition-shadow duration-200 cursor-pointer group tabular-nums"
-      style={{ borderRadius: 16 }}
+      style={{ borderRadius: 12 }}
     >
       <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", iconBgColor)}>
         {(() => {

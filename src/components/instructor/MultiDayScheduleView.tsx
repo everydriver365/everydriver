@@ -895,7 +895,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
             gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
             gap: 0,
             background: "#FFFFFF",
-            borderRadius: 18,
+            borderRadius: 12,
             padding: "12px 6px",
             boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -10px rgba(16,24,40,0.08)",
           }}
@@ -1337,7 +1337,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
           bottom: 96,
           width: 52,
           height: 52,
-          borderRadius: 16,
+          borderRadius: 12,
           background: "#FFFFFF",
           border: "none",
           boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.08)",

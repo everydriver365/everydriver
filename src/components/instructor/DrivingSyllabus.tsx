@@ -227,7 +227,7 @@ export function DrivingSyllabus({ pupilId, pupilName, onClose }: DrivingSyllabus
             style={{
               width: 32,
               height: 32,
-              borderRadius: 16,
+              borderRadius: 12,
               background: '#F2F2F4',
               display: 'inline-flex',
               alignItems: 'center',

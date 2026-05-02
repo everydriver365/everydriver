@@ -205,7 +205,7 @@ export function RecentSessionsList({ instructorId }: RecentSessionsListProps) {
                         style={{
                           width: 36,
                           height: 36,
-                          borderRadius: 18,
+                          borderRadius: 12,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",

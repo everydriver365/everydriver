@@ -864,7 +864,7 @@ export function ChatWindow({
             <div
               style={{
                 background: PAGE_BG,
-                borderRadius: 18,
+                borderRadius: 12,
                 padding: "8px 12px",
                 display: "flex",
                 alignItems: "center",

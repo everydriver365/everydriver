@@ -14,7 +14,7 @@ export function DashcamGalleryView({ instructorId, showAllInstructors }: Dashcam
     <div
       style={{
         background: "#FFFFFF",
-        borderRadius: 20,
+        borderRadius: 12,
         border: "0.5px solid #E5E5EA",
         padding: 24,
         fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
@@ -25,7 +25,7 @@ export function DashcamGalleryView({ instructorId, showAllInstructors }: Dashcam
           style={{
             width: 64,
             height: 64,
-            borderRadius: 16,
+            borderRadius: 12,
             background: "#F2F2F7",
             display: "flex",
             alignItems: "center",

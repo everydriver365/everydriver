@@ -91,7 +91,7 @@ function LargeToolCard({ tile, onPress, locked }: { tile: QuickAccessTile; onPre
       onClick={onPress}
       aria-label={tile.title}
       style={{
-        background: "#FFFFFF", borderRadius: 20, padding: "14px 12px",
+        background: "#FFFFFF", borderRadius: 12, padding: "14px 12px",
         height: 92, display: "flex", flexDirection: "column",
         alignItems: "flex-start", justifyContent: "space-between",
         textAlign: "left", width: "100%", cursor: "pointer",
@@ -119,7 +119,7 @@ function PrimaryToolCard({ tile, onPress, locked }: { tile: QuickAccessTile; onP
       onClick={onPress}
       aria-label={tile.title}
       style={{
-        background: "#FFFFFF", borderRadius: 22, padding: "18px 16px",
+        background: "#FFFFFF", borderRadius: 12, padding: "18px 16px",
         height: 130, display: "flex", flexDirection: "column",
         alignItems: "flex-start", justifyContent: "space-between",
         textAlign: "left", width: "100%", cursor: "pointer",
@@ -426,7 +426,7 @@ export function HomeToolsHub() {
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.18 }}
             style={{
-              marginTop: 12, background: "#FFFFFF", borderRadius: 16, overflow: "hidden",
+              marginTop: 12, background: "#FFFFFF", borderRadius: 12, overflow: "hidden",
               boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
             }}
           >
@@ -514,7 +514,7 @@ export function HomeToolsHub() {
             <div>
               <SectionLabel>Suggested</SectionLabel>
               <div style={{
-                background: "#FFFFFF", borderRadius: 16, overflow: "hidden",
+                background: "#FFFFFF", borderRadius: 12, overflow: "hidden",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
               }}>
                 {suggestedTools.map((tile, i) => (
@@ -548,7 +548,7 @@ export function HomeToolsHub() {
           {/* Browse all tools (collapsed Categories) */}
           <div style={{ marginTop: 24 }}>
             <div style={{
-              background: "#FFFFFF", borderRadius: 18, overflow: "hidden",
+              background: "#FFFFFF", borderRadius: 12, overflow: "hidden",
               boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
             }}>
               <button

@@ -1151,7 +1151,7 @@ export function NextUpTile({
               Lesson details
             </div>
             <div style={{
-              background: "#FFFFFF", borderRadius: 16, padding: 4,
+              background: "#FFFFFF", borderRadius: 12, padding: 4,
               boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
               display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
             }}>
@@ -1223,7 +1223,7 @@ export function NextUpTile({
                       Conditions
                     </div>
                     <div style={{
-                      background: "#FFFFFF", borderRadius: 16,
+                      background: "#FFFFFF", borderRadius: 12,
                       boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
                       overflow: "hidden",
                     }}>
@@ -1397,7 +1397,7 @@ export function NextUpTile({
                   <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                     {/* Last lesson card (elevated) */}
                     <div style={{
-                      background: "#FFFFFF", borderRadius: 16, padding: 16,
+                      background: "#FFFFFF", borderRadius: 12, padding: 16,
                       boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
                     }}>
                       {lastLesson ? (
@@ -1490,7 +1490,7 @@ export function NextUpTile({
                     {lastLessonPlan && (
                       <div style={{
                         display: "flex", alignItems: "flex-start", gap: 12,
-                        padding: 14, borderRadius: 16, background: "#FFFFFF",
+                        padding: 14, borderRadius: 12, background: "#FFFFFF",
                         boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
                       }}>
                         <div style={{
@@ -1516,7 +1516,7 @@ export function NextUpTile({
                     {noBalance && (
                       <div style={{
                         display: "flex", alignItems: "center", gap: 12,
-                        padding: 14, borderRadius: 16,
+                        padding: 14, borderRadius: 12,
                         background: "#FFFFFF",
                         boxShadow: paymentDue
                           ? "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(239,68,68,0.18)"
@@ -1553,7 +1553,7 @@ export function NextUpTile({
                         style={{
                           width: "100%",
                           display: "flex", alignItems: "center", gap: 12,
-                          padding: 14, borderRadius: 16, background: "#FFFFFF",
+                          padding: 14, borderRadius: 12, background: "#FFFFFF",
                           boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
                           border: "none", textAlign: "left", cursor: "pointer",
                         }}>
@@ -1575,7 +1575,7 @@ export function NextUpTile({
                         style={{
                           width: "100%",
                           display: "flex", alignItems: "center", gap: 12,
-                          padding: 14, borderRadius: 16, background: "#FFFFFF",
+                          padding: 14, borderRadius: 12, background: "#FFFFFF",
                           boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
                           border: "none", textAlign: "left", cursor: "pointer",
                         }}>

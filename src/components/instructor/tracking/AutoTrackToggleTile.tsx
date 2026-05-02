@@ -56,7 +56,7 @@ export function AutoTrackToggleTile({ instructorId }: Props) {
       style={{
         background: "#FFFFFF",
         border: enabled ? "0.5px solid rgba(52,199,89,0.45)" : "0.5px solid #E5E5EA",
-        borderRadius: 16,
+        borderRadius: 12,
         padding: "14px 16px",
         display: "flex",
         alignItems: "center",

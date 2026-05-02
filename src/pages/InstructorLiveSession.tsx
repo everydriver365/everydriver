@@ -1048,7 +1048,7 @@ export default function InstructorLiveSession() {
                 ariaLabel="Tracking view"
               />
               <Suspense fallback={<div className="h-[70vh] flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
-                <div style={{ borderRadius: 16, overflow: "hidden", border: "0.5px solid #E5E5EA", height: "70vh" }}>
+                <div style={{ borderRadius: 12, overflow: "hidden", border: "0.5px solid #E5E5EA", height: "70vh" }}>
                   <InstructorFleetMap />
                 </div>
               </Suspense>
@@ -1092,7 +1092,7 @@ export default function InstructorLiveSession() {
               {/* 2. MAP — context only, ~28vh */}
               <div style={{
                 height: "28vh", minHeight: 180, maxHeight: 260,
-                borderRadius: 18, overflow: "hidden", border: "0.5px solid #E5E5EA",
+                borderRadius: 12, overflow: "hidden", border: "0.5px solid #E5E5EA",
                 opacity: 0.96,
               }}>
                 <MiniLiveMap
@@ -1188,7 +1188,7 @@ export default function InstructorLiveSession() {
                   disabled={!canStartLesson}
                   style={{
                     width: "100%", background: canStartLesson ? "#2B7BC8" : "#B8C4D6",
-                    border: "none", borderRadius: 22, padding: "18px 20px",
+                    border: "none", borderRadius: 12, padding: "18px 20px",
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
                     color: "#FFFFFF", fontSize: 16, fontWeight: 600,
                     cursor: canStartLesson ? "pointer" : "not-allowed",
@@ -1210,7 +1210,7 @@ export default function InstructorLiveSession() {
                   disabled={isStarting || !isConnected}
                   style={{
                     width: "100%", background: "#F4F6F9",
-                    border: "0.5px solid #E5E5EA", borderRadius: 22, padding: "16px 20px",
+                    border: "0.5px solid #E5E5EA", borderRadius: 12, padding: "16px 20px",
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
                     color: "#000", fontSize: 15, fontWeight: 600,
                     cursor: isStarting || !isConnected ? "not-allowed" : "pointer",
@@ -1232,7 +1232,7 @@ export default function InstructorLiveSession() {
                   disabled={isStarting}
                   style={{
                     width: "100%", background: "#FFFFFF",
-                    border: "0.5px solid #E5E5EA", borderRadius: 22, padding: "16px 20px",
+                    border: "0.5px solid #E5E5EA", borderRadius: 12, padding: "16px 20px",
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
                     color: "#000", fontSize: 15, fontWeight: 600,
                     cursor: isStarting ? "not-allowed" : "pointer",

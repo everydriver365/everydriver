@@ -245,7 +245,7 @@ export function StepLessonSummary({
     <div
       style={{
         background: "#FFFFFF",
-        borderRadius: 16,
+        borderRadius: 12,
         overflow: "hidden",
         border: `0.5px solid ${C.border}`,
       }}

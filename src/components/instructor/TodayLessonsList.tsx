@@ -133,7 +133,7 @@ export function TodayLessonsList({ lessons, instructorId, className = "" }: Toda
                         >
                           <div
                             className="p-3 active:scale-[0.98] transition-transform bg-card dark:bg-card border border-border"
-                            style={{ borderRadius: 16 }}
+                            style={{ borderRadius: 12 }}
                           >
                             {/* Top row: Avatar + Name + Type badge */}
                             <div className="flex items-center gap-2.5">
