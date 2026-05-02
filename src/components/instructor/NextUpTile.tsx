@@ -883,7 +883,11 @@ export function NextUpTile({
                           toast.success("Lesson started", { description: pupilName ? `${pupilName} • good luck!` : "Good luck!" });
                         }
                       });
-                      navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
+                      // Only auto-launch the live tracker when the instructor has
+                      // opted in via Settings → Auto-start tracker for every lesson.
+                      if (autoStartTracker) {
+                        navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
+                      }
                     }}
                     className="active:opacity-90"
                     style={{
