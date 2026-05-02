@@ -705,21 +705,9 @@ export function SatNavLiveMap({
         background: "white",
       }}
     >
-      {/* Top bar: Live badge + address */}
+      {/* Top bar: Signal status + road name */}
       <div style={{ background: "white", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div>
-          {isLive ? (
-            <span style={{ background: "#0f9e75", color: "white", fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 20, display: "inline-flex", alignItems: "center", gap: 5 }}>
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
-              </span>
-              Live
-            </span>
-          ) : lastSeenLabel ? (
-            <Badge variant="secondary" className="gap-1 text-[10px]">{lastSeenLabel}</Badge>
-          ) : null}
-        </div>
+        <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} />
         <div className="flex items-center gap-2 ml-3 flex-1 justify-end min-w-0">
           <SnapStatusPill status={snapStatus} lastFixLabel={lastFixLabel} />
           <p style={{ fontSize: 13, fontWeight: 600, color: "#1c1c1e" }} className="truncate text-right">
@@ -731,7 +719,13 @@ export function SatNavLiveMap({
       {/* Map */}
       <div className="relative" style={{ height: "45vh", minHeight: 240 }}>
         <div ref={mapDivRef} className="absolute inset-0 z-0" />
-        {!hasPosition && (
+        {mapError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-[6] px-6 text-center" style={{ background: "rgba(242,242,247,0.95)" }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "#1c1c1e" }}>Map unavailable</p>
+            <p style={{ fontSize: 12, color: "#8e8e93", marginTop: 4 }}>Unable to load live map right now.</p>
+          </div>
+        )}
+        {!hasPosition && !mapError && (
           <div className="absolute inset-0 flex flex-col items-center justify-center z-[5]" style={{ background: "rgba(242,242,247,0.8)" }}>
             <p style={{ fontSize: 14, color: "#8e8e93" }}>No position data yet</p>
           </div>
