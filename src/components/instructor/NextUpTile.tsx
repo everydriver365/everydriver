@@ -714,7 +714,7 @@ export function NextUpTile({
             className="overflow-hidden"
             style={{ marginLeft: 0, marginRight: 0, marginBottom: -16, marginTop: 4 }}
           >
-          <div style={{ padding: "22px 0 20px", display: "flex", flexDirection: "column", gap: 24, borderTop: "1px solid rgba(15,23,42,0.08)", background: "transparent" }}>
+          <div style={{ padding: "16px 0 20px", display: "flex", flexDirection: "column", gap: 16, borderTop: "0.5px solid #c6c6c8", background: "transparent" }}>
 
           {/* ── HERO CARD — native iOS UIKit grouped table view style ── */}
           <div style={{
