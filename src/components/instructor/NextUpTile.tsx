@@ -165,17 +165,19 @@ export function NextUpTile({
   const totalUnreadBadge = pupilUnreadCount + adminUnreadCount;
   const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition, isLoading: etaLoading, error: etaError } = useTrafficETA(pickupPostcode);
 
-  // Fetch instructor hourly rate for expected earnings
+  // Fetch instructor hourly rate (for expected earnings) and auto-start-tracker preference
   const [hourlyRate, setHourlyRate] = useState<number>(40);
+  const [autoStartTracker, setAutoStartTracker] = useState<boolean>(false);
   useEffect(() => {
     if (!instructorId) return;
     supabase
       .from("instructors")
-      .select("hourly_rate")
+      .select("hourly_rate, auto_start_tracker")
       .eq("id", instructorId)
       .maybeSingle()
       .then(({ data }) => {
         if (data?.hourly_rate) setHourlyRate(Number(data.hourly_rate));
+        if (typeof data?.auto_start_tracker === "boolean") setAutoStartTracker(data.auto_start_tracker);
       });
   }, [instructorId]);
   const expectedEarnings = (durationMinutes / 60) * hourlyRate;
