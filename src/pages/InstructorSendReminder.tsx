@@ -17,8 +17,12 @@ interface PupilRow {
   phone: string | null;
   email: string | null;
   account_balance: number | null;
-  home_postcode: string | null;
+  postcode: string | null;
+  pickup_postcode: string | null;
 }
+
+const getPostcode = (p: PupilRow) => (p.postcode || p.pickup_postcode || "").trim();
+const postcodeOutward = (pc: string) => pc.toUpperCase().split(/\s+/)[0] || "";
 
 const renderTemplate = (tpl: string, name: string, amount: string) =>
   tpl.replace(/\{name\}/g, name).replace(/\{amount\}/g, amount);
@@ -54,7 +58,7 @@ export default function InstructorSendReminder() {
         const [{ data: list }, { data: i }] = await Promise.all([
           supabase
             .from("pupils")
-            .select("id, name, phone, email, account_balance, home_postcode")
+            .select("id, name, phone, email, account_balance, postcode, pickup_postcode")
             .eq("instructor_id", instructorId)
             .is("deleted_at", null)
             .lt("account_balance", 0)
@@ -69,7 +73,7 @@ export default function InstructorSendReminder() {
         const [{ data: p }, { data: i }] = await Promise.all([
           supabase
             .from("pupils")
-            .select("id, name, phone, email, account_balance, home_postcode")
+            .select("id, name, phone, email, account_balance, postcode, pickup_postcode")
             .eq("id", pupilIdParam)
             .maybeSingle(),
           instructorPromise,
