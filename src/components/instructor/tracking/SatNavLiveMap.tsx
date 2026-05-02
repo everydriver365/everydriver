@@ -254,7 +254,7 @@ export function SatNavLiveMap({
       });
     }
 
-    // Append to route polyline
+    // Append to route polyline (top + casing kept in sync)
     const lastPt = pathRef.current[pathRef.current.length - 1];
     const shouldAdd = !lastPt ||
       Math.abs(lastPt.lat() - latitude) > 0.000005 ||
@@ -263,10 +263,33 @@ export function SatNavLiveMap({
     if (shouldAdd) {
       pathRef.current.push(latLng);
       polylineRef.current?.setPath(pathRef.current);
+      polylineCasingRef.current?.setPath(pathRef.current);
     }
 
+    // Off-centre camera (fullscreen only): place vehicle ~30% from bottom so
+    // road *ahead* is visible. Computed in pixel space then converted back.
+    if (fullscreen) {
+      const projection = map.getProjection();
+      const div = mapDivRef.current;
+      if (projection && div) {
+        const zoom = map.getZoom() ?? 18;
+        const scale = Math.pow(2, zoom);
+        const worldPx = projection.fromLatLngToPoint(latLng);
+        if (worldPx) {
+          // Shift target downward in screen space so vehicle sits lower in viewport.
+          const offsetY = div.clientHeight * 0.20; // 20% downward = arrow ~30% from bottom
+          const shiftedY = worldPx.y - offsetY / scale;
+          const shifted = new google.maps.Point(worldPx.x, shiftedY);
+          const shiftedLatLng = projection.fromPointToLatLng(shifted);
+          if (shiftedLatLng) {
+            map.panTo(shiftedLatLng);
+            return;
+          }
+        }
+      }
+    }
     map.panTo(pos);
-  }, [latitude, longitude, heading, isActive, getArrowIcon]);
+  }, [latitude, longitude, heading, isActive, getArrowIcon, fullscreen]);
 
   // Fullscreen mode — keep existing behavior
   if (fullscreen) {
