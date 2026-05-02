@@ -160,11 +160,12 @@ export function SatNavLiveMap({
     (async () => {
       try {
         const key = await fetchGoogleMapsKey();
-        if (!key || cancelled) return;
+        if (!key || cancelled) { if (!cancelled) setMapError(true); return; }
         await loadGoogleMaps(key);
-        if (!cancelled) setReady(true);
+        if (!cancelled) { setReady(true); setMapError(false); }
       } catch (e) {
         console.error("Failed to load Google Maps for SatNavLiveMap:", e);
+        if (!cancelled) setMapError(true);
       }
     })();
     return () => { cancelled = true; };
