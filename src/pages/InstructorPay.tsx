@@ -30,7 +30,7 @@ import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayo
 import { PageSkeleton } from "@/components/ui/skeletons/PageSkeleton";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useDailyEarnings } from "@/hooks/useDailyEarnings";
 import { PupilBalancesList } from "@/components/instructor/money/PupilBalancesList";
 import { Button } from "@/components/ui/button";
