@@ -307,24 +307,14 @@ export default function InstructorPay() {
                             <p className="text-[#e24b4a] text-xs font-semibold">Owes £{amount.toFixed(2)}</p>
                           </Link>
                           <div className="flex items-center gap-1.5 flex-shrink-0">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-7 w-7 border-[#e24b4a]/20 hover:bg-[#fff0f0]"
-                              onClick={(e) => { e.stopPropagation(); handleChase(pupil, "sms"); }}
-                              disabled={!!chasing || !pupil.phone}
+                            <Link
+                              to={`/instructor/send-reminder?pupilId=${pupil.id}`}
+                              onClick={(e) => { e.stopPropagation(); haptics.selection(); }}
+                              className="h-7 px-2.5 rounded-md border border-[#e24b4a]/20 hover:bg-[#fff0f0] flex items-center gap-1 text-[11px] font-semibold text-[#e24b4a]"
                             >
-                              {chasing === `${pupil.id}-sms` ? <Loader2 className="h-3 w-3 animate-spin" /> : <MessageSquare className="h-3 w-3 text-[#e24b4a]" />}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-7 w-7 border-[#e24b4a]/20 hover:bg-[#fff0f0]"
-                              onClick={(e) => { e.stopPropagation(); handleChase(pupil, "email"); }}
-                              disabled={!!chasing || !pupil.email}
-                            >
-                              {chasing === `${pupil.id}-email` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3 w-3 text-[#e24b4a]" />}
-                            </Button>
+                              <MessageSquare className="h-3 w-3" />
+                              Remind
+                            </Link>
                           </div>
                         </div>
                       );
