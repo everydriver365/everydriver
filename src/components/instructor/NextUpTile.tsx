@@ -1066,14 +1066,14 @@ export function NextUpTile({
                     ];
                     const segmentStyle = (s: typeof segments[number]): React.CSSProperties => ({
                       flex: 1, minWidth: 0,
-                      background: s.active ? s.activeBg : "transparent",
-                      color: s.active ? s.activeFg : s.inactiveFg,
-                      border: "none", borderRadius: 14,
-                      padding: "8px 4px", minHeight: 52,
+                      background: s.active ? "#FFFFFF" : "transparent",
+                      color: s.active ? "#2563FF" : "#63666D",
+                      border: "none", borderRadius: 16,
+                      padding: "8px 4px", minHeight: 64,
                       cursor: "pointer",
-                      display: "inline-flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3,
+                      display: "inline-flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
                       transition: "background 0.2s ease, color 0.2s ease, transform 0.15s ease",
-                      boxShadow: s.active ? "0 1px 2px rgba(16,24,40,0.06), 0 4px 10px -4px rgba(16,24,40,0.12)" : "none",
+                      boxShadow: s.active ? "0 6px 14px rgba(15,23,42,0.08)" : "none",
                     });
                     return (
                       <div style={{
