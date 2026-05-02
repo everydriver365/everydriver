@@ -726,8 +726,8 @@ export function NextUpTile({
             {/* UP NEXT label — premium small caps, soft blue */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
               <span style={{
-                fontSize: a11yPx(12), fontWeight: 700, color: "#8BB9F2",
-                letterSpacing: 1.3, textTransform: "uppercase",
+                fontSize: a11yPx(11), fontWeight: 700, color: "#8A8A8E",
+                letterSpacing: 1, textTransform: "uppercase",
               }}>
                 Up next
               </span>
