@@ -376,9 +376,9 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
       {/* SECTION 3: Today's schedule */}
       <section className="mt-4">
         <Card>
-          <div className="flex items-center justify-between px-4 pt-4 pb-1">
+          <div className="flex items-center justify-between px-4 pt-4 pb-3">
             <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] leading-tight">
-              Today's schedule
+              Schedule
             </h2>
             <button
               onClick={() => navigate("/instructor/schedule")}
@@ -389,16 +389,45 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
             </button>
           </div>
 
+          {/* Today / Tomorrow segmented control */}
+          <div className="px-4 pb-2">
+            <div
+              role="tablist"
+              aria-label="Schedule day"
+              className="grid grid-cols-2 gap-1 p-[3px] rounded-[10px] bg-[#F2F2F7]"
+            >
+              {(["today", "tomorrow"] as const).map((t) => {
+                const active = scheduleTab === t;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setScheduleTab(t)}
+                    className={`py-1.5 rounded-[8px] text-[13px] transition-colors ${
+                      active
+                        ? "bg-white text-[#1C1C1E] font-semibold shadow-[0_1px_2px_rgba(16,24,40,0.06)]"
+                        : "text-[#3C3C43]/60 font-medium"
+                    }`}
+                  >
+                    {t === "today" ? "Today" : "Tomorrow"}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {previewLessons.length === 0 ? (
             <div className="px-4 pt-3 pb-5 text-center">
               <div className="size-12 rounded-full bg-[#F2F2F7] flex items-center justify-center mx-auto mb-3">
                 <CalendarPlus className="size-[22px] text-[#3C3C43]/50" />
               </div>
               <p className="text-[15px] font-medium text-[#1C1C1E]">
-                No lessons scheduled today
+                {isTomorrowTab ? "No lessons tomorrow" : "No lessons scheduled today"}
               </p>
               <p className="text-[13px] text-[#3C3C43]/60 mt-0.5">
-                Add one to get started
+                {isTomorrowTab ? "Plan ahead or add a lesson" : "Add one to get started"}
               </p>
             </div>
           ) : (
