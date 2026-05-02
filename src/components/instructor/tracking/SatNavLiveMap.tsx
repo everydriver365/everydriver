@@ -231,26 +231,16 @@ export function SatNavLiveMap({
       ? { lat: latitude!, lng: longitude! }
       : { lat: 54.5, lng: -3.5 };
 
-    // Premium dark sat-nav style — charcoal geometry, muted roads, POIs hidden.
+    // Light Google Maps default styling — only hide POI + transit labels.
     const navStyles: google.maps.MapTypeStyle[] = [
-      { elementType: "geometry", stylers: [{ color: "#1c1c1e" }] },
-      { elementType: "labels.text.fill", stylers: [{ color: "#8e8e93" }] },
-      { elementType: "labels.text.stroke", stylers: [{ color: "#1c1c1e" }] },
-      { featureType: "administrative", elementType: "geometry", stylers: [{ visibility: "off" }] },
-      { featureType: "administrative.land_parcel", stylers: [{ visibility: "off" }] },
-      { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#c7c7cc" }] },
       { featureType: "poi", stylers: [{ visibility: "off" }] },
-      { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#1f2a22" }] },
-      { featureType: "road", elementType: "geometry", stylers: [{ color: "#2c2c2e" }] },
-      { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] },
-      { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#3a3a3c" }] },
-      { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#48484a" }] },
-      { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1c1c1e" }] },
-      { featureType: "road.local", elementType: "labels", stylers: [{ visibility: "simplified" }] },
       { featureType: "transit", stylers: [{ visibility: "off" }] },
-      { featureType: "water", elementType: "geometry", stylers: [{ color: "#0a1f2e" }] },
-      { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#3a4a5a" }] },
     ];
+
+    // iOS system grey 6 background under the map tiles
+    if (mapDivRef.current) {
+      mapDivRef.current.style.background = "#F2F2F7";
+    }
 
     const map = new google.maps.Map(mapDivRef.current, {
       center,
@@ -262,6 +252,7 @@ export function SatNavLiveMap({
       mapTypeId: "roadmap",
       clickableIcons: false,
       keyboardShortcuts: false,
+      backgroundColor: "#F2F2F7",
       styles: navStyles,
       // Note: no mapId — required so inline `styles` above are honoured
     });
