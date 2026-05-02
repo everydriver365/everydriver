@@ -908,10 +908,11 @@ export function SatNavLiveMap({
         // the user hasn't taken over with a drag/zoom. Card-mode map stays
         // free for the user to explore.
         if (fullscreenRef.current && followModeRef.current) {
-          // Keep the vehicle pointer centred on screen.
+          // Keep the vehicle pointer locked dead-centre on screen.
+          // setCenter (not panTo) — instant, no chase animation, so the
+          // marker stays exactly under the camera origin every frame.
           suppressFollowOffRef.current = true;
-          map.panTo({ lat, lng });
-          // Release suppression after the next frame — panTo fires its events synchronously
+          map.setCenter({ lat, lng });
           requestAnimationFrame(() => { suppressFollowOffRef.current = false; });
         }
       }
