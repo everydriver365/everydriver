@@ -318,13 +318,7 @@ export function SatNavLiveMap({
       }, (payload) => {
         const p = payload.new as any;
         if (!Number.isFinite(p.latitude) || !Number.isFinite(p.longitude)) return;
-        const newPt = new google.maps.LatLng(p.latitude, p.longitude);
-        const lastPt = pathRef.current[pathRef.current.length - 1];
-        const shouldAdd = !lastPt ||
-          Math.abs(lastPt.lat() - p.latitude) > 0.000005 ||
-          Math.abs(lastPt.lng() - p.longitude) > 0.000005;
-        if (shouldAdd) {
-          pathRef.current.push(newPt);
+        if (appendTrailPoint(p.latitude, p.longitude)) {
           renderPolylines();
           requestSnap();
         }
