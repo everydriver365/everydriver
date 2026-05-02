@@ -261,7 +261,7 @@ export default function InstructorSendReminder() {
     let failed = 0;
 
     for (const p of selectedPupils) {
-      const amt = Math.abs(p.account_balance || 0).toFixed(2);
+      const amt = computeAmountStr(p.account_balance || 0);
       const first = p.name?.split(" ")[0] || "there";
       const finalMsg = renderTemplate(message.trim(), first, amt);
       const result = await sendOne(p, finalMsg);
@@ -452,7 +452,7 @@ export default function InstructorSendReminder() {
                 </div>
                 <div className="-mx-4 px-4 flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-1">
                   {selectedPupils.slice(0, 8).map((p) => {
-                    const amt = Math.abs(p.account_balance || 0).toFixed(2);
+                    const amt = computeAmountStr(p.account_balance || 0);
                     const first = p.name?.split(" ")[0] || "there";
                     const rendered = renderTemplate(message.trim(), first, amt);
                     const bubbleBg =
