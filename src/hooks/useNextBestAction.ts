@@ -154,10 +154,13 @@ export function useNextBestAction(instructorId: string | undefined): NextBestAct
           rank: 3,
           title: `Offer ${format(new Date(usefulGap.date), "EEE d MMM")} gap`,
           subtitle: `${usefulGap.suggestedPupils.length} pupil${usefulGap.suggestedPupils.length === 1 ? "" : "s"} could fill it`,
+          verb: "Offer",
           icon: CalendarPlus,
           tone: "green",
           iconBg: "rgba(59,139,59,0.10)",
           iconFg: "#3B8B3B",
+          cardBg: "#EEF7EE",
+          cardBorder: "rgba(59,139,59,0.22)",
           onPress: () => navigate("/instructor/gaps"),
           snoozeKey: key,
         };
