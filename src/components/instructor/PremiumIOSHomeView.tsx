@@ -171,8 +171,9 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
     green: "bg-[#34C759]/12 text-[#1F8E3F]",
   };
 
-  /* ---------------- Today's schedule — show all of today's lessons ------- */
-  const previewLessons = todayLessons || [];
+  /* ---------------- Schedule preview lessons (today / tomorrow) ---------- */
+  const isTomorrowTab = scheduleTab === "tomorrow";
+  const previewLessons = (isTomorrowTab ? tomorrowLessons : todayLessons) || [];
 
   /* ---------------- Smart suggestion ------------------------------------- */
   const firstGap = gapSuggestions?.find((d) => d.slots.length > 0)?.slots?.[0];
