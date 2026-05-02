@@ -714,12 +714,13 @@ export function NextUpTile({
             className="overflow-hidden"
             style={{ marginLeft: 0, marginRight: 0, marginBottom: -16, marginTop: 4 }}
           >
-          <div style={{ padding: "20px 0 20px", display: "flex", flexDirection: "column", gap: 24, borderTop: "0.5px solid #E5E5EA", background: "transparent" }}>
+          <div style={{ padding: "22px 0 20px", display: "flex", flexDirection: "column", gap: 24, borderTop: "1px solid rgba(15,23,42,0.08)", background: "transparent" }}>
 
-          {/* ── HERO + PRIMARY ACTIONS card (elevated) ── */}
+          {/* ── HERO + PRIMARY ACTIONS card (premium iOS) ── */}
           <div style={{
-            background: "#FFFFFF", borderRadius: 18, padding: 18,
-            boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+            background: "#FFFFFF", borderRadius: 26, padding: 24,
+            border: "1px solid rgba(15,23,42,0.06)",
+            boxShadow: "0 14px 34px rgba(15,23,42,0.07)",
             display: "flex", flexDirection: "column", gap: 18,
           }}>
             {/* UP NEXT label — small, soft blue, tight to top */}
