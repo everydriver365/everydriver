@@ -120,6 +120,10 @@ export default function InstructorPay() {
     setRecentPaymentCount(count || 0);
   };
 
+  if (reminderPupilId) {
+    return <Navigate to={`/instructor/send-reminder?pupilId=${reminderPupilId}`} replace />;
+  }
+
   if (!instructorId) {
     return (
       <InstructorPortalLayout>
