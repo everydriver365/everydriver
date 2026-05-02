@@ -959,6 +959,7 @@ export function SatNavLiveMap({
                 >
                   REC
                 </span>
+              </div>
 
               {/* Snap-active indicator — icon-only, no label, no age.
                   Stacks on the right edge of the top area. Absent when
