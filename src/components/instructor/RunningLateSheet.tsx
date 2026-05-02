@@ -16,8 +16,12 @@ interface RunningLateSheetProps {
   startTime: string;
   /** Optional ETA in minutes from now to enable "Send ETA" preset */
   etaMinutes?: number;
-  /** Optional callback fired after a running-late message is successfully sent */
-  onMarkRunningLate?: () => void;
+  /** Fired after a "running-late" message is successfully sent.
+   *  Receives the delay magnitude in minutes (best-effort, may be null
+   *  for free-form / voice notes). */
+  onMarkRunningLate?: (delayMinutes: number | null, newEtaText: string | null) => void;
+  /** Fired after a plain "On the way / Send ETA" message is sent. */
+  onMarkOnWay?: (etaText: string | null) => void;
 }
 
 type SendState = "idle" | "sending" | "sent" | "error";
@@ -30,6 +34,7 @@ export function RunningLateSheet({
   startTime,
   etaMinutes,
   onMarkRunningLate,
+  onMarkOnWay,
 }: RunningLateSheetProps) {
   const firstName = (pupilName || "").split(" ")[0] || "there";
 
