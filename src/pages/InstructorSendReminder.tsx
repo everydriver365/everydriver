@@ -8,6 +8,9 @@ import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { haptics } from "@/lib/haptics";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { useInstructorTierConfig } from "@/hooks/useInstructorTierConfig";
+import { calculateAdminFee } from "@/hooks/useAdminFee";
 
 type Channel = "sms" | "whatsapp" | "in-app";
 
@@ -46,6 +49,34 @@ export default function InstructorSendReminder() {
   const [editingRecipients, setEditingRecipients] = useState(false);
   const [recipientSearch, setRecipientSearch] = useState("");
   const [minBalance, setMinBalance] = useState<number>(0);
+  const [includeFee, setIncludeFee] = useState(false);
+
+  // Platform fee config (for "balance + Service Fee" preview)
+  const tierConfig = useInstructorTierConfig(instructorId);
+  const { data: globalFeeConfig } = useQuery({
+    queryKey: ["platform-commission-config"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("platform_commission_config")
+        .select("rate_percent, fixed_fee_pence")
+        .eq("is_active", true)
+        .limit(1)
+        .maybeSingle();
+      if (!data) return null;
+      return { ratePercent: data.rate_percent, fixedFeePence: data.fixed_fee_pence };
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+  const feeConfig = tierConfig ?? globalFeeConfig ?? null;
+  const splitPct = instructor?.commission_split_percent ?? 100;
+
+  const computeAmountStr = (balance: number): string => {
+    const owed = Math.abs(balance || 0);
+    if (!includeFee || !feeConfig) return owed.toFixed(2);
+    const fullFee = calculateAdminFee(owed, feeConfig.ratePercent, feeConfig.fixedFeePence);
+    const pupilFee = Math.round(fullFee * (splitPct / 100) * 100) / 100;
+    return (owed + pupilFee).toFixed(2);
+  };
 
   // Load pupils + instructor
   useEffect(() => {
@@ -230,7 +261,7 @@ export default function InstructorSendReminder() {
     let failed = 0;
 
     for (const p of selectedPupils) {
-      const amt = Math.abs(p.account_balance || 0).toFixed(2);
+      const amt = computeAmountStr(p.account_balance || 0);
       const first = p.name?.split(" ")[0] || "there";
       const finalMsg = renderTemplate(message.trim(), first, amt);
       const result = await sendOne(p, finalMsg);
@@ -419,9 +450,54 @@ export default function InstructorSendReminder() {
                       : "In-app"}
                   </p>
                 </div>
+
+                {/* Amount toggle */}
+                <div className="mb-2 px-1 flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      haptics.selection();
+                      setIncludeFee(false);
+                    }}
+                    className={cn(
+                      "text-[12px] font-semibold rounded-full px-3 py-1.5 transition active:scale-95",
+                      !includeFee
+                        ? "bg-[#1c1c1e] text-white"
+                        : "bg-[#F4F4F5] text-[#1c1c1e]"
+                    )}
+                  >
+                    Balance only
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!feeConfig}
+                    onClick={() => {
+                      haptics.selection();
+                      setIncludeFee(true);
+                    }}
+                    className={cn(
+                      "text-[12px] font-semibold rounded-full px-3 py-1.5 transition active:scale-95",
+                      includeFee
+                        ? "bg-[#1c1c1e] text-white"
+                        : "bg-[#F4F4F5] text-[#1c1c1e]",
+                      !feeConfig && "opacity-40"
+                    )}
+                  >
+                    + Service Fee
+                  </button>
+                  {includeFee && feeConfig && (
+                    <span className="ml-auto text-[10.5px] text-[#71717A] font-medium">
+                      {feeConfig.ratePercent}% + {feeConfig.fixedFeePence}p
+                      {splitPct < 100 ? ` · ${splitPct}% pupil` : ""}
+                    </span>
+                  )}
+                </div>
+
                 <div className="-mx-4 px-4 flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-1">
                   {selectedPupils.slice(0, 8).map((p) => {
-                    const amt = Math.abs(p.account_balance || 0).toFixed(2);
+                    const owed = Math.abs(p.account_balance || 0);
+                    const amt = computeAmountStr(p.account_balance || 0);
+                    const showsFee = includeFee && feeConfig && parseFloat(amt) > owed;
                     const first = p.name?.split(" ")[0] || "there";
                     const rendered = renderTemplate(message.trim(), first, amt);
                     const bubbleBg =
@@ -437,13 +513,20 @@ export default function InstructorSendReminder() {
                         key={p.id}
                         className="snap-start shrink-0 w-[78%] max-w-[300px] rounded-2xl bg-white border border-[#E4E4E7] p-3"
                       >
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center justify-between mb-2 gap-2">
                           <p className="text-[12px] font-bold text-[#1c1c1e] truncate">
                             {p.name}
                           </p>
-                          <p className="text-[11px] font-semibold text-[#DC2626] tabular-nums">
-                            £{amt}
-                          </p>
+                          <div className="text-right shrink-0">
+                            <p className="text-[11px] font-semibold text-[#DC2626] tabular-nums">
+                              £{amt}
+                            </p>
+                            {showsFee && (
+                              <p className="text-[9.5px] text-[#71717A] tabular-nums">
+                                £{owed.toFixed(2)} + £{(parseFloat(amt) - owed).toFixed(2)} fee
+                              </p>
+                            )}
+                          </div>
                         </div>
                         <div
                           className="rounded-2xl rounded-bl-sm px-3 py-2 text-[13px] leading-snug whitespace-pre-wrap break-words"
