@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict } from "date-fns";
-import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
+import { fetchGoogleMapsKey, loadGoogleMaps, callSnapToRoad } from "@/lib/googleMapsLoader";
 import { supabase } from "@/integrations/supabase/client";
 
 interface SatNavLiveMapProps {
@@ -45,6 +45,62 @@ export function SatNavLiveMap({
   const fullscreenRef = useRef<boolean>(fullscreen);
   isActiveRef.current = isActive;
   fullscreenRef.current = fullscreen;
+
+  // Snap-to-Roads refs
+  const snappedPathRef = useRef<google.maps.LatLng[]>([]); // road-aligned trail
+  const snapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const snapInFlightRef = useRef<boolean>(false);
+  const snapDirtyRef = useRef<boolean>(false);
+
+  // Render whichever path is freshest (snapped if available, else raw) into both polylines
+  const renderPolylines = useCallback(() => {
+    const display = snappedPathRef.current.length >= 2
+      ? snappedPathRef.current
+      : pathRef.current;
+    polylineRef.current?.setPath(display);
+    polylineCasingRef.current?.setPath(display);
+  }, []);
+
+  // Debounced Snap-to-Roads call — aligns the trail to actual road geometry
+  const requestSnap = useCallback(() => {
+    snapDirtyRef.current = true;
+    if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
+    snapTimerRef.current = setTimeout(async () => {
+      if (snapInFlightRef.current) {
+        // Re-arm — another call already running, retry shortly after it finishes
+        snapTimerRef.current = setTimeout(() => requestSnap(), 1200);
+        return;
+      }
+      const raw = pathRef.current;
+      if (raw.length < 2) return;
+      // Snap-to-Roads accepts max 100 points per call — use trailing window
+      const window = raw.slice(-100).map((p) => ({ lat: p.lat(), lng: p.lng() }));
+      snapInFlightRef.current = true;
+      snapDirtyRef.current = false;
+      try {
+        const snapped = await callSnapToRoad(window);
+        if (snapped && snapped.length >= 2) {
+          // If we used a trailing window, prepend the older raw points so the
+          // entire historic trail still renders (older portion stays as raw).
+          const headCount = Math.max(0, raw.length - window.length);
+          const head = headCount > 0 ? raw.slice(0, headCount) : [];
+          snappedPathRef.current = [
+            ...head,
+            ...snapped.map((p) => new google.maps.LatLng(p.lat, p.lng)),
+          ];
+          renderPolylines();
+        }
+      } catch (err) {
+        console.warn("[SatNavLiveMap] snap-to-road failed, falling back to raw:", err);
+      } finally {
+        snapInFlightRef.current = false;
+        // If new fixes arrived during the request, schedule another pass
+        if (snapDirtyRef.current) {
+          snapTimerRef.current = setTimeout(() => requestSnap(), 800);
+        }
+      }
+    }, 1200); // wait 1.2s after the last fix before snapping
+  }, [renderPolylines]);
 
   const isLive = lastSeenAt && (Date.now() - new Date(lastSeenAt).getTime() < 30000);
   const lastSeenLabel = lastSeenAt
@@ -175,6 +231,8 @@ export function SatNavLiveMap({
       polylineCasingRef.current?.setMap(null);
       polylineCasingRef.current = null;
       pathRef.current = [];
+      snappedPathRef.current = [];
+      if (snapTimerRef.current) { clearTimeout(snapTimerRef.current); snapTimerRef.current = null; }
       mapRef.current = null;
     };
   }, [ready]);
@@ -201,8 +259,8 @@ export function SatNavLiveMap({
         pathRef.current.push(new google.maps.LatLng(latitude, longitude));
       }
 
-      polylineRef.current?.setPath(pathRef.current);
-      polylineCasingRef.current?.setPath(pathRef.current);
+      renderPolylines();
+      requestSnap();
 
       // Only fit bounds if not fullscreen (fullscreen auto-follows)
       if (!fullscreen) {
@@ -230,8 +288,8 @@ export function SatNavLiveMap({
           Math.abs(lastPt.lng() - p.longitude) > 0.000005;
         if (shouldAdd) {
           pathRef.current.push(newPt);
-          polylineRef.current?.setPath(pathRef.current);
-          polylineCasingRef.current?.setPath(pathRef.current);
+          renderPolylines();
+          requestSnap();
         }
       })
       .subscribe();
@@ -279,10 +337,10 @@ export function SatNavLiveMap({
       Math.abs(lastPt.lng() - longitude) > 0.000005;
     if (shouldAdd) {
       pathRef.current.push(new google.maps.LatLng(latitude, longitude));
-      polylineRef.current?.setPath(pathRef.current);
-      polylineCasingRef.current?.setPath(pathRef.current);
+      renderPolylines();
+      requestSnap();
     }
-  }, [latitude, longitude, heading, isActive, getArrowIcon]);
+  }, [latitude, longitude, heading, isActive, getArrowIcon, renderPolylines, requestSnap]);
 
   // Continuous animation loop — interpolates marker between fixes at 60fps
   useEffect(() => {
