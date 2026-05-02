@@ -77,12 +77,12 @@ export function SatNavLiveMap({
   }, [fullscreen]);
 
   const getArrowIcon = useCallback((rotation: number, active: boolean): google.maps.Symbol => ({
-    path: "M 0,-10 L -6,10 L 0,5 L 6,10 Z",
-    fillColor: active ? "#3b82f6" : "#9ca3af",
+    path: "M 0,-12 L -7,11 L 0,6 L 7,11 Z",
+    fillColor: active ? "#2563eb" : "#9ca3af",
     fillOpacity: 1,
     strokeColor: "white",
-    strokeWeight: 2.5,
-    scale: fullscreen ? 3.2 : 2.8,
+    strokeWeight: 3,
+    scale: fullscreen ? 3.6 : 3.0,
     rotation: rotation,
     anchor: new google.maps.Point(0, 0),
   }), [fullscreen]);
@@ -95,37 +95,64 @@ export function SatNavLiveMap({
       ? { lat: latitude!, lng: longitude! }
       : { lat: 54.5, lng: -3.5 };
 
+    // Decluttering nav-style — hide POI/transit clutter, keep roads + key labels
+    const navStyles: google.maps.MapTypeStyle[] = [
+      { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
+      { featureType: "poi.business", stylers: [{ visibility: "off" }] },
+      { featureType: "poi.attraction", elementType: "labels", stylers: [{ visibility: "simplified" }] },
+      { featureType: "poi.school", elementType: "labels", stylers: [{ visibility: "on" }] },
+      { featureType: "transit", stylers: [{ visibility: "off" }] },
+      { featureType: "transit.station", stylers: [{ visibility: "off" }] },
+      { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+      { featureType: "road.local", elementType: "labels", stylers: [{ visibility: "simplified" }] },
+      { featureType: "administrative.land_parcel", stylers: [{ visibility: "off" }] },
+    ];
+
     const map = new google.maps.Map(mapDivRef.current, {
       center,
-      zoom: 17,
-      tilt: 45,
+      zoom: fullscreen ? 18.5 : 17,
+      tilt: fullscreen ? 30 : 0,
       heading: heading ?? 0,
       disableDefaultUI: true,
       gestureHandling: "greedy",
       mapTypeId: "roadmap",
       clickableIcons: false,
-      mapId: "sat-nav-map",
+      keyboardShortcuts: false,
+      styles: navStyles,
+      // Note: no mapId — required so inline `styles` above are honoured
     });
 
     mapRef.current = map;
 
+    // Two-tone route polyline (Waze/Google nav style)
+    polylineCasingRef.current = new google.maps.Polyline({
+      map,
+      path: [],
+      strokeColor: "#1e3a8a",
+      strokeOpacity: 0.9,
+      strokeWeight: 9,
+      zIndex: 1,
+    });
     polylineRef.current = new google.maps.Polyline({
       map,
       path: [],
       strokeColor: "#3b82f6",
-      strokeOpacity: 0.7,
-      strokeWeight: 5,
+      strokeOpacity: 1,
+      strokeWeight: 6,
+      zIndex: 2,
     });
 
     if (hasPosition) {
       const pos = new google.maps.LatLng(latitude!, longitude!);
       pathRef.current = [pos];
       polylineRef.current.setPath(pathRef.current);
+      polylineCasingRef.current.setPath(pathRef.current);
 
       markerRef.current = new google.maps.Marker({
         position: center,
         map,
         icon: getArrowIcon(heading ?? 0, isActive),
+        zIndex: 999,
       });
     }
 
@@ -134,6 +161,8 @@ export function SatNavLiveMap({
       markerRef.current = null;
       polylineRef.current?.setMap(null);
       polylineRef.current = null;
+      polylineCasingRef.current?.setMap(null);
+      polylineCasingRef.current = null;
       pathRef.current = [];
       mapRef.current = null;
     };
