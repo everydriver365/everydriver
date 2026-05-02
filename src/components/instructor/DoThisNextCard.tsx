@@ -73,7 +73,7 @@ export function DoThisNextCard({ instructorId }: Props) {
         position: "relative",
         width: "100%",
         background: `linear-gradient(135deg, ${action.cardBg} 0%, #FFFFFF 70%)`,
-        borderRadius: 22,
+        borderRadius: 12,
         boxShadow:
           "0 1px 2px rgba(16,24,40,0.04), 0 8px 28px -12px rgba(16,24,40,0.10)",
         border: `1px solid ${action.cardBorder}`,
@@ -100,7 +100,7 @@ export function DoThisNextCard({ instructorId }: Props) {
           style={{
             position: "absolute",
             inset: 0,
-            borderRadius: 13,
+            borderRadius: 12,
             background: action.iconFg,
             animation: "dtn-pulse-ring 1.6s ease-out 1 forwards",
             pointerEvents: "none",
@@ -111,7 +111,7 @@ export function DoThisNextCard({ instructorId }: Props) {
             position: "relative",
             width: 44,
             height: 44,
-            borderRadius: 13,
+            borderRadius: 12,
             background: action.iconFg,
             display: "flex",
             alignItems: "center",
