@@ -1,64 +1,76 @@
-## Goal
-Make the **"Do this next"** card visually pop so it reads as the *primary* CTA on the home screen — instead of looking like just another white card sitting between "Up next" and "Needs your attention".
+## Bulk "Remind All" for Send Reminder
 
-The uppercase `DO THIS NEXT` label above the card stays unchanged (peer of the other section labels). Only the card itself gets the hero treatment.
+### Goal
+Let an instructor remind every debtor in one tap, while keeping the existing single-pupil flow untouched. Tap → Send → Done.
 
-## Visual changes (per-tone)
+### Entry points
+1. **Owes Money card** — add a "Remind all" pill in the header that links to `/instructor/send-reminder?bulk=1` (only shown when there are 2+ debtors).
+2. **Existing single-pupil link** (`?pupilId=...`) keeps working exactly as today.
 
-The priority engine already returns a `tone` (amber/blue/green/purple) per action. We'll use it to drive a tinted hero card:
+### Send Reminder screen changes
 
-| Tone | Trigger | Card gradient | Solid icon fill | Verb pill |
-|---|---|---|---|---|
-| amber | Debt | `#FFF8EC → #FFFFFF` | `#B8801F` / white glyph | `Chase` |
-| blue | Swap offer | `#EFF6FF → #FFFFFF` | `#2B7BC8` / white glyph | `Respond` |
-| green | Gap fill | `#EEF7EE → #FFFFFF` | `#3B8B3B` / white glyph | `Offer` |
-| purple | Re-engage | `#F5EFFB → #FFFFFF` | `#8A5BC9` / white glyph | `Re-engage` |
+**Mode detection from URL:**
+- `?pupilId=xxx` → single mode (current behaviour, unchanged).
+- `?bulk=1` → bulk mode (new).
 
-Card itself:
+**Bulk mode UI:**
 
 ```text
-┌─ tinted gradient · 1px tone/20% border · same rounded-22 ──┐
-│  ╭──╮                                                       │
-│  │💷│  Chase £45 from Sarah               ┌─────┐  ›        │
-│  ╰──╯  Outstanding balance                │Chase│           │
-└────────────────────────────────────────────┴─────┘──────────┘
+┌──────────────────────────────────────┐
+│ ← Send Reminder · 5 pupils           │
+├──────────────────────────────────────┤
+│ OUTSTANDING                          │
+│ 5 pupils owe you           £420.00   │
+│ ●●●●● avatar stack                   │
+├──────────────────────────────────────┤
+│ Recipients (5)            Edit ▸     │
+│ Alex · £120  Sam · £80  +3 more      │
+├──────────────────────────────────────┤
+│ QUICK MESSAGES                       │
+│ [Pay {amt} now] [Friendly reminder]  │
+│ [Due today]     [Overdue notice]     │
+├──────────────────────────────────────┤
+│ MESSAGE                              │
+│ Hi {name}, just a reminder your      │
+│ balance is £{amount}.                │
+│ ⓘ {name} and {amount} personalised   │
+├──────────────────────────────────────┤
+│ SEND VIA                             │
+│ [SMS]  [WhatsApp]  [In-app]          │
+└──────────────────────────────────────┘
+[ Send to 5 pupils ]   ← sticky
 ```
 
-Specifics:
+**Personalisation:** `{name}` and `{amount}` tokens in templates and the textarea are substituted per pupil at send time.
 
-1. **Background**: `linear-gradient(135deg, {tone-soft} 0%, #FFFFFF 70%)` instead of pure white. Subtle but immediately distinct from the flat white siblings on `#F4F7F6` page bg.
-2. **Border**: 1px solid `{tone}/20%` for a hairline coloured edge.
-3. **Icon tile**: 44×44 (up from 40), solid `{iconFg}` fill (was 10% wash), white glyph at strokeWidth 2.
-4. **Title**: bump from 15px/600 to **16.5px/700**, letter-spacing `-0.2px` (kept tight, not larger than "Up next" pupil name to maintain hierarchy).
-5. **Verb pill**: small rounded pill (`{tone}/14% bg`, `{iconFg}` text, 11px/700, `Chase`/`Respond`/`Offer`/`Re-engage`) sitting between the text block and the chevron.
-6. **One-shot pulse**: a 1.6s ease-out ring expansion behind the icon tile on mount only (CSS keyframes). Skipped when `prefers-reduced-motion: reduce`.
-7. **Snooze button (✕)**: shrunk to a tiny 13px control top-right, lower-contrast — stops competing with the verb pill / chevron.
+**Recipients editor:** "Edit" opens a sheet with a checklist of all debtors (all ticked by default). Untick to exclude. Updates count + total live.
 
-## Code changes
+**Channel availability in bulk:** SMS/WhatsApp tiles disabled only if no selected pupil has a phone; otherwise allowed and pupils without a phone are skipped (counted in the result toast).
 
-**`src/hooks/useNextBestAction.ts`** — extend `NextBestAction` interface with three fields per branch:
-- `verb: string` (already mapped above)
-- `cardBg: string` (gradient start hex)
-- `cardBorder: string` (border colour)
+**Send action (bulk):**
+- Iterate selected pupils, substitute tokens, fan out via chosen channel:
+  - `sms` / `whatsapp` → loop `supabase.functions.invoke("send-sms" | "send-whatsapp")` per pupil.
+  - `in-app` → reuse conversation lookup/insert + `notify-pupil` per pupil.
+- Insert one `followup_log` row per pupil (`manual_chase`).
+- One bottom toast summary, e.g. `Sent to 4 · skipped 1 (no phone)` — no modal.
+- Navigate back.
 
-Set them per rank in the existing `useMemo`. No new queries.
+### Data fetch (bulk mode)
+```ts
+supabase.from("pupils")
+  .select("id, name, phone, email, account_balance")
+  .eq("instructor_id", instructorId)
+  .is("deleted_at", null)
+  .lt("account_balance", 0)
+  .order("account_balance", { ascending: true });
+```
+Plus existing instructor query for `paymentLink`.
 
-**`src/components/instructor/DoThisNextCard.tsx`** — restyle the existing button:
-- Replace flat `background: #FFFFFF` with `linear-gradient(135deg, ${action.cardBg} 0%, #FFFFFF 70%)`.
-- Add `border: 1px solid ${action.cardBorder}`.
-- Bump icon tile to 44px, swap to solid `action.iconFg` fill with white glyph.
-- Bump title to 16.5px/700.
-- Insert verb pill before the snooze + chevron group.
-- Wrap icon tile in a relatively-positioned span with an absolute `::after` pseudo-ring driven by a keyframe (one-shot via `animationFillMode: forwards` and a state guard so it only plays once per mount).
-- Add a small `<style>` block (or inline keyframes via a styled span) registering `@keyframes dtn-pulse` once. Use a unique class so it doesn't collide.
-- Honour `@media (prefers-reduced-motion: reduce)` to disable the pulse.
+### Files to edit
+- `src/pages/InstructorSendReminder.tsx` — add bulk mode (URL param, recipients state, token substitution, fan-out send, recipients edit sheet).
+- `src/components/instructor/money/OwesMoneyCard.tsx` — add "Remind all" header pill → `/instructor/send-reminder?bulk=1`.
 
-## Out of scope
-- No change to the priority engine logic or data sources.
-- No change to gating in `PremiumIOSHomeView.tsx`.
-- No change to the `SectionLabel` style — label stays grey to keep all five home sections visually equal at the heading level. The card carries all the emphasis.
-- No mobile layout restructure.
-
-## Files
-- Edit: `src/hooks/useNextBestAction.ts` — add `verb`, `cardBg`, `cardBorder` to each returned action.
-- Edit: `src/components/instructor/DoThisNextCard.tsx` — apply hero styling, verb pill, one-shot pulse, smaller snooze.
+### Out of scope
+- No backend / edge function changes.
+- No changes to messaging templates infrastructure or pupil data.
+- No mobile layout changes outside this screen.
