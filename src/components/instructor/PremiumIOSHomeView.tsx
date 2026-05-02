@@ -90,6 +90,43 @@ function SectionHeader({
 /* Main view                                                                  */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * iOS-style uppercase section label — sits ABOVE its card. Used for
+ * "Do this next", "Needs your attention", "Schedule" so all home sections
+ * share one heading style.
+ */
+function SectionLabel({
+  children,
+  action,
+}: {
+  children: React.ReactNode;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        margin: "0 2px 8px",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          color: "#8E8E93",
+          textTransform: "uppercase",
+          letterSpacing: "0.4px",
+        }}
+      >
+        {children}
+      </div>
+      {action}
+    </div>
+  );
+}
+
 export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }: Props) {
   const navigate = useNavigate();
   const firstName = instructor?.name?.split(" ")[0] || "Instructor";
@@ -331,19 +368,18 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
       {/* "Do this next" — single contextual action card. Hidden when a lesson is imminent. */}
       {(!nextLesson || nextLesson.minutesUntil > 45) && (
-        <DoThisNextCard instructorId={instructorId} />
+        <section className="mt-4">
+          <SectionLabel>Do this next</SectionLabel>
+          <DoThisNextCard instructorId={instructorId} />
+        </section>
       )}
 
       {/* SECTION 2: Needs attention — single card, 64px rows */}
       {attentionRows.length > 0 && (
         <section className="mt-4">
+          <SectionLabel>Needs your attention</SectionLabel>
           <Card>
-            <div className="px-4 pt-4 pb-1">
-              <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
-                Needs your attention
-              </h2>
-            </div>
-            <div>
+            <div className="py-1">
               {attentionRows.map((row, i) => (
                 <div key={row.key}>
                   <button
@@ -385,22 +421,22 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
       {/* SECTION 3: Today's schedule */}
       <section className="mt-4">
-        <Card>
-          <div className="flex items-center justify-between px-4 pt-4 pb-3">
-            <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] leading-tight">
-              Schedule
-            </h2>
+        <SectionLabel
+          action={
             <button
               onClick={() => navigate("/instructor/schedule")}
-              className="flex items-center gap-0.5 text-[14px] font-semibold text-[#007AFF] active:opacity-60 transition-opacity shrink-0 ml-2"
+              className="flex items-center gap-0.5 text-[12px] font-semibold text-[#007AFF] active:opacity-60 transition-opacity shrink-0"
             >
               View all
-              <ChevronRight className="size-[15px]" />
+              <ChevronRight className="size-[13px]" />
             </button>
-          </div>
-
+          }
+        >
+          Schedule
+        </SectionLabel>
+        <Card>
           {/* Today / Tomorrow segmented control */}
-          <div className="px-4 pb-2">
+          <div className="px-4 pt-3 pb-2">
             <div
               role="tablist"
               aria-label="Schedule day"
