@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface FloatingSessionTimerProps {
   elapsedSeconds: number;
