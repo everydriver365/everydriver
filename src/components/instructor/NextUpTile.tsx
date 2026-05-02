@@ -714,14 +714,28 @@ export function NextUpTile({
             className="overflow-hidden"
             style={{ marginLeft: 0, marginRight: 0, marginBottom: -16, marginTop: 4 }}
           >
-          <div style={{ padding: "16px 0 20px", display: "flex", flexDirection: "column", gap: 16, borderTop: "0.5px solid #c6c6c8", background: "transparent" }}>
+          <div style={{ padding: "14px 0 20px", display: "flex", flexDirection: "column", gap: 16, background: "transparent" }}>
 
-          {/* ── HERO CARD — native iOS UIKit grouped table view style ── */}
+          {/* Subtle divider directly under the "UP NEXT · TAP TO HIDE" strip */}
+          <div aria-hidden style={{ height: 0.5, background: "rgba(91,92,226,0.18)", margin: "-8px -2px 2px" }} />
+
+          {/* ── PREMIUM HERO CARD — soft off-white inset wrapping a floating white card ── */}
+          <div style={{
+            background: "#F7F7FB",
+            borderRadius: 22,
+            padding: 14,
+            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif',
+          }}>
           <div style={{
             background: "#FFFFFF",
-            borderRadius: 13,
+            borderRadius: 24,
+            border: "0.5px solid rgba(15,23,42,0.06)",
+            boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 14px 34px -12px rgba(16,24,40,0.10)",
+            padding: 18,
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
             overflow: "hidden",
-            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif',
           }}>
             {/* ── 1. STATUS ROW — pulsing amber dot + Awaiting badge / Today ── */}
             <div style={{
