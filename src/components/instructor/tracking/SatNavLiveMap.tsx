@@ -698,7 +698,7 @@ export function SatNavLiveMap({
                 <div
                   className="absolute left-3 right-3 z-20"
                   style={{
-                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 156px)",
+                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 180px)",
                     background: "linear-gradient(180deg, rgba(255,69,58,0.95) 0%, rgba(225,29,42,0.95) 100%)",
                     color: "white",
                     borderRadius: 16,
