@@ -389,6 +389,73 @@ export default function InstructorSendReminder() {
               </div>
             </div>
 
+            {/* Live preview */}
+            {selectedPupils.length > 0 && message.trim() && (
+              <div className="mt-5">
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#71717A]">
+                    Preview
+                  </p>
+                  <p className="text-[11px] text-[#71717A]">
+                    {isBulk
+                      ? `${Math.min(selectedPupils.length, 8)} of ${selectedPupils.length}`
+                      : "1 of 1"}
+                    {" · "}
+                    {channel === "sms"
+                      ? "SMS"
+                      : channel === "whatsapp"
+                      ? "WhatsApp"
+                      : "In-app"}
+                  </p>
+                </div>
+                <div className="-mx-4 px-4 flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-1">
+                  {selectedPupils.slice(0, 8).map((p) => {
+                    const amt = Math.abs(p.account_balance || 0).toFixed(2);
+                    const first = p.name?.split(" ")[0] || "there";
+                    const rendered = renderTemplate(message.trim(), first, amt);
+                    const bubbleBg =
+                      channel === "whatsapp"
+                        ? "#DCF8C6"
+                        : channel === "sms"
+                        ? "#E5E5EA"
+                        : "#EFF6FF";
+                    const bubbleText =
+                      channel === "in-app" ? "#1E3A8A" : "#1c1c1e";
+                    return (
+                      <div
+                        key={p.id}
+                        className="snap-start shrink-0 w-[78%] max-w-[300px] rounded-2xl bg-white border border-[#E4E4E7] p-3"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-[12px] font-bold text-[#1c1c1e] truncate">
+                            {p.name}
+                          </p>
+                          <p className="text-[11px] font-semibold text-[#DC2626] tabular-nums">
+                            £{amt}
+                          </p>
+                        </div>
+                        <div
+                          className="rounded-2xl rounded-bl-sm px-3 py-2 text-[13px] leading-snug whitespace-pre-wrap break-words"
+                          style={{ background: bubbleBg, color: bubbleText }}
+                        >
+                          {rendered}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {selectedPupils.length > 8 && (
+                    <div className="snap-start shrink-0 w-[40%] max-w-[160px] rounded-2xl bg-[#F4F4F5] border border-dashed border-[#D4D4D8] flex items-center justify-center text-center px-3 py-6">
+                      <p className="text-[12px] font-semibold text-[#71717A]">
+                        +{selectedPupils.length - 8} more
+                        <br />
+                        pupils
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Send via */}
             <div className="mt-5">
               <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#71717A] mb-2 px-1">
