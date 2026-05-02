@@ -1069,6 +1069,7 @@ export function NextUpTile({
               );
             })()}
           </div>
+          </div>
 
           {/* (Primary CTA is rendered inside the hero card above) */}
 
