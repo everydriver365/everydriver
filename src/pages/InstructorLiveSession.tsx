@@ -30,6 +30,7 @@ import { autoCaptureLessonRoute } from "@/hooks/useLessonRouteAutoCapture";
 
 import { DrivingTestStartDialog } from "@/components/instructor/DrivingTestStartDialog";
 import { GPSStatusHero } from "@/components/instructor/tracking/GPSStatusHero";
+import { AutoTrackToggleTile } from "@/components/instructor/tracking/AutoTrackToggleTile";
 import { SessionStartPanel } from "@/components/instructor/tracking/SessionStartPanel";
  import { RecentSessionsList } from "@/components/instructor/tracking/RecentSessionsList";
  import { FloatingSessionTimer } from "@/components/instructor/tracking/FloatingSessionTimer";
