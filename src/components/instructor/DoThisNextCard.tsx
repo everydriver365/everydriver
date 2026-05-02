@@ -33,19 +33,7 @@ export function DoThisNextCard({ instructorId }: Props) {
   };
 
   return (
-    <section className="mt-4">
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: "#8E8E93",
-          textTransform: "uppercase",
-          letterSpacing: "0.4px",
-          margin: "0 2px 8px",
-        }}
-      >
-        Do this next
-      </div>
+    <section>
       <button
         type="button"
         onClick={handlePress}
