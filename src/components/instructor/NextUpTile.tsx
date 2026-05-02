@@ -550,22 +550,25 @@ export function NextUpTile({
               }}
             >
               {expanded ? (
-                /* Slim toggle strip when expanded — avoids duplicating pupil/time/countdown shown in the hero card below */
+                /* Premium slim toggle strip when expanded */
                 <div style={{
                   width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
                   padding: "2px 0",
                 }}>
-                  <span style={{ fontSize: a11yPx(11), fontWeight: 600, color: "#5856D6", letterSpacing: 0.6, textTransform: "uppercase" }}>
+                  <span style={{
+                    fontSize: a11yPx(13), fontWeight: 700, color: "#5B5CE2",
+                    letterSpacing: 1.2, textTransform: "uppercase",
+                  }}>
                     Up next · tap to hide
                   </span>
                   <ChevronDown
                     aria-hidden
                     style={{
-                      width: 16, height: 16, color: "#6E6E73",
+                      width: 18, height: 18, color: "#5B5CE2",
                       transform: "rotate(180deg)",
                       transition: "transform 250ms cubic-bezier(0.2,0.7,0.2,1)",
                     }}
-                    strokeWidth={1.8}
+                    strokeWidth={2}
                   />
                 </div>
               ) : (
@@ -711,37 +714,39 @@ export function NextUpTile({
             className="overflow-hidden"
             style={{ marginLeft: 0, marginRight: 0, marginBottom: -16, marginTop: 4 }}
           >
-          <div style={{ padding: "20px 0 20px", display: "flex", flexDirection: "column", gap: 24, borderTop: "0.5px solid #E5E5EA", background: "transparent" }}>
+          <div style={{ padding: "22px 0 20px", display: "flex", flexDirection: "column", gap: 24, borderTop: "1px solid rgba(15,23,42,0.08)", background: "transparent" }}>
 
-          {/* ── HERO + PRIMARY ACTIONS card (elevated) ── */}
+          {/* ── HERO + PRIMARY ACTIONS card (premium iOS) ── */}
           <div style={{
-            background: "#FFFFFF", borderRadius: 18, padding: 18,
-            boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
+            background: "#FFFFFF", borderRadius: 26, padding: 24,
+            border: "1px solid rgba(15,23,42,0.06)",
+            boxShadow: "0 14px 34px rgba(15,23,42,0.07)",
             display: "flex", flexDirection: "column", gap: 18,
           }}>
-            {/* UP NEXT label — small, soft blue, tight to top */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            {/* UP NEXT label — premium small caps, soft blue */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
               <span style={{
-                fontSize: a11yPx(10), fontWeight: 600, color: "#7AA7E8",
-                letterSpacing: 0.8, textTransform: "uppercase",
+                fontSize: a11yPx(12), fontWeight: 700, color: "#8BB9F2",
+                letterSpacing: 1.3, textTransform: "uppercase",
               }}>
                 Up next
               </span>
               {(() => {
                 const isPending = !checkInStatus || checkInStatus === "pending";
                 const canNudge = isPending && !!pupilPhone;
+                const pillBase: React.CSSProperties = {
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  borderRadius: 999, padding: "7px 12px",
+                  fontSize: a11yPx(13), fontWeight: 700, letterSpacing: 0.1,
+                };
                 if (nudgeSentAt) {
                   return (
-                    <span
-                      aria-label="Reminder sent"
-                      style={{
-                        display: "inline-flex", alignItems: "center", gap: 4,
-                        background: "#E8F5EE", color: "#1F7A3F",
-                        borderRadius: 999, padding: "3px 8px",
-                        fontSize: 10, fontWeight: 600, letterSpacing: 0.1,
-                      }}
-                    >
-                      <CheckCircle2 style={{ width: 11, height: 11, strokeWidth: 2.4 }} />
+                    <span aria-label="Reminder sent" style={{
+                      ...pillBase,
+                      background: "#E3F6EA", color: "#1F7A3F",
+                      border: "1px solid rgba(31,122,63,0.12)",
+                    }}>
+                      <CheckCircle2 style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
                       Reminder sent
                     </span>
                   );
@@ -761,37 +766,50 @@ export function NextUpTile({
                       aria-label="Send confirmation reminder to pupil"
                       className="active:scale-95"
                       style={{
-                        display: "inline-flex", alignItems: "center", gap: 4,
-                        background: "#FFF4E0", color: "#A8731A",
-                        border: "none", borderRadius: 999, padding: "3px 8px",
-                        fontSize: 10, fontWeight: 600, letterSpacing: 0.1,
+                        ...pillBase,
+                        background: "#FFF3D6", color: "#A15A10",
+                        border: "1px solid rgba(161,90,16,0.12)",
                         cursor: "pointer",
                         transition: "transform 120ms cubic-bezier(0.2,0.7,0.2,1)",
                       }}
                     >
-                      <Clock style={{ width: 11, height: 11, strokeWidth: 2.4 }} />
+                      <Clock style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
                       Awaiting confirmation · Tap to nudge
                     </button>
                   );
                 }
-                if (checkInStatus) {
+                if (checkInStatus === "confirmed") {
                   return (
-                    <LessonCheckInBadge status={checkInStatus} className="text-[10px] py-0 px-1.5 h-5" />
+                    <span style={{ ...pillBase, background: "#E3F6EA", color: "#1F7A3F", border: "1px solid rgba(31,122,63,0.12)" }}>
+                      <CheckCircle2 style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                      Confirmed
+                    </span>
                   );
                 }
-                // pending without phone — show plain Awaiting badge
+                if (checkInStatus === "declined" || checkInStatus === "cancelled") {
+                  return (
+                    <span style={{ ...pillBase, background: "#FCE4E4", color: "#9A1F1F", border: "1px solid rgba(154,31,31,0.12)" }}>
+                      <AlertTriangle style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                      {checkInStatus === "declined" ? "Declined" : "Cancelled"}
+                    </span>
+                  );
+                }
+                // pending without phone — amber awaiting
                 return (
-                  <LessonCheckInBadge status="pending" className="text-[10px] py-0 px-1.5 h-5" />
+                  <span style={{ ...pillBase, background: "#FFF3D6", color: "#A15A10", border: "1px solid rgba(161,90,16,0.12)" }}>
+                    <Clock style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                    Awaiting confirmation
+                  </span>
                 );
               })()}
             </div>
 
             {/* Header row: pupil name (left) | time + date (right) */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14 }}>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{
-                  fontSize: a11yPx(20), fontWeight: 600, color: "#000000",
-                  letterSpacing: -0.4, lineHeight: 1.15,
+                  fontSize: a11yPx(28), lineHeight: "34px", fontWeight: 800, color: "#050505",
+                  letterSpacing: -0.6,
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                 }}>
                   {toSentenceName(pupilName)}
@@ -799,34 +817,33 @@ export function NextUpTile({
               </div>
               <div style={{ textAlign: "right", flexShrink: 0 }}>
                 <div style={{
-                  fontSize: a11yPx(22), fontWeight: 600, letterSpacing: -0.6,
-                  color: "#000000", lineHeight: 1, fontVariantNumeric: "tabular-nums",
+                  fontSize: a11yPx(34), lineHeight: "38px", fontWeight: 800, letterSpacing: -0.8,
+                  color: "#050505", fontVariantNumeric: "tabular-nums",
                 }}>
                   {formatTime24(startTime)}
                 </div>
-                <div style={{ fontSize: a11yPx(12), color: "#8A8A8E", marginTop: 4 }}>
+                <div style={{ fontSize: a11yPx(16), color: "#8A8A8E", marginTop: 2, fontWeight: 500 }}>
                   {getDateLabel()}
                 </div>
               </div>
             </div>
 
-            {/* Secondary info: lesson type · duration, then location */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <div style={{ fontSize: a11yPx(13), color: "#3C3C43", letterSpacing: -0.05 }}>
+            {/* Secondary info: lesson type · duration, location, countdown */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ fontSize: a11yPx(17), color: "#3C3C43", fontWeight: 500, letterSpacing: -0.1 }}>
                 {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
               </div>
               {(pickupLocation || pickupPostcode) && (
-                <div style={{ display: "flex", alignItems: "center", gap: 5, color: "#8A8A8E", minWidth: 0 }}>
-                  <MapPin style={{ width: 13, height: 13, flexShrink: 0 }} strokeWidth={2} />
-                  <span style={{ fontSize: a11yPx(13), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#8A8A8E", minWidth: 0 }}>
+                  <MapPin style={{ width: 18, height: 18, flexShrink: 0, color: "#8A8A8E" }} strokeWidth={2} />
+                  <span style={{ fontSize: a11yPx(16), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {formattedPickupAddress || pickupPostcode || pickupLocation}
                   </span>
                 </div>
               )}
-              {/* Tertiary: countdown as plain muted text */}
-              <div style={{ display: "flex", alignItems: "center", gap: 5, color: "#8A8A8E" }}>
-                <Clock style={{ width: 12, height: 12 }} strokeWidth={2 } />
-                <span style={{ fontSize: a11yPx(13), fontVariantNumeric: "tabular-nums" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#8A8A8E" }}>
+                <Clock style={{ width: 18, height: 18, color: "#8A8A8E" }} strokeWidth={2} />
+                <span style={{ fontSize: a11yPx(16), fontVariantNumeric: "tabular-nums" }}>
                   {minutesUntil <= 0 ? "Starting now" : `Starts in ${getCountdownText()}`}
                 </span>
               </div>
@@ -943,48 +960,48 @@ export function NextUpTile({
               // sits directly under the pupil address in the hero card.
               void isEarly;
               return (
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {/* Primary action row — Navigate / Call / Text */}
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 12 }}>
+                  {/* Primary action row — Nav / Call / Text (premium iOS hero buttons) */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr 1fr", gap: 12 }}>
                     <button onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
                       className="active:scale-[0.98]"
                       style={{
-                        background: "#1B5BFF", color: "#FFFFFF",
-                        border: "none", borderRadius: 16, height: 50,
+                        background: "#2563FF", color: "#FFFFFF",
+                        border: "none", borderRadius: 20, height: 58,
                         cursor: "pointer", transition: "transform 0.15s ease, opacity 0.15s ease",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
-                        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 8px 18px -8px rgba(27,91,255,0.4)",
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                        boxShadow: "0 12px 22px rgba(37,99,255,0.28)",
                       }}
                       aria-label="Navigate to pickup"
                     >
-                      <Navigation style={{ width: 16, height: 16 }} strokeWidth={2.4} />
-                      <span style={{ fontSize: a11yPx(14), fontWeight: 600, letterSpacing: -0.1 }}>Nav</span>
+                      <Navigation style={{ width: 18, height: 18, color: "#FFFFFF" }} strokeWidth={2.4} />
+                      <span style={{ fontSize: a11yPx(17), fontWeight: 800, letterSpacing: -0.1 }}>Nav</span>
                     </button>
                     <button onClick={(e) => { e.stopPropagation(); handleCall(); }}
                       className="active:scale-[0.98]"
                       style={{
-                        background: "rgba(52,199,89,0.12)", color: "#1C7A3E",
-                        border: "none", borderRadius: 16, height: 50,
+                        background: "#E8F7EE", color: "#168347",
+                        border: "none", borderRadius: 20, height: 58,
                         cursor: "pointer", transition: "transform 0.15s ease, opacity 0.15s ease",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
                       }}
                       aria-label="Call pupil"
                     >
-                      <Phone style={{ width: 16, height: 16, color: "#1C7A3E" }} strokeWidth={2.3} />
-                      <span style={{ fontSize: a11yPx(14), fontWeight: 600, letterSpacing: -0.1 }}>Call</span>
+                      <Phone style={{ width: 18, height: 18, color: "#168347" }} strokeWidth={2.3} />
+                      <span style={{ fontSize: a11yPx(17), fontWeight: 800, letterSpacing: -0.1 }}>Call</span>
                     </button>
                     <button onClick={(e) => { e.stopPropagation(); handleMessage(); }}
                       className="active:scale-[0.98]"
                       style={{
-                        background: "rgba(43,123,200,0.12)", color: "#1F5C99",
-                        border: "none", borderRadius: 16, height: 50,
+                        background: "#EAF3FB", color: "#1F5F96",
+                        border: "none", borderRadius: 20, height: 58,
                         cursor: "pointer", transition: "transform 0.15s ease, opacity 0.15s ease",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
                       }}
                       aria-label="Text pupil"
                     >
-                      <MessageSquare style={{ width: 16, height: 16, color: "#1F5C99" }} strokeWidth={2.3} />
-                      <span style={{ fontSize: a11yPx(14), fontWeight: 600, letterSpacing: -0.1 }}>Text</span>
+                      <MessageSquare style={{ width: 18, height: 18, color: "#1F5F96" }} strokeWidth={2.3} />
+                      <span style={{ fontSize: a11yPx(17), fontWeight: 800, letterSpacing: -0.1 }}>Text</span>
                     </button>
                   </div>
 
@@ -1049,29 +1066,30 @@ export function NextUpTile({
                     ];
                     const segmentStyle = (s: typeof segments[number]): React.CSSProperties => ({
                       flex: 1, minWidth: 0,
-                      background: s.active ? s.activeBg : "transparent",
-                      color: s.active ? s.activeFg : s.inactiveFg,
-                      border: "none", borderRadius: 14,
-                      padding: "8px 4px", minHeight: 52,
+                      background: s.active ? "#FFFFFF" : "transparent",
+                      color: s.active ? "#2563FF" : "#63666D",
+                      border: "none", borderRadius: 16,
+                      padding: "8px 4px", minHeight: 64,
                       cursor: "pointer",
-                      display: "inline-flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3,
+                      display: "inline-flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
                       transition: "background 0.2s ease, color 0.2s ease, transform 0.15s ease",
-                      boxShadow: s.active ? "0 1px 2px rgba(16,24,40,0.06), 0 4px 10px -4px rgba(16,24,40,0.12)" : "none",
+                      boxShadow: s.active ? "0 6px 14px rgba(15,23,42,0.08)" : "none",
                     });
                     return (
                       <div style={{
-                        display: "flex", alignItems: "stretch",
-                        background: "#EEF1F6", borderRadius: 18,
-                        padding: 4, gap: 2,
+                        display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
+                        background: "#EEF1F5", borderRadius: 22,
+                        padding: "12px 10px", gap: 4,
                       }}>
                         {segments.map((s) => {
                           const Icon = s.icon;
                           const inner = (
                             <>
-                              <Icon style={{ width: 16, height: 16 }} strokeWidth={2.1} />
+                              <Icon style={{ width: 22, height: 22, color: s.active ? "#2563FF" : "#63666D" }} strokeWidth={2.1} />
                               <span style={{
-                                fontSize: a11yPx(11), fontWeight: 600, letterSpacing: -0.05,
+                                fontSize: a11yPx(13), fontWeight: 700, letterSpacing: -0.05,
                                 lineHeight: 1.15, textAlign: "center",
+                                color: s.active ? "#2563FF" : "#63666D",
                                 display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
                                 overflow: "hidden", maxWidth: "100%", wordBreak: "break-word",
                               }}>{s.label}</span>
