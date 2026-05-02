@@ -919,6 +919,47 @@ export function SatNavLiveMap({
                 <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} />
               </div>
 
+              {/* REC pill — top-right of the map, mirrors signal pill on the left. */}
+              <div
+                className="absolute z-10"
+                style={{
+                  top: "calc(env(safe-area-inset-top, 0px) + 10px)",
+                  right: 14,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "5px 10px 5px 8px",
+                  borderRadius: 999,
+                  background: "rgba(255,255,255,0.78)",
+                  backdropFilter: "blur(14px) saturate(180%)",
+                  WebkitBackdropFilter: "blur(14px) saturate(180%)",
+                  border: "1px solid rgba(0,0,0,0.06)",
+                  boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                }}
+              >
+                <motion.span
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: "#FF3B30",
+                    display: "inline-block",
+                  }}
+                  animate={{ opacity: [1, 0.35, 1] }}
+                  transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                />
+                <span
+                  style={{
+                    color: "#FF3B30",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: 0.6,
+                    fontSize: 11,
+                  }}
+                >
+                  REC
+                </span>
+
               {/* Snap-active indicator — icon-only, no label, no age.
                   Stacks on the right edge of the top area. Absent when
                   snap isn't actively snapped. */}
