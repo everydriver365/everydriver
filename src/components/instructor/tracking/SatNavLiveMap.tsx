@@ -489,11 +489,15 @@ export function SatNavLiveMap({
           (map as any).setHeading(hd);
         }
 
-        // Camera follow — only auto-pan in fullscreen sat-nav mode so users
-        // can drag/explore the card-mode map without it snapping back.
-        if (fullscreenRef.current) {
+        // Camera follow — only auto-pan in fullscreen sat-nav mode AND when
+        // the user hasn't taken over with a drag/zoom. Card-mode map stays
+        // free for the user to explore.
+        if (fullscreenRef.current && followModeRef.current) {
           const latLng = new google.maps.LatLng(lat, lng);
+          suppressFollowOffRef.current = true;
           map.panTo(latLng);
+          // Release suppression after the next frame — panTo fires its events synchronously
+          requestAnimationFrame(() => { suppressFollowOffRef.current = false; });
         }
       }
 
