@@ -331,9 +331,9 @@ export function HomeToolsHub() {
   };
 
   const SectionLabel = ({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) => (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 4px 10px" }}>
+    <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", margin: "0 2px 8px" }}>
       <h2 style={{
-        fontSize: 12, fontWeight: 600, color: "#6E6E73",
+        fontSize: 11, fontWeight: 600, color: "#8E8E93",
         textTransform: "uppercase", letterSpacing: "0.4px", margin: 0,
       }}>
         {children}
@@ -343,14 +343,9 @@ export function HomeToolsHub() {
   );
 
   return (
-    <section style={{ marginTop: 24 }}>
-      {/* Header */}
-      <h2 style={{
-        fontSize: 22, fontWeight: 700, letterSpacing: "-0.4px",
-        color: "#000", margin: "0 4px 12px", lineHeight: 1.1,
-      }}>
-        Tools
-      </h2>
+    <section style={{ marginTop: 16 }}>
+      {/* Header — matches sibling section labels (Do this next / Needs your attention / Schedule) */}
+      <SectionLabel>Tools</SectionLabel>
 
       {/* Search — lighter, blended, integrated */}
       <div
