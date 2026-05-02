@@ -310,21 +310,34 @@ export function SatNavLiveMap({
       (results, status) => {
         if (cancelled) return;
         if (status !== "OK" || !results || results.length === 0) return;
-        // Prefer a result that has a `route` component (an actual road),
-        // else fall back to the first formatted address line.
-        let road: string | null = null;
-        for (const r of results) {
-          const route = r.address_components?.find((c) => c.types.includes("route"));
-          if (route?.long_name && !/^unnamed\s+road$/i.test(route.long_name)) {
-            road = route.long_name;
-            break;
-          }
-        }
-        if (!road) {
+
+        const components = results.flatMap((r) => r.address_components ?? []);
+
+        const route = components.find((a) => a.types.includes("route"))?.long_name;
+        const locality =
+          components.find((a) => a.types.includes("postal_town"))?.long_name ||
+          components.find((a) => a.types.includes("locality"))?.long_name ||
+          components.find((a) => a.types.includes("administrative_area_level_2"))?.long_name;
+
+        let label: string | null = null;
+        if (route && !/^unnamed\s+road$/i.test(route)) {
+          // Major routes (M-roads, A-roads) → cardinal direction.
+          // Named streets → nearby locality.
+          const isMajorRoute = /^[MA]\d/i.test(route);
+          const suffix = isMajorRoute
+            ? headingToCardinal(headingRef.current) + "bound"
+            : locality;
+          label = suffix ? `${route} · ${suffix}` : route;
+        } else if (locality) {
+          label = locality;
+        } else {
+          // Last-ditch — first segment of formatted address.
           const first = results[0].formatted_address?.split(",")[0]?.trim();
-          if (first && !/^unnamed\s+road$/i.test(first)) road = first;
+          if (first && !/^unnamed\s+road$/i.test(first)) label = first;
         }
-        if (road) setFallbackRoadName(road);
+
+        // Don't clobber a previously-good label with nothing — better stale than blank.
+        if (label) setFallbackRoadName(label);
       }
     );
     return () => { cancelled = true; };
