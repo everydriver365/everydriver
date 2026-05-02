@@ -614,10 +614,8 @@ export function SatNavLiveMap({
         });
       }
 
-      const center = vectorReadyRef.current
-        ? (offsetCenterForLowerThird(map, { lat: latitude, lng: longitude }, camHeadingRef.current) ?? { lat: latitude, lng: longitude })
-        : { lat: latitude, lng: longitude };
-      map.setCenter(center);
+      // Keep the vehicle pointer centred (no lower-third offset).
+      map.setCenter({ lat: latitude, lng: longitude });
       requestAnimationFrame(() => { suppressFollowOffRef.current = false; });
 
       const seed = { lat: latitude, lng: longitude, heading: headingNow, t: now };
