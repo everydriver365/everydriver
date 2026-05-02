@@ -604,7 +604,13 @@ export function SatNavLiveMap({
           requestSnap();
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          setRealtimeConnected(true);
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          setRealtimeConnected(false);
+        }
+      });
 
     return () => { supabase.removeChannel(channel); };
   }, [ready, sessionId, fullscreen]);
