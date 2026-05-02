@@ -805,6 +805,16 @@ export function SatNavLiveMap({
         // arrow stays pointing roughly up the screen (and leans into turns
         // while the camera catches up).
         const screenHeading = satNavCam ? hd - camHeadingRef.current : hd;
+        if (import.meta.env.DEV && Math.random() < 0.02) {
+          // ~1 in 50 frames so the console isn't flooded
+          console.debug(
+            "[satnav] vehicleHeading=", hd.toFixed(1),
+            "camHeading=", camHeadingRef.current.toFixed(1),
+            "screenHeading=", screenHeading.toFixed(1),
+            "vectorReady=", vectorReadyRef.current,
+            "follow=", followModeRef.current,
+          );
+        }
         marker.setIcon(getArrowIcon(screenHeading, isActiveRef.current));
         markerShadowRef.current?.setPosition({ lat, lng });
 
