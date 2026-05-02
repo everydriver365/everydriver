@@ -219,7 +219,7 @@ export default function InstructorSendReminder() {
     }
   };
 
-  const handleSend = async () => {
+  const dispatchSend = async () => {
     if (!instructorId || sending) return;
     if (!message.trim() || selectedPupils.length === 0) return;
     haptics.selection();
@@ -239,7 +239,6 @@ export default function InstructorSendReminder() {
       else failed++;
     }
 
-    // Single summary toast (no modal)
     const parts: string[] = [];
     if (sent > 0) parts.push(`Sent to ${sent}`);
     if (skippedNoPhone > 0) parts.push(`skipped ${skippedNoPhone} (no phone)`);
@@ -247,7 +246,18 @@ export default function InstructorSendReminder() {
     if (sent > 0) toast.success(parts.join(" · "));
     else toast.error(parts.join(" · ") || "Nothing sent");
 
+    setConfirmingBulk(false);
     navigate(-1);
+  };
+
+  const handleSend = () => {
+    if (!message.trim() || selectedPupils.length === 0 || sending) return;
+    if (isBulk) {
+      haptics.selection();
+      setConfirmingBulk(true);
+    } else {
+      void dispatchSend();
+    }
   };
 
   const toggleRecipient = (id: string) => {
