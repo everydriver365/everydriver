@@ -826,9 +826,17 @@ export default function InstructorSendReminder() {
                         return (
                           <button
                             key={p.id}
+                            ref={(el) => {
+                              recipientRowRefs.current[p.id] = el;
+                            }}
                             type="button"
                             onClick={() => toggleRecipient(p.id)}
-                            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-black/5 active:scale-[0.99] transition text-left"
+                            className={cn(
+                              "w-full flex items-center gap-3 px-3 py-3 rounded-xl active:scale-[0.99] transition text-left",
+                              focusedPupilId === p.id
+                                ? "bg-[#FEF3C7] ring-2 ring-[#F59E0B]"
+                                : "hover:bg-black/5"
+                            )}
                           >
                             <div
                               className={cn(
