@@ -20,6 +20,7 @@ import { EndLessonWizard } from "./EndLessonWizard";
 import { RunningLateSheet } from "./RunningLateSheet";
 import { supabase } from "@/integrations/supabase/client";
 import { LessonRouteRecorder } from "./LessonRouteRecorder";
+import { getNextUpVisibility } from "./nextUpTileState";
 
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
