@@ -3,8 +3,39 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-twilio-signature",
 };
+
+// Verify Twilio request signature (HMAC-SHA1 of URL + sorted POST params, base64).
+// https://www.twilio.com/docs/usage/webhooks/webhooks-security
+async function verifyTwilioSignature(
+  authToken: string,
+  url: string,
+  params: Record<string, string>,
+  signature: string,
+): Promise<boolean> {
+  const sortedKeys = Object.keys(params).sort();
+  let data = url;
+  for (const key of sortedKeys) {
+    data += key + params[key];
+  }
+
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(authToken),
+    { name: "HMAC", hash: "SHA-1" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(data));
+  // base64 encode
+  const bytes = new Uint8Array(sig);
+  let bin = "";
+  for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
+  const expected = btoa(bin);
+  return expected === signature;
+}
 
 // Parse multiple slot numbers from response (e.g., "1 and 3", "1,3", "1 3", "1, 2, 3")
 function parseSlotNumbers(body: string): number[] {
