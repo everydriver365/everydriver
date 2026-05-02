@@ -437,13 +437,16 @@ export function SatNavLiveMap({
     // the last accepted fix. This is the single most important filter — it
     // prevents stationary drift from drawing erratic lines and ensures
     // Snap-to-Roads only ever sees clean input.
-    if (movingFastEnough && metresFromPrev >= 3) {
+    // Also gate by ignition: if we explicitly know the engine is off, don't
+    // append. If ignitionOn is null/undefined we don't block (legacy behaviour).
+    const ignitionAllowsTrail = ignitionOn !== false;
+    if (movingFastEnough && metresFromPrev >= 3 && ignitionAllowsTrail) {
       if (appendTrailPoint(latitude, longitude)) {
         renderPolylines();
         requestSnap();
       }
     }
-  }, [latitude, longitude, heading, speedKmh, isActive, getArrowIcon, renderPolylines, requestSnap, appendTrailPoint]);
+  }, [latitude, longitude, heading, speedKmh, isActive, ignitionOn, getArrowIcon, renderPolylines, requestSnap, appendTrailPoint]);
 
   // Continuous animation loop — interpolates marker between fixes at 60fps
   useEffect(() => {
