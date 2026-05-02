@@ -1329,6 +1329,9 @@ export default function InstructorLiveSession() {
                 />
               )}
 
+              {/* Auto-track every lesson — quick toggle */}
+              {instructor?.id && <AutoTrackToggleTile instructorId={instructor.id} />}
+
               {/* Recent Sessions */}
               {instructor?.id && (
                 <div id="recent-sessions-anchor" style={{ scrollMarginTop: 80 }}>
