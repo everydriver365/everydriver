@@ -37,6 +37,12 @@ export function SatNavLiveMap({
   const [mapError, setMapError] = useState(false);
   const trailLoadedRef = useRef<string | null>(null);
   const isFirstFixRef = useRef<boolean>(true);
+  // Wall-clock timestamp of the last accepted fix — used to derive an
+  // adaptive tween duration that matches the true cadence of the device.
+  const lastFixAtRef = useRef<number>(0);
+  // Adaptive tween duration in ms for the *current* segment, set by applyFix
+  // and read by the rAF loop as `expected`. Defaults to 900 before any fix.
+  const tweenMsRef = useRef<number>(900);
 
   // Follow mode — when true (default), camera tracks the vehicle in fullscreen.
   // User drag/zoom turns it off and surfaces a "Re-centre" button.
@@ -313,9 +319,11 @@ export function SatNavLiveMap({
     };
   }, [ready]);
 
-  // When the active session changes, ensure the next fix re-frames the map.
+  // When the active session changes, ensure the next fix re-frames the map
+  // and the cadence estimator restarts from a clean slate.
   useEffect(() => {
     isFirstFixRef.current = true;
+    lastFixAtRef.current = 0;
   }, [sessionId]);
 
   // Load historical trail + subscribe to new GPS points for active sessions
@@ -324,12 +332,17 @@ export function SatNavLiveMap({
     trailLoadedRef.current = sessionId;
 
     (async () => {
+      // Trail line is no longer rendered, so we only need *just enough*
+      // history to seed the marker's anchor before realtime takes over.
+      // Last 5 minutes / 50 rows is plenty at 1Hz.
+      const since = new Date(Date.now() - 5 * 60 * 1000).toISOString();
       const { data: points } = await supabase
         .from("telematics_gps_points")
         .select("latitude, longitude")
         .eq("telematics_id", sessionId)
+        .gte("recorded_at", since)
         .order("recorded_at", { ascending: true })
-        .limit(500);
+        .limit(50);
 
       if (!points || points.length === 0 || !mapRef.current) return;
 
@@ -413,6 +426,7 @@ export function SatNavLiveMap({
       fromPosRef.current = seed;
       targetPosRef.current = seed;
       lastFixTsRef.current = now;
+      lastFixAtRef.current = Date.now();
       pathRef.current = [new google.maps.LatLng(latitude, longitude)];
       isFirstFixRef.current = false;
       return;
@@ -477,6 +491,32 @@ export function SatNavLiveMap({
       });
     }
 
+    // ── Adaptive tween duration ──────────────────────────────────────────
+    // Use the wall-clock gap between the previous accepted fix and this one
+    // to size the tween. ~80% of the gap, clamped to [250ms, 1200ms].
+    //   • At 1Hz: ~800ms (smooth, no lag).
+    //   • At 5s gap: capped at 1200ms (still smooth).
+    //   • At 10s+: capped at 1200ms so the marker rests between hops rather
+    //     than crawling across stale ground.
+    const nowMs = Date.now();
+    const gapMs = lastFixAtRef.current ? nowMs - lastFixAtRef.current : 900;
+    lastFixAtRef.current = nowMs;
+    const tweenMs = Math.max(250, Math.min(1200, gapMs * 0.8));
+    tweenMsRef.current = tweenMs;
+
+    // ── Small-movement short-circuit (<3 m): snap, don't tween ───────────
+    // Kills the "drifting while stationary" effect when GPS jitter delivers
+    // a tiny move. Reuses metresFromPrev — no second haversine.
+    if (prev && metresFromPrev < 3) {
+      markerRef.current.setPosition({ lat: latitude, lng: longitude });
+      markerRef.current.setIcon(getArrowIcon(rotation, isActive));
+      markerShadowRef.current?.setPosition({ lat: latitude, lng: longitude });
+      const snapped = { lat: latitude, lng: longitude, heading: rotation, t: now };
+      fromPosRef.current = snapped;
+      targetPosRef.current = snapped;
+      return;
+    }
+
     // ── Jump rejection (>500 m): snap, don't tween ───────────────────────
     // The "from" point of the next tween must be the *previous animation's
     // destination* (targetPosRef before this update), not the marker's
@@ -535,12 +575,10 @@ export function SatNavLiveMap({
       const target = targetPosRef.current;
 
       if (map && marker && from && target) {
-        // Estimate fix cadence (avg of last few real gaps), clamped 1500–6000ms
-        const gaps = fixGapsRef.current;
-        const avgGap = gaps.length > 0
-          ? gaps.reduce((s, g) => s + g, 0) / gaps.length
-          : 2500;
-        const expected = Math.max(1500, Math.min(6000, avgGap));
+        // Adaptive tween duration — set per-segment by applyFix from the
+        // real wall-clock gap between fixes, clamped to [250ms, 1200ms].
+        // Defaults to 900ms before the first fix has been processed.
+        const expected = tweenMsRef.current || 900;
 
         const elapsed = performance.now() - target.t;
         const t = Math.max(0, Math.min(1, elapsed / expected));
