@@ -22,6 +22,13 @@ interface SatNavLiveMapProps {
   className?: string;
 }
 
+const COMPASS_LABELS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+function headingToCardinal(heading: number): string {
+  const norm = ((heading % 360) + 360) % 360;
+  const idx = Math.round(norm / 45) % 8;
+  return COMPASS_LABELS[idx];
+}
+
 export function SatNavLiveMap({
   latitude, longitude, heading, speedKmh, speedLimitKmh, roadName,
   lastSeenAt, isActive, sessionId, ignitionOn, dailyDistanceKm,
