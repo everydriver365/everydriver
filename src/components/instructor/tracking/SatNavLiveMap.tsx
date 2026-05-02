@@ -29,12 +29,14 @@ export function SatNavLiveMap({
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markerRef = useRef<google.maps.Marker | null>(null);
+  const markerShadowRef = useRef<google.maps.Marker | null>(null);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
   const polylineCasingRef = useRef<google.maps.Polyline | null>(null);
   const pathRef = useRef<google.maps.LatLng[]>([]);
   const [ready, setReady] = useState(false);
   const [mapError, setMapError] = useState(false);
   const trailLoadedRef = useRef<string | null>(null);
+  const isFirstFixRef = useRef<boolean>(true);
 
   // Follow mode — when true (default), camera tracks the vehicle in fullscreen.
   // User drag/zoom turns it off and surfaces a "Re-centre" button.
@@ -189,9 +191,19 @@ export function SatNavLiveMap({
     fillColor: active ? "#0A84FF" : "#8E8E93",
     fillOpacity: 1,
     strokeColor: "#FFFFFF",
-    strokeWeight: 3,
-    scale: fullscreenRef.current ? (active ? 2.6 : 2.2) : (active ? 2.4 : 2.0),
+    strokeWeight: 2,
+    scale: active ? 1.6 : 1.2,
     rotation,
+    anchor: new google.maps.Point(0, 0),
+  }), []);
+
+  // Soft drop-shadow icon under the arrow for legibility on light roads
+  const getShadowIcon = useCallback((active: boolean): google.maps.Symbol => ({
+    path: google.maps.SymbolPath.CIRCLE,
+    fillColor: "#000000",
+    fillOpacity: 0.18,
+    strokeOpacity: 0,
+    scale: active ? 11 : 9,
     anchor: new google.maps.Point(0, 0),
   }), []);
 
@@ -219,26 +231,16 @@ export function SatNavLiveMap({
       ? { lat: latitude!, lng: longitude! }
       : { lat: 54.5, lng: -3.5 };
 
-    // Premium dark sat-nav style — charcoal geometry, muted roads, POIs hidden.
+    // Light Google Maps default styling — only hide POI + transit labels.
     const navStyles: google.maps.MapTypeStyle[] = [
-      { elementType: "geometry", stylers: [{ color: "#1c1c1e" }] },
-      { elementType: "labels.text.fill", stylers: [{ color: "#8e8e93" }] },
-      { elementType: "labels.text.stroke", stylers: [{ color: "#1c1c1e" }] },
-      { featureType: "administrative", elementType: "geometry", stylers: [{ visibility: "off" }] },
-      { featureType: "administrative.land_parcel", stylers: [{ visibility: "off" }] },
-      { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#c7c7cc" }] },
       { featureType: "poi", stylers: [{ visibility: "off" }] },
-      { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#1f2a22" }] },
-      { featureType: "road", elementType: "geometry", stylers: [{ color: "#2c2c2e" }] },
-      { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] },
-      { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#3a3a3c" }] },
-      { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#48484a" }] },
-      { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1c1c1e" }] },
-      { featureType: "road.local", elementType: "labels", stylers: [{ visibility: "simplified" }] },
       { featureType: "transit", stylers: [{ visibility: "off" }] },
-      { featureType: "water", elementType: "geometry", stylers: [{ color: "#0a1f2e" }] },
-      { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#3a4a5a" }] },
     ];
+
+    // iOS system grey 6 background under the map tiles
+    if (mapDivRef.current) {
+      mapDivRef.current.style.background = "#F2F2F7";
+    }
 
     const map = new google.maps.Map(mapDivRef.current, {
       center,
@@ -250,6 +252,7 @@ export function SatNavLiveMap({
       mapTypeId: "roadmap",
       clickableIcons: false,
       keyboardShortcuts: false,
+      backgroundColor: "#F2F2F7",
       styles: navStyles,
       // Note: no mapId — required so inline `styles` above are honoured
     });
@@ -263,6 +266,13 @@ export function SatNavLiveMap({
       const pos = new google.maps.LatLng(latitude!, longitude!);
       pathRef.current = [pos];
 
+      markerShadowRef.current = new google.maps.Marker({
+        position: center,
+        map,
+        icon: getShadowIcon(isActive),
+        zIndex: 998,
+        clickable: false,
+      });
       markerRef.current = new google.maps.Marker({
         position: center,
         map,
@@ -290,6 +300,8 @@ export function SatNavLiveMap({
       mapListenersRef.current = [];
       markerRef.current?.setMap(null);
       markerRef.current = null;
+      markerShadowRef.current?.setMap(null);
+      markerShadowRef.current = null;
       polylineRef.current?.setMap(null);
       polylineRef.current = null;
       polylineCasingRef.current?.setMap(null);
@@ -300,6 +312,11 @@ export function SatNavLiveMap({
       mapRef.current = null;
     };
   }, [ready]);
+
+  // When the active session changes, ensure the next fix re-frames the map.
+  useEffect(() => {
+    isFirstFixRef.current = true;
+  }, [sessionId]);
 
   // Load historical trail + subscribe to new GPS points for active sessions
   useEffect(() => {
@@ -362,6 +379,45 @@ export function SatNavLiveMap({
 
     const now = performance.now();
 
+    // ── First-fix handling ────────────────────────────────────────────────
+    // On the very first fix for this session, frame the map on the vehicle
+    // immediately and skip any tween. Without this, an initialCenter prop
+    // could leave the marker off-screen until the next fix arrives.
+    if (isFirstFixRef.current) {
+      const headingNow = heading ?? 0;
+      if (!markerRef.current) {
+        markerShadowRef.current = new google.maps.Marker({
+          position: { lat: latitude, lng: longitude },
+          map,
+          icon: getShadowIcon(isActive),
+          zIndex: 998,
+          clickable: false,
+        });
+        markerRef.current = new google.maps.Marker({
+          position: { lat: latitude, lng: longitude },
+          map,
+          icon: getArrowIcon(headingNow, isActive),
+          zIndex: 999,
+        });
+      } else {
+        markerRef.current.setPosition({ lat: latitude, lng: longitude });
+        markerRef.current.setIcon(getArrowIcon(headingNow, isActive));
+        markerShadowRef.current?.setPosition({ lat: latitude, lng: longitude });
+      }
+      suppressFollowOffRef.current = true;
+      map.setCenter({ lat: latitude, lng: longitude });
+      map.setZoom(17);
+      requestAnimationFrame(() => { suppressFollowOffRef.current = false; });
+
+      const seed = { lat: latitude, lng: longitude, heading: headingNow, t: now };
+      fromPosRef.current = seed;
+      targetPosRef.current = seed;
+      lastFixTsRef.current = now;
+      pathRef.current = [new google.maps.LatLng(latitude, longitude)];
+      isFirstFixRef.current = false;
+      return;
+    }
+
     // ── Jitter / outlier guards ───────────────────────────────────────────
     // 1. Stationary detection — speed < 3 km/h ≈ walking pace. GPS heading is
     //    meaningless at low speed and "stationary drift" causes the most
@@ -404,8 +460,15 @@ export function SatNavLiveMap({
     }
     lastFixTsRef.current = now;
 
-    // Seed marker on first fix
+    // Seed marker on first fix (defensive — should already exist after first-fix block)
     if (!markerRef.current) {
+      markerShadowRef.current = new google.maps.Marker({
+        position: { lat: latitude, lng: longitude },
+        map,
+        icon: getShadowIcon(isActive),
+        zIndex: 998,
+        clickable: false,
+      });
       markerRef.current = new google.maps.Marker({
         position: { lat: latitude, lng: longitude },
         map,
@@ -414,14 +477,30 @@ export function SatNavLiveMap({
       });
     }
 
-    // Set up interpolation: from = current displayed pos, target = new fix.
-    // While stationary, re-anchor `from` to `target` so the marker doesn't
-    // visibly twitch between near-identical fixes.
-    const currentDisplayed = targetPosRef.current ?? { lat: latitude, lng: longitude, heading: rotation, t: now };
-    fromPosRef.current = movingFastEnough
-      ? { ...currentDisplayed, t: now }
-      : { lat: latitude, lng: longitude, heading: rotation, t: now };
-    targetPosRef.current = { lat: latitude, lng: longitude, heading: rotation, t: now };
+    // ── Jump rejection (>500 m): snap, don't tween ───────────────────────
+    // The "from" point of the next tween must be the *previous animation's
+    // destination* (targetPosRef before this update), not the marker's
+    // current mid-tween position — otherwise the marker ping-pongs.
+    const fromBase = targetPosRef.current ?? (() => {
+      const p = markerRef.current?.getPosition();
+      return p ? { lat: p.lat(), lng: p.lng(), heading: rotation, t: now } : null;
+    })();
+
+    if (fromBase && metresFromPrev > 500) {
+      // GPS spike or out-of-order row — snap directly, clear tween state
+      markerRef.current.setPosition({ lat: latitude, lng: longitude });
+      markerRef.current.setIcon(getArrowIcon(rotation, isActive));
+      markerShadowRef.current?.setPosition({ lat: latitude, lng: longitude });
+      const snapped = { lat: latitude, lng: longitude, heading: rotation, t: now };
+      fromPosRef.current = snapped;
+      targetPosRef.current = snapped;
+    } else {
+      // Normal tween: from = previous tween destination (or marker fallback)
+      fromPosRef.current = fromBase
+        ? (movingFastEnough ? { ...fromBase, t: now } : { lat: latitude, lng: longitude, heading: rotation, t: now })
+        : { lat: latitude, lng: longitude, heading: rotation, t: now };
+      targetPosRef.current = { lat: latitude, lng: longitude, heading: rotation, t: now };
+    }
 
     // Append to trail polyline only when moving AND we've travelled ≥3 m from
     // the last accepted fix. This is the single most important filter — it
@@ -436,7 +515,7 @@ export function SatNavLiveMap({
         requestSnap();
       }
     }
-  }, [latitude, longitude, heading, speedKmh, isActive, ignitionOn, getArrowIcon, renderPolylines, requestSnap, appendTrailPoint]);
+  }, [latitude, longitude, heading, speedKmh, isActive, ignitionOn, getArrowIcon, getShadowIcon, renderPolylines, requestSnap, appendTrailPoint]);
 
   // Continuous animation loop — interpolates marker between fixes at 60fps
   useEffect(() => {
@@ -473,6 +552,7 @@ export function SatNavLiveMap({
 
         marker.setPosition({ lat, lng });
         marker.setIcon(getArrowIcon(hd, isActiveRef.current));
+        markerShadowRef.current?.setPosition({ lat, lng });
 
         // Heading-up: rotate map smoothly
         if (typeof (map as any).setHeading === "function") {
@@ -513,24 +593,24 @@ export function SatNavLiveMap({
     }
   }, []);
 
-  // Fullscreen mode — premium dark sat-nav layout
+  // Fullscreen mode — premium iOS light sat-nav layout
   if (fullscreen) {
     return (
-      <div className={className} style={{ overflow: "hidden", background: "#0a0a0c" }}>
+      <div className={className} style={{ overflow: "hidden", background: "#F2F2F7" }}>
         <div className="relative" style={{ height: "100%", width: "100%" }}>
-          <div ref={mapDivRef} className="absolute inset-0 z-0" />
+          <div ref={mapDivRef} className="absolute inset-0 z-0" style={{ background: "#F2F2F7" }} />
 
           {mapError && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center z-[6] px-6 text-center" style={{ background: "rgba(10,10,12,0.96)" }}>
-              <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, marginBottom: 14 }}>🛰️</div>
-              <p style={{ fontSize: 17, fontWeight: 700, color: "white", letterSpacing: -0.2 }}>Map unavailable</p>
-              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 4 }}>Unable to load live map right now.</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-[6] px-6 text-center" style={{ background: "rgba(242,242,247,0.96)" }}>
+              <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, marginBottom: 14 }}>🛰️</div>
+              <p style={{ fontSize: 17, fontWeight: 700, color: "#1C1C1E", letterSpacing: -0.2 }}>Map unavailable</p>
+              <p style={{ fontSize: 13, color: "rgba(60,60,67,0.6)", marginTop: 4 }}>Unable to load live map right now.</p>
             </div>
           )}
 
           {hasPosition && !mapError ? (
             <>
-              {/* Top bar — signal pill + road name pill, dark glass */}
+              {/* Top bar — signal pill + road name pill, light glass */}
               <div
                 className="absolute z-10 flex items-center gap-2 px-3"
                 style={{
@@ -539,28 +619,28 @@ export function SatNavLiveMap({
                   right: 0,
                 }}
               >
-                <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} dark />
+                <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} />
                 <div
                   className="flex-1 truncate"
                   style={{
-                    background: "rgba(20,20,22,0.62)",
+                    background: "rgba(255,255,255,0.72)",
                     backdropFilter: "blur(18px) saturate(180%)",
                     WebkitBackdropFilter: "blur(18px) saturate(180%)",
-                    border: "0.5px solid rgba(255,255,255,0.14)",
+                    border: "1px solid rgba(0,0,0,0.06)",
                     borderRadius: 14,
                     padding: "7px 12px",
-                    color: "white",
+                    color: "#1C1C1E",
                     fontSize: 13,
                     fontWeight: 600,
                     lineHeight: 1.25,
-                    boxShadow: "0 6px 20px rgba(0,0,0,0.35)",
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
                     textAlign: "center",
                     maxWidth: "60%",
                     margin: "0 auto",
                   }}
                   title={roadName || "Awaiting location"}
                 >
-                  <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6, marginRight: 6 }}>On</span>
+                  <span style={{ color: "rgba(60,60,67,0.6)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6, marginRight: 6 }}>On</span>
                   <span className="truncate">{roadName || "Awaiting location…"}</span>
                 </div>
                 <SnapStatusPill status={snapStatus} lastFixLabel={lastFixLabel} />
@@ -575,16 +655,16 @@ export function SatNavLiveMap({
                   style={{
                     right: 14,
                     bottom: "calc(env(safe-area-inset-bottom, 0px) + 220px)",
-                    background: "rgba(255,255,255,0.14)",
+                    background: "rgba(255,255,255,0.78)",
                     backdropFilter: "blur(20px) saturate(180%)",
                     WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                    border: "1px solid rgba(255,255,255,0.22)",
+                    border: "1px solid rgba(0,0,0,0.08)",
                     borderRadius: 999,
-                    padding: "10px 16px",
+                    padding: "10px 14px",
                     fontSize: 13,
                     fontWeight: 600,
-                    color: "white",
-                    boxShadow: "0 8px 24px rgba(0,0,0,0.45)",
+                    color: "#0A84FF",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 6,
@@ -596,17 +676,17 @@ export function SatNavLiveMap({
                 </button>
               )}
 
-              {/* Overspeed banner — gradient red, premium */}
+              {/* Overspeed banner — gradient red, sits above bottom panel */}
               {isOverSpeed && speedMph != null && speedLimitMph != null && (
                 <div
                   className="absolute left-3 right-3 z-20"
                   style={{
-                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 170px)",
-                    background: "linear-gradient(135deg, #FF453A 0%, #E11D2A 100%)",
+                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 156px)",
+                    background: "linear-gradient(180deg, rgba(255,69,58,0.95) 0%, rgba(225,29,42,0.95) 100%)",
                     color: "white",
                     borderRadius: 16,
                     padding: "12px 16px",
-                    boxShadow: "0 14px 32px rgba(255,69,58,0.45), inset 0 1px 0 rgba(255,255,255,0.18)",
+                    boxShadow: "0 12px 30px rgba(225,29,42,0.28), inset 0 1px 0 rgba(255,255,255,0.18)",
                     border: "0.5px solid rgba(255,255,255,0.18)",
                     display: "flex",
                     alignItems: "center",
@@ -620,18 +700,18 @@ export function SatNavLiveMap({
                 </div>
               )}
 
-              {/* Bottom sat-nav glass panel — dark gradient */}
+              {/* Bottom sat-nav glass panel — light gradient */}
               <div
                 className="absolute left-3 right-3 z-10"
                 style={{
                   bottom: "calc(env(safe-area-inset-bottom, 0px) + 14px)",
-                  background: "linear-gradient(180deg, rgba(28,28,30,0.78) 0%, rgba(18,18,20,0.88) 100%)",
+                  background: "linear-gradient(180deg, rgba(255,255,255,0.78) 0%, rgba(245,245,247,0.78) 100%)",
                   backdropFilter: "blur(24px) saturate(180%)",
                   WebkitBackdropFilter: "blur(24px) saturate(180%)",
-                  border: "1px solid rgba(255,255,255,0.10)",
+                  border: "1px solid rgba(0,0,0,0.06)",
                   borderRadius: 22,
                   padding: "16px 18px",
-                  boxShadow: "0 18px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08)",
+                  boxShadow: "0 1px 0 rgba(255,255,255,0.8) inset, 0 18px 40px rgba(0,0,0,0.12)",
                   display: "flex",
                   alignItems: "center",
                   gap: 16,
@@ -643,7 +723,7 @@ export function SatNavLiveMap({
                     style={{
                       fontSize: 56,
                       fontWeight: 800,
-                      color: isOverSpeed ? "#FF453A" : "white",
+                      color: isOverSpeed ? "#FF3B30" : "#1C1C1E",
                       lineHeight: 0.95,
                       letterSpacing: -1.5,
                       fontVariantNumeric: "tabular-nums",
@@ -652,10 +732,10 @@ export function SatNavLiveMap({
                   >
                     {speedMph ?? 0}
                   </span>
-                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 4, textTransform: "uppercase", letterSpacing: 0.8, fontWeight: 700 }}>mph</span>
+                  <span style={{ fontSize: 11, color: "rgba(60,60,67,0.6)", marginTop: 4, textTransform: "uppercase", letterSpacing: 0.4, fontWeight: 600 }}>mph</span>
                 </div>
 
-                {/* Speed limit roundel — large, bold */}
+                {/* Speed limit roundel */}
                 {speedLimitMph != null && speedLimitMph > 0 && (
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
                     <div
@@ -669,12 +749,12 @@ export function SatNavLiveMap({
                         justifyContent: "center",
                         flexShrink: 0,
                         background: "white",
-                        boxShadow: "0 4px 12px rgba(225,29,42,0.35)",
+                        boxShadow: "0 4px 14px rgba(0,0,0,0.12)",
                       }}
                     >
-                      <span style={{ fontSize: 22, fontWeight: 800, color: "#1c1c1e", letterSpacing: -0.5, fontVariantNumeric: "tabular-nums" }}>{speedLimitMph}</span>
+                      <span style={{ fontSize: 22, fontWeight: 800, color: "#1C1C1E", letterSpacing: -0.5, fontVariantNumeric: "tabular-nums" }}>{speedLimitMph}</span>
                     </div>
-                    <span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 0.8, fontWeight: 700 }}>limit</span>
+                    <span style={{ fontSize: 9, color: "rgba(60,60,67,0.6)", textTransform: "uppercase", letterSpacing: 0.4, fontWeight: 600 }}>limit</span>
                   </div>
                 )}
 
@@ -683,10 +763,10 @@ export function SatNavLiveMap({
                 {/* Miles today */}
                 {dailyMiles != null && (
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-                    <span style={{ fontSize: 20, fontWeight: 800, color: "white", lineHeight: 1, letterSpacing: -0.3, fontVariantNumeric: "tabular-nums" }}>
+                    <span style={{ fontSize: 20, fontWeight: 800, color: "#1C1C1E", lineHeight: 1, letterSpacing: -0.3, fontVariantNumeric: "tabular-nums" }}>
                       {dailyMiles}
                     </span>
-                    <span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", marginTop: 4, textTransform: "uppercase", letterSpacing: 0.8, fontWeight: 700 }}>miles today</span>
+                    <span style={{ fontSize: 9, color: "rgba(60,60,67,0.6)", marginTop: 4, textTransform: "uppercase", letterSpacing: 0.4, fontWeight: 600 }}>miles today</span>
                   </div>
                 )}
 
@@ -697,8 +777,8 @@ export function SatNavLiveMap({
                       display: "inline-flex",
                       alignItems: "center",
                       gap: 6,
-                      background: ignitionOn ? "rgba(48,209,88,0.18)" : "rgba(142,142,147,0.18)",
-                      border: `0.5px solid ${ignitionOn ? "rgba(48,209,88,0.4)" : "rgba(142,142,147,0.35)"}`,
+                      background: ignitionOn ? "rgba(52,199,89,0.14)" : "rgba(142,142,147,0.14)",
+                      border: `1px solid ${ignitionOn ? "rgba(52,199,89,0.35)" : "rgba(0,0,0,0.08)"}`,
                       borderRadius: 999,
                       padding: "6px 10px",
                     }}
@@ -708,11 +788,11 @@ export function SatNavLiveMap({
                         width: 8,
                         height: 8,
                         borderRadius: "50%",
-                        background: ignitionOn ? "#30D158" : "#8E8E93",
-                        boxShadow: ignitionOn ? "0 0 8px rgba(48,209,88,0.7)" : "none",
+                        background: ignitionOn ? "#34C759" : "#8E8E93",
+                        boxShadow: ignitionOn ? "0 0 6px rgba(52,199,89,0.6)" : "none",
                       }}
                     />
-                    <span style={{ fontSize: 11, color: ignitionOn ? "#30D158" : "rgba(255,255,255,0.6)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                    <span style={{ fontSize: 11, color: ignitionOn ? "#1F7A3A" : "rgba(60,60,67,0.7)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
                       {ignitionOn ? "Engine On" : "Engine Off"}
                     </span>
                   </div>
@@ -720,8 +800,8 @@ export function SatNavLiveMap({
               </div>
             </>
           ) : !mapError ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center z-[5]" style={{ background: "rgba(10,10,12,0.85)" }}>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>No position data yet</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-[5]" style={{ background: "rgba(242,242,247,0.85)" }}>
+              <p style={{ fontSize: 14, color: "rgba(60,60,67,0.6)" }}>No position data yet</p>
             </div>
           ) : null}
         </div>
@@ -922,13 +1002,15 @@ function SignalStatusPill({ status, lastFixLabel, dark = false }: { status: Sign
         display: "inline-flex",
         alignItems: "center",
         gap: 6,
-        background: c.bg,
+        background: "rgba(255,255,255,0.72)",
+        backdropFilter: "blur(14px) saturate(180%)",
+        WebkitBackdropFilter: "blur(14px) saturate(180%)",
         border: "1px solid rgba(0,0,0,0.06)",
         borderRadius: 20,
         padding: "4px 10px",
         fontSize: 11,
         fontWeight: 700,
-        color: c.fg,
+        color: "#1C1C1E",
         whiteSpace: "nowrap",
         flexShrink: 0,
       }}
@@ -939,13 +1021,13 @@ function SignalStatusPill({ status, lastFixLabel, dark = false }: { status: Sign
           height: 7,
           borderRadius: "50%",
           background: c.dot,
-          boxShadow: status === "live" ? `0 0 6px ${c.dot}` : "none",
+          boxShadow: status === "live" ? `0 0 0 4px rgba(52,199,89,0.2)` : "none",
         }}
         className={c.pulse ? "animate-pulse" : ""}
       />
       {c.label}
       {lastFixLabel && status !== "live" && (
-        <span style={{ color: "#8e8e93", fontWeight: 500 }}>· {lastFixLabel}</span>
+        <span style={{ color: "rgba(60,60,67,0.6)", fontWeight: 500 }}>· {lastFixLabel}</span>
       )}
     </span>
   );
