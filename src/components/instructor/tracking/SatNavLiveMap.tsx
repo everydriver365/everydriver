@@ -487,6 +487,9 @@ export function SatNavLiveMap({
   useEffect(() => {
     isFirstFixRef.current = true;
     lastFixAtRef.current = 0;
+    camHeadingRef.current = 0;
+    camTiltRef.current = 0;
+    lastAutoZoomRef.current = null;
   }, [sessionId]);
 
   // Load historical trail + subscribe to new GPS points for active sessions
