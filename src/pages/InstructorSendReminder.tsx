@@ -530,9 +530,12 @@ export default function InstructorSendReminder() {
                     const bubbleText =
                       channel === "in-app" ? "#1E3A8A" : "#1c1c1e";
                     return (
-                      <div
+                      <button
                         key={p.id}
-                        className="snap-start shrink-0 w-[78%] max-w-[300px] rounded-2xl bg-white border border-[#E4E4E7] p-3"
+                        type="button"
+                        onClick={() => focusPupilInRecipients(p.id)}
+                        title="Edit in recipients"
+                        className="snap-start shrink-0 w-[78%] max-w-[300px] rounded-2xl bg-white border border-[#E4E4E7] p-3 text-left active:scale-[0.98] hover:border-[#1c1c1e]/30 transition"
                       >
                         <div className="flex items-center justify-between mb-2 gap-2">
                           <p className="text-[12px] font-bold text-[#1c1c1e] truncate">
@@ -555,7 +558,7 @@ export default function InstructorSendReminder() {
                         >
                           {rendered}
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                   {selectedPupils.length > 8 && (
