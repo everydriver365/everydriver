@@ -90,6 +90,43 @@ function SectionHeader({
 /* Main view                                                                  */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * iOS-style uppercase section label — sits ABOVE its card. Used for
+ * "Do this next", "Needs your attention", "Schedule" so all home sections
+ * share one heading style.
+ */
+function SectionLabel({
+  children,
+  action,
+}: {
+  children: React.ReactNode;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        margin: "0 2px 8px",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          color: "#8E8E93",
+          textTransform: "uppercase",
+          letterSpacing: "0.4px",
+        }}
+      >
+        {children}
+      </div>
+      {action}
+    </div>
+  );
+}
+
 export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }: Props) {
   const navigate = useNavigate();
   const firstName = instructor?.name?.split(" ")[0] || "Instructor";
