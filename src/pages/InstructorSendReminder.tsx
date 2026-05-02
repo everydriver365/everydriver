@@ -41,6 +41,7 @@ export default function InstructorSendReminder() {
   const [channel, setChannel] = useState<Channel>("sms");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [confirmingBulk, setConfirmingBulk] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [editingRecipients, setEditingRecipients] = useState(false);
   const [recipientSearch, setRecipientSearch] = useState("");
