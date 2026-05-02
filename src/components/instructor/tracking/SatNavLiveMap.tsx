@@ -950,9 +950,70 @@ export function SatNavLiveMap({
                 </div>
               )}
 
-              {/* Bottom sat-nav glass panel — light gradient. Now vertical:
-                  road-name row on top, existing speed/limit/right-column row
-                  underneath. */}
+              {/* Floating road-name pill — sits on the map, just above the
+                  bottom panel. Centred, glass, ellipsised. CarPlay-style. */}
+              <div
+                className="absolute z-10 pointer-events-none flex justify-center px-4"
+                style={{
+                  left: 0,
+                  right: 0,
+                  bottom: "calc(env(safe-area-inset-bottom, 0px) + 150px)",
+                }}
+              >
+                <div
+                  title={displayRoadName || "Locating road"}
+                  style={{
+                    maxWidth: "min(86%, 460px)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "8px 14px",
+                    background: "rgba(255,255,255,0.82)",
+                    backdropFilter: "blur(20px) saturate(180%)",
+                    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+                    border: "1px solid rgba(0,0,0,0.06)",
+                    borderRadius: 999,
+                    boxShadow: "0 10px 28px rgba(0,0,0,0.16), 0 1px 0 rgba(255,255,255,0.7) inset",
+                  }}
+                >
+                  <span aria-hidden="true" style={{ fontSize: 13, color: "#0A84FF", lineHeight: 1, flexShrink: 0 }}>◉</span>
+                  {displayRoadName ? (
+                    <span
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: "#1C1C1E",
+                        letterSpacing: -0.1,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {displayRoadName}
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 500,
+                        fontStyle: "italic",
+                        color: "rgba(60,60,67,0.5)",
+                        letterSpacing: -0.1,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      Locating road…
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Bottom sat-nav glass panel — light gradient. Speed + limit
+                  + right column. Road name now floats above on the map. */}
               <div
                 className="absolute left-3 right-3 z-10"
                 style={{
@@ -969,54 +1030,6 @@ export function SatNavLiveMap({
                   alignItems: "stretch",
                 }}
               >
-                {/* Road-name row — sits where the driver's eyes already are */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    paddingBottom: 10,
-                    marginBottom: 10,
-                    borderBottom: "1px solid rgba(0,0,0,0.06)",
-                    minHeight: 22,
-                  }}
-                  title={displayRoadName || "Locating road"}
-                >
-                  <span aria-hidden="true" style={{ fontSize: 14, color: "rgba(60,60,67,0.55)", lineHeight: 1, flexShrink: 0 }}>◉</span>
-                  {displayRoadName ? (
-                    <span
-                      style={{
-                        fontSize: 15,
-                        fontWeight: 600,
-                        color: "#1C1C1E",
-                        letterSpacing: -0.1,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        flex: 1,
-                      }}
-                    >
-                      {displayRoadName}
-                    </span>
-                  ) : (
-                    <span
-                      style={{
-                        fontSize: 15,
-                        fontWeight: 500,
-                        fontStyle: "italic",
-                        color: "rgba(60,60,67,0.4)",
-                        letterSpacing: -0.1,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        flex: 1,
-                      }}
-                    >
-                      Locating road…
-                    </span>
-                  )}
-                </div>
-
                 {/* Existing horizontal row — mph numeral, roundel, right column */}
                 <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                 {/* Speed — huge numeral */}
