@@ -176,10 +176,13 @@ export function useNextBestAction(instructorId: string | undefined): NextBestAct
           rank: 4,
           title: `Re-engage ${atRisk.pupilName}`,
           subtitle: atRisk.factors[0] ?? "At risk of dropping off",
+          verb: "Re-engage",
           icon: UserCheck,
           tone: "purple",
           iconBg: "rgba(138,91,201,0.10)",
           iconFg: "#8A5BC9",
+          cardBg: "#F5EFFB",
+          cardBorder: "rgba(138,91,201,0.22)",
           onPress: () => navigate(`/instructor/pupils/${atRisk.pupilId}`),
           snoozeKey: key,
         };
