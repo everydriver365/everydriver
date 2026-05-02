@@ -505,7 +505,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
     ? ""
     : hasLessons
     ? `${dateLabel} · ${doneCount} of ${dayLessonCount} done`
-    : `${dateLabel} · no lessons today`;
+    : `${dateLabel} · no lessons ${isTomorrow ? "tomorrow" : "today"}`;
 
   return (
     <div
@@ -563,7 +563,7 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
                 margin: "0 0 4px",
               }}
             >
-              {isTomorrow ? "Tomorrow's schedule" : "Today's schedule"}
+              Schedule
             </span>
             <span
               style={{
@@ -686,8 +686,12 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             >
               <CalendarIcon size={20} color={IOS.secondaryLabel} strokeWidth={2} />
             </div>
-            <div style={{ fontSize: 14, fontWeight: 500, color: IOS.label }}>No lessons today</div>
-            <div style={{ fontSize: 12, color: IOS.secondaryLabel }}>Perfect time to catch up on admin</div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: IOS.label }}>
+              {isTomorrow ? "No lessons tomorrow" : "No lessons today"}
+            </div>
+            <div style={{ fontSize: 12, color: IOS.secondaryLabel }}>
+              {isTomorrow ? "Plan ahead or add a lesson" : "Perfect time to catch up on admin"}
+            </div>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column" }}>
