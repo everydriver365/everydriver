@@ -735,9 +735,9 @@ export function NextUpTile({
                 const isPending = !checkInStatus || checkInStatus === "pending";
                 const canNudge = isPending && !!pupilPhone;
                 const pillBase: React.CSSProperties = {
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  borderRadius: 999, padding: "7px 12px",
-                  fontSize: a11yPx(13), fontWeight: 700, letterSpacing: 0.1,
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  borderRadius: 999, padding: "4px 10px",
+                  fontSize: a11yPx(12), fontWeight: 600, letterSpacing: 0.05,
                 };
                 if (nudgeSentAt) {
                   return (
