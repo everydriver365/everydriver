@@ -281,7 +281,23 @@ export function SatNavLiveMap({
       });
     }
 
+    // User gesture detection — turn off follow mode when the user drags or
+    // zooms the map. We only listen to `dragstart` (true user gesture) and
+    // `zoom_changed` because `center_changed` also fires from our own panTo.
+    const onDragStart = () => {
+      if (suppressFollowOffRef.current) return;
+      if (followModeRef.current) setFollowMode(false);
+    };
+    const onZoomChanged = () => {
+      if (suppressFollowOffRef.current) return;
+      if (followModeRef.current) setFollowMode(false);
+    };
+    mapListenersRef.current.push(map.addListener("dragstart", onDragStart));
+    mapListenersRef.current.push(map.addListener("zoom_changed", onZoomChanged));
+
     return () => {
+      mapListenersRef.current.forEach((l) => l.remove());
+      mapListenersRef.current = [];
       markerRef.current?.setMap(null);
       markerRef.current = null;
       polylineRef.current?.setMap(null);
