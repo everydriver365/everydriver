@@ -1530,7 +1530,8 @@ export function NextUpTile({
           }} />
       )}
       <RunningLateSheet open={lateSheetOpen} onOpenChange={setLateSheetOpen}
-        pupilName={pupilName} pupilPhone={pupilPhone} startTime={startTime} />
+        pupilName={pupilName} pupilPhone={pupilPhone} startTime={startTime}
+        etaMinutes={etaMinutes} />
 
       {/* Traffic Alerts Modal */}
       <Dialog open={trafficModalOpen} onOpenChange={setTrafficModalOpen}>
