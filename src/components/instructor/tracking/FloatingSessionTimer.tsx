@@ -1,87 +1,200 @@
- import { motion } from "framer-motion";
- import { Clock, Route, Square } from "lucide-react";
- import { Button } from "@/components/ui/button";
- import { RefreshCw } from "lucide-react";
- 
- interface FloatingSessionTimerProps {
-   elapsedSeconds: number;
-   distanceMiles: number;
-   pupilName: string | null;
-   isTestRoute: boolean;
-   onStop: () => void;
-   isStopping: boolean;
- }
- 
- export function FloatingSessionTimer({
-   elapsedSeconds,
-   distanceMiles,
-   pupilName,
-   isTestRoute,
-   onStop,
-   isStopping,
- }: FloatingSessionTimerProps) {
-   const formatElapsedTime = (seconds: number) => {
-     const hrs = Math.floor(seconds / 3600);
-     const mins = Math.floor((seconds % 3600) / 60);
-     const secs = seconds % 60;
-     
-     if (hrs > 0) {
-       return `${hrs}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-     }
-     return `${mins}:${secs.toString().padStart(2, "0")}`;
-   };
- 
-   return (
-     <motion.div
-       className="fixed bottom-[140px] left-4 right-4 z-40"
-       initial={{ y: 100, opacity: 0 }}
-       animate={{ y: 0, opacity: 1 }}
-       exit={{ y: 100, opacity: 0 }}
-       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-     >
-        <div className="bg-card/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-border px-3 py-2.5 flex items-center gap-3">
-          {/* Live pulse */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <motion.div
-              className="w-2 h-2 rounded-full bg-red-500"
-              animate={{ opacity: [1, 0.4, 1] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            />
-            <span className="text-[10px] font-semibold text-red-500">REC</span>
-          </div>
+import { motion, AnimatePresence } from "framer-motion";
+import { Clock, Route, Square, Play, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
-          {/* Pupil name */}
-          <span className="text-sm font-semibold text-foreground truncate min-w-0">
-            {pupilName || "Test Route"}
+interface FloatingSessionTimerProps {
+  elapsedSeconds: number;
+  distanceMiles: number;
+  pupilName: string | null;
+  isTestRoute: boolean;
+  onStop: () => void;
+  isStopping: boolean;
+  /** Live speed in mph (rounded). Null if no recent fix. */
+  speedMph?: number | null;
+  /** Posted limit in mph (rounded). Null if unknown. */
+  speedLimitMph?: number | null;
+  /** True when no movement detected for the configured idle window. */
+  paused?: boolean;
+  /** Called when instructor taps Resume — clears the paused-overlay (no backend change). */
+  onResume?: () => void;
+  /** Optional alert count badge inside the panel. */
+  alertCount?: number;
+}
+
+export function FloatingSessionTimer({
+  elapsedSeconds,
+  distanceMiles,
+  pupilName,
+  isTestRoute,
+  onStop,
+  isStopping,
+  speedMph = null,
+  speedLimitMph = null,
+  paused = false,
+  onResume,
+  alertCount = 0,
+}: FloatingSessionTimerProps) {
+  const formatElapsedTime = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    if (hrs > 0) {
+      return `${hrs}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    }
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const isOver = !paused && speedMph != null && speedLimitMph != null && speedMph > speedLimitMph;
+  const speedColor = paused ? "#71717A" : isOver ? "#DC2626" : "#1c1c1e";
+
+  return (
+    <motion.div
+      className="fixed bottom-4 left-3 right-3 z-40"
+      initial={{ y: 120, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: 120, opacity: 0 }}
+      transition={{ type: "spring", damping: 26, stiffness: 320 }}
+    >
+      <div className="bg-card/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-border overflow-hidden">
+        {/* Top row: status + pupil + alert chip */}
+        <div className="flex items-center gap-2 px-4 pt-3">
+          <AnimatePresence mode="wait" initial={false}>
+            {paused ? (
+              <motion.div
+                key="paused"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.18 }}
+                className="flex items-center gap-1.5 shrink-0"
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
+                  Paused
+                </span>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="rec"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.18 }}
+                className="flex items-center gap-1.5 shrink-0"
+              >
+                <motion.div
+                  className="w-2 h-2 rounded-full bg-red-500"
+                  animate={{ opacity: [1, 0.4, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-red-500">
+                  REC
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <span className="text-[13px] font-semibold text-foreground truncate min-w-0 flex-1">
+            {pupilName || (isTestRoute ? "Test route" : "Lesson")}
           </span>
 
-          {/* Spacer */}
-          <div className="flex-1" />
+          {alertCount > 0 && (
+            <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-red-500/10 text-red-600 text-[10px] font-semibold px-2 py-0.5">
+              <AlertTriangle className="h-3 w-3" />
+              {alertCount}
+            </span>
+          )}
+        </div>
 
-          {/* Timer */}
+        {/* Middle row: BIG speed + limit pill */}
+        <div className="flex items-end justify-between gap-3 px-4 pt-1.5 pb-1">
+          <div className="flex items-baseline gap-2 min-w-0">
+            <motion.span
+              key={speedMph ?? "—"}
+              initial={{ opacity: 0.4, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.15 }}
+              className="text-[44px] leading-none font-bold tabular-nums tracking-tight"
+              style={{ color: speedColor }}
+            >
+              {paused ? 0 : speedMph != null ? speedMph : "—"}
+            </motion.span>
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              mph
+            </span>
+          </div>
+
+          {speedLimitMph != null && (
+            <div
+              className={`flex flex-col items-center justify-center rounded-full border-[3px] bg-white shrink-0 ${
+                isOver ? "border-red-500" : "border-[#1c1c1e]"
+              }`}
+              style={{ width: 52, height: 52 }}
+              aria-label={`Speed limit ${speedLimitMph} mph`}
+            >
+              <span
+                className={`text-[18px] leading-none font-bold tabular-nums ${
+                  isOver ? "text-red-500" : "text-[#1c1c1e]"
+                }`}
+              >
+                {speedLimitMph}
+              </span>
+              <span className="text-[7px] font-bold uppercase tracking-wider text-[#71717A] mt-0.5">
+                limit
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom row: stats + actions */}
+        <div className="flex items-center gap-3 px-4 py-3 border-t border-border/60 mt-1">
           <div className="flex items-center gap-1.5 shrink-0">
             <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-lg font-bold text-foreground tabular-nums">
+            <span className="text-[15px] font-bold text-foreground tabular-nums">
               {formatElapsedTime(elapsedSeconds)}
             </span>
           </div>
 
-          <div className="h-5 w-px bg-border" />
+          <div className="h-4 w-px bg-border" />
 
-          {/* Distance */}
           <div className="flex items-center gap-1.5 shrink-0">
             <Route className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-lg font-bold text-foreground tabular-nums">
+            <span className="text-[15px] font-bold text-foreground tabular-nums">
               {distanceMiles.toFixed(1)}
-              <span className="text-xs font-normal text-muted-foreground ml-0.5">mi</span>
+              <span className="text-[11px] font-normal text-muted-foreground ml-0.5">
+                mi
+              </span>
             </span>
           </div>
 
-          {/* Stop Button */}
+          <div className="flex-1" />
+
+          <AnimatePresence mode="popLayout" initial={false}>
+            {paused && onResume && (
+              <motion.div
+                key="resume"
+                initial={{ opacity: 0, x: 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 12 }}
+                transition={{ duration: 0.18 }}
+              >
+                <Button
+                  size="sm"
+                  className="h-9 px-4 rounded-2xl font-semibold text-xs bg-[#1c1c1e] hover:bg-[#1c1c1e]/90 text-white"
+                  onClick={onResume}
+                >
+                  <Play className="h-3.5 w-3.5 mr-1" />
+                  Resume
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <Button
             variant="destructive"
             size="sm"
-            className="h-8 px-3 rounded-2xl font-semibold text-xs shrink-0"
+            className="h-9 px-4 rounded-2xl font-semibold text-xs shrink-0"
             onClick={onStop}
             disabled={isStopping}
           >
@@ -95,6 +208,7 @@
             )}
           </Button>
         </div>
-     </motion.div>
-   );
- }
+      </div>
+    </motion.div>
+  );
+}

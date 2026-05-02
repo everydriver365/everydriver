@@ -865,7 +865,52 @@ export default function InstructorLiveSession() {
 
   const currentPupil = pupils.find(p => p.id === device?.current_pupil_id);
   const speedMph = device?.last_speed_kmh != null ? Math.round(device.last_speed_kmh * 0.621371) : null;
+  const speedLimitMph = (device?.last_speed_limit_kmh ?? speedLimitKmh) != null
+    ? Math.round(((device?.last_speed_limit_kmh ?? speedLimitKmh) as number) * 0.621371)
+    : null;
   const distanceMiles = totalDistance * 0.621371;
+
+  // ── PAUSED STATE (UI only) ────────────────────────────────────────────────
+  // Visual pause when speed has been 0 for >= PAUSE_AFTER_SECONDS while a
+  // session is active. Tapping Resume hides the overlay until the next stop.
+  const PAUSE_AFTER_SECONDS = 5;
+  const [stoppedSinceMs, setStoppedSinceMs] = React.useState<number | null>(null);
+  const [manuallyResumedAt, setManuallyResumedAt] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    if (!isSessionActive) {
+      setStoppedSinceMs(null);
+      setManuallyResumedAt(null);
+      return;
+    }
+    const movingNow = (device?.last_speed_kmh ?? 0) > 0.5;
+    if (movingNow) {
+      setStoppedSinceMs(null);
+      // any movement clears the manual-resume override
+      setManuallyResumedAt(null);
+    } else if (stoppedSinceMs == null) {
+      setStoppedSinceMs(Date.now());
+    }
+  }, [device?.last_speed_kmh, isSessionActive, stoppedSinceMs]);
+
+  // Re-render every second so the paused-after delay actually flips
+  const [, forceTick] = React.useState(0);
+  React.useEffect(() => {
+    if (!isSessionActive || stoppedSinceMs == null) return;
+    const id = setInterval(() => forceTick((n) => n + 1), 1000);
+    return () => clearInterval(id);
+  }, [isSessionActive, stoppedSinceMs]);
+
+  const isPaused =
+    isSessionActive &&
+    stoppedSinceMs != null &&
+    Date.now() - stoppedSinceMs >= PAUSE_AFTER_SECONDS * 1000 &&
+    (manuallyResumedAt == null || stoppedSinceMs > manuallyResumedAt);
+
+  const handleResumeFromPaused = useCallback(() => {
+    setManuallyResumedAt(Date.now());
+  }, []);
+
 
   if (loading || isLoading) {
     return (
@@ -943,7 +988,7 @@ export default function InstructorLiveSession() {
             </div>
           )}
 
-           {/* Floating Session Timer Card */}
+           {/* Unified bottom panel — single source of truth for live session state */}
            <FloatingSessionTimer
              elapsedSeconds={elapsedTime}
              distanceMiles={distanceMiles}
@@ -951,25 +996,12 @@ export default function InstructorLiveSession() {
              isTestRoute={device.is_test_route_mode || !device.current_pupil_id}
              onStop={stopSession}
              isStopping={isStopping}
+             speedMph={speedMph}
+             speedLimitMph={speedLimitMph}
+             paused={isPaused}
+             onResume={handleResumeFromPaused}
+             alertCount={alertCounts.total}
            />
-
-          {/* Session info badge */}
-          {alertCounts.total > 0 && (
-            <div className="absolute top-24 left-4 z-30">
-              <Badge variant="destructive" className="text-xs px-2 py-1">
-                <AlertTriangle className="h-3 w-3 mr-1" />
-                {alertCounts.total} alert{alertCounts.total !== 1 ? 's' : ''}
-              </Badge>
-            </div>
-          )}
-
-            {/* Timer badge */}
-            <div className="absolute top-24 right-4 z-30 flex items-center gap-2">
-            <Badge variant="secondary" className="text-xs px-2 py-1 bg-[#1c1c1e]/90 text-white border-0">
-              <Clock className="h-3 w-3 mr-1" />
-              {formatElapsedTime(elapsedTime)}
-            </Badge>
-          </div>
         </div>
 
         {/* Trip Summary Sheet */}
