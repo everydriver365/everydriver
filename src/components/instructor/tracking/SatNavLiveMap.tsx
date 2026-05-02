@@ -186,11 +186,11 @@ export function SatNavLiveMap({
 
   const getArrowIcon = useCallback((rotation: number, active: boolean): google.maps.Symbol => ({
     path: "M 0,-12 L -7,11 L 0,6 L 7,11 Z",
-    fillColor: active ? "#2563eb" : "#9ca3af",
+    fillColor: active ? "#0A84FF" : "#8E8E93",
     fillOpacity: 1,
-    strokeColor: "white",
+    strokeColor: "#FFFFFF",
     strokeWeight: 3,
-    scale: fullscreenRef.current ? 2.4 : 2.2,
+    scale: fullscreenRef.current ? (active ? 2.6 : 2.2) : (active ? 2.4 : 2.0),
     rotation,
     anchor: new google.maps.Point(0, 0),
   }), []);
@@ -219,17 +219,25 @@ export function SatNavLiveMap({
       ? { lat: latitude!, lng: longitude! }
       : { lat: 54.5, lng: -3.5 };
 
-    // Decluttering nav-style — hide POI/transit clutter, keep roads + key labels
+    // Premium dark sat-nav style — charcoal geometry, muted roads, POIs hidden.
     const navStyles: google.maps.MapTypeStyle[] = [
-      { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
-      { featureType: "poi.business", stylers: [{ visibility: "off" }] },
-      { featureType: "poi.attraction", elementType: "labels", stylers: [{ visibility: "simplified" }] },
-      { featureType: "poi.school", elementType: "labels", stylers: [{ visibility: "on" }] },
-      { featureType: "transit", stylers: [{ visibility: "off" }] },
-      { featureType: "transit.station", stylers: [{ visibility: "off" }] },
-      { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] },
-      { featureType: "road.local", elementType: "labels", stylers: [{ visibility: "simplified" }] },
+      { elementType: "geometry", stylers: [{ color: "#1c1c1e" }] },
+      { elementType: "labels.text.fill", stylers: [{ color: "#8e8e93" }] },
+      { elementType: "labels.text.stroke", stylers: [{ color: "#1c1c1e" }] },
+      { featureType: "administrative", elementType: "geometry", stylers: [{ visibility: "off" }] },
       { featureType: "administrative.land_parcel", stylers: [{ visibility: "off" }] },
+      { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#c7c7cc" }] },
+      { featureType: "poi", stylers: [{ visibility: "off" }] },
+      { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#1f2a22" }] },
+      { featureType: "road", elementType: "geometry", stylers: [{ color: "#2c2c2e" }] },
+      { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+      { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#3a3a3c" }] },
+      { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#48484a" }] },
+      { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1c1c1e" }] },
+      { featureType: "road.local", elementType: "labels", stylers: [{ visibility: "simplified" }] },
+      { featureType: "transit", stylers: [{ visibility: "off" }] },
+      { featureType: "water", elementType: "geometry", stylers: [{ color: "#0a1f2e" }] },
+      { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#3a4a5a" }] },
     ];
 
     const map = new google.maps.Map(mapDivRef.current, {
@@ -505,51 +513,57 @@ export function SatNavLiveMap({
     }
   }, []);
 
-  // Fullscreen mode — premium sat-nav layout
+  // Fullscreen mode — premium dark sat-nav layout
   if (fullscreen) {
     return (
-      <div className={className} style={{ overflow: "hidden" }}>
+      <div className={className} style={{ overflow: "hidden", background: "#0a0a0c" }}>
         <div className="relative" style={{ height: "100%", width: "100%" }}>
           <div ref={mapDivRef} className="absolute inset-0 z-0" />
 
           {mapError && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center z-[6] px-6 text-center" style={{ background: "rgba(242,242,247,0.95)" }}>
-              <p style={{ fontSize: 16, fontWeight: 600, color: "#1c1c1e" }}>Map unavailable</p>
-              <p style={{ fontSize: 13, color: "#8e8e93", marginTop: 4 }}>Unable to load live map right now.</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-[6] px-6 text-center" style={{ background: "rgba(10,10,12,0.96)" }}>
+              <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, marginBottom: 14 }}>🛰️</div>
+              <p style={{ fontSize: 17, fontWeight: 700, color: "white", letterSpacing: -0.2 }}>Map unavailable</p>
+              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 4 }}>Unable to load live map right now.</p>
             </div>
           )}
 
           {hasPosition && !mapError ? (
             <>
-              {/* Top bar — signal status + snap status */}
-              <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 py-2.5" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-                <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} />
-                <SnapStatusPill status={snapStatus} lastFixLabel={lastFixLabel} />
-              </div>
-
-              {/* Road name banner */}
+              {/* Top bar — signal pill + road name pill, dark glass */}
               <div
-                className="absolute left-3 right-3 z-20"
+                className="absolute z-10 flex items-center gap-2 px-3"
                 style={{
-                  top: 56,
-                  background: "rgba(28,28,30,0.88)",
-                  color: "white",
-                  borderRadius: 14,
-                  padding: "8px 14px",
-                  boxShadow: "0 6px 20px rgba(0,0,0,0.18)",
-                  backdropFilter: "blur(12px)",
-                  WebkitBackdropFilter: "blur(12px)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
+                  top: "calc(env(safe-area-inset-top, 0px) + 10px)",
+                  left: 0,
+                  right: 0,
                 }}
               >
-                <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: 0.6, flexShrink: 0 }}>
-                  On
-                </span>
-                <span style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.25 }} className="truncate flex-1">
-                  {roadName || "Awaiting location…"}
-                </span>
+                <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} dark />
+                <div
+                  className="flex-1 truncate"
+                  style={{
+                    background: "rgba(20,20,22,0.62)",
+                    backdropFilter: "blur(18px) saturate(180%)",
+                    WebkitBackdropFilter: "blur(18px) saturate(180%)",
+                    border: "0.5px solid rgba(255,255,255,0.14)",
+                    borderRadius: 14,
+                    padding: "7px 12px",
+                    color: "white",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    lineHeight: 1.25,
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.35)",
+                    textAlign: "center",
+                    maxWidth: "60%",
+                    margin: "0 auto",
+                  }}
+                  title={roadName || "Awaiting location"}
+                >
+                  <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6, marginRight: 6 }}>On</span>
+                  <span className="truncate">{roadName || "Awaiting location…"}</span>
+                </div>
+                <SnapStatusPill status={snapStatus} lastFixLabel={lastFixLabel} />
               </div>
 
               {/* Re-centre button — appears when user has dragged/zoomed */}
@@ -560,17 +574,17 @@ export function SatNavLiveMap({
                   className="absolute z-20"
                   style={{
                     right: 14,
-                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 200px)",
-                    background: "rgba(255,255,255,0.92)",
-                    backdropFilter: "blur(14px)",
-                    WebkitBackdropFilter: "blur(14px)",
-                    border: "0.5px solid rgba(0,0,0,0.08)",
+                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 220px)",
+                    background: "rgba(255,255,255,0.14)",
+                    backdropFilter: "blur(20px) saturate(180%)",
+                    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+                    border: "1px solid rgba(255,255,255,0.22)",
                     borderRadius: 999,
-                    padding: "9px 14px",
+                    padding: "10px 16px",
                     fontSize: 13,
                     fontWeight: 600,
-                    color: "#2563eb",
-                    boxShadow: "0 6px 20px rgba(0,0,0,0.18)",
+                    color: "white",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.45)",
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 6,
@@ -582,65 +596,85 @@ export function SatNavLiveMap({
                 </button>
               )}
 
-              {/* Overspeed warning — sits above the bottom panel */}
+              {/* Overspeed banner — gradient red, premium */}
               {isOverSpeed && speedMph != null && speedLimitMph != null && (
                 <div
                   className="absolute left-3 right-3 z-20"
                   style={{
-                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 156px)",
-                    background: "linear-gradient(180deg, rgba(226,75,74,0.96), rgba(200,55,55,0.96))",
+                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 170px)",
+                    background: "linear-gradient(135deg, #FF453A 0%, #E11D2A 100%)",
                     color: "white",
-                    borderRadius: 14,
-                    padding: "10px 14px",
-                    boxShadow: "0 8px 24px rgba(226,75,74,0.35)",
+                    borderRadius: 16,
+                    padding: "12px 16px",
+                    boxShadow: "0 14px 32px rgba(255,69,58,0.45), inset 0 1px 0 rgba(255,255,255,0.18)",
                     border: "0.5px solid rgba(255,255,255,0.18)",
                     display: "flex",
                     alignItems: "center",
-                    gap: 10,
+                    gap: 12,
                   }}
                 >
-                  <span style={{ fontSize: 18, lineHeight: 1 }}>⚠</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.25 }} className="truncate flex-1">
+                  <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>⚠︎</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.25, letterSpacing: -0.1 }} className="truncate flex-1">
                     Over speed limit · {speedMph} mph in a {speedLimitMph} zone
                   </span>
                 </div>
               )}
 
-              {/* Bottom sat-nav panel */}
+              {/* Bottom sat-nav glass panel — dark gradient */}
               <div
                 className="absolute left-3 right-3 z-10"
                 style={{
-                  bottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
-                  background: "rgba(255,255,255,0.88)",
-                  backdropFilter: "blur(20px)",
-                  WebkitBackdropFilter: "blur(20px)",
-                  border: "0.5px solid rgba(0,0,0,0.06)",
+                  bottom: "calc(env(safe-area-inset-bottom, 0px) + 14px)",
+                  background: "linear-gradient(180deg, rgba(28,28,30,0.78) 0%, rgba(18,18,20,0.88) 100%)",
+                  backdropFilter: "blur(24px) saturate(180%)",
+                  WebkitBackdropFilter: "blur(24px) saturate(180%)",
+                  border: "1px solid rgba(255,255,255,0.10)",
                   borderRadius: 22,
-                  padding: "14px 18px",
-                  boxShadow: "0 12px 32px rgba(0,0,0,0.18)",
+                  padding: "16px 18px",
+                  boxShadow: "0 18px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08)",
                   display: "flex",
                   alignItems: "center",
                   gap: 16,
                 }}
               >
-                {/* Speed */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                {/* Speed — huge numeral */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", minWidth: 0 }}>
                   <span
-                    style={{ fontSize: 36, fontWeight: 700, color: isOverSpeed ? "#e24b4a" : "#1c1c1e", lineHeight: 1 }}
-                    className={`tabular-nums ${isOverSpeed ? "animate-pulse" : ""}`}
+                    style={{
+                      fontSize: 56,
+                      fontWeight: 800,
+                      color: isOverSpeed ? "#FF453A" : "white",
+                      lineHeight: 0.95,
+                      letterSpacing: -1.5,
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                    className={isOverSpeed ? "animate-pulse" : ""}
                   >
                     {speedMph ?? 0}
                   </span>
-                  <span style={{ fontSize: 11, color: "#8e8e93", marginTop: 2, textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 600 }}>mph</span>
+                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 4, textTransform: "uppercase", letterSpacing: 0.8, fontWeight: 700 }}>mph</span>
                 </div>
 
-                {/* Speed limit roundel */}
+                {/* Speed limit roundel — large, bold */}
                 {speedLimitMph != null && speedLimitMph > 0 && (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-                    <div style={{ width: 46, height: 46, border: "3px solid #e24b4a", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: "white" }}>
-                      <span style={{ fontSize: 17, fontWeight: 700, color: "#e24b4a" }} className="tabular-nums">{speedLimitMph}</span>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                    <div
+                      style={{
+                        width: 56,
+                        height: 56,
+                        border: "5px solid #E11D2A",
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        background: "white",
+                        boxShadow: "0 4px 12px rgba(225,29,42,0.35)",
+                      }}
+                    >
+                      <span style={{ fontSize: 22, fontWeight: 800, color: "#1c1c1e", letterSpacing: -0.5, fontVariantNumeric: "tabular-nums" }}>{speedLimitMph}</span>
                     </div>
-                    <span style={{ fontSize: 10, color: "#8e8e93", textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 600 }}>limit</span>
+                    <span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 0.8, fontWeight: 700 }}>limit</span>
                   </div>
                 )}
 
@@ -649,25 +683,45 @@ export function SatNavLiveMap({
                 {/* Miles today */}
                 {dailyMiles != null && (
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-                    <span style={{ fontSize: 17, fontWeight: 700, color: "#1c1c1e", lineHeight: 1 }} className="tabular-nums">
+                    <span style={{ fontSize: 20, fontWeight: 800, color: "white", lineHeight: 1, letterSpacing: -0.3, fontVariantNumeric: "tabular-nums" }}>
                       {dailyMiles}
                     </span>
-                    <span style={{ fontSize: 10, color: "#8e8e93", marginTop: 2, textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 600 }}>miles today</span>
+                    <span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", marginTop: 4, textTransform: "uppercase", letterSpacing: 0.8, fontWeight: 700 }}>miles today</span>
                   </div>
                 )}
 
-                {/* Engine */}
+                {/* Engine pill */}
                 {ignitionOn != null && (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
-                    <span style={{ width: 9, height: 9, borderRadius: "50%", background: ignitionOn ? "#0f9e75" : "#c7c7cc", boxShadow: ignitionOn ? "0 0 6px rgba(15,158,117,0.5)" : "none" }} />
-                    <span style={{ fontSize: 10, color: "#8e8e93", textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 600 }}>{ignitionOn ? "Engine On" : "Engine Off"}</span>
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      background: ignitionOn ? "rgba(48,209,88,0.18)" : "rgba(142,142,147,0.18)",
+                      border: `0.5px solid ${ignitionOn ? "rgba(48,209,88,0.4)" : "rgba(142,142,147,0.35)"}`,
+                      borderRadius: 999,
+                      padding: "6px 10px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        background: ignitionOn ? "#30D158" : "#8E8E93",
+                        boxShadow: ignitionOn ? "0 0 8px rgba(48,209,88,0.7)" : "none",
+                      }}
+                    />
+                    <span style={{ fontSize: 11, color: ignitionOn ? "#30D158" : "rgba(255,255,255,0.6)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                      {ignitionOn ? "Engine On" : "Engine Off"}
+                    </span>
                   </div>
                 )}
               </div>
             </>
           ) : !mapError ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center z-[5]" style={{ background: "rgba(242,242,247,0.8)" }}>
-              <p style={{ fontSize: 14, color: "#8e8e93" }}>No position data yet</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-[5]" style={{ background: "rgba(10,10,12,0.85)" }}>
+              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>No position data yet</p>
             </div>
           ) : null}
         </div>
@@ -801,15 +855,66 @@ function SnapStatusPill({ status, lastFixLabel }: { status: "idle" | "syncing" |
 
 type SignalStatusValue = "waiting" | "live" | "delayed" | "weak" | "lost";
 
-function SignalStatusPill({ status, lastFixLabel }: { status: SignalStatusValue; lastFixLabel: string | null }) {
-  const config: Record<SignalStatusValue, { dot: string; label: string; bg: string; fg: string; pulse: boolean }> = {
+function SignalStatusPill({ status, lastFixLabel, dark = false }: { status: SignalStatusValue; lastFixLabel: string | null; dark?: boolean }) {
+  // Light variant — used in card mode on white surfaces.
+  const lightConfig: Record<SignalStatusValue, { dot: string; label: string; bg: string; fg: string; pulse: boolean }> = {
     waiting: { dot: "#c7c7cc", label: "Waiting",     bg: "rgba(0,0,0,0.04)",         fg: "#3a3a3c", pulse: false },
-    live:    { dot: "#0f9e75", label: "Live",        bg: "rgba(15,158,117,0.12)",    fg: "#0a7558", pulse: true  },
-    delayed: { dot: "#f59e0b", label: "Delayed",     bg: "rgba(245,158,11,0.14)",    fg: "#a25c00", pulse: false },
-    weak:    { dot: "#ff8a3d", label: "Weak GPS",    bg: "rgba(255,138,61,0.14)",    fg: "#a14310", pulse: false },
-    lost:    { dot: "#e24b4a", label: "Signal Lost", bg: "rgba(226,75,74,0.12)",     fg: "#a02c2b", pulse: false },
+    live:    { dot: "#34C759", label: "Live",        bg: "rgba(52,199,89,0.12)",     fg: "#1a7d3a", pulse: true  },
+    delayed: { dot: "#FFCC00", label: "Delayed",     bg: "rgba(255,204,0,0.16)",     fg: "#8a6a00", pulse: false },
+    weak:    { dot: "#FF9500", label: "Weak GPS",    bg: "rgba(255,149,0,0.14)",     fg: "#a14310", pulse: false },
+    lost:    { dot: "#FF3B30", label: "Signal Lost", bg: "rgba(255,59,48,0.12)",     fg: "#a02c2b", pulse: false },
   };
-  const c = config[status];
+  // Dark glass variant — used in fullscreen sat-nav mode.
+  const darkConfig: Record<SignalStatusValue, { dot: string; label: string; fg: string; pulse: boolean }> = {
+    waiting: { dot: "#8E8E93", label: "Waiting",     fg: "rgba(255,255,255,0.7)", pulse: false },
+    live:    { dot: "#34C759", label: "Live",        fg: "#34C759",               pulse: true  },
+    delayed: { dot: "#FFCC00", label: "Delayed",     fg: "#FFCC00",               pulse: false },
+    weak:    { dot: "#FF9500", label: "Weak GPS",    fg: "#FF9500",               pulse: false },
+    lost:    { dot: "#FF3B30", label: "Signal Lost", fg: "#FF3B30",               pulse: false },
+  };
+
+  if (dark) {
+    const c = darkConfig[status];
+    return (
+      <span
+        title={`Signal: ${c.label}${lastFixLabel ? ` · last fix ${lastFixLabel}` : ""}`}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          background: "rgba(20,20,22,0.62)",
+          backdropFilter: "blur(14px) saturate(180%)",
+          WebkitBackdropFilter: "blur(14px) saturate(180%)",
+          border: "0.5px solid rgba(255,255,255,0.18)",
+          borderRadius: 20,
+          padding: "5px 11px",
+          fontSize: 11,
+          fontWeight: 700,
+          color: c.fg,
+          whiteSpace: "nowrap",
+          flexShrink: 0,
+          boxShadow: "0 4px 14px rgba(0,0,0,0.35)",
+        }}
+      >
+        <span
+          style={{
+            width: 7,
+            height: 7,
+            borderRadius: "50%",
+            background: c.dot,
+            boxShadow: status === "live" ? `0 0 8px ${c.dot}, 0 0 0 3px rgba(52,199,89,0.18)` : "none",
+          }}
+          className={c.pulse ? "animate-pulse" : ""}
+        />
+        {c.label}
+        {lastFixLabel && status !== "live" && (
+          <span style={{ color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>· {lastFixLabel}</span>
+        )}
+      </span>
+    );
+  }
+
+  const c = lightConfig[status];
   return (
     <span
       title={`Signal: ${c.label}${lastFixLabel ? ` · last fix ${lastFixLabel}` : ""}`}
@@ -829,7 +934,13 @@ function SignalStatusPill({ status, lastFixLabel }: { status: SignalStatusValue;
       }}
     >
       <span
-        style={{ width: 7, height: 7, borderRadius: "50%", background: c.dot }}
+        style={{
+          width: 7,
+          height: 7,
+          borderRadius: "50%",
+          background: c.dot,
+          boxShadow: status === "live" ? `0 0 6px ${c.dot}` : "none",
+        }}
         className={c.pulse ? "animate-pulse" : ""}
       />
       {c.label}
