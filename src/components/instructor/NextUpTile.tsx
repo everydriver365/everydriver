@@ -843,39 +843,144 @@ export function NextUpTile({
                 );
               }
 
-              // EARLY state: simple bottom action row — primary Navigate + secondary Call icon.
+              // EARLY state: unified control system — primary action row + segmented status,
+              // sits directly under the pupil address in the hero card.
               void isEarly;
               return (
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
-                    className="active:opacity-90"
-                    style={{
-                      flex: 1,
-                      background: "#1B5BFF", color: "#FFFFFF",
-                      border: "none", borderRadius: 14, padding: "14px 16px",
-                      fontSize: a11yPx(16), fontWeight: 600, letterSpacing: -0.2,
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {/* Primary action row — Navigate / Call / Text */}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
+                    <button onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
+                      className="active:scale-[0.98]"
+                      style={{
+                        background: "#1B5BFF", color: "#FFFFFF",
+                        border: "none", borderRadius: 16, height: 50,
+                        cursor: "pointer", transition: "transform 0.15s ease, opacity 0.15s ease",
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 8px 18px -8px rgba(27,91,255,0.4)",
+                      }}
+                      aria-label="Navigate to pickup"
+                    >
+                      <Navigation style={{ width: 16, height: 16 }} strokeWidth={2.4} />
+                      <span style={{ fontSize: a11yPx(14), fontWeight: 600, letterSpacing: -0.1 }}>Navigate</span>
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); handleCall(); }}
+                      className="active:scale-[0.98]"
+                      style={{
+                        background: "rgba(52,199,89,0.12)", color: "#1C7A3E",
+                        border: "none", borderRadius: 16, height: 50,
+                        cursor: "pointer", transition: "transform 0.15s ease, opacity 0.15s ease",
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                      }}
+                      aria-label="Call pupil"
+                    >
+                      <Phone style={{ width: 16, height: 16, color: "#1C7A3E" }} strokeWidth={2.3} />
+                      <span style={{ fontSize: a11yPx(14), fontWeight: 600, letterSpacing: -0.1 }}>Call</span>
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); handleMessage(); }}
+                      className="active:scale-[0.98]"
+                      style={{
+                        background: "rgba(43,123,200,0.12)", color: "#1F5C99",
+                        border: "none", borderRadius: 16, height: 50,
+                        cursor: "pointer", transition: "transform 0.15s ease, opacity 0.15s ease",
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                      }}
+                      aria-label="Text pupil"
+                    >
+                      <MessageSquare style={{ width: 16, height: 16, color: "#1F5C99" }} strokeWidth={2.3} />
+                      <span style={{ fontSize: a11yPx(14), fontWeight: 600, letterSpacing: -0.1 }}>Text</span>
+                    </button>
+                  </div>
+
+                  {/* Unified segmented status control */}
+                  {(() => {
+                    const norm = (lessonStatus || "").toLowerCase();
+                    const segments = [
+                      { id: "prep", label: "Prep", icon: ClipboardList,
+                        active: norm === "prep" || norm === "preparing",
+                        activeBg: "#6E6E73", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
+                        isDropdown: false as const,
+                        onClick: () => navigate(`/instructor/pupils/${pupilId}?tab=progress`) },
+                      { id: "on_the_way", label: "On the way", icon: Send,
+                        active: norm === "en_route" || norm === "on_the_way",
+                        activeBg: "#2B7BC8", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
+                        isDropdown: true as const },
+                      { id: "late", label: "Running late", icon: Clock,
+                        active: norm === "late" || norm === "running_late",
+                        activeBg: "#E08E1A", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
+                        isDropdown: false as const,
+                        onClick: () => setLateSheetOpen(true) },
+                      { id: "here", label: "Here", icon: MapPin,
+                        active: norm === "arrived" || norm === "here",
+                        activeBg: "#34C759", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
+                        isDropdown: false as const,
+                        onClick: () => handleArrived() },
+                    ];
+                    const segmentStyle = (s: typeof segments[number]): React.CSSProperties => ({
+                      flex: 1, minWidth: 0,
+                      background: s.active ? s.activeBg : "transparent",
+                      color: s.active ? s.activeFg : s.inactiveFg,
+                      border: "none", borderRadius: 14,
+                      padding: "8px 4px", minHeight: 52,
                       cursor: "pointer",
-                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                      boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -6px rgba(27,91,255,0.30)",
-                    }}
-                    aria-label="Navigate"
-                  >
-                    <Navigation style={{ width: 17, height: 17 }} strokeWidth={2.4} />
-                    Navigate
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleCall(); }}
-                    className="active:opacity-80"
-                    style={{
-                      width: 48, height: 48, borderRadius: 14, flexShrink: 0,
-                      background: "#F2F3F5", border: "none", cursor: "pointer",
-                      display: "inline-flex", alignItems: "center", justifyContent: "center",
-                    }}
-                    aria-label="Call pupil"
-                  >
-                    <Phone style={{ width: 18, height: 18, color: "#34C759" }} strokeWidth={2.2} />
-                  </button>
+                      display: "inline-flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3,
+                      transition: "background 0.2s ease, color 0.2s ease, transform 0.15s ease",
+                      boxShadow: s.active ? "0 1px 2px rgba(16,24,40,0.06), 0 4px 10px -4px rgba(16,24,40,0.12)" : "none",
+                    });
+                    return (
+                      <div style={{
+                        display: "flex", alignItems: "stretch",
+                        background: "#EEF1F6", borderRadius: 18,
+                        padding: 4, gap: 2,
+                      }}>
+                        {segments.map((s) => {
+                          const Icon = s.icon;
+                          const inner = (
+                            <>
+                              <Icon style={{ width: 16, height: 16 }} strokeWidth={2.1} />
+                              <span style={{
+                                fontSize: a11yPx(11), fontWeight: 600, letterSpacing: -0.05,
+                                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%",
+                              }}>{s.label}</span>
+                            </>
+                          );
+                          if (s.isDropdown) {
+                            return (
+                              <DropdownMenu key={s.id}>
+                                <DropdownMenuTrigger asChild>
+                                  <button onClick={(e) => e.stopPropagation()}
+                                    className="active:scale-[0.97]"
+                                    style={segmentStyle(s)} aria-label={s.label}>
+                                    {inner}
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="center" className="w-52">
+                                  <DropdownMenuItem onClick={handleSendETA}>Send ETA Now</DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 5 minutes late. Sorry!`)}>Running 5 min late</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 10 minutes late. Sorry!`)}>Running 10 min late</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 15 minutes late. Sorry!`)}>Running 15 min late</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 20 minutes late. Sorry!`)}>Running 20 min late</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 30 minutes late. Sorry!`)}>Running 30 min late</DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, I'll call you as soon as I can!`)}>Call ASAP</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            );
+                          }
+                          return (
+                            <button key={s.id}
+                              onClick={(e) => { e.stopPropagation(); s.onClick?.(); }}
+                              className="active:scale-[0.97]"
+                              style={segmentStyle(s)}
+                              aria-label={s.label} aria-pressed={s.active}>
+                              {inner}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })()}
