@@ -35,6 +35,17 @@ export function SatNavLiveMap({
   const [ready, setReady] = useState(false);
   const trailLoadedRef = useRef<string | null>(null);
 
+  // Smoothing/interpolation refs
+  const animRef = useRef<number | null>(null);
+  const fromPosRef = useRef<{ lat: number; lng: number; heading: number; t: number } | null>(null);
+  const targetPosRef = useRef<{ lat: number; lng: number; heading: number; t: number } | null>(null);
+  const fixGapsRef = useRef<number[]>([]);
+  const lastFixTsRef = useRef<number | null>(null);
+  const isActiveRef = useRef<boolean>(isActive);
+  const fullscreenRef = useRef<boolean>(fullscreen);
+  isActiveRef.current = isActive;
+  fullscreenRef.current = fullscreen;
+
   const isLive = lastSeenAt && (Date.now() - new Date(lastSeenAt).getTime() < 30000);
   const lastSeenLabel = lastSeenAt
     ? formatDistanceToNowStrict(new Date(lastSeenAt), { addSuffix: true })
