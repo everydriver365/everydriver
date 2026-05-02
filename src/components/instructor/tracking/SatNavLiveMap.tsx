@@ -515,7 +515,7 @@ export function SatNavLiveMap({
         requestSnap();
       }
     }
-  }, [latitude, longitude, heading, speedKmh, isActive, ignitionOn, getArrowIcon, renderPolylines, requestSnap, appendTrailPoint]);
+  }, [latitude, longitude, heading, speedKmh, isActive, ignitionOn, getArrowIcon, getShadowIcon, renderPolylines, requestSnap, appendTrailPoint]);
 
   // Continuous animation loop — interpolates marker between fixes at 60fps
   useEffect(() => {
