@@ -1158,8 +1158,33 @@ export function SatNavLiveMap({
       }}
     >
       {/* Top bar: Signal status + road name */}
-      <div style={{ background: "white", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} />
+      <div style={{ background: "white", padding: "10px 16px", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+          <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} />
+          {!realtimeConnected && (
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "4px 8px",
+                borderRadius: 999,
+                background: "rgba(255, 59, 48, 0.92)",
+                border: "1px solid rgba(255,255,255,0.18)",
+                color: "white",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: 0.1,
+                lineHeight: 1,
+                boxShadow: "0 4px 12px rgba(255,59,48,0.32)",
+              }}
+              role="alert"
+            >
+              <span aria-hidden="true" style={{ fontSize: 10 }}>⚠︎</span>
+              No connection
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-2 ml-3 flex-1 justify-end min-w-0">
           <SnapStatusPill status={snapStatus} lastFixLabel={lastFixLabel} />
           <p style={{ fontSize: 13, fontWeight: 600, color: "#1c1c1e" }} className="truncate text-right">
