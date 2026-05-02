@@ -515,9 +515,12 @@ export function SatNavLiveMap({
             <Badge variant="secondary" className="gap-1 text-[10px]">{lastSeenLabel}</Badge>
           ) : null}
         </div>
-        <p style={{ fontSize: 13, fontWeight: 600, color: "#1c1c1e" }} className="truncate ml-3 flex-1 text-right">
-          {roadName || "Awaiting location…"}
-        </p>
+        <div className="flex items-center gap-2 ml-3 flex-1 justify-end min-w-0">
+          <SnapStatusPill status={snapStatus} lastFixLabel={lastFixLabel} />
+          <p style={{ fontSize: 13, fontWeight: 600, color: "#1c1c1e" }} className="truncate text-right">
+            {roadName || "Awaiting location…"}
+          </p>
+        </div>
       </div>
 
       {/* Map */}
