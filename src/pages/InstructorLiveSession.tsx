@@ -392,7 +392,7 @@ export default function InstructorLiveSession() {
         supabase.functions.invoke("radius-poller").catch(() => {});
       };
       triggerPoller(); // Immediate first trigger
-      pollerInterval = setInterval(triggerPoller, 2000);
+      pollerInterval = setInterval(triggerPoller, 1500);
 
       // Fallback DB poll every 5s (safety net — Realtime is primary)
       fallbackInterval = setInterval(pollDevice, 5000);
