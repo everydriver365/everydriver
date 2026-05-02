@@ -17,6 +17,10 @@ import {
   Calendar as CalendarIcon,
   MapPin,
   MoreHorizontal,
+  Users,
+  CalendarDays,
+  Wallet,
+  ClipboardCheck,
 } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
