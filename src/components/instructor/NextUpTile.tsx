@@ -746,7 +746,7 @@ export function NextUpTile({
                       background: "#E3F6EA", color: "#1F7A3F",
                       border: "1px solid rgba(31,122,63,0.12)",
                     }}>
-                      <CheckCircle2 style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                      <CheckCircle2 style={{ width: 12, height: 12, strokeWidth: 2.2 }} />
                       Reminder sent
                     </span>
                   );
@@ -773,7 +773,7 @@ export function NextUpTile({
                         transition: "transform 120ms cubic-bezier(0.2,0.7,0.2,1)",
                       }}
                     >
-                      <Clock style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                      <Clock style={{ width: 12, height: 12, strokeWidth: 2.2 }} />
                       Awaiting confirmation · Tap to nudge
                     </button>
                   );
@@ -781,7 +781,7 @@ export function NextUpTile({
                 if (checkInStatus === "confirmed") {
                   return (
                     <span style={{ ...pillBase, background: "#E3F6EA", color: "#1F7A3F", border: "1px solid rgba(31,122,63,0.12)" }}>
-                      <CheckCircle2 style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                      <CheckCircle2 style={{ width: 12, height: 12, strokeWidth: 2.2 }} />
                       Confirmed
                     </span>
                   );
@@ -789,7 +789,7 @@ export function NextUpTile({
                 if (checkInStatus === "declined" || checkInStatus === "cancelled") {
                   return (
                     <span style={{ ...pillBase, background: "#FCE4E4", color: "#9A1F1F", border: "1px solid rgba(154,31,31,0.12)" }}>
-                      <AlertTriangle style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                      <AlertTriangle style={{ width: 12, height: 12, strokeWidth: 2.2 }} />
                       {checkInStatus === "declined" ? "Declined" : "Cancelled"}
                     </span>
                   );
@@ -797,7 +797,7 @@ export function NextUpTile({
                 // pending without phone — amber awaiting
                 return (
                   <span style={{ ...pillBase, background: "#FFF3D6", color: "#A15A10", border: "1px solid rgba(161,90,16,0.12)" }}>
-                    <Clock style={{ width: 14, height: 14, strokeWidth: 2.4 }} />
+                    <Clock style={{ width: 12, height: 12, strokeWidth: 2.2 }} />
                     Awaiting confirmation
                   </span>
                 );
