@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { QUICK_ACCESS_TILES, QUICK_ACCESS_TILES_BY_ID, QuickAccessTile, TileTone } from "./tileRegistry";
-import { RichTileCard, PersistentSearchBar } from "./QuickAccessTiles";
+import { CompactTile, PersistentSearchBar } from "./QuickAccessTiles";
 import { CustomizeTilesSheet } from "./CustomizeTilesSheet";
 import { useInstructorPinnedTiles } from "@/hooks/useInstructorPinnedTiles";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
