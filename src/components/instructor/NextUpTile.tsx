@@ -789,9 +789,19 @@ export function NextUpTile({
               </div>
             </div>
 
-            {/* PRIMARY CTA — single, state-based, full-width */}
+            {/* ── STATE-BASED ACTION SYSTEM ──
+              EARLY     (>60 min) : no primary CTA, no quick row (mini call/navigate already shown top-right)
+              MID       (15–60 min): no primary CTA, full quick action row (Navigate/Call/Message/Arrived)
+              STARTING  (0–15 min) : full-width Start lesson, no quick row
+              IN_LESSON           : full-width End lesson, no quick row
+              All handlers (handleCall/handleMessage/handleNavigate/handleArrived/start/end) preserved.
+            */}
             {(() => {
               const inLesson = lessonStatus === "in_progress";
+              const isStartingNow = !inLesson && minutesUntil <= 15;
+              const isMid = !inLesson && minutesUntil > 15 && minutesUntil <= 60;
+              const isEarly = !inLesson && minutesUntil > 60;
+
               if (inLesson) {
                 return (
                   <button
@@ -812,66 +822,78 @@ export function NextUpTile({
                   </button>
                 );
               }
-              return (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(({ error }) => {
-                      if (error) {
-                        toast.error("Couldn't start lesson", { description: error.message });
-                      } else {
-                        toast.success("Lesson started", { description: pupilName ? `${pupilName} • good luck!` : "Good luck!" });
-                      }
-                    });
-                    navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
-                  }}
-                  className="active:opacity-90"
-                  style={{
-                    width: "100%",
-                    background: "#1B5BFF", color: "#FFFFFF",
-                    border: "none", borderRadius: 14, padding: "16px 16px",
-                    fontSize: a11yPx(17), fontWeight: 600, letterSpacing: -0.2,
-                    cursor: "pointer",
-                    display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 10,
-                    boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -6px rgba(27,91,255,0.35)",
-                  }}
-                >
-                  <Play style={{ width: 18, height: 18 }} strokeWidth={2.4} fill="#FFFFFF" />
-                  Start lesson
-                </button>
-              );
-            })()}
 
-            {/* Quick action row: Navigate / Call / Message / Arrived */}
-            <div style={{ display: "flex", alignItems: "stretch", gap: 0 }}>
-              {[
-                { label: "Navigate", icon: Navigation, color: "#1B5BFF", onClick: handleNavigate },
-                { label: "Call", icon: Phone, color: "#34C759", onClick: handleCall },
-                { label: "Message", icon: MessageSquare, color: "#FF9500", onClick: handleMessage },
-                { label: "Arrived", icon: MapPin, color: "#FF3B30", onClick: handleArrived },
-              ].map((a, i, arr) => (
-                <React.Fragment key={a.label}>
+              if (isStartingNow) {
+                return (
                   <button
-                    onClick={(e) => { e.stopPropagation(); a.onClick(); }}
-                    className="active:opacity-60"
-                    style={{
-                      flex: 1, background: "transparent", border: "none", cursor: "pointer",
-                      padding: "8px 4px",
-                      display: "inline-flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      supabase.from("scheduled_lessons").update({ status: "in_progress" }).eq("id", lessonId).then(({ error }) => {
+                        if (error) {
+                          toast.error("Couldn't start lesson", { description: error.message });
+                        } else {
+                          toast.success("Lesson started", { description: pupilName ? `${pupilName} • good luck!` : "Good luck!" });
+                        }
+                      });
+                      navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
                     }}
-                    aria-label={a.label}
+                    className="active:opacity-90"
+                    style={{
+                      width: "100%",
+                      background: "#1B5BFF", color: "#FFFFFF",
+                      border: "none", borderRadius: 14, padding: "16px 16px",
+                      fontSize: a11yPx(17), fontWeight: 600, letterSpacing: -0.2,
+                      cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 10,
+                      boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -6px rgba(27,91,255,0.35)",
+                    }}
                   >
-                    <a.icon style={{ width: 22, height: 22, color: a.color }} strokeWidth={2.1} />
-                    <span style={{ fontSize: a11yPx(12), fontWeight: 500, color: "#1C1C1E", letterSpacing: -0.05 }}>
-                      {a.label}
-                    </span>
+                    <Play style={{ width: 18, height: 18 }} strokeWidth={2.4} fill="#FFFFFF" />
+                    Start lesson
                   </button>
-                  {i < arr.length - 1 && (
-                    <div style={{ width: 0.5, background: "#E5E5EA", margin: "8px 0" }} />
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
+                );
+              }
+
+              if (isMid) {
+                // Subtle quick action row — secondary, not primary
+                return (
+                  <div style={{ display: "flex", alignItems: "stretch", gap: 0 }}>
+                    {[
+                      { label: "Navigate", icon: Navigation, color: "#1B5BFF", onClick: handleNavigate },
+                      { label: "Call", icon: Phone, color: "#34C759", onClick: handleCall },
+                      { label: "Message", icon: MessageSquare, color: "#FF9500", onClick: handleMessage },
+                      { label: "Arrived", icon: MapPin, color: "#FF3B30", onClick: handleArrived },
+                    ].map((a, i, arr) => (
+                      <React.Fragment key={a.label}>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); a.onClick(); }}
+                          className="active:opacity-60"
+                          style={{
+                            flex: 1, background: "transparent", border: "none", cursor: "pointer",
+                            padding: "8px 4px",
+                            display: "inline-flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
+                          }}
+                          aria-label={a.label}
+                        >
+                          <a.icon style={{ width: 22, height: 22, color: a.color }} strokeWidth={2.1} />
+                          <span style={{ fontSize: a11yPx(12), fontWeight: 500, color: "#1C1C1E", letterSpacing: -0.05 }}>
+                            {a.label}
+                          </span>
+                        </button>
+                        {i < arr.length - 1 && (
+                          <div style={{ width: 0.5, background: "#E5E5EA", margin: "8px 0" }} />
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                );
+              }
+
+              // EARLY state: rely on the inline mini call/navigate icons in the header.
+              // Render nothing here to keep the card minimal.
+              void isEarly;
+              return null;
+            })()}
           </div>
 
           {/* (Primary CTA is rendered inside the hero card above) */}
