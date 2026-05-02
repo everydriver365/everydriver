@@ -43,6 +43,8 @@ export default function InstructorSendReminder() {
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [editingRecipients, setEditingRecipients] = useState(false);
+  const [recipientSearch, setRecipientSearch] = useState("");
+  const [minBalance, setMinBalance] = useState<number>(0);
 
   // Load pupils + instructor
   useEffect(() => {
