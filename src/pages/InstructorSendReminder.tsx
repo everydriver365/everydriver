@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Send, Loader2, ChevronRight, X, Check, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +50,27 @@ export default function InstructorSendReminder() {
   const [recipientSearch, setRecipientSearch] = useState("");
   const [minBalance, setMinBalance] = useState<number>(0);
   const [includeFee, setIncludeFee] = useState(false);
+  const [focusedPupilId, setFocusedPupilId] = useState<string | null>(null);
+  const recipientRowRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  const focusPupilInRecipients = (id: string) => {
+    haptics.selection();
+    setEditingRecipients(true);
+    setRecipientSearch("");
+    setMinBalance(0);
+    setFocusedPupilId(id);
+    // Scroll after sheet renders
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const el = recipientRowRefs.current[id];
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 60);
+    });
+    // Clear highlight after a moment
+    window.setTimeout(() => {
+      setFocusedPupilId((cur) => (cur === id ? null : cur));
+    }, 2400);
+  };
 
   // Platform fee config (for "balance + Service Fee" preview)
   const tierConfig = useInstructorTierConfig(instructorId);
@@ -509,9 +530,12 @@ export default function InstructorSendReminder() {
                     const bubbleText =
                       channel === "in-app" ? "#1E3A8A" : "#1c1c1e";
                     return (
-                      <div
+                      <button
                         key={p.id}
-                        className="snap-start shrink-0 w-[78%] max-w-[300px] rounded-2xl bg-white border border-[#E4E4E7] p-3"
+                        type="button"
+                        onClick={() => focusPupilInRecipients(p.id)}
+                        title="Edit in recipients"
+                        className="snap-start shrink-0 w-[78%] max-w-[300px] rounded-2xl bg-white border border-[#E4E4E7] p-3 text-left active:scale-[0.98] hover:border-[#1c1c1e]/30 transition"
                       >
                         <div className="flex items-center justify-between mb-2 gap-2">
                           <p className="text-[12px] font-bold text-[#1c1c1e] truncate">
@@ -534,7 +558,7 @@ export default function InstructorSendReminder() {
                         >
                           {rendered}
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                   {selectedPupils.length > 8 && (
@@ -802,9 +826,17 @@ export default function InstructorSendReminder() {
                         return (
                           <button
                             key={p.id}
+                            ref={(el) => {
+                              recipientRowRefs.current[p.id] = el;
+                            }}
                             type="button"
                             onClick={() => toggleRecipient(p.id)}
-                            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-black/5 active:scale-[0.99] transition text-left"
+                            className={cn(
+                              "w-full flex items-center gap-3 px-3 py-3 rounded-xl active:scale-[0.99] transition text-left",
+                              focusedPupilId === p.id
+                                ? "bg-[#FEF3C7] ring-2 ring-[#F59E0B]"
+                                : "hover:bg-black/5"
+                            )}
                           >
                             <div
                               className={cn(
