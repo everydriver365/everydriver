@@ -62,6 +62,16 @@ export function SatNavLiveMap({
   // and read by the rAF loop as `expected`. Defaults to 900 before any fix.
   const tweenMsRef = useRef<number>(900);
 
+  // Sat-nav camera state — separate from marker so we can smooth it more
+  // aggressively (a jittery rotating world is nausea-inducing).
+  const camHeadingRef = useRef<number>(0);
+  const camTiltRef = useRef<number>(0);
+  // True only when the map was created with a vector mapId (required for
+  // tilt + heading). Otherwise we fall back to flat raster behaviour.
+  const vectorReadyRef = useRef<boolean>(false);
+  // Last auto-zoom value we applied, so we don't re-set zoom every fix.
+  const lastAutoZoomRef = useRef<number | null>(null);
+
   // Follow mode — when true (default), camera tracks the vehicle in fullscreen.
   // User drag/zoom turns it off and surfaces a "Re-centre" button.
   const [followMode, setFollowMode] = useState(true);
