@@ -210,6 +210,62 @@ export function SatNavLiveMap({
     return () => { released = true; document.removeEventListener("visibilitychange", onVis); wakeLock?.release?.().catch(() => {}); };
   }, [fullscreen]);
 
+  // Client-side reverse-geocode fallback for the road name. Runs only when
+  // the upstream `roadName` prop is empty/Unnamed AND we have a position.
+  // Throttled to once every 6s, and skips if the vehicle hasn't moved >25 m
+  // since the last successful geocode.
+  useEffect(() => {
+    if (!ready || latitude == null || longitude == null) return;
+    if (upstreamRoadName) return; // upstream is fine, no fallback needed
+
+    const now = Date.now();
+    if (now - lastGeocodeAtRef.current < 6000) return;
+
+    const last = lastGeocodePosRef.current;
+    if (last) {
+      const R = 6371000;
+      const dLat = (latitude - last.lat) * Math.PI / 180;
+      const dLng = (longitude - last.lng) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(last.lat * Math.PI / 180) * Math.cos(latitude * Math.PI / 180) *
+        Math.sin(dLng / 2) ** 2;
+      const moved = 2 * R * Math.asin(Math.sqrt(a));
+      if (moved < 25 && fallbackRoadName) return;
+    }
+
+    lastGeocodeAtRef.current = now;
+    lastGeocodePosRef.current = { lat: latitude, lng: longitude };
+
+    if (!geocoderRef.current) {
+      try { geocoderRef.current = new google.maps.Geocoder(); } catch { return; }
+    }
+
+    let cancelled = false;
+    geocoderRef.current.geocode(
+      { location: { lat: latitude, lng: longitude } },
+      (results, status) => {
+        if (cancelled) return;
+        if (status !== "OK" || !results || results.length === 0) return;
+        // Prefer a result that has a `route` component (an actual road),
+        // else fall back to the first formatted address line.
+        let road: string | null = null;
+        for (const r of results) {
+          const route = r.address_components?.find((c) => c.types.includes("route"));
+          if (route?.long_name && !/^unnamed\s+road$/i.test(route.long_name)) {
+            road = route.long_name;
+            break;
+          }
+        }
+        if (!road) {
+          const first = results[0].formatted_address?.split(",")[0]?.trim();
+          if (first && !/^unnamed\s+road$/i.test(first)) road = first;
+        }
+        if (road) setFallbackRoadName(road);
+      }
+    );
+    return () => { cancelled = true; };
+  }, [ready, latitude, longitude, upstreamRoadName, fallbackRoadName]);
+
   const getArrowIcon = useCallback((rotation: number, active: boolean): google.maps.Symbol => ({
     path: "M 0,-12 L -7,11 L 0,6 L 7,11 Z",
     fillColor: active ? "#0A84FF" : "#8E8E93",
