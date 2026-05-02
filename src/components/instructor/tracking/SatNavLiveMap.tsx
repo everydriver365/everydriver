@@ -865,6 +865,7 @@ export function SatNavLiveMap({
                     </span>
                   </div>
                 )}
+                </div>
               </div>
             </>
           ) : !mapError ? (
