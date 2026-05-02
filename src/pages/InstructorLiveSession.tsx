@@ -30,6 +30,7 @@ import { autoCaptureLessonRoute } from "@/hooks/useLessonRouteAutoCapture";
 
 import { DrivingTestStartDialog } from "@/components/instructor/DrivingTestStartDialog";
 import { GPSStatusHero } from "@/components/instructor/tracking/GPSStatusHero";
+import { AutoTrackToggleTile } from "@/components/instructor/tracking/AutoTrackToggleTile";
 import { SessionStartPanel } from "@/components/instructor/tracking/SessionStartPanel";
  import { RecentSessionsList } from "@/components/instructor/tracking/RecentSessionsList";
  import { FloatingSessionTimer } from "@/components/instructor/tracking/FloatingSessionTimer";
@@ -1327,6 +1328,9 @@ export default function InstructorLiveSession() {
                   pupilId={selectedPupilId || null}
                 />
               )}
+
+              {/* Auto-track every lesson — quick toggle */}
+              {instructor?.id && <AutoTrackToggleTile instructorId={instructor.id} />}
 
               {/* Recent Sessions */}
               {instructor?.id && (
