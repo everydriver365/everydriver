@@ -16,8 +16,12 @@ interface RunningLateSheetProps {
   startTime: string;
   /** Optional ETA in minutes from now to enable "Send ETA" preset */
   etaMinutes?: number;
-  /** Optional callback fired after a running-late message is successfully sent */
-  onMarkRunningLate?: () => void;
+  /** Fired after a "running-late" message is successfully sent.
+   *  Receives the delay magnitude in minutes (best-effort, may be null
+   *  for free-form / voice notes). */
+  onMarkRunningLate?: (delayMinutes: number | null, newEtaText: string | null) => void;
+  /** Fired after a plain "On the way / Send ETA" message is sent. */
+  onMarkOnWay?: (etaText: string | null) => void;
 }
 
 type SendState = "idle" | "sending" | "sent" | "error";
@@ -30,46 +34,71 @@ export function RunningLateSheet({
   startTime,
   etaMinutes,
   onMarkRunningLate,
+  onMarkOnWay,
 }: RunningLateSheetProps) {
   const firstName = (pupilName || "").split(" ")[0] || "there";
 
   const presets = useMemo(() => {
-    const base = [
-      {
-        id: "5",
-        icon: Clock,
-        label: "Running 5 mins late",
-        message: `Hi ${firstName}, I'm running about 5 minutes late. See you shortly.`,
-      },
-      {
-        id: "10",
-        icon: Clock,
-        label: "Running 10 mins late",
-        message: `Hi ${firstName}, I'm running about 10 minutes late. I'll be with you as soon as possible.`,
-      },
-      {
-        id: "traffic",
-        icon: Car,
-        label: "Stuck in traffic",
-        message: `Hi ${firstName}, I'm stuck in traffic and may be a little late. I'll keep you updated.`,
-      },
-      {
-        id: "update",
-        icon: AlertTriangle,
-        label: "Will update you",
-        message: `Hi ${firstName}, I'm running late. I'll update you shortly with a more accurate arrival time.`,
-      },
-    ];
+    const items: Array<{
+      id: string;
+      icon: any;
+      label: string;
+      message: string;
+      kind: "on_way" | "late";
+      delayMinutes: number | null;
+      newEtaText: string | null;
+    }> = [];
+    // "Send ETA now" — pinned first when an ETA is known. This is the
+    // primary "On the way" action.
     if (etaMinutes && etaMinutes > 0) {
       const etaTime = format(addMinutes(new Date(), etaMinutes), "HH:mm");
-      base.push({
+      items.push({
         id: "eta",
         icon: Navigation,
-        label: "Send ETA",
+        label: `Send ETA · ${etaTime}`,
         message: `Hi ${firstName}, I'm on my way. My estimated arrival time is ${etaTime}.`,
+        kind: "on_way",
+        delayMinutes: null,
+        newEtaText: etaTime,
       });
     }
-    return base;
+    const delayItem = (mins: number) => {
+      const baseEta = etaMinutes && etaMinutes > 0 ? etaMinutes : 0;
+      const newEtaText = baseEta > 0
+        ? format(addMinutes(new Date(), baseEta + mins), "HH:mm")
+        : null;
+      return {
+        id: String(mins),
+        icon: Clock,
+        label: `+${mins} min late`,
+        message: `Hi ${firstName}, I'm running about ${mins} minutes late. ${
+          newEtaText ? `New ETA ${newEtaText}.` : "I'll be with you as soon as possible."
+        }`,
+        kind: "late" as const,
+        delayMinutes: mins,
+        newEtaText,
+      };
+    };
+    items.push(delayItem(5), delayItem(10));
+    items.push({
+      id: "traffic",
+      icon: Car,
+      label: "Stuck in traffic",
+      message: `Hi ${firstName}, I'm stuck in traffic and may be a little late. I'll keep you updated.`,
+      kind: "late",
+      delayMinutes: null,
+      newEtaText: null,
+    });
+    items.push({
+      id: "update",
+      icon: AlertTriangle,
+      label: "Will update you",
+      message: `Hi ${firstName}, I'm running late. I'll update you shortly with a more accurate arrival time.`,
+      kind: "late",
+      delayMinutes: null,
+      newEtaText: null,
+    });
+    return items;
   }, [firstName, etaMinutes]);
 
   const defaultCustom = `Hi ${firstName}, I'm running late… `;
@@ -100,7 +129,11 @@ export function RunningLateSheet({
   }, [open]);
 
   const sendNow = useCallback(
-    async (id: string, message: string) => {
+    async (
+      id: string,
+      message: string,
+      meta?: { kind: "on_way" | "late"; delayMinutes: number | null; newEtaText: string | null },
+    ) => {
       if (!pupilPhone) {
         setErrorMsg("No phone number available for this pupil");
         setSendState("error");
@@ -117,15 +150,22 @@ export function RunningLateSheet({
         setSendState("sent");
         haptics.light();
         try {
-          onMarkRunningLate?.();
+          if (meta?.kind === "on_way") {
+            onMarkOnWay?.(meta.newEtaText);
+          } else {
+            // Default: anything sent from this sheet without explicit kind
+            // is treated as a late message (preserves prior behaviour for
+            // custom text and voice notes).
+            onMarkRunningLate?.(meta?.delayMinutes ?? null, meta?.newEtaText ?? null);
+          }
         } catch (e) {
-          console.error("onMarkRunningLate failed:", e);
+          console.error("Late sheet callback failed:", e);
         }
         setTimeout(() => {
           setSendState("idle");
           setActiveId(null);
           onOpenChange(false);
-        }, 1200);
+        }, 900);
       } else {
         // Fallback to native SMS so the user can still send something
         const a = document.createElement("a");
@@ -135,7 +175,7 @@ export function RunningLateSheet({
         setErrorMsg("Couldn't send message. Try again.");
       }
     },
-    [pupilPhone, sendMessage, onOpenChange, onMarkRunningLate]
+    [pupilPhone, sendMessage, onOpenChange, onMarkRunningLate, onMarkOnWay]
   );
 
   const startRecording = useCallback(async () => {
@@ -204,7 +244,7 @@ export function RunningLateSheet({
           text: `Hi ${firstName}, I'm running late — here's a quick voice message:`,
         });
         try {
-          onMarkRunningLate?.();
+          onMarkRunningLate?.(null, null);
         } catch (e) {
           console.error(e);
         }
@@ -247,39 +287,68 @@ export function RunningLateSheet({
 
         <SheetHeader className="px-5 pt-2 pb-4">
           <SheetTitle className="text-left text-[17px] font-semibold text-[#0F172A]">
-            Running late
+            On the way
           </SheetTitle>
         </SheetHeader>
 
         <div className="px-5 pb-5 space-y-5">
-          {/* Quick Messages */}
+          {/* Primary: Send ETA now (only when ETA known) */}
+          {(() => {
+            const eta = presets.find((p) => p.id === "eta");
+            if (!eta) return null;
+            const isActive = activeId === "eta";
+            return (
+              <button
+                type="button"
+                onClick={() => sendNow(eta.id, eta.message, { kind: eta.kind, delayMinutes: eta.delayMinutes, newEtaText: eta.newEtaText })}
+                disabled={!pupilPhone || isBusy}
+                className={`w-full h-14 rounded-[18px] flex items-center justify-center gap-2 text-[15px] font-semibold transition-all
+                  shadow-[0_2px_8px_rgba(43,123,200,0.30)] active:scale-[0.985]
+                  bg-[#2B7BC8] text-white
+                  disabled:opacity-50 disabled:pointer-events-none
+                  ${isActive ? "ring-2 ring-[#2B7BC8]/30" : ""}`}
+                aria-label={eta.label}
+              >
+                {isActive && sendState === "sending" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : isActive && sendState === "sent" ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Navigation className="h-4 w-4" />
+                )}
+                <span>{eta.label}</span>
+              </button>
+            );
+          })()}
+
+          {/* Late presets */}
           <div>
             <p className="text-[11px] uppercase tracking-wide text-[#6B7280] mb-2 font-semibold">
-              Quick messages
+              Running late
             </p>
             <div className="grid grid-cols-2 gap-2">
-              {presets.map((msg) => {
+              {presets.filter((p) => p.kind === "late").map((msg) => {
                 const isActive = activeId === msg.id;
                 const isAmber = msg.id === "traffic" || msg.id === "update";
                 const iconColor = isActive && sendState === "sent"
                   ? "text-emerald-500"
                   : isAmber
                     ? "text-amber-500"
-                    : "text-[#2B7BC8]";
+                    : "text-[#E08E1A]";
                 return (
                   <button
                     key={msg.id}
                     type="button"
-                    onClick={() => sendNow(msg.id, msg.message)}
+                    onClick={() => sendNow(msg.id, msg.message, { kind: msg.kind, delayMinutes: msg.delayMinutes, newEtaText: msg.newEtaText })}
                     disabled={!pupilPhone || isBusy}
                     className={`group h-auto py-3 px-3 rounded-[16px] border text-left flex items-start gap-2 transition-all
                       bg-white border-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.04)]
-                      hover:border-[#2B7BC8]/30 active:bg-[#2B7BC8]/5 active:border-[#2B7BC8]/40
+                      hover:border-[#E08E1A]/30 active:bg-[#E08E1A]/5 active:border-[#E08E1A]/40
                       disabled:opacity-50 disabled:pointer-events-none
-                      ${isActive ? "bg-[#2B7BC8]/5 border-[#2B7BC8]/40" : ""}`}
+                      ${isActive ? "bg-[#E08E1A]/5 border-[#E08E1A]/40" : ""}`}
                   >
                     {isActive && sendState === "sending" ? (
-                      <Loader2 className={`h-4 w-4 shrink-0 mt-0.5 animate-spin text-[#2B7BC8]`} />
+                      <Loader2 className={`h-4 w-4 shrink-0 mt-0.5 animate-spin text-[#E08E1A]`} />
                     ) : isActive && sendState === "sent" ? (
                       <Check className="h-4 w-4 shrink-0 mt-0.5 text-emerald-500" />
                     ) : (

@@ -139,6 +139,20 @@ export function NextUpTile({
   }, [nudgeSentAt]);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [lateSheetOpen, setLateSheetOpen] = useState(false);
+  // Optimistic status overlay so the segmented control + banner update
+  // instantly when the user fires an action from the sheet, without
+  // waiting for the next refetch round-trip.
+  const [localStatus, setLocalStatus] = useState<"en_route" | "late" | null>(null);
+  const [statusBanner, setStatusBanner] = useState<{
+    kind: "en_route" | "late";
+    etaText: string | null;
+    delayMinutes: number | null;
+  } | null>(null);
+  // Reset overlays when we move to a different lesson
+  useEffect(() => {
+    setLocalStatus(null);
+    setStatusBanner(null);
+  }, [lessonId]);
   const [showGPSRecorder, setShowGPSRecorder] = useState(false);
   const [trafficModalOpen, setTrafficModalOpen] = useState(false);
   const [trackerDismissed, setTrackerDismissed] = useState<boolean>(() => isTrackerDismissed(lessonId));
@@ -956,28 +970,63 @@ export function NextUpTile({
                     </button>
                   </div>
 
+                  {/* Inline status banner — appears immediately after the user
+                      sends an ETA / late update from the bottom sheet. Subtle,
+                      animated, no popups. */}
+                  <AnimatePresence initial={false}>
+                    {statusBanner && (
+                      <motion.div
+                        key={statusBanner.kind + (statusBanner.etaText || "") + (statusBanner.delayMinutes ?? "")}
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.22, ease: [0.2, 0.7, 0.2, 1] }}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 8,
+                          padding: "8px 12px", borderRadius: 12,
+                          background: statusBanner.kind === "en_route" ? "#E6F1FB" : "#FBF1DE",
+                          color: statusBanner.kind === "en_route" ? "#1F5C99" : "#A8731A",
+                          fontSize: a11yPx(12), fontWeight: 600, letterSpacing: -0.05,
+                        }}
+                      >
+                        {statusBanner.kind === "en_route" ? (
+                          <Send style={{ width: 14, height: 14 }} strokeWidth={2.3} />
+                        ) : (
+                          <Clock style={{ width: 14, height: 14 }} strokeWidth={2.3} />
+                        )}
+                        <span>
+                          {statusBanner.kind === "en_route"
+                            ? `On the way${statusBanner.etaText ? ` · ETA ${statusBanner.etaText}` : ""}`
+                            : `Running late${statusBanner.delayMinutes ? ` · +${statusBanner.delayMinutes} min` : ""}${statusBanner.etaText ? ` · New ETA ${statusBanner.etaText}` : ""}`}
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   {/* Unified segmented status control */}
                   {(() => {
-                    const norm = (lessonStatus || "").toLowerCase();
+                    const rawNorm = (lessonStatus || "").toLowerCase();
+                    // Optimistic local overlay wins until the next refetch
+                    // brings the server status into agreement.
+                    const norm = localStatus
+                      ? (localStatus === "en_route" ? "en_route" : "late")
+                      : rawNorm;
                     const segments = [
                       { id: "prep", label: "Prep", icon: ClipboardList,
                         active: norm === "prep" || norm === "preparing",
                         activeBg: "#6E6E73", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
-                        isDropdown: false as const,
                         onClick: () => navigate(`/instructor/pupils/${pupilId}?tab=progress`) },
                       { id: "on_the_way", label: "On the way", icon: Send,
                         active: norm === "en_route" || norm === "on_the_way",
                         activeBg: "#2B7BC8", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
-                        isDropdown: true as const },
+                        onClick: () => setLateSheetOpen(true) },
                       { id: "late", label: "Running late", icon: Clock,
                         active: norm === "late" || norm === "running_late",
                         activeBg: "#E08E1A", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
-                        isDropdown: false as const,
                         onClick: () => setLateSheetOpen(true) },
                       { id: "here", label: "Here", icon: MapPin,
                         active: norm === "arrived" || norm === "here",
                         activeBg: "#34C759", activeFg: "#FFFFFF", inactiveFg: "#6E6E73",
-                        isDropdown: false as const,
                         onClick: () => handleArrived() },
                     ];
                     const segmentStyle = (s: typeof segments[number]): React.CSSProperties => ({
@@ -1010,30 +1059,6 @@ export function NextUpTile({
                               }}>{s.label}</span>
                             </>
                           );
-                          if (s.isDropdown) {
-                            return (
-                              <DropdownMenu key={s.id}>
-                                <DropdownMenuTrigger asChild>
-                                  <button onClick={(e) => e.stopPropagation()}
-                                    className="active:scale-[0.97]"
-                                    style={segmentStyle(s)} aria-label={s.label}>
-                                    {inner}
-                                  </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="center" className="w-52">
-                                  <DropdownMenuItem onClick={handleSendETA}>Send ETA Now</DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 5 minutes late. Sorry!`)}>Running 5 min late</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 10 minutes late. Sorry!`)}>Running 10 min late</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 15 minutes late. Sorry!`)}>Running 15 min late</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 20 minutes late. Sorry!`)}>Running 20 min late</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 30 minutes late. Sorry!`)}>Running 30 min late</DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, I'll call you as soon as I can!`)}>Call ASAP</DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            );
-                          }
                           return (
                             <button key={s.id}
                               onClick={(e) => { e.stopPropagation(); s.onClick?.(); }}
@@ -1618,9 +1643,30 @@ export function NextUpTile({
             handleCancelled();
           }} />
       )}
-      <RunningLateSheet open={lateSheetOpen} onOpenChange={setLateSheetOpen}
-        pupilName={pupilName} pupilPhone={pupilPhone} startTime={startTime}
-        etaMinutes={etaMinutes} />
+      <RunningLateSheet
+        open={lateSheetOpen}
+        onOpenChange={setLateSheetOpen}
+        pupilName={pupilName}
+        pupilPhone={pupilPhone}
+        startTime={startTime}
+        etaMinutes={etaMinutes}
+        onMarkOnWay={(etaText) => {
+          // Persist server status; ignore failure (UI already optimistic)
+          supabase.from("scheduled_lessons").update({ status: "en_route" }).eq("id", lessonId).then(() => {});
+          supabase.functions.invoke("notify-pupil", { body: { pupilId, type: "en_route" } }).catch(() => {});
+          setLocalStatus("en_route");
+          setStatusBanner({ kind: "en_route", etaText, delayMinutes: null });
+          queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] });
+          queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+        }}
+        onMarkRunningLate={(delayMinutes, newEtaText) => {
+          supabase.from("scheduled_lessons").update({ status: "late" }).eq("id", lessonId).then(() => {});
+          setLocalStatus("late");
+          setStatusBanner({ kind: "late", etaText: newEtaText, delayMinutes });
+          queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] });
+          queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+        }}
+      />
 
       {/* Traffic Alerts Modal */}
       <Dialog open={trafficModalOpen} onOpenChange={setTrafficModalOpen}>
