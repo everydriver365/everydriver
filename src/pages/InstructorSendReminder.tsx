@@ -8,6 +8,9 @@ import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { haptics } from "@/lib/haptics";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { useInstructorTierConfig } from "@/hooks/useInstructorTierConfig";
+import { calculateAdminFee } from "@/hooks/useAdminFee";
 
 type Channel = "sms" | "whatsapp" | "in-app";
 
@@ -46,6 +49,34 @@ export default function InstructorSendReminder() {
   const [editingRecipients, setEditingRecipients] = useState(false);
   const [recipientSearch, setRecipientSearch] = useState("");
   const [minBalance, setMinBalance] = useState<number>(0);
+  const [includeFee, setIncludeFee] = useState(false);
+
+  // Platform fee config (for "balance + Service Fee" preview)
+  const tierConfig = useInstructorTierConfig(instructorId);
+  const { data: globalFeeConfig } = useQuery({
+    queryKey: ["platform-commission-config"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("platform_commission_config")
+        .select("rate_percent, fixed_fee_pence")
+        .eq("is_active", true)
+        .limit(1)
+        .maybeSingle();
+      if (!data) return null;
+      return { ratePercent: data.rate_percent, fixedFeePence: data.fixed_fee_pence };
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+  const feeConfig = tierConfig ?? globalFeeConfig ?? null;
+  const splitPct = instructor?.commission_split_percent ?? 100;
+
+  const computeAmountStr = (balance: number): string => {
+    const owed = Math.abs(balance || 0);
+    if (!includeFee || !feeConfig) return owed.toFixed(2);
+    const fullFee = calculateAdminFee(owed, feeConfig.ratePercent, feeConfig.fixedFeePence);
+    const pupilFee = Math.round(fullFee * (splitPct / 100) * 100) / 100;
+    return (owed + pupilFee).toFixed(2);
+  };
 
   // Load pupils + instructor
   useEffect(() => {
