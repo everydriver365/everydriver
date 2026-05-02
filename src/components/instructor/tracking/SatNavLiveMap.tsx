@@ -552,6 +552,7 @@ export function SatNavLiveMap({
 
         marker.setPosition({ lat, lng });
         marker.setIcon(getArrowIcon(hd, isActiveRef.current));
+        markerShadowRef.current?.setPosition({ lat, lng });
 
         // Heading-up: rotate map smoothly
         if (typeof (map as any).setHeading === "function") {
