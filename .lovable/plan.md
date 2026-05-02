@@ -1,50 +1,56 @@
 ## Goal
-Add a single **"Do this next"** action card on the instructor home page that picks the most relevant action right now — replacing passive scrolling with one decisive tap.
+Make the home-page section labels consistent. Right now:
 
-## Where it sits
-Above `HomeToolsHub` (search/Frequently used/Browse) and below the existing `NextUpTile`. The card only renders when `NextUpTile` is **not** showing an imminent lesson (no lesson within ~45 min) — otherwise the next lesson is already the most relevant action and we don't want stacked CTAs.
+- **"Do this next"** uses a tiny 11px uppercase grey label *above* its card (iOS-style section header).
+- **"Needs your attention"** and **"Schedule"** use a large 17px bold heading *inside* the card.
 
-```text
-[ NextUpTile — only when lesson imminent ]
-[ Do this next — only when no imminent lesson ]
-[ Search ]
-[ Frequently used ]
-[ Browse all tools ]
-```
+This is jarring and makes "Do this next" look like a category label rather than a sibling section.
 
-## Priority engine
-Pick the highest-priority signal from this ranked list. First match wins, render that card. If nothing matches, render nothing (don't show an empty state).
-
-| Rank | Trigger | Card content | Tap action |
-|---|---|---|---|
-| 1 | Pupil owes ≥ £20 from a lesson finished in last 7 days (uses `usePupilRetentionAlerts` / payments query) | "Chase £{amt} from {Pupil}" + last lesson date | `/instructor/pay?pupilId=…` |
-| 2 | A pending test-swap offer expires in <24h (`useSoonestPendingOffer`) | "Respond to swap offer · expires in {x}h" | `/instructor/test-requests` |
-| 3 | A gap ≥ 90min tomorrow with ≥ 1 waiting-list pupil nearby (`useGapSuggestions`) | "Offer {time} gap to {n} waiting pupils" | `/instructor/gaps` |
-| 4 | Pupil hasn't booked in 21+ days but has prepaid hours (`useChurnRiskScore`) | "Re-engage {Pupil} — {h}h credit unused" | `/instructor/pupils/{id}` |
-| 5 | A pupil's theory/practical test is in <14 days with <5 lessons booked | "Book test prep for {Pupil} — test {date}" | `/instructor/course-planner?pupilId=…` |
-| 6 | Vehicle MOT/service due in <30 days (`useAutoMaintenanceSetup`/vehicle health) | "Book MOT — due {date}" | `/instructor/vehicle-health` |
-| 7 | Weekly report ready and unread | "Read this week's summary" | `/instructor/weekly-report` |
-
-All triggers reuse hooks that already exist — no new queries.
-
-## Card design
-Single white rounded-22 card matching `NextUpTile` style. Left: small tinted icon (tone derived from category — amber for money, blue for swaps, green for gaps, etc.). Centre: bold one-line title + subtle subtitle. Right: chevron. Whole card tappable. Optional secondary "Snooze" link (top-right, tiny grey) that hides this specific card for 24h via `localStorage` key `dsm:next-action-snooze:{rank}:{date}`.
+## Decision
+**Standardise on the small uppercase label above the card** for all three sections — that's the iOS-consistency pattern already documented in memory (`mem://style/ios-consistency-patterns`: "uppercase section headers"). It also keeps card interiors cleaner and gives the screen a clearer rhythm.
 
 ```text
-┌──────────────────────────────────────────────┐
-│ 💷  Chase £45 from Sarah                  ›  │
-│     Lesson Tue · 3 days ago         Snooze   │
-└──────────────────────────────────────────────┘
+DO THIS NEXT
+[ tinted hero card ]
+
+NEEDS YOUR ATTENTION
+[ white card · rows ]
+
+SCHEDULE                          View all ›
+[ white card · today/tomorrow tabs · rows ]
 ```
 
-Header label above the card: `DO THIS NEXT` (uppercase, matches existing iOS section label style).
+## Changes (all in `src/components/instructor/PremiumIOSHomeView.tsx`)
 
-## Files
-- New: `src/components/instructor/DoThisNextCard.tsx` — runs priority engine, renders card.
-- New: `src/hooks/useNextBestAction.ts` — composes existing hooks, returns `{ rank, title, subtitle, icon, tone, route, snoozeKey } | null`.
-- Edit: `src/components/instructor/PremiumIOSHomeView.tsx` — insert `<DoThisNextCard />` after the `NextUpTile` section, gated on `!nextLesson || nextLesson.minutesUntil > 45`.
+1. **Extract a `<SectionLabel>` helper** at the top of the file — one component renders the 11px / 600 / `#8E8E93` / `0.4px` tracking / `uppercase` label with `margin: 0 2px 8px`, optional right-side action slot (for "View all").
+2. **Needs your attention section (lines ~338–383)**:
+   - Remove the inner `<div className="px-4 pt-4 pb-1">…<h2>Needs your attention</h2></div>` heading block.
+   - Render `<SectionLabel>Needs your attention</SectionLabel>` *above* the `<Card>`.
+   - Adjust the first row's top padding (the card no longer has the heading taking that space) — drop `pt-4` from the inner container so the first row sits flush.
+3. **Schedule section (lines ~386–400)**:
+   - Replace the inner `<h2>Schedule</h2>` + "View all" header row with `<SectionLabel action={<ViewAllButton/>}>Schedule</SectionLabel>` above the card.
+   - Tighten the segmented Today/Tomorrow control's top padding inside the card now that the heading row is gone.
+4. **Do this next** stays exactly as-is structurally — but the label is moved out of `DoThisNextCard.tsx` into the parent so all three sections use the same `<SectionLabel>` component. The card itself becomes label-less.
+   - Edit `src/components/instructor/DoThisNextCard.tsx`: remove the inline "Do this next" header `<div>` and the wrapping `<section>` margin — just render the card.
+   - Edit `PremiumIOSHomeView.tsx` (line ~333): wrap the `<DoThisNextCard>` in `<section className="mt-4"><SectionLabel>Do this next</SectionLabel><DoThisNextCard … /></section>`.
+
+## Visual spec for `<SectionLabel>`
+```text
+font-size: 11px
+font-weight: 600
+color: #8E8E93
+text-transform: uppercase
+letter-spacing: 0.4px
+margin: 0 2px 8px
+display: flex; justify-content: space-between; align-items: baseline
+```
+Right-side `action` slot styled as `text-[12px] font-semibold text-[#007AFF]` to keep the existing "View all ›" affordance.
 
 ## Out of scope
-- No backend changes, no new tables.
-- No analytics — can layer in later via existing funnel tracker.
-- Mobile layout untouched (per Core memory rule); the card is part of the existing scroll, not a fixed element.
+- No change to card interiors, row layout, icons or data.
+- No mobile layout restructure (per Core memory rule) — only the heading element moves.
+- "Do this next" tinted-hero styling from the prior plan is unaffected; this is purely about label parity.
+
+## Files
+- Edit: `src/components/instructor/PremiumIOSHomeView.tsx` — add `SectionLabel`, restructure three section headers.
+- Edit: `src/components/instructor/DoThisNextCard.tsx` — remove the internal label/section wrapper.
