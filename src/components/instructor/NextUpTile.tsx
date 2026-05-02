@@ -940,7 +940,9 @@ export function NextUpTile({
                               <Icon style={{ width: 16, height: 16 }} strokeWidth={2.1} />
                               <span style={{
                                 fontSize: a11yPx(11), fontWeight: 600, letterSpacing: -0.05,
-                                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%",
+                                lineHeight: 1.15, textAlign: "center",
+                                display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                                overflow: "hidden", maxWidth: "100%", wordBreak: "break-word",
                               }}>{s.label}</span>
                             </>
                           );
