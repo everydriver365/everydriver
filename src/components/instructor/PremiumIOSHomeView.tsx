@@ -101,6 +101,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
   const { profile: instructorProfile } = useInstructorProfile(instructorId);
 
   const [suggestionDismissed, setSuggestionDismissed] = useState(false);
+  const [scheduleTab, setScheduleTab] = useState<"today" | "tomorrow">("today");
 
   /* ---------------- Subtitle counts -------------------------------------- */
   const lessonsToday = todayOverview?.lessonCount ?? 0;
