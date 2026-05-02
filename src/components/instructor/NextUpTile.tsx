@@ -712,16 +712,16 @@ export function NextUpTile({
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="overflow-hidden"
-            style={{ marginLeft: 0, marginRight: 0, marginBottom: -16, marginTop: 4 }}
+            style={{ marginLeft: 0, marginRight: 0, marginTop: 4 }}
           >
-          <div style={{ padding: "22px 0 20px", display: "flex", flexDirection: "column", gap: 24, borderTop: "1px solid rgba(15,23,42,0.08)", background: "transparent" }}>
+          <div style={{ padding: "12px 0 16px", display: "flex", flexDirection: "column", gap: 14, borderTop: "0.5px solid #E5E5EA", background: "transparent" }}>
 
-          {/* ── HERO + PRIMARY ACTIONS card (premium iOS) ── */}
+          {/* ── HERO + PRIMARY ACTIONS card (flat schedule-style) ── */}
           <div style={{
-            background: "#FFFFFF", borderRadius: 26, padding: 24,
-            border: "1px solid rgba(15,23,42,0.06)",
-            boxShadow: "0 14px 34px rgba(15,23,42,0.07)",
-            display: "flex", flexDirection: "column", gap: 18,
+            background: "#FFFFFF", borderRadius: 12, padding: 14,
+            border: "0.5px solid #E5E5EA",
+            display: "flex", flexDirection: "column", gap: 12,
+            position: "relative",
           }}>
             {/* UP NEXT label — premium small caps, soft blue */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
