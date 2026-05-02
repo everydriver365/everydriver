@@ -39,42 +39,66 @@ export function RunningLateSheet({
   const firstName = (pupilName || "").split(" ")[0] || "there";
 
   const presets = useMemo(() => {
-    const base = [
-      {
-        id: "5",
-        icon: Clock,
-        label: "Running 5 mins late",
-        message: `Hi ${firstName}, I'm running about 5 minutes late. See you shortly.`,
-      },
-      {
-        id: "10",
-        icon: Clock,
-        label: "Running 10 mins late",
-        message: `Hi ${firstName}, I'm running about 10 minutes late. I'll be with you as soon as possible.`,
-      },
-      {
-        id: "traffic",
-        icon: Car,
-        label: "Stuck in traffic",
-        message: `Hi ${firstName}, I'm stuck in traffic and may be a little late. I'll keep you updated.`,
-      },
-      {
-        id: "update",
-        icon: AlertTriangle,
-        label: "Will update you",
-        message: `Hi ${firstName}, I'm running late. I'll update you shortly with a more accurate arrival time.`,
-      },
-    ];
+    const items: Array<{
+      id: string;
+      icon: any;
+      label: string;
+      message: string;
+      kind: "on_way" | "late";
+      delayMinutes: number | null;
+      newEtaText: string | null;
+    }> = [];
+    // "Send ETA now" — pinned first when an ETA is known. This is the
+    // primary "On the way" action.
     if (etaMinutes && etaMinutes > 0) {
       const etaTime = format(addMinutes(new Date(), etaMinutes), "HH:mm");
-      base.push({
+      items.push({
         id: "eta",
         icon: Navigation,
-        label: "Send ETA",
+        label: `Send ETA · ${etaTime}`,
         message: `Hi ${firstName}, I'm on my way. My estimated arrival time is ${etaTime}.`,
+        kind: "on_way",
+        delayMinutes: null,
+        newEtaText: etaTime,
       });
     }
-    return base;
+    const delayItem = (mins: number) => {
+      const baseEta = etaMinutes && etaMinutes > 0 ? etaMinutes : 0;
+      const newEtaText = baseEta > 0
+        ? format(addMinutes(new Date(), baseEta + mins), "HH:mm")
+        : null;
+      return {
+        id: String(mins),
+        icon: Clock,
+        label: `+${mins} min late`,
+        message: `Hi ${firstName}, I'm running about ${mins} minutes late. ${
+          newEtaText ? `New ETA ${newEtaText}.` : "I'll be with you as soon as possible."
+        }`,
+        kind: "late" as const,
+        delayMinutes: mins,
+        newEtaText,
+      };
+    };
+    items.push(delayItem(5), delayItem(10));
+    items.push({
+      id: "traffic",
+      icon: Car,
+      label: "Stuck in traffic",
+      message: `Hi ${firstName}, I'm stuck in traffic and may be a little late. I'll keep you updated.`,
+      kind: "late",
+      delayMinutes: null,
+      newEtaText: null,
+    });
+    items.push({
+      id: "update",
+      icon: AlertTriangle,
+      label: "Will update you",
+      message: `Hi ${firstName}, I'm running late. I'll update you shortly with a more accurate arrival time.`,
+      kind: "late",
+      delayMinutes: null,
+      newEtaText: null,
+    });
+    return items;
   }, [firstName, etaMinutes]);
 
   const defaultCustom = `Hi ${firstName}, I'm running late… `;
