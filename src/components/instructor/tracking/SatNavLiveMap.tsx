@@ -383,34 +383,9 @@ export function SatNavLiveMap({
           (map as any).setHeading(hd);
         }
 
-        // Camera follow — off-center in fullscreen, centered otherwise
+        // Camera follow — keep marker centered at all times
         const latLng = new google.maps.LatLng(lat, lng);
-        if (fullscreenRef.current) {
-          const projection = map.getProjection();
-          const div = mapDivRef.current;
-          if (projection && div) {
-            const zoom = map.getZoom() ?? 18;
-            const scale = Math.pow(2, zoom);
-            const worldPx = projection.fromLatLngToPoint(latLng);
-            if (worldPx) {
-              const offsetY = div.clientHeight * 0.30;
-              const shiftedY = worldPx.y - offsetY / scale;
-              const shifted = new google.maps.Point(worldPx.x, shiftedY);
-              const shiftedLatLng = projection.fromPointToLatLng(shifted);
-              if (shiftedLatLng) {
-                map.panTo(shiftedLatLng);
-              } else {
-                map.panTo(latLng);
-              }
-            } else {
-              map.panTo(latLng);
-            }
-          } else {
-            map.panTo(latLng);
-          }
-        } else {
-          map.panTo(latLng);
-        }
+        map.panTo(latLng);
       }
 
       animRef.current = requestAnimationFrame(tick);
