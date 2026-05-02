@@ -442,16 +442,19 @@ export function SatNavLiveMap({
         const hd = lerpAngle(from.heading, target.heading, e);
 
         marker.setPosition({ lat, lng });
-        marker.setIcon(getArrowIcon(0, isActiveRef.current));
+        marker.setIcon(getArrowIcon(hd, isActiveRef.current));
 
         // Heading-up: rotate map smoothly
         if (typeof (map as any).setHeading === "function") {
           (map as any).setHeading(hd);
         }
 
-        // Camera follow — keep marker centered at all times
-        const latLng = new google.maps.LatLng(lat, lng);
-        map.panTo(latLng);
+        // Camera follow — only auto-pan in fullscreen sat-nav mode so users
+        // can drag/explore the card-mode map without it snapping back.
+        if (fullscreenRef.current) {
+          const latLng = new google.maps.LatLng(lat, lng);
+          map.panTo(latLng);
+        }
       }
 
       animRef.current = requestAnimationFrame(tick);
