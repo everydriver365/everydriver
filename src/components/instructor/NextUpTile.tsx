@@ -130,6 +130,13 @@ export function NextUpTile({
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [nudgeSentAt, setNudgeSentAt] = useState<number | null>(null);
+  // Auto-clear "Reminder sent" chip back to Awaiting after ~3s
+  useEffect(() => {
+    if (!nudgeSentAt) return;
+    const t = setTimeout(() => setNudgeSentAt(null), 3000);
+    return () => clearTimeout(t);
+  }, [nudgeSentAt]);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [lateSheetOpen, setLateSheetOpen] = useState(false);
   const [showGPSRecorder, setShowGPSRecorder] = useState(false);
