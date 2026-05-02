@@ -220,6 +220,16 @@ export function SatNavLiveMap({
     return () => { released = true; document.removeEventListener("visibilitychange", onVis); wakeLock?.release?.().catch(() => {}); };
   }, [fullscreen]);
 
+  // When fullscreen exits, drop the camera back to flat north-up so the
+  // card-mode map doesn't stay tilted/rotated.
+  useEffect(() => {
+    if (!fullscreen && mapRef.current && vectorReadyRef.current) {
+      mapRef.current.moveCamera({ heading: 0, tilt: 0 });
+      camHeadingRef.current = 0;
+      camTiltRef.current = 0;
+    }
+  }, [fullscreen]);
+
   // Client-side reverse-geocode fallback for the road name. Runs only when
   // the upstream `roadName` prop is empty/Unnamed AND we have a position.
   // Throttled to once every 6s, and skips if the vehicle hasn't moved >25 m
