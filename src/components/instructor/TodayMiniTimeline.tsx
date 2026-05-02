@@ -107,7 +107,7 @@ export function TodayMiniTimeline({ lessons, className = "" }: TodayMiniTimeline
                   background: isNext ? "rgba(10,122,255,0.06)" : "rgba(255,255,255,0.65)",
                   backdropFilter: "blur(20px)",
                   WebkitBackdropFilter: "blur(20px)",
-                  borderRadius: 22,
+                  borderRadius: 12,
                   boxShadow: isNext
                     ? "0 4px 24px rgba(10,122,255,0.12), inset 0 1px 0 rgba(255,255,255,0.8)"
                     : "0 4px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",

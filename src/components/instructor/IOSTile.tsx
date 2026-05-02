@@ -39,7 +39,7 @@ function IOSTileRoot({
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       style={{
         background: "#FFFFFF",
-        borderRadius: 16,
+        borderRadius: 12,
         padding,
         display: "flex",
         alignItems: "center",
@@ -161,7 +161,7 @@ export function IOSTileGroup({ header, footer, children, className }: IOSTileGro
         className="shadow-premium tabular-nums"
         style={{
           background: "#FFFFFF",
-          borderRadius: 16,
+          borderRadius: 12,
           overflow: "hidden",
         }}
       >

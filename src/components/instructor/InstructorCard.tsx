@@ -33,7 +33,7 @@ export function InstructorCard({
         interactive && "cursor-pointer",
         className
       )}
-      style={{ backgroundColor: '#FFFFFF', borderRadius: 16 }}
+      style={{ backgroundColor: '#FFFFFF', borderRadius: 12 }}
       whileTap={interactive ? { scale: 0.97 } : undefined}
       transition={interactive ? { type: "spring", stiffness: 400, damping: 25 } : undefined}
       {...motionProps}

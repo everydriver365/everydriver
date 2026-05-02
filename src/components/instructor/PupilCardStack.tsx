@@ -684,7 +684,7 @@ export function PupilCardStack({
         style={{
           backgroundColor: "#FFFFFF",
           border: priority ? "0.5px solid #DCE7F2" : "0.5px solid #ECECEF",
-          borderRadius: 16,
+          borderRadius: 12,
           overflow: "hidden",
           position: "relative",
           boxShadow: priority

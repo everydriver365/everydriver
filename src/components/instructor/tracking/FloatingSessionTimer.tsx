@@ -107,7 +107,7 @@ export function FloatingSessionTimer({
           backdropFilter: "blur(24px) saturate(180%)",
           WebkitBackdropFilter: "blur(24px) saturate(180%)",
           border: "1px solid rgba(0,0,0,0.06)",
-          borderRadius: 22,
+          borderRadius: 12,
           boxShadow: "0 1px 0 rgba(255,255,255,0.8) inset, 0 18px 40px rgba(0,0,0,0.12)",
           padding: "14px 18px",
         }}
