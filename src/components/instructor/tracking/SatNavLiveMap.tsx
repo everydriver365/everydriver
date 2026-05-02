@@ -565,3 +565,45 @@ export function SatNavLiveMap({
     </div>
   );
 }
+
+function SnapStatusPill({ status, lastFixLabel }: { status: "idle" | "syncing" | "snapped" | "raw"; lastFixLabel: string | null }) {
+  const config = {
+    idle:    { dot: "#c7c7cc", label: "Waiting" },
+    syncing: { dot: "#f59e0b", label: "Syncing" },
+    snapped: { dot: "#0f9e75", label: "Snapped" },
+    raw:     { dot: "#8e8e93", label: "Raw GPS" },
+  }[status];
+  return (
+    <span
+      title={`Trail status: ${config.label}${lastFixLabel ? ` · last fix ${lastFixLabel}` : ""}`}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 5,
+        background: "rgba(0,0,0,0.04)",
+        border: "1px solid rgba(0,0,0,0.06)",
+        borderRadius: 20,
+        padding: "3px 8px",
+        fontSize: 10,
+        fontWeight: 600,
+        color: "#3a3a3c",
+        whiteSpace: "nowrap",
+        flexShrink: 0,
+      }}
+    >
+      <span
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: "50%",
+          background: config.dot,
+        }}
+        className={status === "syncing" ? "animate-pulse" : ""}
+      />
+      {config.label}
+      {lastFixLabel && (
+        <span style={{ color: "#8e8e93", fontWeight: 500 }}>· {lastFixLabel}</span>
+      )}
+    </span>
+  );
+}
