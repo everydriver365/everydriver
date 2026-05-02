@@ -377,11 +377,10 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
       {/* SECTION 2: Needs attention — single card, 64px rows */}
       {attentionRows.length > 0 && (
         <section className="mt-4">
+          <SectionLabel>Needs your attention</SectionLabel>
           <Card>
-            <div className="px-4 pt-4 pb-1">
-              <h2 className="text-[17px] font-semibold tracking-tight text-[#1C1C1E]">
-                Needs your attention
-              </h2>
+            <div>
+              {/* heading moved to SectionLabel above */}
             </div>
             <div>
               {attentionRows.map((row, i) => (
