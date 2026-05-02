@@ -591,6 +591,16 @@ export function SatNavLiveMap({
         {/* Spacer */}
         <div style={{ flex: 1 }} />
 
+        {/* Miles today */}
+        {dailyMiles != null && (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: "#1c1c1e", lineHeight: 1 }} className="tabular-nums">
+              {dailyMiles}
+            </span>
+            <span style={{ fontSize: 11, color: "#8e8e93", marginTop: 2 }}>miles today</span>
+          </div>
+        )}
+
         {/* Engine status */}
         {ignitionOn != null && (
           <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
