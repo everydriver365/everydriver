@@ -129,7 +129,11 @@ export function RunningLateSheet({
   }, [open]);
 
   const sendNow = useCallback(
-    async (id: string, message: string) => {
+    async (
+      id: string,
+      message: string,
+      meta?: { kind: "on_way" | "late"; delayMinutes: number | null; newEtaText: string | null },
+    ) => {
       if (!pupilPhone) {
         setErrorMsg("No phone number available for this pupil");
         setSendState("error");
@@ -146,15 +150,22 @@ export function RunningLateSheet({
         setSendState("sent");
         haptics.light();
         try {
-          onMarkRunningLate?.();
+          if (meta?.kind === "on_way") {
+            onMarkOnWay?.(meta.newEtaText);
+          } else {
+            // Default: anything sent from this sheet without explicit kind
+            // is treated as a late message (preserves prior behaviour for
+            // custom text and voice notes).
+            onMarkRunningLate?.(meta?.delayMinutes ?? null, meta?.newEtaText ?? null);
+          }
         } catch (e) {
-          console.error("onMarkRunningLate failed:", e);
+          console.error("Late sheet callback failed:", e);
         }
         setTimeout(() => {
           setSendState("idle");
           setActiveId(null);
           onOpenChange(false);
-        }, 1200);
+        }, 900);
       } else {
         // Fallback to native SMS so the user can still send something
         const a = document.createElement("a");
@@ -164,7 +175,7 @@ export function RunningLateSheet({
         setErrorMsg("Couldn't send message. Try again.");
       }
     },
-    [pupilPhone, sendMessage, onOpenChange, onMarkRunningLate]
+    [pupilPhone, sendMessage, onOpenChange, onMarkRunningLate, onMarkOnWay]
   );
 
   const startRecording = useCallback(async () => {
