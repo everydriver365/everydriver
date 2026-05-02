@@ -36,6 +36,24 @@ export function SatNavLiveMap({
   const [ready, setReady] = useState(false);
   const [mapError, setMapError] = useState(false);
   const trailLoadedRef = useRef<string | null>(null);
+
+  // Client-side reverse-geocode fallback. The poller normally stamps
+  // `last_road_name` on gps_devices, but there's a few-second lag on first
+  // fix and the field can be blank/"Unnamed Road" on minor lanes. We fill
+  // those gaps here so the bottom panel always shows something useful.
+  const [fallbackRoadName, setFallbackRoadName] = useState<string | null>(null);
+  const lastGeocodeAtRef = useRef<number>(0);
+  const lastGeocodePosRef = useRef<{ lat: number; lng: number } | null>(null);
+  const geocoderRef = useRef<google.maps.Geocoder | null>(null);
+
+  // Treat upstream value as "missing" if null/empty/whitespace/"Unnamed Road"
+  const upstreamRoadName =
+    typeof roadName === "string" &&
+    roadName.trim().length > 0 &&
+    !/^unnamed\s+road$/i.test(roadName.trim())
+      ? roadName.trim()
+      : null;
+  const displayRoadName = upstreamRoadName || fallbackRoadName;
   const isFirstFixRef = useRef<boolean>(true);
   // Wall-clock timestamp of the last accepted fix — used to derive an
   // adaptive tween duration that matches the true cadence of the device.
@@ -191,6 +209,62 @@ export function SatNavLiveMap({
     document.addEventListener("visibilitychange", onVis);
     return () => { released = true; document.removeEventListener("visibilitychange", onVis); wakeLock?.release?.().catch(() => {}); };
   }, [fullscreen]);
+
+  // Client-side reverse-geocode fallback for the road name. Runs only when
+  // the upstream `roadName` prop is empty/Unnamed AND we have a position.
+  // Throttled to once every 6s, and skips if the vehicle hasn't moved >25 m
+  // since the last successful geocode.
+  useEffect(() => {
+    if (!ready || latitude == null || longitude == null) return;
+    if (upstreamRoadName) return; // upstream is fine, no fallback needed
+
+    const now = Date.now();
+    if (now - lastGeocodeAtRef.current < 6000) return;
+
+    const last = lastGeocodePosRef.current;
+    if (last) {
+      const R = 6371000;
+      const dLat = (latitude - last.lat) * Math.PI / 180;
+      const dLng = (longitude - last.lng) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(last.lat * Math.PI / 180) * Math.cos(latitude * Math.PI / 180) *
+        Math.sin(dLng / 2) ** 2;
+      const moved = 2 * R * Math.asin(Math.sqrt(a));
+      if (moved < 25 && fallbackRoadName) return;
+    }
+
+    lastGeocodeAtRef.current = now;
+    lastGeocodePosRef.current = { lat: latitude, lng: longitude };
+
+    if (!geocoderRef.current) {
+      try { geocoderRef.current = new google.maps.Geocoder(); } catch { return; }
+    }
+
+    let cancelled = false;
+    geocoderRef.current.geocode(
+      { location: { lat: latitude, lng: longitude } },
+      (results, status) => {
+        if (cancelled) return;
+        if (status !== "OK" || !results || results.length === 0) return;
+        // Prefer a result that has a `route` component (an actual road),
+        // else fall back to the first formatted address line.
+        let road: string | null = null;
+        for (const r of results) {
+          const route = r.address_components?.find((c) => c.types.includes("route"));
+          if (route?.long_name && !/^unnamed\s+road$/i.test(route.long_name)) {
+            road = route.long_name;
+            break;
+          }
+        }
+        if (!road) {
+          const first = results[0].formatted_address?.split(",")[0]?.trim();
+          if (first && !/^unnamed\s+road$/i.test(first)) road = first;
+        }
+        if (road) setFallbackRoadName(road);
+      }
+    );
+    return () => { cancelled = true; };
+  }, [ready, latitude, longitude, upstreamRoadName, fallbackRoadName]);
 
   const getArrowIcon = useCallback((rotation: number, active: boolean): google.maps.Symbol => ({
     path: "M 0,-12 L -7,11 L 0,6 L 7,11 Z",
@@ -746,10 +820,10 @@ export function SatNavLiveMap({
                     marginBottom: 10,
                     borderBottom: "1px solid rgba(0,0,0,0.06)",
                   }}
-                  title={roadName || "Locating road"}
+                  title={displayRoadName || "Locating road"}
                 >
                   <span aria-hidden="true" style={{ fontSize: 14, color: "rgba(60,60,67,0.55)", lineHeight: 1, flexShrink: 0 }}>◉</span>
-                  {roadName ? (
+                  {displayRoadName ? (
                     <span
                       style={{
                         fontSize: 15,
@@ -762,7 +836,7 @@ export function SatNavLiveMap({
                         flex: 1,
                       }}
                     >
-                      {roadName}
+                      {displayRoadName}
                     </span>
                   ) : (
                     <span
@@ -896,7 +970,7 @@ export function SatNavLiveMap({
         <div className="flex items-center gap-2 ml-3 flex-1 justify-end min-w-0">
           <SnapStatusPill status={snapStatus} lastFixLabel={lastFixLabel} />
           <p style={{ fontSize: 13, fontWeight: 600, color: "#1c1c1e" }} className="truncate text-right">
-            {roadName || "Awaiting location…"}
+            {displayRoadName || "Awaiting location…"}
           </p>
         </div>
       </div>
