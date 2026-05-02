@@ -426,6 +426,7 @@ export function SatNavLiveMap({
       fromPosRef.current = seed;
       targetPosRef.current = seed;
       lastFixTsRef.current = now;
+      lastFixAtRef.current = Date.now();
       pathRef.current = [new google.maps.LatLng(latitude, longitude)];
       isFirstFixRef.current = false;
       return;
