@@ -4,7 +4,7 @@ import { a11yPx } from "@/lib/a11yScale";
 import {
   Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, ChevronDown,
   Send, Play, MapPin, Calendar, ClipboardList,
-  Hourglass, PoundSterling, MessageCircle, AlertTriangle, CheckCircle2, Check, XCircle,
+  Hourglass, PoundSterling, MessageCircle, AlertTriangle, CheckCircle2,
   Thermometer, Battery, Wifi, BookOpen, Banknote, ChevronRight, Mail,
 } from "lucide-react";
 import { PostcodeMapPreview } from "@/components/instructor/PostcodeMapPreview";
@@ -714,185 +714,156 @@ export function NextUpTile({
             className="overflow-hidden"
             style={{ marginLeft: 0, marginRight: 0, marginBottom: -16, marginTop: 4 }}
           >
-          <div style={{ padding: "14px 0 20px", display: "flex", flexDirection: "column", gap: 16, background: "transparent" }}>
+          <div style={{ padding: "16px 0 20px", display: "flex", flexDirection: "column", gap: 16, borderTop: "0.5px solid #c6c6c8", background: "transparent" }}>
 
-          {/* Subtle divider directly under the "UP NEXT · TAP TO HIDE" strip */}
-          <div aria-hidden style={{ height: 0.5, background: "rgba(91,92,226,0.18)", margin: "-8px -2px 2px" }} />
-
-          {/* ── PREMIUM HERO CARD — soft off-white inset wrapping a floating white card ── */}
-          <div style={{
-            background: "#F7F7FB",
-            borderRadius: 22,
-            padding: 14,
-            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif',
-          }}>
+          {/* ── HERO CARD — native iOS UIKit grouped table view style ── */}
           <div style={{
             background: "#FFFFFF",
-            borderRadius: 24,
-            border: "0.5px solid rgba(15,23,42,0.06)",
-            boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 14px 34px -12px rgba(16,24,40,0.10)",
-            padding: 18,
-            display: "flex",
-            flexDirection: "column",
-            gap: 16,
+            borderRadius: 13,
             overflow: "hidden",
+            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif',
           }}>
-            {/* ── 1. TOP ROW — UP NEXT label + name (left); pill + time + date (right) ── */}
-            {(() => {
-              // Build the confirmation pill (logic preserved, restyled — rounded full, soft tinted, leading icon).
-              const isPending = !checkInStatus || checkInStatus === "pending";
-              const canNudge = isPending && !!pupilPhone;
-              const pillBase: React.CSSProperties = {
-                display: "inline-flex", alignItems: "center", gap: 5,
-                padding: "4px 10px 4px 8px", borderRadius: 999,
-                fontSize: 12, fontWeight: 600, letterSpacing: -0.05,
-                border: "none", lineHeight: 1.1,
-              };
-              let pill: React.ReactNode;
-              if (nudgeSentAt) {
-                pill = (
-                  <span style={{ ...pillBase, background: "rgba(52,199,89,0.12)", color: "#137333" }}>
-                    <Check style={{ width: 11, height: 11 }} strokeWidth={2.4} />
-                    Reminder sent
-                  </span>
-                );
-              } else if (canNudge) {
-                pill = (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      try { haptics.medium(); } catch {}
-                      const firstName = (pupilName || "").split(" ")[0];
-                      sendSMS(`Hi ${firstName}, just confirming your driving lesson at ${formatTime24(startTime)}. Please reply to confirm — thanks!`);
-                      setNudgeSentAt(Date.now());
-                      toast.success("Reminder sent");
-                    }}
-                    aria-label="Send confirmation reminder to pupil"
-                    style={{ ...pillBase, background: "#FFF4D6", color: "#8A5A00", cursor: "pointer", position: "relative" }}
-                  >
-                    <span style={{ position: "relative", width: 10, height: 10, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            {/* ── 1. STATUS ROW — pulsing amber dot + Awaiting badge / Today ── */}
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "12px 16px",
+            }}>
+              {(() => {
+                const isPending = !checkInStatus || checkInStatus === "pending";
+                const canNudge = isPending && !!pupilPhone;
+                const badgeBase: React.CSSProperties = {
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "4px 10px", borderRadius: 6,
+                  fontSize: 13, fontWeight: 500, letterSpacing: -0.08,
+                  border: "none",
+                };
+                const Dot = ({ color, pulse }: { color: string; pulse?: boolean }) => (
+                  <span style={{ position: "relative", width: 8, height: 8, display: "inline-block" }}>
+                    {pulse && (
                       <span aria-hidden style={{
                         position: "absolute", inset: 0, borderRadius: "50%",
-                        background: "#D4A017", opacity: 0.45,
+                        background: color, opacity: 0.45,
                         animation: "ios-halo-pulse 1.6s ease-out infinite",
                       }} />
-                      <Clock style={{ width: 10, height: 10, color: "#8A5A00", position: "relative" }} strokeWidth={2.4} />
-                    </span>
-                    Awaiting confirmation
-                  </button>
-                );
-              } else if (checkInStatus === "confirmed") {
-                pill = (
-                  <span style={{ ...pillBase, background: "rgba(52,199,89,0.14)", color: "#137333" }}>
-                    <Check style={{ width: 11, height: 11 }} strokeWidth={2.4} />
-                    Confirmed
-                  </span>
-                );
-              } else if (checkInStatus === "declined" || checkInStatus === "cancelled") {
-                pill = (
-                  <span style={{ ...pillBase, background: "#FCE6E6", color: "#B42318" }}>
-                    <XCircle style={{ width: 11, height: 11 }} strokeWidth={2.2} />
-                    {checkInStatus === "declined" ? "Declined" : "Cancelled"}
-                  </span>
-                );
-              } else {
-                pill = (
-                  <span style={{ ...pillBase, background: "#FFF4D6", color: "#8A5A00" }}>
-                    <Clock style={{ width: 11, height: 11 }} strokeWidth={2.4} />
-                    Awaiting confirmation
-                  </span>
-                );
-              }
-
-              return (
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-                  {/* LEFT — eyebrow + pupil name */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      display: "inline-flex", alignItems: "center", gap: 5,
-                      fontSize: 11, fontWeight: 700, color: "#5B5CE2",
-                      letterSpacing: 0.6, textTransform: "uppercase",
-                    }}>
-                      <Calendar style={{ width: 11, height: 11 }} strokeWidth={2.4} />
-                      Up next
-                    </div>
-                    <div style={{
-                      marginTop: 4,
-                      fontSize: 26, fontWeight: 700, color: "#0B0B0F",
-                      letterSpacing: -0.5, lineHeight: 1.15,
-                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                    }}>
-                      {toSentenceName(pupilName)}
-                    </div>
-                  </div>
-
-                  {/* RIGHT — pill, time, date */}
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
-                    {pill}
-                    <div style={{
-                      fontSize: 30, fontWeight: 700, color: "#0B0B0F",
-                      letterSpacing: -0.7, fontVariantNumeric: "tabular-nums", lineHeight: 1,
-                    }}>
-                      {formatTime24(startTime)}
-                    </div>
-                    <div style={{ fontSize: 14, color: "#6E6E73", letterSpacing: -0.08, fontWeight: 500 }}>
-                      {getDateLabel()}
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* ── 2. META BLOCK — accent bar + tinted icon badges ── */}
-            <div style={{ display: "flex", alignItems: "stretch", gap: 12 }}>
-              <div aria-hidden style={{ width: 2, borderRadius: 2, background: "rgba(91,92,226,0.55)", flexShrink: 0 }} />
-              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                  <span style={{
-                    width: 24, height: 24, borderRadius: "50%",
-                    background: "rgba(91,92,226,0.10)",
-                    display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  }}>
-                    <Car style={{ width: 13, height: 13, color: "#5B5CE2" }} strokeWidth={2} />
-                  </span>
-                  <span style={{ fontSize: 15, color: "#0B0B0F", letterSpacing: -0.1, fontWeight: 500 }}>
-                    {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
-                  </span>
-                </div>
-                {(pickupLocation || pickupPostcode) && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                    )}
                     <span style={{
-                      width: 24, height: 24, borderRadius: "50%",
-                      background: "rgba(91,92,226,0.10)",
-                      display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                    }}>
-                      <MapPin style={{ width: 13, height: 13, color: "#5B5CE2" }} strokeWidth={2} />
-                    </span>
-                    <span style={{
-                      fontSize: 15, color: "#48484A", letterSpacing: -0.1,
-                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, flex: 1,
-                    }}>
-                      {formattedPickupAddress || pickupPostcode || pickupLocation}
-                    </span>
-                  </div>
-                )}
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{
-                    width: 24, height: 24, borderRadius: "50%",
-                    background: "rgba(0,122,255,0.10)",
-                    display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  }}>
-                    <Clock style={{ width: 13, height: 13, color: "#007AFF" }} strokeWidth={2} />
+                      position: "absolute", inset: 0, borderRadius: "50%",
+                      background: color,
+                    }} />
                   </span>
-                  <span style={{ fontSize: 15, color: "#007AFF", letterSpacing: -0.1, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
-                    {minutesUntil <= 0 ? "Starting now" : `Starts in ${getCountdownText()}`}
+                );
+                if (nudgeSentAt) {
+                  return (
+                    <span style={{ ...badgeBase, background: "transparent", color: "#34C759" }}>
+                      <Dot color="#34C759" />
+                      Reminder sent
+                    </span>
+                  );
+                }
+                if (canNudge) {
+                  return (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        try { haptics.medium(); } catch {}
+                        const firstName = (pupilName || "").split(" ")[0];
+                        sendSMS(`Hi ${firstName}, just confirming your driving lesson at ${formatTime24(startTime)}. Please reply to confirm — thanks!`);
+                        setNudgeSentAt(Date.now());
+                        toast.success("Reminder sent");
+                      }}
+                      aria-label="Send confirmation reminder to pupil"
+                      style={{
+                        ...badgeBase,
+                        background: "#fff3cd", color: "#9a6700",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <Dot color="#d4a017" pulse />
+                      Awaiting confirmation
+                    </button>
+                  );
+                }
+                if (checkInStatus === "confirmed") {
+                  return (
+                    <span style={{ ...badgeBase, background: "transparent", color: "#34C759" }}>
+                      <Dot color="#34C759" />
+                      Confirmed
+                    </span>
+                  );
+                }
+                if (checkInStatus === "declined" || checkInStatus === "cancelled") {
+                  return (
+                    <span style={{ ...badgeBase, background: "transparent", color: "#ff3b30" }}>
+                      <Dot color="#ff3b30" />
+                      {checkInStatus === "declined" ? "Declined" : "Cancelled"}
+                    </span>
+                  );
+                }
+                return (
+                  <span style={{ ...badgeBase, background: "#fff3cd", color: "#9a6700" }}>
+                    <Dot color="#d4a017" pulse />
+                    Awaiting confirmation
                   </span>
-                </div>
+                );
+              })()}
+              <span style={{ fontSize: 13, color: "#6e6e73", letterSpacing: -0.08 }}>
+                {getDateLabel()}
+              </span>
+            </div>
+
+            {/* ── 2. NAME + TIME ROW ── */}
+            <div style={{
+              display: "flex", alignItems: "baseline", justifyContent: "space-between",
+              padding: "0 16px 10px", gap: 12,
+            }}>
+              <div style={{
+                fontSize: 22, fontWeight: 700, color: "#000000",
+                letterSpacing: -0.4, minWidth: 0,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>
+                {toSentenceName(pupilName)}
+              </div>
+              <div style={{
+                fontSize: 28, fontWeight: 700, color: "#000000",
+                letterSpacing: -0.6, fontVariantNumeric: "tabular-nums",
+                flexShrink: 0,
+              }}>
+                {formatTime24(startTime)}
               </div>
             </div>
 
-            {/* ── 3. STATE-DRIVEN PRIMARY ACTION (preserved logic) ──
+            {/* ── 3. META ROWS — thin SVG icons ── */}
+            <div style={{ padding: "0 16px 14px", display: "flex", flexDirection: "column", gap: 7 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#6e6e73" }}>
+                <Car style={{ width: 15, height: 15, color: "#6e6e73", flexShrink: 0 }} strokeWidth={1.6} />
+                <span style={{ fontSize: 15, color: "#6e6e73", letterSpacing: -0.1 }}>
+                  {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
+                </span>
+              </div>
+              {(pickupLocation || pickupPostcode) && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#6e6e73", minWidth: 0 }}>
+                  <MapPin style={{ width: 15, height: 15, color: "#6e6e73", flexShrink: 0 }} strokeWidth={1.6} />
+                  <span style={{
+                    fontSize: 15, color: "#6e6e73", letterSpacing: -0.1,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>
+                    {formattedPickupAddress || pickupPostcode || pickupLocation}
+                  </span>
+                </div>
+              )}
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Clock style={{ width: 15, height: 15, color: "#007aff", flexShrink: 0 }} strokeWidth={1.6} />
+                <span style={{ fontSize: 15, color: "#007aff", letterSpacing: -0.1, fontVariantNumeric: "tabular-nums" }}>
+                  {minutesUntil <= 0 ? "Starting now" : `Starts in ${getCountdownText()}`}
+                </span>
+              </div>
+            </div>
+
+            {/* ── 4. HAIRLINE SEPARATOR ── */}
+            <div style={{ height: 0.5, background: "#c6c6c8", width: "100%" }} />
+
+            {/* ── STATE-DRIVEN PRIMARY ACTION (preserved logic) ──
                 Keep Start / End lesson behaviour for STARTING / IN_LESSON states;
                 show the 3-button native action row for EARLY / MID. */}
             {(() => {
@@ -901,16 +872,16 @@ export function NextUpTile({
                 return (
                   <button
                     onClick={(e) => { e.stopPropagation(); setWizardOpen(true); }}
-                    className="active:opacity-80"
+                    className="active:opacity-70"
                     style={{
-                      width: "100%", height: 52, borderRadius: 18,
-                      background: "rgba(255,59,48,0.10)", color: "#D70015",
-                      border: "none", cursor: "pointer",
-                      fontSize: 16, fontWeight: 700, letterSpacing: -0.2,
+                      width: "100%", background: "transparent", color: "#ff3b30",
+                      border: "none", padding: "14px 16px",
+                      fontSize: 17, fontWeight: 600, letterSpacing: -0.2,
+                      cursor: "pointer",
                       display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
                     }}
                   >
-                    <CheckCircle2 style={{ width: 18, height: 18 }} strokeWidth={2} />
+                    <CheckCircle2 style={{ width: 18, height: 18 }} strokeWidth={1.8} />
                     End lesson
                   </button>
                 );
@@ -931,58 +902,68 @@ export function NextUpTile({
                         navigate(`/instructor/tracking?pupilId=${pupilId}&lessonId=${lessonId}&autoStart=1`);
                       }
                     }}
-                    className="active:opacity-80"
+                    className="active:opacity-70"
                     style={{
-                      width: "100%", height: 52, borderRadius: 18,
-                      background: "#0A6CFF", color: "#FFFFFF",
-                      border: "none", cursor: "pointer",
-                      boxShadow: "0 8px 18px -6px rgba(10,108,255,0.45)",
-                      fontSize: 16, fontWeight: 700, letterSpacing: -0.2,
+                      width: "100%", background: "transparent", color: "#007aff",
+                      border: "none", padding: "14px 16px",
+                      fontSize: 17, fontWeight: 600, letterSpacing: -0.2,
+                      cursor: "pointer",
                       display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
                     }}
                   >
-                    <Play style={{ width: 18, height: 18 }} strokeWidth={2} fill="#FFFFFF" />
+                    <Play style={{ width: 18, height: 18 }} strokeWidth={1.8} fill="#007aff" />
                     Start lesson
                   </button>
                 );
               }
 
-              // EARLY / MID — three filled tinted buttons (Navigate / Call / Text)
-              const actions: { label: string; icon: typeof Navigation; bg: string; fg: string; shadow?: string; onClick: () => void; ariaLabel: string }[] = [
-                { label: "Nav", icon: Navigation, bg: "#0A6CFF", fg: "#FFFFFF",
-                  shadow: "0 8px 18px -6px rgba(10,108,255,0.45)",
-                  onClick: handleNavigate, ariaLabel: "Navigate to pickup" },
-                { label: "Call", icon: Phone, bg: "rgba(52,199,89,0.14)", fg: "#1F8B3A",
-                  onClick: handleCall, ariaLabel: "Call pupil" },
-                { label: "Text", icon: MessageSquare, bg: "rgba(0,122,255,0.10)", fg: "#0A6CFF",
-                  onClick: handleMessage, ariaLabel: "Text pupil" },
+              // EARLY / MID — three equal action buttons (Navigate / Call / Text)
+              const actions: { label: string; icon: typeof Navigation; circleBg: string; onClick: () => void; ariaLabel: string }[] = [
+                { label: "Navigate", icon: Navigation, circleBg: "#007aff", onClick: handleNavigate, ariaLabel: "Navigate to pickup" },
+                { label: "Call", icon: Phone, circleBg: "#34c759", onClick: handleCall, ariaLabel: "Call pupil" },
+                { label: "Text", icon: MessageSquare, circleBg: "#007aff", onClick: handleMessage, ariaLabel: "Text pupil" },
               ];
               return (
-                <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: 10 }}>
-                  {actions.map((a) => (
-                    <button
-                      key={a.label}
-                      onClick={(e) => { e.stopPropagation(); a.onClick(); }}
-                      aria-label={a.ariaLabel}
-                      className="active:opacity-80"
-                      style={{
-                        height: 52, borderRadius: 18,
-                        background: a.bg, color: a.fg,
-                        border: "none", cursor: "pointer",
-                        boxShadow: a.shadow,
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                        fontSize: 15, fontWeight: 600, letterSpacing: -0.1,
-                      }}
-                    >
-                      <a.icon style={{ width: 18, height: 18 }} strokeWidth={2} />
-                      {a.label}
-                    </button>
+                <div style={{ display: "flex", alignItems: "stretch", padding: "10px 0" }}>
+                  {actions.map((a, i) => (
+                    <React.Fragment key={a.label}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); a.onClick(); }}
+                        aria-label={a.ariaLabel}
+                        className="active:opacity-60"
+                        style={{
+                          flex: 1, background: "transparent", border: "none",
+                          padding: "8px 4px", cursor: "pointer",
+                          display: "inline-flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
+                        }}
+                      >
+                        <span style={{
+                          width: 32, height: 32, borderRadius: "50%",
+                          background: a.circleBg,
+                          display: "inline-flex", alignItems: "center", justifyContent: "center",
+                          flexShrink: 0,
+                        }}>
+                          <a.icon style={{ width: 16, height: 16, color: "#FFFFFF" }} strokeWidth={2} />
+                        </span>
+                        <span style={{
+                          fontSize: 13, fontWeight: 400, color: "#007aff", letterSpacing: -0.08,
+                        }}>
+                          {a.label}
+                        </span>
+                      </button>
+                      {i < actions.length - 1 && (
+                        <div aria-hidden style={{ width: 0.5, background: "#c6c6c8", margin: "6px 0" }} />
+                      )}
+                    </React.Fragment>
                   ))}
                 </div>
               );
             })()}
 
-            {/* Inline status banner (kept — appears after sending ETA / late update) — restyled as soft chip */}
+            {/* ── 6. HAIRLINE SEPARATOR ── */}
+            <div style={{ height: 0.5, background: "#c6c6c8", width: "100%" }} />
+
+            {/* Inline status banner (kept — appears after sending ETA / late update) */}
             <AnimatePresence initial={false}>
               {statusBanner && (
                 <motion.div
@@ -992,18 +973,18 @@ export function NextUpTile({
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.22, ease: [0.2, 0.7, 0.2, 1] }}
                   style={{
-                    display: "inline-flex", alignItems: "center", gap: 8,
-                    padding: "8px 12px", borderRadius: 12,
-                    background: statusBanner.kind === "en_route" ? "rgba(0,122,255,0.08)" : "rgba(255,149,0,0.10)",
-                    color: statusBanner.kind === "en_route" ? "#0A6CFF" : "#9a6700",
-                    fontSize: 13, fontWeight: 600, letterSpacing: -0.08,
-                    alignSelf: "flex-start",
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "8px 16px",
+                    background: "transparent",
+                    color: statusBanner.kind === "en_route" ? "#007aff" : "#9a6700",
+                    fontSize: 13, fontWeight: 500, letterSpacing: -0.08,
+                    borderBottom: "0.5px solid #c6c6c8",
                   }}
                 >
                   {statusBanner.kind === "en_route" ? (
-                    <Send style={{ width: 14, height: 14 }} strokeWidth={2} />
+                    <Send style={{ width: 14, height: 14 }} strokeWidth={1.8} />
                   ) : (
-                    <Clock style={{ width: 14, height: 14 }} strokeWidth={2} />
+                    <Clock style={{ width: 14, height: 14 }} strokeWidth={1.8} />
                   )}
                   <span>
                     {statusBanner.kind === "en_route"
@@ -1014,7 +995,7 @@ export function NextUpTile({
               )}
             </AnimatePresence>
 
-            {/* ── 4. SEGMENTED STATUS STRIP — Prep / On the way / Running late / Here ── */}
+            {/* ── 7. FOUR-ITEM STATUS STRIP — Prep / On the way / Running late / Here ── */}
             {(() => {
               const rawNorm = (lessonStatus || "").toLowerCase();
               const norm = localStatus
@@ -1037,42 +1018,33 @@ export function NextUpTile({
               return (
                 <div style={{
                   display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
-                  background: "#F1F2F6",
-                  border: "0.5px solid rgba(15,23,42,0.06)",
-                  borderRadius: 18,
-                  padding: 4,
-                  gap: 0,
+                  background: "#f9f9f9",
                 }}>
                   {segments.map((s, i) => {
                     const Icon = s.icon;
-                    const tint = s.active ? "#0A6CFF" : "#6E6E73";
+                    const tint = s.active ? "#007aff" : "#6e6e73";
                     return (
                       <React.Fragment key={s.id}>
                         <button
                           onClick={(e) => { e.stopPropagation(); s.onClick?.(); }}
-                          className="active:opacity-70"
+                          className="active:opacity-60"
                           style={{
-                            background: s.active ? "#FFFFFF" : "transparent",
-                            border: "none", cursor: "pointer",
-                            padding: "10px 4px",
-                            borderRadius: 14,
-                            minHeight: 56,
+                            background: "transparent", border: "none", cursor: "pointer",
+                            padding: "12px 4px",
                             display: "inline-flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5,
                             position: "relative",
-                            boxShadow: s.active ? "0 4px 12px -4px rgba(16,24,40,0.10)" : "none",
-                            transition: "background 180ms ease, box-shadow 180ms ease",
                           }}
                           aria-label={s.label} aria-pressed={s.active}
                         >
-                          <Icon style={{ width: 18, height: 18, color: tint }} strokeWidth={2} />
+                          <Icon style={{ width: 18, height: 18, color: tint }} strokeWidth={1.6} />
                           <span style={{
-                            fontSize: 12, fontWeight: 600, color: tint, letterSpacing: -0.05,
+                            fontSize: 11, fontWeight: 400, color: tint, letterSpacing: -0.05,
                             lineHeight: 1.2, textAlign: "center",
                           }}>{s.label}</span>
-                          {i < segments.length - 1 && !s.active && !segments[i + 1].active && (
+                          {i < segments.length - 1 && (
                             <span aria-hidden style={{
-                              position: "absolute", right: -0.25, top: 10, bottom: 10,
-                              width: 0.5, background: "#D8DAE0",
+                              position: "absolute", right: 0, top: 8, bottom: 8,
+                              width: 0.5, background: "#c6c6c8",
                             }} />
                           )}
                         </button>
@@ -1082,7 +1054,6 @@ export function NextUpTile({
                 </div>
               );
             })()}
-          </div>
           </div>
 
           {/* (Primary CTA is rendered inside the hero card above) */}
