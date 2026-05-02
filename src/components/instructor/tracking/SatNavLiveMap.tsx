@@ -291,19 +291,20 @@ export function SatNavLiveMap({
     fillColor: active ? "#0A84FF" : "#8E8E93",
     fillOpacity: 1,
     strokeColor: "#FFFFFF",
-    strokeWeight: 2,
+    strokeWeight: 1.5,
     scale: active ? 1.6 : 1.2,
     rotation,
     anchor: new google.maps.Point(0, 0),
   }), []);
 
-  // Soft drop-shadow icon under the arrow for legibility on light roads
+  // Tight accuracy halo under the arrow — small blue tint, no stroke.
+  // Reads as a deliberate accuracy disc rather than a render artifact.
   const getShadowIcon = useCallback((active: boolean): google.maps.Symbol => ({
     path: google.maps.SymbolPath.CIRCLE,
-    fillColor: "#000000",
+    fillColor: "#0A84FF",
     fillOpacity: 0.18,
     strokeOpacity: 0,
-    scale: active ? 11 : 9,
+    scale: active ? 18 : 14,
     anchor: new google.maps.Point(0, 0),
   }), []);
 
@@ -804,6 +805,16 @@ export function SatNavLiveMap({
         // arrow stays pointing roughly up the screen (and leans into turns
         // while the camera catches up).
         const screenHeading = satNavCam ? hd - camHeadingRef.current : hd;
+        if (import.meta.env.DEV && Math.random() < 0.02) {
+          // ~1 in 50 frames so the console isn't flooded
+          console.debug(
+            "[satnav] vehicleHeading=", hd.toFixed(1),
+            "camHeading=", camHeadingRef.current.toFixed(1),
+            "screenHeading=", screenHeading.toFixed(1),
+            "vectorReady=", vectorReadyRef.current,
+            "follow=", followModeRef.current,
+          );
+        }
         marker.setIcon(getArrowIcon(screenHeading, isActiveRef.current));
         markerShadowRef.current?.setPosition({ lat, lng });
 
@@ -874,11 +885,31 @@ export function SatNavLiveMap({
 
           {hasPosition && !mapError ? (
             <>
-              {/* Top bar — signal pill (left) + snap status (right). The
-                  road name has moved into the bottom sat-nav panel where the
-                  driver's eyes already are (TomTom/CarPlay convention). */}
+              {/* Map vignettes — soft top + bottom shading so white pills /
+                  glass cards don't disappear over bright map areas. */}
               <div
-                className="absolute z-10 flex items-center justify-between gap-2 px-3"
+                aria-hidden="true"
+                className="absolute pointer-events-none"
+                style={{
+                  top: 0, left: 0, right: 0, height: 100,
+                  background: "linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0) 100%)",
+                  zIndex: 1,
+                }}
+              />
+              <div
+                aria-hidden="true"
+                className="absolute pointer-events-none"
+                style={{
+                  bottom: 0, left: 0, right: 0, height: 80,
+                  background: "linear-gradient(0deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 100%)",
+                  zIndex: 1,
+                }}
+              />
+
+              {/* Top bar — signal pill (left). Snap is demoted to a small
+                  icon-only indicator stacked on the right (rendered below). */}
+              <div
+                className="absolute z-10 flex items-center px-3"
                 style={{
                   top: "calc(env(safe-area-inset-top, 0px) + 10px)",
                   left: 0,
@@ -886,10 +917,46 @@ export function SatNavLiveMap({
                 }}
               >
                 <SignalStatusPill status={signalStatus} lastFixLabel={lastFixLabel} />
-                <SnapStatusPill status={snapStatus} lastFixLabel={lastFixLabel} />
               </div>
 
-              {/* Re-centre button — appears when user has dragged/zoomed */}
+              {/* Snap-active indicator — icon-only, no label, no age.
+                  Stacks on the right edge of the top area. Absent when
+                  snap isn't actively snapped. */}
+              {snapStatus === "snapped" && (
+                <div
+                  className="absolute z-10"
+                  title="Trail snapped to roads"
+                  style={{
+                    top: "calc(env(safe-area-inset-top, 0px) + 56px)",
+                    right: 14,
+                    width: 24,
+                    height: 24,
+                    borderRadius: "50%",
+                    background: "rgba(255,255,255,0.72)",
+                    backdropFilter: "blur(14px) saturate(180%)",
+                    WebkitBackdropFilter: "blur(14px) saturate(180%)",
+                    border: "1px solid rgba(0,0,0,0.06)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      width: 9,
+                      height: 9,
+                      borderRadius: "50%",
+                      background: "#34C759",
+                      boxShadow: "0 0 6px rgba(52,199,89,0.55)",
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Re-centre button — appears when user has dragged/zoomed.
+                  Sits above the FloatingSessionTimer card. */}
               {!followMode && (
                 <button
                   type="button"
@@ -897,7 +964,7 @@ export function SatNavLiveMap({
                   className="absolute z-20"
                   style={{
                     right: 14,
-                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 220px)",
+                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 180px)",
                     background: "rgba(255,255,255,0.78)",
                     backdropFilter: "blur(20px) saturate(180%)",
                     WebkitBackdropFilter: "blur(20px) saturate(180%)",
@@ -919,12 +986,12 @@ export function SatNavLiveMap({
                 </button>
               )}
 
-              {/* Overspeed banner — gradient red, sits above bottom panel */}
+              {/* Overspeed banner — sits above the FloatingSessionTimer card */}
               {isOverSpeed && speedMph != null && speedLimitMph != null && (
                 <div
                   className="absolute left-3 right-3 z-20"
                   style={{
-                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 180px)",
+                    bottom: "calc(env(safe-area-inset-bottom, 0px) + 240px)",
                     background: "linear-gradient(180deg, rgba(255,69,58,0.95) 0%, rgba(225,29,42,0.95) 100%)",
                     color: "white",
                     borderRadius: 16,
@@ -943,170 +1010,11 @@ export function SatNavLiveMap({
                 </div>
               )}
 
-              {/* Floating road-name pill — sits on the map, just above the
-                  bottom panel. Centred, glass, ellipsised. CarPlay-style. */}
-              <div
-                className="absolute z-10 pointer-events-none flex justify-center px-4"
-                style={{
-                  left: 0,
-                  right: 0,
-                  bottom: "calc(env(safe-area-inset-bottom, 0px) + 210px)",
-                }}
-              >
-                <div
-                  title={displayRoadName || "Locating road"}
-                  style={{
-                    maxWidth: "min(86%, 460px)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 8,
-                    padding: "8px 14px",
-                    background: "rgba(255,255,255,0.82)",
-                    backdropFilter: "blur(20px) saturate(180%)",
-                    WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                    border: "1px solid rgba(0,0,0,0.06)",
-                    borderRadius: 999,
-                    boxShadow: "0 10px 28px rgba(0,0,0,0.16), 0 1px 0 rgba(255,255,255,0.7) inset",
-                  }}
-                >
-                  <span aria-hidden="true" style={{ fontSize: 13, color: "#0A84FF", lineHeight: 1, flexShrink: 0 }}>◉</span>
-                  {displayRoadName ? (
-                    <span
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 700,
-                        color: "#1C1C1E",
-                        letterSpacing: -0.1,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {displayRoadName}
-                    </span>
-                  ) : (
-                    <span
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 500,
-                        fontStyle: "italic",
-                        color: "rgba(60,60,67,0.5)",
-                        letterSpacing: -0.1,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      Locating road…
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Bottom sat-nav glass panel — light gradient. Speed + limit
-                  + right column. Road name now floats above on the map. */}
-              <div
-                className="absolute left-3 right-3 z-10"
-                style={{
-                  bottom: "calc(env(safe-area-inset-bottom, 0px) + 14px)",
-                  background: "linear-gradient(180deg, rgba(255,255,255,0.78) 0%, rgba(245,245,247,0.78) 100%)",
-                  backdropFilter: "blur(24px) saturate(180%)",
-                  WebkitBackdropFilter: "blur(24px) saturate(180%)",
-                  border: "1px solid rgba(0,0,0,0.06)",
-                  borderRadius: 22,
-                  padding: "16px 18px",
-                  boxShadow: "0 1px 0 rgba(255,255,255,0.8) inset, 0 18px 40px rgba(0,0,0,0.12)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "stretch",
-                }}
-              >
-                {/* Existing horizontal row — mph numeral, roundel, right column */}
-                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                {/* Speed — huge numeral */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", minWidth: 0 }}>
-                  <span
-                    style={{
-                      fontSize: 56,
-                      fontWeight: 800,
-                      color: isOverSpeed ? "#FF3B30" : "#1C1C1E",
-                      lineHeight: 0.95,
-                      letterSpacing: -1.5,
-                      fontVariantNumeric: "tabular-nums",
-                    }}
-                    className={isOverSpeed ? "animate-pulse" : ""}
-                  >
-                    {speedMph ?? 0}
-                  </span>
-                  <span style={{ fontSize: 11, color: "rgba(60,60,67,0.6)", marginTop: 4, textTransform: "uppercase", letterSpacing: 0.4, fontWeight: 600 }}>mph</span>
-                </div>
-
-                {/* Speed limit roundel */}
-                {speedLimitMph != null && speedLimitMph > 0 && (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                    <div
-                      style={{
-                        width: 56,
-                        height: 56,
-                        border: "5px solid #E11D2A",
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                        background: "white",
-                        boxShadow: "0 4px 14px rgba(0,0,0,0.12)",
-                      }}
-                    >
-                      <span style={{ fontSize: 22, fontWeight: 800, color: "#1C1C1E", letterSpacing: -0.5, fontVariantNumeric: "tabular-nums" }}>{speedLimitMph}</span>
-                    </div>
-                    <span style={{ fontSize: 9, color: "rgba(60,60,67,0.6)", textTransform: "uppercase", letterSpacing: 0.4, fontWeight: 600 }}>limit</span>
-                  </div>
-                )}
-
-                <div style={{ flex: 1 }} />
-
-                {/* Miles today */}
-                {dailyMiles != null && (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-                    <span style={{ fontSize: 20, fontWeight: 800, color: "#1C1C1E", lineHeight: 1, letterSpacing: -0.3, fontVariantNumeric: "tabular-nums" }}>
-                      {dailyMiles}
-                    </span>
-                    <span style={{ fontSize: 9, color: "rgba(60,60,67,0.6)", marginTop: 4, textTransform: "uppercase", letterSpacing: 0.4, fontWeight: 600 }}>miles today</span>
-                  </div>
-                )}
-
-                {/* Engine pill */}
-                {ignitionOn != null && (
-                  <div
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                      background: ignitionOn ? "rgba(52,199,89,0.14)" : "rgba(142,142,147,0.14)",
-                      border: `1px solid ${ignitionOn ? "rgba(52,199,89,0.35)" : "rgba(0,0,0,0.08)"}`,
-                      borderRadius: 999,
-                      padding: "6px 10px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        background: ignitionOn ? "#34C759" : "#8E8E93",
-                        boxShadow: ignitionOn ? "0 0 6px rgba(52,199,89,0.6)" : "none",
-                      }}
-                    />
-                    <span style={{ fontSize: 11, color: ignitionOn ? "#1F7A3A" : "rgba(60,60,67,0.7)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                      {ignitionOn ? "Engine On" : "Engine Off"}
-                    </span>
-                  </div>
-                )}
-                </div>
-              </div>
+              {/* The bottom sat-nav glass panel (speed/limit/road-name) is
+                  intentionally omitted in fullscreen — `FloatingSessionTimer`
+                  rendered by the parent owns the single source of truth for
+                  the headline (speed, limit, pupil, REC, timer, distance,
+                  End). Avoids a duplicate, conflicting card. */}
             </>
           ) : !mapError ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center z-[5]" style={{ background: "rgba(242,242,247,0.85)" }}>
