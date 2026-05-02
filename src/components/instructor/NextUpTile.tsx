@@ -1384,67 +1384,160 @@ export function NextUpTile({
                   </div>
                 </div>
 
-                {/* ── SECTION B — Update status (neutral surface, coloured icons only) ── */}
+                {/* ── SECTION B — Control panel: Primary actions → divider → Status pills ── */}
                 <div>
+                  {/* Primary action row — equal width, consistent height */}
                   <div style={{
-                    fontSize: a11yPx(11), fontWeight: 600, color: "#6E6E73",
-                    letterSpacing: 0.4, textTransform: "uppercase", margin: "0 4px 10px",
+                    display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8,
                   }}>
-                    Update status
-                  </div>
-                  <div style={{
-                    background: "#FFFFFF", borderRadius: 16, padding: 8,
-                    boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 14px -4px rgba(16,24,40,0.06)",
-                    display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 4,
-                  }}>
-                    {/* Prep */}
-                    <button onClick={(e) => { e.stopPropagation(); navigate(`/instructor/pupils/${pupilId}?tab=progress`); }}
+                    {/* Navigate (primary) */}
+                    <button onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
+                      className="active:opacity-90"
                       style={{
-                        background: "transparent", border: "none", borderRadius: 10,
-                        padding: "10px 4px", cursor: "pointer",
-                        display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                      }}>
-                      <ClipboardList style={{ width: 18, height: 18, color: "#8A5BC9" }} strokeWidth={1.9} />
-                      <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#1C1C1E" }}>Prep</span>
+                        background: "#1B5BFF", color: "#FFFFFF",
+                        border: "none", borderRadius: 12, height: 44,
+                        cursor: "pointer",
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 14px -6px rgba(27,91,255,0.35)",
+                      }}
+                      aria-label="Navigate to pickup"
+                    >
+                      <Navigation style={{ width: 15, height: 15 }} strokeWidth={2.4} />
+                      <span style={{ fontSize: a11yPx(13), fontWeight: 600, letterSpacing: -0.1 }}>Navigate</span>
                     </button>
-
-                    {/* On the way */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button onClick={(e) => e.stopPropagation()}
-                          style={{
-                            background: "transparent", border: "none", borderRadius: 10,
-                            padding: "10px 4px", cursor: "pointer",
-                            display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                          }}>
-                          <Send style={{ width: 18, height: 18, color: "#2B7BC8" }} strokeWidth={1.9} />
-                          <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#1C1C1E" }}>On the way</span>
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="center" className="w-52">
-                        <DropdownMenuItem onClick={handleSendETA}>Send ETA Now</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 5 minutes late. Sorry!`)}>Running 5 min late</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 10 minutes late. Sorry!`)}>Running 10 min late</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 15 minutes late. Sorry!`)}>Running 15 min late</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 20 minutes late. Sorry!`)}>Running 20 min late</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 30 minutes late. Sorry!`)}>Running 30 min late</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, I'll call you as soon as I can!`)}>Call ASAP</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    {/* Running late */}
-                    <button onClick={(e) => { e.stopPropagation(); setLateSheetOpen(true); }}
+                    {/* Call (soft) */}
+                    <button onClick={(e) => { e.stopPropagation(); handleCall(); }}
+                      className="active:opacity-80"
                       style={{
-                        background: "transparent", border: "none", borderRadius: 10,
-                        padding: "10px 4px", cursor: "pointer",
-                        display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                      }}>
-                      <Clock style={{ width: 18, height: 18, color: "#B8801F" }} strokeWidth={1.9} />
-                      <span style={{ fontSize: a11yPx(11), fontWeight: 500, color: "#1C1C1E" }}>Running late</span>
+                        background: "#F2F3F5", color: "#1C1C1E",
+                        border: "none", borderRadius: 12, height: 44,
+                        cursor: "pointer",
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                      }}
+                      aria-label="Call pupil"
+                    >
+                      <Phone style={{ width: 15, height: 15, color: "#34C759" }} strokeWidth={2.2} />
+                      <span style={{ fontSize: a11yPx(13), fontWeight: 600, letterSpacing: -0.1 }}>Call</span>
+                    </button>
+                    {/* Text (soft) */}
+                    <button onClick={(e) => { e.stopPropagation(); handleMessage(); }}
+                      className="active:opacity-80"
+                      style={{
+                        background: "#F2F3F5", color: "#1C1C1E",
+                        border: "none", borderRadius: 12, height: 44,
+                        cursor: "pointer",
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                      }}
+                      aria-label="Text pupil"
+                    >
+                      <MessageSquare style={{ width: 15, height: 15, color: "#FF9500" }} strokeWidth={2.2} />
+                      <span style={{ fontSize: a11yPx(13), fontWeight: 600, letterSpacing: -0.1 }}>Text</span>
                     </button>
                   </div>
+
+                  {/* Subtle divider with breathing room */}
+                  <div style={{ height: 0.5, background: "#E5E5EA", margin: "18px 0" }} />
+
+                  {/* Status label */}
+                  <div style={{
+                    fontSize: a11yPx(11), fontWeight: 500, color: "#8A8A8E",
+                    letterSpacing: 0.3, textTransform: "uppercase", margin: "0 4px 10px",
+                  }}>
+                    Status
+                  </div>
+
+                  {/* Status pill row — wraps if needed */}
+                  {(() => {
+                    const norm = (lessonStatus || "").toLowerCase();
+                    const statusItems = [
+                      {
+                        id: "prep",
+                        label: "Prep",
+                        active: norm === "prep" || norm === "preparing",
+                        accent: "#8A5BC9",
+                        onClick: () => navigate(`/instructor/pupils/${pupilId}?tab=progress`),
+                        isDropdown: false as const,
+                      },
+                      {
+                        id: "on_the_way",
+                        label: "On the way",
+                        active: norm === "en_route" || norm === "on_the_way",
+                        accent: "#2B7BC8",
+                        isDropdown: true as const,
+                      },
+                      {
+                        id: "late",
+                        label: "Running late",
+                        active: norm === "late" || norm === "running_late",
+                        accent: "#B8801F",
+                        onClick: () => setLateSheetOpen(true),
+                        isDropdown: false as const,
+                      },
+                      {
+                        id: "here",
+                        label: "Here",
+                        active: norm === "arrived" || norm === "here",
+                        accent: "#34C759",
+                        onClick: () => handleArrived(),
+                        isDropdown: false as const,
+                      },
+                    ];
+
+                    const pillStyle = (active: boolean, accent: string): React.CSSProperties => ({
+                      borderRadius: 999,
+                      padding: "8px 14px",
+                      minHeight: 34,
+                      border: active ? "none" : "0.5px solid #E5E5EA",
+                      background: active ? accent : "#FFFFFF",
+                      color: active ? "#FFFFFF" : "#1C1C1E",
+                      opacity: active ? 1 : 0.85,
+                      fontSize: a11yPx(12),
+                      fontWeight: 600,
+                      letterSpacing: -0.05,
+                      cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                      transition: "background 0.15s ease, opacity 0.15s ease",
+                    });
+
+                    return (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                        {statusItems.map((s) => {
+                          if (s.isDropdown) {
+                            return (
+                              <DropdownMenu key={s.id}>
+                                <DropdownMenuTrigger asChild>
+                                  <button onClick={(e) => e.stopPropagation()}
+                                    className="active:opacity-70"
+                                    style={pillStyle(s.active, s.accent)}>
+                                    {s.label}
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="center" className="w-52">
+                                  <DropdownMenuItem onClick={handleSendETA}>Send ETA Now</DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 5 minutes late. Sorry!`)}>Running 5 min late</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 10 minutes late. Sorry!`)}>Running 10 min late</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 15 minutes late. Sorry!`)}>Running 15 min late</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 20 minutes late. Sorry!`)}>Running 20 min late</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 30 minutes late. Sorry!`)}>Running 30 min late</DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, I'll call you as soon as I can!`)}>Call ASAP</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            );
+                          }
+                          return (
+                            <button key={s.id}
+                              onClick={(e) => { e.stopPropagation(); s.onClick?.(); }}
+                              className="active:opacity-70"
+                              style={pillStyle(s.active, s.accent)}>
+                              {s.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* ── SECTION 5 — Reschedule + Cancel (secondary/destructive) ── */}
