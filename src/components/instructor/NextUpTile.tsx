@@ -1059,30 +1059,6 @@ export function NextUpTile({
                               }}>{s.label}</span>
                             </>
                           );
-                          if (s.isDropdown) {
-                            return (
-                              <DropdownMenu key={s.id}>
-                                <DropdownMenuTrigger asChild>
-                                  <button onClick={(e) => e.stopPropagation()}
-                                    className="active:scale-[0.97]"
-                                    style={segmentStyle(s)} aria-label={s.label}>
-                                    {inner}
-                                  </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="center" className="w-52">
-                                  <DropdownMenuItem onClick={handleSendETA}>Send ETA Now</DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 5 minutes late. Sorry!`)}>Running 5 min late</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 10 minutes late. Sorry!`)}>Running 10 min late</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 15 minutes late. Sorry!`)}>Running 15 min late</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 20 minutes late. Sorry!`)}>Running 20 min late</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, running about 30 minutes late. Sorry!`)}>Running 30 min late</DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem onClick={() => sendSMS(`Hi ${firstName}, I'll call you as soon as I can!`)}>Call ASAP</DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            );
-                          }
                           return (
                             <button key={s.id}
                               onClick={(e) => { e.stopPropagation(); s.onClick?.(); }}
@@ -1092,6 +1068,10 @@ export function NextUpTile({
                               {inner}
                             </button>
                           );
+                        })}
+                      </div>
+                    );
+                  })()}
                         })}
                       </div>
                     );
