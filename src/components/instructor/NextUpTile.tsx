@@ -550,22 +550,25 @@ export function NextUpTile({
               }}
             >
               {expanded ? (
-                /* Slim toggle strip when expanded — avoids duplicating pupil/time/countdown shown in the hero card below */
+                /* Premium slim toggle strip when expanded */
                 <div style={{
                   width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
                   padding: "2px 0",
                 }}>
-                  <span style={{ fontSize: a11yPx(11), fontWeight: 600, color: "#5856D6", letterSpacing: 0.6, textTransform: "uppercase" }}>
+                  <span style={{
+                    fontSize: a11yPx(13), fontWeight: 700, color: "#5B5CE2",
+                    letterSpacing: 1.2, textTransform: "uppercase",
+                  }}>
                     Up next · tap to hide
                   </span>
                   <ChevronDown
                     aria-hidden
                     style={{
-                      width: 16, height: 16, color: "#6E6E73",
+                      width: 18, height: 18, color: "#5B5CE2",
                       transform: "rotate(180deg)",
                       transition: "transform 250ms cubic-bezier(0.2,0.7,0.2,1)",
                     }}
-                    strokeWidth={1.8}
+                    strokeWidth={2}
                   />
                 </div>
               ) : (
