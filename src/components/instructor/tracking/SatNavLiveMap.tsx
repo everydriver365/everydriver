@@ -220,6 +220,7 @@ export function SatNavLiveMap({
         if (shouldAdd) {
           pathRef.current.push(newPt);
           polylineRef.current?.setPath(pathRef.current);
+          polylineCasingRef.current?.setPath(pathRef.current);
         }
       })
       .subscribe();
