@@ -1072,10 +1072,6 @@ export function NextUpTile({
                       </div>
                     );
                   })()}
-                        })}
-                      </div>
-                    );
-                  })()}
                 </div>
               );
             })()}
