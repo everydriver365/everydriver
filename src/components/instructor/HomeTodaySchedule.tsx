@@ -694,7 +694,16 @@ export function HomeTodaySchedule({ instructorId }: HomeTodayScheduleProps) {
             </div>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column" }}>
+          <div
+            style={{
+              backgroundColor: IOS.card,
+              borderRadius: 12,
+              border: `0.5px solid ${IOS.opaqueSeparator}`,
+              padding: "0 8px",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
             {lessons.map((lesson, idx) => {
               const state = getLessonState(lesson, nowSec, isTomorrow);
               const isDrivingTest = (lesson.lessonType || "").toLowerCase().includes("driving test")
