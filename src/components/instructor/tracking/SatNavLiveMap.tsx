@@ -37,6 +37,12 @@ export function SatNavLiveMap({
   const [mapError, setMapError] = useState(false);
   const trailLoadedRef = useRef<string | null>(null);
   const isFirstFixRef = useRef<boolean>(true);
+  // Wall-clock timestamp of the last accepted fix — used to derive an
+  // adaptive tween duration that matches the true cadence of the device.
+  const lastFixAtRef = useRef<number>(0);
+  // Adaptive tween duration in ms for the *current* segment, set by applyFix
+  // and read by the rAF loop as `expected`. Defaults to 900 before any fix.
+  const tweenMsRef = useRef<number>(900);
 
   // Follow mode — when true (default), camera tracks the vehicle in fullscreen.
   // User drag/zoom turns it off and surfaces a "Re-centre" button.
