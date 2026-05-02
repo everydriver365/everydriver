@@ -737,145 +737,160 @@ export function NextUpTile({
             gap: 16,
             overflow: "hidden",
           }}>
-            {/* ── 1. STATUS ROW — pulsing amber dot + Awaiting badge / Today ── */}
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "12px 16px",
-            }}>
-              {(() => {
-                const isPending = !checkInStatus || checkInStatus === "pending";
-                const canNudge = isPending && !!pupilPhone;
-                const badgeBase: React.CSSProperties = {
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  padding: "4px 10px", borderRadius: 6,
-                  fontSize: 13, fontWeight: 500, letterSpacing: -0.08,
-                  border: "none",
-                };
-                const Dot = ({ color, pulse }: { color: string; pulse?: boolean }) => (
-                  <span style={{ position: "relative", width: 8, height: 8, display: "inline-block" }}>
-                    {pulse && (
-                      <span aria-hidden style={{
-                        position: "absolute", inset: 0, borderRadius: "50%",
-                        background: color, opacity: 0.45,
-                        animation: "ios-halo-pulse 1.6s ease-out infinite",
-                      }} />
-                    )}
-                    <span style={{
-                      position: "absolute", inset: 0, borderRadius: "50%",
-                      background: color,
-                    }} />
+            {/* ── 1. TOP ROW — UP NEXT label + name (left); pill + time + date (right) ── */}
+            {(() => {
+              // Build the confirmation pill (logic preserved, restyled — rounded full, soft tinted, leading icon).
+              const isPending = !checkInStatus || checkInStatus === "pending";
+              const canNudge = isPending && !!pupilPhone;
+              const pillBase: React.CSSProperties = {
+                display: "inline-flex", alignItems: "center", gap: 5,
+                padding: "4px 10px 4px 8px", borderRadius: 999,
+                fontSize: 12, fontWeight: 600, letterSpacing: -0.05,
+                border: "none", lineHeight: 1.1,
+              };
+              let pill: React.ReactNode;
+              if (nudgeSentAt) {
+                pill = (
+                  <span style={{ ...pillBase, background: "rgba(52,199,89,0.12)", color: "#137333" }}>
+                    <Check style={{ width: 11, height: 11 }} strokeWidth={2.4} />
+                    Reminder sent
                   </span>
                 );
-                if (nudgeSentAt) {
-                  return (
-                    <span style={{ ...badgeBase, background: "transparent", color: "#34C759" }}>
-                      <Dot color="#34C759" />
-                      Reminder sent
+              } else if (canNudge) {
+                pill = (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      try { haptics.medium(); } catch {}
+                      const firstName = (pupilName || "").split(" ")[0];
+                      sendSMS(`Hi ${firstName}, just confirming your driving lesson at ${formatTime24(startTime)}. Please reply to confirm — thanks!`);
+                      setNudgeSentAt(Date.now());
+                      toast.success("Reminder sent");
+                    }}
+                    aria-label="Send confirmation reminder to pupil"
+                    style={{ ...pillBase, background: "#FFF4D6", color: "#8A5A00", cursor: "pointer", position: "relative" }}
+                  >
+                    <span style={{ position: "relative", width: 10, height: 10, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                      <span aria-hidden style={{
+                        position: "absolute", inset: 0, borderRadius: "50%",
+                        background: "#D4A017", opacity: 0.45,
+                        animation: "ios-halo-pulse 1.6s ease-out infinite",
+                      }} />
+                      <Clock style={{ width: 10, height: 10, color: "#8A5A00", position: "relative" }} strokeWidth={2.4} />
                     </span>
-                  );
-                }
-                if (canNudge) {
-                  return (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        try { haptics.medium(); } catch {}
-                        const firstName = (pupilName || "").split(" ")[0];
-                        sendSMS(`Hi ${firstName}, just confirming your driving lesson at ${formatTime24(startTime)}. Please reply to confirm — thanks!`);
-                        setNudgeSentAt(Date.now());
-                        toast.success("Reminder sent");
-                      }}
-                      aria-label="Send confirmation reminder to pupil"
-                      style={{
-                        ...badgeBase,
-                        background: "#fff3cd", color: "#9a6700",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <Dot color="#d4a017" pulse />
-                      Awaiting confirmation
-                    </button>
-                  );
-                }
-                if (checkInStatus === "confirmed") {
-                  return (
-                    <span style={{ ...badgeBase, background: "transparent", color: "#34C759" }}>
-                      <Dot color="#34C759" />
-                      Confirmed
-                    </span>
-                  );
-                }
-                if (checkInStatus === "declined" || checkInStatus === "cancelled") {
-                  return (
-                    <span style={{ ...badgeBase, background: "transparent", color: "#ff3b30" }}>
-                      <Dot color="#ff3b30" />
-                      {checkInStatus === "declined" ? "Declined" : "Cancelled"}
-                    </span>
-                  );
-                }
-                return (
-                  <span style={{ ...badgeBase, background: "#fff3cd", color: "#9a6700" }}>
-                    <Dot color="#d4a017" pulse />
+                    Awaiting confirmation
+                  </button>
+                );
+              } else if (checkInStatus === "confirmed") {
+                pill = (
+                  <span style={{ ...pillBase, background: "rgba(52,199,89,0.14)", color: "#137333" }}>
+                    <Check style={{ width: 11, height: 11 }} strokeWidth={2.4} />
+                    Confirmed
+                  </span>
+                );
+              } else if (checkInStatus === "declined" || checkInStatus === "cancelled") {
+                pill = (
+                  <span style={{ ...pillBase, background: "#FCE6E6", color: "#B42318" }}>
+                    <XCircle style={{ width: 11, height: 11 }} strokeWidth={2.2} />
+                    {checkInStatus === "declined" ? "Declined" : "Cancelled"}
+                  </span>
+                );
+              } else {
+                pill = (
+                  <span style={{ ...pillBase, background: "#FFF4D6", color: "#8A5A00" }}>
+                    <Clock style={{ width: 11, height: 11 }} strokeWidth={2.4} />
                     Awaiting confirmation
                   </span>
                 );
-              })()}
-              <span style={{ fontSize: 13, color: "#6e6e73", letterSpacing: -0.08 }}>
-                {getDateLabel()}
-              </span>
-            </div>
+              }
 
-            {/* ── 2. NAME + TIME ROW ── */}
-            <div style={{
-              display: "flex", alignItems: "baseline", justifyContent: "space-between",
-              padding: "0 16px 10px", gap: 12,
-            }}>
-              <div style={{
-                fontSize: 22, fontWeight: 700, color: "#000000",
-                letterSpacing: -0.4, minWidth: 0,
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-              }}>
-                {toSentenceName(pupilName)}
-              </div>
-              <div style={{
-                fontSize: 28, fontWeight: 700, color: "#000000",
-                letterSpacing: -0.6, fontVariantNumeric: "tabular-nums",
-                flexShrink: 0,
-              }}>
-                {formatTime24(startTime)}
-              </div>
-            </div>
+              return (
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                  {/* LEFT — eyebrow + pupil name */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      display: "inline-flex", alignItems: "center", gap: 5,
+                      fontSize: 11, fontWeight: 700, color: "#5B5CE2",
+                      letterSpacing: 0.6, textTransform: "uppercase",
+                    }}>
+                      <Calendar style={{ width: 11, height: 11 }} strokeWidth={2.4} />
+                      Up next
+                    </div>
+                    <div style={{
+                      marginTop: 4,
+                      fontSize: 26, fontWeight: 700, color: "#0B0B0F",
+                      letterSpacing: -0.5, lineHeight: 1.15,
+                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    }}>
+                      {toSentenceName(pupilName)}
+                    </div>
+                  </div>
 
-            {/* ── 3. META ROWS — thin SVG icons ── */}
-            <div style={{ padding: "0 16px 14px", display: "flex", flexDirection: "column", gap: 7 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#6e6e73" }}>
-                <Car style={{ width: 15, height: 15, color: "#6e6e73", flexShrink: 0 }} strokeWidth={1.6} />
-                <span style={{ fontSize: 15, color: "#6e6e73", letterSpacing: -0.1 }}>
-                  {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
-                </span>
-              </div>
-              {(pickupLocation || pickupPostcode) && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#6e6e73", minWidth: 0 }}>
-                  <MapPin style={{ width: 15, height: 15, color: "#6e6e73", flexShrink: 0 }} strokeWidth={1.6} />
+                  {/* RIGHT — pill, time, date */}
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
+                    {pill}
+                    <div style={{
+                      fontSize: 30, fontWeight: 700, color: "#0B0B0F",
+                      letterSpacing: -0.7, fontVariantNumeric: "tabular-nums", lineHeight: 1,
+                    }}>
+                      {formatTime24(startTime)}
+                    </div>
+                    <div style={{ fontSize: 14, color: "#6E6E73", letterSpacing: -0.08, fontWeight: 500 }}>
+                      {getDateLabel()}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* ── 2. META BLOCK — accent bar + tinted icon badges ── */}
+            <div style={{ display: "flex", alignItems: "stretch", gap: 12 }}>
+              <div aria-hidden style={{ width: 2, borderRadius: 2, background: "rgba(91,92,226,0.55)", flexShrink: 0 }} />
+              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                   <span style={{
-                    fontSize: 15, color: "#6e6e73", letterSpacing: -0.1,
-                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    width: 24, height: 24, borderRadius: "50%",
+                    background: "rgba(91,92,226,0.10)",
+                    display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                   }}>
-                    {formattedPickupAddress || pickupPostcode || pickupLocation}
+                    <Car style={{ width: 13, height: 13, color: "#5B5CE2" }} strokeWidth={2} />
+                  </span>
+                  <span style={{ fontSize: 15, color: "#0B0B0F", letterSpacing: -0.1, fontWeight: 500 }}>
+                    {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
                   </span>
                 </div>
-              )}
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <Clock style={{ width: 15, height: 15, color: "#007aff", flexShrink: 0 }} strokeWidth={1.6} />
-                <span style={{ fontSize: 15, color: "#007aff", letterSpacing: -0.1, fontVariantNumeric: "tabular-nums" }}>
-                  {minutesUntil <= 0 ? "Starting now" : `Starts in ${getCountdownText()}`}
-                </span>
+                {(pickupLocation || pickupPostcode) && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                    <span style={{
+                      width: 24, height: 24, borderRadius: "50%",
+                      background: "rgba(91,92,226,0.10)",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    }}>
+                      <MapPin style={{ width: 13, height: 13, color: "#5B5CE2" }} strokeWidth={2} />
+                    </span>
+                    <span style={{
+                      fontSize: 15, color: "#48484A", letterSpacing: -0.1,
+                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, flex: 1,
+                    }}>
+                      {formattedPickupAddress || pickupPostcode || pickupLocation}
+                    </span>
+                  </div>
+                )}
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{
+                    width: 24, height: 24, borderRadius: "50%",
+                    background: "rgba(0,122,255,0.10)",
+                    display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}>
+                    <Clock style={{ width: 13, height: 13, color: "#007AFF" }} strokeWidth={2} />
+                  </span>
+                  <span style={{ fontSize: 15, color: "#007AFF", letterSpacing: -0.1, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
+                    {minutesUntil <= 0 ? "Starting now" : `Starts in ${getCountdownText()}`}
+                  </span>
+                </div>
               </div>
             </div>
-
-            {/* ── 4. HAIRLINE SEPARATOR ── */}
-            <div style={{ height: 0.5, background: "#c6c6c8", width: "100%" }} />
 
             {/* ── STATE-DRIVEN PRIMARY ACTION (preserved logic) ──
                 Keep Start / End lesson behaviour for STARTING / IN_LESSON states;
