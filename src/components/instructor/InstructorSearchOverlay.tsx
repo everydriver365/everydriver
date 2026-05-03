@@ -683,6 +683,7 @@ export function InstructorSearchOverlay({ open, onOpenChange, instructorId }: Pr
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
