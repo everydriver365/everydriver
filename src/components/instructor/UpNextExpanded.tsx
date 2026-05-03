@@ -647,6 +647,9 @@ export function UpNextExpanded({
         lessonId={lessonId}
         pupilId={pupilId}
         pupilName={pupilName}
+        amountDue={lessonFee}
+        pupilBalance={accountBalance}
+        durationMinutes={durationMinutes}
         lessonDate={new Date().toISOString().slice(0, 10)}
         lessonTime={startTime}
         endTime={startTime}
@@ -660,7 +663,7 @@ export function UpNextExpanded({
         open={rescheduleOpen}
         onOpenChange={setRescheduleOpen}
         lessonId={lessonId}
-        pupilId={pupilId}
+        instructorId={instructorId}
         pupilName={pupilName}
         currentDate={new Date().toISOString().slice(0, 10)}
         currentTime={startTime}
