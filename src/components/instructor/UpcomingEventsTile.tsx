@@ -39,7 +39,9 @@ interface Props {
 
 export function UpcomingEventsTile({ instructorId }: Props) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: events = [], isLoading } = useUpcomingEvents(instructorId);
+  const [addOpen, setAddOpen] = useState(false);
   const [stripStart, setStripStart] = useState<Date>(() =>
     subDays(startOfDay(new Date()), 4),
   );
