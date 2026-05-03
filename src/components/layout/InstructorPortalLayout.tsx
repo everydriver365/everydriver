@@ -439,7 +439,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             height: 30,
             borderRadius: 8,
             flexShrink: 0,
-            background: destructive ? "#FFF0F0" : active ? "#1A52A0" : "#F2F4F8",
+            background: destructive ? "#FFF0F0" : active ? "#0A0F29" : "#F2F4F8",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -457,7 +457,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             minWidth: 0,
             fontSize: 13,
             fontWeight: active ? 700 : 600,
-            color: destructive ? "#CC2229" : active ? "#1A52A0" : "#1A1A1A",
+            color: destructive ? "#CC2229" : active ? "#0A0F29" : "#1A1A1A",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -466,7 +466,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           {label}
         </span>
         {active ? (
-          <span style={{ width: 6, height: 6, borderRadius: 3, background: "#1A52A0", flexShrink: 0 }} />
+          <span style={{ width: 6, height: 6, borderRadius: 3, background: "#0A0F29", flexShrink: 0 }} />
         ) : children ? (
           children
         ) : !destructive ? (
@@ -609,7 +609,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               >
                 <SheetHeader className="space-y-0 text-left">
                   <SheetTitle className="sr-only">Instructor menu</SheetTitle>
-                  <div style={{ backgroundColor: "#1A52A0", padding: "20px 16px 18px" }}>
+                  <div style={{ backgroundColor: "#0A0F29", padding: "20px 16px 18px" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
                         <div

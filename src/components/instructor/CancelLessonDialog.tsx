@@ -447,8 +447,8 @@ export function CancelLessonDialog({
                 marginBottom: 14,
               }}
             >
-              <Save size={11} color="#1A52A0" />
-              <span style={{ fontSize: 10, color: "#1A52A0", fontWeight: 500 }}>
+              <Save size={11} color="#0A0F29" />
+              <span style={{ fontSize: 10, color: "#0A0F29", fontWeight: 500 }}>
                 Saved to {firstName}'s lesson record
               </span>
             </div>
@@ -515,13 +515,13 @@ export function CancelLessonDialog({
               style={{
                 background: "#FFF",
                 borderRadius: 14,
-                border: "0.5px solid #1A52A0",
+                border: "0.5px solid #0A0F29",
                 padding: 14,
                 cursor: "pointer",
                 width: "100%",
               }}
             >
-              <span style={{ fontSize: 14, fontWeight: 700, color: "#1A52A0" }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#0A0F29" }}>
                 Keep lesson
               </span>
             </button>
@@ -588,7 +588,7 @@ function PolicyOption({
       onClick={onSelect}
       style={{
         background: "#FFF",
-        border: selected ? "2px solid #1A52A0" : "0.5px solid #E0E5EE",
+        border: selected ? "2px solid #0A0F29" : "0.5px solid #E0E5EE",
         borderRadius: 14,
         padding: 11,
         marginBottom: 7,
@@ -604,7 +604,7 @@ function PolicyOption({
             width: 18,
             height: 18,
             borderRadius: 9,
-            background: selected ? "#1A52A0" : "transparent",
+            background: selected ? "#0A0F29" : "transparent",
             border: selected ? "0" : "1.5px solid #C7C7CC",
             display: "inline-flex",
             alignItems: "center",
