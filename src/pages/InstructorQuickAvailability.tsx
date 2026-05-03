@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { PageSkeleton } from "@/components/ui/skeletons/PageSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format, addWeeks, subWeeks, startOfWeek, addDays, isSameDay } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar, Plus, Trash2 } from "lucide-react";
+import { format, addWeeks, subWeeks, startOfWeek, addDays, subDays, isSameDay, startOfDay, startOfMonth, endOfMonth } from "date-fns";
+import { ChevronLeft, ChevronRight, Calendar, Plus, Trash2, Pencil, X } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { AvailabilityRulesManager } from "@/components/instructor/AvailabilityRulesManager";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
