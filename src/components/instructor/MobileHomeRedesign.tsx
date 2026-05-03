@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Briefcase,
   CalendarPlus,
+  Calendar,
   PoundSterling,
   type LucideIcon,
 } from "lucide-react";
