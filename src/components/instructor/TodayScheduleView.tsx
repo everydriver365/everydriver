@@ -538,7 +538,7 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                     )}
                     
                     {/* Time Header */}
-                    <div className="bg-primary px-3 py-1.5 flex items-center justify-between">
+                    <div className="bg-[hsl(var(--instructor-mobile-blue))] px-3 py-1.5 flex items-center justify-between">
                       <div className="flex items-center gap-2 text-primary-foreground text-sm">
                         <Clock className="h-3.5 w-3.5" />
                         <span className="font-bold">{formatTime(lesson.start_time)}</span>
@@ -584,20 +584,20 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-col h-auto py-2 gap-1"
+                          className="flex-col h-auto py-2 gap-1 border-[hsl(var(--instructor-mobile-blue)/0.24)] bg-[hsl(var(--instructor-mobile-blue-tint))]"
                           onClick={() => handleCall(lesson.pupil?.phone)}
                         >
-                          <Phone className="h-4 w-4 text-success" />
+                          <Phone className="h-4 w-4 text-[hsl(var(--instructor-mobile-blue))]" />
                           <span className="text-[10px] leading-none">Call</span>
                         </Button>
 
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-col h-auto py-2 gap-1"
+                          className="flex-col h-auto py-2 gap-1 border-[hsl(var(--instructor-mobile-blue)/0.24)] bg-[hsl(var(--instructor-mobile-blue-tint))]"
                           onClick={() => handleText(lesson.pupil?.phone)}
                         >
-                          <MessageSquare className="h-4 w-4 text-primary" />
+                          <MessageSquare className="h-4 w-4 text-[hsl(var(--instructor-mobile-blue))]" />
                           <span className="text-[10px] leading-none">Text</span>
                         </Button>
 
