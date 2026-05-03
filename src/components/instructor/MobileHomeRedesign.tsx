@@ -28,6 +28,7 @@ import { MapHeroLive } from "@/components/instructor/upNext/MapHeroLive";
 
 /* Restored sections from legacy home */
 import { QuickAccessSwipeablePaged } from "@/components/instructor/quickAccess/QuickAccessSwipeablePaged";
+import { MobileHomeBottomSections } from "@/components/instructor/MobileHomeBottomSections";
 import { ImpactAlertCard } from "@/components/instructor/ImpactAlertCard";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 import { TelematicsTile } from "@/components/instructor/TelematicsTile";
