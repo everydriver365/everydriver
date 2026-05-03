@@ -15,7 +15,7 @@ import {
   TILE_TONE,
   type QuickAccessTile,
 } from "@/components/instructor/quickAccess/tileRegistry";
-import { useInstructorPinnedTiles, DEFAULT_PINNED_TILE_IDS } from "@/hooks/useInstructorPinnedTiles";
+import { useInstructorPinnedTiles } from "@/hooks/useInstructorPinnedTiles";
 
 /* Premium iOS-style "Tools" hub: editable 3×2 pinned grid + categorised browse.
    Visual/layout only — reuses existing routes, gating, search, and pin store. */
