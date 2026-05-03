@@ -298,7 +298,7 @@ export function AppHeader({
                   fontFamily: FONT_STACK,
                   fontSize: 11,
                   fontWeight: 600,
-                  color: "#2952B3",
+                  color: "#3D55A1",
                   cursor: "pointer",
                   WebkitTapHighlightColor: "transparent",
                 }}

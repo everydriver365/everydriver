@@ -359,7 +359,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
               <button
                 key={n.key}
                 onClick={n.onClick}
-                className="flex items-center gap-2 px-3 py-2 rounded-[14px] bg-[#EEF4FF] text-[#1A4FB8] active:opacity-80 transition-opacity text-left"
+                className="flex items-center gap-2 px-3 py-2 rounded-[14px] bg-[#EDF2FE] text-[#1A4FB8] active:opacity-80 transition-opacity text-left"
               >
                 <span className="shrink-0">{n.icon}</span>
                 <span className="text-[12.5px] font-medium leading-snug truncate">{n.label}</span>

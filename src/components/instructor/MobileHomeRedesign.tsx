@@ -39,7 +39,7 @@ import { differenceInDays, isPast } from "date-fns";
 
 /* ---------- Brand tokens ---------- */
 const RED = "#B23A3F";
-const BLUE = "#2952B3";
+const BLUE = "#3D55A1";
 const CHARCOAL = "#2B2B2B";
 const BG = "#F2F4F8";
 const MUTED = "#5B6B8A";

@@ -15,7 +15,7 @@ import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { CustomizeFrequentlyUsedSheet } from "@/components/instructor/quickAccess/CustomizeFrequentlyUsedSheet";
 import { InstructorSearchOverlay } from "@/components/instructor/InstructorSearchOverlay";
 
-const BLUE = "#2952B3";
+const BLUE = "#3D55A1";
 const TEXT = "#1A1A1A";
 const MUTED = "#8E8E93";
 const BORDER = "rgba(26,82,160,0.08)";
@@ -122,7 +122,7 @@ type LessonStatus = "done" | "upcoming" | "inProgress" | "cancelled";
 
 const STATUS_CFG: Record<LessonStatus, { bg: string; color: string }> = {
   done: { bg: "#F2F4F8", color: "#8E8E93" },
-  upcoming: { bg: "#EEF3FF", color: "#2952B3" },
+  upcoming: { bg: "#EEF3FF", color: "#3D55A1" },
   inProgress: { bg: "#E8F8ED", color: "#1A7A3C" },
   cancelled: { bg: "#FFF0F0", color: "#B23A3F" },
 };
@@ -331,12 +331,12 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
               e.status === "inProgress"
                 ? "#1A7A3C"
                 : e.status === "upcoming"
-                  ? "#2952B3"
+                  ? "#3D55A1"
                   : e.status === "cancelled"
                     ? "#B23A3F"
                     : "#E0E5EE";
             const timeColor =
-              e.status === "upcoming" ? "#2952B3" : "#1A1A1A";
+              e.status === "upcoming" ? "#3D55A1" : "#1A1A1A";
             const minutesUntil =
               e.status === "upcoming" && e.start
                 ? Math.max(0, Math.round((e.start.getTime() - now.getTime()) / 60_000))
@@ -443,7 +443,7 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                   )}
                   {e.status === "upcoming" && (
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
-                      <span style={{ fontSize: 9, fontWeight: 700, color: "#2952B3" }}>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: "#3D55A1" }}>
                         {minutesUntil}m
                       </span>
                       {fee > 0 && (

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { PupilLessonHistoryEntry } from "@/hooks/usePupilLessonHistory";
 
-const BLUE = "#2952B3";
+const BLUE = "#3D55A1";
 const BLUE_TINT = "#EEF3FF";
 const CHARCOAL = "#2B2B2B";
 const MUTED = "#5B6B8A";

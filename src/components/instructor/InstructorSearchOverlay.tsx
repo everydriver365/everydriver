@@ -69,7 +69,7 @@ function writeRecent(item: Omit<RecentItem, "ts">) {
 const TILE_BY_ID = Object.fromEntries(QUICK_ACCESS_TILES.map((t) => [t.id, t]));
 
 const groupConfig = {
-  Tools: { chipBg: "#EEF3FF", chipText: "#2952B3" },
+  Tools: { chipBg: "#EEF3FF", chipText: "#3D55A1" },
   Pupils: { chipBg: "#E8F8ED", chipText: "#1A7A3C" },
   Lessons: { chipBg: "#FFF6E6", chipText: "#B45309" },
 } as const;
@@ -81,7 +81,7 @@ function HighlightedText({ text, query }: { text: string; query: string }) {
   return (
     <span style={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A" }}>
       {text.slice(0, idx)}
-      <span style={{ color: "#2952B3", fontWeight: 700 }}>
+      <span style={{ color: "#3D55A1", fontWeight: 700 }}>
         {text.slice(idx, idx + query.length)}
       </span>
       {text.slice(idx + query.length)}
@@ -195,7 +195,7 @@ function Row({
       {isTopResult && (
         <div
           style={{
-            background: "#2952B3",
+            background: "#3D55A1",
             borderRadius: 5,
             padding: "2px 6px",
             display: "flex",
@@ -319,7 +319,7 @@ export function InstructorSearchOverlay({ open, onOpenChange, instructorId }: Pr
         out.push({
           key: "navigate",
           icon: NavigateIcon,
-          iconBg: "#2952B3",
+          iconBg: "#3D55A1",
           iconColor: "#FFF",
           title: "Navigate to lesson",
           subtitle: `${nextLesson.pickupPostcode || "—"} · ${nextLesson.pupilName}`,
@@ -334,7 +334,7 @@ export function InstructorSearchOverlay({ open, onOpenChange, instructorId }: Pr
         key: "message",
         icon: MessageIcon,
         iconBg: "#EEF3FF",
-        iconColor: "#2952B3",
+        iconColor: "#3D55A1",
         title: `Message ${nextLesson.pupilName}`,
         subtitle: "Open conversation",
         badge: unreadCount > 0 ? unreadCount : null,
@@ -425,10 +425,10 @@ export function InstructorSearchOverlay({ open, onOpenChange, instructorId }: Pr
             display: "flex",
             alignItems: "center",
             gap: 10,
-            borderBottom: isActive ? "1px solid #2952B3" : "0.5px solid #F0F3F8",
+            borderBottom: isActive ? "1px solid #3D55A1" : "0.5px solid #F0F3F8",
           }}
         >
-          <SearchIcon size={15} color="#2952B3" strokeWidth={2} />
+          <SearchIcon size={15} color="#3D55A1" strokeWidth={2} />
           <input
             ref={inputRef}
             value={query}
