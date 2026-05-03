@@ -390,7 +390,7 @@ export function InstructorSearchOverlay({ open, onOpenChange, instructorId }: Pr
 
   const isActive = queryTrim.length > 0;
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
