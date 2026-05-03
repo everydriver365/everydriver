@@ -22,6 +22,17 @@ interface Props {
   onToggleExpanded: () => void;
   pupilName?: string | null;
   pupilPhone?: string | null;
+  pupilProfileImage?: string | null;
+}
+
+function avatarInitials(name?: string | null) {
+  if (!name) return "";
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join("");
 }
 
 const HEIGHT = 140;
