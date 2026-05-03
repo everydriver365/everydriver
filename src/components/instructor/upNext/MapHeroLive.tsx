@@ -1,8 +1,9 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { GoogleMap, OverlayViewF, OVERLAY_MOUSE_TARGET } from "@react-google-maps/api";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
+import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { dsmMapStyle } from "./dsmMapStyle";
 import { DSMPin } from "./DSMPin";
 
@@ -19,6 +20,8 @@ interface Props {
   whenLabel: string;
   expanded: boolean;
   onToggleExpanded: () => void;
+  pupilName?: string | null;
+  pupilPhone?: string | null;
 }
 
 const HEIGHT = 140;
@@ -133,7 +136,27 @@ function MapHeroLiveImpl({
   whenLabel,
   expanded,
   onToggleExpanded,
+  pupilName,
+  pupilPhone,
 }: Props) {
+  const eta = useTrafficETA(pickupPostcode);
+  const etaMinutes = eta.durationMinutes || 0;
+  // "Late" = travel time exceeds time remaining until lesson start
+  const willBeLate = etaMinutes > 0 && minutesUntil > 0 && etaMinutes > minutesUntil;
+  const lateBy = willBeLate ? etaMinutes - minutesUntil : 0;
+  const [notified, setNotified] = useState(false);
+
+  const sendLateText = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!pupilPhone) return;
+    const first = (pupilName || "").split(/\s+/)[0] || "there";
+    const msg = `Hi ${first}, traffic is heavier than expected — I'm running about ${lateBy} min${lateBy === 1 ? "" : "s"} late for our lesson. Sorry about that!`;
+    const a = document.createElement("a");
+    a.href = `sms:${pupilPhone}?body=${encodeURIComponent(msg)}`;
+    a.click();
+    setNotified(true);
+  };
+
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const [visible, setVisible] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
@@ -253,6 +276,54 @@ function MapHeroLiveImpl({
           <span style={{ fontSize: 11, fontWeight: 700, color: "#1A1A1A" }}>
             In {countdown}
           </span>
+        </div>
+      ) : null}
+
+      {/* ETA pill (top-right). Red + Notify button when running late. */}
+      {etaMinutes > 0 ? (
+        <div
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            background: willBeLate ? "rgba(204,34,41,0.95)" : "rgba(255,255,255,0.95)",
+            color: willBeLate ? "#FFFFFF" : "#1A1A1A",
+            borderRadius: 20,
+            padding: "4px 4px 4px 10px",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+            maxWidth: "65%",
+          }}
+        >
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "-0.1px" }}>
+            {willBeLate ? `${lateBy}m late` : `ETA ${etaMinutes}m`}
+          </span>
+          {willBeLate && pupilPhone ? (
+            <button
+              type="button"
+              onClick={sendLateText}
+              disabled={notified}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 3,
+                background: notified ? "rgba(255,255,255,0.25)" : "#FFFFFF",
+                color: notified ? "#FFFFFF" : "#CC2229",
+                border: "none",
+                borderRadius: 999,
+                padding: "3px 8px",
+                fontSize: 10,
+                fontWeight: 700,
+                cursor: notified ? "default" : "pointer",
+              }}
+              aria-label="Notify pupil you're running late"
+            >
+              <Send size={9} strokeWidth={2.4} />
+              {notified ? "Sent" : "Notify"}
+            </button>
+          ) : null}
         </div>
       ) : null}
 
