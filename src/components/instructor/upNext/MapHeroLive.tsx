@@ -1,8 +1,9 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { GoogleMap, OverlayViewF, OVERLAY_MOUSE_TARGET } from "@react-google-maps/api";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
+import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { dsmMapStyle } from "./dsmMapStyle";
 import { DSMPin } from "./DSMPin";
 
@@ -19,6 +20,8 @@ interface Props {
   whenLabel: string;
   expanded: boolean;
   onToggleExpanded: () => void;
+  pupilName?: string | null;
+  pupilPhone?: string | null;
 }
 
 const HEIGHT = 140;
