@@ -49,7 +49,7 @@ function SectionHeader({
         style={{
           fontSize: 10,
           fontWeight: 700,
-          color: MUTED,
+          color: "#000",
           letterSpacing: "0.12em",
           textTransform: "uppercase",
         }}
