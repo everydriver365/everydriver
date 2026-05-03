@@ -427,6 +427,7 @@ function UpNextTile({
   lessonId,
   pupilName,
   pupilPhone,
+  pupilProfileImage,
   lessonDate,
   startTime,
   durationMinutes,
@@ -438,6 +439,7 @@ function UpNextTile({
   lessonId: string;
   pupilName: string;
   pupilPhone: string | null;
+  pupilProfileImage: string | null;
   lessonDate: string;
   startTime: string;
   durationMinutes: number;
