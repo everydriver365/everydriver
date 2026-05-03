@@ -13,6 +13,8 @@ import {
   subDays,
 } from "date-fns";
 import { useUpcomingEvents, UpcomingEvent, UpcomingEventType } from "@/hooks/useUpcomingEvents";
+import { AddCalendarEventDialog } from "@/components/instructor/AddCalendarEventDialog";
+import { useQueryClient } from "@tanstack/react-query";
 
 const eventTypeConfig: Record<
   UpcomingEventType,
