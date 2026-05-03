@@ -22,6 +22,7 @@ import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useInstructorPupilsPaymentSummary } from "@/hooks/usePupilPaymentStatus";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { MapHeroStatic } from "@/components/instructor/MapHeroStatic";
+import { NextUpTile } from "@/components/instructor/NextUpTile";
 
 /* ---------- Brand tokens ---------- */
 const RED = "#CC2229";
@@ -940,19 +941,27 @@ export function MobileHomeRedesign({
       {nextLesson && (
         <>
           <SectionLabel>Up next</SectionLabel>
-          <UpNextTile
-            pupilId={nextLesson.pupilId}
-            lessonId={nextLesson.lessonId}
-            pupilName={nextLesson.pupilName}
-            pupilPhone={nextLesson.pupilPhone}
-            pupilProfileImage={nextLesson.pupilProfileImage}
-            lessonDate={nextLesson.lessonDate}
-            startTime={nextLesson.startTime}
-            durationMinutes={nextLesson.durationMinutes}
-            pickupLocation={nextLesson.pickupLocation}
-            pickupPostcode={nextLesson.pickupPostcode}
-            minutesUntil={liveMinutes}
-          />
+          <div style={{ padding: "0 14px 14px" }}>
+            <NextUpTile
+              lessonId={nextLesson.lessonId}
+              pupilId={nextLesson.pupilId}
+              pupilName={nextLesson.pupilName}
+              pupilProfileImage={nextLesson.pupilProfileImage}
+              pupilPhone={nextLesson.pupilPhone}
+              lessonDate={nextLesson.lessonDate}
+              pickupPostcode={nextLesson.pickupPostcode}
+              pickupLocation={nextLesson.pickupLocation}
+              startTime={nextLesson.startTime}
+              minutesUntil={liveMinutes}
+              accountBalance={nextLesson.accountBalance}
+              prepaidHours={nextLesson.prepaidHours}
+              durationMinutes={nextLesson.durationMinutes}
+              instructorId={instructorId}
+              checkInStatus={nextLesson.checkInStatus}
+              lessonStatus={(nextLesson as any).lessonStatus}
+              lastLessonPlan={nextLesson.lastLessonPlan}
+            />
+          </div>
         </>
       )}
 
