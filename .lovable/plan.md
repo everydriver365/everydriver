@@ -1,51 +1,44 @@
+# Upcoming Events – Today button + Event Details page
 
-# Home Screen Restructure
+## 1. Add "Today" button to the tile
 
-Reorganise the instructor mobile Home screen so the layout flows: greeting → Up Next → Schedule → Quick Access → Needs Attention. Merge the old "Quick Actions" and "Tools / Frequently Used" sections into one unified **Quick Access** block. Pull Vehicle Health, Open Slots, and Dormant Pupils into a single grouped **Needs Attention** card, and stop rendering the standalone Insights, Telematics, Vehicle Health, Idle Time, Impact Alert, and Upcoming Events blocks. All data hooks, handlers, navigation, and the Up Next tile stay untouched — this is purely presentational.
+File: `src/components/instructor/UpcomingEventsTile.tsx`
 
-## Files to edit
+In the calendar strip header (between the prev/next chevrons and the month label), add a small "Today" pill button. It is only visible when the visible week strip does not already include today (`!visibleDays.some(d => isSameDay(d, today))`). Clicking sets `stripStart` back to `subDays(startOfDay(new Date()), 4)` so today appears centred again — matching the initial state.
 
-### 1. `src/components/instructor/MobileHomeRedesign.tsx`
-- Move the existing `Needs attention` block from above `MobileHomeBottomSections` to **after** it.
-- Remove the JSX rendering for: `ImpactAlertCard`, `InsightTilesGrid` (+ its "Insights" label), `TelematicsTile` (+ "Telematics" label), `VehicleHealthCard`, `IdleTimeCostCard`, `UpcomingEventsCard`. Keep `FloatingSessionBar`. Leave the imports for now (they're harmless) or trim them — either is fine.
-- Extend `attentionRows` to include:
-  - **Vehicle health fault** — read from existing `VehicleHealthCard` data source (will inspect `useVehicleSecurity` / related hook used inside `VehicleHealthCard`) and only push when a fault exists. Routes to `/instructor/vehicle-health`.
-  - **Dormant pupils** — use `useDormantPupilsCount`. Routes to `/instructor/pupils?filter=dormant`.
-  - Existing rows (job offers, open slots, unread messages, outstanding balance) remain.
-- Group `attentionRows` into two visual sub-groups inside `AttentionCard`: **Urgent** (job offers, vehicle fault) and **To do** (everything else). Render group label only when the group has rows; render the card only when it has at least one row; otherwise show an "All clear" empty state.
-- Order after edit: Greeting → StatsRow → Up Next (+expanded) → `MobileHomeBottomSections` → Needs Attention → FloatingSessionBar.
+Style: same `stripBtn` pattern, but auto width with `padding: "0 10px"`, font 10/700, color `#1A52A0`, background `#EEF3FF`. Place it next to the month label.
 
-### 2. `src/components/instructor/MobileHomeBottomSections.tsx`
-- Merge `QuickActionsSection` + `ToolsSection` into a single **`QuickAccessSection`**:
-  - One section header `Quick access` with right-side `Edit` button + `PageDots` (when >1 page).
-  - One ⌘K search bar (kept from current ToolsSection).
-  - One swipeable 4×2 paged grid (8 tiles per page).
-  - Tiles sourced from `useInstructorPinnedTiles().pinnedIds` mapped through `QUICK_ACCESS_TILES_BY_ID` (single source — no separate hard-coded `actions` array).
-  - Badge counts wired from existing hooks: `useUnreadMessagesCount` for `messages`, `usePendingJobsCount` for `tests`, `useRealGapSlots` for `fill-gaps`, `useInstructorPupilsPaymentSummary.debtors` for `take-payment`.
-  - First tile (`pageIdx 0 && idx 0`) renders with `isPrimary` styling (`#1A52A0`), already implemented.
-  - Edit opens existing `CustomizeFrequentlyUsedSheet`, persisting via `setPins` (same as today).
-- Drop the old `QuickActionsSection` and `ToolsSection` exports; export only `ScheduleSection` + new `QuickAccessSection` from `MobileHomeBottomSections`.
-- Keep the schedule row visual styling already in place — no changes there.
+## 2. Event details page
 
-## Data bindings (no new fetches)
+New route: `/instructor/events/:eventKey`
 
-| UI piece | Source |
-|---|---|
-| Schedule lessons + statuses | `useDayLessons`, `useDayLessonHistory` (unchanged) |
-| Quick Access tiles | `useInstructorPinnedTiles` + `QUICK_ACCESS_TILES_BY_ID` |
-| Quick Access badges | `useUnreadMessagesCount`, `usePendingJobsCount`, `useRealGapSlots`, `useInstructorPupilsPaymentSummary` |
-| Vehicle fault row | Existing hook used by `VehicleHealthCard` (will reuse, no new query) |
-| Dormant pupils row | `useDormantPupilsCount` |
-| Open slots / unread / debt / jobs | Existing hooks already used in `MobileHomeRedesign` |
+`eventKey` is the existing `UpcomingEvent.id` (e.g. `dt-<pupilId>`, `tt-<pupilId>`, `mot-<vehicleId>`, `ins-<vehicleId>`, `todo-<id>`, `cpd-<id>`, `block-<id>`). The prefix tells the page how to fetch the source record.
 
-## Out of scope / hard constraints
+New file: `src/pages/InstructorEventDetails.tsx`
+- Parses the prefix, fetches the matching row from the appropriate table (`pupils`, `instructor_vehicles`, `instructor_todos`, `cpd_log_entries`, `instructor_manual_blocks`).
+- Renders a mobile detail screen using existing portal styling (white card on `#F2F4F8`, back chevron header showing event type label):
+  - Title, date + time, location/description, related entity link (e.g. "Open pupil profile", "Open vehicle health").
+  - For CPD / manual blocks / training that have a `meeting_url` (Zoom/Teams/Meet), show a primary "Join meeting" button that opens the link in a new tab. Detect provider from URL host (`zoom.us` → "Join Zoom", `teams.microsoft.com` → "Join Teams", else "Join meeting"). Show muted host text underneath.
+  - Secondary actions: "Open in Schedule" (navigates `/instructor/schedule`), and for tasks "Mark complete" (existing todo update if trivially possible — otherwise just deep-link to `/instructor/todos`).
 
-- Up Next tile, greeting, stats row, and tab bar unchanged.
-- No handler, hook, route, or backend change.
-- Mobile-only file; desktop layouts untouched (per project rule).
-- No new libraries.
-- The first pinned tile auto-styles as primary on reorder (already wired).
+Meeting URL sources:
+- `cpd_log_entries`: add optional read of `meeting_url` if column exists; fall back to scanning `description`/`notes`/`provider` for a URL via regex.
+- `instructor_manual_blocks`: same — read `meeting_url` if present, else regex over `title`/`notes`.
+- `instructor_calendar_events` already has `meeting_url` (per migration 20260417). Manual blocks added via the Add event dialog may write here; if so, use it directly.
 
-## Open question
+No schema changes required; if the column is missing on a table the read is wrapped in try/catch and the URL regex fallback covers it.
 
-The prompt mentions `FaultBadge`, `Smart tips`, and a "2×2 card section" that don't currently exist in the live `MobileHomeRedesign` — those are already absent. I'll skip them rather than invent placeholders. If you want a Smart Tips row brought back into Needs Attention, say so and I'll wire it.
+## 3. Wire navigation
+
+File: `src/components/instructor/UpcomingEventsTile.tsx`
+
+Change the row click handler from `navigate(e.destinationPath)` to `navigate(\`/instructor/events/\${e.id}\`)`. Keep `destinationPath` on the event model — the details page uses it as the "Open related" deep link.
+
+File: `src/App.tsx` (or wherever instructor routes live — verify with `rg "instructor/schedule" src/App.tsx`)
+Add: `<Route path="/instructor/events/:eventKey" element={<InstructorEventDetails />} />`.
+
+## Out of scope
+
+- No changes to data fetching in `useUpcomingEvents` beyond exposing `meeting_url` if trivial.
+- No new tables, no Zoom API integration — "join" is just opening the stored URL.
+- Mobile-only styling; matches existing instructor portal tokens.
