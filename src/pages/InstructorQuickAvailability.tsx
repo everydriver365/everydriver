@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, type CSSProperties } from "react";
 import { PageSkeleton } from "@/components/ui/skeletons/PageSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, addWeeks, subWeeks, startOfWeek, addDays, subDays, isSameDay, startOfDay, startOfMonth, endOfMonth } from "date-fns";
