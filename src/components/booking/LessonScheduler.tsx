@@ -240,7 +240,9 @@ export function LessonScheduler({
   const fetchAvailability = async () => {
     setLoading(true);
     try {
-      const [hoursRes, overridesRes, calendarRes, instructorRes] = await Promise.all([
+      const today = format(new Date(), "yyyy-MM-dd");
+      const maxDate = format(addDays(new Date(), bookingAdvanceDays), "yyyy-MM-dd");
+      const [hoursRes, overridesRes, calendarRes, instructorRes, lessonsRes] = await Promise.all([
         supabase
           .from("instructor_working_hours")
           .select("*")
@@ -249,25 +251,34 @@ export function LessonScheduler({
           .from("instructor_date_overrides")
           .select("*")
           .eq("instructor_id", instructorId)
-          .or(`override_end_date.gte.${format(new Date(), "yyyy-MM-dd")},override_end_date.is.null`)
-          .lte("override_date", format(addDays(new Date(), bookingAdvanceDays), "yyyy-MM-dd")),
+          .or(`override_end_date.gte.${today},override_end_date.is.null`)
+          .lte("override_date", maxDate),
         supabase
           .from("instructor_calendar_events")
           .select("start_time, end_time")
           .eq("instructor_id", instructorId)
           .eq("is_busy", true)
-          .gte("start_time", format(new Date(), "yyyy-MM-dd")),
+          .gte("start_time", today),
         supabase
           .from("instructors")
           .select("prefer_earliest_slot")
           .eq("id", instructorId)
           .single(),
+        supabase
+          .from("scheduled_lessons")
+          .select("lesson_date, start_time, duration_minutes")
+          .eq("instructor_id", instructorId)
+          .neq("status", "cancelled")
+          .is("deleted_at", null)
+          .gte("lesson_date", today)
+          .lte("lesson_date", maxDate),
       ]);
 
       const hours = hoursRes.data;
       const overrides = overridesRes.data;
       const calendarEvents = calendarRes.data;
-      
+      const existingLessons = lessonsRes.data;
+
       setPreferEarliestSlot((instructorRes.data as any)?.prefer_earliest_slot ?? false);
 
       setWorkingHours(
@@ -289,12 +300,22 @@ export function LessonScheduler({
         }))
       );
 
-      setExternalEvents(
-        (calendarEvents || []).map((e) => ({
+      // Convert existing scheduled_lessons into the same shape as external calendar events
+      // so they block pupil-facing slots via the same conflict logic.
+      const lessonEvents = (existingLessons || []).map((l: any) => {
+        const startIso = `${l.lesson_date}T${(l.start_time || '00:00:00').slice(0, 8)}`;
+        const startD = new Date(startIso);
+        const endD = new Date(startD.getTime() + (l.duration_minutes || 60) * 60_000);
+        return { start_time: startD.toISOString(), end_time: endD.toISOString() };
+      });
+
+      setExternalEvents([
+        ...(calendarEvents || []).map((e) => ({
           start_time: e.start_time,
           end_time: e.end_time,
-        }))
-      );
+        })),
+        ...lessonEvents,
+      ]);
     } catch (error) {
       console.error("Error fetching availability:", error);
     } finally {
