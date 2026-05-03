@@ -240,23 +240,22 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
   }, [enriched, isToday, now]);
 
   return (
-    <div style={{ padding: "0 14px", marginBottom: 14 }}>
+    <div style={{ padding: "0 20px", marginBottom: 18 }}>
       <SectionHeader
-        label="Schedule"
+        label="Today's schedule"
         rightLabel="View all →"
         onRightPress={() => navigate("/instructor/schedule")}
       />
 
-      {/* Day toggle */}
+      {/* Day toggle — soft segmented control */}
       <div
         style={{
-          background: "#FFF",
+          background: "rgba(15,35,65,0.05)",
           borderRadius: 12,
           padding: 3,
           display: "flex",
           gap: 2,
-          marginBottom: 8,
-          border: `0.5px solid ${BORDER_STRONG}`,
+          marginBottom: 10,
         }}
       >
         {(["Today", "Tomorrow"] as const).map((day) => {
@@ -269,17 +268,22 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
               style={{
                 flex: 1,
                 borderRadius: 9,
-                padding: "5px 0",
-                background: active ? BLUE : "transparent",
+                padding: "7px 0",
+                background: active ? "#FFFFFF" : "transparent",
                 border: "none",
                 cursor: "pointer",
+                boxShadow: active
+                  ? "0 1px 3px rgba(15,35,65,0.10), 0 0 0 0.5px rgba(15,35,65,0.06)"
+                  : "none",
+                transition: "background 150ms ease",
               }}
             >
               <span
                 style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: active ? "#FFF" : MUTED,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: active ? "#315FAE" : "#6B7A90",
+                  letterSpacing: "-0.1px",
                 }}
               >
                 {day}
@@ -291,10 +295,8 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
 
       {/* Card */}
       <div
+        className="home-v2-card"
         style={{
-          background: "#FFF",
-          borderRadius: 16,
-          border: `0.5px solid ${BORDER}`,
           overflow: "hidden",
         }}
       >
@@ -638,20 +640,20 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
   };
 
   return (
-    <div style={{ padding: "0 14px", marginBottom: 14 }}>
+    <div style={{ padding: "0 20px", marginBottom: 18 }}>
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: 8,
+          marginBottom: 10,
         }}
       >
         <div
           style={{
-            fontSize: 10,
-            fontWeight: 700,
-            color: MUTED,
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#6B7A90",
             letterSpacing: "0.12em",
             textTransform: "uppercase",
           }}
@@ -697,32 +699,29 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
       <button
         type="button"
         onClick={() => setSearchOpen(true)}
+        className="home-v2-tile"
         style={{
           width: "100%",
-          background: "#FFF",
-          borderRadius: 12,
-          padding: "8px 12px",
+          padding: "10px 14px",
           display: "flex",
           alignItems: "center",
-          gap: 7,
-          marginBottom: 10,
-          border: `0.5px solid ${BORDER_STRONG}`,
+          gap: 8,
+          marginBottom: 12,
           cursor: "pointer",
         }}
       >
-        <Search size={12} color={MUTED} />
-        <span style={{ fontSize: 11, color: "#C7C7CC", flex: 1, textAlign: "left" }}>
+        <Search size={14} color="#94A3B8" />
+        <span style={{ fontSize: 13, color: "#94A3B8", flex: 1, textAlign: "left" }}>
           Search tools, pupils, lessons
         </span>
         <span
           style={{
-            background: "#F2F4F8",
-            borderRadius: 5,
-            padding: "2px 6px",
-            border: "0.5px solid #E0E5EE",
-            fontSize: 9,
+            background: "rgba(15,35,65,0.05)",
+            borderRadius: 6,
+            padding: "2px 7px",
+            fontSize: 10,
             fontWeight: 600,
-            color: MUTED,
+            color: "#6B7A90",
           }}
         >
           ⌘K
