@@ -3,7 +3,15 @@
  * Persisted in localStorage so each device keeps its own layout.
  */
 
-export type QuickActionId = "jobs" | "messages" | "take-payment" | "pupils";
+export type QuickActionId =
+  | "add-lesson"
+  | "message"
+  | "fill-gap"
+  | "payment"
+  | "schedule"
+  | "pupils"
+  | "earnings"
+  | "tests";
 
 export interface QuickActionsPrefs {
   order: QuickActionId[];
@@ -11,17 +19,28 @@ export interface QuickActionsPrefs {
 }
 
 export const DEFAULT_QUICK_ACTIONS: QuickActionId[] = [
-  "jobs",
-  "messages",
-  "take-payment",
+  "add-lesson",
+  "message",
+  "fill-gap",
+  "payment",
+  "schedule",
   "pupils",
+  "earnings",
+  "tests",
 ];
 
-const STORAGE_KEY = "instructor_home_quick_actions_v1";
+const STORAGE_KEY = "instructor_home_quick_actions_v2";
 
 function isQuickActionId(v: unknown): v is QuickActionId {
   return (
-    v === "jobs" || v === "messages" || v === "take-payment" || v === "pupils"
+    v === "add-lesson" ||
+    v === "message" ||
+    v === "fill-gap" ||
+    v === "payment" ||
+    v === "schedule" ||
+    v === "pupils" ||
+    v === "earnings" ||
+    v === "tests"
   );
 }
 

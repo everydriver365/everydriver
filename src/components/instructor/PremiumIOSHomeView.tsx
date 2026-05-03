@@ -655,7 +655,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         <SectionLabel
           action={
             <button
-              onClick={() => navigate("/instructor/settings?tab=appearance")}
+              onClick={() => navigate("/every-instructor/quick-actions/edit")}
               className="text-[12px] font-semibold text-[#007AFF] active:opacity-60 transition-opacity"
             >
               Edit

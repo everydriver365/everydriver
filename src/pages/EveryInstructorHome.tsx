@@ -293,10 +293,14 @@ const QUICK_ACTION_META: Record<
   QuickActionId,
   { label: string; icon: any; accent: string; route: string }
 > = {
-  jobs: { label: "Job Offers", icon: Briefcase, accent: "#AF52DE", route: "/every-instructor/jobs" },
-  messages: { label: "Messages", icon: MessageSquare, accent: "#FF9500", route: "/every-instructor/messages" },
-  "take-payment": { label: "Take Payment", icon: PoundSterling, accent: "#34C759", route: "/every-instructor/take-payment" },
-  pupils: { label: "Pupils", icon: Users, accent: "#007AFF", route: "/every-instructor/pupils" },
+  "add-lesson": { label: "Add lesson", icon: Briefcase, accent: "#007AFF", route: "/every-instructor/schedule?action=add" },
+  message: { label: "Message", icon: MessageSquare, accent: "#5856D6", route: "/every-instructor/messages" },
+  "fill-gap": { label: "Fill gap", icon: Briefcase, accent: "#FF9500", route: "/instructor/gaps" },
+  payment: { label: "Payment", icon: PoundSterling, accent: "#34C759", route: "/every-instructor/take-payment" },
+  schedule: { label: "Schedule", icon: Briefcase, accent: "#007AFF", route: "/every-instructor/schedule" },
+  pupils: { label: "Pupils", icon: Users, accent: "#5856D6", route: "/every-instructor/pupils" },
+  earnings: { label: "Earnings", icon: PoundSterling, accent: "#34C759", route: "/every-instructor/income" },
+  tests: { label: "Tests", icon: Briefcase, accent: "#FF9500", route: "/every-instructor/jobs" },
 };
 
 function QuickActionsBlock({
@@ -315,8 +319,8 @@ function QuickActionsBlock({
   if (visible.length === 0) return null;
 
   const badgeFor = (id: QuickActionId): number | undefined => {
-    if (id === "jobs") return pendingJobs;
-    if (id === "messages") return unreadMessages;
+    if (id === "message") return unreadMessages;
+    if (id === "tests") return pendingJobs;
     return undefined;
   };
 
