@@ -17,6 +17,7 @@ import { useInstructorPupilsPaymentSummary } from "@/hooks/usePupilPaymentStatus
 import { useInstructorPinnedTiles } from "@/hooks/useInstructorPinnedTiles";
 import { QUICK_ACCESS_TILES_BY_ID } from "@/components/instructor/quickAccess/tileRegistry";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { CustomizeFrequentlyUsedSheet } from "@/components/instructor/quickAccess/CustomizeFrequentlyUsedSheet";
 
 const BLUE = "#1A52A0";
 const TEXT = "#1A1A1A";
@@ -579,6 +580,8 @@ interface QuickActionDef {
 
 function QuickActionsSection({ instructorId }: { instructorId: string }) {
   const navigate = useNavigate();
+  const [editOpen, setEditOpen] = useState(false);
+  const { pinnedIds, setPins, isSaving } = useInstructorPinnedTiles(instructorId);
   const { data: unread = 0 } = useUnreadMessagesCount(instructorId);
   const pendingJobs = usePendingJobsCount();
   const { data: gapData } = useRealGapSlots(instructorId);
@@ -712,7 +715,17 @@ function QuickActionsSection({ instructorId }: { instructorId: string }) {
       <SectionHeader
         label="Quick actions"
         rightLabel="Edit"
-        onRightPress={() => navigate("/instructor/menu")}
+        onRightPress={() => setEditOpen(true)}
+      />
+      <CustomizeFrequentlyUsedSheet
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        initialPinnedIds={pinnedIds}
+        onSave={async (ids) => {
+          await setPins(ids);
+          setEditOpen(false);
+        }}
+        saving={isSaving}
       />
       <div
         style={{
