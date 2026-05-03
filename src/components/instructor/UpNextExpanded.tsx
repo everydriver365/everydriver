@@ -4,6 +4,9 @@ import { formatDistanceToNow } from "date-fns";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { AlertTriangle } from "lucide-react";
 import { enrichFaultCode } from "@/lib/obdCodeLookup";
+import { usePupilLessonHistory, type PupilLessonHistoryEntry } from "@/hooks/usePupilLessonHistory";
+import { PreviousLessonModal } from "./PreviousLessonModal";
+import { parse as parseDateFn } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle2,
@@ -393,6 +396,8 @@ export function UpNextExpanded({
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [lateOpen, setLateOpen] = useState(false);
+  const [selectedHistoryLesson, setSelectedHistoryLesson] = useState<PupilLessonHistoryEntry | null>(null);
+  const lessonHistoryQuery = usePupilLessonHistory(pupilId, 5);
 
   const eta = useTrafficETA(pickupPostcode);
   const weather = useLessonWeather(pickupPostcode);
@@ -918,38 +923,12 @@ export function UpNextExpanded({
 
         <Divider />
 
-        {/* SECTION 7 — Notes / last plan */}
+        {/* SECTION 7 — Previous lessons */}
         <SectionLabel>Previous lessons</SectionLabel>
-        <div style={{ padding: "0 16px 12px" }}>
-          {lastLessonPlan ? (
-            <div
-              style={{
-                background: "#FAFBFD",
-                border: `0.5px solid ${ROW_BORDER}`,
-                borderRadius: 12,
-                padding: 12,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  marginBottom: 6,
-                  fontSize: 11,
-                  color: MUTED,
-                  fontWeight: 700,
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase",
-                }}
-              >
-                <StickyNote size={12} /> Plan from last lesson
-              </div>
-              <div style={{ fontSize: 13, color: CHARCOAL, lineHeight: 1.45 }}>
-                {lastLessonPlan}
-              </div>
-            </div>
-          ) : (
+        <div style={{ padding: "0 16px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
+          {lessonHistoryQuery.isLoading ? (
+            <div style={{ height: 64, borderRadius: 12, background: "linear-gradient(90deg,#F1F4F8 0%,#FAFBFD 50%,#F1F4F8 100%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+          ) : (lessonHistoryQuery.data?.length ?? 0) === 0 ? (
             <button
               type="button"
               onClick={() => navigate(`/instructor/pupils/${pupilId}`)}
@@ -970,8 +949,106 @@ export function UpNextExpanded({
             >
               <History size={14} /> View pupil history
             </button>
+          ) : (
+            <>
+              {(lessonHistoryQuery.data || []).map((l) => {
+                const dateLabel = (() => {
+                  try {
+                    return format(new Date(l.lesson_date), "EEE d MMM");
+                  } catch {
+                    return l.lesson_date;
+                  }
+                })();
+                const timeLabel = l.start_time
+                  ? (() => {
+                      try {
+                        return format(parseDateFn(l.start_time.slice(0, 5), "HH:mm", new Date()), "h:mm a");
+                      } catch {
+                        return l.start_time;
+                      }
+                    })()
+                  : "";
+                const topics = l.skills_practiced || [];
+                return (
+                  <button
+                    key={l.id}
+                    type="button"
+                    onClick={() => setSelectedHistoryLesson(l)}
+                    style={{
+                      textAlign: "left",
+                      background: "#FAFBFD",
+                      border: `0.5px solid ${ROW_BORDER}`,
+                      borderRadius: 12,
+                      padding: 12,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 6,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: CHARCOAL, flex: 1, minWidth: 0 }}>
+                        {dateLabel}
+                        {timeLabel && <span style={{ color: MUTED, fontWeight: 500 }}> · {timeLabel}</span>}
+                      </div>
+                      {l.rating != null && (
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#A66B00", background: "#FFF8E6", padding: "2px 8px", borderRadius: 999 }}>
+                          ★ {l.rating}
+                        </span>
+                      )}
+                      <span style={{ fontSize: 11, fontWeight: 600, color: MUTED, background: "#F1F4F8", padding: "2px 8px", borderRadius: 999 }}>
+                        {l.duration_minutes} min
+                      </span>
+                    </div>
+                    {topics.length > 0 && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                        {topics.slice(0, 3).map((t, i) => (
+                          <span key={`${t}-${i}`} style={{ background: BLUE_TINT, color: BLUE, fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999 }}>
+                            {t}
+                          </span>
+                        ))}
+                        {topics.length > 3 && (
+                          <span style={{ background: "#F1F4F8", color: MUTED, fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999 }}>
+                            +{topics.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {l.notes && (
+                      <div style={{ fontSize: 12, color: MUTED, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {l.notes}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => navigate(`/instructor/pupils/${pupilId}`)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: BLUE,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  padding: "4px 0 0",
+                  cursor: "pointer",
+                  alignSelf: "flex-end",
+                }}
+              >
+                View all lessons →
+              </button>
+            </>
           )}
         </div>
+        <PreviousLessonModal
+          open={!!selectedHistoryLesson}
+          onOpenChange={(v) => !v && setSelectedHistoryLesson(null)}
+          lesson={selectedHistoryLesson}
+          pupilId={pupilId}
+          pupilName={pupilName}
+        />
+
 
         {/* SECTION 8 — Payment status */}
         {!isPaid && (

@@ -1,51 +1,51 @@
 ## Goal
-Replace the static "OBD not connected" placeholder in the expanded Up next tile (Section 6 — Vehicle) with live data from the connected OBD device for this instructor's vehicle. No DB schema changes, no other screens touched.
+Wire the "Previous lessons" section in the expanded Up next tile to show the pupil's recent completed lessons (date, time, duration, topics, notes) and open a detail modal on tap. No other screens or schemas changed.
 
 ## Data source
-Use the existing `useVehicleHealth()` hook (already powering Vehicle Health screens). It returns `devices[]` from `gps_devices` with all the fields needed:
-- `is_connected`, `last_seen_at`, `tracking_provider`
-- `last_fuel_percent`, `last_battery_voltage`, `last_coolant_temp_c`
-- `last_ecu_odometer_km`, `last_engine_hours`
-- `last_tire_pressure_json` (PSI per corner — already imperial per project rules)
-- `last_fault_codes[]` (with `code`, `description`, `severity`)
-- `vehicle` (registration, make, model)
+New hook `src/hooks/usePupilLessonHistory.ts` reading `public.lesson_history` (already exists, fully scoped to pupil, soft-deleted rows excluded):
+- Select: `id, lesson_date, start_time, duration_minutes, skills_practiced, notes, rating, next_lesson_plan`
+- Filter: `pupil_id = ?`, `deleted_at IS NULL`
+- Order: `lesson_date DESC, start_time DESC`, limit 10
+- Cached via React Query, staleTime 60s
 
-Verified live: instructor `c9843b58-…` has a Geotab device reporting fuel 47.84%, battery 90, coolant 85°C, odometer 42,982 km, 1 fault (P0B15), and tyre pressures 224–236.
+No DB migration; no edge function; existing RLS already restricts `lesson_history` to the owning instructor.
 
-## Device selection
-Inside `UpNextExpanded`, pick the device to show in this priority:
-1. A connected device whose `vehicle_id` matches the instructor's primary vehicle.
-2. Otherwise, the most recently `last_seen_at` device with diagnostics (`last_diagnostics_at` not null).
-3. Otherwise, fall back to the existing "OBD not connected" pill.
+## UI changes (only inside `src/components/instructor/UpNextExpanded.tsx`, Section 7)
+Replace the current Section 7 body (lines ~921–974) with:
+- Section header unchanged: `<SectionLabel>Previous lessons</SectionLabel>`
+- Loading: a single shimmer row (matches iOS consistency rule)
+- Empty: keep the existing dashed "View pupil history" button, unchanged
+- List: up to 5 most recent rows rendered as tappable cards. Each card shows:
+  - Top row: bold date (e.g. "Wed 30 Apr") + time ("9:30 AM") on the left, small "60 min" duration chip on the right
+  - Middle row: up to 3 topic chips from `skills_practiced` (BLUE_TINT / BLUE), with `+N more` chip if extra
+  - Bottom row: 1-line truncated notes preview in MUTED, only if notes present
+  - 5-star rating badge on the right of the date row when `rating` not null
+- Below the list: a small text-only "View all lessons →" link that routes to `/instructor/pupils/${pupilId}` (existing route used by the empty-state button)
 
-## UI changes (only inside Section 6 of `src/components/instructor/UpNextExpanded.tsx`)
-Replace lines 720–737 with a connected-state card. Keep `SectionLabel`, `Divider`, paddings, fonts, and surrounding sections unchanged.
+All inline styles reuse existing tokens (`BLUE`, `BLUE_TINT`, `CHARCOAL`, `MUTED`, `ROW_BORDER`, `BORDER`, radius 12). No Tailwind. Match font/size patterns of the surrounding sections.
 
-Connected card layout (single rounded-12 card, `BLUE_TINT` background, 10/12 padding, fontSize 12, two rows):
+## Modal
+New file `src/components/instructor/PreviousLessonModal.tsx`:
+- Uses existing shadcn `Dialog` from `@/components/ui/dialog`
+- Props: `open`, `onOpenChange`, `lesson: PupilLessonHistoryEntry`, `pupilName`
+- Sections inside the dialog:
+  1. Header: pupil name + formatted full date/time + duration
+  2. Rating (stars) if present
+  3. Topics covered: full list of `skills_practiced` as wrapping chips
+  4. Notes: full `notes` block, whitespace-pre-wrap
+  5. Plan for next lesson: `next_lesson_plan` if present, in a tinted card
+  6. Footer button: "Open pupil profile" → `/instructor/pupils/${pupilId}` (closes modal)
+- Sized for mobile (max-width ~420px, scrollable body)
 
-```text
-[Car icon]  AB12 CDE · Ford Fiesta            ● Live
-            Fuel 48% · Batt 12.5V · 85°C · 26,708 mi
-            [P0B15 chip if fault, red tint]
-```
-
-Details:
-- Convert km → miles using `* 0.621371` (project rule). Round to whole miles.
-- Battery: prefer `last_battery_voltage` (e.g. "12.5V"); otherwise `last_battery_percent` ("90%").
-- Coolant: only show if present (`°C`).
-- Fuel: only show if `last_fuel_percent` not null.
-- Tyre warning: if any value in `last_tire_pressure_json` is < 28 PSI or > 40 PSI, append a small "Tyre check" amber chip.
-- Fault codes: render a single red-tint chip showing the count, e.g. `1 fault: P0B15` (tap → `/instructor/vehicle-health` via existing `useNavigate`). If 0 codes, omit.
-- Live dot: green 6px circle if `is_connected`, otherwise grey + "Last seen Xm ago" using existing `formatDistanceToNow` style (already used elsewhere — import from `date-fns`).
-- If no device matches, keep the existing grey "OBD not connected" pill (unchanged copy).
-
-All colours via existing tokens (`BLUE_TINT`, `BLUE`, `MUTED`, `RED`, plus the established amber `#A66B00` already used by the notes card). No Tailwind classes — match the inline-style pattern of the rest of this file.
-
-## Wiring
-- Import `useVehicleHealth` at top of `UpNextExpanded.tsx`.
-- Call once inside the component; derive `obdDevice` via the priority above (memoise inline with `useMemo`).
-- No props added; no parent component (`MobileHomeRedesign`) changes required.
+`UpNextExpanded` keeps a local `selectedLesson` state; tapping a card sets it; the modal renders only when set. No prop drilling required.
 
 ## Out of scope
-- No changes to collapsed tile, map hero, ETA pill, avatar, other sections, schemas, or any other screen.
-- No new edge functions; the hook already polls the existing `radius-poller`.
+- No changes to collapsed tile, map hero, OBD section, fault codes section, or any other screen
+- No edits to `MobileHomeRedesign` (no new props)
+- No schema changes
+- The existing `lastLessonPlan` prop becomes redundant for this section but is left intact (still passed in by parent) — we just stop rendering it here in favour of the live list
+
+## Files
+- Add `src/hooks/usePupilLessonHistory.ts`
+- Add `src/components/instructor/PreviousLessonModal.tsx`
+- Edit `src/components/instructor/UpNextExpanded.tsx` (Section 7 only + small imports + selectedLesson state)
