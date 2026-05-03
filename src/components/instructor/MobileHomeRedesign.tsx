@@ -539,6 +539,7 @@ function UpNextTile({
           pupilName={pupilName}
           pupilPhone={pupilPhone}
           pupilProfileImage={pupilProfileImage}
+          instructorId={instructorId}
         />
 
         <div style={{ display: "flex", minHeight: 130 }}>
