@@ -704,6 +704,7 @@ export function NextUpTile({
               )}
             </button>
           </div>
+          )}
 
           {/* ── EXPANDED CONTENT (inside the same white card) ──
               When collapsed, ONLY the header above is visible. Tapping the
