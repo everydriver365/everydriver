@@ -62,17 +62,17 @@ export function MobileBlueHeader({
           {isHomePage ? (
             <>
               <img src={dsmLogo} alt="DSM" className="h-6 w-auto object-contain shrink-0" />
-              <span
-                className="truncate"
-                style={{
-                  fontSize: 15,
-                  fontWeight: 600,
-                  letterSpacing: -0.2,
-                  color: "hsl(var(--dsm-text-primary, 240 6% 11%))",
-                }}
+              <div
+                className="flex flex-col min-w-0 leading-none"
+                style={{ color: "hsl(var(--dsm-text-primary, 240 6% 11%))" }}
               >
-                Driving School Manager
-              </span>
+                <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: -0.2 }}>
+                  DrivingSchool
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 400, letterSpacing: -0.1, marginTop: 2 }}>
+                  Manager
+                </span>
+              </div>
             </>
           ) : (
             <h1
