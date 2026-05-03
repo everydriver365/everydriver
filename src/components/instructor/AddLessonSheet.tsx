@@ -302,7 +302,7 @@ export function AddLessonSheet({
     setIsRecurring(false); setRecurrenceWeeks('4');
     setPlannedCompetencies([]); setLessonType('standard');
     setSelectedTestCentre(''); setSelectedExaminer('');
-    setConflictWarning(null); setPaymentMethod('tbc');
+    setConflictWarning(null); setIsHardOverlap(false); setPaymentMethod('tbc');
   };
 
   const handlePostSavePayment = (pupilId: string) => {
@@ -322,7 +322,7 @@ export function AddLessonSheet({
   // Conflict check (buffered overlap) + travel-time check (previous + next + first-of-day)
   useEffect(() => {
     if (!lessonDate || !lessonStartTime || !open) {
-      setConflictWarning(null);
+      setConflictWarning(null); setIsHardOverlap(false);
       setTravelSuggestion(null);
       setTravelWarning(null);
       return;
@@ -445,10 +445,10 @@ export function AddLessonSheet({
             // Fall through — travel-time checks below still run so the amber
             // soft warning can appear alongside the red hard-block banner.
           } else {
-            setConflictWarning(null);
+            setConflictWarning(null); setIsHardOverlap(false);
           }
         } else {
-          setConflictWarning(null);
+          setConflictWarning(null); setIsHardOverlap(false);
         }
 
         const previous = allSlots
@@ -547,7 +547,7 @@ export function AddLessonSheet({
         setTravelSuggestion(pendingTravelSuggestion);
         setTravelWarning(pendingTravelWarning);
       } catch {
-        setConflictWarning(null);
+        setConflictWarning(null); setIsHardOverlap(false);
         setTravelSuggestion(null);
         setTravelWarning(null);
       } finally {
