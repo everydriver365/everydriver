@@ -719,6 +719,7 @@ export function UpNextExpanded({
         onRescheduled={() => {
           qc.invalidateQueries({ queryKey: ["next-lesson-details"] });
         }}
+      />
       <RunningLateSheet
         open={lateOpen}
         onOpenChange={setLateOpen}
