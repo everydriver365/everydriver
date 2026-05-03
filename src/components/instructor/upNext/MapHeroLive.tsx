@@ -279,6 +279,54 @@ function MapHeroLiveImpl({
         </div>
       ) : null}
 
+      {/* ETA pill (top-right). Red + Notify button when running late. */}
+      {etaMinutes > 0 ? (
+        <div
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            background: willBeLate ? "rgba(204,34,41,0.95)" : "rgba(255,255,255,0.95)",
+            color: willBeLate ? "#FFFFFF" : "#1A1A1A",
+            borderRadius: 20,
+            padding: "4px 4px 4px 10px",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+            maxWidth: "65%",
+          }}
+        >
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "-0.1px" }}>
+            {willBeLate ? `${lateBy}m late` : `ETA ${etaMinutes}m`}
+          </span>
+          {willBeLate && pupilPhone ? (
+            <button
+              type="button"
+              onClick={sendLateText}
+              disabled={notified}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 3,
+                background: notified ? "rgba(255,255,255,0.25)" : "#FFFFFF",
+                color: notified ? "#FFFFFF" : "#CC2229",
+                border: "none",
+                borderRadius: 999,
+                padding: "3px 8px",
+                fontSize: 10,
+                fontWeight: 700,
+                cursor: notified ? "default" : "pointer",
+              }}
+              aria-label="Notify pupil you're running late"
+            >
+              <Send size={9} strokeWidth={2.4} />
+              {notified ? "Sent" : "Notify"}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
       {/* Time card */}
       <div
         style={{
