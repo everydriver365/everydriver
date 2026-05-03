@@ -132,9 +132,9 @@
   /* Light mode (default when present without .dsm-dark) */
   .instructor-portal,
   .dsm-instructor {
-    --dsm-bg: 0 0% 92%;             /* #EAEAEA */
-    --dsm-page-bg: 40 20% 96%;      /* #F7F6F3 */
-    --background: 0 0% 92%;         /* match for bg-background pages */
+    --dsm-bg: 220 30% 96%;          /* #F2F4F8 */
+    --dsm-page-bg: 220 30% 96%;     /* #F2F4F8 */
+    --background: 220 30% 96%;      /* match for bg-background pages */
     --dsm-card: 0 0% 100%;          /* #FFFFFF */
     --dsm-text: 217 51% 12%;        /* #0F1B2D */
     --dsm-text-secondary: 213 22% 57%; /* #7A8FAA */
