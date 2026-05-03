@@ -185,6 +185,33 @@ export function useUpcomingEvents(instructorId: string | undefined) {
         console.error("[useUpcomingEvents] cpd", e);
       }
 
+      // Manual time blocks added via Add event dialog
+      try {
+        const horizonIso = addDays(today, 30).toISOString();
+        const { data: blocks } = await supabase
+          .from("instructor_manual_blocks")
+          .select("id, title, start_datetime, block_type")
+          .eq("instructor_id", instructorId)
+          .gte("start_datetime", today.toISOString())
+          .lte("start_datetime", horizonIso);
+        for (const b of blocks || []) {
+          const d = new Date(b.start_datetime as string);
+          events.push({
+            id: `block-${b.id}`,
+            type: "task",
+            date: d,
+            daysUntil: differenceInCalendarDays(d, today),
+            title: b.title || "Time block",
+            dateLabel: fmtDate(d),
+            timeLabel: format(d, "HH:mm"),
+            locationLabel: (b.block_type as string) || "Block",
+            destinationPath: `/instructor/schedule`,
+          });
+        }
+      } catch (e) {
+        console.error("[useUpcomingEvents] blocks", e);
+      }
+
       events.sort((a, b) => a.date.getTime() - b.date.getTime());
       return events;
     },
