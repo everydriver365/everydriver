@@ -16,6 +16,7 @@ import { CustomizeFrequentlyUsedSheet } from "@/components/instructor/quickAcces
 import { InstructorSearchOverlay } from "@/components/instructor/InstructorSearchOverlay";
 
 const BLUE = "#3D55A1";
+const BLUE_TINT = "#EDF2FE";
 const TEXT = "#1A1A1A";
 const MUTED = "#8E8E93";
 const BORDER = "rgba(26,82,160,0.08)";
@@ -122,7 +123,7 @@ type LessonStatus = "done" | "upcoming" | "inProgress" | "cancelled";
 
 const STATUS_CFG: Record<LessonStatus, { bg: string; color: string }> = {
   done: { bg: "#F2F4F8", color: "#8E8E93" },
-  upcoming: { bg: "#EEF3FF", color: "#3D55A1" },
+  upcoming: { bg: BLUE_TINT, color: BLUE },
   inProgress: { bg: "#E8F8ED", color: "#1A7A3C" },
   cancelled: { bg: "#FFF0F0", color: "#B23A3F" },
 };
@@ -325,18 +326,18 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
               e.status === "inProgress"
                 ? "#F2FBF5"
                 : e.status === "upcoming"
-                  ? "#F5F8FF"
+                  ? BLUE_TINT
                   : "#FFF";
             const bandColor =
               e.status === "inProgress"
                 ? "#1A7A3C"
                 : e.status === "upcoming"
-                  ? "#3D55A1"
+                  ? BLUE
                   : e.status === "cancelled"
                     ? "#B23A3F"
                     : "#E0E5EE";
             const timeColor =
-              e.status === "upcoming" ? "#3D55A1" : "#1A1A1A";
+              e.status === "upcoming" ? BLUE : "#1A1A1A";
             const minutesUntil =
               e.status === "upcoming" && e.start
                 ? Math.max(0, Math.round((e.start.getTime() - now.getTime()) / 60_000))
@@ -443,7 +444,7 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                   )}
                   {e.status === "upcoming" && (
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
-                      <span style={{ fontSize: 9, fontWeight: 700, color: "#3D55A1" }}>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: BLUE }}>
                         {minutesUntil}m
                       </span>
                       {fee > 0 && (
@@ -565,7 +566,7 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
 /* ────────────────────────────────────────────────────── */
 
 const TONE_PALETTE: Record<string, { bg: string; fg: string }> = {
-  blue: { bg: "#EEF3FF", fg: BLUE },
+  blue: { bg: BLUE_TINT, fg: BLUE },
   green: { bg: "#E8F8ED", fg: "#1A7A3C" },
   amber: { bg: "#FFF6E6", fg: "#B45309" },
   purple: { bg: "#F0EEFF", fg: "#5B47C9" },

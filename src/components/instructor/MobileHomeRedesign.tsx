@@ -45,7 +45,7 @@ const BG = "#F2F4F8";
 const MUTED = "#5B6B8A";
 const BORDER = "rgba(26,82,160,0.10)";
 const ROW_BORDER = "#F0F3F8";
-const BLUE_TINT = "#EEF3FF";
+const BLUE_TINT = "#EDF2FE";
 const FONT =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif';
 
