@@ -583,9 +583,9 @@ export default function InstructorPupils() {
   }).length;
 
   const filterChipColor: Record<string, string> = {
-    active: "#1A52A0",
+    active: "#0A0F29",
     needs_lesson: "#B45309",
-    upcoming: "#1A52A0",
+    upcoming: "#0A0F29",
     passed: "#1A7A3C",
     on_hold: "#B45309",
     inactive: "#8E8E93",
@@ -624,7 +624,7 @@ export default function InstructorPupils() {
             type="button"
             onClick={() => setIsAddOpen(true)}
             style={{
-              background: "#1A52A0",
+              background: "#0A0F29",
               borderRadius: 20,
               padding: "7px 14px",
               display: "inline-flex",
@@ -678,7 +678,7 @@ export default function InstructorPupils() {
                   style={{
                     padding: "5px 12px",
                     borderRadius: 20,
-                    background: active ? "#1A52A0" : "#FFF",
+                    background: active ? "#0A0F29" : "#FFF",
                     border: active ? "none" : "0.5px solid rgba(26,82,160,0.15)",
                     display: "inline-flex",
                     alignItems: "center",
@@ -730,7 +730,7 @@ export default function InstructorPupils() {
                   type="button"
                   onClick={() => setIsAddOpen(true)}
                   style={{
-                    background: "#1A52A0",
+                    background: "#0A0F29",
                     borderRadius: 20,
                     padding: "7px 16px",
                     border: "none",

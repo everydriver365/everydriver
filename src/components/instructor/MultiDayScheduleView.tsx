@@ -892,7 +892,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
       <div style={{ padding: "0 15px", marginBottom: 14 }}>
         <div style={{ display: "flex", gap: 7 }}>
           {[
-            { value: String(todaySummary.lessonCount), label: "Lessons", color: "#1A52A0", small: false },
+            { value: String(todaySummary.lessonCount), label: "Lessons", color: "#0A0F29", small: false },
             { value: `${Math.floor(todaySummary.scheduledMins / 60)}h`, label: "Scheduled", color: "#1A7A3C", small: false },
             { value: formatHm(todaySummary.freeMins), label: "Free", color: "#5B6B8A", small: true },
             { value: String(todaySummary.overdueCount), label: "Overdue", color: "#CC2229", small: false },
@@ -968,12 +968,12 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span style={{
                     width: 6, height: 6, borderRadius: 3,
-                    backgroundColor: today ? "#1A52A0" : "#8E8E93",
+                    backgroundColor: today ? "#0A0F29" : "#8E8E93",
                   }} />
                   <span style={{
                     fontSize: 11,
                     fontWeight: 700,
-                    color: today ? "#1A52A0" : "#8E8E93",
+                    color: today ? "#0A0F29" : "#8E8E93",
                     letterSpacing: "0.02em",
                   }}>
                     {format(day, "EEE d MMM")}{today ? " · today" : ""}
@@ -983,7 +983,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                   type="button"
                   onClick={() => setAddLessonOpen(true)}
                   style={{
-                    backgroundColor: today ? "#1A52A0" : "#FFFFFF",
+                    backgroundColor: today ? "#0A0F29" : "#FFFFFF",
                     border: today ? "none" : "0.5px solid rgba(26,82,160,0.12)",
                     borderRadius: 20,
                     padding: "3px 10px",
