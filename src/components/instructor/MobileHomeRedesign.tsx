@@ -940,6 +940,7 @@ export function MobileHomeRedesign({
             lessonId={nextLesson.lessonId}
             pupilName={nextLesson.pupilName}
             pupilPhone={nextLesson.pupilPhone}
+            pupilProfileImage={nextLesson.pupilProfileImage}
             lessonDate={nextLesson.lessonDate}
             startTime={nextLesson.startTime}
             durationMinutes={nextLesson.durationMinutes}
