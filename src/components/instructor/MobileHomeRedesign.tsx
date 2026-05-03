@@ -21,6 +21,7 @@ import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useInstructorPupilsPaymentSummary } from "@/hooks/usePupilPaymentStatus";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
+import { MapHeroStatic } from "@/components/instructor/MapHeroStatic";
 
 /* ---------- Brand tokens ---------- */
 const RED = "#CC2229";
