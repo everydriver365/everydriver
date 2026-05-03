@@ -229,35 +229,35 @@ function StatsRow({
         flex: 1,
         background: "#FFFFFF",
         border: `0.5px solid ${BORDER}`,
-        borderRadius: 14,
-        padding: "12px 14px",
+        borderRadius: 12,
+        padding: "8px 10px",
         minWidth: 0,
       }}
     >
       <div
         style={{
-          fontSize: 10,
+          fontSize: 9,
           fontWeight: 700,
           color: MUTED,
           letterSpacing: "0.08em",
-          marginBottom: 6,
+          marginBottom: 3,
         }}
       >
         {label}
       </div>
       <div
         style={{
-          fontSize: 22,
+          fontSize: 16,
           fontWeight: 700,
           color: valueColor,
-          letterSpacing: "-0.4px",
+          letterSpacing: "-0.3px",
           lineHeight: 1.1,
           fontVariantNumeric: "tabular-nums",
         }}
       >
         {value}
       </div>
-      <div style={{ fontSize: 11, color: MUTED, marginTop: 4 }}>{sub}</div>
+      <div style={{ fontSize: 10, color: MUTED, marginTop: 2 }}>{sub}</div>
     </div>
   );
 

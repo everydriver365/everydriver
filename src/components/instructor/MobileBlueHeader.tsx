@@ -104,20 +104,6 @@ export function MobileBlueHeader({
             <Plus size={20} strokeWidth={1.7} color={ICON_COLOR} />
           </button>
           <button
-            onClick={() => navigate("/instructor/profile")}
-            className="flex items-center justify-center rounded-full overflow-hidden bg-[hsl(var(--dsm-tile-icon-bg))] border border-[hsl(var(--dsm-border))]"
-            style={{ width: 32, height: 32 }}
-            aria-label="Profile"
-          >
-            {profileImageUrl ? (
-              <img src={profileImageUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-[12px] font-semibold text-[hsl(var(--dsm-text))]">
-                {(/* initial */ "I")}
-              </span>
-            )}
-          </button>
-          <button
             onClick={onMenu}
             className="flex items-center justify-center"
             style={{ width: 32, height: 32 }}
