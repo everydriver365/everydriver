@@ -467,7 +467,7 @@ function UpNextTile({
   const whenLabel = isToday(date) ? "Today" : isTomorrow(date) ? "Tomorrow" : format(date, "EEE");
   const countdown = fmtCountdown(minutesUntil);
 
-  const open = () => navigate(`/instructor/pupils/${pupilId}?lesson=${lessonId}`);
+  const open = () => onToggleExpanded();
   const call = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (pupilPhone) window.location.href = `tel:${pupilPhone}`;
