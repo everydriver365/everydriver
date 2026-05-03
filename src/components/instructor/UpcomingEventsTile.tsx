@@ -377,6 +377,16 @@ export function UpcomingEventsTile({ instructorId }: Props) {
           </>
         )}
       </div>
+
+      <AddCalendarEventDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        instructorId={instructorId}
+        onSuccess={() => {
+          setAddOpen(false);
+          queryClient.invalidateQueries({ queryKey: ["upcoming-events-home", instructorId] });
+        }}
+      />
     </div>
   );
 }
