@@ -93,6 +93,8 @@ interface NextUpTileProps {
   checkInStatus?: string | null;
   lessonStatus?: string | null;
   lastLessonPlan?: string | null;
+  hideHeader?: boolean;
+  forceExpanded?: boolean;
 }
 
 function getInitials(name: string): string {
