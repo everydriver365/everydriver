@@ -71,23 +71,23 @@ export function UpcomingEventsTile({ instructorId }: Props) {
   const goSeeAll = () => navigate("/instructor/schedule");
 
   return (
-    <div style={{ marginTop: 14, padding: "0 20px", fontFamily: FONT }}>
+    <div style={{ marginTop: 14, padding: "0 16px", fontFamily: FONT }}>
       {/* Header */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: 10,
+          marginBottom: 8,
           padding: "0 2px",
         }}
       >
         <span
           style={{
-            fontSize: 11,
+            fontSize: 10,
             fontWeight: 700,
-            color: "#6B7A90",
-            letterSpacing: "0.12em",
+            color: "#8E8E93",
+            letterSpacing: 1.2,
             textTransform: "uppercase",
           }}
         >
@@ -99,9 +99,9 @@ export function UpcomingEventsTile({ instructorId }: Props) {
             background: "none",
             border: "none",
             padding: 0,
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: 600,
-            color: "#315FAE",
+            color: BLUE,
             cursor: "pointer",
           }}
         >
@@ -111,11 +111,12 @@ export function UpcomingEventsTile({ instructorId }: Props) {
 
       {/* Card */}
       <div
-        className="home-v2-card"
         style={{
+          backgroundColor: "#FFF",
+          borderRadius: 14,
           overflow: "hidden",
+          border: "0.5px solid rgba(26,82,160,0.08)",
           marginBottom: 24,
-          padding: 0,
         }}
       >
         {isLoading ? (

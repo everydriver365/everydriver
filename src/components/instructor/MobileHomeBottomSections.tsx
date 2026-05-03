@@ -240,22 +240,23 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
   }, [enriched, isToday, now]);
 
   return (
-    <div style={{ padding: "0 20px", marginBottom: 18 }}>
+    <div style={{ padding: "0 14px", marginBottom: 14 }}>
       <SectionHeader
-        label="Today's schedule"
+        label="Schedule"
         rightLabel="View all →"
         onRightPress={() => navigate("/instructor/schedule")}
       />
 
-      {/* Day toggle — soft segmented control */}
+      {/* Day toggle */}
       <div
         style={{
-          background: "rgba(15,35,65,0.05)",
+          background: "#FFF",
           borderRadius: 12,
           padding: 3,
           display: "flex",
           gap: 2,
-          marginBottom: 10,
+          marginBottom: 8,
+          border: `0.5px solid ${BORDER_STRONG}`,
         }}
       >
         {(["Today", "Tomorrow"] as const).map((day) => {
@@ -268,22 +269,17 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
               style={{
                 flex: 1,
                 borderRadius: 9,
-                padding: "7px 0",
-                background: active ? "#FFFFFF" : "transparent",
+                padding: "5px 0",
+                background: active ? BLUE : "transparent",
                 border: "none",
                 cursor: "pointer",
-                boxShadow: active
-                  ? "0 1px 3px rgba(15,35,65,0.10), 0 0 0 0.5px rgba(15,35,65,0.06)"
-                  : "none",
-                transition: "background 150ms ease",
               }}
             >
               <span
                 style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: active ? "#315FAE" : "#6B7A90",
-                  letterSpacing: "-0.1px",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: active ? "#FFF" : MUTED,
                 }}
               >
                 {day}
@@ -295,8 +291,10 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
 
       {/* Card */}
       <div
-        className="home-v2-card"
         style={{
+          background: "#FFF",
+          borderRadius: 16,
+          border: `0.5px solid ${BORDER}`,
           overflow: "hidden",
         }}
       >
@@ -361,70 +359,39 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                   }}
                   style={{
                     display: "flex",
-                    alignItems: "stretch",
-                    padding: "10px 14px",
-                    gap: 12,
+                    alignItems: "center",
+                    padding: "10px 12px",
+                    gap: 8,
                     background: rowBg,
                     opacity: e.status === "done" ? 0.55 : 1,
                     cursor: e.lesson.pupilId ? "pointer" : "default",
-                    position: "relative",
                   }}
                 >
-                  {/* Vertical timeline rail with hollow ring */}
+                  {/* Left colour band */}
                   <div
                     style={{
-                      width: 18,
+                      width: 3,
+                      height: 32,
+                      borderRadius: 2,
+                      background: bandColor,
                       flexShrink: 0,
-                      position: "relative",
-                      display: "flex",
-                      alignItems: "flex-start",
-                      justifyContent: "center",
-                      paddingTop: 4,
                     }}
-                  >
-                    {/* Rail */}
-                    <span
-                      aria-hidden
-                      style={{
-                        position: "absolute",
-                        top: i === 0 ? 12 : 0,
-                        bottom: i === enriched.length - 1 ? "calc(100% - 14px)" : 0,
-                        left: "50%",
-                        transform: "translateX(-50%)",
-                        width: 1.5,
-                        background: "rgba(49,95,174,0.18)",
-                      }}
-                    />
-                    {/* Hollow ring */}
-                    <span
-                      aria-hidden
-                      style={{
-                        position: "relative",
-                        width: 12,
-                        height: 12,
-                        borderRadius: 999,
-                        background: "#FFFFFF",
-                        border: `2px solid ${bandColor}`,
-                        boxShadow: "0 0 0 3px #FFFFFF",
-                      }}
-                    />
-                  </div>
+                  />
 
                   {/* Time + duration */}
-                  <div style={{ minWidth: 50, flexShrink: 0 }}>
+                  <div style={{ minWidth: 36 }}>
                     <div
                       style={{
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: 700,
                         letterSpacing: -0.3,
-                        lineHeight: "18px",
+                        lineHeight: "17px",
                         color: timeColor,
-                        fontVariantNumeric: "tabular-nums",
                       }}
                     >
                       {fmtTime(e.lesson.startTime)}
                     </div>
-                    <div style={{ fontSize: 10.5, color: MUTED, marginTop: 1 }}>
+                    <div style={{ fontSize: 9, color: MUTED, marginTop: 1 }}>
                       {durationHours(e.lesson.durationMinutes || 60)}h
                     </div>
                   </div>
@@ -433,10 +400,10 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: 13,
+                        fontSize: 12,
                         fontWeight: 700,
                         color: TEXT,
-                        lineHeight: "18px",
+                        lineHeight: "17px",
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -446,23 +413,15 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                     </div>
                     <div
                       style={{
-                        fontSize: 11,
+                        fontSize: 10,
                         color: MUTED,
-                        marginTop: 1,
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 4,
                       }}
                     >
-                      {e.lesson.pickupLocation && (
-                        <>
-                          <span aria-hidden style={{ fontSize: 10 }}>📍</span>
-                          {e.lesson.pickupLocation}
-                        </>
-                      )}
+                      {e.lesson.lessonType}
+                      {e.lesson.pickupLocation ? ` · ${e.lesson.pickupLocation}` : ""}
                     </div>
                   </div>
 
@@ -679,20 +638,20 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
   };
 
   return (
-    <div style={{ padding: "0 20px", marginBottom: 18 }}>
+    <div style={{ padding: "0 14px", marginBottom: 14 }}>
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: 10,
+          marginBottom: 8,
         }}
       >
         <div
           style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: "#6B7A90",
+            fontSize: 10,
+            fontWeight: 700,
+            color: MUTED,
             letterSpacing: "0.12em",
             textTransform: "uppercase",
           }}
@@ -738,29 +697,32 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
       <button
         type="button"
         onClick={() => setSearchOpen(true)}
-        className="home-v2-tile"
         style={{
           width: "100%",
-          padding: "10px 14px",
+          background: "#FFF",
+          borderRadius: 12,
+          padding: "8px 12px",
           display: "flex",
           alignItems: "center",
-          gap: 8,
-          marginBottom: 12,
+          gap: 7,
+          marginBottom: 10,
+          border: `0.5px solid ${BORDER_STRONG}`,
           cursor: "pointer",
         }}
       >
-        <Search size={14} color="#94A3B8" />
-        <span style={{ fontSize: 13, color: "#94A3B8", flex: 1, textAlign: "left" }}>
+        <Search size={12} color={MUTED} />
+        <span style={{ fontSize: 11, color: "#C7C7CC", flex: 1, textAlign: "left" }}>
           Search tools, pupils, lessons
         </span>
         <span
           style={{
-            background: "rgba(15,35,65,0.05)",
-            borderRadius: 6,
-            padding: "2px 7px",
-            fontSize: 10,
+            background: "#F2F4F8",
+            borderRadius: 5,
+            padding: "2px 6px",
+            border: "0.5px solid #E0E5EE",
+            fontSize: 9,
             fontWeight: 600,
-            color: "#6B7A90",
+            color: MUTED,
           }}
         >
           ⌘K

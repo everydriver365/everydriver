@@ -14,7 +14,6 @@ import {
   CalendarPlus,
   Calendar,
   PoundSterling,
-  UserRound,
   type LucideIcon,
 } from "lucide-react";
 
@@ -105,12 +104,12 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: 700,
-        color: "#6B7A90",
-        letterSpacing: "0.12em",
+        color: MUTED,
+        letterSpacing: "0.08em",
         textTransform: "uppercase",
-        padding: "0 20px 10px",
+        padding: "0 18px 8px",
       }}
     >
       {children}
@@ -133,88 +132,45 @@ function GreetingBlock({
   const now = new Date();
   const hour = now.getHours();
   const greet = hour < 12 ? "Morning" : hour < 18 ? "Afternoon" : "Evening";
-  const dateLine = format(now, "EEEE, d MMMM");
+  const dateLine = format(now, "EEE · d MMM yyyy").toUpperCase();
 
-  const Chip = ({
-    value,
+  const Pill = ({
     label,
-    tone = "blue",
-    Icon,
+    tone,
   }: {
-    value: string;
     label: string;
-    tone?: "blue" | "green" | "amber";
-    Icon: LucideIcon;
+    tone: "blue" | "red";
   }) => {
-    const accent =
-      tone === "amber" ? "#E29A2B" : tone === "green" ? "#2F9E6E" : "#315FAE";
-    const tint =
-      tone === "amber" ? "#FFF3DC" : tone === "green" ? "#E4F5EC" : "#E6EEFB";
+    const isRed = tone === "red";
     return (
-      <div
-        className="home-v2-tile"
+      <span
         style={{
-          flex: 1,
-          minWidth: 0,
-          padding: "10px 12px",
-          display: "flex",
+          display: "inline-flex",
           alignItems: "center",
-          gap: 10,
+          height: 26,
+          padding: "0 11px",
+          borderRadius: 999,
+          fontSize: 12,
+          fontWeight: 600,
+          background: isRed ? RED : "#FFFFFF",
+          color: isRed ? "#FFFFFF" : BLUE,
+          border: isRed ? "0.5px solid transparent" : `0.5px solid ${BLUE}`,
+          letterSpacing: "-0.1px",
         }}
       >
-        <span
-          aria-hidden
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 10,
-            background: tint,
-            color: accent,
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <Icon size={16} strokeWidth={2} />
-        </span>
-        <div style={{ minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: 17,
-              fontWeight: 700,
-              color: "#0B1220",
-              letterSpacing: "-0.3px",
-              lineHeight: 1.05,
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            {value}
-          </div>
-          <div
-            style={{
-              fontSize: 11,
-              color: "#64748B",
-              marginTop: 1,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {label}
-          </div>
-        </div>
-      </div>
+        {label}
+      </span>
     );
   };
 
   return (
-    <div style={{ padding: "20px 20px 16px" }}>
+    <div style={{ padding: "20px 18px 12px" }}>
       <div
         style={{
-          fontSize: 13,
-          fontWeight: 500,
-          color: "#64748B",
+          fontSize: 11,
+          fontWeight: 600,
+          color: MUTED,
+          letterSpacing: "0.08em",
           marginBottom: 6,
         }}
       >
@@ -222,35 +178,25 @@ function GreetingBlock({
       </div>
       <h1
         style={{
-          fontSize: 30,
-          fontWeight: 600,
-          color: "#0B1220",
-          letterSpacing: "-0.6px",
+          fontSize: 26,
+          fontWeight: 700,
+          color: "#1A1A1A",
+          letterSpacing: "-0.4px",
           margin: 0,
-          lineHeight: 1.1,
+          lineHeight: 1.15,
         }}
       >
         {greet}, {firstName}.
       </h1>
-      <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-        <Chip
-          value={String(lessonsToday)}
-          label={`Lesson${lessonsToday === 1 ? "" : "s"}`}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 12 }}>
+        <Pill
+          label={`${lessonsToday} lesson${lessonsToday === 1 ? "" : "s"}`}
           tone="blue"
-          Icon={Calendar}
         />
-        <Chip
-          value={`£${Math.round(earningsToday)}`}
-          label="Today"
-          tone="green"
-          Icon={PoundSterling}
-        />
-        <Chip
-          value={String(pendingJobs)}
-          label="Waiting"
-          tone={pendingJobs > 0 ? "amber" : "blue"}
-          Icon={Clock}
-        />
+        <Pill label={`£${Math.round(earningsToday)} today`} tone="blue" />
+        {pendingJobs > 0 && (
+          <Pill label={`${pendingJobs} waiting`} tone="red" />
+        )}
       </div>
     </div>
   );
@@ -271,88 +217,64 @@ function StatsRow({
   const Card = ({
     label,
     value,
+    valueColor,
     sub,
-    accent,
-    Icon,
   }: {
     label: string;
     value: string;
+    valueColor: string;
     sub: string;
-    accent: string;
-    Icon: LucideIcon;
   }) => (
     <div
-      className="home-v2-card"
       style={{
         flex: 1,
-        padding: "14px 14px",
+        background: "#FFFFFF",
+        border: `0.5px solid ${BORDER}`,
+        borderRadius: 12,
+        padding: "8px 10px",
         minWidth: 0,
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
       }}
     >
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: "#6B7A90",
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            marginBottom: 4,
-          }}
-        >
-          {label}
-        </div>
-        <div
-          style={{
-            fontSize: 22,
-            fontWeight: 600,
-            color: "#0B1220",
-            letterSpacing: "-0.5px",
-            lineHeight: 1.05,
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
-          {value}
-        </div>
-        <div style={{ fontSize: 12, color: "#64748B", marginTop: 3 }}>
-          {sub}
-        </div>
+      <div
+        style={{
+          fontSize: 9,
+          fontWeight: 700,
+          color: MUTED,
+          letterSpacing: "0.08em",
+          marginBottom: 3,
+        }}
+      >
+        {label}
       </div>
       <div
         style={{
-          width: 38,
-          height: 38,
-          borderRadius: 999,
-          background: `${accent}1A`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
+          fontSize: 16,
+          fontWeight: 700,
+          color: valueColor,
+          letterSpacing: "-0.3px",
+          lineHeight: 1.1,
+          fontVariantNumeric: "tabular-nums",
         }}
       >
-        <Icon size={18} strokeWidth={1.8} color={accent} />
+        {value}
       </div>
+      <div style={{ fontSize: 10, color: MUTED, marginTop: 2 }}>{sub}</div>
     </div>
   );
 
   return (
-    <div style={{ display: "flex", gap: 10, padding: "0 20px 16px" }}>
+    <div style={{ display: "flex", gap: 8, padding: "0 14px 14px" }}>
       <Card
         label="TODAY"
         value={`£${Math.round(todayEarnings)}`}
+        valueColor={RED}
         sub={`${todaySessions} lesson${todaySessions === 1 ? "" : "s"}`}
-        accent="#2F9E6E"
-        Icon={PoundSterling}
       />
       <Card
         label="THIS WEEK"
         value={`${weekHours}h`}
+        valueColor={BLUE}
         sub={`${weekSessions} lesson${weekSessions === 1 ? "" : "s"}`}
-        accent="#315FAE"
-        Icon={Calendar}
       />
     </div>
   );
@@ -593,231 +515,200 @@ function UpNextTile({
   );
 
   return (
-    <div style={{ padding: "0 20px 16px" }}>
+    <div style={{ padding: "0 14px 14px" }}>
       <div
         role="button"
         onClick={open}
-        className="home-v2-card"
         style={{
+          background: "#FFFFFF",
+          borderRadius: 20,
           overflow: "hidden",
+          border: `0.5px solid ${BORDER}`,
           cursor: "pointer",
-          padding: "14px 14px 14px 16px",
         }}
       >
-        {/* Top split: details (left) + map (right) */}
-        <div style={{ display: "flex", gap: 12, alignItems: "stretch" }}>
-          {/* LEFT: details */}
-          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
-            {/* eyebrow */}
-            <div
+        <MapHeroLive
+          lessonId={lessonId}
+          pickupPostcode={pickupPostcode}
+          pickupLocation={pickupLocation}
+          countdown={countdown}
+          minutesUntil={minutesUntil}
+          startTime={start}
+          whenLabel={whenLabel}
+          expanded={expanded}
+          onToggleExpanded={onToggleExpanded}
+          pupilName={pupilName}
+          pupilPhone={pupilPhone}
+          pupilProfileImage={pupilProfileImage}
+          instructorId={instructorId}
+        />
+
+        <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
+          {/* Date · time chip */}
+          <div
+            style={{
+              alignSelf: "flex-start",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "5px 10px",
+              borderRadius: 999,
+              background: BLUE_TINT,
+              border: `0.5px solid ${BORDER}`,
+            }}
+          >
+            <Calendar size={12} strokeWidth={2.4} style={{ color: BLUE }} />
+            <span
               style={{
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: 600,
-                color: "#6B7A90",
-                letterSpacing: "0.02em",
+                color: CHARCOAL,
+                letterSpacing: 0.4,
+                textTransform: "uppercase",
+                fontVariantNumeric: "tabular-nums",
               }}
             >
-              Next lesson
+              {`${whenLabel} ${dayNum} ${monthName}`} · {start}
+            </span>
+          </div>
+
+          {/* Pupil name + chevron */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+            <div
+              style={{
+                fontSize: 19,
+                fontWeight: 700,
+                color: CHARCOAL,
+                letterSpacing: "-0.4px",
+                lineHeight: 1.15,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                minWidth: 0,
+              }}
+            >
+              {toSentence(pupilName)}
+            </div>
+            <ChevronDown
+              size={18}
+              strokeWidth={2}
+              style={{
+                color: MUTED,
+                flexShrink: 0,
+                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 200ms ease",
+              }}
+            />
+          </div>
+
+          {/* Info rows */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <IconTile>
+                <Clock size={13} strokeWidth={2.2} />
+              </IconTile>
+              <div style={{ fontSize: 13, color: CHARCOAL, fontWeight: 500 }}>
+                Standard lesson · <span style={{ color: MUTED, fontWeight: 400 }}>{hoursLong(durationMinutes)}</span>
+              </div>
             </div>
 
-            {/* avatar + name */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-              <span
-                aria-hidden
-                style={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: 999,
-                  background: BLUE_TINT,
-                  color: BLUE,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <UserRound size={15} strokeWidth={2} />
-              </span>
+              <IconTile>
+                <MapPin size={13} strokeWidth={2.2} />
+              </IconTile>
               <div
                 style={{
-                  fontSize: 18,
-                  fontWeight: 700,
-                  color: "#0B1220",
-                  letterSpacing: "-0.4px",
-                  lineHeight: 1.1,
+                  fontSize: 13,
+                  color: CHARCOAL,
+                  fontWeight: 500,
                   minWidth: 0,
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
                 }}
               >
-                {toSentence(pupilName)}
+                {pickupPostcode || "Pick-up TBC"}
+                {pickupLocation && (
+                  <span style={{ color: MUTED, fontWeight: 400 }}> · {pickupLocation}</span>
+                )}
               </div>
             </div>
-
-            {/* date + time row */}
-            <div style={{ display: "flex", alignItems: "center", gap: 14, color: "#64748B", fontSize: 12.5 }}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-                <Calendar size={13} strokeWidth={2} />
-                {`${whenLabel}, ${dayNum} ${monthName}`}
-              </span>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontVariantNumeric: "tabular-nums" }}>
-                <Clock size={13} strokeWidth={2} />
-                {start}{durationMinutes ? ` (${hoursLong(durationMinutes)})` : ""}
-              </span>
-            </div>
-
-            {/* type pills */}
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              <span
-                style={{
-                  padding: "4px 10px",
-                  borderRadius: 999,
-                  background: "#E6EEFB",
-                  color: "#315FAE",
-                  fontSize: 11.5,
-                  fontWeight: 600,
-                }}
-              >
-                Standard Lesson
-              </span>
-              <span
-                style={{
-                  padding: "4px 10px",
-                  borderRadius: 999,
-                  background: "#E4F5EC",
-                  color: "#1F8A4D",
-                  fontSize: 11.5,
-                  fontWeight: 600,
-                }}
-              >
-                Manual
-              </span>
-            </div>
           </div>
 
-          {/* RIGHT: map */}
-          <div
-            style={{
-              width: 132,
-              flexShrink: 0,
-              borderRadius: 14,
-              overflow: "hidden",
-              border: "0.5px solid rgba(15,35,65,0.08)",
-            }}
-          >
-            <MapHeroLive
-              lessonId={lessonId}
-              pickupPostcode={pickupPostcode}
-              pickupLocation={pickupLocation}
-              countdown={countdown}
-              minutesUntil={minutesUntil}
-              startTime={start}
-              whenLabel={whenLabel}
-              expanded={expanded}
-              onToggleExpanded={onToggleExpanded}
-              pupilName={pupilName}
-              pupilPhone={pupilPhone}
-              pupilProfileImage={pupilProfileImage}
-              instructorId={instructorId}
-            />
+          {/* Action row — Call / Text / Navigate */}
+          <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+            <button
+              type="button"
+              onClick={call}
+              disabled={!pupilPhone}
+              style={{
+                flex: 1,
+                height: 44,
+                borderRadius: 14,
+                background: BLUE,
+                color: "#FFFFFF",
+                border: "none",
+                fontSize: 14,
+                fontWeight: 600,
+                letterSpacing: 0.1,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                opacity: pupilPhone ? 1 : 0.5,
+                cursor: pupilPhone ? "pointer" : "not-allowed",
+                boxShadow: "0 4px 12px -4px rgba(41,82,179,0.45)",
+              }}
+            >
+              <Phone size={15} strokeWidth={2.2} /> Call
+            </button>
+            <button
+              type="button"
+              onClick={message}
+              style={{
+                flex: 1,
+                height: 44,
+                borderRadius: 14,
+                background: BLUE_TINT,
+                color: BLUE,
+                border: `0.5px solid ${BORDER}`,
+                fontSize: 14,
+                fontWeight: 600,
+                letterSpacing: 0.1,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                cursor: "pointer",
+              }}
+            >
+              <MessageSquare size={15} strokeWidth={2.2} /> Text
+            </button>
+            <button
+              type="button"
+              onClick={navTo}
+              disabled={!(pickupPostcode || pickupLocation)}
+              style={{
+                flex: 1,
+                height: 44,
+                borderRadius: 14,
+                background: BLUE_TINT,
+                color: BLUE,
+                border: `0.5px solid ${BORDER}`,
+                fontSize: 14,
+                fontWeight: 600,
+                letterSpacing: 0.1,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                opacity: (pickupPostcode || pickupLocation) ? 1 : 0.5,
+                cursor: (pickupPostcode || pickupLocation) ? "pointer" : "not-allowed",
+              }}
+            >
+              <NavIcon size={15} strokeWidth={2.2} /> Go
+            </button>
           </div>
-        </div>
-
-        {/* Postcode + distance row (under split) */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 14,
-            marginTop: 12,
-            paddingTop: 12,
-            borderTop: "0.5px solid rgba(15,35,65,0.06)",
-            color: "#0B1220",
-            fontSize: 13,
-            fontWeight: 500,
-          }}
-        >
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>
-            <MapPin size={14} strokeWidth={2} style={{ color: "#94A3B8", flexShrink: 0 }} />
-            <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-              {pickupPostcode || "Pick-up TBC"}
-              {pickupLocation && (
-                <span style={{ color: "#64748B", fontWeight: 400 }}> · {pickupLocation}</span>
-              )}
-            </span>
-          </span>
-        </div>
-
-        {/* Action row — Call / Text / Navigate */}
-        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-          <button
-            type="button"
-            onClick={call}
-            disabled={!pupilPhone}
-            style={{
-              flex: 1,
-              height: 42,
-              borderRadius: 12,
-              background: "#FFFFFF",
-              color: "#1F8A4D",
-              border: "1px solid rgba(15,35,65,0.10)",
-              fontSize: 13.5,
-              fontWeight: 600,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-              opacity: pupilPhone ? 1 : 0.5,
-              cursor: pupilPhone ? "pointer" : "not-allowed",
-            }}
-          >
-            <Phone size={14} strokeWidth={2.2} /> Call
-          </button>
-          <button
-            type="button"
-            onClick={message}
-            style={{
-              flex: 1,
-              height: 42,
-              borderRadius: 12,
-              background: "#FFFFFF",
-              color: "#315FAE",
-              border: "1px solid rgba(15,35,65,0.10)",
-              fontSize: 13.5,
-              fontWeight: 600,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-              cursor: "pointer",
-            }}
-          >
-            <MessageSquare size={14} strokeWidth={2.2} /> Text
-          </button>
-          <button
-            type="button"
-            onClick={navTo}
-            disabled={!(pickupPostcode || pickupLocation)}
-            style={{
-              flex: 1,
-              height: 42,
-              borderRadius: 12,
-              background: "#FFFFFF",
-              color: "#315FAE",
-              border: "1px solid rgba(15,35,65,0.10)",
-              fontSize: 13.5,
-              fontWeight: 600,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-              opacity: (pickupPostcode || pickupLocation) ? 1 : 0.5,
-              cursor: (pickupPostcode || pickupLocation) ? "pointer" : "not-allowed",
-            }}
-          >
-            <NavIcon size={14} strokeWidth={2.2} /> Navigate
-          </button>
         </div>
       </div>
     </div>
@@ -852,22 +743,21 @@ function AttentionGroupCard({
   if (rows.length === 0) return null;
   return (
     <>
-      <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 20px", marginBottom: 6 }}>
-        <span
-          style={{
-            fontSize: 10,
-            fontWeight: 700,
-            color: groupColor,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-          }}
-        >
+      <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "0 14px", marginBottom: 4 }}>
+        <span style={{ fontSize: 9, fontWeight: 700, color: groupColor, letterSpacing: "0.1em", textTransform: "uppercase" }}>
           {groupLabel}
         </span>
         <span style={{ flex: 1, height: 0.5, background: groupBorder }} />
       </div>
-      <div style={{ padding: "0 20px", marginBottom: 10 }}>
-        <div className="home-v2-card" style={{ overflow: "hidden", padding: 0 }}>
+      <div style={{ padding: "0 14px", marginBottom: 8 }}>
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 14,
+            overflow: "hidden",
+            border: `0.5px solid ${groupLabel === "Urgent" ? "rgba(204,34,41,0.12)" : BORDER}`,
+          }}
+        >
           {rows.map((r, i) => (
             <button
               key={r.key}
@@ -877,20 +767,20 @@ function AttentionGroupCard({
                 width: "100%",
                 display: "flex",
                 alignItems: "center",
-                gap: 12,
-                padding: "12px 14px",
+                gap: 10,
+                padding: "10px 12px",
                 background: "transparent",
                 border: "none",
-                borderTop: i === 0 ? "none" : "0.5px solid rgba(15,35,65,0.06)",
+                borderTop: i === 0 ? "none" : `0.5px solid ${ROW_BORDER}`,
                 cursor: "pointer",
                 textAlign: "left",
               }}
             >
               <span
                 style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: 10,
+                  width: 30,
+                  height: 30,
+                  borderRadius: 8,
                   background: r.iconBg,
                   color: r.iconColor,
                   display: "inline-flex",
@@ -899,24 +789,15 @@ function AttentionGroupCard({
                   flexShrink: 0,
                 }}
               >
-                <r.Icon size={15} strokeWidth={2} />
+                <r.Icon size={13} strokeWidth={1.8} />
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A" }}>{r.title}</div>
                 <div
                   style={{
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: "#0B1220",
-                    letterSpacing: "-0.2px",
-                  }}
-                >
-                  {r.title}
-                </div>
-                <div
-                  style={{
-                    fontSize: 11.5,
-                    color: "#64748B",
-                    marginTop: 2,
+                    fontSize: 10,
+                    color: MUTED,
+                    marginTop: 1,
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
@@ -928,13 +809,13 @@ function AttentionGroupCard({
               {r.badge && (
                 <span
                   style={{
-                    minWidth: 22,
-                    height: 22,
-                    padding: "0 7px",
-                    borderRadius: 11,
+                    minWidth: 20,
+                    height: 20,
+                    padding: "0 6px",
+                    borderRadius: 10,
                     background: r.badge.bg,
                     color: "#FFFFFF",
-                    fontSize: 11,
+                    fontSize: 10,
                     fontWeight: 700,
                     display: "inline-flex",
                     alignItems: "center",
@@ -945,7 +826,7 @@ function AttentionGroupCard({
                   {r.badge.label}
                 </span>
               )}
-              <ChevronRight size={15} color="#C7D2DE" strokeWidth={2} />
+              <ChevronRight size={14} color="#C7C7CC" strokeWidth={1.8} />
             </button>
           ))}
         </div>
@@ -960,130 +841,27 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
 
   if (rows.length === 0) {
     return (
-      <div style={{ padding: "0 20px 14px" }}>
-        <div className="home-v2-card" style={{ padding: 18, textAlign: "center" }}>
-          <div
-            style={{
-              fontSize: 14,
-              fontWeight: 600,
-              color: "#0B1220",
-              marginBottom: 4,
-              letterSpacing: "-0.2px",
-            }}
-          >
-            All clear
-          </div>
-          <div style={{ fontSize: 11.5, color: "#64748B" }}>
-            Nothing needs your attention right now
-          </div>
+      <div style={{ padding: "0 14px 14px" }}>
+        <div
+          style={{
+            background: "#FFF",
+            borderRadius: 13,
+            padding: 16,
+            textAlign: "center",
+            border: `0.5px solid ${BORDER}`,
+          }}
+        >
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A", marginBottom: 3 }}>All clear</div>
+          <div style={{ fontSize: 10, color: MUTED }}>Nothing needs your attention right now</div>
         </div>
       </div>
     );
   }
 
-  // Top 3 horizontal tiles (urgent first, then to-do)
-  const top = [...urgent, ...todo].slice(0, 3);
-
   return (
-    <div style={{ padding: "0 20px 14px" }}>
-      <div style={{ display: "grid", gridTemplateColumns: `repeat(${top.length}, minmax(0, 1fr))`, gap: 8 }}>
-        {top.map((r) => {
-          const isUrgent = r.group === "urgent";
-          const badgeBg = r.badge?.bg || (isUrgent ? "#E15D5A" : "#E29A2B");
-          const badgeLabel = r.badge?.label;
-          // Take first sentence of subtitle as 2nd line; fall back to subtitle
-          const lineTwo = r.subtitle.split("·")[0]?.trim() || "";
-          return (
-            <button
-              key={r.key}
-              type="button"
-              onClick={r.onClick}
-              className="home-v2-tile"
-              style={{
-                position: "relative",
-                padding: "10px 10px 10px 10px",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                textAlign: "left",
-                cursor: "pointer",
-                background: "#FFFFFF",
-                minWidth: 0,
-              }}
-            >
-              <span
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 10,
-                  background: r.iconBg,
-                  color: r.iconColor,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <r.Icon size={15} strokeWidth={2} />
-              </span>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "#0B1220",
-                    letterSpacing: "-0.1px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                    lineHeight: 1.15,
-                  }}
-                >
-                  {r.title}
-                </div>
-                {lineTwo && (
-                  <div
-                    style={{
-                      fontSize: 10.5,
-                      color: "#64748B",
-                      marginTop: 1,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {lineTwo}
-                  </div>
-                )}
-              </div>
-              {badgeLabel && (
-                <span
-                  style={{
-                    position: "absolute",
-                    top: -4,
-                    right: -4,
-                    minWidth: 20,
-                    height: 20,
-                    padding: "0 6px",
-                    borderRadius: 10,
-                    background: badgeBg,
-                    color: "#FFFFFF",
-                    fontSize: 10.5,
-                    fontWeight: 700,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: "2px solid #FFFFFF",
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {badgeLabel}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+    <div style={{ paddingBottom: 14 }}>
+      <AttentionGroupCard rows={urgent} groupLabel="Urgent" groupColor="#B23A3F" groupBorder="#F0CCCC" />
+      <AttentionGroupCard rows={todo} groupLabel="To do" groupColor="#B45309" groupBorder="#E8D5B0" />
     </div>
   );
 }

@@ -89,18 +89,18 @@ export function FloatingSessionBar({ instructorId, className }: FloatingSessionB
           onDragEnd={handleDragEnd}
           style={{ y }}
           className={cn(
-            "fixed bottom-24 left-4 right-4 z-30",
+            "fixed bottom-20 left-4 right-4 z-30",
             className
           )}
         >
           <motion.button
             onClick={handleTap}
             className={cn(
-              "w-full flex items-center gap-3 p-3 pl-3.5",
-              "backdrop-blur-xl bg-white/95 dark:bg-card/85",
-              "border border-[rgba(15,35,65,0.08)]",
-              "border-l-[3px] border-l-emerald-500",
-              "rounded-[22px] shadow-[0_10px_30px_-12px_rgba(15,35,65,0.18),0_2px_6px_-2px_rgba(15,35,65,0.08)]",
+              "w-full flex items-center gap-3 p-3",
+              "backdrop-blur-xl bg-card/90 dark:bg-card/80",
+              "border border-primary/20 dark:border-primary/30",
+              "border-l-4 border-l-emerald-500",
+              "rounded-2xl shadow-lg",
               "active:scale-[0.98] transition-transform"
             )}
             whileTap={{ scale: 0.98 }}
