@@ -143,6 +143,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/pupils" element={<InstructorPupils />} />
     <Route path="/instructor/pupils/:pupilId" element={<PremiumPupilProfile />} />
     <Route path="/instructor/schedule" element={<InstructorSchedule />} />
+    <Route path="/instructor/events/:eventKey" element={<InstructorEventDetails />} />
     <Route path="/instructor/course-planner" element={<CoursePlannerPage />} />
     <Route path="/instructor/diary" element={<InstructorDiary />} />
     <Route path="/instructor/menu" element={<InstructorMenu />} />
