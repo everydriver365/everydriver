@@ -164,56 +164,63 @@ export default function InstructorSchedule() {
           style={{ backgroundColor: "transparent", position: "relative", padding: isMobile ? "16px 20px 10px" : "12px 0 8px" }}
         >
           {isMobile ? (
-            <>
-              {/* Top row: Month title + subtitle, avatar right */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <div style={{
+              backgroundColor: "#FFFFFF",
+              padding: "12px 16px",
+              borderBottom: "0.5px solid #F0F3F8",
+              margin: "-16px -20px 0",
+            }}>
+              {/* Title row */}
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
                 <div style={{ minWidth: 0 }}>
                   <h1 style={{
                     margin: 0,
-                    fontSize: 26,
+                    fontSize: 24,
                     fontWeight: 700,
-                    color: "#000000",
+                    color: "#1A1A1A",
                     letterSpacing: "-0.5px",
-                    lineHeight: 1.1,
-                    fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif',
+                    lineHeight: "28px",
                   }}>
                     {new Date().toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
                   </h1>
                   <div style={{
-                    marginTop: 4,
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: "#6E6E73",
-                    letterSpacing: "-0.1px",
+                    marginTop: 3,
+                    fontSize: 11,
+                    color: "#8E8E93",
                   }}>
                     {new Date().toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })} · Today
                   </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                   <button
                     onClick={handleSync}
                     disabled={isSyncing}
                     style={{
-                      width: 38, height: 38, display: "flex",
-                      alignItems: "center", justifyContent: "center",
-                      borderRadius: "50%", border: "none",
-                      background: "transparent", cursor: "pointer",
-                      color: "#6E6E73",
+                      width: 30, height: 30, borderRadius: 15,
+                      backgroundColor: "#F2F4F8",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      border: "none", cursor: "pointer",
                     }}
                     aria-label="Sync calendar"
                   >
-                    <RefreshCw style={{ width: 18, height: 18, ...(isSyncing ? { animation: "spin 1s linear infinite" } : {}) }} />
+                    <RefreshCw style={{ width: 14, height: 14, color: "#5B6B8A", strokeWidth: 1.8, ...(isSyncing ? { animation: "spin 1s linear infinite" } : {}) }} />
                   </button>
                   <button
                     onClick={() => navigate("/instructor/profile")}
-                    className="flex items-center justify-center rounded-full overflow-hidden bg-[hsl(var(--dsm-tile-icon-bg))] border border-[hsl(var(--dsm-border))]"
-                    style={{ width: 36, height: 36 }}
+                    style={{
+                      width: 34, height: 34, borderRadius: 17,
+                      backgroundColor: "#CC2229",
+                      border: "2px solid #1A52A0",
+                      overflow: "hidden",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      padding: 0, cursor: "pointer",
+                    }}
                     aria-label="Profile"
                   >
                     {instructor?.profile_image_url ? (
-                      <img src={instructor.profile_image_url} alt="" className="w-full h-full object-cover" />
+                      <img src={instructor.profile_image_url} alt="" style={{ width: 34, height: 34, objectFit: "cover" }} />
                     ) : (
-                      <span style={{ fontSize: 13, fontWeight: 600, color: "#1C1C1E" }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF" }}>
                         {(instructor?.name || "I").charAt(0).toUpperCase()}
                       </span>
                     )}
@@ -221,64 +228,43 @@ export default function InstructorSchedule() {
                 </div>
               </div>
 
-              {/* iOS-style segmented pill: Calendar / Schedule */}
+              {/* View toggle: Calendar / Schedule */}
               <div
                 style={{
-                  marginTop: 14,
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 4,
-                  backgroundColor: "rgba(118,118,128,0.12)",
+                  backgroundColor: "#F2F4F8",
+                  borderRadius: 11,
                   padding: 3,
-                  borderRadius: 10,
+                  display: "flex",
+                  gap: 2,
                 }}
               >
-                <button
-                  onClick={() => setViewMode('month')}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                    padding: "7px 0",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontWeight: viewMode === 'month' ? 600 : 500,
-                    border: "none",
-                    transition: "all 0.18s ease",
-                    cursor: "pointer",
-                    ...(viewMode === 'month'
-                      ? { backgroundColor: "#FFFFFF", color: "#000000", boxShadow: "0 1px 2px rgba(0,0,0,0.06), 0 3px 8px rgba(0,0,0,0.04)" }
-                      : { backgroundColor: "transparent", color: "#6E6E73" }),
-                  }}
-                >
-                  <CalendarRange style={{ width: 14, height: 14 }} />
-                  Calendar
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                    padding: "7px 0",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontWeight: viewMode === 'list' ? 600 : 500,
-                    border: "none",
-                    transition: "all 0.18s ease",
-                    cursor: "pointer",
-                    ...(viewMode === 'list'
-                      ? { backgroundColor: "#FFFFFF", color: "#000000", boxShadow: "0 1px 2px rgba(0,0,0,0.06), 0 3px 8px rgba(0,0,0,0.04)" }
-                      : { backgroundColor: "transparent", color: "#6E6E73" }),
-                  }}
-                >
-                  <List style={{ width: 14, height: 14 }} />
-                  Schedule
-                </button>
+                {(["Calendar", "Schedule"] as const).map((view) => {
+                  const target: ViewMode = view === "Calendar" ? "month" : "list";
+                  const active = viewMode === target;
+                  const Icon = view === "Calendar" ? CalendarRange : List;
+                  return (
+                    <button
+                      key={view}
+                      onClick={() => setViewMode(target)}
+                      style={{
+                        flex: 1,
+                        padding: "6px 0",
+                        borderRadius: 8,
+                        backgroundColor: active ? "#FFFFFF" : "transparent",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                        border: "none", cursor: "pointer",
+                        fontSize: 11,
+                        fontWeight: active ? 700 : 500,
+                        color: active ? "#1A52A0" : "#8E8E93",
+                      }}
+                    >
+                      <Icon style={{ width: 12, height: 12, strokeWidth: 1.7 }} />
+                      {view}
+                    </button>
+                  );
+                })}
               </div>
-            </>
+            </div>
           ) : (
             <div className="flex items-center justify-between gap-2">
               <InstructorPageHeader
