@@ -194,6 +194,108 @@ function StatChip({
   );
 }
 
+const WEATHER_ICONS: Record<string, LucideIcon> = {
+  Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, Snowflake, CloudLightning,
+};
+
+const WEATHER_TINTS: Record<string, { bg: string; fg: string }> = {
+  clear: { bg: "#FFF8E6", fg: "#B8860B" },
+  cloudy: { bg: "#EEF3FF", fg: BLUE },
+  rain: { bg: "#E8F1FB", fg: "#1A52A0" },
+  snow: { bg: "#F0F6FF", fg: "#3A6FB5" },
+  fog: { bg: "#F2F2EE", fg: "#5B6B6B" },
+  storm: { bg: "#FBECEC", fg: "#A03030" },
+};
+
+function WeatherRow({
+  loading,
+  data,
+  hasPostcode,
+}: {
+  loading: boolean;
+  data: ReturnType<typeof useLessonWeather>["data"];
+  hasPostcode: boolean;
+}) {
+  if (loading) {
+    return (
+      <div
+        style={{
+          margin: "0 16px 12px",
+          background: "#F1F4F8",
+          borderRadius: 12,
+          padding: "10px 12px",
+          height: 56,
+          opacity: 0.6,
+        }}
+      />
+    );
+  }
+
+  if (!hasPostcode || !data) {
+    return (
+      <div
+        style={{
+          margin: "0 16px 12px",
+          background: BLUE_TINT,
+          borderRadius: 12,
+          padding: "10px 12px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+        }}
+      >
+        <CloudOff size={18} color={MUTED} strokeWidth={2.2} />
+        <div style={{ flex: 1, fontSize: 12, color: MUTED }}>
+          {hasPostcode ? "Weather unavailable" : "Add a pick-up postcode for live weather"}
+        </div>
+      </div>
+    );
+  }
+
+  const Icon = WEATHER_ICONS[data.icon] || Cloud;
+  const tint = WEATHER_TINTS[data.category] || WEATHER_TINTS.cloudy;
+
+  return (
+    <div
+      style={{
+        margin: "0 16px 12px",
+        background: tint.bg,
+        borderRadius: 12,
+        padding: "10px 12px",
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+      }}
+    >
+      <Icon size={22} color={tint.fg} strokeWidth={2.2} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: CHARCOAL, lineHeight: 1.2 }}>
+          {data.description} · {data.temperature}°C
+        </div>
+        <div
+          style={{
+            fontSize: 11,
+            color: MUTED,
+            marginTop: 3,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+            <Wind size={11} strokeWidth={2.2} />
+            {data.windSpeedMph} mph
+          </span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+            <Eye size={11} strokeWidth={2.2} />
+            {data.visibilityMi} mi
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function UpNextExpanded({
   lessonId,
   pupilId,
