@@ -14,6 +14,16 @@ import {
   CheckCheck,
   CloudOff,
   Cloud,
+  CloudSun,
+  CloudFog,
+  CloudDrizzle,
+  CloudRain,
+  CloudSnow,
+  CloudLightning,
+  Snowflake,
+  Sun,
+  Wind,
+  Eye,
   Car,
   History,
   StickyNote,
@@ -23,6 +33,7 @@ import {
   PoundSterling,
   type LucideIcon,
 } from "lucide-react";
+import { useLessonWeather } from "@/hooks/useLessonWeather";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
