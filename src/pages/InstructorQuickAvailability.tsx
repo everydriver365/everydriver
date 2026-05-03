@@ -870,3 +870,15 @@ export default function InstructorQuickAvailability() {
     </InstructorPortalLayout>
   );
 }
+
+const navBtnStyle: React.CSSProperties = {
+  width: 32,
+  height: 32,
+  borderRadius: 16,
+  background: "#FFF",
+  border: "0.5px solid rgba(26,82,160,0.15)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  cursor: "pointer",
+};
