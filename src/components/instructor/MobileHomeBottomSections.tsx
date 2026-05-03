@@ -579,6 +579,8 @@ interface QuickActionDef {
 
 function QuickActionsSection({ instructorId }: { instructorId: string }) {
   const navigate = useNavigate();
+  const [editOpen, setEditOpen] = useState(false);
+  const { pinnedIds, setPins, isSaving } = useInstructorPinnedTiles(instructorId);
   const { data: unread = 0 } = useUnreadMessagesCount(instructorId);
   const pendingJobs = usePendingJobsCount();
   const { data: gapData } = useRealGapSlots(instructorId);
