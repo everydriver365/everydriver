@@ -69,7 +69,7 @@ export const QUICK_ACCESS_TILES: QuickAccessTile[] = [
   { id: "find-nearby",      title: "Find nearby",      subtitle: "Toilets, food & more",  icon: MapPin,          tone: "blue",   route: "/instructor/find-nearby" },
   { id: "locations",        title: "Locations",        subtitle: "Saved places",          icon: MapPinned,       tone: "blue",   route: "/instructor/locations" },
   { id: "cpd-log",          title: "CPD log",          subtitle: "Training hours",        icon: BookOpen,        tone: "purple", route: "/instructor/cpd" },
-  { id: "settings",         title: "Settings",         subtitle: "Preferences",           icon: Settings,        tone: "grey",   route: "/instructor/settings" },
+  { id: "settings",         title: "Settings",         subtitle: "Preferences",           icon: Settings,        tone: "blue",   route: "/instructor/settings" },
   { id: "referrals",        title: "Referrals",        subtitle: "Earn rewards",          icon: Gift,            tone: "amber",  route: "/instructor/referrals" },
   { id: "availability",     title: "Availability",     subtitle: "Working hours",         icon: Clock,           tone: "blue",   route: "/instructor/availability" },
   { id: "expenses",         title: "Expenses",         subtitle: "Track costs",           icon: Receipt,         tone: "amber",  route: "/instructor/expenses",          requiredFeature: "expense_tracking" },
