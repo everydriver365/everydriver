@@ -93,6 +93,14 @@ interface DrivingEvent {
   created_at: string;
 }
 
+const SectionLabel = ({ label }: { label: string }) => (
+  <div style={{
+    fontSize: 10, fontWeight: 700, color: "#8E8E93",
+    letterSpacing: 1.2, textTransform: "uppercase",
+    marginBottom: 8, paddingLeft: 2,
+  }}>{label}</div>
+);
+
 export default function InstructorLiveSession() {
   const { instructor, loading } = useInstructorAuth();
   const navigate = useNavigate();
