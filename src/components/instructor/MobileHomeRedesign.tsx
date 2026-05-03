@@ -992,6 +992,8 @@ export function MobileHomeRedesign({
                 checkInStatus={(nextLesson as any).checkInStatus}
                 lessonStatus={(nextLesson as any).lessonStatus}
                 lastLessonPlan={(nextLesson as any).lastLessonPlan}
+                hideHeader
+                forceExpanded
               />
             </div>
           )}

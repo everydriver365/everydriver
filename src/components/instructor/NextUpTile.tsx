@@ -93,6 +93,8 @@ interface NextUpTileProps {
   checkInStatus?: string | null;
   lessonStatus?: string | null;
   lastLessonPlan?: string | null;
+  hideHeader?: boolean;
+  forceExpanded?: boolean;
 }
 
 function getInitials(name: string): string {
@@ -126,10 +128,11 @@ export function NextUpTile({
   lessonDate, pickupPostcode, pickupLocation, startTime,
   minutesUntil, accountBalance, prepaidHours, durationMinutes = 60, instructorId,
   checkInStatus, lessonStatus, lastLessonPlan,
+  hideHeader = false, forceExpanded = false,
 }: NextUpTileProps) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(forceExpanded);
   const [nudgeSentAt, setNudgeSentAt] = useState<number | null>(null);
   // Auto-clear "Reminder sent" chip back to Awaiting after ~3s
   useEffect(() => {
@@ -516,18 +519,20 @@ export function NextUpTile({
       <div style={{ fontFamily: iosFont, WebkitFontSmoothing: "antialiased" }}>
         {/* ── Card — matches other home widgets (white, rounded-[20px], soft shadow) ── */}
         <div
-          className="bg-white rounded-[20px] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_28px_-12px_rgba(16,24,40,0.08)]"
+          className={hideHeader ? "" : "bg-white rounded-[20px] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_28px_-12px_rgba(16,24,40,0.08)]"}
           style={{
             overflow: "hidden",
-            padding: 16,
+            padding: hideHeader ? 0 : 16,
             display: "flex",
             flexDirection: "column",
-            gap: 14,
+            gap: hideHeader ? 0 : 14,
             position: "relative",
             width: "100%",
+            background: hideHeader ? "transparent" : undefined,
           }}
         >
           {/* ── Header (whole row tappable to expand) ── */}
+          {!hideHeader && (
           <div style={{ position: "relative" }}>
 
             {/* UP NEXT label moved to parent SectionLabel above the tile.
@@ -699,6 +704,7 @@ export function NextUpTile({
               )}
             </button>
           </div>
+          )}
 
           {/* ── EXPANDED CONTENT (inside the same white card) ──
               When collapsed, ONLY the header above is visible. Tapping the
@@ -712,9 +718,9 @@ export function NextUpTile({
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="overflow-hidden"
-            style={{ marginLeft: 0, marginRight: 0, marginBottom: -16, marginTop: 4 }}
+            style={{ marginLeft: 0, marginRight: 0, marginBottom: hideHeader ? 0 : -16, marginTop: hideHeader ? 0 : 4 }}
           >
-          <div style={{ padding: "16px 0 20px", display: "flex", flexDirection: "column", gap: 16, borderTop: "0.5px solid #c6c6c8", background: "transparent" }}>
+          <div style={{ padding: hideHeader ? 0 : "16px 0 20px", display: "flex", flexDirection: "column", gap: 16, borderTop: hideHeader ? "none" : "0.5px solid #c6c6c8", background: "transparent" }}>
 
           {/* ── HERO CARD — native iOS UIKit grouped table view style ── */}
           <div style={{
