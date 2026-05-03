@@ -24,6 +24,8 @@ import {
   History,
   Users,
   ChevronDown,
+  User,
+  X,
 } from "lucide-react";
 import TripSummarySheet from "@/components/instructor/TripSummarySheet";
 import { autoCaptureLessonRoute } from "@/hooks/useLessonRouteAutoCapture";
