@@ -566,7 +566,7 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
 /* ────────────────────────────────────────────────────── */
 
 const TONE_PALETTE: Record<string, { bg: string; fg: string }> = {
-  blue: { bg: "#EEF3FF", fg: BLUE },
+  blue: { bg: BLUE_TINT, fg: BLUE },
   green: { bg: "#E8F8ED", fg: "#1A7A3C" },
   amber: { bg: "#FFF6E6", fg: "#B45309" },
   purple: { bg: "#F0EEFF", fg: "#5B47C9" },
