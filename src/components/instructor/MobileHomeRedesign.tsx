@@ -583,19 +583,6 @@ function UpNextTile({
                 background: "rgba(255,255,255,0.25)",
               }}
             />
-            <div
-              style={{
-                fontSize: 9,
-                fontWeight: 600,
-                color: "rgba(255,255,255,0.6)",
-                textAlign: "center",
-                lineHeight: 1.1,
-                width: "100%",
-                wordBreak: "break-word",
-              }}
-            >
-              {toSentence(pupilName).split(" ")[0]}
-            </div>
           </div>
 
           {/* Right column */}
