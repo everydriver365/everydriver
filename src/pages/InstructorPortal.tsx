@@ -375,10 +375,10 @@ export default function InstructorPortal() {
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="today" className="w-full">
-                  <TabsList className="w-full grid grid-cols-3 mb-4">
-                    <TabsTrigger value="today">Today</TabsTrigger>
-                    <TabsTrigger value="tomorrow">Tomorrow</TabsTrigger>
-                    <TabsTrigger value="gaps">Fill gaps</TabsTrigger>
+                  <TabsList className="w-full grid grid-cols-3 mb-4 bg-[hsl(var(--instructor-mobile-blue)/0.45)]">
+                    <TabsTrigger value="today" className="data-[state=active]:bg-card data-[state=active]:text-foreground">Today</TabsTrigger>
+                    <TabsTrigger value="tomorrow" className="data-[state=active]:bg-card data-[state=active]:text-foreground">Tomorrow</TabsTrigger>
+                    <TabsTrigger value="gaps" className="data-[state=active]:bg-card data-[state=active]:text-foreground">Fill gaps</TabsTrigger>
                   </TabsList>
                   <TabsContent value="today">
                     <TodayScheduleView instructorId={instructorId} />
