@@ -994,6 +994,46 @@ export function MobileHomeRedesign({
           <AttentionCard rows={attentionRows} />
         </>
       )}
+
+      {/* Quick Access — search + swipeable tiles */}
+      <div style={{ marginTop: 20, paddingBottom: 4 }}>
+        <QuickAccessSwipeablePaged instructorId={instructorId} />
+      </div>
+
+      {/* Impact alerts */}
+      <div style={{ padding: "0 16px", marginTop: 20 }}>
+        <ImpactAlertCard instructorId={instructorId} />
+      </div>
+
+      {/* Insights */}
+      <div style={{ marginTop: 20 }}>
+        <div style={{ padding: "0 16px" }}>
+          <SectionLabel>Insights</SectionLabel>
+        </div>
+        <InsightTilesGrid instructorId={instructorId} gapCount={(gapData ?? []).length} />
+      </div>
+
+      {/* Telematics */}
+      <div style={{ marginTop: 20 }}>
+        <div style={{ padding: "0 16px" }}>
+          <SectionLabel>Telematics</SectionLabel>
+        </div>
+        <div style={{ marginTop: 8 }}>
+          <TelematicsTile />
+        </div>
+      </div>
+
+      {/* Vehicle health & idle */}
+      <div style={{ padding: "0 16px", marginTop: 12 }}>
+        <VehicleHealthCard instructorId={instructorId} className="mt-3" />
+        <IdleTimeCostCard instructorId={instructorId} className="mt-3" />
+        <div style={{ marginTop: 20 }}>
+          <UpcomingEventsCard className="mb-6" />
+        </div>
+      </div>
+
+      {/* Floating session bar */}
+      <FloatingSessionBar instructorId={instructorId} />
     </div>
   );
 }
