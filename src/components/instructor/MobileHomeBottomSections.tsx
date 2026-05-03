@@ -361,39 +361,70 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                   }}
                   style={{
                     display: "flex",
-                    alignItems: "center",
-                    padding: "10px 12px",
-                    gap: 8,
+                    alignItems: "stretch",
+                    padding: "10px 14px",
+                    gap: 12,
                     background: rowBg,
                     opacity: e.status === "done" ? 0.55 : 1,
                     cursor: e.lesson.pupilId ? "pointer" : "default",
+                    position: "relative",
                   }}
                 >
-                  {/* Left colour band */}
+                  {/* Vertical timeline rail with hollow ring */}
                   <div
                     style={{
-                      width: 3,
-                      height: 32,
-                      borderRadius: 2,
-                      background: bandColor,
+                      width: 18,
                       flexShrink: 0,
+                      position: "relative",
+                      display: "flex",
+                      alignItems: "flex-start",
+                      justifyContent: "center",
+                      paddingTop: 4,
                     }}
-                  />
+                  >
+                    {/* Rail */}
+                    <span
+                      aria-hidden
+                      style={{
+                        position: "absolute",
+                        top: i === 0 ? 12 : 0,
+                        bottom: i === enriched.length - 1 ? "calc(100% - 14px)" : 0,
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        width: 1.5,
+                        background: "rgba(49,95,174,0.18)",
+                      }}
+                    />
+                    {/* Hollow ring */}
+                    <span
+                      aria-hidden
+                      style={{
+                        position: "relative",
+                        width: 12,
+                        height: 12,
+                        borderRadius: 999,
+                        background: "#FFFFFF",
+                        border: `2px solid ${bandColor}`,
+                        boxShadow: "0 0 0 3px #FFFFFF",
+                      }}
+                    />
+                  </div>
 
                   {/* Time + duration */}
-                  <div style={{ minWidth: 36 }}>
+                  <div style={{ minWidth: 50, flexShrink: 0 }}>
                     <div
                       style={{
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: 700,
                         letterSpacing: -0.3,
-                        lineHeight: "17px",
+                        lineHeight: "18px",
                         color: timeColor,
+                        fontVariantNumeric: "tabular-nums",
                       }}
                     >
                       {fmtTime(e.lesson.startTime)}
                     </div>
-                    <div style={{ fontSize: 9, color: MUTED, marginTop: 1 }}>
+                    <div style={{ fontSize: 10.5, color: MUTED, marginTop: 1 }}>
                       {durationHours(e.lesson.durationMinutes || 60)}h
                     </div>
                   </div>
@@ -402,10 +433,10 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: 700,
                         color: TEXT,
-                        lineHeight: "17px",
+                        lineHeight: "18px",
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -415,15 +446,23 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                     </div>
                     <div
                       style={{
-                        fontSize: 10,
+                        fontSize: 11,
                         color: MUTED,
+                        marginTop: 1,
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
                       }}
                     >
-                      {e.lesson.lessonType}
-                      {e.lesson.pickupLocation ? ` · ${e.lesson.pickupLocation}` : ""}
+                      {e.lesson.pickupLocation && (
+                        <>
+                          <span aria-hidden style={{ fontSize: 10 }}>📍</span>
+                          {e.lesson.pickupLocation}
+                        </>
+                      )}
                     </div>
                   </div>
 
