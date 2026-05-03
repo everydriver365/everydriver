@@ -27,7 +27,6 @@ const navItems: NavItem[] = [
   { label: "Schedule", icon: CalendarDays, path: "/instructor/schedule", isSchedule: true },
   { label: "Track", icon: Crosshair, path: "/instructor/tracking", isTrack: true },
   { label: "Pupils", icon: User, path: "/instructor/pupils", showBadge: true },
-  { label: "More", icon: MoreHorizontal, path: "/instructor/menu", isMore: true },
 ];
 
 interface InstructorBottomNavProps {
