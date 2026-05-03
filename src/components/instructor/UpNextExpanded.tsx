@@ -322,6 +322,7 @@ export function UpNextExpanded({
 
   const eta = useTrafficETA(pickupPostcode);
   const weather = useLessonWeather(pickupPostcode);
+  const drivingAlerts = useDrivingAlerts(instructorId);
   const etaMinutes = eta.durationMinutes || 0;
   const fullAddress = [pickupLocation, pickupPostcode].filter(Boolean).join(", ");
   const lessonFee = (durationMinutes / 60) * 40;
