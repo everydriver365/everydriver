@@ -729,7 +729,7 @@ export function AddCalendarEventDialog({
         >
           <button
             type="button"
-            onClick={tab === 'block' ? handleAddBlock : handleAddLesson}
+            onClick={tab === 'block' ? handleAddBlock : tab === 'lesson' ? handleAddLesson : handleAddEvent}
             disabled={loading}
             className={cn(
               'w-full h-[54px] rounded-[16px] bg-[#007AFF] text-white text-[16px] font-semibold',
@@ -741,7 +741,9 @@ export function AddCalendarEventDialog({
               ? 'Saving…'
               : tab === 'block'
               ? 'Save block'
-              : 'Add lesson'}
+              : tab === 'lesson'
+              ? 'Add lesson'
+              : 'Add event'}
           </button>
           <button
             type="button"
