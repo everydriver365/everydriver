@@ -682,7 +682,7 @@ function UpNextTile({
 /* ---------- Attention items ---------- */
 interface AttentionRow {
   key: string;
-  Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
+  Icon: LucideIcon;
   iconBg: string;
   iconColor: string;
   title: string;
