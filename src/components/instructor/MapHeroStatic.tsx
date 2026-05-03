@@ -23,14 +23,23 @@ interface Props {
   countdown: string;
   startTime: string;
   whenLabel: string;
+  /** Optional: when set, tapping the map opens Google Maps directions to this destination. */
+  directionsQuery?: string | null;
 }
 
 /**
  * Real mini-map for the "Up next" tile, using Google Static Maps API.
  * Falls back gracefully to a plain background if the key or query is missing.
  */
-export function MapHeroStatic({ centerQuery, countdown, startTime, whenLabel }: Props) {
+export function MapHeroStatic({ centerQuery, countdown, startTime, whenLabel, directionsQuery }: Props) {
   const [src, setSrc] = useState<string | null>(null);
+  const dest = directionsQuery ?? centerQuery;
+  const openDirections = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!dest) return;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -73,12 +82,27 @@ export function MapHeroStatic({ centerQuery, countdown, startTime, whenLabel }: 
 
   return (
     <div
+      onClick={dest ? openDirections : undefined}
+      role={dest ? "button" : undefined}
+      tabIndex={dest ? 0 : undefined}
+      aria-label={dest ? "Open directions in Google Maps" : undefined}
+      onKeyDown={
+        dest
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openDirections(e as unknown as React.MouseEvent);
+              }
+            }
+          : undefined
+      }
       style={{
         position: "relative",
         height: 126,
         width: "100%",
         background: "#E9EEF5",
         overflow: "hidden",
+        cursor: dest ? "pointer" : "default",
       }}
     >
       {src ? (

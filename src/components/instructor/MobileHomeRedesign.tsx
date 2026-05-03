@@ -517,6 +517,11 @@ function UpNextTile({
                   ? `${pickupPostcode}, UK`
                   : null
           }
+          directionsQuery={
+            pickupLocation && pickupPostcode
+              ? `${pickupLocation}, ${pickupPostcode}, UK`
+              : pickupLocation || pickupPostcode || null
+          }
           countdown={countdown}
           startTime={start}
           whenLabel={whenLabel}
