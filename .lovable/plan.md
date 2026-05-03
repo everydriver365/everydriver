@@ -1,44 +1,32 @@
-# Upcoming Events – Today button + Event Details page
+## Goal
+Replace the flat, label-less stylised look of the Up Next mini map with a realistic Google Maps view that shows roads, place names, and an actual driving route to the pickup.
 
-## 1. Add "Today" button to the tile
+## Changes
 
-File: `src/components/instructor/UpcomingEventsTile.tsx`
+### 1. Use realistic map styling
+File: `src/components/instructor/upNext/MapHeroLive.tsx`
+- Stop applying `dsmMapStyle` (which strips every label and POI). Use Google's default roadmap styling so road names, neighbourhoods and water labels appear naturally.
+- Keep `disableDefaultUI`, no gestures, no zoom controls — it stays a non-interactive preview tile.
+- Slightly reduce the zoom from `15` to `14` when a route is shown so both endpoints fit; otherwise keep 15 for a single pin.
 
-In the calendar strip header (between the prev/next chevrons and the month label), add a small "Today" pill button. It is only visible when the visible week strip does not already include today (`!visibleDays.some(d => isSameDay(d, today))`). Clicking sets `stripStart` back to `subDays(startOfDay(new Date()), 4)` so today appears centred again — matching the initial state.
+### 2. Draw the actual driving route
+- When the instructor's current location is available (use the existing `useInstructorLastPosition` hook already in the project), call the Google Directions service (already loaded via `loadGoogleMaps`) for `origin = current position`, `destination = pickup coords`, `travelMode: DRIVING`.
+- Render the result as a `<Polyline>` in DSM red (`#CC2229`, 4px, 90% opacity) with a subtle white casing underneath (5px, white) for legibility on both light and dark roads.
+- Add a small green "current location" dot overlay at the origin and keep the existing `DSMPin` at the destination.
+- Fit the map bounds to the polyline with ~24px padding; fall back to the single-pin centered view if directions fail or current location is unknown.
 
-Style: same `stripBtn` pattern, but auto width with `padding: "0 10px"`, font 10/700, color `#1A52A0`, background `#EEF3FF`. Place it next to the month label.
+### 3. Cache & performance
+- Cache the directions result per `lessonId` in a module-level `Map` so re-mounts/scroll-revisits are instant (mirrors the existing `coordCache` pattern).
+- Only request directions once the tile is visible (existing `IntersectionObserver` already gates this).
+- Skip the Directions call entirely when origin and destination are within ~150m (just show the pin).
 
-## 2. Event details page
-
-New route: `/instructor/events/:eventKey`
-
-`eventKey` is the existing `UpcomingEvent.id` (e.g. `dt-<pupilId>`, `tt-<pupilId>`, `mot-<vehicleId>`, `ins-<vehicleId>`, `todo-<id>`, `cpd-<id>`, `block-<id>`). The prefix tells the page how to fetch the source record.
-
-New file: `src/pages/InstructorEventDetails.tsx`
-- Parses the prefix, fetches the matching row from the appropriate table (`pupils`, `instructor_vehicles`, `instructor_todos`, `cpd_log_entries`, `instructor_manual_blocks`).
-- Renders a mobile detail screen using existing portal styling (white card on `#F2F4F8`, back chevron header showing event type label):
-  - Title, date + time, location/description, related entity link (e.g. "Open pupil profile", "Open vehicle health").
-  - For CPD / manual blocks / training that have a `meeting_url` (Zoom/Teams/Meet), show a primary "Join meeting" button that opens the link in a new tab. Detect provider from URL host (`zoom.us` → "Join Zoom", `teams.microsoft.com` → "Join Teams", else "Join meeting"). Show muted host text underneath.
-  - Secondary actions: "Open in Schedule" (navigates `/instructor/schedule`), and for tasks "Mark complete" (existing todo update if trivially possible — otherwise just deep-link to `/instructor/todos`).
-
-Meeting URL sources:
-- `cpd_log_entries`: add optional read of `meeting_url` if column exists; fall back to scanning `description`/`notes`/`provider` for a URL via regex.
-- `instructor_manual_blocks`: same — read `meeting_url` if present, else regex over `title`/`notes`.
-- `instructor_calendar_events` already has `meeting_url` (per migration 20260417). Manual blocks added via the Add event dialog may write here; if so, use it directly.
-
-No schema changes required; if the column is missing on a table the read is wrapped in try/catch and the URL regex fallback covers it.
-
-## 3. Wire navigation
-
-File: `src/components/instructor/UpcomingEventsTile.tsx`
-
-Change the row click handler from `navigate(e.destinationPath)` to `navigate(\`/instructor/events/\${e.id}\`)`. Keep `destinationPath` on the event model — the details page uses it as the "Open related" deep link.
-
-File: `src/App.tsx` (or wherever instructor routes live — verify with `rg "instructor/schedule" src/App.tsx`)
-Add: `<Route path="/instructor/events/:eventKey" element={<InstructorEventDetails />} />`.
+### 4. Keep all overlay pills unchanged
+Countdown pill, ETA / "running late" pill, pupil avatar, and Details expand button stay exactly as they are.
 
 ## Out of scope
+- The full-screen `HomeMapHero` and `RouteHeatmap` components — those already use realistic tiles and don't need changes.
+- Any changes to live GPS tracking or the snap-to-road pipeline.
 
-- No changes to data fetching in `useUpcomingEvents` beyond exposing `meeting_url` if trivial.
-- No new tables, no Zoom API integration — "join" is just opening the stored URL.
-- Mobile-only styling; matches existing instructor portal tokens.
+## Files touched
+- `src/components/instructor/upNext/MapHeroLive.tsx` (main changes)
+- `src/components/instructor/upNext/dsmMapStyle.ts` (no longer imported; can be left for now or deleted in a follow-up)
