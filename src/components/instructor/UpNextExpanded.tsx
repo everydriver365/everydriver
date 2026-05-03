@@ -415,7 +415,7 @@ export function UpNextExpanded({
             Icon={Send}
             label="On My Way"
             onClick={onMyWay}
-            active={norm === "on_the_way"}
+            active={norm === "on_the_way" || norm === "en_route"}
             disabled={busyAction === "on_the_way"}
           />
           <ActionTile
