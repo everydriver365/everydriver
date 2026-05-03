@@ -644,6 +644,26 @@ export function NextUpTile({
                     />
                   </div>
                 </div>
+                {/* Avatar */}
+                <div style={{ flexShrink: 0 }}>
+                  {pupilProfileImage ? (
+                    <img
+                      src={pupilProfileImage}
+                      alt={pupilName}
+                      style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", display: "block" }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: 44, height: 44, borderRadius: "50%",
+                      background: "linear-gradient(135deg, #5856D6 0%, #007AFF 100%)",
+                      color: "#fff", fontSize: a11yPx(15), fontWeight: 600,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      letterSpacing: 0.2,
+                    }}>
+                      {getInitials(pupilName)}
+                    </div>
+                  )}
+                </div>
 
                 {/* Action buttons */}
                 <div style={{ display: "flex", gap: 6 }}>
