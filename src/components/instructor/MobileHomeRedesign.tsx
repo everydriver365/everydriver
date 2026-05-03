@@ -504,7 +504,12 @@ function UpNextTile({
           cursor: "pointer",
         }}
       >
-        <MapHero countdown={countdown} startTime={start} whenLabel={whenLabel} />
+        <MapHeroStatic
+          centerQuery={pickupPostcode || pickupLocation || null}
+          countdown={countdown}
+          startTime={start}
+          whenLabel={whenLabel}
+        />
 
         <div style={{ display: "flex", minHeight: 130 }}>
           {/* Left blue rail */}
