@@ -519,15 +519,16 @@ export function NextUpTile({
       <div style={{ fontFamily: iosFont, WebkitFontSmoothing: "antialiased" }}>
         {/* ── Card — matches other home widgets (white, rounded-[20px], soft shadow) ── */}
         <div
-          className="bg-white rounded-[20px] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_28px_-12px_rgba(16,24,40,0.08)]"
+          className={hideHeader ? "" : "bg-white rounded-[20px] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_28px_-12px_rgba(16,24,40,0.08)]"}
           style={{
             overflow: "hidden",
-            padding: 16,
+            padding: hideHeader ? 0 : 16,
             display: "flex",
             flexDirection: "column",
-            gap: 14,
+            gap: hideHeader ? 0 : 14,
             position: "relative",
             width: "100%",
+            background: hideHeader ? "transparent" : undefined,
           }}
         >
           {/* ── Header (whole row tappable to expand) ── */}
