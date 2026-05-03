@@ -97,7 +97,53 @@ const MAP_OPTIONS: google.maps.MapOptions = {
   rotateControl: false,
   scaleControl: false,
 };
-const _trailing = null;
+
+// Cache route polylines per lessonId so revisits are instant.
+const routeCache = new Map<string, google.maps.LatLngLiteral[]>();
+const inflightRoutes = new Map<string, Promise<google.maps.LatLngLiteral[] | null>>();
+
+function haversineMeters(a: google.maps.LatLngLiteral, b: google.maps.LatLngLiteral) {
+  const R = 6371000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+}
+
+async function fetchRoute(
+  lessonId: string,
+  origin: google.maps.LatLngLiteral,
+  destination: google.maps.LatLngLiteral
+): Promise<google.maps.LatLngLiteral[] | null> {
+  if (routeCache.has(lessonId)) return routeCache.get(lessonId)!;
+  if (inflightRoutes.has(lessonId)) return inflightRoutes.get(lessonId)!;
+  const p = (async () => {
+    try {
+      const ds = new google.maps.DirectionsService();
+      const res = await ds.route({
+        origin,
+        destination,
+        travelMode: google.maps.TravelMode.DRIVING,
+      });
+      const path = res.routes?.[0]?.overview_path?.map((p) => ({ lat: p.lat(), lng: p.lng() })) || null;
+      if (path && path.length) {
+        routeCache.set(lessonId, path);
+        return path;
+      }
+      return null;
+    } catch {
+      return null;
+    } finally {
+      inflightRoutes.delete(lessonId);
+    }
+  })();
+  inflightRoutes.set(lessonId, p);
+  return p;
+}
+
 
 function PulsingDot() {
   return (
