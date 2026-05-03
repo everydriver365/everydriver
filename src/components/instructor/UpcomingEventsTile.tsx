@@ -78,16 +78,16 @@ export function UpcomingEventsTile({ instructorId }: Props) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: 8,
+          marginBottom: 10,
           padding: "0 2px",
         }}
       >
         <span
           style={{
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
-            color: "#8E8E93",
-            letterSpacing: 1.2,
+            color: "#6B7A90",
+            letterSpacing: "0.12em",
             textTransform: "uppercase",
           }}
         >
