@@ -396,6 +396,8 @@ export function UpNextExpanded({
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [lateOpen, setLateOpen] = useState(false);
+  const [selectedHistoryLesson, setSelectedHistoryLesson] = useState<PupilLessonHistoryEntry | null>(null);
+  const lessonHistoryQuery = usePupilLessonHistory(pupilId, 5);
 
   const eta = useTrafficETA(pickupPostcode);
   const weather = useLessonWeather(pickupPostcode);
