@@ -289,20 +289,6 @@ function InsightRow({
 }
 
 /* ── Quick Actions block (reads user prefs) ──────────── */
-const QUICK_ACTION_META: Record<
-  QuickActionId,
-  { label: string; icon: any; accent: string; route: string }
-> = {
-  "add-lesson": { label: "Add lesson", icon: Briefcase, accent: "#007AFF", route: "/every-instructor/schedule?action=add" },
-  message: { label: "Message", icon: MessageSquare, accent: "#5856D6", route: "/every-instructor/messages" },
-  "fill-gap": { label: "Fill gap", icon: Briefcase, accent: "#FF9500", route: "/instructor/gaps" },
-  payment: { label: "Payment", icon: PoundSterling, accent: "#34C759", route: "/every-instructor/take-payment" },
-  schedule: { label: "Schedule", icon: Briefcase, accent: "#007AFF", route: "/every-instructor/schedule" },
-  pupils: { label: "Pupils", icon: Users, accent: "#5856D6", route: "/every-instructor/pupils" },
-  earnings: { label: "Earnings", icon: PoundSterling, accent: "#34C759", route: "/every-instructor/income" },
-  tests: { label: "Tests", icon: Briefcase, accent: "#FF9500", route: "/every-instructor/jobs" },
-};
-
 function QuickActionsBlock({
   pendingJobs,
   unreadMessages,
@@ -318,16 +304,19 @@ function QuickActionsBlock({
   const visible = prefs.order.filter((id) => !prefs.hidden.includes(id));
   if (visible.length === 0) return null;
 
-  const badgeFor = (id: QuickActionId): number | undefined => {
-    if (id === "message") return unreadMessages;
-    if (id === "tests") return pendingJobs;
+  const badgeFor = (key?: string) => {
+    if (key === "unreadMessages") return unreadMessages;
+    if (key === "pendingJobs") return pendingJobs;
     return undefined;
   };
 
   return (
     <section className="mt-9">
       <div className="px-5 mb-3 flex items-baseline justify-between">
-        <h2 className="text-[22px] font-semibold text-gray-900 leading-tight" style={{ letterSpacing: "-0.02em" }}>
+        <h2
+          className="text-[22px] font-semibold text-gray-900 leading-tight"
+          style={{ letterSpacing: "-0.02em" }}
+        >
           Quick Actions
         </h2>
         <button
@@ -340,14 +329,16 @@ function QuickActionsBlock({
       </div>
       <div className="mx-5 bg-white rounded-xl ios-shadow-resting overflow-hidden divide-y divide-gray-100">
         {visible.map((id, idx) => {
-          const meta = QUICK_ACTION_META[id];
+          const meta = QUICK_ACTIONS_BY_ID[id];
+          if (!meta) return null;
+          const tone = TILE_TONE[meta.tone];
           return (
             <QuickActionRow
               key={id}
               icon={meta.icon}
               label={meta.label}
-              accent={meta.accent}
-              badge={badgeFor(id)}
+              accent={tone.fg}
+              badge={badgeFor(meta.badgeKey)}
               onClick={() => onNavigate(meta.route)}
               isLast={idx === visible.length - 1}
             />
