@@ -1,48 +1,43 @@
 ## Goal
 
-Bring back the rich, full-featured behaviour of the existing `NextUpTile` (travel-time/ETA, route recorder, end-lesson wizard, running-late, smart prompts, vehicle health, payment status, expand/collapse, etc.) inside the new brand-styled "Up next" card on the redesigned mobile home — without losing the new map-hero / blue-rail / Call-Message-Navigate design.
+Replace the "Weather data not connected" placeholder in the **Conditions** section of `src/components/instructor/UpNextExpanded.tsx` with live weather for the lesson's pickup postcode.
 
 ## Approach
 
-Treat the redesigned `UpNextTile` as the **summary header** and mount the existing `NextUpTile` (`src/components/instructor/NextUpTile.tsx`) as the **expanded body** when the user taps to expand. Both share the same data from `useNextLessonDetails`, so no new fetching is needed.
+Reuse the existing Open-Meteo pattern (already used by `useTomorrowWeather`) but with a new hook that:
+1. Accepts a UK postcode (already in the lesson data as `pickupPostcode`).
+2. Geocodes it via `https://api.postcodes.io/postcodes/{postcode}` (free, UK-only, no key).
+3. Fetches current conditions from `https://api.open-meteo.com/v1/forecast` (free, no key) — temperature, WMO weather code, wind speed, visibility.
+4. Maps the WMO code to a description + icon name + tint category (`clear | cloudy | rain | snow | fog | storm`).
 
-```text
-[ MAP HERO + frosted pill + start time ]
-[ Blue rail | Duration / Pickup / Call · Msg · Nav ]   <-- new design (always shown)
-                  ▼ chevron
-[ NextUpTile expanded section ]                        <-- existing rich features
-  - Travel time + traffic ETA
-  - Smart prompts strip
-  - Lesson route recorder / Start tracking
-  - Check-in badge
-  - Pupil unread, balance, prepaid hours
-  - Reschedule / Cancel / End lesson wizard
-  - Running-late sheet, driving alerts, vehicle health
-```
+No secrets, no edge function, no schema changes.
 
 ## Changes
 
-### 1. `src/components/instructor/MobileHomeRedesign.tsx`
-- Add `const [expanded, setExpanded] = useState(false);` in `MobileHomeRedesign`.
-- Pass `expanded` + `onToggleExpanded` props to the redesigned `UpNextTile`.
-- In `UpNextTile`:
-  - Replace the whole-card `onClick={open}` with a smaller summary-row toggle that calls `onToggleExpanded` (keep `Call`, `Message`, `Navigate` buttons working as today via `stopPropagation`).
-  - Add a small `ChevronDown` indicator (rotates when expanded) on the right side of the duration/pickup column to make the affordance obvious.
-  - Map tap still opens Google Maps directions (already wired in `MapHeroStatic`).
-- Below the redesigned card, when `expanded`, render the existing `<NextUpTile … />` with all props from `useNextLessonDetails`, wrapped in a 14px-padding container and a matching white card with `borderRadius: 20`, `border: 0.5px solid rgba(26,82,160,0.10)`.
+### 1. New hook: `src/hooks/useLessonWeather.ts`
+- Exports `useLessonWeather(postcode)` returning `{ temperature, description, icon, windSpeed, visibility, category }` plus the React Query loading/error state.
+- 15-min `staleTime`, disabled when postcode is missing, returns `null` on any failure (graceful).
 
-### 2. `src/components/instructor/NextUpTile.tsx`
-- No edits needed — used as-is. It already manages its own internal expand sections, sheets and dialogs.
-
-### 3. No backend / hook changes
-- All required data is already returned by `useNextLessonDetails` (account balance, prepaid hours, check-in status, lesson status, last lesson plan, durationMinutes, etc.).
+### 2. Edit `src/components/instructor/UpNextExpanded.tsx`
+- Import the hook + the lucide icons (`Sun`, `CloudSun`, `Cloud`, `CloudFog`, `CloudDrizzle`, `CloudRain`, `CloudSnow`, `Snowflake`, `CloudLightning`, `Wind`, `Eye`).
+- Call `useLessonWeather(pickupPostcode)` in the component body.
+- Replace the existing `{/* SECTION 5 — Conditions */}` block (~lines 489–510) with:
+  - **Loading state**: shimmer-style placeholder row (matches existing iOS Consistency memory).
+  - **Error / no-postcode state**: keep current "Weather data not connected" muted message.
+  - **Loaded state**:
+    - Background tint per `category`: clear/cloudy → `#EEF3FF`, rain → `#EEF6FF`, fog → `#F5F5F0`, snow → `#F0F6FF`, storm → `#FFF0F0`.
+    - Top row: weather icon (mapped from `icon` name) + condition label + temperature `· {n}°C`.
+    - Bottom row (muted): `Wind {n} mph · Visibility {n} mi`.
+- **Imperial conversion** (project rule: imperial units): convert km/h → mph (`* 0.621371`) and km → mi (`* 0.621371`), rounded to whole numbers.
 
 ## Notes / decisions
 
-- We keep two visually distinct cards (summary above, rich card below) rather than trying to merge them, so the new brand design is preserved and the existing internal animations/sheets in `NextUpTile` continue to work without refactor risk.
-- Existing instructor business logic (route recording, end-lesson, reschedule, running-late, smart prompts, payments, vehicle health, etc.) is untouched.
-- No memory/preferences changes.
+- Open-Meteo + postcodes.io are both free and keyless — no `add_secret` step, no edge function needed.
+- Hook is independent of `useTomorrowWeather` so we don't disturb the dashboard's existing tomorrow-preview logic.
+- All UI tokens (`BLUE`, `MUTED`, `BLUE_TINT`, `BORDER`) already exist in `UpNextExpanded.tsx`.
+- Failure modes (bad postcode, API down, missing fields) all collapse to the existing "not connected" muted row, so the tile never breaks.
 
 ## Files
 
-- Edit: `src/components/instructor/MobileHomeRedesign.tsx`
+- New: `src/hooks/useLessonWeather.ts`
+- Edit: `src/components/instructor/UpNextExpanded.tsx`
