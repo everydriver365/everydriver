@@ -211,10 +211,9 @@ export default function InstructorPortal() {
       <InstructorPortalLayout>
         <div className="space-y-0">
         <DemoModeBanner />
-        <InstructorMobileHome 
-          instructor={instructorData}
-          todaysLessonCount={todaysLessonCount}
-          onPaymentClick={() => setPaymentModalOpen(true)}
+        <MobileHomeRedesign
+          instructorId={instructorId}
+          instructorName={instructorData?.name}
         />
         <TakePaymentModal
           open={paymentModalOpen}
