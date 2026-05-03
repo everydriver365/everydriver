@@ -218,6 +218,8 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
               </span>
             </button>
           );
+          })());
+          return nodes;
         })}
       </div>
       <div
