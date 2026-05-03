@@ -547,28 +547,6 @@ function UpNextTile({
               color: "#FFFFFF",
             }}
           >
-            <div style={{ textAlign: "center", lineHeight: 1 }}>
-              <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.4px" }}>
-                {dayNum}
-              </div>
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "rgba(255,255,255,0.7)",
-                  marginTop: 2,
-                }}
-              >
-                {monthName}
-              </div>
-            </div>
-            <div
-              style={{
-                width: 36,
-                height: 1,
-                background: "rgba(255,255,255,0.25)",
-              }}
-            />
             <div
               style={{
                 width: 36,
@@ -598,6 +576,28 @@ function UpNextTile({
             </div>
             <div
               style={{
+                width: 36,
+                height: 1,
+                background: "rgba(255,255,255,0.25)",
+              }}
+            />
+            <div style={{ textAlign: "center", lineHeight: 1 }}>
+              <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.4px" }}>
+                {dayNum}
+              </div>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "rgba(255,255,255,0.7)",
+                  marginTop: 2,
+                }}
+              >
+                {monthName}
+              </div>
+            </div>
+            <div
+              style={{
                 fontSize: 9,
                 fontWeight: 600,
                 color: "rgba(255,255,255,0.6)",
@@ -613,6 +613,20 @@ function UpNextTile({
 
           {/* Right column */}
           <div style={{ flex: 1, padding: "12px 13px", minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 700,
+                color: CHARCOAL,
+                letterSpacing: "-0.2px",
+                marginBottom: 6,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {toSentence(pupilName)}
+            </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
               <IconTile>
                 <Clock size={14} strokeWidth={2.2} />
