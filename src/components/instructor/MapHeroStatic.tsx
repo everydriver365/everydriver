@@ -191,45 +191,38 @@ export function MapHeroStatic({ centerQuery, countdown, startTime, whenLabel, di
         In {countdown}
       </div>
 
-      {/* Frosted time card */}
+      {/* Pupil avatar (replaces former time card) */}
       <div
         style={{
           position: "absolute",
           bottom: 10,
           right: 10,
-          background: "rgba(255,255,255,0.92)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          padding: "6px 10px",
-          borderRadius: 12,
-          textAlign: "right",
-          border: `0.5px solid ${BORDER}`,
-          minWidth: 64,
+          width: 44,
+          height: 44,
+          borderRadius: "50%",
+          background: RED,
+          color: "#FFFFFF",
+          fontSize: 14,
+          fontWeight: 700,
+          letterSpacing: 0.3,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+          border: "2px solid rgba(255,255,255,0.95)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
         }}
+        aria-label={pupilName || undefined}
       >
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: 700,
-            color: "#000",
-            letterSpacing: "-0.4px",
-            fontVariantNumeric: "tabular-nums",
-            lineHeight: 1,
-          }}
-        >
-          {startTime}
-        </div>
-        <div
-          style={{
-            fontSize: 10,
-            fontWeight: 600,
-            color: MUTED,
-            marginTop: 3,
-            letterSpacing: "0.04em",
-          }}
-        >
-          {whenLabel}
-        </div>
+        {pupilProfileImage ? (
+          <img
+            src={pupilProfileImage}
+            alt=""
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : (
+          avatarInitials(pupilName)
+        )}
       </div>
 
       <style>{`
