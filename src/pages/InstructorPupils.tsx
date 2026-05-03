@@ -573,167 +573,266 @@ export default function InstructorPupils() {
     ...(statusCounts.inactive > 0 ? [{ value: "inactive" as const, label: "Inactive" }] : []),
   ];
 
+  // Count lessons today (next_lesson within today)
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+  const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999);
+  const lessonsToday = pupils.filter((p) => {
+    if (!p.next_lesson) return false;
+    const t = new Date(p.next_lesson).getTime();
+    return t >= todayStart.getTime() && t <= todayEnd.getTime();
+  }).length;
+
+  const filterChipColor: Record<string, string> = {
+    active: "#1A52A0",
+    needs_lesson: "#B45309",
+    upcoming: "#1A52A0",
+    passed: "#1A7A3C",
+    on_hold: "#B45309",
+    inactive: "#8E8E93",
+  };
+
   return (
     <InstructorPortalLayout>
-      <div style={{ display: "flex", flexDirection: "column", gap: 18, paddingBottom: 24 }}>
+      <div
+        style={{
+          background: "#F2F4F8",
+          margin: "-16px -16px 0",
+          padding: "0 0 24px",
+          minHeight: "calc(100dvh - 56px)",
+        }}
+      >
         {/* Header */}
-        <div className="flex items-start justify-between" style={{ marginBottom: 4 }}>
+        <div
+          style={{
+            background: "#FFFFFF",
+            padding: "12px 16px",
+            borderBottom: "0.5px solid #F0F3F8",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           <div>
-            <h1 style={{ fontSize: 26, fontWeight: 600, color: "#000000", letterSpacing: "-0.5px", lineHeight: 1.15 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1A1A1A", letterSpacing: "-0.4px", lineHeight: 1.15 }}>
               Pupils
             </h1>
-            <p style={{ fontSize: 13, color: "#8E8E93", marginTop: 4, lineHeight: 1.4 }}>
-              {stats.active} active · {stats.passed} passed · {stats.totalLessons} lessons
+            <p style={{ fontSize: 10, color: "#8E8E93", marginTop: 2 }}>
+              {stats.active} active · {stats.passed} passed · {lessonsToday} lessons today
             </p>
           </div>
-          <Button
-            size="sm"
-            className="bg-[#2B7BC8] hover:bg-[#2670B8] text-white rounded-full h-9 px-4 shadow-none"
+          <button
+            type="button"
             onClick={() => setIsAddOpen(true)}
+            style={{
+              background: "#1A52A0",
+              borderRadius: 20,
+              padding: "7px 14px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 5,
+              border: "none",
+              cursor: "pointer",
+            }}
           >
-            <Plus className="h-4 w-4 mr-1" />
-            Add
-          </Button>
+            <Plus size={11} color="#FFF" strokeWidth={2.2} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#FFF" }}>Add</span>
+          </button>
         </div>
 
-        {/* Search */}
-        <SearchInput
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder="Search name, phone, location, notes"
-        />
+        <div style={{ padding: "14px 15px 0" }}>
+          {/* Search */}
+          <div style={{ marginBottom: 10 }}>
+            <SearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search name, phone, location..."
+            />
+          </div>
 
-        {/* Filter pills — horizontally scrollable */}
-        <div
-          role="tablist"
-          aria-label="Filter pupils"
-          className="flex gap-2.5 overflow-x-auto scrollbar-none -mx-1 px-1"
-          style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch", paddingTop: 2, paddingBottom: 2 }}
-        >
-          {segmentOptions.map((opt) => {
-            const active = opt.value === activeTab;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setActiveTab(opt.value as any)}
-                className="shrink-0 transition-all"
-                style={{
-                  padding: "9px 16px",
-                  borderRadius: 999,
-                  fontSize: 13,
-                  fontWeight: active ? 600 : 500,
-                  color: active ? "#FFFFFF" : "#3C3C43",
-                  background: active ? "#2B7BC8" : "#F2F2F4",
-                  border: "none",
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
-                  boxShadow: active ? "0 2px 6px rgba(43,123,200,0.25)" : "none",
-                }}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
+          {/* Filter pills — horizontally scrollable */}
+          <div
+            role="tablist"
+            aria-label="Filter pupils"
+            className="flex gap-2 overflow-x-auto scrollbar-none -mx-1 px-1"
+            style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch", marginBottom: 14 }}
+          >
+            {segmentOptions.map((opt) => {
+              const active = opt.value === activeTab;
+              const count =
+                opt.value === "all" ? stats.total :
+                opt.value === "active" ? stats.active :
+                opt.value === "passed" ? stats.passed :
+                opt.value === "needs_lesson" ? needsLessonCount :
+                opt.value === "upcoming" ? upcomingCount :
+                opt.value === "on_hold" ? statusCounts.on_hold :
+                opt.value === "inactive" ? statusCounts.inactive : null;
+              const countColor = filterChipColor[opt.value] || "#8E8E93";
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setActiveTab(opt.value as any)}
+                  className="shrink-0 transition-all"
+                  style={{
+                    padding: "5px 12px",
+                    borderRadius: 20,
+                    background: active ? "#1A52A0" : "#FFF",
+                    border: active ? "none" : "0.5px solid rgba(26,82,160,0.15)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+                  }}
+                >
+                  <span style={{ fontSize: 11, fontWeight: 600, color: active ? "#FFF" : "#5B6B8A" }}>
+                    {opt.label}
+                  </span>
+                  {count != null && (
+                    <span style={{ fontSize: 10, color: active ? "rgba(255,255,255,0.7)" : countColor }}>
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Pupils List */}
-        {displayedPupils.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-14 h-14 rounded-[12px] bg-[#E8ECF1] flex items-center justify-center mb-3">
-              <Users className="h-7 w-7" style={{ color: "#2A394F" }} />
+        <div style={{ padding: "0 15px" }}>
+          {/* Pupils List */}
+          {displayedPupils.length === 0 ? (
+            <div
+              style={{
+                background: "#FFF",
+                borderRadius: 16,
+                padding: 24,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                border: "0.5px solid rgba(26,82,160,0.08)",
+              }}
+            >
+              <Users size={28} color="#C7C7CC" strokeWidth={1.4} />
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#1A1A1A", marginTop: 10, marginBottom: 4 }}>
+                No pupils
+              </div>
+              <div style={{ fontSize: 11, color: "#8E8E93", textAlign: "center", marginBottom: 14 }}>
+                {activeTab === "all"
+                  ? "Add your first pupil to get started"
+                  : `No pupils match the "${activeTab}" filter`}
+              </div>
+              {activeTab === "all" && (
+                <button
+                  type="button"
+                  onClick={() => setIsAddOpen(true)}
+                  style={{
+                    background: "#1A52A0",
+                    borderRadius: 20,
+                    padding: "7px 16px",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#FFF",
+                  }}
+                >
+                  Add first pupil
+                </button>
+              )}
             </div>
-            <h3 className="font-bold text-[14px] text-[#1c1c1e] mb-1">No pupils found</h3>
-            <p className="text-[12px] text-[#8e8e93] max-w-xs">
-              {searchQuery
-                ? "No pupils match your search."
-                : "Add your first pupil to get started."}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {(() => {
-              // Detect duplicate display names so cards can show a small disambiguator.
-              const nameCount = new Map<string, number>();
-              displayedPupils.forEach((p) => {
-                const k = (p.name || "").trim().toLowerCase();
-                nameCount.set(k, (nameCount.get(k) || 0) + 1);
-              });
-              return displayedPupils.map((pupil, idx) => {
-                const dupKey = (pupil.name || "").trim().toLowerCase();
-                const isDup = (nameCount.get(dupKey) || 0) > 1;
-                const suffix = isDup
-                  ? (pupil.address?.split(",")[0]?.trim() || pupil.postcode || null)
-                  : null;
-                const priority = isUpcoming(pupil) || needsLesson(pupil) || (pupil.account_balance ?? 0) < 0;
-                return (
-                  <motion.div
-                    key={pupil.id}
-                    id={`pupil-card-${pupil.id}`}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ type: "spring", stiffness: 350, damping: 25, delay: idx * 0.03 }}
-                  >
-                    <PupilCardStack
-                      pupil={pupil}
-                      defaultExpanded={expandedPupilId === pupil.id}
-                      nameSuffix={suffix}
-                      priority={priority}
-                      onEdit={handleEditPupil}
-                      onDelete={handleDeletePupil}
-                      onViewHistory={(p) => {
-                        setSelectedPupil(p);
-                        setIsHistoryOpen(true);
-                      }}
-                      onViewReport={(p) => {
-                        setSelectedPupil(p);
-                        setIsDrivingReportOpen(true);
-                      }}
-                      onViewTerms={(p) => {
-                        setSelectedPupil(p);
-                        setIsTermsModalOpen(true);
-                      }}
-                      onStartChat={(p) => {
-                        navigate(`/instructor/messages?pupilId=${p.id}`);
-                      }}
-                      onRecordTestResult={(p, isMock) => {
-                        setSelectedPupil(p);
-                        setTestFormIsMock(isMock);
-                        setIsTestFormOpen(true);
-                      }}
-                      onViewTestHistory={(p) => {
-                        setSelectedPupil(p);
-                        setIsTestHistoryOpen(true);
-                      }}
-                      onStatusChange={(pupilId, newStatus) => {
-                        setPupils(prevPupils =>
-                          prevPupils.map(p =>
-                            p.id === pupilId ? { ...p, status: newStatus } : p
-                          )
-                        );
-                      }}
-                      hasSignedTerms={pupilSignatures[pupil.id] || false}
-                      instructorId={instructorId}
-                      instructorName={instructor?.name}
-                      isTracking={isTracking(pupil.id)}
-                      paymentQrUrl={getActivePaymentQrUrl(instructor)}
-                      commissionPayer={instructor?.commission_payer}
-                    />
-                  </motion.div>
-                );
-              });
-            })()}
-          </div>
-        )}
-        
-        {/* Progress Reports */}
-        <PupilProgressReportGenerator 
-          instructorId={instructorId} 
-          pupils={pupils.map(p => ({ id: p.id, name: p.name }))} 
-        />
+          ) : (
+            <>
+              <div className="space-y-3" style={{ marginBottom: 12 }}>
+                {(() => {
+                  // Detect duplicate display names so cards can show a small disambiguator.
+                  const nameCount = new Map<string, number>();
+                  displayedPupils.forEach((p) => {
+                    const k = (p.name || "").trim().toLowerCase();
+                    nameCount.set(k, (nameCount.get(k) || 0) + 1);
+                  });
+                  return displayedPupils.map((pupil, idx) => {
+                    const dupKey = (pupil.name || "").trim().toLowerCase();
+                    const isDup = (nameCount.get(dupKey) || 0) > 1;
+                    const suffix = isDup
+                      ? (pupil.address?.split(",")[0]?.trim() || pupil.postcode || null)
+                      : null;
+                    const priority = isUpcoming(pupil) || needsLesson(pupil) || (pupil.account_balance ?? 0) < 0;
+                    const isPassed = (pupil.status || "active") === "passed";
+                    return (
+                      <motion.div
+                        key={pupil.id}
+                        id={`pupil-card-${pupil.id}`}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ type: "spring", stiffness: 350, damping: 25, delay: idx * 0.03 }}
+                        style={{ opacity: isPassed ? 0.6 : 1 }}
+                      >
+                        <PupilCardStack
+                          pupil={pupil}
+                          defaultExpanded={expandedPupilId === pupil.id}
+                          nameSuffix={suffix}
+                          priority={priority}
+                          onEdit={handleEditPupil}
+                          onDelete={handleDeletePupil}
+                          onViewHistory={(p) => {
+                            setSelectedPupil(p);
+                            setIsHistoryOpen(true);
+                          }}
+                          onViewReport={(p) => {
+                            setSelectedPupil(p);
+                            setIsDrivingReportOpen(true);
+                          }}
+                          onViewTerms={(p) => {
+                            setSelectedPupil(p);
+                            setIsTermsModalOpen(true);
+                          }}
+                          onStartChat={(p) => {
+                            navigate(`/instructor/messages?pupilId=${p.id}`);
+                          }}
+                          onRecordTestResult={(p, isMock) => {
+                            setSelectedPupil(p);
+                            setTestFormIsMock(isMock);
+                            setIsTestFormOpen(true);
+                          }}
+                          onViewTestHistory={(p) => {
+                            setSelectedPupil(p);
+                            setIsTestHistoryOpen(true);
+                          }}
+                          onStatusChange={(pupilId, newStatus) => {
+                            setPupils(prevPupils =>
+                              prevPupils.map(p =>
+                                p.id === pupilId ? { ...p, status: newStatus } : p
+                              )
+                            );
+                          }}
+                          hasSignedTerms={pupilSignatures[pupil.id] || false}
+                          instructorId={instructorId}
+                          instructorName={instructor?.name}
+                          isTracking={isTracking(pupil.id)}
+                          paymentQrUrl={getActivePaymentQrUrl(instructor)}
+                          commissionPayer={instructor?.commission_payer}
+                        />
+                      </motion.div>
+                    );
+                  });
+                })()}
+              </div>
+              <div style={{ fontSize: 10, color: "#C7C7CC", fontWeight: 500, textAlign: "center", marginTop: 12 }}>
+                Showing {displayedPupils.length} of {stats.total} pupils
+              </div>
+            </>
+          )}
+
+          {/* Progress Reports */}
+          <PupilProgressReportGenerator
+            instructorId={instructorId}
+            pupils={pupils.map(p => ({ id: p.id, name: p.name }))}
+          />
+        </div>
       </div>
 
       {/* Add Pupil Sheet (premium iOS design) */}
