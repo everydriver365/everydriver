@@ -10,6 +10,8 @@ interface NextLessonDetails {
   pupilProfileImage: string | null;
   pickupPostcode: string | null;
   pickupLocation: string | null;
+  pickupWhat3words: string | null;
+  pickupNotes: string | null;
   lessonDate: string;
   startTime: string;
   minutesUntil: number;
@@ -37,7 +39,7 @@ export function useNextLessonDetails(instructorId: string | undefined) {
       // moment its start time passes.
       const { data: todayLessons } = await supabase
         .from("scheduled_lessons")
-        .select(`id, lesson_date, start_time, duration_minutes, pickup_location, pickup_postcode, check_in_status, status, pupils!inner (id, name, phone, profile_image_url, postcode, address, pickup_address, pickup_postcode, account_balance, prepaid_hours)`)
+        .select(`id, lesson_date, start_time, duration_minutes, pickup_location, pickup_postcode, pickup_what3words, notes, check_in_status, status, pupils!inner (id, name, phone, profile_image_url, postcode, address, pickup_address, pickup_postcode, what3words, account_balance, prepaid_hours)`)
         .eq("instructor_id", instructorId)
         .eq("lesson_date", today)
         .neq("status", "cancelled")
@@ -54,7 +56,7 @@ export function useNextLessonDetails(instructorId: string | undefined) {
       if (!lesson) {
         const { data: futureLesson } = await supabase
           .from("scheduled_lessons")
-          .select(`id, lesson_date, start_time, duration_minutes, pickup_location, pickup_postcode, check_in_status, status, pupils!inner (id, name, phone, profile_image_url, postcode, address, pickup_address, pickup_postcode, account_balance, prepaid_hours)`)
+          .select(`id, lesson_date, start_time, duration_minutes, pickup_location, pickup_postcode, pickup_what3words, notes, check_in_status, status, pupils!inner (id, name, phone, profile_image_url, postcode, address, pickup_address, pickup_postcode, what3words, account_balance, prepaid_hours)`)
           .eq("instructor_id", instructorId)
           .gt("lesson_date", today)
           .neq("status", "cancelled")
@@ -90,6 +92,8 @@ export function useNextLessonDetails(instructorId: string | undefined) {
         lessonId: lesson.id, pupilId: pupil.id, pupilName: pupil.name,
         pupilPhone: pupil.phone, pupilProfileImage: pupil.profile_image_url,
         pickupPostcode: effectivePostcode, pickupLocation: effectiveLocation,
+        pickupWhat3words: (lesson as any).pickup_what3words || pupil.what3words || null,
+        pickupNotes: (lesson as any).notes || null,
         lessonDate, startTime: lesson.start_time,
         minutesUntil: Math.max(0, minutesUntil),
         durationMinutes: lesson.duration_minutes || 60,
