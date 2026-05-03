@@ -246,6 +246,36 @@
   /* Safe-area zone always uses the page background — header and status-bar
      area read as one continuous surface across every instructor screen. */
 
+  /* ===== Home v2 — premium iOS dashboard primitives =================
+     Scoped to .ios-home-v2 wrapper so it only affects the redesigned
+     instructor home screen. Does not touch the radius scale or
+     surfaces on any other instructor route. */
+  .ios-home-v2 {
+    background:
+      radial-gradient(120% 60% at 50% -10%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 60%),
+      hsl(var(--dsm-page-bg));
+    color: var(--home-v2-text);
+  }
+  .ios-home-v2 .home-v2-card {
+    background: #FFFFFF;
+    border-radius: var(--home-v2-card-radius);
+    border: 1px solid var(--home-v2-card-hairline);
+    box-shadow: var(--home-v2-shadow);
+  }
+  .ios-home-v2 .home-v2-tile {
+    background: #FFFFFF;
+    border-radius: var(--home-v2-tile-radius);
+    border: 1px solid var(--home-v2-card-hairline);
+    box-shadow: var(--home-v2-shadow);
+  }
+  .ios-home-v2 .home-v2-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--home-v2-section-label);
+  }
+
   /* ===== Unified Portal Design System (instructor mobile) =====
      One coherent visual language across every instructor screen.
      Scoped to .instructor-portal so it cannot leak into pupil/marketing surfaces.
