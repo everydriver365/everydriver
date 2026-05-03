@@ -566,6 +566,13 @@ function UpNextTile({
             </div>
             <div
               style={{
+                width: 36,
+                height: 1,
+                background: "rgba(255,255,255,0.25)",
+              }}
+            />
+            <div
+              style={{
                 fontSize: 16,
                 fontWeight: 700,
                 color: "#FFFFFF",
@@ -576,13 +583,6 @@ function UpNextTile({
             >
               {start}
             </div>
-            <div
-              style={{
-                width: 36,
-                height: 1,
-                background: "rgba(255,255,255,0.25)",
-              }}
-            />
           </div>
 
           {/* Right column */}
