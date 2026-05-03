@@ -526,6 +526,7 @@ function UpNextTile({
           onToggleExpanded={onToggleExpanded}
           pupilName={pupilName}
           pupilPhone={pupilPhone}
+          pupilProfileImage={pupilProfileImage}
         />
 
         <div style={{ display: "flex", minHeight: 130 }}>

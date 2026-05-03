@@ -22,6 +22,17 @@ interface Props {
   onToggleExpanded: () => void;
   pupilName?: string | null;
   pupilPhone?: string | null;
+  pupilProfileImage?: string | null;
+}
+
+function avatarInitials(name?: string | null) {
+  if (!name) return "";
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join("");
 }
 
 const HEIGHT = 140;
@@ -138,6 +149,7 @@ function MapHeroLiveImpl({
   onToggleExpanded,
   pupilName,
   pupilPhone,
+  pupilProfileImage,
 }: Props) {
   const eta = useTrafficETA(pickupPostcode);
   const etaMinutes = eta.durationMinutes || 0;
@@ -327,34 +339,38 @@ function MapHeroLiveImpl({
         </div>
       ) : null}
 
-      {/* Time card */}
+      {/* Pupil avatar */}
       <div
         style={{
           position: "absolute",
           bottom: 10,
           right: 10,
-          background: "rgba(255,255,255,0.95)",
-          borderRadius: 12,
-          padding: "6px 12px",
+          width: 44,
+          height: 44,
+          borderRadius: "50%",
+          background: "#1A52A0",
+          color: "#FFFFFF",
           display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 14,
+          fontWeight: 700,
+          letterSpacing: "0.5px",
+          border: "2px solid #FFFFFF",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.18)",
+          overflow: "hidden",
         }}
+        aria-label={pupilName || "Pupil"}
       >
-        <span
-          style={{
-            fontSize: 22,
-            fontWeight: 700,
-            color: "#1A1A1A",
-            letterSpacing: "-0.8px",
-            lineHeight: "22px",
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
-          {startTime}
-        </span>
-        <span style={{ fontSize: 10, color: "#5B6B8A", marginTop: 2 }}>{whenLabel}</span>
+        {pupilProfileImage ? (
+          <img
+            src={pupilProfileImage}
+            alt=""
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : (
+          avatarInitials(pupilName)
+        )}
       </div>
 
       {/* Expand pill */}
