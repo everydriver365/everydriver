@@ -132,45 +132,78 @@ function GreetingBlock({
   const now = new Date();
   const hour = now.getHours();
   const greet = hour < 12 ? "Morning" : hour < 18 ? "Afternoon" : "Evening";
-  const dateLine = format(now, "EEE · d MMM yyyy").toUpperCase();
+  const dateLine = format(now, "EEEE, d MMMM");
 
-  const Pill = ({
+  const Chip = ({
+    value,
     label,
-    tone,
+    tone = "blue",
   }: {
+    value: string;
     label: string;
-    tone: "blue" | "red";
+    tone?: "blue" | "green" | "amber";
   }) => {
-    const isRed = tone === "red";
+    const dot =
+      tone === "amber" ? "#E29A2B" : tone === "green" ? "#2F9E6E" : "#315FAE";
     return (
-      <span
+      <div
+        className="home-v2-tile"
         style={{
-          display: "inline-flex",
+          flex: 1,
+          minWidth: 0,
+          padding: "10px 12px",
+          display: "flex",
           alignItems: "center",
-          height: 26,
-          padding: "0 11px",
-          borderRadius: 999,
-          fontSize: 12,
-          fontWeight: 600,
-          background: isRed ? RED : "#FFFFFF",
-          color: isRed ? "#FFFFFF" : BLUE,
-          border: isRed ? "0.5px solid transparent" : `0.5px solid ${BLUE}`,
-          letterSpacing: "-0.1px",
+          gap: 10,
         }}
       >
-        {label}
-      </span>
+        <span
+          aria-hidden
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 999,
+            background: dot,
+            flexShrink: 0,
+          }}
+        />
+        <div style={{ minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 15,
+              fontWeight: 600,
+              color: "#0B1220",
+              letterSpacing: "-0.2px",
+              lineHeight: 1.1,
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {value}
+          </div>
+          <div
+            style={{
+              fontSize: 11,
+              color: "#64748B",
+              marginTop: 2,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {label}
+          </div>
+        </div>
+      </div>
     );
   };
 
   return (
-    <div style={{ padding: "20px 18px 12px" }}>
+    <div style={{ padding: "20px 20px 16px" }}>
       <div
         style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: MUTED,
-          letterSpacing: "0.08em",
+          fontSize: 13,
+          fontWeight: 500,
+          color: "#64748B",
           marginBottom: 6,
         }}
       >
@@ -178,25 +211,32 @@ function GreetingBlock({
       </div>
       <h1
         style={{
-          fontSize: 26,
-          fontWeight: 700,
-          color: "#1A1A1A",
-          letterSpacing: "-0.4px",
+          fontSize: 30,
+          fontWeight: 600,
+          color: "#0B1220",
+          letterSpacing: "-0.6px",
           margin: 0,
-          lineHeight: 1.15,
+          lineHeight: 1.1,
         }}
       >
         {greet}, {firstName}.
       </h1>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 12 }}>
-        <Pill
-          label={`${lessonsToday} lesson${lessonsToday === 1 ? "" : "s"}`}
+      <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+        <Chip
+          value={String(lessonsToday)}
+          label={`Lesson${lessonsToday === 1 ? "" : "s"}`}
           tone="blue"
         />
-        <Pill label={`£${Math.round(earningsToday)} today`} tone="blue" />
-        {pendingJobs > 0 && (
-          <Pill label={`${pendingJobs} waiting`} tone="red" />
-        )}
+        <Chip
+          value={`£${Math.round(earningsToday)}`}
+          label="Today"
+          tone="green"
+        />
+        <Chip
+          value={String(pendingJobs)}
+          label="Waiting"
+          tone={pendingJobs > 0 ? "amber" : "blue"}
+        />
       </div>
     </div>
   );
@@ -217,64 +257,88 @@ function StatsRow({
   const Card = ({
     label,
     value,
-    valueColor,
     sub,
+    accent,
+    Icon,
   }: {
     label: string;
     value: string;
-    valueColor: string;
     sub: string;
+    accent: string;
+    Icon: LucideIcon;
   }) => (
     <div
+      className="home-v2-card"
       style={{
         flex: 1,
-        background: "#FFFFFF",
-        border: `0.5px solid ${BORDER}`,
-        borderRadius: 12,
-        padding: "8px 10px",
+        padding: "14px 14px",
         minWidth: 0,
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
       }}
     >
-      <div
-        style={{
-          fontSize: 9,
-          fontWeight: 700,
-          color: MUTED,
-          letterSpacing: "0.08em",
-          marginBottom: 3,
-        }}
-      >
-        {label}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#6B7A90",
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            marginBottom: 4,
+          }}
+        >
+          {label}
+        </div>
+        <div
+          style={{
+            fontSize: 22,
+            fontWeight: 600,
+            color: "#0B1220",
+            letterSpacing: "-0.5px",
+            lineHeight: 1.05,
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          {value}
+        </div>
+        <div style={{ fontSize: 12, color: "#64748B", marginTop: 3 }}>
+          {sub}
+        </div>
       </div>
       <div
         style={{
-          fontSize: 16,
-          fontWeight: 700,
-          color: valueColor,
-          letterSpacing: "-0.3px",
-          lineHeight: 1.1,
-          fontVariantNumeric: "tabular-nums",
+          width: 38,
+          height: 38,
+          borderRadius: 999,
+          background: `${accent}1A`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
         }}
       >
-        {value}
+        <Icon size={18} strokeWidth={1.8} color={accent} />
       </div>
-      <div style={{ fontSize: 10, color: MUTED, marginTop: 2 }}>{sub}</div>
     </div>
   );
 
   return (
-    <div style={{ display: "flex", gap: 8, padding: "0 14px 14px" }}>
+    <div style={{ display: "flex", gap: 10, padding: "0 20px 16px" }}>
       <Card
         label="TODAY"
         value={`£${Math.round(todayEarnings)}`}
-        valueColor={RED}
         sub={`${todaySessions} lesson${todaySessions === 1 ? "" : "s"}`}
+        accent="#2F9E6E"
+        Icon={PoundSterling}
       />
       <Card
         label="THIS WEEK"
         value={`${weekHours}h`}
-        valueColor={BLUE}
         sub={`${weekSessions} lesson${weekSessions === 1 ? "" : "s"}`}
+        accent="#315FAE"
+        Icon={Calendar}
       />
     </div>
   );
