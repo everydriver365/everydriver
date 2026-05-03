@@ -959,7 +959,32 @@ export function MobileHomeRedesign({
             pickupLocation={nextLesson.pickupLocation}
             pickupPostcode={nextLesson.pickupPostcode}
             minutesUntil={liveMinutes}
+            expanded={expanded}
+            onToggleExpanded={() => setExpanded((v) => !v)}
           />
+          {expanded && (
+            <div style={{ padding: "0 14px 14px" }}>
+              <NextUpTileFull
+                lessonId={nextLesson.lessonId}
+                pupilId={nextLesson.pupilId}
+                pupilName={nextLesson.pupilName}
+                pupilProfileImage={nextLesson.pupilProfileImage}
+                pupilPhone={nextLesson.pupilPhone}
+                lessonDate={nextLesson.lessonDate}
+                pickupPostcode={nextLesson.pickupPostcode}
+                pickupLocation={nextLesson.pickupLocation}
+                startTime={nextLesson.startTime}
+                minutesUntil={liveMinutes}
+                accountBalance={(nextLesson as any).accountBalance ?? 0}
+                prepaidHours={(nextLesson as any).prepaidHours ?? 0}
+                durationMinutes={nextLesson.durationMinutes}
+                instructorId={instructorId}
+                checkInStatus={(nextLesson as any).checkInStatus}
+                lessonStatus={(nextLesson as any).lessonStatus}
+                lastLessonPlan={(nextLesson as any).lastLessonPlan}
+              />
+            </div>
+          )}
         </>
       )}
 
