@@ -92,6 +92,8 @@ export function useNextLessonDetails(instructorId: string | undefined) {
         lessonId: lesson.id, pupilId: pupil.id, pupilName: pupil.name,
         pupilPhone: pupil.phone, pupilProfileImage: pupil.profile_image_url,
         pickupPostcode: effectivePostcode, pickupLocation: effectiveLocation,
+        pickupWhat3words: (lesson as any).pickup_what3words || pupil.what3words || null,
+        pickupNotes: (lesson as any).notes || null,
         lessonDate, startTime: lesson.start_time,
         minutesUntil: Math.max(0, minutesUntil),
         durationMinutes: lesson.duration_minutes || 60,
