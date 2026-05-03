@@ -702,100 +702,137 @@ export default function InstructorPupils() {
           </div>
         </div>
 
-        {/* Pupils List */}
-        {displayedPupils.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-14 h-14 rounded-[12px] bg-[#E8ECF1] flex items-center justify-center mb-3">
-              <Users className="h-7 w-7" style={{ color: "#2A394F" }} />
+        <div style={{ padding: "0 15px" }}>
+          {/* Pupils List */}
+          {displayedPupils.length === 0 ? (
+            <div
+              style={{
+                background: "#FFF",
+                borderRadius: 16,
+                padding: 24,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                border: "0.5px solid rgba(26,82,160,0.08)",
+              }}
+            >
+              <Users size={28} color="#C7C7CC" strokeWidth={1.4} />
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#1A1A1A", marginTop: 10, marginBottom: 4 }}>
+                No pupils
+              </div>
+              <div style={{ fontSize: 11, color: "#8E8E93", textAlign: "center", marginBottom: 14 }}>
+                {activeTab === "all"
+                  ? "Add your first pupil to get started"
+                  : `No pupils match the "${activeTab}" filter`}
+              </div>
+              {activeTab === "all" && (
+                <button
+                  type="button"
+                  onClick={() => setIsAddOpen(true)}
+                  style={{
+                    background: "#1A52A0",
+                    borderRadius: 20,
+                    padding: "7px 16px",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#FFF",
+                  }}
+                >
+                  Add first pupil
+                </button>
+              )}
             </div>
-            <h3 className="font-bold text-[14px] text-[#1c1c1e] mb-1">No pupils found</h3>
-            <p className="text-[12px] text-[#8e8e93] max-w-xs">
-              {searchQuery
-                ? "No pupils match your search."
-                : "Add your first pupil to get started."}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {(() => {
-              // Detect duplicate display names so cards can show a small disambiguator.
-              const nameCount = new Map<string, number>();
-              displayedPupils.forEach((p) => {
-                const k = (p.name || "").trim().toLowerCase();
-                nameCount.set(k, (nameCount.get(k) || 0) + 1);
-              });
-              return displayedPupils.map((pupil, idx) => {
-                const dupKey = (pupil.name || "").trim().toLowerCase();
-                const isDup = (nameCount.get(dupKey) || 0) > 1;
-                const suffix = isDup
-                  ? (pupil.address?.split(",")[0]?.trim() || pupil.postcode || null)
-                  : null;
-                const priority = isUpcoming(pupil) || needsLesson(pupil) || (pupil.account_balance ?? 0) < 0;
-                return (
-                  <motion.div
-                    key={pupil.id}
-                    id={`pupil-card-${pupil.id}`}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ type: "spring", stiffness: 350, damping: 25, delay: idx * 0.03 }}
-                  >
-                    <PupilCardStack
-                      pupil={pupil}
-                      defaultExpanded={expandedPupilId === pupil.id}
-                      nameSuffix={suffix}
-                      priority={priority}
-                      onEdit={handleEditPupil}
-                      onDelete={handleDeletePupil}
-                      onViewHistory={(p) => {
-                        setSelectedPupil(p);
-                        setIsHistoryOpen(true);
-                      }}
-                      onViewReport={(p) => {
-                        setSelectedPupil(p);
-                        setIsDrivingReportOpen(true);
-                      }}
-                      onViewTerms={(p) => {
-                        setSelectedPupil(p);
-                        setIsTermsModalOpen(true);
-                      }}
-                      onStartChat={(p) => {
-                        navigate(`/instructor/messages?pupilId=${p.id}`);
-                      }}
-                      onRecordTestResult={(p, isMock) => {
-                        setSelectedPupil(p);
-                        setTestFormIsMock(isMock);
-                        setIsTestFormOpen(true);
-                      }}
-                      onViewTestHistory={(p) => {
-                        setSelectedPupil(p);
-                        setIsTestHistoryOpen(true);
-                      }}
-                      onStatusChange={(pupilId, newStatus) => {
-                        setPupils(prevPupils =>
-                          prevPupils.map(p =>
-                            p.id === pupilId ? { ...p, status: newStatus } : p
-                          )
-                        );
-                      }}
-                      hasSignedTerms={pupilSignatures[pupil.id] || false}
-                      instructorId={instructorId}
-                      instructorName={instructor?.name}
-                      isTracking={isTracking(pupil.id)}
-                      paymentQrUrl={getActivePaymentQrUrl(instructor)}
-                      commissionPayer={instructor?.commission_payer}
-                    />
-                  </motion.div>
-                );
-              });
-            })()}
-          </div>
-        )}
-        
-        {/* Progress Reports */}
-        <PupilProgressReportGenerator 
-          instructorId={instructorId} 
-          pupils={pupils.map(p => ({ id: p.id, name: p.name }))} 
-        />
+          ) : (
+            <>
+              <div className="space-y-3" style={{ marginBottom: 12 }}>
+                {(() => {
+                  // Detect duplicate display names so cards can show a small disambiguator.
+                  const nameCount = new Map<string, number>();
+                  displayedPupils.forEach((p) => {
+                    const k = (p.name || "").trim().toLowerCase();
+                    nameCount.set(k, (nameCount.get(k) || 0) + 1);
+                  });
+                  return displayedPupils.map((pupil, idx) => {
+                    const dupKey = (pupil.name || "").trim().toLowerCase();
+                    const isDup = (nameCount.get(dupKey) || 0) > 1;
+                    const suffix = isDup
+                      ? (pupil.address?.split(",")[0]?.trim() || pupil.postcode || null)
+                      : null;
+                    const priority = isUpcoming(pupil) || needsLesson(pupil) || (pupil.account_balance ?? 0) < 0;
+                    const isPassed = (pupil.status || "active") === "passed";
+                    return (
+                      <motion.div
+                        key={pupil.id}
+                        id={`pupil-card-${pupil.id}`}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ type: "spring", stiffness: 350, damping: 25, delay: idx * 0.03 }}
+                        style={{ opacity: isPassed ? 0.6 : 1 }}
+                      >
+                        <PupilCardStack
+                          pupil={pupil}
+                          defaultExpanded={expandedPupilId === pupil.id}
+                          nameSuffix={suffix}
+                          priority={priority}
+                          onEdit={handleEditPupil}
+                          onDelete={handleDeletePupil}
+                          onViewHistory={(p) => {
+                            setSelectedPupil(p);
+                            setIsHistoryOpen(true);
+                          }}
+                          onViewReport={(p) => {
+                            setSelectedPupil(p);
+                            setIsDrivingReportOpen(true);
+                          }}
+                          onViewTerms={(p) => {
+                            setSelectedPupil(p);
+                            setIsTermsModalOpen(true);
+                          }}
+                          onStartChat={(p) => {
+                            navigate(`/instructor/messages?pupilId=${p.id}`);
+                          }}
+                          onRecordTestResult={(p, isMock) => {
+                            setSelectedPupil(p);
+                            setTestFormIsMock(isMock);
+                            setIsTestFormOpen(true);
+                          }}
+                          onViewTestHistory={(p) => {
+                            setSelectedPupil(p);
+                            setIsTestHistoryOpen(true);
+                          }}
+                          onStatusChange={(pupilId, newStatus) => {
+                            setPupils(prevPupils =>
+                              prevPupils.map(p =>
+                                p.id === pupilId ? { ...p, status: newStatus } : p
+                              )
+                            );
+                          }}
+                          hasSignedTerms={pupilSignatures[pupil.id] || false}
+                          instructorId={instructorId}
+                          instructorName={instructor?.name}
+                          isTracking={isTracking(pupil.id)}
+                          paymentQrUrl={getActivePaymentQrUrl(instructor)}
+                          commissionPayer={instructor?.commission_payer}
+                        />
+                      </motion.div>
+                    );
+                  });
+                })()}
+              </div>
+              <div style={{ fontSize: 10, color: "#C7C7CC", fontWeight: 500, textAlign: "center", marginTop: 12 }}>
+                Showing {displayedPupils.length} of {stats.total} pupils
+              </div>
+            </>
+          )}
+
+          {/* Progress Reports */}
+          <PupilProgressReportGenerator
+            instructorId={instructorId}
+            pupils={pupils.map(p => ({ id: p.id, name: p.name }))}
+          />
+        </div>
       </div>
 
       {/* Add Pupil Sheet (premium iOS design) */}
