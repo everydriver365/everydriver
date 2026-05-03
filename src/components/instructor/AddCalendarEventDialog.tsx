@@ -91,7 +91,7 @@ export function AddCalendarEventDialog({
   defaultDate,
   onSuccess,
 }: AddCalendarEventDialogProps) {
-  const [tab, setTab] = useState<'block' | 'lesson'>('block');
+  const [tab, setTab] = useState<'block' | 'lesson' | 'event'>('block');
   const [loading, setLoading] = useState(false);
   const [pupils, setPupils] = useState<Pupil[]>([]);
 
@@ -110,6 +110,14 @@ export function AddCalendarEventDialog({
   const [lessonStartTime, setLessonStartTime] = useState('09:00');
   const [lessonDuration, setLessonDuration] = useState('1');
   const [pickupAddress, setPickupAddress] = useState('');
+
+  // Event form state
+  const [eventTitle, setEventTitle] = useState('');
+  const [eventDate, setEventDate] = useState<Date | undefined>(defaultDate || new Date());
+  const [eventStartTime, setEventStartTime] = useState('09:00');
+  const [eventEndTime, setEventEndTime] = useState('10:00');
+  const [eventLocation, setEventLocation] = useState('');
+  const [eventNotes, setEventNotes] = useState('');
 
   // Inline error state
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -238,6 +246,53 @@ export function AddCalendarEventDialog({
     }
   };
 
+  const handleAddEvent = async () => {
+    const nextErrors: Record<string, string> = {};
+    if (!eventTitle) nextErrors.eventTitle = 'Title is required';
+    if (!eventDate) nextErrors.eventDate = 'Date is required';
+    if (Object.keys(nextErrors).length) {
+      setErrors(nextErrors);
+      return;
+    }
+    setErrors({});
+
+    setLoading(true);
+    try {
+      const startDateTime = new Date(eventDate!);
+      const [sh, sm] = eventStartTime.split(':').map(Number);
+      startDateTime.setHours(sh, sm, 0, 0);
+      const endDateTime = new Date(eventDate!);
+      const [eh, em] = eventEndTime.split(':').map(Number);
+      endDateTime.setHours(eh, em, 0, 0);
+
+      const notesParts = [eventLocation && `Location: ${eventLocation}`, eventNotes].filter(Boolean);
+
+      const { error } = await supabase
+        .from('instructor_manual_blocks')
+        .insert({
+          instructor_id: instructorId,
+          title: eventTitle,
+          start_datetime: startDateTime.toISOString(),
+          end_datetime: endDateTime.toISOString(),
+          block_type: 'event',
+          color: '#6B21A8',
+          notes: notesParts.join('\n') || null,
+        });
+      if (error) throw error;
+
+      toast.success('Event added');
+      setEventTitle('');
+      setEventLocation('');
+      setEventNotes('');
+      onSuccess();
+    } catch (error) {
+      console.error('Error adding event:', error);
+      toast.error('Failed to add event');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const timeSlots = Array.from({ length: 28 }, (_, i) => {
     const hour = 7 + Math.floor(i / 2);
     const min = (i % 2) * 30;
@@ -287,9 +342,9 @@ export function AddCalendarEventDialog({
           <div
             role="tablist"
             aria-label="Event type"
-            className="grid grid-cols-2 gap-1 p-[3px] rounded-[10px] bg-[#E5E5EA]/70"
+            className="grid grid-cols-3 gap-1 p-[3px] rounded-[10px] bg-[#E5E5EA]/70"
           >
-            {(['block', 'lesson'] as const).map((t) => {
+            {(['block', 'lesson', 'event'] as const).map((t) => {
               const active = tab === t;
               return (
                 <button
@@ -305,7 +360,7 @@ export function AddCalendarEventDialog({
                       : 'text-[#3C3C43]/60 font-medium'
                   )}
                 >
-                  {t === 'block' ? 'Block Time' : 'Add Lesson'}
+                  {t === 'block' ? 'Block Time' : t === 'lesson' ? 'Add Lesson' : 'Add Event'}
                 </button>
               );
             })}
@@ -317,7 +372,104 @@ export function AddCalendarEventDialog({
           className="flex-1 overflow-y-auto px-5 pb-6"
           style={{ scrollbarWidth: 'thin' }}
         >
-          {tab === 'block' ? (
+          {tab === 'event' ? (
+            <div className="space-y-5">
+              <div>
+                <SectionLabel>Event</SectionLabel>
+                <FieldGroup>
+                  <FieldRow label="Title">
+                    <Input
+                      placeholder="e.g., Driving test, MOT, Training"
+                      value={eventTitle}
+                      onChange={(e) => setEventTitle(e.target.value)}
+                      className={iosInputClass}
+                    />
+                  </FieldRow>
+                  <FieldRow label="Location">
+                    <Input
+                      placeholder="Optional"
+                      value={eventLocation}
+                      onChange={(e) => setEventLocation(e.target.value)}
+                      className={iosInputClass}
+                    />
+                  </FieldRow>
+                </FieldGroup>
+                <ErrorText id="eventTitle" />
+              </div>
+
+              <div>
+                <SectionLabel>When</SectionLabel>
+                <FieldGroup>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="w-full px-4 py-3 min-h-[52px] flex items-center justify-between gap-3 text-left active:bg-black/[0.03] transition-colors"
+                      >
+                        <div className="flex flex-col gap-1">
+                          <div className="text-[12px] font-semibold text-[#3C3C43]/70">Date</div>
+                          <div className="text-[16px] text-[#1C1C1E]">
+                            {eventDate ? format(eventDate, 'EEE, d MMM yyyy') : 'Pick a date'}
+                          </div>
+                        </div>
+                        <CalendarIcon className="size-[18px] text-[#3C3C43]/50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={eventDate} onSelect={setEventDate} initialFocus />
+                    </PopoverContent>
+                  </Popover>
+
+                  <div className="grid grid-cols-2 divide-x divide-[#E5E5EA]">
+                    <FieldRow label="Start">
+                      <Select value={eventStartTime} onValueChange={setEventStartTime}>
+                        <SelectTrigger className={iosTriggerClass}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {timeSlots.map((time) => (
+                            <SelectItem key={time} value={time}>
+                              {time}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FieldRow>
+                    <FieldRow label="End">
+                      <Select value={eventEndTime} onValueChange={setEventEndTime}>
+                        <SelectTrigger className={iosTriggerClass}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {timeSlots.map((time) => (
+                            <SelectItem key={time} value={time}>
+                              {time}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FieldRow>
+                  </div>
+                </FieldGroup>
+                <ErrorText id="eventDate" />
+              </div>
+
+              <div>
+                <SectionLabel>Notes</SectionLabel>
+                <FieldGroup>
+                  <FieldRow label="Notes" className="py-3">
+                    <Textarea
+                      placeholder="Optional details..."
+                      value={eventNotes}
+                      onChange={(e) => setEventNotes(e.target.value)}
+                      rows={3}
+                      className={cn(iosInputClass, 'resize-none min-h-[60px]')}
+                    />
+                  </FieldRow>
+                </FieldGroup>
+              </div>
+            </div>
+          ) : tab === 'block' ? (
             <div className="space-y-5">
               {/* Event */}
               <div>
@@ -577,7 +729,7 @@ export function AddCalendarEventDialog({
         >
           <button
             type="button"
-            onClick={tab === 'block' ? handleAddBlock : handleAddLesson}
+            onClick={tab === 'block' ? handleAddBlock : tab === 'lesson' ? handleAddLesson : handleAddEvent}
             disabled={loading}
             className={cn(
               'w-full h-[54px] rounded-[16px] bg-[#007AFF] text-white text-[16px] font-semibold',
@@ -589,7 +741,9 @@ export function AddCalendarEventDialog({
               ? 'Saving…'
               : tab === 'block'
               ? 'Save block'
-              : 'Add lesson'}
+              : tab === 'lesson'
+              ? 'Add lesson'
+              : 'Add event'}
           </button>
           <button
             type="button"
