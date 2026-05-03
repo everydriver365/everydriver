@@ -23,11 +23,14 @@ import {
   PoundSterling,
   type LucideIcon,
 } from "lucide-react";
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
-import { toast } from "@/hooks/use-toast";
+import { RunningLateSheet } from "./RunningLateSheet";
+import { toast } from "sonner";
+import { haptics } from "@/lib/haptics";
 
 /* Brand tokens */
 const RED = "#CC2229";
@@ -201,19 +204,29 @@ export function UpNextExpanded({
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [busyAction, setBusyAction] = useState<string | null>(null);
+  const [lateOpen, setLateOpen] = useState(false);
 
   const eta = useTrafficETA(pickupPostcode);
+  const etaMinutes = eta.durationMinutes || 0;
   const fullAddress = [pickupLocation, pickupPostcode].filter(Boolean).join(", ");
   const lessonFee = (durationMinutes / 60) * 40;
 
   const debt = accountBalance < 0 ? Math.abs(accountBalance) : 0;
   const isPaid = debt === 0 || prepaidHours > 0;
   const norm = (lessonStatus || "").toLowerCase();
+  const firstName = (pupilName || "").split(/\s+/)[0] || "there";
+
+  const sendSMS = (msg: string) => {
+    if (!pupilPhone) return;
+    const a = document.createElement("a");
+    a.href = `sms:${pupilPhone}?body=${encodeURIComponent(msg)}`;
+    a.click();
+  };
 
   const copyAddress = () => {
     if (!fullAddress) return;
     navigator.clipboard.writeText(fullAddress).catch(() => {});
-    toast({ title: "Address copied" });
+    toast.success("Address copied");
   };
 
   const navigateMap = () => {
@@ -222,35 +235,70 @@ export function UpNextExpanded({
   };
 
   const callPupil = () => {
-    if (pupilPhone) window.location.href = `tel:${pupilPhone}`;
+    if (!pupilPhone) return;
+    const a = document.createElement("a");
+    a.href = `tel:${pupilPhone}`;
+    a.click();
   };
-  const messagePupil = () => navigate(`/instructor/messages?pupilId=${pupilId}`);
+  const messagePupil = () => {
+    if (pupilPhone) {
+      const a = document.createElement("a");
+      a.href = `sms:${pupilPhone}`;
+      a.click();
+    } else {
+      navigate(`/instructor/messages?pupilId=${pupilId}`);
+    }
+  };
   const openPrep = () => navigate(`/instructor/pupils/${pupilId}?tab=plan`);
 
-  const setStatus = async (status: string, type: string, label: string) => {
-    setBusyAction(type);
+  const onMyWay = async () => {
+    setBusyAction("on_the_way");
     try {
-      await supabase.from("scheduled_lessons").update({ status }).eq("id", lessonId);
-      supabase.functions.invoke("notify-pupil", { body: { pupilId, type } }).catch(() => {});
+      const etaClock = etaMinutes > 0
+        ? format(new Date(Date.now() + etaMinutes * 60000), "HH:mm")
+        : null;
+      const message = etaClock
+        ? `Hi ${firstName}, on the way — ETA ${etaClock}.`
+        : `Hi ${firstName}, on the way.`;
+      sendSMS(message);
+      await supabase.from("scheduled_lessons").update({ status: "en_route" }).eq("id", lessonId);
+      supabase.functions.invoke("notify-pupil", { body: { pupilId, type: "en_route" } }).catch(() => {});
+      try { haptics.medium(); } catch {}
       qc.invalidateQueries({ queryKey: ["next-lesson-details"] });
-      toast({ title: label });
+      qc.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+      toast.success(etaClock ? `On the way · ETA ${etaClock}` : "On the way");
     } catch {
-      toast({ title: "Failed to update", variant: "destructive" });
+      toast.error("Failed to update");
     } finally {
       setBusyAction(null);
     }
   };
 
-  const onMyWay = () => setStatus("on_the_way", "on_the_way", "Pupil notified · On my way");
-  const runningLate = () =>
-    setStatus("running_late", "running_late", "Pupil notified · Running late");
-  const arrived = () => setStatus("arrived", "arrived", "Pupil notified · Arrived");
+  const arrived = async () => {
+    setBusyAction("arrived");
+    try {
+      await supabase.from("scheduled_lessons").update({ status: "arrived" }).eq("id", lessonId);
+      supabase.functions.invoke("notify-pupil", { body: { pupilId, type: "arrived" } }).catch(() => {});
+      sendSMS(`Hi ${firstName}, I'm outside and ready when you are! 🚗`);
+      try { haptics.medium(); } catch {}
+      qc.invalidateQueries({ queryKey: ["next-lesson-details"] });
+      qc.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+      toast.success("Marked as arrived");
+    } catch {
+      toast.error("Failed to update");
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
+  const runningLate = () => setLateOpen(true);
 
   const chasePayment = () => {
     supabase.functions
       .invoke("notify-pupil", { body: { pupilId, type: "payment_reminder" } })
       .catch(() => {});
-    toast({ title: "Payment reminder sent" });
+    sendSMS(`Hi ${firstName}, just a quick reminder there's £${debt.toFixed(0)} outstanding on your lesson account. Thanks!`);
+    toast.success("Payment reminder sent");
   };
   const markPaid = () => {
     navigate(`/instructor/pupils/${pupilId}?tab=payments`);
@@ -367,7 +415,7 @@ export function UpNextExpanded({
             Icon={Send}
             label="On My Way"
             onClick={onMyWay}
-            active={norm === "on_the_way"}
+            active={norm === "on_the_way" || norm === "en_route"}
             disabled={busyAction === "on_the_way"}
           />
           <ActionTile
@@ -669,6 +717,25 @@ export function UpNextExpanded({
         currentTime={startTime}
         durationMinutes={durationMinutes}
         onRescheduled={() => {
+          qc.invalidateQueries({ queryKey: ["next-lesson-details"] });
+        }}
+      />
+      <RunningLateSheet
+        open={lateOpen}
+        onOpenChange={setLateOpen}
+        pupilName={pupilName}
+        pupilPhone={pupilPhone}
+        startTime={startTime}
+        etaMinutes={etaMinutes}
+        onMarkRunningLate={(delayMinutes, newEtaText) => {
+          supabase.from("scheduled_lessons").update({ status: "running_late" }).eq("id", lessonId).then(() => {});
+          supabase.functions.invoke("notify-pupil", { body: { pupilId, type: "running_late", delayMinutes, newEtaText } }).catch(() => {});
+          qc.invalidateQueries({ queryKey: ["next-lesson-details"] });
+          qc.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+        }}
+        onMarkOnWay={(etaText) => {
+          supabase.from("scheduled_lessons").update({ status: "en_route" }).eq("id", lessonId).then(() => {});
+          supabase.functions.invoke("notify-pupil", { body: { pupilId, type: "en_route", etaText } }).catch(() => {});
           qc.invalidateQueries({ queryKey: ["next-lesson-details"] });
         }}
       />
