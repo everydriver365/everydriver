@@ -363,6 +363,7 @@ function AlertsRow({ alerts, loading }: { alerts: DrivingAlert[]; loading: boole
 }
 
 
+export function UpNextExpanded({
   lessonId,
   pupilId,
   pupilName,
