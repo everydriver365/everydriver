@@ -953,44 +953,57 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
           const hasContent = timeline.length > 0 || allDay.length > 0;
 
           return (
-            <div key={dateStr} style={{ padding: "12px 16px 4px" }}>
-              {/* Day header */}
+            <div key={dateStr} style={{ padding: today ? "0 15px 4px" : "14px 15px 4px" }}>
+              {/* Day header with Add button */}
               <div
                 id={`schedule-day-${dateStr}`}
                 ref={today ? todayRef : undefined}
                 style={{
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 5,
-                  backgroundColor: "#F7F7F8",
-                  padding: "8px 4px 10px",
                   display: "flex",
-                  alignItems: "baseline",
-                  gap: 8,
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 8,
                 }}
               >
-                <h3
-                  style={{
-                    margin: 0,
-                    fontSize: 13,
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{
+                    width: 6, height: 6, borderRadius: 3,
+                    backgroundColor: today ? "#1A52A0" : "#8E8E93",
+                  }} />
+                  <span style={{
+                    fontSize: 11,
                     fontWeight: 700,
-                    color: today ? "#2B7BC8" : "#1C1C1E",
-                    letterSpacing: "-0.1px",
-                    textTransform: "none",
+                    color: today ? "#1A52A0" : "#8E8E93",
+                    letterSpacing: "0.02em",
+                  }}>
+                    {format(day, "EEE d MMM")}{today ? " · today" : ""}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAddLessonOpen(true)}
+                  style={{
+                    backgroundColor: today ? "#1A52A0" : "#FFFFFF",
+                    border: today ? "none" : "0.5px solid rgba(26,82,160,0.12)",
+                    borderRadius: 20,
+                    padding: "3px 10px",
+                    display: "inline-flex", alignItems: "center", gap: 4,
+                    cursor: "pointer",
                   }}
                 >
-                  {formatDayHeader(day)}
-                </h3>
+                  <Plus style={{ width: 9, height: 9, color: today ? "#FFFFFF" : "#8E8E93", strokeWidth: 2.4 }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, color: today ? "#FFFFFF" : "#8E8E93" }}>Add</span>
+                </button>
               </div>
 
-              {/* Day rows container — flat white card matching Calendar tab */}
+              {/* Day rows container — single rounded white card */}
               <div
                 style={{
                   backgroundColor: hasContent ? "#FFFFFF" : "transparent",
-                  borderRadius: 12,
-                  border: hasContent ? "0.5px solid #E5E5EA" : "none",
+                  borderRadius: 16,
+                  border: hasContent ? "0.5px solid rgba(26,82,160,0.08)" : "none",
                   overflow: "hidden",
-                  padding: hasContent ? "0 8px" : 0,
+                  padding: 0,
                   display: "flex",
                   flexDirection: "column",
                 }}
