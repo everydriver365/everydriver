@@ -691,8 +691,6 @@ export function HomeToolsHub() {
         </div>
       )}
 
-      {/* Reference: defaults are seeded by useInstructorPinnedTiles. */}
-      {void DEFAULT_PINNED_TILE_IDS}
     </section>
   );
 }
