@@ -640,20 +640,20 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
   };
 
   return (
-    <div style={{ padding: "0 14px", marginBottom: 14 }}>
+    <div style={{ padding: "0 20px", marginBottom: 18 }}>
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: 8,
+          marginBottom: 10,
         }}
       >
         <div
           style={{
-            fontSize: 10,
-            fontWeight: 700,
-            color: MUTED,
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#6B7A90",
             letterSpacing: "0.12em",
             textTransform: "uppercase",
           }}
