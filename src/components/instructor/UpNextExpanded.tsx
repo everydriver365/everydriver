@@ -733,24 +733,135 @@ export function UpNextExpanded({
 
         <Divider />
 
-        {/* SECTION 6 — Vehicle / OBD (placeholder) */}
+        {/* SECTION 6 — Vehicle / OBD */}
         <SectionLabel>Vehicle</SectionLabel>
-        <div
-          style={{
-            margin: "0 16px 12px",
-            background: "#F1F4F8",
-            borderRadius: 12,
-            padding: "10px 12px",
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            color: MUTED,
-            fontSize: 12,
-          }}
-        >
-          <CloudOff size={16} strokeWidth={2.2} />
-          OBD not connected
-        </div>
+        {(() => {
+          if (!obdDevice) {
+            return (
+              <div
+                style={{
+                  margin: "0 16px 12px",
+                  background: "#F1F4F8",
+                  borderRadius: 12,
+                  padding: "10px 12px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  color: MUTED,
+                  fontSize: 12,
+                }}
+              >
+                <CloudOff size={16} strokeWidth={2.2} />
+                OBD not connected
+              </div>
+            );
+          }
+          const d = obdDevice;
+          const v = d.vehicle;
+          const title = [
+            v?.registration,
+            [v?.make, v?.model].filter(Boolean).join(" ") || null,
+          ]
+            .filter(Boolean)
+            .join(" · ") || d.device_name || "Vehicle";
+
+          const stats: string[] = [];
+          if (d.last_fuel_percent != null) stats.push(`Fuel ${Math.round(d.last_fuel_percent)}%`);
+          if (d.last_battery_voltage != null) stats.push(`Batt ${d.last_battery_voltage.toFixed(1)}V`);
+          else if (d.last_battery_percent != null) stats.push(`Batt ${Math.round(d.last_battery_percent)}%`);
+          if (d.last_coolant_temp_c != null) stats.push(`${Math.round(d.last_coolant_temp_c)}°C`);
+          if (d.last_ecu_odometer_km != null)
+            stats.push(`${Math.round(d.last_ecu_odometer_km * 0.621371).toLocaleString()} mi`);
+
+          const tyres = d.last_tire_pressure_json
+            ? Object.values(d.last_tire_pressure_json).filter((n) => typeof n === "number")
+            : [];
+          const tyreWarn = tyres.length > 0 && tyres.some((p) => p < 28 || p > 40);
+          const faults = (d.last_fault_codes || []).filter(Boolean);
+
+          const ago = d.last_seen_at
+            ? formatDistanceToNow(new Date(d.last_seen_at), { addSuffix: false })
+            : null;
+
+          return (
+            <div
+              onClick={() => navigate("/instructor/vehicle-health")}
+              style={{
+                margin: "0 16px 12px",
+                background: BLUE_TINT,
+                borderRadius: 12,
+                padding: "10px 12px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+                cursor: "pointer",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Car size={14} color={BLUE} strokeWidth={2.2} />
+                <div style={{ fontSize: 13, fontWeight: 700, color: CHARCOAL, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {title}
+                </div>
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: d.is_connected ? "#22A06B" : "#9AA5B8",
+                    display: "inline-block",
+                  }}
+                />
+                <span style={{ fontSize: 11, color: MUTED, fontWeight: 600 }}>
+                  {d.is_connected ? "Live" : ago ? `${ago} ago` : "Offline"}
+                </span>
+              </div>
+              {stats.length > 0 && (
+                <div style={{ fontSize: 12, color: MUTED, fontWeight: 500 }}>
+                  {stats.join(" · ")}
+                </div>
+              )}
+              {(faults.length > 0 || tyreWarn) && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 2 }}>
+                  {faults.length > 0 && (
+                    <span
+                      style={{
+                        background: "rgba(204,34,41,0.10)",
+                        color: RED,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        padding: "3px 8px",
+                        borderRadius: 999,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      <AlertTriangle size={11} strokeWidth={2.4} />
+                      {faults.length === 1
+                        ? `1 fault: ${faults[0].code}`
+                        : `${faults.length} faults`}
+                    </span>
+                  )}
+                  {tyreWarn && (
+                    <span
+                      style={{
+                        background: "#FFF8E6",
+                        color: "#A66B00",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        padding: "3px 8px",
+                        borderRadius: 999,
+                      }}
+                    >
+                      Tyre check
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
 
         <Divider />
 
