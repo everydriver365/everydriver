@@ -4,6 +4,9 @@ import { formatDistanceToNow } from "date-fns";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { AlertTriangle } from "lucide-react";
 import { enrichFaultCode } from "@/lib/obdCodeLookup";
+import { usePupilLessonHistory, type PupilLessonHistoryEntry } from "@/hooks/usePupilLessonHistory";
+import { PreviousLessonModal } from "./PreviousLessonModal";
+import { parse as parseDateFn } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle2,
