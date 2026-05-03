@@ -29,6 +29,7 @@ import { MapHeroLive } from "@/components/instructor/upNext/MapHeroLive";
 /* Restored sections from legacy home */
 import { MobileHomeBottomSections } from "@/components/instructor/MobileHomeBottomSections";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
+import { UpcomingEventsTile } from "@/components/instructor/UpcomingEventsTile";
 import { useDormantPupilsCount } from "@/hooks/useDormantPupilsCount";
 import { Wrench, Users as UsersIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
