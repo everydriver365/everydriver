@@ -547,28 +547,6 @@ function UpNextTile({
               color: "#FFFFFF",
             }}
           >
-            <div style={{ textAlign: "center", lineHeight: 1 }}>
-              <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.4px" }}>
-                {dayNum}
-              </div>
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "rgba(255,255,255,0.7)",
-                  marginTop: 2,
-                }}
-              >
-                {monthName}
-              </div>
-            </div>
-            <div
-              style={{
-                width: 36,
-                height: 1,
-                background: "rgba(255,255,255,0.25)",
-              }}
-            />
             <div
               style={{
                 width: 36,
@@ -595,6 +573,28 @@ function UpNextTile({
               ) : (
                 initials(pupilName)
               )}
+            </div>
+            <div
+              style={{
+                width: 36,
+                height: 1,
+                background: "rgba(255,255,255,0.25)",
+              }}
+            />
+            <div style={{ textAlign: "center", lineHeight: 1 }}>
+              <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.4px" }}>
+                {dayNum}
+              </div>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "rgba(255,255,255,0.7)",
+                  marginTop: 2,
+                }}
+              >
+                {monthName}
+              </div>
             </div>
             <div
               style={{
