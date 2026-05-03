@@ -61,7 +61,7 @@ export function MobileBlueHeader({
           )}
           {isHomePage ? (
             <>
-              <img src={dsmLogo} alt="DSM" className="h-9 w-auto object-contain shrink-0" />
+              <img src={dsmLogo} alt="DSM" className="h-6 w-auto object-contain shrink-0" />
               <span
                 className="truncate"
                 style={{
