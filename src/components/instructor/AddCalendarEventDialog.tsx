@@ -111,6 +111,14 @@ export function AddCalendarEventDialog({
   const [lessonDuration, setLessonDuration] = useState('1');
   const [pickupAddress, setPickupAddress] = useState('');
 
+  // Event form state
+  const [eventTitle, setEventTitle] = useState('');
+  const [eventDate, setEventDate] = useState<Date | undefined>(defaultDate || new Date());
+  const [eventStartTime, setEventStartTime] = useState('09:00');
+  const [eventEndTime, setEventEndTime] = useState('10:00');
+  const [eventLocation, setEventLocation] = useState('');
+  const [eventNotes, setEventNotes] = useState('');
+
   // Inline error state
   const [errors, setErrors] = useState<Record<string, string>>({});
 
