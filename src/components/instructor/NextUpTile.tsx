@@ -532,6 +532,7 @@ export function NextUpTile({
           }}
         >
           {/* ── Header (whole row tappable to expand) ── */}
+          {!hideHeader && (
           <div style={{ position: "relative" }}>
 
             {/* UP NEXT label moved to parent SectionLabel above the tile.
