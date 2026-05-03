@@ -13,15 +13,7 @@ import { useInstructorPinnedTiles } from "@/hooks/useInstructorPinnedTiles";
 import { QUICK_ACCESS_TILES, QUICK_ACCESS_TILES_BY_ID } from "@/components/instructor/quickAccess/tileRegistry";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { CustomizeFrequentlyUsedSheet } from "@/components/instructor/quickAccess/CustomizeFrequentlyUsedSheet";
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { supabase } from "@/integrations/supabase/client";
+import { InstructorSearchOverlay } from "@/components/instructor/InstructorSearchOverlay";
 
 const BLUE = "#1A52A0";
 const TEXT = "#1A1A1A";
@@ -585,8 +577,6 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
   const navigate = useNavigate();
   const [editOpen, setEditOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [pupilResults, setPupilResults] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -598,29 +588,6 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
-
-  useEffect(() => {
-    if (!searchOpen || !instructorId) return;
-    const q = searchQuery.trim();
-    if (q.length < 2) {
-      setPupilResults([]);
-      return;
-    }
-    let cancelled = false;
-    const t = setTimeout(async () => {
-      const { data } = await supabase
-        .from("pupils")
-        .select("id, name")
-        .eq("instructor_id", instructorId)
-        .ilike("name", `%${q}%`)
-        .limit(8);
-      if (!cancelled) setPupilResults((data as any) || []);
-    }, 180);
-    return () => {
-      cancelled = true;
-      clearTimeout(t);
-    };
-  }, [searchQuery, searchOpen, instructorId]);
 
   const { pinnedIds, setPins, isSaving } = useInstructorPinnedTiles(instructorId);
 
@@ -772,48 +739,11 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
         saving={isSaving}
       />
 
-      <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
-        <CommandInput
-          placeholder="Search tools, pupils, lessons…"
-          value={searchQuery}
-          onValueChange={setSearchQuery}
-        />
-        <CommandList>
-          <CommandEmpty>No results.</CommandEmpty>
-          <CommandGroup heading="Tools">
-            {QUICK_ACCESS_TILES.map((t) => (
-              <CommandItem
-                key={t.id}
-                value={`${t.title} ${t.subtitle}`}
-                onSelect={() => {
-                  setSearchOpen(false);
-                  navigate(t.route);
-                }}
-              >
-                <t.icon size={14} className="mr-2 opacity-70" />
-                <span>{t.title}</span>
-                <span className="ml-2 text-xs opacity-50">{t.subtitle}</span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-          {pupilResults.length > 0 && (
-            <CommandGroup heading="Pupils">
-              {pupilResults.map((p) => (
-                <CommandItem
-                  key={p.id}
-                  value={`pupil-${p.name}`}
-                  onSelect={() => {
-                    setSearchOpen(false);
-                    navigate(`/instructor/pupils/${p.id}`);
-                  }}
-                >
-                  {p.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
-        </CommandList>
-      </CommandDialog>
+      <InstructorSearchOverlay
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        instructorId={instructorId}
+      />
 
 
       {/* Swipeable paged grid */}
