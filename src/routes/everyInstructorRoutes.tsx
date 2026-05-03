@@ -3,6 +3,7 @@ import { lazyWithRetry as lazy } from "@/utils/lazyWithRetry";
 
 // Home
 const EveryInstructorHome = lazy(() => import("@/pages/EveryInstructorHome"));
+const EveryInstructorQuickActionsEdit = lazy(() => import("@/pages/EveryInstructorQuickActionsEdit"));
 
 // Reuse existing pages — they render inside EveryInstructorLayout via their own wrappers,
 // but for now we route to the same underlying components.
