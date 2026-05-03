@@ -104,12 +104,12 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        fontSize: 10,
+        fontSize: 11,
         fontWeight: 700,
-        color: MUTED,
-        letterSpacing: "0.08em",
+        color: "#6B7A90",
+        letterSpacing: "0.12em",
         textTransform: "uppercase",
-        padding: "0 18px 8px",
+        padding: "0 20px 10px",
       }}
     >
       {children}
@@ -814,21 +814,22 @@ function AttentionGroupCard({
   if (rows.length === 0) return null;
   return (
     <>
-      <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "0 14px", marginBottom: 4 }}>
-        <span style={{ fontSize: 9, fontWeight: 700, color: groupColor, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 20px", marginBottom: 6 }}>
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: groupColor,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+          }}
+        >
           {groupLabel}
         </span>
         <span style={{ flex: 1, height: 0.5, background: groupBorder }} />
       </div>
-      <div style={{ padding: "0 14px", marginBottom: 8 }}>
-        <div
-          style={{
-            background: "#FFFFFF",
-            borderRadius: 14,
-            overflow: "hidden",
-            border: `0.5px solid ${groupLabel === "Urgent" ? "rgba(204,34,41,0.12)" : BORDER}`,
-          }}
-        >
+      <div style={{ padding: "0 20px", marginBottom: 10 }}>
+        <div className="home-v2-card" style={{ overflow: "hidden", padding: 0 }}>
           {rows.map((r, i) => (
             <button
               key={r.key}
@@ -838,20 +839,20 @@ function AttentionGroupCard({
                 width: "100%",
                 display: "flex",
                 alignItems: "center",
-                gap: 10,
-                padding: "10px 12px",
+                gap: 12,
+                padding: "12px 14px",
                 background: "transparent",
                 border: "none",
-                borderTop: i === 0 ? "none" : `0.5px solid ${ROW_BORDER}`,
+                borderTop: i === 0 ? "none" : "0.5px solid rgba(15,35,65,0.06)",
                 cursor: "pointer",
                 textAlign: "left",
               }}
             >
               <span
                 style={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: 8,
+                  width: 34,
+                  height: 34,
+                  borderRadius: 10,
                   background: r.iconBg,
                   color: r.iconColor,
                   display: "inline-flex",
@@ -860,15 +861,24 @@ function AttentionGroupCard({
                   flexShrink: 0,
                 }}
               >
-                <r.Icon size={13} strokeWidth={1.8} />
+                <r.Icon size={15} strokeWidth={2} />
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A" }}>{r.title}</div>
                 <div
                   style={{
-                    fontSize: 10,
-                    color: MUTED,
-                    marginTop: 1,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: "#0B1220",
+                    letterSpacing: "-0.2px",
+                  }}
+                >
+                  {r.title}
+                </div>
+                <div
+                  style={{
+                    fontSize: 11.5,
+                    color: "#64748B",
+                    marginTop: 2,
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
@@ -880,13 +890,13 @@ function AttentionGroupCard({
               {r.badge && (
                 <span
                   style={{
-                    minWidth: 20,
-                    height: 20,
-                    padding: "0 6px",
-                    borderRadius: 10,
+                    minWidth: 22,
+                    height: 22,
+                    padding: "0 7px",
+                    borderRadius: 11,
                     background: r.badge.bg,
                     color: "#FFFFFF",
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: 700,
                     display: "inline-flex",
                     alignItems: "center",
@@ -897,7 +907,7 @@ function AttentionGroupCard({
                   {r.badge.label}
                 </span>
               )}
-              <ChevronRight size={14} color="#C7C7CC" strokeWidth={1.8} />
+              <ChevronRight size={15} color="#C7D2DE" strokeWidth={2} />
             </button>
           ))}
         </div>
@@ -912,18 +922,22 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
 
   if (rows.length === 0) {
     return (
-      <div style={{ padding: "0 14px 14px" }}>
-        <div
-          style={{
-            background: "#FFF",
-            borderRadius: 13,
-            padding: 16,
-            textAlign: "center",
-            border: `0.5px solid ${BORDER}`,
-          }}
-        >
-          <div style={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A", marginBottom: 3 }}>All clear</div>
-          <div style={{ fontSize: 10, color: MUTED }}>Nothing needs your attention right now</div>
+      <div style={{ padding: "0 20px 14px" }}>
+        <div className="home-v2-card" style={{ padding: 18, textAlign: "center" }}>
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: "#0B1220",
+              marginBottom: 4,
+              letterSpacing: "-0.2px",
+            }}
+          >
+            All clear
+          </div>
+          <div style={{ fontSize: 11.5, color: "#64748B" }}>
+            Nothing needs your attention right now
+          </div>
         </div>
       </div>
     );
@@ -931,8 +945,8 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
 
   return (
     <div style={{ paddingBottom: 14 }}>
-      <AttentionGroupCard rows={urgent} groupLabel="Urgent" groupColor="#B23A3F" groupBorder="#F0CCCC" />
-      <AttentionGroupCard rows={todo} groupLabel="To do" groupColor="#B45309" groupBorder="#E8D5B0" />
+      <AttentionGroupCard rows={urgent} groupLabel="Urgent" groupColor="#B23A3F" groupBorder="rgba(178,58,63,0.18)" />
+      <AttentionGroupCard rows={todo} groupLabel="To do" groupColor="#B45309" groupBorder="rgba(180,83,9,0.18)" />
     </div>
   );
 }
