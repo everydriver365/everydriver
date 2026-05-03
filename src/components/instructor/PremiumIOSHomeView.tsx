@@ -39,6 +39,8 @@ import { useLastWeekComparison } from "@/hooks/useLastWeekComparison";
 import { useHomeActions } from "@/components/instructor/WarmHomeTiles";
 import { getTimeOfDayGreeting } from "@/lib/composeStatusSubtitle";
 import { GraduationCap } from "lucide-react";
+import { loadQuickActionsPrefs } from "@/lib/quickActionsPrefs";
+import { QUICK_ACTIONS_BY_ID } from "@/lib/quickActionsCatalog";
 
 interface Props {
   instructorId: string | undefined;
@@ -650,7 +652,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </Card>
       </section>
 
-      {/* SECTION 4: Quick actions — 2 rows of 4 tiles */}
+      {/* SECTION 4: Quick actions — user-customisable grid (max 12) */}
       <section className="mt-4">
         <SectionLabel
           action={
@@ -666,90 +668,34 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
         </SectionLabel>
         <div className="grid grid-cols-4 gap-2">
           {(() => {
-            const actions = {
-              add: (
-                <QuickActionPill
-                  key="add"
-                  icon={<CalendarPlus className="size-[20px]" />}
-                  label="Add lesson"
-                  tone="blue"
-                  onClick={() => navigate("/instructor/schedule?action=add")}
-                />
-              ),
-              payment: (
-                <QuickActionPill
-                  key="payment"
-                  icon={<PoundSterling className="size-[20px]" />}
-                  label="Payment"
-                  tone="green"
-                  onClick={onPaymentClick}
-                />
-              ),
-              message: (
-                <QuickActionPill
-                  key="message"
-                  icon={<MessageCircle className="size-[20px]" />}
-                  label="Message"
-                  tone="indigo"
-                  onClick={() => navigate("/instructor/messages")}
-                />
-              ),
-              gap: (
-                <QuickActionPill
-                  key="gap"
-                  icon={<Clock className="size-[20px]" />}
-                  label="Fill gap"
-                  tone="amber"
-                  onClick={() => navigate("/instructor/gaps")}
-                />
-              ),
+            const prefs = loadQuickActionsPrefs();
+            const visible = prefs.order.filter((id) => !prefs.hidden.includes(id));
+            const toneMap: Record<string, "blue" | "green" | "amber" | "indigo" | "neutral"> = {
+              blue: "blue",
+              green: "green",
+              amber: "amber",
+              purple: "indigo",
+              red: "amber",
+              grey: "neutral",
             };
-            const hour = new Date().getHours();
-            // Morning: navigate-ish (add) + message first
-            // Midday: fill gap + message first
-            // Evening: payment first
-            let order: Array<keyof typeof actions>;
-            if (hour < 11) order = ["add", "message", "gap", "payment"];
-            else if (hour < 16) order = ["gap", "message", "add", "payment"];
-            else order = ["payment", "message", "add", "gap"];
-            const secondRow = (
-              <>
+            return visible.map((id) => {
+              const meta = QUICK_ACTIONS_BY_ID[id];
+              if (!meta) return null;
+              const Icon = meta.icon;
+              const onClick =
+                id === "take-payment"
+                  ? onPaymentClick
+                  : () => navigate(meta.route);
+              return (
                 <QuickActionPill
-                  key="schedule"
-                  icon={<CalendarDays className="size-[20px]" />}
-                  label="Schedule"
-                  tone="blue"
-                  onClick={() => navigate("/instructor/schedule")}
+                  key={id}
+                  icon={<Icon className="size-[20px]" />}
+                  label={meta.label}
+                  tone={toneMap[meta.tone] ?? "neutral"}
+                  onClick={onClick}
                 />
-                <QuickActionPill
-                  key="pupils"
-                  icon={<Users className="size-[20px]" />}
-                  label="Pupils"
-                  tone="indigo"
-                  onClick={() => navigate("/instructor/pupils")}
-                />
-                <QuickActionPill
-                  key="earnings"
-                  icon={<Wallet className="size-[20px]" />}
-                  label="Earnings"
-                  tone="green"
-                  onClick={() => navigate("/instructor/earnings")}
-                />
-                <QuickActionPill
-                  key="tests"
-                  icon={<ClipboardCheck className="size-[20px]" />}
-                  label="Tests"
-                  tone="amber"
-                  onClick={() => navigate("/instructor/tests")}
-                />
-              </>
-            );
-            return (
-              <>
-                {order.map((k) => actions[k])}
-                {secondRow}
-              </>
-            );
+              );
+            });
           })()}
         </div>
       </section>
