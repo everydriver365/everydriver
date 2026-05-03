@@ -53,7 +53,7 @@ import { haptics } from "@/lib/haptics";
 
 /* Brand tokens */
 const RED = "#B23A3F";
-const BLUE = "#0A0F29";
+const BLUE = "#1F3A8A";
 const CHARCOAL = "#2B2B2B";
 const MUTED = "#5B6B8A";
 const BORDER = "rgba(26,82,160,0.10)";
@@ -211,7 +211,7 @@ const WEATHER_ICONS: Record<string, LucideIcon> = {
 const WEATHER_TINTS: Record<string, { bg: string; fg: string }> = {
   clear: { bg: "#FFF8E6", fg: "#B8860B" },
   cloudy: { bg: "#EEF3FF", fg: BLUE },
-  rain: { bg: "#E8F1FB", fg: "#0A0F29" },
+  rain: { bg: "#E8F1FB", fg: "#1F3A8A" },
   snow: { bg: "#F0F6FF", fg: "#3A6FB5" },
   fog: { bg: "#F2F2EE", fg: "#5B6B6B" },
   storm: { bg: "#FBECEC", fg: "#A03030" },
@@ -307,7 +307,7 @@ function WeatherRow({
 }
 
 const ALERT_TINTS: Record<DrivingAlert["severity"], { bg: string; fg: string; border: string }> = {
-  low: { bg: "#EEF3FF", fg: "#0A0F29", border: "rgba(26,82,160,0.18)" },
+  low: { bg: "#EEF3FF", fg: "#1F3A8A", border: "rgba(26,82,160,0.18)" },
   moderate: { bg: "#FFF6E6", fg: "#A86A00", border: "rgba(168,106,0,0.22)" },
   severe: { bg: "#FBECEC", fg: "#A03030", border: "rgba(160,48,48,0.25)" },
 };

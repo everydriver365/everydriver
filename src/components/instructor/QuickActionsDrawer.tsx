@@ -41,8 +41,8 @@ const TILE_META: Record<string, TileMeta> = {
   "add-pupil":    { label: "Add pupil",    subtitle: "New learner",   Icon: UserPlus,   iconBg: "#E8F8ED", iconColor: "#1A7A3C" },
   "take-payment": { label: "Take payment", subtitle: "Record payment",Icon: CreditCard, iconBg: "#FFF6E6", iconColor: "#B45309" },
   "track-live":   { label: "Track live",   subtitle: "Start GPS",     Icon: MapPin,     iconBg: "#FFF0F0", iconColor: "#B23A3F" },
-  "messages":     { label: "Messages",     subtitle: "Send a message",Icon: MessageSquare, iconBg: "#EEF3FF", iconColor: "#0A0F29" },
-  "nearby-adis":  { label: "Nearby ADIs",  subtitle: "Find instructors", Icon: MapPin,  iconBg: "#EEF3FF", iconColor: "#0A0F29" },
+  "messages":     { label: "Messages",     subtitle: "Send a message",Icon: MessageSquare, iconBg: "#EEF3FF", iconColor: "#1F3A8A" },
+  "nearby-adis":  { label: "Nearby ADIs",  subtitle: "Find instructors", Icon: MapPin,  iconBg: "#EEF3FF", iconColor: "#1F3A8A" },
 };
 
 const FONT = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
@@ -100,7 +100,7 @@ export function QuickActionsDrawer({
               <div style={{ display: "flex", gap: 2 }}>
                 {[
                   { l: "D", bg: "#B23A3F", r: { borderTopLeftRadius: 3, borderBottomLeftRadius: 3 } },
-                  { l: "S", bg: "#0A0F29", r: {} },
+                  { l: "S", bg: "#1F3A8A", r: {} },
                   { l: "M", bg: "#2B2B2B", r: { borderTopRightRadius: 3, borderBottomRightRadius: 3 } },
                 ].map((b) => (
                   <div
@@ -155,7 +155,7 @@ export function QuickActionsDrawer({
                 onClick={() => trigger(addLesson)}
                 style={{
                   width: "100%",
-                  backgroundColor: "#0A0F29",
+                  backgroundColor: "#1F3A8A",
                   borderRadius: 14,
                   padding: "13px 14px",
                   display: "flex",
@@ -275,7 +275,7 @@ export function QuickActionsDrawer({
                 : meta?.subtitle ?? "";
               const Icon = (isAvailability ? Clock : meta?.Icon ?? trailing.icon) as LucideIcon;
               const iconBg = meta?.iconBg ?? "#EEF3FF";
-              const iconColor = meta?.iconColor ?? "#0A0F29";
+              const iconColor = meta?.iconColor ?? "#1F3A8A";
               return (
                 <button
                   onClick={() => trigger(trailing)}

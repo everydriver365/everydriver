@@ -1144,8 +1144,8 @@ export default function InstructorLiveSession() {
               }}>
                 {(
                   [
-                    { key: "liveLesson", label: "Live lesson", subtitle: "Track with a pupil · records route", iconBg: "#0A0F29", iconColor: "#FFF", Icon: Play },
-                    { key: "testRoute", label: "Test route", subtitle: "Practice route without a pupil", iconBg: "#EEF3FF", iconColor: "#0A0F29", Icon: MapPin },
+                    { key: "liveLesson", label: "Live lesson", subtitle: "Track with a pupil · records route", iconBg: "#1F3A8A", iconColor: "#FFF", Icon: Play },
+                    { key: "testRoute", label: "Test route", subtitle: "Practice route without a pupil", iconBg: "#EEF3FF", iconColor: "#1F3A8A", Icon: MapPin },
                     { key: "recordTest", label: "Record driving test", subtitle: "Log a pupil's DVSA test", iconBg: "#E8F8ED", iconColor: "#1A7A3C", Icon: ShieldCheck },
                   ] as const
                 ).map((mode, idx, arr) => {
@@ -1167,7 +1167,7 @@ export default function InstructorLiveSession() {
                       >
                         <div style={{
                           width: 30, height: 30, borderRadius: 8,
-                          background: active ? "#0A0F29" : mode.iconBg,
+                          background: active ? "#1F3A8A" : mode.iconBg,
                           display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                         }}>
                           <mode.Icon size={13} color={active ? "#FFF" : mode.iconColor} strokeWidth={1.7} />
@@ -1176,16 +1176,16 @@ export default function InstructorLiveSession() {
                           <div style={{
                             fontSize: 12,
                             fontWeight: active ? 700 : 600,
-                            color: active ? "#0A0F29" : "#1A1A1A",
+                            color: active ? "#1F3A8A" : "#1A1A1A",
                           }}>{mode.label}</div>
                           <div style={{ fontSize: 10, color: "#8E8E93", marginTop: 1 }}>{mode.subtitle}</div>
                         </div>
                         <div style={{
                           width: 18, height: 18, borderRadius: 9,
-                          border: `${active ? 2 : 1.5}px solid ${active ? "#0A0F29" : "#E0E5EE"}`,
+                          border: `${active ? 2 : 1.5}px solid ${active ? "#1F3A8A" : "#E0E5EE"}`,
                           display: "flex", alignItems: "center", justifyContent: "center",
                         }}>
-                          {active && <span style={{ width: 8, height: 8, borderRadius: 4, background: "#0A0F29" }} />}
+                          {active && <span style={{ width: 8, height: 8, borderRadius: 4, background: "#1F3A8A" }} />}
                         </div>
                       </button>
                       {idx < arr.length - 1 && (
@@ -1215,7 +1215,7 @@ export default function InstructorLiveSession() {
                         <>
                           <div style={{
                             width: 34, height: 34, borderRadius: 17,
-                            background: "#0A0F29",
+                            background: "#1F3A8A",
                             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                             color: "#FFF", fontSize: 13, fontWeight: 700,
                           }}>
@@ -1340,7 +1340,7 @@ export default function InstructorLiveSession() {
                       onClick={canStart ? cta.onClick : undefined}
                       disabled={!canStart}
                       style={{
-                        width: "100%", background: canStart ? "#0A0F29" : "#C7C7CC",
+                        width: "100%", background: canStart ? "#1F3A8A" : "#C7C7CC",
                         border: "none", borderRadius: 14, padding: "14px 16px",
                         display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                         marginBottom: 8, cursor: canStart ? "pointer" : "not-allowed",
