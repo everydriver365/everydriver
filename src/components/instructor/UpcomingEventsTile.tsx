@@ -71,7 +71,7 @@ export function UpcomingEventsTile({ instructorId }: Props) {
   const goSeeAll = () => navigate("/instructor/schedule");
 
   return (
-    <div style={{ marginTop: 14, padding: "0 16px", fontFamily: FONT }}>
+    <div style={{ marginTop: 14, padding: "0 20px", fontFamily: FONT }}>
       {/* Header */}
       <div
         style={{
