@@ -1,0 +1,1 @@
+UPDATE public.scheduled_lessons SET pickup_what3words = 'filled.count.soap', notes = 'Pupil prefers to start from the side road — park behind the blue van if possible.' WHERE id = '55a1fec7-8d41-41ec-b0b3-a96cc620624b';
