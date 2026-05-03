@@ -571,9 +571,19 @@ function UpNextTile({
                 alignItems: "center",
                 justifyContent: "center",
                 letterSpacing: 0.3,
+                overflow: "hidden",
+                border: "1.5px solid rgba(255,255,255,0.4)",
               }}
             >
-              {initials(pupilName)}
+              {pupilProfileImage ? (
+                <img
+                  src={pupilProfileImage}
+                  alt=""
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                initials(pupilName)
+              )}
             </div>
             <div
               style={{
