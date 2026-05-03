@@ -70,96 +70,109 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden overflow-hidden border-t-[0.5px]"
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden overflow-hidden"
       style={{
-        background: 'hsl(var(--dsm-card))',
-        borderColor: 'hsl(var(--dsm-border))',
+        background: 'rgba(255,255,255,0.92)',
+        backdropFilter: 'saturate(180%) blur(20px)',
+        WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+        borderTop: '0.5px solid rgba(15,35,65,0.08)',
         borderRadius: '22px 22px 0 0',
-        boxShadow: '0 -10px 30px -12px rgba(15,35,65,0.18), 0 -2px 6px -2px rgba(15,35,65,0.08)',
+        boxShadow:
+          '0 -10px 30px -12px rgba(15,35,65,0.18), 0 -2px 6px -2px rgba(15,35,65,0.08)',
       }}
     >
-      <div className="flex items-start justify-around" style={{ padding: '10px 8px 16px' }}>
+      <div className="flex items-start justify-around" style={{ padding: '8px 6px 12px' }}>
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const isTrack = item.isTrack;
           const isSchedule = item.isSchedule;
           const isMore = item.isMore;
 
-          // Per-tab badge count (iOS-style numbered pill)
           let tabBadge = 0;
-          if (item.showBadge) tabBadge = pendingJobsCount; // Pupils
+          if (item.showBadge) tabBadge = pendingJobsCount;
           if (isSchedule && todayLessonCount > 0) tabBadge = todayLessonCount;
-          if (isMore) tabBadge = pendingJobsCount + unreadCount; // combined alerts
+          if (isMore) tabBadge = pendingJobsCount + unreadCount;
 
           const Icon = item.icon;
-          const activeColor = 'hsl(var(--dsm-accent-blue))';
-          const inactiveColor = 'hsl(var(--dsm-text-secondary))';
-          const trackActiveColor = isTrack && isTrackingActive && !isActive
-            ? "#10b981"
-            : undefined;
+          const ACCENT = '#315FAE';
+          const ACCENT_TINT = '#E6EEFB';
+          const INACTIVE = '#6B7A90';
+          const trackActiveColor =
+            isTrack && isTrackingActive && !isActive ? '#10b981' : undefined;
 
           const showBadge = tabBadge > 0 && !(isSchedule && isActive);
-          const badgeLabel = tabBadge > 99 ? "99+" : tabBadge > 9 ? `${tabBadge}` : `${tabBadge}`;
+          const badgeLabel = tabBadge > 99 ? '99+' : `${tabBadge}`;
 
           return (
             <button
               key={item.path}
               onClick={() => handleNavClick(item.path)}
               className="relative flex flex-col items-center cursor-pointer"
-              style={{ gap: 4, minWidth: 60 }}
+              style={{ gap: 3, minWidth: 60, padding: '2px 4px' }}
             >
-              {/* Icon with optional rounded-pill accent background when active */}
-              <div
+              <motion.div
                 className="relative flex items-center justify-center"
+                animate={{ scale: isActive ? 1 : 0.98 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
                 style={{
-                  width: 44,
-                  height: 28,
-                  borderRadius: 14,
-                  background: isActive ? 'hsl(var(--dsm-accent-blue) / 0.12)' : 'transparent',
+                  width: 50,
+                  height: 30,
+                  borderRadius: 999,
+                  background: isActive ? ACCENT_TINT : 'transparent',
+                  transition: 'background 180ms ease',
                 }}
               >
                 <Icon
-                  size={26}
-                  strokeWidth={isActive ? 2.2 : 1.8}
-                  color={isActive ? activeColor : trackActiveColor || inactiveColor}
+                  size={22}
+                  strokeWidth={isActive ? 2.4 : 1.9}
+                  color={isActive ? ACCENT : trackActiveColor || INACTIVE}
                   style={{ strokeLinecap: 'round', strokeLinejoin: 'round' }}
                 />
 
-                {/* iOS-style numbered notification badge */}
                 {showBadge && (
                   <span
                     className="absolute flex items-center justify-center"
                     style={{
-                      top: -4,
-                      right: -2,
-                      minWidth: 18,
-                      height: 18,
+                      top: -3,
+                      right: 4,
+                      minWidth: 17,
+                      height: 17,
                       borderRadius: 9,
                       padding: '0 5px',
                       background: '#E15D5A',
                       color: 'white',
-                      fontSize: 11,
+                      fontSize: 10.5,
                       fontWeight: 700,
                       lineHeight: 1,
                       letterSpacing: '-0.2px',
-                      border: '2px solid hsl(var(--dsm-card))',
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.15)',
+                      border: '2px solid #FFFFFF',
+                      boxShadow: '0 1px 2px rgba(15,35,65,0.18)',
+                      fontVariantNumeric: 'tabular-nums',
                     }}
                   >
                     {badgeLabel}
                   </span>
                 )}
 
-                {/* Track active dot */}
-                {isTrack && isTrackingActive && (
-                  <span className="absolute top-1 right-3 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                {isTrack && isTrackingActive && !showBadge && (
+                  <span
+                    className="absolute rounded-full bg-emerald-500 animate-pulse"
+                    style={{
+                      top: 2,
+                      right: 8,
+                      width: 7,
+                      height: 7,
+                      border: '2px solid #FFFFFF',
+                    }}
+                  />
                 )}
-              </div>
+              </motion.div>
               <span
                 style={{
-                  fontSize: 11,
+                  fontSize: 10.5,
                   fontWeight: isActive ? 700 : 500,
-                  color: isActive ? activeColor : inactiveColor,
+                  color: isActive ? ACCENT : INACTIVE,
+                  letterSpacing: '-0.1px',
                 }}
               >
                 {item.label}
@@ -168,8 +181,10 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
           );
         })}
       </div>
-      {/* Safe area for iOS */}
-      <div className="h-safe-area-inset-bottom" style={{ background: 'hsl(var(--dsm-card))' }} />
+      <div
+        className="h-safe-area-inset-bottom"
+        style={{ background: 'rgba(255,255,255,0.92)' }}
+      />
     </nav>
   );
 }
