@@ -839,7 +839,7 @@ export function MobileHomeRedesign({
     });
   }
 
-  const openSlots = gapSlots?.length ?? 0;
+  const openSlots = (gapData ?? []).reduce((sum, g) => sum + (g.slots?.length ?? 0), 0);
   if (openSlots > 0) {
     attentionRows.push({
       key: "gaps",
