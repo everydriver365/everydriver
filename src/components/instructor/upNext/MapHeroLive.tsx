@@ -23,6 +23,7 @@ interface Props {
   pupilName?: string | null;
   pupilPhone?: string | null;
   pupilProfileImage?: string | null;
+  instructorId?: string | null;
 }
 
 function avatarInitials(name?: string | null) {
