@@ -535,8 +535,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     );
   }
 
-  // Check if on main dashboard (don't show back button)
-  const showBackButton = location.pathname !== "/instructor";
+  // Tab roots — no back button on these
+  const tabRootPaths = ["/instructor", "/instructor/schedule", "/instructor/tracking", "/instructor/pupils", "/instructor/menu"];
+  const isTabRoot = tabRootPaths.includes(location.pathname);
+  const showBackButton = !isTabRoot;
   const firstName = instructor?.name?.split(" ")[0] || "Instructor";
   const headerLabel = firstName;
   const mobilePageTitle = sidebarLinks.find(l => l.href === location.pathname)?.label || "Dashboard";
