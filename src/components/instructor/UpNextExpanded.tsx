@@ -34,6 +34,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useLessonWeather } from "@/hooks/useLessonWeather";
+import { useDrivingAlerts, type DrivingAlert } from "@/hooks/useDrivingAlerts";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
