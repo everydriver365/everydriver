@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
   Search as SearchIcon,
@@ -389,7 +390,7 @@ export function InstructorSearchOverlay({ open, onOpenChange, instructorId }: Pr
 
   const isActive = queryTrim.length > 0;
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -682,6 +683,7 @@ export function InstructorSearchOverlay({ open, onOpenChange, instructorId }: Pr
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
