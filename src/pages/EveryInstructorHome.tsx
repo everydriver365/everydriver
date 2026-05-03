@@ -30,10 +30,8 @@ import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import heroImage from "@/assets/every-instructor-hero.webp";
 import { useMemo } from "react";
-import {
-  loadQuickActionsPrefs,
-  type QuickActionId,
-} from "@/lib/quickActionsPrefs";
+import { loadQuickActionsPrefs } from "@/lib/quickActionsPrefs";
+import { QUICK_ACTIONS_BY_ID, TILE_TONE } from "@/lib/quickActionsCatalog";
 
 /* ── Section with refined header ─────────────────────── */
 function Section({
