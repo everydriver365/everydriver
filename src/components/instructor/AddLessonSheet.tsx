@@ -437,7 +437,7 @@ export function AddLessonSheet({
               : 'back-to-back, no gap';
             setConflictWarning(
               hardOverlap
-                ? `Overlaps with ${names}`
+                ? `HARD_OVERLAP::Overlaps with ${names}`
                 : `Too close to ${names} (${bufferLabel})`
             );
             // Fall through — travel-time checks below still run so the amber
