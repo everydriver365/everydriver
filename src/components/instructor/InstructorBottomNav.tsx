@@ -74,8 +74,8 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
       style={{
         background: 'hsl(var(--dsm-card))',
         borderColor: 'hsl(var(--dsm-border))',
-        borderRadius: '20px 20px 0 0',
-        boxShadow: '0 -4px 16px rgba(0,0,0,0.08), 0 -1px 4px rgba(0,0,0,0.05)',
+        borderRadius: '22px 22px 0 0',
+        boxShadow: '0 -10px 30px -12px rgba(15,35,65,0.18), 0 -2px 6px -2px rgba(15,35,65,0.08)',
       }}
     >
       <div className="flex items-start justify-around" style={{ padding: '10px 8px 16px' }}>
