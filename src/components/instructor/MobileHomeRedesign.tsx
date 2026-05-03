@@ -11,6 +11,7 @@ import {
   Briefcase,
   CalendarPlus,
   PoundSterling,
+  type LucideIcon,
 } from "lucide-react";
 
 import { useTodayOverview } from "@/hooks/useTodayOverview";
