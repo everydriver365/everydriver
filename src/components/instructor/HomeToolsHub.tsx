@@ -1,10 +1,11 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
 import {
-  Search, Mic, ChevronRight, ChevronDown, CalendarDays, Users,
-  PoundSterling, BarChart3, Car, Briefcase, type LucideIcon,
+  Search, ChevronRight, Info, AlertTriangle, Plus, X, GripVertical,
+  CalendarDays, Users, PoundSterling, BarChart3, Car, Briefcase,
+  type LucideIcon,
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,20 +14,70 @@ import {
   QUICK_ACCESS_TILES_BY_ID,
   TILE_TONE,
   type QuickAccessTile,
-  type TileTone,
 } from "@/components/instructor/quickAccess/tileRegistry";
-import { useInstructorPinnedTiles } from "@/hooks/useInstructorPinnedTiles";
+import { useInstructorPinnedTiles, DEFAULT_PINNED_TILE_IDS } from "@/hooks/useInstructorPinnedTiles";
 
-/* Premium iOS-style "Tools" hub embedded on the instructor home page.
-   Visual/layout only — reuses existing routes, gating, and pin data. */
+/* Premium iOS-style "Tools" hub: editable 3×2 pinned grid + categorised browse.
+   Visual/layout only — reuses existing routes, gating, search, and pin store. */
+
+const MAX_PINS = 6;
+const ACCENT = "#1A52A0";
+const ACCENT_BG = "#EEF3FF";
+const AMBER_BG = "#FFF6E6";
+const AMBER_FG = "#B45309";
+const RED = "#CC2229";
+
+type CategoryId = "scheduling" | "finance" | "pupils" | "vehicle" | "reports" | "admin";
 
 interface Category {
-  id: string;
-  title: string;
-  subtitle: string;
+  id: CategoryId;
+  label: string;
   icon: LucideIcon;
-  tone: TileTone;
+  /** Background tile colour for icons in this category. */
+  bg: string;
+  /** Accent / icon stroke colour. */
+  fg: string;
   tileIds: string[];
+}
+
+const CATEGORIES: Category[] = [
+  {
+    id: "scheduling", label: "Scheduling", icon: CalendarDays,
+    bg: ACCENT_BG, fg: ACCENT,
+    tileIds: ["schedule","course-planner","availability","fill-gaps","plan-ahead","track-lesson","sat-nav","find-my-car","find-fuel","find-nearby","locations"],
+  },
+  {
+    id: "finance", label: "Finance", icon: PoundSterling,
+    bg: AMBER_BG, fg: AMBER_FG,
+    tileIds: ["take-payment","earnings","expenses","referrals"],
+  },
+  {
+    id: "pupils", label: "Pupils", icon: Users,
+    bg: "#E8F8ED", fg: "#3B8B3B",
+    tileIds: ["pupils","messages","log-test-result","tests","waiting-room"],
+  },
+  {
+    id: "vehicle", label: "Vehicle", icon: Car,
+    bg: "#FFF0F0", fg: RED,
+    tileIds: ["vehicle-health"],
+  },
+  {
+    id: "reports", label: "Reports", icon: BarChart3,
+    bg: "#F0EEFF", fg: "#5B47C9",
+    tileIds: ["weekly-report","standards-check","cpd-log","end-of-day","tasks-due","to-do"],
+  },
+  {
+    id: "admin", label: "Admin", icon: Briefcase,
+    bg: "#F2F4F8", fg: "#5B6B8A",
+    tileIds: ["your-plan","settings","accessibility","nearby-adis","find-colleague","platform-updates"],
+  },
+];
+
+const CATEGORY_BY_TILE: Record<string, Category> = {};
+CATEGORIES.forEach((c) => c.tileIds.forEach((id) => { CATEGORY_BY_TILE[id] = c; }));
+
+function getCategoryFor(tileId: string): Category {
+  return CATEGORY_BY_TILE[tileId] ?? CATEGORIES[CATEGORIES.length - 1];
 }
 
 interface PupilSearchResult {
@@ -42,226 +93,221 @@ interface PupilSearchResult {
   progress: number | null;
 }
 
-const CATEGORIES: Category[] = [
-  {
-    id: "schedule", title: "Schedule & Lessons",
-    subtitle: "Plan, track and fill your day",
-    icon: CalendarDays, tone: "blue",
-    tileIds: ["schedule","course-planner","availability","fill-gaps","plan-ahead","track-lesson","sat-nav","find-my-car","find-fuel","find-nearby","locations"],
-  },
-  {
-    id: "pupils", title: "Pupils",
-    subtitle: "Manage learners and progress",
-    icon: Users, tone: "green",
-    tileIds: ["pupils","messages","log-test-result","tests","waiting-room"],
-  },
-  {
-    id: "money", title: "Money & Payments",
-    subtitle: "Take payments and track earnings",
-    icon: PoundSterling, tone: "amber",
-    tileIds: ["take-payment","earnings","expenses","referrals"],
-  },
-  {
-    id: "reports", title: "Reports & Insights",
-    subtitle: "Weekly summaries and analytics",
-    icon: BarChart3, tone: "purple",
-    tileIds: ["weekly-report","standards-check","cpd-log","end-of-day","tasks-due","to-do"],
-  },
-  {
-    id: "vehicle", title: "Vehicle & Compliance",
-    subtitle: "Health, MOT and safety",
-    icon: Car, tone: "red",
-    tileIds: ["vehicle-health"],
-  },
-  {
-    id: "business", title: "Business Tools",
-    subtitle: "Plan, settings and updates",
-    icon: Briefcase, tone: "grey",
-    tileIds: ["your-plan","settings","accessibility","nearby-adis","find-colleague","platform-updates"],
-  },
-];
+/* ─── Pinned tile (normal mode) ─────────────────────────────────────── */
 
-function LargeToolCard({ tile, onPress, locked }: { tile: QuickAccessTile; onPress: () => void; locked?: boolean }) {
-  const palette = TILE_TONE[tile.tone];
+function PinnedTile({
+  tile, isPrimary, onPress, locked,
+}: { tile: QuickAccessTile; isPrimary: boolean; onPress: () => void; locked?: boolean }) {
+  const cat = getCategoryFor(tile.id);
   const Icon = tile.icon;
+  const iconBg = isPrimary ? "rgba(255,255,255,0.16)" : cat.bg;
+  const iconFg = isPrimary ? "#FFFFFF" : cat.fg;
   return (
     <motion.button
       type="button"
-      whileTap={{ scale: 0.97 }}
+      whileTap={{ scale: 0.96 }}
       onClick={onPress}
       aria-label={tile.title}
       style={{
-        background: "#FFFFFF", borderRadius: 12, padding: "14px 12px",
-        height: 92, display: "flex", flexDirection: "column",
-        alignItems: "flex-start", justifyContent: "space-between",
-        textAlign: "left", width: "100%", cursor: "pointer",
-        opacity: locked ? 0.55 : 1, border: "0.5px solid rgba(0,0,0,0.04)",
-        boxShadow: "0 1px 2px rgba(0,0,0,0.03), 0 4px 14px rgba(0,0,0,0.04)",
+        position: "relative",
+        background: isPrimary ? ACCENT : "#FFFFFF",
+        borderRadius: 14,
+        padding: "11px 6px",
+        display: "flex", flexDirection: "column", alignItems: "center",
+        gap: 5, width: "100%", cursor: "pointer",
+        opacity: locked ? 0.55 : 1,
+        border: isPrimary ? "0.5px solid transparent" : "0.5px solid rgba(26,82,160,0.08)",
+        boxShadow: isPrimary
+          ? "0 4px 12px rgba(26,82,160,0.18)"
+          : "0 1px 2px rgba(16,24,40,0.04)",
       }}
     >
-      <div style={{ width: 34, height: 34, borderRadius: 10, background: palette.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Icon size={17} strokeWidth={1.8} color={palette.fg} />
+      <div style={{
+        width: 36, height: 36, borderRadius: 10, background: iconBg,
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <Icon size={17} strokeWidth={1.8} color={iconFg} />
       </div>
-      <span style={{ fontSize: 13.5, fontWeight: 600, color: "#000", letterSpacing: "-0.2px", lineHeight: 1.2 }}>
+      <span style={{
+        fontSize: 10, fontWeight: 600,
+        color: isPrimary ? "#FFFFFF" : "#1A1A1A",
+        textAlign: "center", lineHeight: 1.25,
+      }}>
         {tile.title}
       </span>
     </motion.button>
   );
 }
 
-function PrimaryToolCard({ tile, onPress, locked }: { tile: QuickAccessTile; onPress: () => void; locked?: boolean }) {
-  const palette = TILE_TONE[tile.tone];
-  const Icon = tile.icon;
-  return (
-    <motion.button
-      type="button"
-      whileTap={{ scale: 0.97 }}
-      onClick={onPress}
-      aria-label={tile.title}
-      style={{
-        background: "#FFFFFF", borderRadius: 12, padding: "18px 16px",
-        height: 130, display: "flex", flexDirection: "column",
-        alignItems: "flex-start", justifyContent: "space-between",
-        textAlign: "left", width: "100%", cursor: "pointer",
-        opacity: locked ? 0.55 : 1, border: 0,
-        boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 8px 24px -10px rgba(16,24,40,0.10)",
-      }}
-    >
-      <div style={{ width: 44, height: 44, borderRadius: 13, background: palette.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Icon size={22} strokeWidth={1.8} color={palette.fg} />
-      </div>
-      <div style={{ width: "100%" }}>
-        <div style={{ fontSize: 15, fontWeight: 600, color: "#000", letterSpacing: "-0.2px", lineHeight: 1.2 }}>
-          {tile.title}
-        </div>
-        {tile.subtitle && (
-          <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 3, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical" }}>
-            {tile.subtitle}
-          </div>
-        )}
-      </div>
-    </motion.button>
-  );
-}
+/* ─── Pinned tile (edit mode) — draggable, removable ──────────────── */
 
-function CategoryRow({ category, count, expanded, onPress }: { category: Category; count: number; expanded: boolean; onPress: () => void }) {
-  const palette = TILE_TONE[category.tone];
-  const Icon = category.icon;
+function EditablePinnedTile({
+  tile, isPrimary, onRemove,
+}: { tile: QuickAccessTile; isPrimary: boolean; onRemove: () => void }) {
+  const cat = getCategoryFor(tile.id);
+  const Icon = tile.icon;
+  const iconBg = isPrimary ? "rgba(255,255,255,0.16)" : cat.bg;
+  const iconFg = isPrimary ? "#FFFFFF" : cat.fg;
   return (
-    <motion.button
-      type="button" whileTap={{ scale: 0.985 }} onClick={onPress}
+    <Reorder.Item
+      value={tile.id}
+      whileDrag={{
+        scale: 1.05,
+        backgroundColor: ACCENT_BG,
+        boxShadow: "0 8px 18px rgba(26,82,160,0.18)",
+        zIndex: 10,
+      }}
       style={{
-        display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-        background: "#FFFFFF", width: "100%", textAlign: "left",
-        cursor: "pointer", borderWidth: 0, borderStyle: "none", minHeight: 68,
+        position: "relative",
+        background: isPrimary ? ACCENT : "#FFFFFF",
+        borderRadius: 14,
+        padding: "11px 6px",
+        display: "flex", flexDirection: "column", alignItems: "center",
+        gap: 5,
+        border: isPrimary
+          ? "1.5px dashed rgba(255,255,255,0.28)"
+          : "1.5px dashed rgba(26,82,160,0.22)",
+        listStyle: "none",
+        cursor: "grab",
+        touchAction: "none",
       }}
     >
-      <div style={{ width: 36, height: 36, borderRadius: 10, background: palette.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <Icon size={18} strokeWidth={1.8} color={palette.fg} />
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onRemove(); }}
+        aria-label={`Remove ${tile.title}`}
+        style={{
+          position: "absolute", top: -6, left: -6, width: 17, height: 17,
+          borderRadius: "50%", background: RED,
+          border: "2px solid #F2F4F8",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: "pointer", padding: 0, zIndex: 2,
+        }}
+      >
+        <X size={9} color="#FFF" strokeWidth={2.4} />
+      </button>
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute", top: -6, right: -6, width: 17, height: 17,
+          borderRadius: "50%", background: ACCENT,
+          border: "2px solid #F2F4F8",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          zIndex: 2, pointerEvents: "none",
+        }}
+      >
+        <GripVertical size={9} color="#FFF" strokeWidth={2.2} />
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 15, fontWeight: 600, color: "#000", letterSpacing: "-0.2px", lineHeight: 1.2 }}>
-          {category.title}
-        </div>
-        <div style={{ fontSize: 12.5, color: "#6E6E73", marginTop: 2, lineHeight: 1.3 }}>
-          {category.subtitle}
-        </div>
+      <div style={{
+        width: 36, height: 36, borderRadius: 10, background: iconBg,
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <Icon size={17} strokeWidth={1.8} color={iconFg} />
       </div>
-      <span style={{ fontSize: 12, color: "#8E8E93", background: "#F2F2F4", borderRadius: 999, padding: "2px 8px", fontWeight: 500 }}>
-        {count}
+      <span style={{
+        fontSize: 10, fontWeight: 600,
+        color: isPrimary ? "#FFFFFF" : "#1A1A1A",
+        textAlign: "center", lineHeight: 1.25,
+      }}>
+        {tile.title}
       </span>
-      {expanded
-        ? <ChevronDown size={17} color="#C7C7CC" strokeWidth={2} />
-        : <ChevronRight size={17} color="#C7C7CC" strokeWidth={2} />}
-    </motion.button>
+    </Reorder.Item>
   );
 }
 
-function SearchResultRow({ tile, onPress }: { tile: QuickAccessTile; onPress: () => void }) {
-  const palette = TILE_TONE[tile.tone];
+/* ─── Tool row inside category card ─────────────────────────────── */
+
+function ToolRow({
+  tile, isPinned, isEditMode, full, onPress, onPin,
+}: {
+  tile: QuickAccessTile; isPinned: boolean; isEditMode: boolean; full: boolean;
+  onPress: () => void; onPin: () => void;
+}) {
+  const cat = getCategoryFor(tile.id);
   const Icon = tile.icon;
   return (
-    <button type="button" onClick={onPress}
-      style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", background: "#FFFFFF", width: "100%", textAlign: "left", border: 0, cursor: "pointer" }}>
-      <div style={{ width: 30, height: 30, borderRadius: 9, background: palette.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Icon size={15} strokeWidth={1.8} color={palette.fg} />
+    <button
+      type="button"
+      onClick={onPress}
+      style={{
+        display: "flex", alignItems: "center", gap: 10,
+        padding: "8px 13px", width: "100%", textAlign: "left",
+        background: "transparent", border: 0,
+        borderTop: "0.5px solid #F0F3F8",
+        cursor: "pointer",
+      }}
+    >
+      <div style={{
+        width: 26, height: 26, borderRadius: 8, background: cat.bg,
+        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+      }}>
+        <Icon size={12} strokeWidth={1.8} color={cat.fg} />
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14.5, color: "#000", fontWeight: 500 }}>{tile.title}</div>
-        <div style={{ fontSize: 12, color: "#8E8E93" }}>{tile.subtitle}</div>
-      </div>
-      <ChevronRight size={15} color="#C7C7CC" />
+      <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: "#1A1A1A" }}>
+        {tile.title}
+      </span>
+      {!isEditMode && isPinned && (
+        <span aria-label="Pinned" style={{
+          width: 5, height: 5, borderRadius: "50%", background: ACCENT,
+        }} />
+      )}
+      {isEditMode && !isPinned && (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); if (!full) onPin(); }}
+          disabled={full}
+          aria-label={`Pin ${tile.title}`}
+          style={{
+            width: 22, height: 22, borderRadius: 11,
+            background: "#F2F4F8",
+            border: `1.5px solid ${full ? "#E0E5EE" : "#C7C7CC"}`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: full ? "not-allowed" : "pointer", padding: 0,
+          }}
+        >
+          <Plus size={9} color={full ? "#E0E5EE" : "#8E8E93"} strokeWidth={2.4} />
+        </button>
+      )}
+      <ChevronRight size={11} color="#C7C7CC" strokeWidth={2} />
     </button>
   );
 }
 
-function PupilSearchResultRow({ pupil, onPress }: { pupil: PupilSearchResult; onPress: () => void }) {
-  const palette = TILE_TONE.green;
-  const subtitleParts = [
-    pupil.phone,
-    pupil.postcode,
-    `${pupil.lessons_completed || 0} lessons`,
-  ].filter(Boolean);
-
-  return (
-    <button type="button" onClick={onPress}
-      style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", background: "#FFFFFF", width: "100%", textAlign: "left", border: 0, cursor: "pointer" }}>
-      <div style={{ width: 30, height: 30, borderRadius: 9, background: palette.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Users size={15} strokeWidth={1.8} color={palette.fg} />
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14.5, color: "#000", fontWeight: 500 }}>{pupil.name}</div>
-        <div style={{ fontSize: 12, color: "#8E8E93", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {subtitleParts.join(" · ") || pupil.email || pupil.address || "Pupil"}
-        </div>
-      </div>
-      <ChevronRight size={15} color="#C7C7CC" />
-    </button>
-  );
-}
+/* ─── Main hub ─────────────────────────────────────────────────── */
 
 export function HomeToolsHub() {
   const navigate = useNavigate();
   const { instructor, subscription } = useInstructorAuth();
   const features = subscription?.features || [];
+
+  const { pinnedIds, setPins } = useInstructorPinnedTiles(instructor?.id);
+
+  const [isEditMode, setIsEditMode] = useState(false);
+  // Local working copy of the pinned order while editing — committed on every change.
+  const [draftPins, setDraftPins] = useState<string[]>(pinnedIds);
+  useEffect(() => {
+    if (!isEditMode) setDraftPins(pinnedIds);
+  }, [pinnedIds, isEditMode]);
+
+  const persistPins = (next: string[]) => {
+    setDraftPins(next);
+    setPins(next).catch(() => {/* hook surfaces its own errors */});
+  };
+
+  // Search (tap target navigates to existing search screen — fall back to focus + inline).
   const [query, setQuery] = useState("");
-  const [openCategory, setOpenCategory] = useState<string | null>(null);
-  const [browseOpen, setBrowseOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [pupilSearchResults, setPupilSearchResults] = useState<PupilSearchResult[]>([]);
   const [pupilsLoading, setPupilsLoading] = useState(false);
-  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
-    try {
-      const raw = localStorage.getItem("instructor.toolsRecentSearches");
-      return raw ? (JSON.parse(raw) as string[]).slice(0, 5) : [];
-    } catch {
-      return [];
-    }
-  });
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const persistRecent = (term: string) => {
-    const t = term.trim();
-    if (!t) return;
-    setRecentSearches((prev) => {
-      const next = [t, ...prev.filter((x) => x.toLowerCase() !== t.toLowerCase())].slice(0, 5);
-      try { localStorage.setItem("instructor.toolsRecentSearches", JSON.stringify(next)); } catch {}
-      return next;
-    });
-  };
-
-  const { pinnedIds } = useInstructorPinnedTiles(instructor?.id);
 
   useEffect(() => {
     const term = query.trim();
     if (!instructor?.id || term.length === 0) {
-      setPupilSearchResults([]);
-      setPupilsLoading(false);
-      return;
+      setPupilSearchResults([]); setPupilsLoading(false); return;
     }
-
     let cancelled = false;
-    const timeout = window.setTimeout(async () => {
+    const t = window.setTimeout(async () => {
       setPupilsLoading(true);
       const pattern = `%${term}%`;
       const { data, error } = await supabase
@@ -272,416 +318,381 @@ export function HomeToolsHub() {
         .or(`name.ilike.${pattern},email.ilike.${pattern},phone.ilike.${pattern},postcode.ilike.${pattern},address.ilike.${pattern},parent_name.ilike.${pattern},parent_phone.ilike.${pattern}`)
         .order("name", { ascending: true })
         .limit(8);
-
       if (cancelled) return;
-      if (error) {
-        console.error("Error searching pupils:", error);
-        setPupilSearchResults([]);
-      } else {
-        setPupilSearchResults((data || []) as PupilSearchResult[]);
-      }
+      setPupilSearchResults(error ? [] : ((data || []) as PupilSearchResult[]));
       setPupilsLoading(false);
     }, 180);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timeout);
-    };
+    return () => { cancelled = true; window.clearTimeout(t); };
   }, [query, instructor?.id]);
 
   const isLocked = (tile: QuickAccessTile) =>
     tile.requiredFeature ? !features.includes(tile.requiredFeature) : false;
 
   const handleTap = (tile: QuickAccessTile) => {
+    if (isEditMode) return;
     if (isLocked(tile)) {
       toast.info(`${tile.title} requires a plan upgrade`, {
         action: { label: "View plans", onClick: () => navigate("/instructor/plans") },
       });
       return;
     }
-    if (trimmed) persistRecent(query);
     navigate(tile.route);
   };
 
-  const suggestedTools = useMemo(
-    () => QUICK_ACCESS_TILES.slice(0, 6),
-    [],
-  );
+  const handlePinTool = (toolId: string) => {
+    if (draftPins.length >= MAX_PINS) return;
+    if (draftPins.includes(toolId)) return;
+    persistPins([...draftPins, toolId]);
+  };
+  const handleUnpinTool = (toolId: string) => {
+    persistPins(draftPins.filter((id) => id !== toolId));
+  };
 
-  const frequentlyUsed = useMemo(
-    () => pinnedIds.map((id) => QUICK_ACCESS_TILES_BY_ID[id]).filter(Boolean).slice(0, 6) as QuickAccessTile[],
-    [pinnedIds],
-  );
-  const pinnedToHome = useMemo(
-    () => pinnedIds.map((id) => QUICK_ACCESS_TILES_BY_ID[id]).filter(Boolean).slice(0, 4) as QuickAccessTile[],
-    [pinnedIds],
-  );
+  // Browse filter
+  const [selectedCategory, setSelectedCategory] = useState<"all" | CategoryId>("all");
+  const filterChips: { id: "all" | CategoryId; label: string }[] = [
+    { id: "all", label: "All" },
+    ...CATEGORIES.map((c) => ({ id: c.id, label: c.label })),
+  ];
+
+  const visiblePins = isEditMode ? draftPins : pinnedIds;
+  const pinnedTiles = visiblePins
+    .map((id) => QUICK_ACCESS_TILES_BY_ID[id])
+    .filter(Boolean)
+    .slice(0, MAX_PINS) as QuickAccessTile[];
 
   const trimmed = query.trim().toLowerCase();
+  const totalToolCount = QUICK_ACCESS_TILES.length;
+
+  // Inline search results list (kept lightweight so search remains usable here).
   const searchResults = trimmed
     ? QUICK_ACCESS_TILES.filter(
         (t) => t.title.toLowerCase().includes(trimmed) || t.subtitle.toLowerCase().includes(trimmed),
-      )
+      ).slice(0, 8)
     : [];
-  const totalSearchResults = searchResults.length + pupilSearchResults.length;
-
-  const handlePupilTap = (pupil: PupilSearchResult) => {
-    if (trimmed) persistRecent(query);
-    navigate(`/instructor/pupils/${pupil.id}`);
-  };
-
-  const SectionLabel = ({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) => (
-    <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", margin: "0 2px 8px" }}>
-      <h2 style={{
-        fontSize: 11, fontWeight: 600, color: "#8E8E93",
-        textTransform: "uppercase", letterSpacing: "0.4px", margin: 0,
-      }}>
-        {children}
-      </h2>
-      {action}
-    </div>
-  );
 
   return (
     <section style={{ marginTop: 16 }}>
-      {/* Header — matches sibling section labels (Do this next / Needs your attention / Schedule) */}
-      <SectionLabel>Tools</SectionLabel>
+      {/* Header */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        marginBottom: 12, padding: "0 2px",
+      }}>
+        <div>
+          <div style={{ fontSize: 21, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.4 }}>
+            {isEditMode ? "Edit pins" : "Tools"}
+          </div>
+          <div style={{ fontSize: 10, color: "#8E8E93", marginTop: 1 }}>
+            {isEditMode ? "Hold to drag · tap − to remove" : `${totalToolCount} features`}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsEditMode((v) => !v)}
+          style={{
+            background: isEditMode ? ACCENT : ACCENT_BG,
+            borderRadius: 20,
+            padding: "5px 14px",
+            border: 0, cursor: "pointer",
+            fontSize: 11, fontWeight: 700,
+            color: isEditMode ? "#FFF" : ACCENT,
+          }}
+        >
+          {isEditMode ? "Done" : "Edit"}
+        </button>
+      </div>
 
-      {/* Search — lighter, blended, integrated */}
+      {/* Search bar (tap target — opens inline search) */}
       <div
+        onClick={() => inputRef.current?.focus()}
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          borderRadius: 12,
-          padding: "9px 12px",
-          borderWidth: 0.5,
-          borderStyle: "solid",
-          backgroundColor: searchFocused ? "#FFFFFF" : "rgba(118,118,128,0.08)",
-          borderColor: searchFocused ? "rgba(0,0,0,0.06)" : "rgba(0,0,0,0)",
-          boxShadow: searchFocused ? "0 2px 10px rgba(0,0,0,0.06)" : "none",
-          transition: "background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease",
+          background: "#FFF", borderRadius: 12,
+          padding: "8px 12px",
+          display: "flex", alignItems: "center", gap: 7,
+          marginBottom: 14,
+          border: "0.5px solid rgba(26,82,160,0.1)",
+          cursor: "text",
         }}
       >
-        <Search size={16} color="#8E8E93" strokeWidth={1.8} />
+        <Search size={12} color="#8E8E93" strokeWidth={1.8} />
         <input
           ref={inputRef}
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setSearchFocused(true)}
-          onBlur={() => {
-            // delay so taps on results register
-            window.setTimeout(() => setSearchFocused(false), 150);
-            if (trimmed) persistRecent(query);
-          }}
-          placeholder="Search tools, pupils, lessons"
-          aria-label="Search"
+          onBlur={() => window.setTimeout(() => setSearchFocused(false), 150)}
+          placeholder={`Search ${totalToolCount} tools...`}
+          aria-label="Search tools"
           autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="none"
           spellCheck={false}
           style={{
-            flex: 1,
-            border: 0,
-            outline: "none",
-            background: "transparent",
-            fontSize: 16, // 16px to prevent iOS zoom-on-focus
-            color: "#000",
-            minWidth: 0,
+            flex: 1, border: 0, outline: "none", background: "transparent",
+            fontSize: 16, color: "#000", minWidth: 0, padding: 0,
             fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
           }}
         />
-        {query ? (
-          <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {
-              setQuery("");
-              inputRef.current?.focus();
-            }}
-            aria-label="Clear search"
-            style={{
-              border: 0,
-              background: "transparent",
-              padding: 0,
-              cursor: "pointer",
-              color: "#8E8E93",
-              fontSize: 13,
-            }}
-          >
-            Clear
-          </button>
-        ) : (
-          <Mic size={16} color="#8E8E93" strokeWidth={1.8} />
-        )}
       </div>
 
+      {/* Inline search results */}
       <AnimatePresence initial={false}>
-        {trimmed ? (
+        {(trimmed || (searchFocused && pupilSearchResults.length > 0)) && (
           <motion.div
-            key="results"
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.18 }}
             style={{
-              marginTop: 12, background: "#FFFFFF", borderRadius: 12, overflow: "hidden",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+              marginBottom: 14, background: "#FFF", borderRadius: 12, overflow: "hidden",
+              border: "0.5px solid rgba(26,82,160,0.08)",
             }}
           >
-            {pupilsLoading && totalSearchResults === 0 ? (
-              <div style={{ padding: 22, textAlign: "center", color: "#8E8E93", fontSize: 13.5 }}>
-                Searching pupils…
-              </div>
-            ) : totalSearchResults === 0 ? (
-              <div style={{ padding: 22, textAlign: "center", color: "#8E8E93", fontSize: 13.5 }}>
-                No matches for "{query}"
-              </div>
+            {pupilsLoading && searchResults.length === 0 && pupilSearchResults.length === 0 ? (
+              <div style={{ padding: 18, textAlign: "center", color: "#8E8E93", fontSize: 12 }}>Searching…</div>
+            ) : searchResults.length === 0 && pupilSearchResults.length === 0 ? (
+              <div style={{ padding: 18, textAlign: "center", color: "#8E8E93", fontSize: 12 }}>No matches for "{query}"</div>
             ) : (
               <>
-                {pupilSearchResults.map((pupil, i) => (
-                  <div key={`pupil-${pupil.id}`}>
-                    <PupilSearchResultRow pupil={pupil} onPress={() => handlePupilTap(pupil)} />
-                    {i < totalSearchResults - 1 && (
-                      <div style={{ marginLeft: 56, height: 0.5, background: "#E5E5EA" }} />
-                    )}
-                  </div>
-                ))}
-                {searchResults.map((tile, i) => {
-                  const resultIndex = pupilSearchResults.length + i;
-                  return (
-                    <div key={tile.id}>
-                      <SearchResultRow tile={tile} onPress={() => handleTap(tile)} />
-                      {resultIndex < totalSearchResults - 1 && (
-                        <div style={{ marginLeft: 56, height: 0.5, background: "#E5E5EA" }} />
-                      )}
+                {pupilSearchResults.map((p) => (
+                  <button key={`p-${p.id}`} type="button" onClick={() => navigate(`/instructor/pupils/${p.id}`)}
+                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 13px", width: "100%", textAlign: "left", background: "transparent", border: 0, borderTop: "0.5px solid #F0F3F8", cursor: "pointer" }}>
+                    <div style={{ width: 26, height: 26, borderRadius: 8, background: "#E8F8ED", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Users size={12} color="#3B8B3B" strokeWidth={1.8} />
                     </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A" }}>{p.name}</div>
+                      <div style={{ fontSize: 10, color: "#8E8E93", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {[p.phone, p.postcode].filter(Boolean).join(" · ") || p.email || "Pupil"}
+                      </div>
+                    </div>
+                    <ChevronRight size={11} color="#C7C7CC" />
+                  </button>
+                ))}
+                {searchResults.map((tile) => {
+                  const cat = getCategoryFor(tile.id);
+                  const Icon = tile.icon;
+                  return (
+                    <button key={tile.id} type="button" onClick={() => handleTap(tile)}
+                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 13px", width: "100%", textAlign: "left", background: "transparent", border: 0, borderTop: "0.5px solid #F0F3F8", cursor: "pointer" }}>
+                      <div style={{ width: 26, height: 26, borderRadius: 8, background: cat.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <Icon size={12} color={cat.fg} strokeWidth={1.8} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A" }}>{tile.title}</div>
+                        <div style={{ fontSize: 10, color: "#8E8E93" }}>{tile.subtitle}</div>
+                      </div>
+                      <ChevronRight size={11} color="#C7C7CC" />
+                    </button>
                   );
                 })}
               </>
             )}
           </motion.div>
-        ) : searchFocused ? (
-          <motion.div
-            key="expansion"
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18 }}
-            style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 14 }}
-          >
-            {recentSearches.length > 0 && (
-              <div>
-                <SectionLabel
-                  action={
-                    <button
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => {
-                        setRecentSearches([]);
-                        try { localStorage.removeItem("instructor.toolsRecentSearches"); } catch {}
-                      }}
-                      style={{ border: 0, background: "transparent", color: "#2B7BC8", fontSize: 12, cursor: "pointer" }}
-                    >
-                      Clear
-                    </button>
-                  }
-                >
-                  Recent
-                </SectionLabel>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {recentSearches.map((term) => (
-                    <button
-                      key={term}
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => { setQuery(term); inputRef.current?.focus(); }}
-                      style={{
-                        border: "0.5px solid rgba(0,0,0,0.08)",
-                        background: "#FFFFFF",
-                        borderRadius: 999,
-                        padding: "6px 12px",
-                        fontSize: 13, color: "#1C1C1E", cursor: "pointer",
-                      }}
-                    >
-                      {term}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div>
-              <SectionLabel>Suggested</SectionLabel>
-              <div style={{
-                background: "#FFFFFF", borderRadius: 12, overflow: "hidden",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-              }}>
-                {suggestedTools.map((tile, i) => (
-                  <div key={tile.id} onMouseDown={(e) => e.preventDefault()}>
-                    <SearchResultRow tile={tile} onPress={() => handleTap(tile)} />
-                    {i < suggestedTools.length - 1 && (
-                      <div style={{ marginLeft: 56, height: 0.5, background: "#E5E5EA" }} />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        ) : null}
+        )}
       </AnimatePresence>
 
-      {!trimmed && !searchFocused && (
-        <>
-          {/* Frequently used */}
-          {frequentlyUsed.length > 0 && (
-            <div style={{ marginTop: 22 }}>
-              <SectionLabel>Frequently used</SectionLabel>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                {frequentlyUsed.map((tile) => (
-                  <LargeToolCard key={tile.id} tile={tile} onPress={() => handleTap(tile)} locked={isLocked(tile)} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Browse all tools (collapsed Categories) */}
-          <div style={{ marginTop: 24 }}>
-            <div style={{
-              background: "#FFFFFF", borderRadius: 12, overflow: "hidden",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-            }}>
-              <button
-                type="button"
-                onClick={() => setBrowseOpen((v) => !v)}
-                aria-expanded={browseOpen}
-                aria-label={browseOpen ? "Hide all tools" : "Browse all tools"}
-                style={{
-                  width: "100%", display: "flex", alignItems: "center", gap: 12,
-                  padding: "14px 16px", background: "transparent", border: 0,
-                  cursor: "pointer", textAlign: "left",
-                }}
-              >
-                <div style={{
-                  width: 34, height: 34, borderRadius: 9, background: "#F2F2F4",
-                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                }}>
-                  <Briefcase size={17} strokeWidth={1.8} color="#6E6E73" />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 15, fontWeight: 500, color: "#000000", letterSpacing: "-0.1px" }}>
-                    Browse all tools
-                  </div>
-                  <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 1 }}>
-                    {QUICK_ACCESS_TILES.length} across {CATEGORIES.length} categories
-                  </div>
-                </div>
-                <motion.div
-                  animate={{ rotate: browseOpen ? 90 : 0 }}
-                  transition={{ duration: 0.2 }}
-                  style={{ display: "flex", alignItems: "center" }}
-                >
-                  <ChevronRight size={18} strokeWidth={1.8} color="#C7C7CC" />
-                </motion.div>
-              </button>
-
-              <AnimatePresence initial={false}>
-                {browseOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.22 }}
-                    style={{ overflow: "hidden", borderTop: "0.5px solid #E5E5EA" }}
-                  >
-                    {CATEGORIES.map((cat, i) => {
-                      const validTiles = cat.tileIds.filter((id) => QUICK_ACCESS_TILES_BY_ID[id]);
-                      const expanded = openCategory === cat.id;
-                      return (
-                        <div key={cat.id}>
-                          <CategoryRow
-                            category={cat} count={validTiles.length} expanded={expanded}
-                            onPress={() => setOpenCategory((prev) => (prev === cat.id ? null : cat.id))}
-                          />
-                          <AnimatePresence initial={false}>
-                            {expanded && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.22 }}
-                                style={{ overflow: "hidden", background: "#F7F7F9", borderTop: "0.5px solid #E5E5EA" }}
-                              >
-                                <div style={{ padding: "20px 16px 22px" }}>
-                                  <div style={{ marginBottom: 16, padding: "0 2px" }}>
-                                    <div style={{ fontSize: 11, fontWeight: 600, color: "#8E8E93", textTransform: "uppercase", letterSpacing: "0.4px" }}>
-                                      {validTiles.length} tool{validTiles.length === 1 ? "" : "s"}
-                                    </div>
-                                  </div>
-
-                                  {validTiles.length > 0 && (() => {
-                                    const primary = validTiles.slice(0, 3);
-                                    const rest = validTiles.slice(3);
-                                    return (
-                                      <>
-                                        <div style={{ fontSize: 11, fontWeight: 600, color: "#6E6E73", textTransform: "uppercase", letterSpacing: "0.4px", margin: "0 2px 10px" }}>
-                                          Primary
-                                        </div>
-                                        <div style={{ display: "grid", gridTemplateColumns: primary.length === 1 ? "1fr" : "1fr 1fr", gap: 12, marginBottom: rest.length > 0 ? 24 : 0 }}>
-                                          {primary.map((id) => {
-                                            const tile = QUICK_ACCESS_TILES_BY_ID[id];
-                                            return (
-                                              <PrimaryToolCard
-                                                key={id}
-                                                tile={tile}
-                                                onPress={() => handleTap(tile)}
-                                                locked={isLocked(tile)}
-                                              />
-                                            );
-                                          })}
-                                        </div>
-
-                                        {rest.length > 0 && (
-                                          <>
-                                            <div style={{ fontSize: 11, fontWeight: 600, color: "#6E6E73", textTransform: "uppercase", letterSpacing: "0.4px", margin: "0 2px 10px" }}>
-                                              All tools
-                                            </div>
-                                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                                              {rest.map((id) => {
-                                                const tile = QUICK_ACCESS_TILES_BY_ID[id];
-                                                return (
-                                                  <LargeToolCard
-                                                    key={id}
-                                                    tile={tile}
-                                                    onPress={() => handleTap(tile)}
-                                                    locked={isLocked(tile)}
-                                                  />
-                                                );
-                                              })}
-                                            </div>
-                                          </>
-                                        )}
-                                      </>
-                                    );
-                                  })()}
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                          {i < CATEGORIES.length - 1 && (
-                            <div style={{ marginLeft: 62, height: 0.5, background: "#E5E5EA" }} />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-        </>
+      {/* Edit-mode info banner */}
+      {isEditMode && (
+        <div style={{
+          background: ACCENT_BG, borderRadius: 10,
+          padding: "8px 11px",
+          display: "flex", alignItems: "center", gap: 7,
+          marginBottom: 12,
+        }}>
+          <Info size={12} color={ACCENT} strokeWidth={2} />
+          <span style={{ fontSize: 10, color: ACCENT, fontWeight: 500 }}>
+            {draftPins.length} of {MAX_PINS} slots used · tap + in browse to add
+          </span>
+        </div>
       )}
+
+      {/* Section: Pinned */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        margin: "0 2px 8px",
+      }}>
+        <span style={{
+          fontSize: 10, fontWeight: 700, color: "#8E8E93",
+          textTransform: "uppercase", letterSpacing: "0.08em",
+        }}>
+          Pinned
+        </span>
+        {isEditMode && (
+          <span style={{ fontSize: 10, color: "#8E8E93", fontWeight: 600 }}>
+            {draftPins.length} / {MAX_PINS}
+          </span>
+        )}
+      </div>
+
+      {isEditMode ? (
+        <Reorder.Group
+          axis="y"
+          values={draftPins}
+          onReorder={persistPins}
+          as="div"
+          style={{
+            display: "grid", gridTemplateColumns: "1fr 1fr 1fr",
+            gap: 7, marginBottom: 16, padding: 0, listStyle: "none",
+          }}
+        >
+          {pinnedTiles.map((tile, idx) => (
+            <EditablePinnedTile
+              key={tile.id}
+              tile={tile}
+              isPrimary={idx === 0}
+              onRemove={() => handleUnpinTool(tile.id)}
+            />
+          ))}
+        </Reorder.Group>
+      ) : (
+        <div style={{
+          display: "grid", gridTemplateColumns: "1fr 1fr 1fr",
+          gap: 7, marginBottom: 16,
+        }}>
+          {pinnedTiles.map((tile, idx) => (
+            <PinnedTile
+              key={tile.id}
+              tile={tile}
+              isPrimary={idx === 0}
+              onPress={() => handleTap(tile)}
+              locked={isLocked(tile)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Section: Browse */}
+      <div style={{
+        margin: "4px 2px 8px",
+        fontSize: 10, fontWeight: 700, color: "#8E8E93",
+        textTransform: "uppercase", letterSpacing: "0.08em",
+      }}>
+        Browse
+      </div>
+
+      {/* Category filter chips */}
+      <div style={{
+        display: "flex", gap: 5, marginBottom: 12,
+        overflowX: "auto", scrollbarWidth: "none",
+        WebkitOverflowScrolling: "touch",
+      }}>
+        {filterChips.map((chip) => {
+          const active = selectedCategory === chip.id;
+          return (
+            <button
+              key={chip.id}
+              type="button"
+              onClick={() => setSelectedCategory(chip.id)}
+              style={{
+                background: active ? ACCENT : "#FFF",
+                borderRadius: 20,
+                padding: "4px 10px",
+                border: active ? 0 : "0.5px solid rgba(26,82,160,0.15)",
+                fontSize: 10, fontWeight: 600,
+                color: active ? "#FFF" : "#5B6B8A",
+                whiteSpace: "nowrap", flexShrink: 0, cursor: "pointer",
+              }}
+            >
+              {chip.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Category cards */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {CATEGORIES
+          .filter((cat) => selectedCategory === "all" || selectedCategory === cat.id)
+          .map((cat) => {
+            const Icon = cat.icon;
+            const validTiles = cat.tileIds
+              .map((id) => QUICK_ACCESS_TILES_BY_ID[id])
+              .filter(Boolean) as QuickAccessTile[];
+            const previewTiles = validTiles.slice(0, 3);
+            const full = draftPins.length >= MAX_PINS;
+            const firstTile = validTiles[0];
+            const goCategoryHome = () => firstTile && handleTap(firstTile);
+
+            return (
+              <div key={cat.id} style={{
+                background: "#FFF", borderRadius: 16,
+                border: "0.5px solid rgba(26,82,160,0.08)",
+                overflow: "hidden",
+              }}>
+                <button
+                  type="button"
+                  onClick={goCategoryHome}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "11px 13px", width: "100%", background: "transparent",
+                    border: 0, textAlign: "left", cursor: "pointer",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 9, background: cat.bg,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <Icon size={15} color={cat.fg} strokeWidth={1.8} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#1A1A1A" }}>{cat.label}</div>
+                      <div style={{ fontSize: 9, color: "#8E8E93", marginTop: 1 }}>
+                        {validTiles.length} tool{validTiles.length === 1 ? "" : "s"}
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight size={11} color="#C7C7CC" strokeWidth={2} />
+                </button>
+
+                {previewTiles.map((tile) => (
+                  <ToolRow
+                    key={tile.id}
+                    tile={tile}
+                    isPinned={draftPins.includes(tile.id)}
+                    isEditMode={isEditMode}
+                    full={full}
+                    onPress={() => handleTap(tile)}
+                    onPin={() => handlePinTool(tile.id)}
+                  />
+                ))}
+
+                {validTiles.length > previewTiles.length && firstTile && (
+                  <button
+                    type="button"
+                    onClick={goCategoryHome}
+                    style={{
+                      padding: "7px 13px", width: "100%", textAlign: "left",
+                      background: "transparent", border: 0,
+                      borderTop: "0.5px solid #F0F3F8",
+                      fontSize: 10, fontWeight: 600, color: ACCENT, cursor: "pointer",
+                    }}
+                  >
+                    See all {validTiles.length} →
+                  </button>
+                )}
+              </div>
+            );
+          })}
+      </div>
+
+      {/* Full slots warning */}
+      {isEditMode && draftPins.length >= MAX_PINS && (
+        <div style={{
+          background: AMBER_BG, borderRadius: 10,
+          padding: "8px 11px",
+          display: "flex", alignItems: "center", gap: 7,
+          marginTop: 12, marginBottom: 20,
+        }}>
+          <AlertTriangle size={12} color={AMBER_FG} strokeWidth={2} />
+          <span style={{ fontSize: 10, color: AMBER_FG, fontWeight: 500 }}>
+            All {MAX_PINS} slots full — remove a pinned tool to add another
+          </span>
+        </div>
+      )}
+
+      {/* Reference: defaults are seeded by useInstructorPinnedTiles. */}
+      {void DEFAULT_PINNED_TILE_IDS}
     </section>
   );
 }
