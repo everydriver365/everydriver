@@ -234,7 +234,7 @@ export function CustomizeFrequentlyUsedSheet({
                         alignItems: "center",
                         gap: 10,
                         padding: "10px 12px",
-                        background: isPrimary ? "#F5F8FF" : "#FFF",
+                        background: isPrimary ? "#EDF2FE" : "#FFF",
                         opacity: dragId === id ? 0.4 : 1,
                       }}
                     >
