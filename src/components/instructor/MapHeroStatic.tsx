@@ -23,14 +23,23 @@ interface Props {
   countdown: string;
   startTime: string;
   whenLabel: string;
+  /** Optional: when set, tapping the map opens Google Maps directions to this destination. */
+  directionsQuery?: string | null;
 }
 
 /**
  * Real mini-map for the "Up next" tile, using Google Static Maps API.
  * Falls back gracefully to a plain background if the key or query is missing.
  */
-export function MapHeroStatic({ centerQuery, countdown, startTime, whenLabel }: Props) {
+export function MapHeroStatic({ centerQuery, countdown, startTime, whenLabel, directionsQuery }: Props) {
   const [src, setSrc] = useState<string | null>(null);
+  const dest = directionsQuery ?? centerQuery;
+  const openDirections = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!dest) return;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
   useEffect(() => {
     let cancelled = false;
