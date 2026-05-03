@@ -114,7 +114,14 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
         <Mic size={22} strokeWidth={2.2} />
       </button>
       <div className="flex items-start justify-around" style={{ padding: '8px 6px 12px' }}>
-        {navItems.map((item) => {
+        {navItems.flatMap((item, idx) => {
+          const nodes: React.ReactNode[] = [];
+          if (idx === 2) {
+            nodes.push(
+              <div key="mic-spacer" aria-hidden style={{ width: 56, minWidth: 56 }} />
+            );
+          }
+          nodes.push(((): React.ReactNode => {
           const isActive = location.pathname === item.path;
           const isTrack = item.isTrack;
           const isSchedule = item.isSchedule;
