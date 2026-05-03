@@ -435,9 +435,10 @@ export function AddLessonSheet({
             const bufferLabel = bufferMinutes > 0
               ? `needs ${bufferMinutes} min buffer`
               : 'back-to-back, no gap';
+            setIsHardOverlap(hardOverlap);
             setConflictWarning(
               hardOverlap
-                ? `HARD_OVERLAP::Overlaps with ${names}`
+                ? `Overlaps with ${names}`
                 : `Too close to ${names} (${bufferLabel})`
             );
             // Fall through — travel-time checks below still run so the amber
