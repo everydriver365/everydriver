@@ -209,7 +209,7 @@ export default function InstructorPortal() {
   if (isMobile) {
     return (
       <InstructorPortalLayout>
-        <div className="space-y-0">
+        <div className="space-y-0 ios-home-v2">
         <DemoModeBanner />
         <MobileHomeRedesign
           instructorId={instructorId}
