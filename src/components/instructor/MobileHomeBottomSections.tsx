@@ -474,6 +474,7 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
         onOpenChange={setShowAdd}
         instructorId={instructorId}
         defaultDate={dayDate}
+        onSuccess={() => setShowAdd(false)}
       />
     </div>
   );
