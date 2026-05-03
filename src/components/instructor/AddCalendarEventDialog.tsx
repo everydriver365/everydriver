@@ -91,7 +91,7 @@ export function AddCalendarEventDialog({
   defaultDate,
   onSuccess,
 }: AddCalendarEventDialogProps) {
-  const [tab, setTab] = useState<'block' | 'lesson'>('block');
+  const [tab, setTab] = useState<'block' | 'lesson' | 'event'>('block');
   const [loading, setLoading] = useState(false);
   const [pupils, setPupils] = useState<Pupil[]>([]);
 
