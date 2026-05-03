@@ -25,13 +25,26 @@ interface Props {
   whenLabel: string;
   /** Optional: when set, tapping the map opens Google Maps directions to this destination. */
   directionsQuery?: string | null;
+  /** Pupil avatar shown in the bottom-right of the map hero. */
+  pupilName?: string;
+  pupilProfileImage?: string | null;
+}
+
+function avatarInitials(name?: string) {
+  if (!name) return "";
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join("");
 }
 
 /**
  * Real mini-map for the "Up next" tile, using Google Static Maps API.
  * Falls back gracefully to a plain background if the key or query is missing.
  */
-export function MapHeroStatic({ centerQuery, countdown, startTime, whenLabel, directionsQuery }: Props) {
+export function MapHeroStatic({ centerQuery, countdown, startTime, whenLabel, directionsQuery, pupilName, pupilProfileImage }: Props) {
   const [src, setSrc] = useState<string | null>(null);
   const dest = directionsQuery ?? centerQuery;
   const openDirections = (e: React.MouseEvent) => {
