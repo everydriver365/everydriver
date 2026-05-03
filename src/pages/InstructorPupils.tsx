@@ -746,77 +746,177 @@ export default function InstructorPupils() {
             </div>
           ) : (
             <>
-              <div className="space-y-3" style={{ marginBottom: 12 }}>
+              <div
+                style={{
+                  background: "#FFF",
+                  borderRadius: 16,
+                  overflow: "hidden",
+                  border: "0.5px solid rgba(26,82,160,0.08)",
+                  marginBottom: 12,
+                }}
+              >
                 {(() => {
-                  // Detect duplicate display names so cards can show a small disambiguator.
                   const nameCount = new Map<string, number>();
                   displayedPupils.forEach((p) => {
                     const k = (p.name || "").trim().toLowerCase();
                     nameCount.set(k, (nameCount.get(k) || 0) + 1);
                   });
+                  const palette = ["#1A52A0", "#1A7A3C", "#B45309", "#7B3FB0", "#0F6E8E", "#CC2229"];
+                  const colorFor = (id: string) => palette[Math.abs(id.split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % palette.length];
+                  const initials = (name: string) => name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+                  const formatTestDate = (s: string) => {
+                    try { return format(new Date(s), "d MMM"); } catch { return s; }
+                  };
+
                   return displayedPupils.map((pupil, idx) => {
+                    const status = pupil.status || "active";
+                    const isPassed = status === "passed";
                     const dupKey = (pupil.name || "").trim().toLowerCase();
                     const isDup = (nameCount.get(dupKey) || 0) > 1;
                     const suffix = isDup
                       ? (pupil.address?.split(",")[0]?.trim() || pupil.postcode || null)
                       : null;
-                    const priority = isUpcoming(pupil) || needsLesson(pupil) || (pupil.account_balance ?? 0) < 0;
-                    const isPassed = (pupil.status || "active") === "passed";
+                    const balance = pupil.account_balance ?? 0;
+                    const lessonCount = pupil.lessons_completed || 0;
+                    const totalHours = lessonCount; // 1 lesson ≈ 1h fallback (no separate field)
+                    const nextLessonTs = pupil.next_lesson ? new Date(pupil.next_lesson).getTime() : NaN;
+                    const lastLessonLabel = pupil.next_lesson && !isNaN(nextLessonTs) && nextLessonTs >= now
+                      ? `Next ${format(new Date(pupil.next_lesson!), "d MMM")}`
+                      : pupil.next_lesson && !isNaN(nextLessonTs)
+                        ? `Last ${format(new Date(pupil.next_lesson!), "d MMM")}`
+                        : "No lesson booked";
+                    const nextLessonIsFirst = lessonCount === 0 && !!pupil.next_lesson && nextLessonTs >= now;
+                    const isOverdue = needsLesson(pupil);
+
+                    // Inline badge
+                    let inlineBadge: { bg: string; color: string; label: string } | null = null;
+                    if (nextLessonIsFirst) inlineBadge = { bg: "#EEF3FF", color: "#1A52A0", label: "Next" };
+                    else if (pupil.test_date) inlineBadge = { bg: "#FFF0F0", color: "#CC2229", label: `Test ${formatTestDate(pupil.test_date)}` };
+
+                    // Context badge
+                    let ctxBadge: { bg: string; color: string; label: string } | null = null;
+                    if (isPassed) ctxBadge = { bg: "#E8F8ED", color: "#1A7A3C", label: "Passed" };
+                    else if (isOverdue) ctxBadge = { bg: "#FFF0F0", color: "#CC2229", label: "Overdue" };
+                    else if (balance < 0) ctxBadge = { bg: "#FFF6E6", color: "#B45309", label: `£${Math.abs(balance).toFixed(0)} owed` };
+                    else if (balance > 0) ctxBadge = { bg: "#E8F8ED", color: "#1A7A3C", label: `+£${balance.toFixed(0)}` };
+
+                    // Status dot
+                    const dotBg = isPassed ? "#E8F8ED" : (isOverdue ? "#CC2229" : "#34C759");
+                    const avatarColor = colorFor(pupil.id);
+
                     return (
-                      <motion.div
-                        key={pupil.id}
-                        id={`pupil-card-${pupil.id}`}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ type: "spring", stiffness: 350, damping: 25, delay: idx * 0.03 }}
-                        style={{ opacity: isPassed ? 0.6 : 1 }}
-                      >
-                        <PupilCardStack
-                          pupil={pupil}
-                          defaultExpanded={expandedPupilId === pupil.id}
-                          nameSuffix={suffix}
-                          priority={priority}
-                          onEdit={handleEditPupil}
-                          onDelete={handleDeletePupil}
-                          onViewHistory={(p) => {
-                            setSelectedPupil(p);
-                            setIsHistoryOpen(true);
+                      <div key={pupil.id} id={`pupil-card-${pupil.id}`}>
+                        {idx > 0 && (
+                          <div style={{ height: 0.5, background: "#F0F3F8", marginLeft: 14, marginRight: 14 }} />
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/instructor/pupils/${pupil.id}`)}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 11,
+                            padding: "11px 14px",
+                            width: "100%",
+                            background: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                            textAlign: "left",
+                            opacity: isPassed ? 0.6 : 1,
                           }}
-                          onViewReport={(p) => {
-                            setSelectedPupil(p);
-                            setIsDrivingReportOpen(true);
-                          }}
-                          onViewTerms={(p) => {
-                            setSelectedPupil(p);
-                            setIsTermsModalOpen(true);
-                          }}
-                          onStartChat={(p) => {
-                            navigate(`/instructor/messages?pupilId=${p.id}`);
-                          }}
-                          onRecordTestResult={(p, isMock) => {
-                            setSelectedPupil(p);
-                            setTestFormIsMock(isMock);
-                            setIsTestFormOpen(true);
-                          }}
-                          onViewTestHistory={(p) => {
-                            setSelectedPupil(p);
-                            setIsTestHistoryOpen(true);
-                          }}
-                          onStatusChange={(pupilId, newStatus) => {
-                            setPupils(prevPupils =>
-                              prevPupils.map(p =>
-                                p.id === pupilId ? { ...p, status: newStatus } : p
-                              )
-                            );
-                          }}
-                          hasSignedTerms={pupilSignatures[pupil.id] || false}
-                          instructorId={instructorId}
-                          instructorName={instructor?.name}
-                          isTracking={isTracking(pupil.id)}
-                          paymentQrUrl={getActivePaymentQrUrl(instructor)}
-                          commissionPayer={instructor?.commission_payer}
-                        />
-                      </motion.div>
+                        >
+                          {/* Avatar */}
+                          <div style={{ position: "relative", flexShrink: 0 }}>
+                            <div
+                              style={{
+                                width: 38,
+                                height: 38,
+                                borderRadius: 19,
+                                background: avatarColor,
+                                overflow: "hidden",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              {pupil.profile_image_url ? (
+                                <img src={pupil.profile_image_url} alt="" style={{ width: 38, height: 38, objectFit: "cover" }} />
+                              ) : (
+                                <span style={{ fontSize: 13, fontWeight: 700, color: "#FFF" }}>
+                                  {initials(pupil.name)}
+                                </span>
+                              )}
+                            </div>
+                            <div
+                              style={{
+                                position: "absolute",
+                                bottom: 0,
+                                right: 0,
+                                width: 9,
+                                height: 9,
+                                borderRadius: 5,
+                                background: dotBg,
+                                border: "1.5px solid #FFF",
+                              }}
+                            />
+                          </div>
+
+                          {/* Main */}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 2 }}>
+                              <span
+                                style={{
+                                  fontSize: 13,
+                                  fontWeight: 700,
+                                  color: "#1A1A1A",
+                                  lineHeight: "17px",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                  minWidth: 0,
+                                }}
+                              >
+                                {pupil.name}{suffix ? ` — ${suffix}` : ""}
+                              </span>
+                              {inlineBadge && (
+                                <span
+                                  style={{
+                                    background: inlineBadge.bg,
+                                    color: inlineBadge.color,
+                                    borderRadius: 20,
+                                    padding: "1px 6px",
+                                    fontSize: 9,
+                                    fontWeight: 700,
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  {inlineBadge.label}
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ fontSize: 10, color: "#8E8E93" }}>
+                              {lastLessonLabel} · {lessonCount} lesson{lessonCount !== 1 ? "s" : ""} · {totalHours}h
+                            </div>
+                          </div>
+
+                          {ctxBadge && (
+                            <span
+                              style={{
+                                background: ctxBadge.bg,
+                                color: ctxBadge.color,
+                                borderRadius: 20,
+                                padding: "2px 8px",
+                                fontSize: 9,
+                                fontWeight: 700,
+                                flexShrink: 0,
+                              }}
+                            >
+                              {ctxBadge.label}
+                            </span>
+                          )}
+                          <span style={{ color: "#C7C7CC", fontSize: 14, lineHeight: 1, flexShrink: 0 }}>›</span>
+                        </button>
+                      </div>
                     );
                   });
                 })()}
