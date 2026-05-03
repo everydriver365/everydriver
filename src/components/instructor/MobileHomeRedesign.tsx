@@ -973,29 +973,22 @@ export function MobileHomeRedesign({
             onToggleExpanded={() => setExpanded((v) => !v)}
           />
           {expanded && (
-            <div style={{ padding: "0 14px 14px" }}>
-              <NextUpTileFull
-                lessonId={nextLesson.lessonId}
-                pupilId={nextLesson.pupilId}
-                pupilName={nextLesson.pupilName}
-                pupilProfileImage={nextLesson.pupilProfileImage}
-                pupilPhone={nextLesson.pupilPhone}
-                lessonDate={nextLesson.lessonDate}
-                pickupPostcode={nextLesson.pickupPostcode}
-                pickupLocation={nextLesson.pickupLocation}
-                startTime={nextLesson.startTime}
-                minutesUntil={liveMinutes}
-                accountBalance={(nextLesson as any).accountBalance ?? 0}
-                prepaidHours={(nextLesson as any).prepaidHours ?? 0}
-                durationMinutes={nextLesson.durationMinutes}
-                instructorId={instructorId}
-                checkInStatus={(nextLesson as any).checkInStatus}
-                lessonStatus={(nextLesson as any).lessonStatus}
-                lastLessonPlan={(nextLesson as any).lastLessonPlan}
-                hideHeader
-                forceExpanded
-              />
-            </div>
+            <UpNextExpanded
+              lessonId={nextLesson.lessonId}
+              pupilId={nextLesson.pupilId}
+              pupilName={nextLesson.pupilName}
+              pupilPhone={nextLesson.pupilPhone}
+              pickupLocation={nextLesson.pickupLocation}
+              pickupPostcode={nextLesson.pickupPostcode}
+              startTime={nextLesson.startTime}
+              durationMinutes={nextLesson.durationMinutes}
+              accountBalance={(nextLesson as any).accountBalance ?? 0}
+              prepaidHours={(nextLesson as any).prepaidHours ?? 0}
+              checkInStatus={(nextLesson as any).checkInStatus}
+              lessonStatus={(nextLesson as any).lessonStatus}
+              lastLessonPlan={(nextLesson as any).lastLessonPlan}
+              instructorId={instructorId}
+            />
           )}
         </>
       )}
