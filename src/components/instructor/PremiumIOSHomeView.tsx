@@ -173,7 +173,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
     attentionRows.push({
       key: "jobs",
       iconBg: "#FFE5E1",
-      iconFg: "#FF3B30",
+      iconFg: "#E15D5A",
       icon: <Briefcase className="size-[22px]" />,
       title: `${pendingJobsCount} new job offer${pendingJobsCount === 1 ? "" : "s"}`,
       subtitle: "Tap to review and respond",
@@ -210,7 +210,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
   }
 
   const pillStyles: Record<AttentionTone, string> = {
-    red: "bg-[#FF3B30]/10 text-[#FF3B30]",
+    red: "bg-[#E15D5A]/10 text-[#E15D5A]",
     amber: "bg-[#FF9500]/12 text-[#C46E00]",
     green: "bg-[#34C759]/12 text-[#1F8E3F]",
   };
@@ -254,7 +254,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
           {waitingCount > 0 && (
             <>
               <span className="mx-1.5 text-[#3C3C43]/40">·</span>
-              <span className="text-[#FF3B30] font-semibold">
+              <span className="text-[#E15D5A] font-semibold">
                 {waitingCount} thing{waitingCount === 1 ? "" : "s"} waiting
               </span>
             </>
@@ -508,9 +508,9 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
 
                 const NowMarker = (
                   <div className="flex items-center gap-2 px-4 py-1.5">
-                    <div className="size-1.5 rounded-full bg-[#FF3B30]" />
-                    <div className="flex-1 h-px bg-[#FF3B30]/40" />
-                    <span className="text-[10.5px] font-bold tracking-wide uppercase text-[#FF3B30] tabular-nums">
+                    <div className="size-1.5 rounded-full bg-[#E15D5A]" />
+                    <div className="flex-1 h-px bg-[#E15D5A]/40" />
+                    <span className="text-[10.5px] font-bold tracking-wide uppercase text-[#E15D5A] tabular-nums">
                       Now {format(now, "HH:mm")}
                     </span>
                   </div>
@@ -553,7 +553,7 @@ export function PremiumIOSHomeView({ instructorId, instructor, onPaymentClick }:
                       : statusTone === "blue"
                       ? "bg-[#007AFF]/12 text-[#007AFF]"
                       : statusTone === "red"
-                      ? "bg-[#FF3B30]/12 text-[#FF3B30]"
+                      ? "bg-[#E15D5A]/12 text-[#E15D5A]"
                       : "";
                   const accentColor =
                     statusTone === "green"

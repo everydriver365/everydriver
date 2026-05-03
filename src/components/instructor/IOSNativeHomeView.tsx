@@ -105,7 +105,7 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
     : nextLesson.minutesUntil < 60
     ? `in ${nextLesson.minutesUntil} min`
     : `in ${Math.floor(nextLesson.minutesUntil / 60)}h ${nextLesson.minutesUntil % 60}m`;
-  const trafficDotColor = trafficCondition === "light" ? "#34C759" : trafficCondition === "moderate" ? "#FFCC00" : "#FF3B30";
+  const trafficDotColor = trafficCondition === "light" ? "#34C759" : trafficCondition === "moderate" ? "#FFCC00" : "#E15D5A";
 
   const handleSendDelay = (minutes: number) => {
     if (!nextLesson.pupilPhone) return;
@@ -371,7 +371,7 @@ function IOSNextLessonCard({ instructorId }: { instructorId: string | undefined 
                   <button
                     onClick={() => setCancelOpen(true)}
                     className="py-2.5 rounded-2xl text-[13px] font-medium"
-                    style={{ backgroundColor: "rgba(255,0,0,0.12)", color: "#FF3B30" }}
+                    style={{ backgroundColor: "rgba(255,0,0,0.12)", color: "#E15D5A" }}
                   >
                     Cancel Lesson
                   </button>

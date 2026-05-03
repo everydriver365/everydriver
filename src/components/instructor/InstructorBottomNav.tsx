@@ -136,7 +136,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                       height: 18,
                       borderRadius: 9,
                       padding: '0 5px',
-                      background: '#FF3B30',
+                      background: '#E15D5A',
                       color: 'white',
                       fontSize: 11,
                       fontWeight: 700,

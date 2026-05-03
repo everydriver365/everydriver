@@ -664,7 +664,7 @@ export default function InstructorQuickAvailability() {
                                 cursor: "pointer",
                               }}
                             >
-                              <X size={12} color="#CC2229" strokeWidth={1.7} />
+                              <X size={12} color="#B23A3F" strokeWidth={1.7} />
                             </span>
                           </div>
                         </button>

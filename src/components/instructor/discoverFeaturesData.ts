@@ -102,7 +102,7 @@ export const DISCOVER_FEATURES: DiscoverFeature[] = [
   {
     title: "Track Lesson",
     icon: MapPin,
-    accent: "#FF3B30",
+    accent: "#E15D5A",
     route: "/instructor/tracking",
     summary: "GPS-track lessons in real time with route recording.",
     detailedDescription: "Start GPS tracking when a lesson begins to record the exact route driven. See speed, distance, and duration in real time. The route is saved to the pupil's history so you can review areas covered and plan future lessons.",
@@ -120,7 +120,7 @@ export const DISCOVER_FEATURES: DiscoverFeature[] = [
   {
     title: "Standards Check",
     icon: Target,
-    accent: "#FF3B30",
+    accent: "#E15D5A",
     route: "/instructor/standards-check",
     summary: "Prepare for your DVSA Standards Check assessment.",
     detailedDescription: "Review the 17 competency areas assessed during a Standards Check. Log practice sessions, track your readiness score, and access tips for each competency. Set reminders so you're never caught off guard.",
@@ -167,7 +167,7 @@ export const DISCOVER_FEATURES: DiscoverFeature[] = [
   {
     title: "Locations",
     icon: MapPinned,
-    accent: "#FF3B30",
+    accent: "#E15D5A",
     route: "/instructor/locations",
     summary: "Save frequently visited addresses and meeting points.",
     detailedDescription: "Pin your most-used locations — test centres, pupil homes, practice areas. Quickly navigate to saved locations or share them with pupils. Organise with custom labels and categories.",

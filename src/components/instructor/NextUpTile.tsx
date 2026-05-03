@@ -494,7 +494,7 @@ export function NextUpTile({
     green: "#34C759",
     indigo: "#5856D6",
     orange: "#FF9500",
-    red: "#FF3B30",
+    red: "#E15D5A",
     card: "#FFFFFF",
     grouped: "#F2F2F7",
   };
@@ -593,7 +593,7 @@ export function NextUpTile({
                   display: "inline-flex", alignItems: "center", gap: 4,
                   padding: "3px 8px", borderRadius: 999,
                   background: minutesUntil <= 5 ? "rgba(255,59,48,0.12)" : minutesUntil <= 15 ? "rgba(255,149,0,0.12)" : "rgba(88,86,214,0.10)",
-                  color: minutesUntil <= 5 ? "#FF3B30" : minutesUntil <= 15 ? "#FF9500" : "#5856D6",
+                  color: minutesUntil <= 5 ? "#E15D5A" : minutesUntil <= 15 ? "#FF9500" : "#5856D6",
                   fontSize: a11yPx(11), fontWeight: 600, letterSpacing: 0.1,
                   fontVariantNumeric: "tabular-nums",
                 }}>
@@ -1627,8 +1627,8 @@ export function NextUpTile({
                       display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
                       minHeight: 44,
                     }}>
-                    <X style={{ width: 16, height: 16, color: "#FF3B30" }} strokeWidth={2.4} />
-                    <span style={{ fontSize: a11yPx(14), fontWeight: 600, color: "#FF3B30", letterSpacing: -0.1 }}>
+                    <X style={{ width: 16, height: 16, color: "#E15D5A" }} strokeWidth={2.4} />
+                    <span style={{ fontSize: a11yPx(14), fontWeight: 600, color: "#E15D5A", letterSpacing: -0.1 }}>
                       Cancel lesson
                     </span>
                   </button>

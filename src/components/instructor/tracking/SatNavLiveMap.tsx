@@ -1040,7 +1040,7 @@ export function SatNavLiveMap({
                     width: 8,
                     height: 8,
                     borderRadius: "50%",
-                    background: "#FF3B30",
+                    background: "#E15D5A",
                     display: "inline-block",
                   }}
                   animate={{ opacity: [1, 0.35, 1] }}
@@ -1048,7 +1048,7 @@ export function SatNavLiveMap({
                 />
                 <span
                   style={{
-                    color: "#FF3B30",
+                    color: "#E15D5A",
                     fontWeight: 700,
                     textTransform: "uppercase",
                     letterSpacing: 0.6,
@@ -1324,7 +1324,7 @@ function SignalStatusPill({ status, lastFixLabel, dark = false }: { status: Sign
     live:    { dot: "#34C759", label: "Live",        bg: "rgba(52,199,89,0.12)",     fg: "#1a7d3a", pulse: true  },
     delayed: { dot: "#FFCC00", label: "Delayed",     bg: "rgba(255,204,0,0.16)",     fg: "#8a6a00", pulse: false },
     weak:    { dot: "#FF9500", label: "Weak GPS",    bg: "rgba(255,149,0,0.14)",     fg: "#a14310", pulse: false },
-    lost:    { dot: "#FF3B30", label: "Signal Lost", bg: "rgba(255,59,48,0.12)",     fg: "#a02c2b", pulse: false },
+    lost:    { dot: "#E15D5A", label: "Signal Lost", bg: "rgba(255,59,48,0.12)",     fg: "#a02c2b", pulse: false },
   };
   // Dark glass variant — used in fullscreen sat-nav mode.
   const darkConfig: Record<SignalStatusValue, { dot: string; label: string; fg: string; pulse: boolean }> = {
@@ -1332,7 +1332,7 @@ function SignalStatusPill({ status, lastFixLabel, dark = false }: { status: Sign
     live:    { dot: "#34C759", label: "Live",        fg: "#34C759",               pulse: true  },
     delayed: { dot: "#FFCC00", label: "Delayed",     fg: "#FFCC00",               pulse: false },
     weak:    { dot: "#FF9500", label: "Weak GPS",    fg: "#FF9500",               pulse: false },
-    lost:    { dot: "#FF3B30", label: "Signal Lost", fg: "#FF3B30",               pulse: false },
+    lost:    { dot: "#E15D5A", label: "Signal Lost", fg: "#E15D5A",               pulse: false },
   };
 
   if (dark) {

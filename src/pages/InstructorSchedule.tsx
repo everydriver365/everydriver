@@ -209,7 +209,7 @@ export default function InstructorSchedule() {
                     onClick={() => navigate("/instructor/profile")}
                     style={{
                       width: 34, height: 34, borderRadius: 17,
-                      backgroundColor: "#CC2229",
+                      backgroundColor: "#B23A3F",
                       border: "2px solid #0A0F29",
                       overflow: "hidden",
                       display: "flex", alignItems: "center", justifyContent: "center",

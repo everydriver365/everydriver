@@ -301,7 +301,7 @@ export function AddCalendarEventDialog({
 
   const ErrorText = ({ id }: { id: string }) =>
     errors[id] ? (
-      <div className="px-1 pt-1.5 text-[12px] font-medium text-[#FF3B30]">{errors[id]}</div>
+      <div className="px-1 pt-1.5 text-[12px] font-medium text-[#E15D5A]">{errors[id]}</div>
     ) : null;
 
   return (

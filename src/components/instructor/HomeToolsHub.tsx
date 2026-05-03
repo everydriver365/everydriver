@@ -25,7 +25,7 @@ const ACCENT = "#0A0F29";
 const ACCENT_BG = "#EEF3FF";
 const AMBER_BG = "#FFF6E6";
 const AMBER_FG = "#B45309";
-const RED = "#CC2229";
+const RED = "#B23A3F";
 
 type CategoryId = "scheduling" | "finance" | "pupils" | "vehicle" | "reports" | "admin";
 

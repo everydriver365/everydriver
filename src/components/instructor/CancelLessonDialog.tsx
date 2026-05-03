@@ -232,7 +232,7 @@ export function CancelLessonDialog({
           style={{ borderRadius: 24, background: "#FFFFFF" }}
         >
           {/* Top accent bar */}
-          <div style={{ height: 4, background: "#CC2229" }} />
+          <div style={{ height: 4, background: "#B23A3F" }} />
 
           {/* Header */}
           <div style={{ padding: "16px 18px 0" }}>
@@ -249,7 +249,7 @@ export function CancelLessonDialog({
                   flexShrink: 0,
                 }}
               >
-                <AlertTriangle size={18} color="#CC2229" strokeWidth={2} />
+                <AlertTriangle size={18} color="#B23A3F" strokeWidth={2} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 16, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.2 }}>
@@ -300,7 +300,7 @@ export function CancelLessonDialog({
                   width: 32,
                   height: 32,
                   borderRadius: "50%",
-                  background: "#CC2229",
+                  background: "#B23A3F",
                   color: "#FFF",
                   fontSize: 13,
                   fontWeight: 700,
@@ -348,7 +348,7 @@ export function CancelLessonDialog({
               subtitle={`Deduct from ${firstName}'s balance`}
               feeLabel={`£${fullChargeAmount.toFixed(2)}`}
               feeBg="#FFF0F0"
-              feeColor="#CC2229"
+              feeColor="#B23A3F"
               extra={
                 <div
                   style={{
@@ -361,7 +361,7 @@ export function CancelLessonDialog({
                     display: "inline-block",
                   }}
                 >
-                  <span style={{ fontSize: 10, color: "#CC2229", fontWeight: 600 }}>
+                  <span style={{ fontSize: 10, color: "#B23A3F", fontWeight: 600 }}>
                     Balance: £{pupilBalance.toFixed(2)} → £{(pupilBalance - fullChargeAmount).toFixed(2)}
                   </span>
                 </div>
@@ -387,10 +387,10 @@ export function CancelLessonDialog({
                       background: isSel ? "#FFF0F0" : "#F2F4F8",
                       borderRadius: 20,
                       padding: "5px 11px",
-                      border: isSel ? "1.5px solid #CC2229" : "0",
+                      border: isSel ? "1.5px solid #B23A3F" : "0",
                       fontSize: 11,
                       fontWeight: isSel ? 600 : 500,
-                      color: isSel ? "#CC2229" : "#5B6B8A",
+                      color: isSel ? "#B23A3F" : "#5B6B8A",
                       cursor: "pointer",
                     }}
                   >
@@ -401,7 +401,7 @@ export function CancelLessonDialog({
             </div>
 
             {!selectedReason && (
-              <div style={{ fontSize: 11, color: "#CC2229", marginBottom: 8 }}>
+              <div style={{ fontSize: 11, color: "#B23A3F", marginBottom: 8 }}>
                 Please select a reason to continue
               </div>
             )}
@@ -409,7 +409,7 @@ export function CancelLessonDialog({
             <div
               style={{
                 borderRadius: 12,
-                border: focused ? "1.5px solid #CC2229" : "1px solid #E0E5EE",
+                border: focused ? "1.5px solid #B23A3F" : "1px solid #E0E5EE",
                 marginBottom: 8,
               }}
             >
@@ -492,7 +492,7 @@ export function CancelLessonDialog({
               onClick={handleCancel}
               disabled={!selectedReason || cancelling}
               style={{
-                background: selectedReason && !cancelling ? "#CC2229" : "#C7C7CC",
+                background: selectedReason && !cancelling ? "#B23A3F" : "#C7C7CC",
                 borderRadius: 14,
                 padding: 14,
                 display: "flex",

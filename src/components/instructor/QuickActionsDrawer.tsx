@@ -40,7 +40,7 @@ type TileMeta = {
 const TILE_META: Record<string, TileMeta> = {
   "add-pupil":    { label: "Add pupil",    subtitle: "New learner",   Icon: UserPlus,   iconBg: "#E8F8ED", iconColor: "#1A7A3C" },
   "take-payment": { label: "Take payment", subtitle: "Record payment",Icon: CreditCard, iconBg: "#FFF6E6", iconColor: "#B45309" },
-  "track-live":   { label: "Track live",   subtitle: "Start GPS",     Icon: MapPin,     iconBg: "#FFF0F0", iconColor: "#CC2229" },
+  "track-live":   { label: "Track live",   subtitle: "Start GPS",     Icon: MapPin,     iconBg: "#FFF0F0", iconColor: "#B23A3F" },
   "messages":     { label: "Messages",     subtitle: "Send a message",Icon: MessageSquare, iconBg: "#EEF3FF", iconColor: "#0A0F29" },
   "nearby-adis":  { label: "Nearby ADIs",  subtitle: "Find instructors", Icon: MapPin,  iconBg: "#EEF3FF", iconColor: "#0A0F29" },
 };
@@ -99,7 +99,7 @@ export function QuickActionsDrawer({
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ display: "flex", gap: 2 }}>
                 {[
-                  { l: "D", bg: "#CC2229", r: { borderTopLeftRadius: 3, borderBottomLeftRadius: 3 } },
+                  { l: "D", bg: "#B23A3F", r: { borderTopLeftRadius: 3, borderBottomLeftRadius: 3 } },
                   { l: "S", bg: "#0A0F29", r: {} },
                   { l: "M", bg: "#2B2B2B", r: { borderTopRightRadius: 3, borderBottomRightRadius: 3 } },
                 ].map((b) => (
@@ -228,7 +228,7 @@ export function QuickActionsDrawer({
                           position: "absolute",
                           top: 8,
                           right: 8,
-                          backgroundColor: "#CC2229",
+                          backgroundColor: "#B23A3F",
                           borderRadius: 8,
                           minWidth: 14,
                           height: 14,

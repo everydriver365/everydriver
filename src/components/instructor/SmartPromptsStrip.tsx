@@ -14,7 +14,7 @@ export interface SmartPrompt {
 }
 
 const toneStyles: Record<PromptTone, { bg: string; border: string; fg: string; iconFg: string; ctaBg: string; ctaFg: string }> = {
-  red:   { bg: "rgba(255,59,48,0.08)",  border: "rgba(255,59,48,0.18)",  fg: "#7A1F1A", iconFg: "#FF3B30", ctaBg: "#FF3B30", ctaFg: "#FFFFFF" },
+  red:   { bg: "rgba(255,59,48,0.08)",  border: "rgba(255,59,48,0.18)",  fg: "#7A1F1A", iconFg: "#E15D5A", ctaBg: "#E15D5A", ctaFg: "#FFFFFF" },
   amber: { bg: "rgba(255,149,0,0.10)",  border: "rgba(255,149,0,0.20)",  fg: "#6B3E00", iconFg: "#FF9500", ctaBg: "#FF9500", ctaFg: "#FFFFFF" },
   blue:  { bg: "rgba(0,122,255,0.08)",  border: "rgba(0,122,255,0.18)",  fg: "#0A3D7A", iconFg: "#007AFF", ctaBg: "#007AFF", ctaFg: "#FFFFFF" },
   green: { bg: "rgba(52,199,89,0.10)",  border: "rgba(52,199,89,0.20)",  fg: "#0F4F2B", iconFg: "#34C759", ctaBg: "#34C759", ctaFg: "#FFFFFF" },

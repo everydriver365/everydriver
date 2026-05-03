@@ -33,7 +33,7 @@ const CATEGORY_COLORS: Record<string, { iconBg: string; iconColor: string }> = {
   Scheduling: { iconBg: "#EEF3FF", iconColor: "#0A0F29" },
   Finance: { iconBg: "#FFF6E6", iconColor: "#B45309" },
   Pupils: { iconBg: "#E8F8ED", iconColor: "#1A7A3C" },
-  Vehicle: { iconBg: "#FFF0F0", iconColor: "#CC2229" },
+  Vehicle: { iconBg: "#FFF0F0", iconColor: "#B23A3F" },
   Reports: { iconBg: "#F0EEFF", iconColor: "#6B21A8" },
   Admin: { iconBg: "#F2F4F8", iconColor: "#5B6B8A" },
 };
@@ -345,7 +345,7 @@ export function CustomizeFrequentlyUsedSheet({
                           flexShrink: 0,
                         }}
                       >
-                        <X size={9} color="#CC2229" strokeWidth={2.2} />
+                        <X size={9} color="#B23A3F" strokeWidth={2.2} />
                       </button>
                     </div>
                   </div>

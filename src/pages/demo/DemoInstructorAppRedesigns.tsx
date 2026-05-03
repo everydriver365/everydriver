@@ -169,7 +169,7 @@ function PhoneFrame({ t }: { t: Theme }) {
             DSM
           </span>
           <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-full flex items-center justify-center text-[9px] font-extrabold text-white" style={{ background: "#FF3B30" }}>
+            <div className="h-7 w-7 rounded-full flex items-center justify-center text-[9px] font-extrabold text-white" style={{ background: "#E15D5A" }}>
               SOS
             </div>
             <Menu className="h-5 w-5" style={{ color: t.muted }} strokeWidth={2} />

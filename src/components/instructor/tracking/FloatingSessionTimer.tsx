@@ -50,7 +50,7 @@ export function FloatingSessionTimer({
   };
 
   const isOver = !paused && speedMph != null && speedLimitMph != null && speedMph > speedLimitMph;
-  const speedColor = paused ? "#71717A" : isOver ? "#FF3B30" : "#1C1C1E";
+  const speedColor = paused ? "#71717A" : isOver ? "#E15D5A" : "#1C1C1E";
   const headlineName = pupilName || (isTestRoute ? "Test route" : "Lesson");
 
   // Hold-to-confirm End button — 800ms press to commit, release cancels.
