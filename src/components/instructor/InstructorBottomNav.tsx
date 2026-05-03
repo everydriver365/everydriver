@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Home, CalendarDays, Crosshair, User, MoreHorizontal } from "lucide-react";
+import { Home, CalendarDays, Crosshair, User, MoreHorizontal, Mic, Loader2, Volume2 } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { haptics } from "@/lib/haptics";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
