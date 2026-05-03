@@ -871,7 +871,7 @@ export default function InstructorQuickAvailability() {
   );
 }
 
-const navBtnStyle: React.CSSProperties = {
+const navBtnStyle: CSSProperties = {
   width: 32,
   height: 32,
   borderRadius: 16,
