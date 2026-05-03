@@ -273,7 +273,7 @@ function StatsRow({
         label="THIS WEEK"
         value={`${weekHours}h`}
         valueColor={BLUE}
-        sub={`${weekSessions} session${weekSessions === 1 ? "" : "s"}`}
+        sub={`${weekSessions} lesson${weekSessions === 1 ? "" : "s"}`}
       />
     </div>
   );
