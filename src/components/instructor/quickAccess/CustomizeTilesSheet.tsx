@@ -180,7 +180,7 @@ export function CustomizeTilesSheet({
             type="button"
             onClick={() => add(id)}
             aria-label="Show tile"
-            style={{ ...iconBtnStyle(false), color: "#2B7BC8" }}
+            style={{ ...iconBtnStyle(false), color: "#2F63D3" }}
           >
             <Plus size={16} />
           </button>

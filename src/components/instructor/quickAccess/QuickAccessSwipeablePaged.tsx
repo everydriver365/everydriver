@@ -216,7 +216,7 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
             marginBottom: 16,
             fontSize: 12,
             fontWeight: 500,
-            color: "#2B7BC8",
+            color: "#2F63D3",
             cursor: "pointer",
             flexShrink: 0,
           }}
@@ -243,7 +243,7 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
                 marginTop: 8,
                 background: "transparent",
                 border: 0,
-                color: "#2B7BC8",
+                color: "#2F63D3",
                 fontSize: 13,
                 cursor: "pointer",
                 padding: 0,
@@ -317,7 +317,7 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
                     style={{
                       width: active ? 16 : 4,
                       height: 4,
-                      background: active ? "#2B7BC8" : "#C7C7CC",
+                      background: active ? "#2F63D3" : "#C7C7CC",
                       borderRadius: active ? 2 : 999,
                       border: 0,
                       padding: 0,
