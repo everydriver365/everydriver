@@ -880,50 +880,51 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   return (
     <div
       style={{
-        backgroundColor: "#F7F7F8",
-        color: "#1F1F1F",
+        backgroundColor: "#F2F4F8",
+        color: "#1A1A1A",
         fontFamily: FONT_STACK,
         paddingBottom: 96,
+        paddingTop: 14,
         minHeight: "100%",
       }}
     >
-      {/* Summary strip — uses existing data only */}
-      <div style={{ padding: "8px 16px 4px" }}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-            gap: 0,
-            background: "#FFFFFF",
-            borderRadius: 12,
-            padding: "12px 6px",
-            boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -10px rgba(16,24,40,0.08)",
-          }}
-        >
-          <SummaryStat
-            icon={<CalendarDays style={{ width: 14, height: 14 }} />}
-            value={String(todaySummary.lessonCount)}
-            label="Lessons"
-            tint="#2B7BC8"
-          />
-          <SummaryStat
-            icon={<Clock style={{ width: 14, height: 14 }} />}
-            value={formatHm(todaySummary.scheduledMins)}
-            label="Scheduled"
-            tint="#3B8B3B"
-          />
-          <SummaryStat
-            icon={<Hourglass style={{ width: 14, height: 14 }} />}
-            value={formatHm(todaySummary.freeMins)}
-            label="Free"
-            tint="#8A5BC9"
-          />
-          <SummaryStat
-            icon={<AlertCircle style={{ width: 14, height: 14 }} />}
-            value={String(todaySummary.overdueCount)}
-            label="Overdue"
-            tint={todaySummary.overdueCount > 0 ? "#C8434F" : "#8E8E93"}
-          />
+      {/* Stats row — 4 equal cards */}
+      <div style={{ padding: "0 15px", marginBottom: 14 }}>
+        <div style={{ display: "flex", gap: 7 }}>
+          {[
+            { value: String(todaySummary.lessonCount), label: "Lessons", color: "#1A52A0", small: false },
+            { value: `${Math.floor(todaySummary.scheduledMins / 60)}h`, label: "Scheduled", color: "#1A7A3C", small: false },
+            { value: formatHm(todaySummary.freeMins), label: "Free", color: "#5B6B8A", small: true },
+            { value: String(todaySummary.overdueCount), label: "Overdue", color: "#CC2229", small: false },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              style={{
+                flex: 1,
+                backgroundColor: "#FFFFFF",
+                borderRadius: 12,
+                padding: "10px 8px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                border: "0.5px solid rgba(26,82,160,0.08)",
+              }}
+            >
+              <span style={{
+                fontSize: stat.small ? 13 : 18,
+                fontWeight: 700,
+                color: stat.color,
+                lineHeight: stat.small ? "17px" : "21px",
+                letterSpacing: "-0.5px",
+                fontVariantNumeric: "tabular-nums",
+              }}>
+                {stat.value}
+              </span>
+              <span style={{ fontSize: 8, color: "#8E8E93", marginTop: 3, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.4px" }}>
+                {stat.label}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
 
