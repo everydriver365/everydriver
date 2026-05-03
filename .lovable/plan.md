@@ -1,54 +1,45 @@
 ## Goal
-Add a real "Edit" button next to the Quick Actions title on the instructor mobile home page that opens a dedicated screen where the user can:
-- Reorder the quick action rows
-- Show / hide individual rows
-- Save changes (persisted) or cancel
+Let instructors pick from the full catalog of ~33 actions for their home Quick Actions, with a max of **12** shown on Home.
 
-The 4 current rows on the home page are: **Job Offers, Messages, Take Payment, Pupils**.
+## Changes
 
-## Why this is needed
-The current `EveryInstructorHome.tsx` Quick Actions block is hard-coded — there is no Edit control wired up. Any "Edit" you're seeing is the Lovable visual-edit overlay, not a real feature, which is why it lands you on Settings.
+### 1. New catalog `src/lib/quickActionsCatalog.ts`
+- Re-export the existing `QUICK_ACCESS_TILES` from `src/components/instructor/quickAccess/tileRegistry.ts` as the single source of truth (id, label, subtitle, icon, route, optional `requiredFeature`).
+- Add lightweight badge mapping (e.g. `messages` → unread count, `tests` → pending count) so tiles can show the same dot/number badges they do today.
 
-## What will change
+### 2. Refactor `src/lib/quickActionsPrefs.ts`
+- Replace the hard-coded `QuickActionId` union with `string` ids (validated against the catalog at load time — unknown ids dropped).
+- Bump storage key to `instructor_home_quick_actions_v3` (clean migration; old prefs ignored).
+- New defaults: first 8 ids matching today's home (`add-lesson`, `messages`, `fill-gaps`, `take-payment`, `schedule`, `pupils`, `earnings`, `tests`).
+- Export `MAX_HOME_ACTIONS = 12`.
+- Helper `loadQuickActionsPrefs()` returns `{ order: string[]; hidden: string[] }`; `order` only contains ids the user has chosen for Home (max 12). Anything not in `order` is "available to add".
 
-### 1. Home page — add real Edit button
-**File:** `src/pages/EveryInstructorHome.tsx`
-- Add an "Edit" text button (iOS blue `#007AFF`, 15px semibold) on the right side of the Quick Actions title row.
-- Tapping it navigates to `/every-instructor/quick-actions/edit`.
-- Read the saved preference (order + hidden ids) from `localStorage` (`instructor_home_quick_actions_v1`) and render the rows in that order, skipping hidden ones. If nothing is stored, fall back to the current default order.
+### 3. Rework edit screen `src/pages/EveryInstructorQuickActionsEdit.tsx`
+Two grouped sections:
+- **Shown on Home** (`order` minus `hidden`)
+  - Drag to reorder (framer-motion `Reorder`, already used)
+  - Toggle to hide (kept in list but greyed)
+  - Trash icon to remove entirely (returns it to "More Actions")
+  - Header shows counter `8 / 12`
+- **More Actions** — every catalog tile not in `order`, grouped by category (Lessons, Pupils, Money, Business, Comms, Admin), each with a `+` button to add to Home. `+` disabled with helper text once 12 are pinned.
+- Sticky search field at top filtering both sections by label.
+- Save / Back / Reset behaviour unchanged. Reset = first 8 defaults.
 
-### 2. New Edit screen
-**New file:** `src/pages/EveryInstructorQuickActionsEdit.tsx`
-- Mobile screen wrapped in `EveryInstructorLayout`.
-- Header: back chevron, title "Edit Quick Actions", and a primary **Save** button (top-right, disabled until changes are made).
-- Body: a single grouped iOS-style card listing all 4 quick actions, each row with:
-  - Drag handle (left) to reorder (using `framer-motion` Reorder, already in deps)
-  - Icon + label
-  - Toggle switch (right) to show/hide
-- Footer hint text: "Tap and drag to reorder. Use the toggle to hide an action."
-- **Save** writes the new order + hidden list to `localStorage` and navigates back to `/every-instructor`.
-- **Back** without saving discards changes (with a confirm if unsaved).
+### 4. Dynamic rendering
+- `src/components/instructor/PremiumIOSHomeView.tsx` and `src/pages/EveryInstructorHome.tsx` Quick Actions block: map `order` (minus `hidden`) through the catalog → render tile with icon, label, route, badge.
+- Keep current tile visual (no design change).
+- "Edit" button continues to navigate to `/every-instructor/quick-actions/edit`.
 
-### 3. Route registration
-**File:** `src/routes/everyInstructorRoutes.tsx`
-- Register `/every-instructor/quick-actions/edit` → `EveryInstructorQuickActionsEdit` (lazy-loaded to match siblings).
-
-### 4. Shared helper
-**New file:** `src/lib/quickActionsPrefs.ts`
-- Tiny module exporting:
-  - `DEFAULT_QUICK_ACTIONS` (the 4 ids in order)
-  - `loadQuickActionsPrefs()` → `{ order: string[]; hidden: string[] }`
-  - `saveQuickActionsPrefs(prefs)`
-- Used by both the home page and the edit screen so the contract stays in one place.
+### 5. Plan-feature gating
+- Tiles with `requiredFeature` show a lock chip in "More Actions" if the user's plan lacks it; tapping `+` opens the existing upgrade flow instead of pinning. Reuse the same gate already used by the Quick Access grid.
 
 ## Out of scope
-- No DB / Supabase changes — preferences live in `localStorage` only (fast, no schema work, survives reloads on the same device). Can be promoted to a Supabase table later if cross-device sync is needed.
-- Existing functionality, routes, business logic, and design tokens stay unchanged. Radii follow the established 12px card / 999px pill scale.
-- The legacy `QuickActionTiles.tsx` component (different screen) is not touched.
+- No DB sync — still localStorage. Can promote to a `instructor_home_prefs` table later.
+- No changes to the separate Quick Access screen or its tile registry.
+- No new icons/colours; reuse catalog tones.
 
 ## Acceptance
-- "Edit" appears next to the Quick Actions title on the home page.
-- Tapping it opens the new screen (no longer goes to Settings).
-- User can reorder and hide/show rows, then tap Save.
-- Returning to home reflects the new order and hides any disabled rows.
-- Reload of the app preserves the saved layout.
+- Edit screen lists all ~33 actions split into "Shown on Home" and "More Actions".
+- User can add/remove/reorder; Home cap enforced at 12 with clear messaging.
+- Home renders only chosen tiles in chosen order with correct badges and routes.
+- Reload preserves layout; resetting restores the 8 defaults.
