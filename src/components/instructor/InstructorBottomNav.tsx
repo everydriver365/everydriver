@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Home, CalendarDays, Crosshair, User, MoreHorizontal } from "lucide-react";
+import { Home, CalendarDays, Crosshair, User, MoreHorizontal, Mic } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { haptics } from "@/lib/haptics";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -68,9 +68,14 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleMicClick = () => {
+    haptics.medium();
+    navigate("/instructor/tracking");
+  };
+
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden overflow-hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
       style={{
         background: 'rgba(255,255,255,0.92)',
         backdropFilter: 'saturate(180%) blur(20px)',
@@ -79,10 +84,44 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
         borderRadius: '22px 22px 0 0',
         boxShadow:
           '0 -10px 30px -12px rgba(15,35,65,0.18), 0 -2px 6px -2px rgba(15,35,65,0.08)',
+        position: 'fixed',
       }}
     >
+      {/* Centered floating mic — raised above nav */}
+      <button
+        type="button"
+        onClick={handleMicClick}
+        aria-label="Voice / Tracking"
+        style={{
+          position: 'absolute',
+          top: -26,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 56,
+          height: 56,
+          borderRadius: 999,
+          background: 'linear-gradient(180deg, #4D6BC4 0%, #3D55A1 100%)',
+          color: '#FFFFFF',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: '4px solid rgba(255,255,255,0.95)',
+          boxShadow: '0 10px 24px -8px rgba(61,85,161,0.55), 0 4px 10px -4px rgba(15,35,65,0.25)',
+          cursor: 'pointer',
+          zIndex: 2,
+        }}
+      >
+        <Mic size={22} strokeWidth={2.2} />
+      </button>
       <div className="flex items-start justify-around" style={{ padding: '8px 6px 12px' }}>
-        {navItems.map((item) => {
+        {navItems.flatMap((item, idx) => {
+          const nodes: React.ReactNode[] = [];
+          if (idx === 2) {
+            nodes.push(
+              <div key="mic-spacer" aria-hidden style={{ width: 56, minWidth: 56 }} />
+            );
+          }
+          nodes.push(((): React.ReactNode => {
           const isActive = location.pathname === item.path;
           const isTrack = item.isTrack;
           const isSchedule = item.isSchedule;
@@ -179,6 +218,8 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
               </span>
             </button>
           );
+          })());
+          return nodes;
         })}
       </div>
       <div
