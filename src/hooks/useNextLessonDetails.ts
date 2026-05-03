@@ -10,6 +10,8 @@ interface NextLessonDetails {
   pupilProfileImage: string | null;
   pickupPostcode: string | null;
   pickupLocation: string | null;
+  pickupWhat3words: string | null;
+  pickupNotes: string | null;
   lessonDate: string;
   startTime: string;
   minutesUntil: number;
