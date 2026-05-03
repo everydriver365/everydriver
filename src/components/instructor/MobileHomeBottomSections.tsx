@@ -739,48 +739,11 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
         saving={isSaving}
       />
 
-      <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
-        <CommandInput
-          placeholder="Search tools, pupils, lessons…"
-          value={searchQuery}
-          onValueChange={setSearchQuery}
-        />
-        <CommandList>
-          <CommandEmpty>No results.</CommandEmpty>
-          <CommandGroup heading="Tools">
-            {QUICK_ACCESS_TILES.map((t) => (
-              <CommandItem
-                key={t.id}
-                value={`${t.title} ${t.subtitle}`}
-                onSelect={() => {
-                  setSearchOpen(false);
-                  navigate(t.route);
-                }}
-              >
-                <t.icon size={14} className="mr-2 opacity-70" />
-                <span>{t.title}</span>
-                <span className="ml-2 text-xs opacity-50">{t.subtitle}</span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-          {pupilResults.length > 0 && (
-            <CommandGroup heading="Pupils">
-              {pupilResults.map((p) => (
-                <CommandItem
-                  key={p.id}
-                  value={`pupil-${p.name}`}
-                  onSelect={() => {
-                    setSearchOpen(false);
-                    navigate(`/instructor/pupils/${p.id}`);
-                  }}
-                >
-                  {p.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
-        </CommandList>
-      </CommandDialog>
+      <InstructorSearchOverlay
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        instructorId={instructorId}
+      />
 
 
       {/* Swipeable paged grid */}
