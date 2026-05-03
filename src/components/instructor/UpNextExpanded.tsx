@@ -488,24 +488,13 @@ export function UpNextExpanded({
 
         <Divider />
 
-        {/* SECTION 5 — Conditions (placeholder until weather service wired) */}
+        {/* SECTION 5 — Conditions */}
         <SectionLabel>Conditions</SectionLabel>
-        <div
-          style={{
-            margin: "0 16px 12px",
-            background: BLUE_TINT,
-            borderRadius: 12,
-            padding: "10px 12px",
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          <Cloud size={18} color={BLUE} strokeWidth={2.2} />
-          <div style={{ flex: 1, fontSize: 12, color: MUTED }}>
-            Weather data not connected
-          </div>
-        </div>
+        <WeatherRow
+          loading={weather.isLoading}
+          data={weather.data}
+          hasPostcode={!!pickupPostcode}
+        />
 
         <Divider />
 
