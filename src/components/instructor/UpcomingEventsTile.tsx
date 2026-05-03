@@ -151,7 +151,7 @@ export function UpcomingEventsTile({ instructorId }: Props) {
               No tests, MOTs, tasks or training in the next 30 days
             </div>
             <button
-              onClick={() => navigate("/instructor/schedule")}
+              onClick={() => setAddOpen(true)}
               style={{
                 marginTop: 4,
                 background: "#EEF3FF",
