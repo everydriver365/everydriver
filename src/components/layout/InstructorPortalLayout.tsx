@@ -586,6 +586,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               showBackButton={showBackButton}
               showGreeting={!showBackButton}
               surface={isHomePage ? "white" : "page"}
+              isHomePage={isHomePage}
+              pageTitle={mobilePageTitle}
               onBack={() => navigate(-1)}
               onSOS={() => setShowSOS(true)}
               onPlus={() => setHeaderQuickActionsOpen(true)}
