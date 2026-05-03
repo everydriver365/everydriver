@@ -224,8 +224,7 @@ export function AppHeader({
         role="banner"
         className="sticky top-0 z-40"
         style={{
-          background: "#FFFFFF",
-          borderBottom: "0.5px solid #F0F3F8",
+          background: "#F2F4F8",
         }}
       >
         <div
