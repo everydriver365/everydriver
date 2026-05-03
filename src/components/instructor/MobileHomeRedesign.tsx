@@ -28,6 +28,7 @@ import { MapHeroLive } from "@/components/instructor/upNext/MapHeroLive";
 
 /* Restored sections from legacy home */
 import { QuickAccessSwipeablePaged } from "@/components/instructor/quickAccess/QuickAccessSwipeablePaged";
+import { MobileHomeBottomSections } from "@/components/instructor/MobileHomeBottomSections";
 import { ImpactAlertCard } from "@/components/instructor/ImpactAlertCard";
 import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
 import { TelematicsTile } from "@/components/instructor/TelematicsTile";
@@ -995,9 +996,9 @@ export function MobileHomeRedesign({
         </>
       )}
 
-      {/* Quick Access — search + swipeable tiles */}
-      <div style={{ marginTop: 20, paddingBottom: 4 }}>
-        <QuickAccessSwipeablePaged instructorId={instructorId} />
+      {/* Schedule + Quick actions + Tools (redesigned) */}
+      <div style={{ marginTop: 14 }}>
+        <MobileHomeBottomSections instructorId={instructorId} />
       </div>
 
       {/* Impact alerts */}
