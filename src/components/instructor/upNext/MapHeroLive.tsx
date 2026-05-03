@@ -136,7 +136,27 @@ function MapHeroLiveImpl({
   whenLabel,
   expanded,
   onToggleExpanded,
+  pupilName,
+  pupilPhone,
 }: Props) {
+  const eta = useTrafficETA(pickupPostcode);
+  const etaMinutes = eta.durationMinutes || 0;
+  // "Late" = travel time exceeds time remaining until lesson start
+  const willBeLate = etaMinutes > 0 && minutesUntil > 0 && etaMinutes > minutesUntil;
+  const lateBy = willBeLate ? etaMinutes - minutesUntil : 0;
+  const [notified, setNotified] = useState(false);
+
+  const sendLateText = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!pupilPhone) return;
+    const first = (pupilName || "").split(/\s+/)[0] || "there";
+    const msg = `Hi ${first}, traffic is heavier than expected — I'm running about ${lateBy} min${lateBy === 1 ? "" : "s"} late for our lesson. Sorry about that!`;
+    const a = document.createElement("a");
+    a.href = `sms:${pupilPhone}?body=${encodeURIComponent(msg)}`;
+    a.click();
+    setNotified(true);
+  };
+
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const [visible, setVisible] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
