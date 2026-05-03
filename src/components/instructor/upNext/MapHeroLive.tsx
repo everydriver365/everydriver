@@ -197,7 +197,15 @@ function MapHeroLiveImpl({
   pupilName,
   pupilPhone,
   pupilProfileImage,
+  instructorId,
 }: Props) {
+  const lastPos = useInstructorLastPosition(instructorId ?? null);
+  const origin = useMemo(() => {
+    if (lastPos.latitude != null && lastPos.longitude != null) {
+      return { lat: lastPos.latitude, lng: lastPos.longitude };
+    }
+    return null;
+  }, [lastPos.latitude, lastPos.longitude]);
   const eta = useTrafficETA(pickupPostcode);
   const etaMinutes = eta.durationMinutes || 0;
   // "Late" = travel time exceeds time remaining until lesson start
