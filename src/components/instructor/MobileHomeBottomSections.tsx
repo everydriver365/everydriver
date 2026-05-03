@@ -1,12 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, parse } from "date-fns";
-import {
-  Plus, Search, ChevronsLeftRight,
-  CalendarDays, MessageSquare, CalendarPlus, PoundSterling,
-  Users, FileBarChart, ArrowLeftRight,
-  type LucideIcon,
-} from "lucide-react";
+import { Plus, Search, ChevronsLeftRight } from "lucide-react";
 
 import { useDayLessons } from "@/hooks/useDayLessons";
 import { useDayLessonHistory, eolKey } from "@/hooks/useDayLessonHistory";
