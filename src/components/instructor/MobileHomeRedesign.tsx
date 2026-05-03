@@ -1053,7 +1053,7 @@ export function MobileHomeRedesign({
         todaySessions={todaySessions}
         todayEarnings={earningsToday}
         weekHours={hoursThisWeek || 0}
-        weekSessions={lessonsToday}
+        weekSessions={lessonsThisWeek}
       />
 
       {nextLesson && (
