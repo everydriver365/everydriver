@@ -1107,6 +1107,9 @@ export function MobileHomeRedesign({
         <AttentionCard rows={attentionRows} />
       </div>
 
+      {/* Upcoming events */}
+      <UpcomingEventsTile instructorId={instructorId} />
+
       {/* Floating session bar */}
       <FloatingSessionBar instructorId={instructorId} />
     </div>
