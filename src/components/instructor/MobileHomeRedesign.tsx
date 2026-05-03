@@ -449,6 +449,7 @@ function UpNextTile({
   minutesUntil,
   expanded,
   onToggleExpanded,
+  instructorId,
 }: {
   pupilId: string;
   lessonId: string;
@@ -463,6 +464,7 @@ function UpNextTile({
   minutesUntil: number;
   expanded: boolean;
   onToggleExpanded: () => void;
+  instructorId: string;
 }) {
   const navigate = useNavigate();
   const date = (() => {
@@ -537,6 +539,7 @@ function UpNextTile({
           pupilName={pupilName}
           pupilPhone={pupilPhone}
           pupilProfileImage={pupilProfileImage}
+          instructorId={instructorId}
         />
 
         <div style={{ display: "flex", minHeight: 130 }}>
@@ -1061,6 +1064,7 @@ export function MobileHomeRedesign({
           <SectionLabel>Up next</SectionLabel>
           <UpNextTile
             pupilId={nextLesson.pupilId}
+            instructorId={instructorId}
             lessonId={nextLesson.lessonId}
             pupilName={nextLesson.pupilName}
             pupilPhone={nextLesson.pupilPhone}

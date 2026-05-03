@@ -1,10 +1,10 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { GoogleMap, OverlayViewF, OVERLAY_MOUSE_TARGET } from "@react-google-maps/api";
+import { GoogleMap, OverlayViewF, OVERLAY_MOUSE_TARGET, PolylineF } from "@react-google-maps/api";
 import { ChevronDown, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
-import { dsmMapStyle } from "./dsmMapStyle";
+import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
 import { DSMPin } from "./DSMPin";
 
 interface Props {
@@ -23,6 +23,7 @@ interface Props {
   pupilName?: string | null;
   pupilPhone?: string | null;
   pupilProfileImage?: string | null;
+  instructorId?: string | null;
 }
 
 function avatarInitials(name?: string | null) {
@@ -96,8 +97,54 @@ const MAP_OPTIONS: google.maps.MapOptions = {
   fullscreenControl: false,
   rotateControl: false,
   scaleControl: false,
-  styles: dsmMapStyle,
 };
+
+// Cache route polylines per lessonId so revisits are instant.
+const routeCache = new Map<string, google.maps.LatLngLiteral[]>();
+const inflightRoutes = new Map<string, Promise<google.maps.LatLngLiteral[] | null>>();
+
+function haversineMeters(a: google.maps.LatLngLiteral, b: google.maps.LatLngLiteral) {
+  const R = 6371000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+}
+
+async function fetchRoute(
+  lessonId: string,
+  origin: google.maps.LatLngLiteral,
+  destination: google.maps.LatLngLiteral
+): Promise<google.maps.LatLngLiteral[] | null> {
+  if (routeCache.has(lessonId)) return routeCache.get(lessonId)!;
+  if (inflightRoutes.has(lessonId)) return inflightRoutes.get(lessonId)!;
+  const p = (async () => {
+    try {
+      const ds = new google.maps.DirectionsService();
+      const res = await ds.route({
+        origin,
+        destination,
+        travelMode: google.maps.TravelMode.DRIVING,
+      });
+      const path = res.routes?.[0]?.overview_path?.map((p) => ({ lat: p.lat(), lng: p.lng() })) || null;
+      if (path && path.length) {
+        routeCache.set(lessonId, path);
+        return path;
+      }
+      return null;
+    } catch {
+      return null;
+    } finally {
+      inflightRoutes.delete(lessonId);
+    }
+  })();
+  inflightRoutes.set(lessonId, p);
+  return p;
+}
+
 
 function PulsingDot() {
   return (
@@ -150,7 +197,15 @@ function MapHeroLiveImpl({
   pupilName,
   pupilPhone,
   pupilProfileImage,
+  instructorId,
 }: Props) {
+  const lastPos = useInstructorLastPosition(instructorId ?? null);
+  const origin = useMemo(() => {
+    if (lastPos.latitude != null && lastPos.longitude != null) {
+      return { lat: lastPos.latitude, lng: lastPos.longitude };
+    }
+    return null;
+  }, [lastPos.latitude, lastPos.longitude]);
   const eta = useTrafficETA(pickupPostcode);
   const etaMinutes = eta.durationMinutes || 0;
   // "Late" = travel time exceeds time remaining until lesson start
@@ -237,6 +292,40 @@ function MapHeroLiveImpl({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lessonId, coords?.lat, coords?.lng]);
 
+  // Fetch driving route when both endpoints known.
+  const [routePath, setRoutePath] = useState<google.maps.LatLngLiteral[] | null>(
+    () => routeCache.get(lessonId) ?? null
+  );
+  useEffect(() => {
+    if (!visible || !sdkLoaded || !coords || !origin) return;
+    // Skip if very close (< 150m) — just show pin.
+    if (haversineMeters(origin, coords) < 150) {
+      setRoutePath(null);
+      return;
+    }
+    let cancelled = false;
+    fetchRoute(lessonId, origin, coords).then((path) => {
+      if (!cancelled) setRoutePath(path);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [visible, sdkLoaded, lessonId, coords?.lat, coords?.lng, origin?.lat, origin?.lng]);
+
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const onMapLoad = (map: google.maps.Map) => {
+    mapRef.current = map;
+  };
+
+  // Fit bounds to route when available.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !routePath || routePath.length < 2) return;
+    const bounds = new google.maps.LatLngBounds();
+    routePath.forEach((p) => bounds.extend(p));
+    map.fitBounds(bounds, { top: 36, right: 36, bottom: 36, left: 36 });
+  }, [routePath]);
+
   const showFallback = coords === null;
 
   return (
@@ -257,7 +346,50 @@ function MapHeroLiveImpl({
           center={center}
           zoom={15}
           options={MAP_OPTIONS}
+          onLoad={onMapLoad}
         >
+          {routePath && routePath.length > 1 ? (
+            <>
+              <PolylineF
+                path={routePath}
+                options={{
+                  strokeColor: "#FFFFFF",
+                  strokeOpacity: 0.95,
+                  strokeWeight: 7,
+                  zIndex: 1,
+                  clickable: false,
+                }}
+              />
+              <PolylineF
+                path={routePath}
+                options={{
+                  strokeColor: "#CC2229",
+                  strokeOpacity: 0.95,
+                  strokeWeight: 4,
+                  zIndex: 2,
+                  clickable: false,
+                }}
+              />
+            </>
+          ) : null}
+          {origin ? (
+            <OverlayViewF
+              position={origin}
+              mapPaneName={OVERLAY_MOUSE_TARGET}
+              getPixelPositionOffset={(w, h) => ({ x: -(w / 2), y: -(h / 2) })}
+            >
+              <div
+                style={{
+                  width: 14,
+                  height: 14,
+                  borderRadius: "50%",
+                  background: "#10B981",
+                  border: "2px solid #FFFFFF",
+                  boxShadow: "0 0 0 2px rgba(16,185,129,0.35), 0 1px 3px rgba(0,0,0,0.25)",
+                }}
+              />
+            </OverlayViewF>
+          ) : null}
           <OverlayViewF
             position={center}
             mapPaneName={OVERLAY_MOUSE_TARGET}
