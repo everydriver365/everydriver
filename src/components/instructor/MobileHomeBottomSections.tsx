@@ -714,7 +714,17 @@ function QuickActionsSection({ instructorId }: { instructorId: string }) {
       <SectionHeader
         label="Quick actions"
         rightLabel="Edit"
-        onRightPress={() => navigate("/instructor/menu")}
+        onRightPress={() => setEditOpen(true)}
+      />
+      <CustomizeFrequentlyUsedSheet
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        initialPinnedIds={pinnedIds}
+        onSave={async (ids) => {
+          await setPins(ids);
+          setEditOpen(false);
+        }}
+        saving={isSaving}
       />
       <div
         style={{
