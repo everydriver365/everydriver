@@ -906,11 +906,48 @@ export function MobileHomeRedesign({
     }
   }, [nextLesson]);
 
+  // Vehicle fault detection (replaces standalone VehicleHealthCard rendering)
+  const { data: vehicle } = useQuery({
+    queryKey: ["vehicle-health-attention", instructorId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("instructor_vehicles")
+        .select("registration, make, model, mot_expiry, insurance_expiry, tax_expiry, current_odometer_km, next_service_due_km")
+        .eq("instructor_id", instructorId)
+        .eq("is_primary", true)
+        .maybeSingle();
+      return data as any;
+    },
+  });
+  const { data: dormantCount = 0 } = useDormantPupilsCount(instructorId);
+
+  const vehicleFault = useMemo(() => {
+    if (!vehicle) return null;
+    const checks: Array<{ label: string; date: string | null; expired: boolean; soon: boolean }> = [
+      { label: "MOT", date: vehicle.mot_expiry, expired: false, soon: false },
+      { label: "Tax", date: vehicle.tax_expiry, expired: false, soon: false },
+      { label: "Insurance", date: vehicle.insurance_expiry, expired: false, soon: false },
+    ].map((c) => {
+      if (!c.date) return c;
+      const d = new Date(c.date);
+      return { ...c, expired: isPast(d), soon: !isPast(d) && differenceInDays(d, new Date()) <= 30 };
+    });
+    const expired = checks.find((c) => c.expired);
+    const soon = checks.find((c) => c.soon);
+    const serviceDue =
+      vehicle.next_service_due_km && vehicle.current_odometer_km && vehicle.current_odometer_km >= vehicle.next_service_due_km;
+    if (expired) return { label: `${expired.label} expired`, urgent: true };
+    if (serviceDue) return { label: "Service due", urgent: true };
+    if (soon) return { label: `${soon.label} due soon`, urgent: false };
+    return null;
+  }, [vehicle]);
+
   const attentionRows: AttentionRow[] = [];
 
   if (pendingJobs > 0) {
     attentionRows.push({
       key: "jobs",
+      group: "urgent",
       Icon: Briefcase,
       iconBg: "#FFF0F0",
       iconColor: RED,
@@ -921,10 +958,24 @@ export function MobileHomeRedesign({
     });
   }
 
+  if (vehicleFault) {
+    attentionRows.push({
+      key: "vehicle",
+      group: vehicleFault.urgent ? "urgent" : "todo",
+      Icon: Wrench,
+      iconBg: vehicleFault.urgent ? "#FFF0F0" : "#FFF6E6",
+      iconColor: vehicleFault.urgent ? RED : "#B45309",
+      title: vehicleFault.urgent ? "Vehicle fault detected" : "Vehicle attention",
+      subtitle: `${vehicleFault.label}${vehicle?.registration ? " · " + vehicle.registration : ""}`,
+      onClick: () => navigate("/instructor/vehicle-health"),
+    });
+  }
+
   const openSlots = (gapData ?? []).reduce((sum, g) => sum + (g.slots?.length ?? 0), 0);
   if (openSlots > 0) {
     attentionRows.push({
       key: "gaps",
+      group: "todo",
       Icon: CalendarPlus,
       iconBg: BLUE_TINT,
       iconColor: BLUE,
@@ -935,9 +986,24 @@ export function MobileHomeRedesign({
     });
   }
 
+  if (dormantCount > 0) {
+    attentionRows.push({
+      key: "dormant",
+      group: "todo",
+      Icon: UsersIcon,
+      iconBg: "#FFF6E6",
+      iconColor: "#B45309",
+      title: `${dormantCount} dormant pupil${dormantCount === 1 ? "" : "s"}`,
+      subtitle: "No lesson in 2+ weeks",
+      badge: { label: String(dormantCount), bg: "#B45309" },
+      onClick: () => navigate("/instructor/pupils?filter=dormant"),
+    });
+  }
+
   if (unread > 0) {
     attentionRows.push({
       key: "messages",
+      group: "todo",
       Icon: MessageSquare,
       iconBg: BLUE_TINT,
       iconColor: BLUE,
@@ -952,6 +1018,7 @@ export function MobileHomeRedesign({
   if (debt > 0) {
     attentionRows.push({
       key: "balance",
+      group: "todo",
       Icon: PoundSterling,
       iconBg: "#F1F4F8",
       iconColor: CHARCOAL,
@@ -1029,48 +1096,15 @@ export function MobileHomeRedesign({
         </>
       )}
 
-      {attentionRows.length > 0 && (
-        <>
-          <SectionLabel>Needs attention</SectionLabel>
-          <AttentionCard rows={attentionRows} />
-        </>
-      )}
-
-      {/* Schedule + Quick actions + Tools (redesigned) */}
+      {/* Schedule + Quick Access */}
       <div style={{ marginTop: 14 }}>
         <MobileHomeBottomSections instructorId={instructorId} />
       </div>
 
-      {/* Impact alerts */}
-      <div style={{ padding: "0 16px", marginTop: 20 }}>
-        <ImpactAlertCard instructorId={instructorId} />
-      </div>
-
-      {/* Insights */}
-      <div style={{ marginTop: 20 }}>
-        <div style={{ padding: "0 16px" }}>
-          <SectionLabel>Insights</SectionLabel>
-        </div>
-        <InsightTilesGrid instructorId={instructorId} gapCount={(gapData ?? []).length} />
-      </div>
-
-      {/* Telematics */}
-      <div style={{ marginTop: 20 }}>
-        <div style={{ padding: "0 16px" }}>
-          <SectionLabel>Telematics</SectionLabel>
-        </div>
-        <div style={{ marginTop: 8 }}>
-          <TelematicsTile />
-        </div>
-      </div>
-
-      {/* Vehicle health & idle */}
-      <div style={{ padding: "0 16px", marginTop: 12 }}>
-        <VehicleHealthCard instructorId={instructorId} className="mt-3" />
-        <IdleTimeCostCard instructorId={instructorId} className="mt-3" />
-        <div style={{ marginTop: 20 }}>
-          <UpcomingEventsCard className="mb-6" />
-        </div>
+      {/* Needs attention (merged) */}
+      <div style={{ marginTop: 6 }}>
+        <SectionLabel>Needs attention</SectionLabel>
+        <AttentionCard rows={attentionRows} />
       </div>
 
       {/* Floating session bar */}
