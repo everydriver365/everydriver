@@ -617,10 +617,20 @@ function UpNextTile({
               <IconTile>
                 <Clock size={14} strokeWidth={2.2} />
               </IconTile>
-              <div style={{ fontSize: 13, color: CHARCOAL, minWidth: 0 }}>
+              <div style={{ fontSize: 13, color: CHARCOAL, minWidth: 0, flex: 1 }}>
                 <span style={{ fontWeight: 700 }}>{hoursLong(durationMinutes)}</span>{" "}
                 <span style={{ color: MUTED }}>· Standard lesson</span>
               </div>
+              <ChevronDown
+                size={16}
+                strokeWidth={2.2}
+                style={{
+                  color: BLUE,
+                  transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 180ms ease",
+                  flexShrink: 0,
+                }}
+              />
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
