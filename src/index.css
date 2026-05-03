@@ -134,9 +134,23 @@
   /* Light mode (default when present without .dsm-dark) */
   .instructor-portal,
   .dsm-instructor {
-    --dsm-bg: 220 30% 96%;          /* #F2F4F8 */
-    --dsm-page-bg: 220 30% 96%;     /* #F2F4F8 */
-    --background: 220 30% 96%;      /* match for bg-background pages */
+    --dsm-bg: 210 33% 95%;          /* #EEF3F8 — premium iOS cool blue-grey */
+    --dsm-page-bg: 210 33% 95%;     /* #EEF3F8 */
+    --background: 210 33% 95%;      /* match for bg-background pages */
+    /* Home v2 premium tokens (scoped via .ios-home-v2 wrapper) */
+    --home-v2-card-radius: 22px;
+    --home-v2-tile-radius: 18px;
+    --home-v2-card-border: 0 0% 100% / 0;
+    --home-v2-card-hairline: rgba(15, 35, 65, 0.08);
+    --home-v2-shadow:
+      0 8px 24px rgba(15, 35, 65, 0.08),
+      0 2px 6px rgba(15, 35, 65, 0.04);
+    --home-v2-text: #0B1220;
+    --home-v2-text-secondary: #64748B;
+    --home-v2-text-muted: #94A3B8;
+    --home-v2-section-label: #6B7A90;
+    --home-v2-accent: #315FAE;
+    --home-v2-accent-tint: #E6EEFB;
     --dsm-card: 0 0% 100%;          /* #FFFFFF */
     --dsm-text: 217 51% 12%;        /* #0F1B2D */
     --dsm-text-secondary: 213 22% 57%; /* #7A8FAA */
@@ -231,6 +245,36 @@
   }
   /* Safe-area zone always uses the page background — header and status-bar
      area read as one continuous surface across every instructor screen. */
+
+  /* ===== Home v2 — premium iOS dashboard primitives =================
+     Scoped to .ios-home-v2 wrapper so it only affects the redesigned
+     instructor home screen. Does not touch the radius scale or
+     surfaces on any other instructor route. */
+  .ios-home-v2 {
+    background:
+      radial-gradient(120% 60% at 50% -10%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 60%),
+      hsl(var(--dsm-page-bg));
+    color: var(--home-v2-text);
+  }
+  .ios-home-v2 .home-v2-card {
+    background: #FFFFFF;
+    border-radius: var(--home-v2-card-radius);
+    border: 1px solid var(--home-v2-card-hairline);
+    box-shadow: var(--home-v2-shadow);
+  }
+  .ios-home-v2 .home-v2-tile {
+    background: #FFFFFF;
+    border-radius: var(--home-v2-tile-radius);
+    border: 1px solid var(--home-v2-card-hairline);
+    box-shadow: var(--home-v2-shadow);
+  }
+  .ios-home-v2 .home-v2-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--home-v2-section-label);
+  }
 
   /* ===== Unified Portal Design System (instructor mobile) =====
      One coherent visual language across every instructor screen.
