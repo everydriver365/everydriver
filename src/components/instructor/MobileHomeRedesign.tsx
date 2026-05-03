@@ -531,6 +531,8 @@ function UpNextTile({
           countdown={countdown}
           startTime={start}
           whenLabel={whenLabel}
+          pupilName={pupilName}
+          pupilProfileImage={pupilProfileImage}
         />
 
         <div style={{ display: "flex", minHeight: 130 }}>
@@ -547,40 +549,6 @@ function UpNextTile({
               color: "#FFFFFF",
             }}
           >
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: "50%",
-                background: RED,
-                color: "#FFFFFF",
-                fontWeight: 700,
-                fontSize: 13,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                letterSpacing: 0.3,
-                overflow: "hidden",
-                border: "1.5px solid rgba(255,255,255,0.4)",
-              }}
-            >
-              {pupilProfileImage ? (
-                <img
-                  src={pupilProfileImage}
-                  alt=""
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              ) : (
-                initials(pupilName)
-              )}
-            </div>
-            <div
-              style={{
-                width: 36,
-                height: 1,
-                background: "rgba(255,255,255,0.25)",
-              }}
-            />
             <div style={{ textAlign: "center", lineHeight: 1 }}>
               <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.4px" }}>
                 {dayNum}
@@ -596,6 +564,25 @@ function UpNextTile({
                 {monthName}
               </div>
             </div>
+            <div
+              style={{
+                fontSize: 16,
+                fontWeight: 700,
+                color: "#FFFFFF",
+                letterSpacing: "-0.3px",
+                fontVariantNumeric: "tabular-nums",
+                lineHeight: 1,
+              }}
+            >
+              {start}
+            </div>
+            <div
+              style={{
+                width: 36,
+                height: 1,
+                background: "rgba(255,255,255,0.25)",
+              }}
+            />
             <div
               style={{
                 fontSize: 9,
