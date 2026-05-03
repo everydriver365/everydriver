@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { formatDistanceToNow } from "date-fns";
+import { useVehicleHealth } from "@/hooks/useVehicleHealth";
+import { Fuel, BatteryCharging, Thermometer, Gauge, AlertTriangle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle2,
