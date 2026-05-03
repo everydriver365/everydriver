@@ -1,32 +1,40 @@
-## Goal
-Replace the flat, label-less stylised look of the Up Next mini map with a realistic Google Maps view that shows roads, place names, and an actual driving route to the pickup.
+Plan to fix this properly:
 
-## Changes
+1. Create one shared instructor mobile blue token
+   - Use the existing target colour from the reference: `#3D55A1` with tint `#EDF2FE`.
+   - Expose it through semantic CSS variables in `index.css`, so the colour is not repeatedly hardcoded in separate components.
+   - Use the token for both solid blue surfaces and pale blue icon/button backgrounds.
 
-### 1. Use realistic map styling
-File: `src/components/instructor/upNext/MapHeroLive.tsx`
-- Stop applying `dsmMapStyle` (which strips every label and POI). Use Google's default roadmap styling so road names, neighbourhoods and water labels appear naturally.
-- Keep `disableDefaultUI`, no gestures, no zoom controls — it stays a non-interactive preview tile.
-- Slightly reduce the zoom from `15` to `14` when a route is shown so both endpoints fit; otherwise keep 15 for a single pin.
+2. Update the actual mobile home components shown in your screenshot
+   - `MobileHomeRedesign.tsx`
+     - Up Next Call button solid background.
+     - Text / Go button tint and icon colour.
+     - Any remaining blue tint values in the Up Next card.
+   - `MobileHomeBottomSections.tsx`
+     - Schedule active Today tab.
+     - Schedule “View all” link.
+     - Upcoming lesson accent bars / time labels.
+     - Add lesson link.
+     - Quick Access primary tile background.
+     - Quick Access blue icon tiles.
+     - Pagination indicators.
+   - `quickAccess/tileRegistry.ts`
+     - Ensure Settings uses the blue tone, not grey.
 
-### 2. Draw the actual driving route
-- When the instructor's current location is available (use the existing `useInstructorLastPosition` hook already in the project), call the Google Directions service (already loaded via `loadGoogleMaps`) for `origin = current position`, `destination = pickup coords`, `travelMode: DRIVING`.
-- Render the result as a `<Polyline>` in DSM red (`#CC2229`, 4px, 90% opacity) with a subtle white casing underneath (5px, white) for legibility on both light and dark roads.
-- Add a small green "current location" dot overlay at the origin and keep the existing `DSMPin` at the destination.
-- Fit the map bounds to the polyline with ~24px padding; fall back to the single-pin centered view if directions fail or current location is unknown.
+3. Remove competing old blue values in this scope
+   - Replace any remaining `#EEF3FF`, `#EEF2FB`, `#F5F8FF`, `#007AFF`, `#2952B3`, or `#2F63D3` used by the instructor mobile home’s Schedule / Quick Access / action buttons.
+   - Keep unrelated screens alone unless they directly render on this same mobile home view.
 
-### 3. Cache & performance
-- Cache the directions result per `lessonId` in a module-level `Map` so re-mounts/scroll-revisits are instant (mirrors the existing `coordCache` pattern).
-- Only request directions once the tile is visible (existing `IntersectionObserver` already gates this).
-- Skip the Directions call entirely when origin and destination are within ~150m (just show the pin).
+4. Add stronger styling where component defaults are overriding the change
+   - For the Today/Tomorrow segmented control and Quick Access primary tile, keep inline/style-level values or token-backed class values so shadcn/Tailwind defaults cannot override them.
+   - Do not change layout, spacing, routes, handlers, data fetching, lesson logic, quick access ordering, edit behaviour, or navigation.
 
-### 4. Keep all overlay pills unchanged
-Countdown pill, ETA / "running late" pill, pupil avatar, and Details expand button stay exactly as they are.
+5. Verify on the exact viewport and route
+   - Open `/instructor` at the mobile viewport shown in your screenshot.
+   - Dismiss the “Lesson ended” modal so the home screen is visible.
+   - Confirm visually and by computed colour that:
+     - Call button solid blue = Settings tile solid blue = Today active tab solid blue.
+     - Text/Go and blue quick-access icon tints use the matching pale blue.
+   - Check no console/runtime errors are introduced.
 
-## Out of scope
-- The full-screen `HomeMapHero` and `RouteHeatmap` components — those already use realistic tiles and don't need changes.
-- Any changes to live GPS tracking or the snap-to-road pipeline.
-
-## Files touched
-- `src/components/instructor/upNext/MapHeroLive.tsx` (main changes)
-- `src/components/instructor/upNext/dsmMapStyle.ts` (no longer imported; can be left for now or deleted in a follow-up)
+Expected result: the visible Call, Settings, and Today blue accents on the instructor mobile home screen will all use the exact same blue source of truth and will no longer be affected by older hardcoded blue values or component defaults.
