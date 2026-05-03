@@ -1,79 +1,51 @@
 ## Goal
+Replace the static "OBD not connected" placeholder in the expanded Up next tile (Section 6 — Vehicle) with live data from the connected OBD device for this instructor's vehicle. No DB schema changes, no other screens touched.
 
-Swap the static Google Maps image in the "Up next" lesson tile for a real interactive Google Maps view (display-only), using the web equivalent of the spec you provided. Everything else on the tile (blue date/time rail, pupil section, expanded sheet) stays exactly as-is.
+## Data source
+Use the existing `useVehicleHealth()` hook (already powering Vehicle Health screens). It returns `devices[]` from `gps_devices` with all the fields needed:
+- `is_connected`, `last_seen_at`, `tracking_provider`
+- `last_fuel_percent`, `last_battery_voltage`, `last_coolant_temp_c`
+- `last_ecu_odometer_km`, `last_engine_hours`
+- `last_tire_pressure_json` (PSI per corner — already imperial per project rules)
+- `last_fault_codes[]` (with `code`, `description`, `severity`)
+- `vehicle` (registration, make, model)
 
-## Translation: native spec → web
+Verified live: instructor `c9843b58-…` has a Geotab device reporting fuel 47.84%, battery 90, coolant 85°C, odometer 42,982 km, 1 fault (P0B15), and tyre pressures 224–236.
 
-The spec was written for `react-native-maps`, which does not run in this React/Vite app. The project already uses `@react-google-maps/api` (see `GoogleMapPreview.tsx`, `FleetLiveMap.tsx`) with a shared loader at `src/lib/googleMapsLoader.ts`. The same constraints (gestures off, no UI chrome, custom style, single red pin, overlay pills) translate cleanly.
+## Device selection
+Inside `UpNextExpanded`, pick the device to show in this priority:
+1. A connected device whose `vehicle_id` matches the instructor's primary vehicle.
+2. Otherwise, the most recently `last_seen_at` device with diagnostics (`last_diagnostics_at` not null).
+3. Otherwise, fall back to the existing "OBD not connected" pill.
 
-| Native spec | Web equivalent |
-|---|---|
-| `MapView provider={PROVIDER_GOOGLE}` | `<GoogleMap>` from `@react-google-maps/api` |
-| `customMapStyle={dsmMapStyle}` | `options.styles = dsmMapStyle` |
-| All `*Enabled={false}` + hidden chrome | `gestureHandling: "none"`, `disableDefaultUI: true`, `clickableIcons: false`, `keyboardShortcuts: false` |
-| `liteMode` (Android only) | not applicable on web — gestures-off achieves the same static feel |
-| `<Marker><DSMPin/></Marker>` | `<OverlayViewF>` with the SVG pin (lets us render the exact teardrop, not a default Google pin) |
-| `tracksViewChanges={false}` | N/A (web markers don't redraw per frame) |
-| Fallback `View` when coords missing | identical fallback `<div>` block |
+## UI changes (only inside Section 6 of `src/components/instructor/UpNextExpanded.tsx`)
+Replace lines 720–737 with a connected-state card. Keep `SectionLabel`, `Divider`, paddings, fonts, and surrounding sections unchanged.
 
-## Files
-
-**New**
-- `src/components/instructor/upNext/dsmMapStyle.ts` — exports `dsmMapStyle` array exactly as in the spec.
-- `src/components/instructor/upNext/DSMPin.tsx` — inline SVG (red teardrop, white inner circle, soft shadow ellipse) — no react-native-svg.
-- `src/components/instructor/upNext/MapHeroLive.tsx` — the new interactive map hero.
-
-**Edited**
-- `src/components/instructor/MobileHomeRedesign.tsx` — replace the single `<MapHeroStatic ... />` usage inside the `UpNextTile` map slot with `<MapHeroLive ... />`. No other changes to the tile.
-
-**Untouched**
-- `MapHeroStatic.tsx` stays in the repo (still used elsewhere if referenced; we only swap the Up Next tile).
-- Blue date/time rail, pupil name row, action buttons, expanded sheet, weather/traffic strip, all other screens.
-
-## MapHeroLive behavior
-
-- Height fixed at **140px**, `overflow: hidden`, `position: relative` wrapper — same dimensions as today.
-- Loads Google Maps via the existing `loadGoogleMaps(await fetchGoogleMapsKey())` helper. While loading, render a neutral `#F0F3F8` placeholder at 140px (no spinner flash — keeps it calm).
-- Geocodes the pickup using the existing `geocode-postcode` edge function (same pattern as `GoogleMapPreview`). Result memoised by postcode so revisits are instant.
-- `<GoogleMap>` options:
-  - `center` = pickup lat/lng, `zoom` = 15
-  - `disableDefaultUI: true`, `gestureHandling: "none"`, `clickableIcons: false`, `keyboardShortcuts: false`, `draggable: false`, `scrollwheel: false`, `disableDoubleClickZoom: true`
-  - `styles: dsmMapStyle`
-- Single marker rendered via `OverlayViewF` (anchor bottom-center) using `DSMPin`.
-- Region object built with `useMemo` keyed on `lesson.id` (per spec performance rule).
-- Component wrapped in `React.memo` so unrelated home-screen state changes don't re-render it.
-- Defer mount until visible: use `IntersectionObserver` on the wrapper; only mount `<GoogleMap>` once `isIntersecting` true (mirrors the spec's "shouldRenderMap" rule). Before that, show the neutral placeholder.
-
-## Overlay pills (absolutely positioned over the map)
-
-All three pills are pure CSS divs, positioned inside the 140px wrapper:
-
-- **PulsingPill** — `top:10 left:10`, white 95% bg, radius 20, "In {minutesUntil} mins". Red 6px dot with a CSS keyframes pulse (opacity 1 ↔ 0.3, 1.2s loop). If `minutesUntil` not provided/<=0, hide the pill.
-- **TimeCard** — `bottom:10 right:10`, radius 12, two-line: 22px bold time, 10px muted "Today" / day label.
-- **ExpandPill** — `bottom:10 left:10`, radius 20, "Details" + chevron that rotates 180° on `expanded` via CSS transition. Calls the existing expand toggle already wired on the tile.
-
-These reuse the props already passed to the current `MapHeroStatic` (`countdown`, `startTime`, `whenLabel`) — no new data plumbing needed.
-
-## Fallback
-
-When pickup coords resolve to `null` (geocode fails, or no postcode on the lesson), render at `height:140`:
+Connected card layout (single rounded-12 card, `BLUE_TINT` background, 10/12 padding, fontSize 12, two rows):
 
 ```text
-[ light grey panel #F0F3F8 ]
-   "Location unavailable"   (12px #8E8E93)
-   {pickupPostcode}         (13px 600 #1A52A0)
+[Car icon]  AB12 CDE · Ford Fiesta            ● Live
+            Fuel 48% · Batt 12.5V · 85°C · 26,708 mi
+            [P0B15 chip if fault, red tint]
 ```
 
-Identical to the spec's fallback block.
+Details:
+- Convert km → miles using `* 0.621371` (project rule). Round to whole miles.
+- Battery: prefer `last_battery_voltage` (e.g. "12.5V"); otherwise `last_battery_percent` ("90%").
+- Coolant: only show if present (`°C`).
+- Fuel: only show if `last_fuel_percent` not null.
+- Tyre warning: if any value in `last_tire_pressure_json` is < 28 PSI or > 40 PSI, append a small "Tyre check" amber chip.
+- Fault codes: render a single red-tint chip showing the count, e.g. `1 fault: P0B15` (tap → `/instructor/vehicle-health` via existing `useNavigate`). If 0 codes, omit.
+- Live dot: green 6px circle if `is_connected`, otherwise grey + "Last seen Xm ago" using existing `formatDistanceToNow` style (already used elsewhere — import from `date-fns`).
+- If no device matches, keep the existing grey "OBD not connected" pill (unchanged copy).
 
-## Hard constraints honoured
+All colours via existing tokens (`BLUE_TINT`, `BLUE`, `MUTED`, `RED`, plus the established amber `#A66B00` already used by the notes card). No Tailwind classes — match the inline-style pattern of the rest of this file.
 
-- No new packages — uses already-installed `@react-google-maps/api` and the shared loader.
-- No map gestures, no Google UI chrome, no toolbar/compass/my-location.
-- No directions, search, or geocoding beyond the existing `geocode-postcode` call already used elsewhere.
-- No new lesson data fields — binds to existing `pickupPostcode` (and lat/lng if the lesson already exposes them; otherwise geocoded from postcode like today's `MapHeroStatic`).
-- Tile height stays 140; collapsed tile layout, blue rail, pupil avatar, detail rows, action buttons, and every other screen remain untouched.
+## Wiring
+- Import `useVehicleHealth` at top of `UpNextExpanded.tsx`.
+- Call once inside the component; derive `obdDevice` via the priority above (memoise inline with `useMemo`).
+- No props added; no parent component (`MobileHomeRedesign`) changes required.
 
 ## Out of scope
-
-- The `react-native-maps` / Capacitor native build path. If you also want this in a native iOS/Android wrapper later, that's a separate task with its own native dependencies.
+- No changes to collapsed tile, map hero, ETA pill, avatar, other sections, schemas, or any other screen.
+- No new edge functions; the hook already polls the existing `radius-poller`.
