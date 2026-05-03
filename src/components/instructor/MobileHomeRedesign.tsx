@@ -138,13 +138,17 @@ function GreetingBlock({
     value,
     label,
     tone = "blue",
+    Icon,
   }: {
     value: string;
     label: string;
     tone?: "blue" | "green" | "amber";
+    Icon: LucideIcon;
   }) => {
-    const dot =
+    const accent =
       tone === "amber" ? "#E29A2B" : tone === "green" ? "#2F9E6E" : "#315FAE";
+    const tint =
+      tone === "amber" ? "#FFF3DC" : tone === "green" ? "#E4F5EC" : "#E6EEFB";
     return (
       <div
         className="home-v2-tile"
@@ -160,21 +164,27 @@ function GreetingBlock({
         <span
           aria-hidden
           style={{
-            width: 8,
-            height: 8,
-            borderRadius: 999,
-            background: dot,
+            width: 32,
+            height: 32,
+            borderRadius: 10,
+            background: tint,
+            color: accent,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
             flexShrink: 0,
           }}
-        />
+        >
+          <Icon size={16} strokeWidth={2} />
+        </span>
         <div style={{ minWidth: 0 }}>
           <div
             style={{
-              fontSize: 15,
-              fontWeight: 600,
+              fontSize: 17,
+              fontWeight: 700,
               color: "#0B1220",
-              letterSpacing: "-0.2px",
-              lineHeight: 1.1,
+              letterSpacing: "-0.3px",
+              lineHeight: 1.05,
               fontVariantNumeric: "tabular-nums",
             }}
           >
@@ -184,7 +194,7 @@ function GreetingBlock({
             style={{
               fontSize: 11,
               color: "#64748B",
-              marginTop: 2,
+              marginTop: 1,
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -226,16 +236,19 @@ function GreetingBlock({
           value={String(lessonsToday)}
           label={`Lesson${lessonsToday === 1 ? "" : "s"}`}
           tone="blue"
+          Icon={Calendar}
         />
         <Chip
           value={`£${Math.round(earningsToday)}`}
           label="Today"
           tone="green"
+          Icon={PoundSterling}
         />
         <Chip
           value={String(pendingJobs)}
           label="Waiting"
           tone={pendingJobs > 0 ? "amber" : "blue"}
+          Icon={Clock}
         />
       </div>
     </div>
