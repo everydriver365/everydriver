@@ -1,4 +1,6 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { NextUpTile as NextUpTileFull } from "@/components/instructor/NextUpTile";
 import { useNavigate } from "react-router-dom";
 import { format, parse, parseISO, isToday, isTomorrow, differenceInMinutes } from "date-fns";
 import {
@@ -434,6 +436,8 @@ function UpNextTile({
   pickupLocation,
   pickupPostcode,
   minutesUntil,
+  expanded,
+  onToggleExpanded,
 }: {
   pupilId: string;
   lessonId: string;
@@ -446,6 +450,8 @@ function UpNextTile({
   pickupLocation: string | null;
   pickupPostcode: string | null;
   minutesUntil: number;
+  expanded: boolean;
+  onToggleExpanded: () => void;
 }) {
   const navigate = useNavigate();
   const date = (() => {
@@ -461,7 +467,7 @@ function UpNextTile({
   const whenLabel = isToday(date) ? "Today" : isTomorrow(date) ? "Tomorrow" : format(date, "EEE");
   const countdown = fmtCountdown(minutesUntil);
 
-  const open = () => navigate(`/instructor/pupils/${pupilId}?lesson=${lessonId}`);
+  const open = () => onToggleExpanded();
   const call = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (pupilPhone) window.location.href = `tel:${pupilPhone}`;
@@ -611,10 +617,20 @@ function UpNextTile({
               <IconTile>
                 <Clock size={14} strokeWidth={2.2} />
               </IconTile>
-              <div style={{ fontSize: 13, color: CHARCOAL, minWidth: 0 }}>
+              <div style={{ fontSize: 13, color: CHARCOAL, minWidth: 0, flex: 1 }}>
                 <span style={{ fontWeight: 700 }}>{hoursLong(durationMinutes)}</span>{" "}
                 <span style={{ color: MUTED }}>· Standard lesson</span>
               </div>
+              <ChevronDown
+                size={16}
+                strokeWidth={2.2}
+                style={{
+                  color: BLUE,
+                  transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 180ms ease",
+                  flexShrink: 0,
+                }}
+              />
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
@@ -839,6 +855,7 @@ export function MobileHomeRedesign({
   const { data: unread = 0 } = useUnreadMessagesCount(instructorId);
   const { data: paymentsSummary } = useInstructorPupilsPaymentSummary(instructorId);
   const { data: gapData } = useRealGapSlots(instructorId);
+  const [expanded, setExpanded] = useState(false);
 
   const lessonsToday = today?.lessonCount ?? 0;
   const earningsToday = today?.expectedEarnings ?? 0;
@@ -952,7 +969,32 @@ export function MobileHomeRedesign({
             pickupLocation={nextLesson.pickupLocation}
             pickupPostcode={nextLesson.pickupPostcode}
             minutesUntil={liveMinutes}
+            expanded={expanded}
+            onToggleExpanded={() => setExpanded((v) => !v)}
           />
+          {expanded && (
+            <div style={{ padding: "0 14px 14px" }}>
+              <NextUpTileFull
+                lessonId={nextLesson.lessonId}
+                pupilId={nextLesson.pupilId}
+                pupilName={nextLesson.pupilName}
+                pupilProfileImage={nextLesson.pupilProfileImage}
+                pupilPhone={nextLesson.pupilPhone}
+                lessonDate={nextLesson.lessonDate}
+                pickupPostcode={nextLesson.pickupPostcode}
+                pickupLocation={nextLesson.pickupLocation}
+                startTime={nextLesson.startTime}
+                minutesUntil={liveMinutes}
+                accountBalance={(nextLesson as any).accountBalance ?? 0}
+                prepaidHours={(nextLesson as any).prepaidHours ?? 0}
+                durationMinutes={nextLesson.durationMinutes}
+                instructorId={instructorId}
+                checkInStatus={(nextLesson as any).checkInStatus}
+                lessonStatus={(nextLesson as any).lessonStatus}
+                lastLessonPlan={(nextLesson as any).lastLessonPlan}
+              />
+            </div>
+          )}
         </>
       )}
 
