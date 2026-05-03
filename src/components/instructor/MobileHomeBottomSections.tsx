@@ -323,156 +323,210 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
             No lessons {selectedDay.toLowerCase()}
           </div>
         ) : (
-          enriched.map((e, i) => (
-            <div key={e.lesson.id}>
-             {/* Lesson row */}
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => e.lesson.pupilId && navigate(`/instructor/pupils/${e.lesson.pupilId}`)}
-                onKeyDown={(ev) => {
-                  if ((ev.key === "Enter" || ev.key === " ") && e.lesson.pupilId) {
-                    ev.preventDefault();
-                    navigate(`/instructor/pupils/${e.lesson.pupilId}`);
-                  }
-                }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "11px 14px",
-                  gap: 10,
-                  opacity: e.status === "done" ? 0.55 : 1,
-                  cursor: e.lesson.pupilId ? "pointer" : "default",
-                }}
-              >
-                <div
-                  style={{
-                    width: 3,
-                    height: 36,
-                    borderRadius: 2,
-                    background:
-                      e.status === "done"
-                        ? "#E0E5EE"
-                        : e.status === "cancelled"
-                          ? "#CC2229"
-                          : e.status === "inProgress"
-                            ? "#1A7A3C"
-                            : BLUE,
-                    flexShrink: 0,
-                  }}
-                />
-                <div style={{ minWidth: 38 }}>
-                  <div
-                    style={{
-                      fontSize: 14,
-                      fontWeight: 700,
-                      letterSpacing: -0.3,
-                      lineHeight: "17px",
-                      color: e.status === "done" ? TEXT : BLUE,
-                    }}
-                  >
-                    {fmtTime(e.lesson.startTime)}
-                  </div>
-                  <div style={{ fontSize: 9, color: MUTED, marginTop: 1 }}>
-                    {durationHours(e.lesson.durationMinutes || 60)}h
-                  </div>
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: TEXT,
-                      lineHeight: "17px",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {e.lesson.pupilName}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 10,
-                      color: MUTED,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {e.lesson.lessonType}
-                    {e.lesson.pickupLocation ? ` · ${e.lesson.pickupLocation}` : ""}
-                  </div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  {(() => {
-                    const paid = e.lesson.paymentStatus === "paid";
-                    return (
-                      <span
-                        style={{
-                          fontSize: 9,
-                          fontWeight: 700,
-                          padding: "2px 6px",
-                          borderRadius: 999,
-                          letterSpacing: 0.2,
-                          textTransform: "uppercase",
-                          color: paid ? "#1A7A3C" : "#CC2229",
-                          background: paid ? "rgba(26,122,60,0.12)" : "rgba(204,34,41,0.12)",
-                        }}
-                      >
-                        {paid ? "Paid" : "Unpaid"}
-                      </span>
-                    );
-                  })()}
-                  <StatusPill status={e.status} label={e.label} />
-                </div>
-              </div>
+          enriched.map((e, i) => {
+            const rowBg =
+              e.status === "inProgress"
+                ? "#F2FBF5"
+                : e.status === "upcoming"
+                  ? "#F5F8FF"
+                  : "#FFF";
+            const bandColor =
+              e.status === "inProgress"
+                ? "#1A7A3C"
+                : e.status === "upcoming"
+                  ? "#1A52A0"
+                  : e.status === "cancelled"
+                    ? "#CC2229"
+                    : "#E0E5EE";
+            const timeColor =
+              e.status === "upcoming" ? "#1A52A0" : "#1A1A1A";
+            const minutesUntil =
+              e.status === "upcoming" && e.start
+                ? Math.max(0, Math.round((e.start.getTime() - now.getTime()) / 60_000))
+                : 0;
+            const fee = e.lesson.amountDue ?? 0;
 
-              {/* NOW line between past and future */}
-              {nowLineIndex === i && (
+            return (
+              <div key={e.lesson.id}>
+                {/* Lesson row */}
                 <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => e.lesson.pupilId && navigate(`/instructor/pupils/${e.lesson.pupilId}`)}
+                  onKeyDown={(ev) => {
+                    if ((ev.key === "Enter" || ev.key === " ") && e.lesson.pupilId) {
+                      ev.preventDefault();
+                      navigate(`/instructor/pupils/${e.lesson.pupilId}`);
+                    }
+                  }}
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 6,
-                    padding: "0 14px",
-                    margin: "-1px 0",
+                    padding: "10px 12px",
+                    gap: 8,
+                    background: rowBg,
+                    opacity: e.status === "done" ? 0.55 : 1,
+                    cursor: e.lesson.pupilId ? "pointer" : "default",
                   }}
                 >
+                  {/* Left colour band */}
                   <div
                     style={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: 3,
-                      background: "#CC2229",
-                    }}
-                  />
-                  <div
-                    style={{
-                      flex: 1,
-                      height: 0.5,
-                      background: "rgba(204,34,41,0.35)",
-                    }}
-                  />
-                  <div
-                    style={{
-                      fontSize: 9,
-                      fontWeight: 700,
-                      color: "#CC2229",
+                      width: 3,
+                      height: 32,
+                      borderRadius: 2,
+                      background: bandColor,
                       flexShrink: 0,
                     }}
-                  >
-                    NOW {currentTimeString}
-                  </div>
-                </div>
-              )}
+                  />
 
-              {/* Separator (not after last) */}
-              {i < enriched.length - 1 && (
-                <div style={{ height: 0.5, background: ROW_DIVIDER }} />
-              )}
-            </div>
-          ))
+                  {/* Time + duration */}
+                  <div style={{ minWidth: 36 }}>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 700,
+                        letterSpacing: -0.3,
+                        lineHeight: "17px",
+                        color: timeColor,
+                      }}
+                    >
+                      {fmtTime(e.lesson.startTime)}
+                    </div>
+                    <div style={{ fontSize: 9, color: MUTED, marginTop: 1 }}>
+                      {durationHours(e.lesson.durationMinutes || 60)}h
+                    </div>
+                  </div>
+
+                  {/* Pupil name + detail */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: TEXT,
+                        lineHeight: "17px",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {e.lesson.pupilName}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: MUTED,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {e.lesson.lessonType}
+                      {e.lesson.pickupLocation ? ` · ${e.lesson.pickupLocation}` : ""}
+                    </div>
+                  </div>
+
+                  {/* Right status / fee area */}
+                  {e.status === "inProgress" && (
+                    <div
+                      style={{
+                        background: "#E8F8ED",
+                        borderRadius: 20,
+                        padding: "2px 7px",
+                        flexShrink: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 3,
+                      }}
+                    >
+                      <div style={{ width: 5, height: 5, borderRadius: 3, background: "#1A7A3C" }} />
+                      <span style={{ fontSize: 9, fontWeight: 700, color: "#1A7A3C" }}>Now</span>
+                    </div>
+                  )}
+                  {e.status === "upcoming" && (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: "#1A52A0" }}>
+                        {minutesUntil}m
+                      </span>
+                      {fee > 0 && (
+                        <span style={{ fontSize: 9, fontWeight: 600, color: "#1A7A3C", marginTop: 1 }}>
+                          £{fee}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {e.status === "done" && (
+                    <div
+                      style={{
+                        background: "#F2F4F8",
+                        borderRadius: 20,
+                        padding: "2px 7px",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <span style={{ fontSize: 9, fontWeight: 600, color: "#8E8E93" }}>Done</span>
+                    </div>
+                  )}
+                  {e.status === "cancelled" && (
+                    <div
+                      style={{
+                        background: "#FFF0F0",
+                        borderRadius: 20,
+                        padding: "2px 7px",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <span style={{ fontSize: 9, fontWeight: 700, color: "#CC2229" }}>Cancelled</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* NOW line between past and future */}
+                {nowLineIndex === i && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      padding: "0 12px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 5,
+                        height: 5,
+                        borderRadius: 3,
+                        background: "#CC2229",
+                      }}
+                    />
+                    <div
+                      style={{
+                        flex: 1,
+                        height: 0.5,
+                        background: "rgba(204,34,41,0.3)",
+                      }}
+                    />
+                    <div
+                      style={{
+                        fontSize: 9,
+                        fontWeight: 700,
+                        color: "#CC2229",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {currentTimeString}
+                    </div>
+                  </div>
+                )}
+
+                {/* Separator (not after last) */}
+                {i < enriched.length - 1 && (
+                  <div style={{ height: 0.5, background: ROW_DIVIDER }} />
+                )}
+              </div>
+            );
+          })
         )}
 
         {/* Add lesson row */}
