@@ -21,7 +21,7 @@ import { useInstructorPinnedTiles } from "@/hooks/useInstructorPinnedTiles";
    Visual/layout only — reuses existing routes, gating, search, and pin store. */
 
 const MAX_PINS = 6;
-const ACCENT = "#2952B3";
+const ACCENT = "#3D55A1";
 const ACCENT_BG = "#EEF3FF";
 const AMBER_BG = "#FFF6E6";
 const AMBER_FG = "#B45309";

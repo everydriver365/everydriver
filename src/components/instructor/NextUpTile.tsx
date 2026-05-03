@@ -631,7 +631,7 @@ export function NextUpTile({
                     ) : (
                       <div style={{
                         width: 44, height: 44, borderRadius: "50%",
-                        background: "linear-gradient(135deg, #3A5BB0 0%, #2952B3 100%)",
+                        background: "linear-gradient(135deg, #3A5BB0 0%, #3D55A1 100%)",
                         color: "#fff", fontSize: a11yPx(15), fontWeight: 600,
                         display: "flex", alignItems: "center", justifyContent: "center",
                         border: "2px solid #FFFFFF",
@@ -769,7 +769,7 @@ export function NextUpTile({
                       disabled={!pupilPhone}
                       style={{
                         flex: 1, height: 44, borderRadius: 14,
-                        background: "#2952B3", color: "#FFFFFF", border: "none",
+                        background: "#3D55A1", color: "#FFFFFF", border: "none",
                         display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
                         fontSize: a11yPx(14), fontWeight: 600, letterSpacing: 0.1,
                         cursor: pupilPhone ? "pointer" : "not-allowed",
@@ -786,7 +786,7 @@ export function NextUpTile({
                       disabled={!pupilPhone}
                       style={{
                         flex: 1, height: 44, borderRadius: 14,
-                        background: "#EEF2FB", color: "#2952B3",
+                        background: "#EEF2FB", color: "#3D55A1",
                         border: "0.5px solid rgba(41,82,179,0.14)",
                         display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
                         fontSize: a11yPx(14), fontWeight: 600, letterSpacing: 0.1,
@@ -803,7 +803,7 @@ export function NextUpTile({
                       disabled={!pickupPostcode}
                       style={{
                         flex: 1, height: 44, borderRadius: 14,
-                        background: "#EEF2FB", color: "#2952B3",
+                        background: "#EEF2FB", color: "#3D55A1",
                         border: "0.5px solid rgba(41,82,179,0.14)",
                         display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
                         fontSize: a11yPx(14), fontWeight: 600, letterSpacing: 0.1,

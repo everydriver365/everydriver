@@ -32,7 +32,7 @@ export interface QuickAccessTile {
  * and the compact app-grid. Stroke matches the accent colour.
  */
 export const TILE_TONE: Record<TileTone, { bg: string; fg: string }> = {
-  blue:   { bg: "#EEF4FF", fg: "#2952B3" },
+  blue:   { bg: "#EDF2FE", fg: "#3D55A1" },
   green:  { bg: "#E8F3E8", fg: "#3B8B3B" },
   amber:  { bg: "#FBF1DE", fg: "#B8801F" },
   purple: { bg: "#F1ECFA", fg: "#8A5BC9" },
