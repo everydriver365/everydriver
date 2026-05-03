@@ -578,8 +578,72 @@ export function NextUpTile({
                 </div>
               ) : (
                 <>
-              {/* LEFT: avatar + identity */}
-              <div style={{ flex: 1, minWidth: 0, display: "flex", gap: 12, alignItems: "flex-start" }}>
+              {/* LEFT: time + date */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-start", gap: 10, flexShrink: 0, minWidth: 96 }}>
+                <div style={{ textAlign: "left" }}>
+                  <div style={{ fontSize: a11yPx(26), fontWeight: 600, letterSpacing: -0.8, color: "#000000", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
+                    {formatTime24(startTime)}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 4, fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73", marginTop: 4 }}>
+                    <span>{formatMetaDate(lessonDate)}</span>
+                  </div>
+                </div>
+                {/* Countdown pill */}
+                <span style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  padding: "3px 8px", borderRadius: 999,
+                  background: minutesUntil <= 5 ? "rgba(255,59,48,0.12)" : minutesUntil <= 15 ? "rgba(255,149,0,0.12)" : "rgba(88,86,214,0.10)",
+                  color: minutesUntil <= 5 ? "#FF3B30" : minutesUntil <= 15 ? "#FF9500" : "#5856D6",
+                  fontSize: a11yPx(11), fontWeight: 600, letterSpacing: 0.1,
+                  fontVariantNumeric: "tabular-nums",
+                }}>
+                  <Clock style={{ width: 11, height: 11 }} strokeWidth={2.2} />
+                  {minutesUntil <= 0 ? "Starting now" : `Starts in ${getCountdownText()}`}
+                </span>
+              </div>
+
+              {/* Vertical divider */}
+              <div aria-hidden style={{ width: 1, background: "#E5E5EA", alignSelf: "stretch", margin: "0 2px" }} />
+
+              {/* RIGHT: avatar + identity */}
+              <div style={{ flex: 1, minWidth: 0, display: "flex", gap: 12, alignItems: "flex-start", justifyContent: "flex-end" }}>
+                <div style={{ flex: 1, minWidth: 0, textAlign: "right" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 6 }}>
+                    <span style={{ fontSize: a11yPx(17), fontWeight: 600, letterSpacing: -0.3, color: "#000000", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {toSentenceName(pupilName)}
+                    </span>
+                    {totalUnreadBadge > 0 && (
+                      <span style={{
+                        minWidth: 18, height: 18, padding: "0 5px", borderRadius: 9,
+                        background: "#C8434F", color: "#fff", fontSize: a11yPx(11), fontWeight: 600,
+                        display: "inline-flex", alignItems: "center", justifyContent: "center",
+                        fontVariantNumeric: "tabular-nums",
+                      }}>{totalUnreadBadge}</span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: a11yPx(12), color: "#6E6E73", marginTop: 3 }}>
+                    {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
+                  </div>
+                  {(pickupPostcode || pickupLocation) && (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 4, marginTop: 4, color: "#6E6E73", minWidth: 0 }}>
+                      <span style={{ fontSize: a11yPx(11), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {pickupPostcode || pickupLocation}
+                      </span>
+                      <MapPin style={{ width: 11, height: 11, flexShrink: 0 }} strokeWidth={2} />
+                    </div>
+                  )}
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+                    <ChevronDown
+                      aria-hidden
+                      style={{
+                        width: 14, height: 14, color: "#6E6E73",
+                        transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+                        transition: "transform 250ms cubic-bezier(0.2,0.7,0.2,1)",
+                      }}
+                      strokeWidth={1.8}
+                    />
+                  </div>
+                </div>
                 {/* Avatar */}
                 <div style={{ flexShrink: 0 }}>
                   {pupilProfileImage ? (
@@ -599,71 +663,6 @@ export function NextUpTile({
                       {getInitials(pupilName)}
                     </div>
                   )}
-                </div>
-
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontSize: a11yPx(17), fontWeight: 600, letterSpacing: -0.3, color: "#000000", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {toSentenceName(pupilName)}
-                    </span>
-                    {totalUnreadBadge > 0 && (
-                      <span style={{
-                        minWidth: 18, height: 18, padding: "0 5px", borderRadius: 9,
-                        background: "#C8434F", color: "#fff", fontSize: a11yPx(11), fontWeight: 600,
-                        display: "inline-flex", alignItems: "center", justifyContent: "center",
-                        fontVariantNumeric: "tabular-nums",
-                      }}>{totalUnreadBadge}</span>
-                    )}
-                  </div>
-                  <div style={{ fontSize: a11yPx(12), color: "#6E6E73", marginTop: 3 }}>
-                    {`Standard lesson · ${formatHoursLong(durationMinutes)}`}
-                  </div>
-                  {(pickupPostcode || pickupLocation) && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4, color: "#6E6E73", minWidth: 0 }}>
-                      <MapPin style={{ width: 11, height: 11, flexShrink: 0 }} strokeWidth={2} />
-                      <span style={{ fontSize: a11yPx(11), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {pickupPostcode || pickupLocation}
-                      </span>
-                    </div>
-                  )}
-                  {/* Countdown pill */}
-                  <div style={{ marginTop: 8 }}>
-                    <span style={{
-                      display: "inline-flex", alignItems: "center", gap: 4,
-                      padding: "3px 8px", borderRadius: 999,
-                      background: minutesUntil <= 5 ? "rgba(255,59,48,0.12)" : minutesUntil <= 15 ? "rgba(255,149,0,0.12)" : "rgba(88,86,214,0.10)",
-                      color: minutesUntil <= 5 ? "#FF3B30" : minutesUntil <= 15 ? "#FF9500" : "#5856D6",
-                      fontSize: a11yPx(11), fontWeight: 600, letterSpacing: 0.1,
-                      fontVariantNumeric: "tabular-nums",
-                    }}>
-                      <Clock style={{ width: 11, height: 11 }} strokeWidth={2.2} />
-                      {minutesUntil <= 0 ? "Starting now" : `Starts in ${getCountdownText()}`}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Vertical divider */}
-              <div aria-hidden style={{ width: 1, background: "#E5E5EA", alignSelf: "stretch", margin: "0 2px" }} />
-
-              {/* RIGHT: time + actions */}
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", justifyContent: "space-between", gap: 10, flexShrink: 0, minWidth: 96 }}>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: a11yPx(26), fontWeight: 600, letterSpacing: -0.8, color: "#000000", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
-                    {formatTime24(startTime)}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 4, fontSize: a11yPx(11), fontWeight: 500, color: "#6E6E73", marginTop: 4 }}>
-                    <span>{formatMetaDate(lessonDate)}</span>
-                    <ChevronDown
-                      aria-hidden
-                      style={{
-                        width: 14, height: 14, color: "#6E6E73",
-                        transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                        transition: "transform 250ms cubic-bezier(0.2,0.7,0.2,1)",
-                      }}
-                      strokeWidth={1.8}
-                    />
-                  </div>
                 </div>
 
                 {/* Action buttons */}
