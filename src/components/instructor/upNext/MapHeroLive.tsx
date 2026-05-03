@@ -1,10 +1,10 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { GoogleMap, OverlayViewF, OVERLAY_MOUSE_TARGET } from "@react-google-maps/api";
+import { GoogleMap, OverlayViewF, OVERLAY_MOUSE_TARGET, PolylineF } from "@react-google-maps/api";
 import { ChevronDown, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
-import { dsmMapStyle } from "./dsmMapStyle";
+import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
 import { DSMPin } from "./DSMPin";
 
 interface Props {
