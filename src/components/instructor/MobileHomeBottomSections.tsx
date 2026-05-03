@@ -712,7 +712,7 @@ function QuickActionsSection({ instructorId }: { instructorId: string }) {
       <SectionHeader
         label="Quick actions"
         rightLabel="Edit"
-        onRightPress={() => navigate("/instructor/tools")}
+        onRightPress={() => navigate("/instructor/menu")}
       />
       <div
         style={{
@@ -770,7 +770,7 @@ function ToolsSection({ instructorId }: { instructorId: string }) {
       {/* Search bar */}
       <button
         type="button"
-        onClick={() => navigate("/instructor/tools")}
+        onClick={() => navigate("/instructor/menu")}
         style={{
           width: "100%",
           background: "#FFF",
