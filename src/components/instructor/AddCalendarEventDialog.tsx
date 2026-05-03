@@ -325,7 +325,104 @@ export function AddCalendarEventDialog({
           className="flex-1 overflow-y-auto px-5 pb-6"
           style={{ scrollbarWidth: 'thin' }}
         >
-          {tab === 'block' ? (
+          {tab === 'event' ? (
+            <div className="space-y-5">
+              <div>
+                <SectionLabel>Event</SectionLabel>
+                <FieldGroup>
+                  <FieldRow label="Title">
+                    <Input
+                      placeholder="e.g., Driving test, MOT, Training"
+                      value={eventTitle}
+                      onChange={(e) => setEventTitle(e.target.value)}
+                      className={iosInputClass}
+                    />
+                  </FieldRow>
+                  <FieldRow label="Location">
+                    <Input
+                      placeholder="Optional"
+                      value={eventLocation}
+                      onChange={(e) => setEventLocation(e.target.value)}
+                      className={iosInputClass}
+                    />
+                  </FieldRow>
+                </FieldGroup>
+                <ErrorText id="eventTitle" />
+              </div>
+
+              <div>
+                <SectionLabel>When</SectionLabel>
+                <FieldGroup>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="w-full px-4 py-3 min-h-[52px] flex items-center justify-between gap-3 text-left active:bg-black/[0.03] transition-colors"
+                      >
+                        <div className="flex flex-col gap-1">
+                          <div className="text-[12px] font-semibold text-[#3C3C43]/70">Date</div>
+                          <div className="text-[16px] text-[#1C1C1E]">
+                            {eventDate ? format(eventDate, 'EEE, d MMM yyyy') : 'Pick a date'}
+                          </div>
+                        </div>
+                        <CalendarIcon className="size-[18px] text-[#3C3C43]/50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={eventDate} onSelect={setEventDate} initialFocus />
+                    </PopoverContent>
+                  </Popover>
+
+                  <div className="grid grid-cols-2 divide-x divide-[#E5E5EA]">
+                    <FieldRow label="Start">
+                      <Select value={eventStartTime} onValueChange={setEventStartTime}>
+                        <SelectTrigger className={iosTriggerClass}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {timeSlots.map((time) => (
+                            <SelectItem key={time} value={time}>
+                              {time}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FieldRow>
+                    <FieldRow label="End">
+                      <Select value={eventEndTime} onValueChange={setEventEndTime}>
+                        <SelectTrigger className={iosTriggerClass}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {timeSlots.map((time) => (
+                            <SelectItem key={time} value={time}>
+                              {time}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FieldRow>
+                  </div>
+                </FieldGroup>
+                <ErrorText id="eventDate" />
+              </div>
+
+              <div>
+                <SectionLabel>Notes</SectionLabel>
+                <FieldGroup>
+                  <FieldRow label="Notes" className="py-3">
+                    <Textarea
+                      placeholder="Optional details..."
+                      value={eventNotes}
+                      onChange={(e) => setEventNotes(e.target.value)}
+                      rows={3}
+                      className={cn(iosInputClass, 'resize-none min-h-[60px]')}
+                    />
+                  </FieldRow>
+                </FieldGroup>
+              </div>
+            </div>
+          ) : tab === 'block' ? (
             <div className="space-y-5">
               {/* Event */}
               <div>
