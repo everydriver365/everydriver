@@ -1,39 +1,54 @@
 ## Goal
+Add a real "Edit" button next to the Quick Actions title on the instructor mobile home page that opens a dedicated screen where the user can:
+- Reorder the quick action rows
+- Show / hide individual rows
+- Save changes (persisted) or cancel
 
-On the **instructor mobile Home page**, make the today/tomorrow lesson tile (`HomeTodaySchedule`) visually match the Calendar/Schedule rows we just unified — without losing any of its current Home-only behaviour (Live tint, Done strikethrough, EOL prompt, Conflict banner, status icons).
+The 4 current rows on the home page are: **Job Offers, Messages, Take Payment, Pupils**.
 
-## What changes (visual only)
+## Why this is needed
+The current `EveryInstructorHome.tsx` Quick Actions block is hard-coded — there is no Edit control wired up. Any "Edit" you're seeing is the Lovable visual-edit overlay, not a real feature, which is why it lands you on Settings.
 
-Wrap the list of lesson rows in the same flat white container used by the Calendar tab and the Schedule list:
+## What will change
 
-- `background #FFFFFF`
-- `borderRadius 12`
-- `border 0.5px solid #E5E5EA`
-- `padding 0 8px`
-- `overflow hidden`
+### 1. Home page — add real Edit button
+**File:** `src/pages/EveryInstructorHome.tsx`
+- Add an "Edit" text button (iOS blue `#007AFF`, 15px semibold) on the right side of the Quick Actions title row.
+- Tapping it navigates to `/every-instructor/quick-actions/edit`.
+- Read the saved preference (order + hidden ids) from `localStorage` (`instructor_home_quick_actions_v1`) and render the rows in that order, skipping hidden ones. If nothing is stored, fall back to the current default order.
 
-Hairline dividers between rows already exist (`0.5px #E5E5EA`); update their horizontal extent to `margin 0 -8px` (or leave full-bleed inside the new wrapper) so they match Calendar's indented-divider look — same hairline rule as Calendar.
+### 2. New Edit screen
+**New file:** `src/pages/EveryInstructorQuickActionsEdit.tsx`
+- Mobile screen wrapped in `EveryInstructorLayout`.
+- Header: back chevron, title "Edit Quick Actions", and a primary **Save** button (top-right, disabled until changes are made).
+- Body: a single grouped iOS-style card listing all 4 quick actions, each row with:
+  - Drag handle (left) to reorder (using `framer-motion` Reorder, already in deps)
+  - Icon + label
+  - Toggle switch (right) to show/hide
+- Footer hint text: "Tap and drag to reorder. Use the toggle to hide an action."
+- **Save** writes the new order + hidden list to `localStorage` and navigates back to `/every-instructor`.
+- **Back** without saving discards changes (with a confirm if unsaved).
 
-## What stays exactly the same
+### 3. Route registration
+**File:** `src/routes/everyInstructorRoutes.tsx`
+- Register `/every-instructor/quick-actions/edit` → `EveryInstructorQuickActionsEdit` (lazy-loaded to match siblings).
 
-- The whole rest of `HomeTodaySchedule` (header, segmented Today/Tomorrow tabs, stats strip, conflict banner, footer with "View full calendar" + "Add lesson", AddLessonSheet, EndLessonWizard).
-- **Live row**: still uses the blue tinted block with the "In progress · X min remaining" line and the Live pill — this is a useful Home-only signal.
-- **Completed row**: still uses strikethrough, opacity 0.55, "Done" pill, EOL prompt button, RowStatusIcons (✓ / £ / amber attention dot).
-- **Default row**: already matches the Calendar row structure (50px right-aligned time column, 3px coloured accent bar, name + subtitle, RowStatusIcons + chevron) — only the surrounding container changes.
-- All data hooks (`useTodayOverview`, `useDayLessons`, `useDayLessonHistory`), tap targets (`<Link to="/instructor/pupils/:id">`), conflict detection, and EOL wizard wiring are untouched.
-- No props change; no other components touched.
-
-## File to change
-
-1. `src/components/instructor/HomeTodaySchedule.tsx` — only the wrapper `<div>` around the `lessons.map(...)` block (currently `<div style={{ display: "flex", flexDirection: "column" }}>` on line 697) becomes the new white rounded container. No other lines change.
+### 4. Shared helper
+**New file:** `src/lib/quickActionsPrefs.ts`
+- Tiny module exporting:
+  - `DEFAULT_QUICK_ACTIONS` (the 4 ids in order)
+  - `loadQuickActionsPrefs()` → `{ order: string[]; hidden: string[] }`
+  - `saveQuickActionsPrefs(prefs)`
+- Used by both the home page and the edit screen so the contract stays in one place.
 
 ## Out of scope
-
-- The Live tinted block, the EOL prompt, the Done strikethrough, the conflict banner, the stats tiles, or any logic.
-- Other tiles on the mobile home page.
+- No DB / Supabase changes — preferences live in `localStorage` only (fast, no schema work, survives reloads on the same device). Can be promoted to a Supabase table later if cross-device sync is needed.
+- Existing functionality, routes, business logic, and design tokens stay unchanged. Radii follow the established 12px card / 999px pill scale.
+- The legacy `QuickActionTiles.tsx` component (different screen) is not touched.
 
 ## Acceptance
-
-- The today/tomorrow lesson list on the mobile Home page now sits inside the same flat white rounded container as Calendar / Schedule.
-- Live, Completed, and Upcoming rows still render with their existing visual cues and remain fully tappable.
-- EOL prompt, Conflict banner, AddLesson and EndLesson flows continue to work.
+- "Edit" appears next to the Quick Actions title on the home page.
+- Tapping it opens the new screen (no longer goes to Settings).
+- User can reorder and hide/show rows, then tap Save.
+- Returning to home reflects the new order and hides any disabled rows.
+- Reload of the app preserves the saved layout.

@@ -29,6 +29,11 @@ import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import heroImage from "@/assets/every-instructor-hero.webp";
+import { useMemo } from "react";
+import {
+  loadQuickActionsPrefs,
+  type QuickActionId,
+} from "@/lib/quickActionsPrefs";
 
 /* ── Section with refined header ─────────────────────── */
 function Section({
@@ -283,6 +288,72 @@ function InsightRow({
   );
 }
 
+/* ── Quick Actions block (reads user prefs) ──────────── */
+const QUICK_ACTION_META: Record<
+  QuickActionId,
+  { label: string; icon: any; accent: string; route: string }
+> = {
+  jobs: { label: "Job Offers", icon: Briefcase, accent: "#AF52DE", route: "/every-instructor/jobs" },
+  messages: { label: "Messages", icon: MessageSquare, accent: "#FF9500", route: "/every-instructor/messages" },
+  "take-payment": { label: "Take Payment", icon: PoundSterling, accent: "#34C759", route: "/every-instructor/take-payment" },
+  pupils: { label: "Pupils", icon: Users, accent: "#007AFF", route: "/every-instructor/pupils" },
+};
+
+function QuickActionsBlock({
+  pendingJobs,
+  unreadMessages,
+  onEdit,
+  onNavigate,
+}: {
+  pendingJobs: number;
+  unreadMessages: number;
+  onEdit: () => void;
+  onNavigate: (path: string) => void;
+}) {
+  const prefs = useMemo(() => loadQuickActionsPrefs(), []);
+  const visible = prefs.order.filter((id) => !prefs.hidden.includes(id));
+  if (visible.length === 0) return null;
+
+  const badgeFor = (id: QuickActionId): number | undefined => {
+    if (id === "jobs") return pendingJobs;
+    if (id === "messages") return unreadMessages;
+    return undefined;
+  };
+
+  return (
+    <section className="mt-9">
+      <div className="px-5 mb-3 flex items-baseline justify-between">
+        <h2 className="text-[22px] font-semibold text-gray-900 leading-tight" style={{ letterSpacing: "-0.02em" }}>
+          Quick Actions
+        </h2>
+        <button
+          onClick={onEdit}
+          className="text-[15px] font-semibold shrink-0"
+          style={{ color: "#007AFF" }}
+        >
+          Edit
+        </button>
+      </div>
+      <div className="mx-5 bg-white rounded-xl ios-shadow-resting overflow-hidden divide-y divide-gray-100">
+        {visible.map((id, idx) => {
+          const meta = QUICK_ACTION_META[id];
+          return (
+            <QuickActionRow
+              key={id}
+              icon={meta.icon}
+              label={meta.label}
+              accent={meta.accent}
+              badge={badgeFor(id)}
+              onClick={() => onNavigate(meta.route)}
+              isLast={idx === visible.length - 1}
+            />
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 /* ── Main Page ─────────────────────────────────────── */
 export default function EveryInstructorHome() {
   const navigate = useNavigate();
@@ -350,42 +421,12 @@ export default function EveryInstructorHome() {
       )}
 
       {/* ── Quick Actions (iOS grouped list) ── */}
-      <section className="mt-9">
-        <div className="px-5 mb-3">
-          <h2 className="text-[22px] font-semibold text-gray-900 leading-tight" style={{ letterSpacing: "-0.02em" }}>
-            Quick Actions
-          </h2>
-        </div>
-        <div className="mx-5 bg-white rounded-xl ios-shadow-resting overflow-hidden divide-y divide-gray-100">
-          <QuickActionRow
-            icon={Briefcase}
-            label="Job Offers"
-            accent="#AF52DE"
-            badge={pendingJobs}
-            onClick={() => navigate("/every-instructor/jobs")}
-          />
-          <QuickActionRow
-            icon={MessageSquare}
-            label="Messages"
-            accent="#FF9500"
-            badge={unreadMessages}
-            onClick={() => navigate("/every-instructor/messages")}
-          />
-          <QuickActionRow
-            icon={PoundSterling}
-            label="Take Payment"
-            accent="#34C759"
-            onClick={() => navigate("/every-instructor/take-payment")}
-          />
-          <QuickActionRow
-            icon={Users}
-            label="Pupils"
-            accent="#007AFF"
-            onClick={() => navigate("/every-instructor/pupils")}
-            isLast
-          />
-        </div>
-      </section>
+      <QuickActionsBlock
+        pendingJobs={pendingJobs}
+        unreadMessages={unreadMessages}
+        onEdit={() => navigate("/every-instructor/quick-actions/edit")}
+        onNavigate={navigate}
+      />
 
       {/* ── Your Business (2x2 grid) ─────────── */}
       <Section title="Your Business" subtitle="Today's Overview" moreRoute="/every-instructor/pay" scroll={false}>
