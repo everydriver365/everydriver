@@ -19,6 +19,7 @@ import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidg
 import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
 import { InstructorMobileHome } from "@/components/instructor/InstructorMobileHome";
+import { MobileHomeRedesign } from "@/components/instructor/MobileHomeRedesign";
 
 import { MileageTaxSavingsCard } from "@/components/instructor/dashboard/MileageTaxSavingsCard";
 import { MessagesWidget } from "@/components/instructor/dashboard/MessagesWidget";
@@ -210,10 +211,9 @@ export default function InstructorPortal() {
       <InstructorPortalLayout>
         <div className="space-y-0">
         <DemoModeBanner />
-        <InstructorMobileHome 
-          instructor={instructorData}
-          todaysLessonCount={todaysLessonCount}
-          onPaymentClick={() => setPaymentModalOpen(true)}
+        <MobileHomeRedesign
+          instructorId={instructorId}
+          instructorName={instructorData?.name}
         />
         <TakePaymentModal
           open={paymentModalOpen}
