@@ -17,6 +17,7 @@ import { useInstructorPupilsPaymentSummary } from "@/hooks/usePupilPaymentStatus
 import { useInstructorPinnedTiles } from "@/hooks/useInstructorPinnedTiles";
 import { QUICK_ACCESS_TILES_BY_ID } from "@/components/instructor/quickAccess/tileRegistry";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { CustomizeFrequentlyUsedSheet } from "@/components/instructor/quickAccess/CustomizeFrequentlyUsedSheet";
 
 const BLUE = "#1A52A0";
 const TEXT = "#1A1A1A";
