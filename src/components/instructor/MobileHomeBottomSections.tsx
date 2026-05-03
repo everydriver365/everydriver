@@ -325,14 +325,24 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
         ) : (
           enriched.map((e, i) => (
             <div key={e.lesson.id}>
-              {/* Lesson row */}
+             {/* Lesson row */}
               <div
+                role="button"
+                tabIndex={0}
+                onClick={() => e.lesson.pupilId && navigate(`/instructor/pupils/${e.lesson.pupilId}`)}
+                onKeyDown={(ev) => {
+                  if ((ev.key === "Enter" || ev.key === " ") && e.lesson.pupilId) {
+                    ev.preventDefault();
+                    navigate(`/instructor/pupils/${e.lesson.pupilId}`);
+                  }
+                }}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   padding: "11px 14px",
                   gap: 10,
                   opacity: e.status === "done" ? 0.55 : 1,
+                  cursor: e.lesson.pupilId ? "pointer" : "default",
                 }}
               >
                 <div
