@@ -61,7 +61,7 @@ export function MobileBlueHeader({
           )}
           {isHomePage ? (
             <>
-              <img src={dsmLogo} alt="DSM" className="h-6 w-auto object-contain shrink-0" />
+              <img src={dsmLogo} alt="DSM" className="w-auto object-contain shrink-0" style={{ height: 29 }} />
               <div
                 className="flex flex-col min-w-0 leading-none"
                 style={{ color: "hsl(var(--dsm-text-primary, 240 6% 11%))" }}
