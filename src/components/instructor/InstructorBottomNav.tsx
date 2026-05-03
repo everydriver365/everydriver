@@ -144,7 +144,7 @@ export function InstructorBottomNav({ wallpaperColor, voiceState = "idle", onVoi
         </div>
         <span
           style={{
-            fontSize: 11,
+            fontSize: 13,
             fontWeight: isActive ? 700 : 500,
             color: isActive ? activeColor : inactiveColor,
           }}
