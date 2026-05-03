@@ -42,6 +42,7 @@ export function useInstructorLiveStats(instructorId: string | undefined) {
 
       const totalMinutes = weekLessons?.reduce((sum, lesson) => sum + (lesson.duration_minutes || 0), 0) || 0;
       const hoursThisWeek = Math.round(totalMinutes / 60 * 10) / 10;
+      const lessonsThisWeek = weekLessons?.length || 0;
 
       const { data: monthPayments, error: monthError } = await supabase
         .from("payment_history")
@@ -54,7 +55,7 @@ export function useInstructorLiveStats(instructorId: string | undefined) {
 
       const monthEarnings = monthPayments?.reduce((sum, payment) => sum + (payment.amount || 0), 0) || 0;
 
-      setStats({ hoursThisWeek, monthEarnings, loading: false });
+      setStats({ hoursThisWeek, lessonsThisWeek, monthEarnings, loading: false });
     } catch (error) {
       console.error("Error fetching live stats:", error);
       setStats(prev => ({ ...prev, loading: false }));
