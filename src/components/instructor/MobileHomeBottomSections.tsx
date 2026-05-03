@@ -450,7 +450,6 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
           onClick={() => setShowAdd(true)}
           style={{
             width: "100%",
-            borderTop: `0.5px solid ${ROW_DIVIDER}`,
             padding: "9px 0",
             display: "flex",
             alignItems: "center",
@@ -458,7 +457,6 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
             gap: 5,
             background: "transparent",
             border: "none",
-            borderTopStyle: "solid",
             cursor: "pointer",
           }}
         >
