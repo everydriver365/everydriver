@@ -247,16 +247,15 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
         onRightPress={() => navigate("/instructor/schedule")}
       />
 
-      {/* Day toggle */}
+      {/* Day toggle — soft segmented control */}
       <div
         style={{
-          background: "#FFF",
+          background: "rgba(15,35,65,0.05)",
           borderRadius: 12,
           padding: 3,
           display: "flex",
           gap: 2,
-          marginBottom: 8,
-          border: `0.5px solid ${BORDER_STRONG}`,
+          marginBottom: 10,
         }}
       >
         {(["Today", "Tomorrow"] as const).map((day) => {
@@ -269,17 +268,22 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
               style={{
                 flex: 1,
                 borderRadius: 9,
-                padding: "5px 0",
-                background: active ? BLUE : "transparent",
+                padding: "7px 0",
+                background: active ? "#FFFFFF" : "transparent",
                 border: "none",
                 cursor: "pointer",
+                boxShadow: active
+                  ? "0 1px 3px rgba(15,35,65,0.10), 0 0 0 0.5px rgba(15,35,65,0.06)"
+                  : "none",
+                transition: "background 150ms ease",
               }}
             >
               <span
                 style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: active ? "#FFF" : MUTED,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: active ? "#315FAE" : "#6B7A90",
+                  letterSpacing: "-0.1px",
                 }}
               >
                 {day}
@@ -291,10 +295,8 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
 
       {/* Card */}
       <div
+        className="home-v2-card"
         style={{
-          background: "#FFF",
-          borderRadius: 16,
-          border: `0.5px solid ${BORDER}`,
           overflow: "hidden",
         }}
       >
