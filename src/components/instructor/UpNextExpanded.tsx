@@ -719,6 +719,24 @@ export function UpNextExpanded({
         onRescheduled={() => {
           qc.invalidateQueries({ queryKey: ["next-lesson-details"] });
         }}
+      <RunningLateSheet
+        open={lateOpen}
+        onOpenChange={setLateOpen}
+        pupilName={pupilName}
+        pupilPhone={pupilPhone}
+        startTime={startTime}
+        etaMinutes={etaMinutes}
+        onMarkRunningLate={(delayMinutes, newEtaText) => {
+          supabase.from("scheduled_lessons").update({ status: "running_late" }).eq("id", lessonId).then(() => {});
+          supabase.functions.invoke("notify-pupil", { body: { pupilId, type: "running_late", delayMinutes, newEtaText } }).catch(() => {});
+          qc.invalidateQueries({ queryKey: ["next-lesson-details"] });
+          qc.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+        }}
+        onMarkOnWay={(etaText) => {
+          supabase.from("scheduled_lessons").update({ status: "en_route" }).eq("id", lessonId).then(() => {});
+          supabase.functions.invoke("notify-pupil", { body: { pupilId, type: "en_route", etaText } }).catch(() => {});
+          qc.invalidateQueries({ queryKey: ["next-lesson-details"] });
+        }}
       />
     </div>
   );
