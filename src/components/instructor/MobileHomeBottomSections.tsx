@@ -10,9 +10,18 @@ import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useInstructorPupilsPaymentSummary } from "@/hooks/usePupilPaymentStatus";
 import { useInstructorPinnedTiles } from "@/hooks/useInstructorPinnedTiles";
-import { QUICK_ACCESS_TILES_BY_ID } from "@/components/instructor/quickAccess/tileRegistry";
+import { QUICK_ACCESS_TILES, QUICK_ACCESS_TILES_BY_ID } from "@/components/instructor/quickAccess/tileRegistry";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { CustomizeFrequentlyUsedSheet } from "@/components/instructor/quickAccess/CustomizeFrequentlyUsedSheet";
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { supabase } from "@/integrations/supabase/client";
 
 const BLUE = "#1A52A0";
 const TEXT = "#1A1A1A";
