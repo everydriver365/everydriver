@@ -124,6 +124,7 @@ export default function InstructorLiveSession() {
     examinerId: string | null;
   } | null>(null);
   const [showPupilPicker, setShowPupilPicker] = useState(false);
+  const [selectedMode, setSelectedMode] = useState<"liveLesson" | "testRoute" | "recordTest">("liveLesson");
 
   const isSessionActive = !!device?.current_session_id;
   const location = useLocation();
