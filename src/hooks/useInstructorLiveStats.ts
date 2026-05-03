@@ -4,6 +4,7 @@ import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from "date-f
 
 interface LiveStats {
   hoursThisWeek: number;
+  lessonsThisWeek: number;
   monthEarnings: number;
   loading: boolean;
 }
@@ -11,6 +12,7 @@ interface LiveStats {
 export function useInstructorLiveStats(instructorId: string | undefined) {
   const [stats, setStats] = useState<LiveStats>({
     hoursThisWeek: 0,
+    lessonsThisWeek: 0,
     monthEarnings: 0,
     loading: true,
   });
