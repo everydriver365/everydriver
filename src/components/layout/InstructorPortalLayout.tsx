@@ -899,34 +899,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <>
             <OfflineBanner />
             <main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`} style={{ backgroundColor: 'transparent' }}>{children}</main>
-            <InstructorBottomNav wallpaperColor={appStyleBg} />
-            {/* Floating Ask ED button */}
-            <div className="fixed bottom-[88px] right-4 z-40 flex flex-col items-center gap-1">
-              <motion.button
-                onClick={handleVoiceTap}
-                whileTap={{ scale: 0.9 }}
-                className={cn(
-                  "h-12 w-12 rounded-full shadow-lg flex items-center justify-center transition-colors duration-300",
-                  voiceAssistant.state === "idle"
-                    ? "bg-gradient-to-br from-violet-500 to-indigo-600 text-white"
-                    : voiceAssistant.state === "listening"
-                    ? "bg-destructive text-destructive-foreground"
-                    : voiceAssistant.state === "processing"
-                    ? "bg-amber-500 text-white"
-                    : "bg-emerald-500 text-white"
-                )}
-                title="Ask ED"
-              >
-                {voiceAssistant.state === "idle" && <Mic className="h-5 w-5" />}
-                {voiceAssistant.state === "listening" && (
-                  <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1 }}>
-                    <Mic className="h-5 w-5" />
-                  </motion.div>
-                )}
-                {voiceAssistant.state === "processing" && <Loader2 className="h-5 w-5 animate-spin" />}
-                {voiceAssistant.state === "speaking" && <Volume2 className="h-5 w-5" />}
-              </motion.button>
-            </div>
+            <InstructorBottomNav wallpaperColor={appStyleBg} voiceState={voiceAssistant.state} onVoiceTap={handleVoiceTap} />
             <VoiceAssistantOverlay state={voiceAssistant.state} transcript={voiceAssistant.transcript} responseText={voiceAssistant.responseText} onCancel={voiceAssistant.cancel} />
           </>
         )}
