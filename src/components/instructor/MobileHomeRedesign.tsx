@@ -541,11 +541,12 @@ function UpNextTile({
             style={{
               width: 68,
               background: BLUE,
-              padding: "12px 8px",
+              padding: "16px 8px",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 8,
+              justifyContent: "center",
+              gap: 14,
               color: "#FFFFFF",
             }}
           >
