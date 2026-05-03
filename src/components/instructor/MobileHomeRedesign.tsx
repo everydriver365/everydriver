@@ -531,6 +531,8 @@ function UpNextTile({
           countdown={countdown}
           startTime={start}
           whenLabel={whenLabel}
+          pupilName={pupilName}
+          pupilProfileImage={pupilProfileImage}
         />
 
         <div style={{ display: "flex", minHeight: 130 }}>
