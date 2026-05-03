@@ -981,10 +981,109 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
     );
   }
 
+  // Top 3 horizontal tiles (urgent first, then to-do)
+  const top = [...urgent, ...todo].slice(0, 3);
+
   return (
-    <div style={{ paddingBottom: 14 }}>
-      <AttentionGroupCard rows={urgent} groupLabel="Urgent" groupColor="#B23A3F" groupBorder="rgba(178,58,63,0.18)" />
-      <AttentionGroupCard rows={todo} groupLabel="To do" groupColor="#B45309" groupBorder="rgba(180,83,9,0.18)" />
+    <div style={{ padding: "0 20px 14px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(${top.length}, minmax(0, 1fr))`, gap: 8 }}>
+        {top.map((r) => {
+          const isUrgent = r.group === "urgent";
+          const badgeBg = r.badge?.bg || (isUrgent ? "#E15D5A" : "#E29A2B");
+          const badgeLabel = r.badge?.label;
+          // Take first sentence of subtitle as 2nd line; fall back to subtitle
+          const lineTwo = r.subtitle.split("·")[0]?.trim() || "";
+          return (
+            <button
+              key={r.key}
+              type="button"
+              onClick={r.onClick}
+              className="home-v2-tile"
+              style={{
+                position: "relative",
+                padding: "10px 10px 10px 10px",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                textAlign: "left",
+                cursor: "pointer",
+                background: "#FFFFFF",
+                minWidth: 0,
+              }}
+            >
+              <span
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 10,
+                  background: r.iconBg,
+                  color: r.iconColor,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <r.Icon size={15} strokeWidth={2} />
+              </span>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "#0B1220",
+                    letterSpacing: "-0.1px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    lineHeight: 1.15,
+                  }}
+                >
+                  {r.title}
+                </div>
+                {lineTwo && (
+                  <div
+                    style={{
+                      fontSize: 10.5,
+                      color: "#64748B",
+                      marginTop: 1,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {lineTwo}
+                  </div>
+                )}
+              </div>
+              {badgeLabel && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: -4,
+                    right: -4,
+                    minWidth: 20,
+                    height: 20,
+                    padding: "0 6px",
+                    borderRadius: 10,
+                    background: badgeBg,
+                    color: "#FFFFFF",
+                    fontSize: 10.5,
+                    fontWeight: 700,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "2px solid #FFFFFF",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {badgeLabel}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
