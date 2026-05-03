@@ -27,15 +27,13 @@ import { MapHeroStatic } from "@/components/instructor/MapHeroStatic";
 import { MapHeroLive } from "@/components/instructor/upNext/MapHeroLive";
 
 /* Restored sections from legacy home */
-import { QuickAccessSwipeablePaged } from "@/components/instructor/quickAccess/QuickAccessSwipeablePaged";
 import { MobileHomeBottomSections } from "@/components/instructor/MobileHomeBottomSections";
-import { ImpactAlertCard } from "@/components/instructor/ImpactAlertCard";
-import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
-import { TelematicsTile } from "@/components/instructor/TelematicsTile";
-import { VehicleHealthCard } from "@/components/instructor/VehicleHealthCard";
-import { IdleTimeCostCard } from "@/components/instructor/IdleTimeCostCard";
-import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
+import { useDormantPupilsCount } from "@/hooks/useDormantPupilsCount";
+import { Wrench, Users as UsersIcon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { differenceInDays, isPast } from "date-fns";
 
 /* ---------- Brand tokens ---------- */
 const RED = "#CC2229";
