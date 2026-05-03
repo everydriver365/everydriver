@@ -34,11 +34,11 @@ const FONT_STACK =
 
 const PALETTE = {
   light: {
-    bg: "#FFFFFF",
-    border: "#E5E5EA",
+    bg: "#F2F4F8",
+    border: "transparent",
     title: "#000000",
     icon: "#6E6E73",
-    badgeRing: "#FFFFFF",
+    badgeRing: "#F2F4F8",
   },
   dark: {
     bg: "#1C1C1E",
