@@ -390,6 +390,18 @@ export function AppHeader({
           }}
         >
           <DsmLogo size={24} dark={isDark} />
+          <span
+            style={{
+              fontFamily: FONT_STACK,
+              fontSize: 14,
+              fontWeight: 600,
+              letterSpacing: -0.2,
+              color: palette.title,
+              whiteSpace: "nowrap",
+            }}
+          >
+            Driving School Manager
+          </span>
           <h1
             style={{
               margin: 0,
