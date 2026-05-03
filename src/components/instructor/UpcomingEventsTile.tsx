@@ -99,9 +99,9 @@ export function UpcomingEventsTile({ instructorId }: Props) {
             background: "none",
             border: "none",
             padding: 0,
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 600,
-            color: BLUE,
+            color: "#315FAE",
             cursor: "pointer",
           }}
         >
@@ -111,12 +111,11 @@ export function UpcomingEventsTile({ instructorId }: Props) {
 
       {/* Card */}
       <div
+        className="home-v2-card"
         style={{
-          backgroundColor: "#FFF",
-          borderRadius: 14,
           overflow: "hidden",
-          border: "0.5px solid rgba(26,82,160,0.08)",
           marginBottom: 24,
+          padding: 0,
         }}
       >
         {isLoading ? (
