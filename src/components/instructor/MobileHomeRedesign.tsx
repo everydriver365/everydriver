@@ -1063,6 +1063,7 @@ export function MobileHomeRedesign({
           <SectionLabel>Up next</SectionLabel>
           <UpNextTile
             pupilId={nextLesson.pupilId}
+            instructorId={instructorId}
             lessonId={nextLesson.lessonId}
             pupilName={nextLesson.pupilName}
             pupilPhone={nextLesson.pupilPhone}
