@@ -885,7 +885,7 @@ export function MobileHomeRedesign({
 
   const { data: today } = useTodayOverview(instructorId);
   const { data: nextLesson } = useNextLessonDetails(instructorId);
-  const { hoursThisWeek } = useInstructorLiveStats(instructorId);
+  const { hoursThisWeek, lessonsThisWeek } = useInstructorLiveStats(instructorId);
   const pendingJobs = usePendingJobsCount();
   const { data: unread = 0 } = useUnreadMessagesCount(instructorId);
   const { data: paymentsSummary } = useInstructorPupilsPaymentSummary(instructorId);
@@ -1053,7 +1053,7 @@ export function MobileHomeRedesign({
         todaySessions={todaySessions}
         todayEarnings={earningsToday}
         weekHours={hoursThisWeek || 0}
-        weekSessions={lessonsToday}
+        weekSessions={lessonsThisWeek}
       />
 
       {nextLesson && (

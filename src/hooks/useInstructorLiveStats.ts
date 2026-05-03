@@ -4,6 +4,7 @@ import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from "date-f
 
 interface LiveStats {
   hoursThisWeek: number;
+  lessonsThisWeek: number;
   monthEarnings: number;
   loading: boolean;
 }
@@ -11,6 +12,7 @@ interface LiveStats {
 export function useInstructorLiveStats(instructorId: string | undefined) {
   const [stats, setStats] = useState<LiveStats>({
     hoursThisWeek: 0,
+    lessonsThisWeek: 0,
     monthEarnings: 0,
     loading: true,
   });
@@ -40,6 +42,7 @@ export function useInstructorLiveStats(instructorId: string | undefined) {
 
       const totalMinutes = weekLessons?.reduce((sum, lesson) => sum + (lesson.duration_minutes || 0), 0) || 0;
       const hoursThisWeek = Math.round(totalMinutes / 60 * 10) / 10;
+      const lessonsThisWeek = weekLessons?.length || 0;
 
       const { data: monthPayments, error: monthError } = await supabase
         .from("payment_history")
@@ -52,7 +55,7 @@ export function useInstructorLiveStats(instructorId: string | undefined) {
 
       const monthEarnings = monthPayments?.reduce((sum, payment) => sum + (payment.amount || 0), 0) || 0;
 
-      setStats({ hoursThisWeek, monthEarnings, loading: false });
+      setStats({ hoursThisWeek, lessonsThisWeek, monthEarnings, loading: false });
     } catch (error) {
       console.error("Error fetching live stats:", error);
       setStats(prev => ({ ...prev, loading: false }));
