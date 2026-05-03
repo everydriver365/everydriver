@@ -94,7 +94,7 @@ export function useUpcomingEvents(instructorId: string | undefined) {
       // Vehicles: MOT + Insurance
       try {
         const { data: vehicles } = await supabase
-          .from("vehicles")
+          .from("instructor_vehicles")
           .select("id, registration, make, model, mot_expiry, insurance_expiry")
           .eq("instructor_id", instructorId);
         for (const v of vehicles || []) {
