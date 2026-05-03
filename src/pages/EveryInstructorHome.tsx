@@ -355,42 +355,12 @@ export default function EveryInstructorHome() {
       )}
 
       {/* ── Quick Actions (iOS grouped list) ── */}
-      <section className="mt-9">
-        <div className="px-5 mb-3">
-          <h2 className="text-[22px] font-semibold text-gray-900 leading-tight" style={{ letterSpacing: "-0.02em" }}>
-            Quick Actions
-          </h2>
-        </div>
-        <div className="mx-5 bg-white rounded-xl ios-shadow-resting overflow-hidden divide-y divide-gray-100">
-          <QuickActionRow
-            icon={Briefcase}
-            label="Job Offers"
-            accent="#AF52DE"
-            badge={pendingJobs}
-            onClick={() => navigate("/every-instructor/jobs")}
-          />
-          <QuickActionRow
-            icon={MessageSquare}
-            label="Messages"
-            accent="#FF9500"
-            badge={unreadMessages}
-            onClick={() => navigate("/every-instructor/messages")}
-          />
-          <QuickActionRow
-            icon={PoundSterling}
-            label="Take Payment"
-            accent="#34C759"
-            onClick={() => navigate("/every-instructor/take-payment")}
-          />
-          <QuickActionRow
-            icon={Users}
-            label="Pupils"
-            accent="#007AFF"
-            onClick={() => navigate("/every-instructor/pupils")}
-            isLast
-          />
-        </div>
-      </section>
+      <QuickActionsBlock
+        pendingJobs={pendingJobs}
+        unreadMessages={unreadMessages}
+        onEdit={() => navigate("/every-instructor/quick-actions/edit")}
+        onNavigate={navigate}
+      />
 
       {/* ── Your Business (2x2 grid) ─────────── */}
       <Section title="Your Business" subtitle="Today's Overview" moreRoute="/every-instructor/pay" scroll={false}>
