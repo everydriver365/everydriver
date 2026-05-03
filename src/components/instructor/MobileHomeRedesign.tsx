@@ -267,7 +267,7 @@ function StatsRow({
         label="TODAY"
         value={`£${Math.round(todayEarnings)}`}
         valueColor={RED}
-        sub={`${todaySessions} session${todaySessions === 1 ? "" : "s"}`}
+        sub={`${todaySessions} lesson${todaySessions === 1 ? "" : "s"}`}
       />
       <Card
         label="THIS WEEK"
