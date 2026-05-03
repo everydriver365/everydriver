@@ -82,13 +82,7 @@ export function CustomizeFrequentlyUsedSheet({
   };
 
   const add = (id: string) => {
-    setPinnedIds((curr) => {
-      if (curr.includes(id)) return curr;
-      if (curr.length >= MAX_PINS) {
-        return [...curr.slice(1), id];
-      }
-      return [...curr, id];
-    });
+    setPinnedIds((curr) => (curr.includes(id) ? curr : [...curr, id]));
   };
 
   const handleDone = async () => {
