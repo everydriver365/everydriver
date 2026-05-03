@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { checkLessonClash } from "@/lib/lessonClashCheck";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateLessonQueries } from "@/lib/invalidateLessonQueries";
 import { cn } from "@/lib/utils";
@@ -223,6 +224,29 @@ export function CoursePlannerForm({
 
     setBooking(true);
     try {
+      // Pre-flight clash check across all generated slots
+      const clashResults = await Promise.all(
+        result.slots.map((s) =>
+          checkLessonClash({
+            instructorId,
+            date: s.date,
+            startTime: s.start_time.slice(0, 5),
+            durationMinutes: s.duration_minutes,
+          }).then((r) => ({ slot: s, result: r }))
+        )
+      );
+      const blocking = clashResults.filter((c) => c.result.hardOverlap);
+      if (blocking.length > 0) {
+        const summary = blocking
+          .slice(0, 3)
+          .map((c) => `${c.slot.date} ${c.slot.start_time.slice(0, 5)} → ${c.result.clashes.map((x) => x.name).join(', ')}`)
+          .join('\n');
+        const more = blocking.length > 3 ? `\n…and ${blocking.length - 3} more` : '';
+        toast.error(`${blocking.length} lesson${blocking.length > 1 ? 's' : ''} clash with existing bookings:\n${summary}${more}`, { duration: 8000 });
+        setBooking(false);
+        return;
+      }
+
       const lessons = result.slots.map((s) => ({
         instructor_id: instructorId,
         pupil_id: effectivePupilId,

@@ -215,6 +215,7 @@ export function AddLessonSheet({
   const [selectedExaminer, setSelectedExaminer] = useState('');
   const [checklistOpen, setChecklistOpen] = useState(true);
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
+  const [isHardOverlap, setIsHardOverlap] = useState(false);
   const [travelDetailsOpen, setTravelDetailsOpen] = useState(false);
   const [checkingConflict, setCheckingConflict] = useState(false);
   const pendingCheckRef = useRef<Promise<void> | null>(null);
@@ -301,7 +302,7 @@ export function AddLessonSheet({
     setIsRecurring(false); setRecurrenceWeeks('4');
     setPlannedCompetencies([]); setLessonType('standard');
     setSelectedTestCentre(''); setSelectedExaminer('');
-    setConflictWarning(null); setPaymentMethod('tbc');
+    setConflictWarning(null); setIsHardOverlap(false); setPaymentMethod('tbc');
   };
 
   const handlePostSavePayment = (pupilId: string) => {
@@ -321,7 +322,7 @@ export function AddLessonSheet({
   // Conflict check (buffered overlap) + travel-time check (previous + next + first-of-day)
   useEffect(() => {
     if (!lessonDate || !lessonStartTime || !open) {
-      setConflictWarning(null);
+      setConflictWarning(null); setIsHardOverlap(false);
       setTravelSuggestion(null);
       setTravelWarning(null);
       return;
@@ -435,6 +436,7 @@ export function AddLessonSheet({
             const bufferLabel = bufferMinutes > 0
               ? `needs ${bufferMinutes} min buffer`
               : 'back-to-back, no gap';
+            setIsHardOverlap(hardOverlap);
             setConflictWarning(
               hardOverlap
                 ? `Overlaps with ${names}`
@@ -443,10 +445,10 @@ export function AddLessonSheet({
             // Fall through — travel-time checks below still run so the amber
             // soft warning can appear alongside the red hard-block banner.
           } else {
-            setConflictWarning(null);
+            setConflictWarning(null); setIsHardOverlap(false);
           }
         } else {
-          setConflictWarning(null);
+          setConflictWarning(null); setIsHardOverlap(false);
         }
 
         const previous = allSlots
@@ -545,7 +547,7 @@ export function AddLessonSheet({
         setTravelSuggestion(pendingTravelSuggestion);
         setTravelWarning(pendingTravelWarning);
       } catch {
-        setConflictWarning(null);
+        setConflictWarning(null); setIsHardOverlap(false);
         setTravelSuggestion(null);
         setTravelWarning(null);
       } finally {
@@ -605,7 +607,7 @@ export function AddLessonSheet({
   const handleAddLessonExisting = async () => {
     if (!selectedPupil || !lessonDate) { toast.error('Please select a pupil and date'); return; }
     if (pendingCheckRef.current) { try { await pendingCheckRef.current; } catch { /* ignore */ } }
-    if (conflictWarning && !overrideBuffer) { toast.error(conflictWarning); return; }
+    if (conflictWarning) { if (isHardOverlap) { toast.error(conflictWarning); return; } if (!overrideBuffer) { toast.error(conflictWarning); return; } }
     if (!(await validateExaminerCentreMatch())) return;
     setLoading(true);
     try {
@@ -642,7 +644,7 @@ export function AddLessonSheet({
   const handleAddLessonNew = async () => {
     if (!newPupilName.trim() || !lessonDate) { toast.error('Please enter a name and date'); return; }
     if (pendingCheckRef.current) { try { await pendingCheckRef.current; } catch { /* ignore */ } }
-    if (conflictWarning && !overrideBuffer) { toast.error(conflictWarning); return; }
+    if (conflictWarning) { if (isHardOverlap) { toast.error(conflictWarning); return; } if (!overrideBuffer) { toast.error(conflictWarning); return; } }
     if (!(await validateExaminerCentreMatch())) return;
     setLoading(true);
     try {
