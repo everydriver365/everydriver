@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 const FONT =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif';
 const BG = "#F2F4F8";
-const BLUE = "#1F3A8A";
+const BLUE = "#2952B3";
 
 interface Detail {
   typeLabel: string;

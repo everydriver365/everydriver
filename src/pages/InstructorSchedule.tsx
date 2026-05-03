@@ -210,7 +210,7 @@ export default function InstructorSchedule() {
                     style={{
                       width: 34, height: 34, borderRadius: 17,
                       backgroundColor: "#B23A3F",
-                      border: "2px solid #1F3A8A",
+                      border: "2px solid #2952B3",
                       overflow: "hidden",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       padding: 0, cursor: "pointer",
@@ -255,7 +255,7 @@ export default function InstructorSchedule() {
                         border: "none", cursor: "pointer",
                         fontSize: 11,
                         fontWeight: active ? 700 : 500,
-                        color: active ? "#1F3A8A" : "#8E8E93",
+                        color: active ? "#2952B3" : "#8E8E93",
                       }}
                     >
                       <Icon style={{ width: 12, height: 12, strokeWidth: 1.7 }} />

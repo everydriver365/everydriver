@@ -31,7 +31,7 @@ const eventTypeConfig: Record<
 const FONT =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif';
 const ROW_BORDER = "#F0F3F8";
-const BLUE = "#1F3A8A";
+const BLUE = "#2952B3";
 
 interface Props {
   instructorId: string;
