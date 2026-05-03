@@ -14,6 +14,7 @@ import {
   CalendarPlus,
   Calendar,
   PoundSterling,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 
