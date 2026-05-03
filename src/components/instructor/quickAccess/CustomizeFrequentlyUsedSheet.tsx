@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { GripVertical, X, Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import {
   QUICK_ACCESS_TILES,
   QUICK_ACCESS_TILES_BY_ID,
-  TILE_TONE,
+  type QuickAccessTile,
+  type TileTone,
 } from "./tileRegistry";
 
 interface CustomizeFrequentlyUsedSheetProps {
@@ -19,13 +19,35 @@ interface CustomizeFrequentlyUsedSheetProps {
 
 const MAX_PINS = 6;
 
-/**
- * Edit-mode sheet for the "Frequently used" 6 rich tiles.
- * - Reorder pinned tiles (move-up / move-down)
- * - Tap × to remove
- * - Tap + on any tile in "All tools" to add (oldest pin gets bumped at capacity)
- * - Done button persists via onSave
- */
+// Visual mapping per spec (does not change underlying tile data).
+const TONE_TO_CATEGORY: Record<TileTone, string> = {
+  blue: "Scheduling",
+  amber: "Finance",
+  green: "Pupils",
+  red: "Vehicle",
+  purple: "Reports",
+  grey: "Admin",
+};
+
+const CATEGORY_COLORS: Record<string, { iconBg: string; iconColor: string }> = {
+  Scheduling: { iconBg: "#EEF3FF", iconColor: "#1A52A0" },
+  Finance: { iconBg: "#FFF6E6", iconColor: "#B45309" },
+  Pupils: { iconBg: "#E8F8ED", iconColor: "#1A7A3C" },
+  Vehicle: { iconBg: "#FFF0F0", iconColor: "#CC2229" },
+  Reports: { iconBg: "#F0EEFF", iconColor: "#6B21A8" },
+  Admin: { iconBg: "#F2F4F8", iconColor: "#5B6B8A" },
+};
+
+const CATEGORIES = ["All", "Scheduling", "Finance", "Pupils", "Vehicle", "Reports", "Admin"];
+
+function categoryOf(tile: QuickAccessTile): string {
+  return TONE_TO_CATEGORY[tile.tone] ?? "Admin";
+}
+
+function colorsOf(tile: QuickAccessTile) {
+  return CATEGORY_COLORS[categoryOf(tile)] ?? CATEGORY_COLORS.Admin;
+}
+
 export function CustomizeFrequentlyUsedSheet({
   open,
   onOpenChange,
@@ -34,17 +56,23 @@ export function CustomizeFrequentlyUsedSheet({
   saving,
 }: CustomizeFrequentlyUsedSheetProps) {
   const [pinnedIds, setPinnedIds] = useState<string[]>(initialPinnedIds);
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [dragId, setDragId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (open) setPinnedIds(initialPinnedIds);
+    if (open) {
+      setPinnedIds(initialPinnedIds);
+      setSelectedCategory("All");
+    }
   }, [open, initialPinnedIds]);
 
-  const move = (idx: number, dir: -1 | 1) => {
-    const target = idx + dir;
-    if (target < 0 || target >= pinnedIds.length) return;
+  const reorder = (sourceId: string, targetId: string) => {
+    if (sourceId === targetId) return;
     setPinnedIds((curr) => {
-      const next = [...curr];
-      [next[idx], next[target]] = [next[target], next[idx]];
+      const next = curr.filter((id) => id !== sourceId);
+      const targetIdx = next.indexOf(targetId);
+      if (targetIdx === -1) return curr;
+      next.splice(targetIdx, 0, sourceId);
       return next;
     });
   };
@@ -57,7 +85,6 @@ export function CustomizeFrequentlyUsedSheet({
     setPinnedIds((curr) => {
       if (curr.includes(id)) return curr;
       if (curr.length >= MAX_PINS) {
-        // Bump oldest (first slot) to make room.
         return [...curr.slice(1), id];
       }
       return [...curr, id];
@@ -67,136 +94,431 @@ export function CustomizeFrequentlyUsedSheet({
   const handleDone = async () => {
     try {
       await onSave(pinnedIds);
-      toast.success("Frequently used updated");
+      toast.success("Quick access updated");
       onOpenChange(false);
     } catch {
       toast.error("Couldn't save your tiles. Please try again.");
     }
   };
 
-  const available = QUICK_ACCESS_TILES.filter((t) => !pinnedIds.includes(t.id));
+  const available = useMemo(
+    () => QUICK_ACCESS_TILES.filter((t) => !pinnedIds.includes(t.id)),
+    [pinnedIds],
+  );
+  const filtered = useMemo(
+    () =>
+      selectedCategory === "All"
+        ? available
+        : available.filter((t) => categoryOf(t) === selectedCategory),
+    [available, selectedCategory],
+  );
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[85vh] overflow-y-auto p-0">
-        <SheetHeader className="sticky top-0 z-10 bg-background border-b border-border/50 px-4 py-3 flex flex-row items-center justify-between">
-          <SheetTitle className="text-base">Customize tiles</SheetTitle>
-          <Button size="sm" onClick={handleDone} disabled={saving}>
-            {saving ? "Saving…" : "Done"}
-          </Button>
-        </SheetHeader>
+      <SheetContent
+        side="bottom"
+        className="h-[90vh] overflow-y-auto p-0 border-0"
+        style={{ background: "#F2F4F8" }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            background: "#FFF",
+            padding: "12px 16px 10px",
+            borderBottom: "0.5px solid #F0F3F8",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: 17,
+                fontWeight: 700,
+                color: "#1A1A1A",
+                letterSpacing: -0.3,
+              }}
+            >
+              Quick access
+            </div>
+            <div style={{ fontSize: 10, color: "#8E8E93", marginTop: 2 }}>
+              {pinnedIds.length} pinned · drag to reorder
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleDone}
+            disabled={saving}
+            style={{
+              background: "#1A52A0",
+              borderRadius: 20,
+              padding: "6px 16px",
+              border: "none",
+              cursor: "pointer",
+              opacity: saving ? 0.6 : 1,
+            }}
+          >
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#FFF" }}>
+              {saving ? "Saving…" : "Done"}
+            </span>
+          </button>
+        </div>
 
-        <div className="px-4 pt-4 pb-8 space-y-6">
-          <section>
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
-              Pinned · {pinnedIds.length} of {MAX_PINS}
-            </p>
-            <p className="text-xs text-muted-foreground mb-3">
-              Reorder using the arrows. Tap × to remove.
-            </p>
-            <ul className="space-y-2">
-              {pinnedIds.length === 0 && (
-                <li className="rounded-xl border border-dashed border-border/60 p-4 text-sm text-muted-foreground text-center">
-                  No pinned tiles. Add up to {MAX_PINS} from below.
-                </li>
-              )}
-              {pinnedIds.map((id, idx) => {
+        <div style={{ padding: "14px 15px 24px" }}>
+          {/* Pinned section */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 8,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: "#8E8E93",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+              }}
+            >
+              Pinned
+            </span>
+            <span style={{ fontSize: 9, fontWeight: 500, color: "#C7C7CC" }}>
+              {pinnedIds.length} / unlimited
+            </span>
+          </div>
+
+          <div
+            style={{
+              background: "#FFF",
+              borderRadius: 14,
+              overflow: "hidden",
+              border: "0.5px solid rgba(26,82,160,0.08)",
+              marginBottom: 14,
+            }}
+          >
+            {pinnedIds.length === 0 ? (
+              <div
+                style={{
+                  padding: "20px 14px",
+                  textAlign: "center",
+                  fontSize: 12,
+                  color: "#8E8E93",
+                }}
+              >
+                No pinned tools. Add some from below.
+              </div>
+            ) : (
+              pinnedIds.map((id, idx) => {
                 const tile = QUICK_ACCESS_TILES_BY_ID[id];
                 if (!tile) return null;
-                const palette = TILE_TONE[tile.tone];
+                const isPrimary = idx === 0;
+                const colors = colorsOf(tile);
+                const category = categoryOf(tile);
                 const Icon = tile.icon;
                 return (
-                  <li
-                    key={id}
-                    className="flex items-center gap-3 bg-white border border-border/50 rounded-xl px-3 py-2.5"
-                  >
-                    <GripVertical className="h-4 w-4 text-muted-foreground" />
+                  <div key={id}>
+                    {idx > 0 && (
+                      <div style={{ height: 0.5, background: "#F0F3F8" }} />
+                    )}
                     <div
+                      draggable
+                      onDragStart={() => setDragId(id)}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        if (dragId && dragId !== id) reorder(dragId, id);
+                      }}
+                      onDragEnd={() => setDragId(null)}
                       style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 8,
-                        background: palette.bg,
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
+                        gap: 10,
+                        padding: "10px 12px",
+                        background: isPrimary ? "#F5F8FF" : "#FFF",
+                        opacity: dragId === id ? 0.4 : 1,
                       }}
                     >
-                      <Icon size={16} strokeWidth={1.8} color={palette.fg} />
-                    </div>
-                    <span className="flex-1 text-sm font-medium truncate">{tile.title}</span>
-                    <button
-                      type="button"
-                      onClick={() => move(idx, -1)}
-                      disabled={idx === 0}
-                      aria-label="Move up"
-                      className="px-2 py-1 text-xs text-muted-foreground disabled:opacity-30"
-                    >
-                      ↑
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => move(idx, 1)}
-                      disabled={idx === pinnedIds.length - 1}
-                      aria-label="Move down"
-                      className="px-2 py-1 text-xs text-muted-foreground disabled:opacity-30"
-                    >
-                      ↓
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => remove(id)}
-                      aria-label={`Remove ${tile.title}`}
-                      className="px-2 text-muted-foreground"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-
-          <section>
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-3">
-              All tools
-            </p>
-            <ul className="grid grid-cols-1 gap-2">
-              {available.map((tile) => {
-                const palette = TILE_TONE[tile.tone];
-                const Icon = tile.icon;
-                return (
-                  <li key={tile.id}>
-                    <button
-                      type="button"
-                      onClick={() => add(tile.id)}
-                      className="w-full flex items-center gap-3 bg-white border border-border/50 rounded-xl px-3 py-2.5 hover:bg-muted/30"
-                    >
+                      {/* Drag handle */}
                       <div
                         style={{
-                          width: 32,
-                          height: 32,
+                          width: 8,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 2,
+                          flexShrink: 0,
+                          cursor: "grab",
+                        }}
+                      >
+                        {[0, 1, 2].map((i) => (
+                          <div
+                            key={i}
+                            style={{
+                              width: 8,
+                              height: 1.5,
+                              background: "#C7C7CC",
+                              borderRadius: 1,
+                            }}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Icon */}
+                      <div
+                        style={{
+                          width: 30,
+                          height: 30,
                           borderRadius: 8,
-                          background: palette.bg,
+                          background: isPrimary ? "#1A52A0" : colors.iconBg,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
                           flexShrink: 0,
                         }}
                       >
-                        <Icon size={16} strokeWidth={1.8} color={palette.fg} />
+                        <Icon
+                          size={13}
+                          color={isPrimary ? "#FFF" : colors.iconColor}
+                          strokeWidth={1.6}
+                        />
                       </div>
-                      <span className="flex-1 text-left text-sm font-medium truncate">
-                        {tile.title}
-                      </span>
-                      <Plus className="h-4 w-4 text-muted-foreground" />
-                    </button>
-                  </li>
+
+                      {/* Label + category */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: "#1A1A1A",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {tile.title}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            color: isPrimary ? "#1A52A0" : "#8E8E93",
+                            marginTop: 1,
+                            fontWeight: isPrimary ? 500 : 400,
+                          }}
+                        >
+                          {isPrimary ? "Primary tile" : category}
+                        </div>
+                      </div>
+
+                      {isPrimary && (
+                        <div
+                          style={{
+                            background: "#EEF3FF",
+                            borderRadius: 20,
+                            padding: "2px 7px",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 9,
+                              fontWeight: 600,
+                              color: "#1A52A0",
+                            }}
+                          >
+                            1st
+                          </span>
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => remove(id)}
+                        aria-label={`Remove ${tile.title}`}
+                        style={{
+                          width: 22,
+                          height: 22,
+                          borderRadius: 11,
+                          background: "#FFF0F0",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          border: "none",
+                          cursor: "pointer",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <X size={9} color="#CC2229" strokeWidth={2.2} />
+                      </button>
+                    </div>
+                  </div>
                 );
-              })}
-            </ul>
-          </section>
+              })
+            )}
+          </div>
+
+          {/* Add from browse */}
+          <div
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: "#8E8E93",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              marginBottom: 8,
+            }}
+          >
+            Add from browse
+          </div>
+
+          {/* Category chips */}
+          <div
+            style={{
+              display: "flex",
+              gap: 6,
+              overflowX: "auto",
+              paddingRight: 4,
+              marginBottom: 10,
+              scrollbarWidth: "none",
+            }}
+            className="no-scrollbar"
+          >
+            {CATEGORIES.map((cat) => {
+              const active = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat)}
+                  style={{
+                    borderRadius: 20,
+                    padding: "4px 11px",
+                    background: active ? "#1A52A0" : "#FFF",
+                    border: active
+                      ? "none"
+                      : "0.5px solid rgba(26,82,160,0.15)",
+                    cursor: "pointer",
+                    flexShrink: 0,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      color: active ? "#FFF" : "#5B6B8A",
+                    }}
+                  >
+                    {cat}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Browse list */}
+          <div
+            style={{
+              background: "#FFF",
+              borderRadius: 14,
+              overflow: "hidden",
+              border: "0.5px solid rgba(26,82,160,0.08)",
+            }}
+          >
+            {filtered.length === 0 ? (
+              <div style={{ padding: "20px 14px", textAlign: "center" }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "#1A1A1A",
+                    marginBottom: 3,
+                  }}
+                >
+                  All pinned
+                </div>
+                <div style={{ fontSize: 10, color: "#8E8E93" }}>
+                  Every {selectedCategory === "All" ? "" : selectedCategory + " "}tool is
+                  already in your grid
+                </div>
+              </div>
+            ) : (
+              filtered.map((tile, idx) => {
+                const colors = colorsOf(tile);
+                const Icon = tile.icon;
+                return (
+                  <div key={tile.id}>
+                    {idx > 0 && (
+                      <div style={{ height: 0.5, background: "#F0F3F8" }} />
+                    )}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        padding: "10px 12px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 30,
+                          height: 30,
+                          borderRadius: 8,
+                          background: colors.iconBg,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Icon size={13} color={colors.iconColor} strokeWidth={1.6} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: "#1A1A1A",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {tile.title}
+                        </div>
+                        <div
+                          style={{ fontSize: 10, color: "#8E8E93", marginTop: 1 }}
+                        >
+                          {categoryOf(tile)}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => add(tile.id)}
+                        aria-label={`Add ${tile.title}`}
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 12,
+                          background: "#E8F8ED",
+                          border: "1.5px solid #1A7A3C",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Plus size={10} color="#1A7A3C" strokeWidth={2.2} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
       </SheetContent>
     </Sheet>
