@@ -290,7 +290,7 @@ export function UpcomingEventsTile({ instructorId }: Props) {
             {top4.map((e, idx) => (
               <div key={e.id}>
                 <button
-                  onClick={() => navigate(e.destinationPath)}
+                  onClick={() => navigate(`/instructor/events/${encodeURIComponent(e.id)}`)}
                   style={{
                     width: "100%",
                     display: "flex",
