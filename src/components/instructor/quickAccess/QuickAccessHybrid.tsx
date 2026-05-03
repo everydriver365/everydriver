@@ -264,7 +264,7 @@ export function QuickAccessHybrid({ instructorId }: QuickAccessHybridProps) {
                 padding: 0,
                 fontSize: 11,
                 fontWeight: 500,
-                color: "#2B7BC8",
+                color: "#2F63D3",
                 cursor: "pointer",
               }}
             >
@@ -362,7 +362,7 @@ export function QuickAccessHybrid({ instructorId }: QuickAccessHybridProps) {
                   width: "100%",
                   fontSize: 12,
                   fontWeight: 500,
-                  color: "#2B7BC8",
+                  color: "#2F63D3",
                   cursor: "pointer",
                 }}
               >
