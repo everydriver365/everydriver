@@ -449,6 +449,7 @@ function UpNextTile({
   minutesUntil,
   expanded,
   onToggleExpanded,
+  instructorId,
 }: {
   pupilId: string;
   lessonId: string;
@@ -463,6 +464,7 @@ function UpNextTile({
   minutesUntil: number;
   expanded: boolean;
   onToggleExpanded: () => void;
+  instructorId: string;
 }) {
   const navigate = useNavigate();
   const date = (() => {
