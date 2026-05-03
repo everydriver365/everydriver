@@ -371,7 +371,7 @@ export default function InstructorQuickAvailability() {
           <button
             onClick={handleAddSlot}
             style={{
-              background: "#0A0F29",
+              background: "#1F3A8A",
               borderRadius: 20,
               padding: "7px 14px",
               border: "none",
@@ -397,7 +397,7 @@ export default function InstructorQuickAvailability() {
               style={navBtnStyle}
               aria-label="Previous week"
             >
-              <ChevronLeft size={14} color="#0A0F29" strokeWidth={2} />
+              <ChevronLeft size={14} color="#1F3A8A" strokeWidth={2} />
             </button>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: "#1A1A1A" }}>{monthLabel}</div>
@@ -410,7 +410,7 @@ export default function InstructorQuickAvailability() {
               style={navBtnStyle}
               aria-label="Next week"
             >
-              <ChevronRight size={14} color="#0A0F29" strokeWidth={2} />
+              <ChevronRight size={14} color="#1F3A8A" strokeWidth={2} />
             </button>
           </div>
 
@@ -450,7 +450,7 @@ export default function InstructorQuickAvailability() {
                     style={{
                       fontSize: 8,
                       fontWeight: isT ? 700 : 500,
-                      color: isT ? "#0A0F29" : isPastDay ? "#C7C7CC" : "#8E8E93",
+                      color: isT ? "#1F3A8A" : isPastDay ? "#C7C7CC" : "#8E8E93",
                     }}
                   >
                     {format(day, "EEEEE")}
@@ -460,7 +460,7 @@ export default function InstructorQuickAvailability() {
                       width: 26,
                       height: 26,
                       borderRadius: 13,
-                      background: isT ? "#0A0F29" : "transparent",
+                      background: isT ? "#1F3A8A" : "transparent",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -517,7 +517,7 @@ export default function InstructorQuickAvailability() {
               <button
                 onClick={handleAddSlot}
                 style={{
-                  background: "#0A0F29",
+                  background: "#1F3A8A",
                   borderRadius: 20,
                   padding: "7px 16px",
                   border: "none",
@@ -687,8 +687,8 @@ export default function InstructorQuickAvailability() {
                     cursor: "pointer",
                   }}
                 >
-                  <Plus size={11} color="#0A0F29" strokeWidth={2.2} />
-                  <span style={{ fontSize: 11, fontWeight: 600, color: "#0A0F29" }}>
+                  <Plus size={11} color="#1F3A8A" strokeWidth={2.2} />
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#1F3A8A" }}>
                     Add availability slot
                   </span>
                 </button>

@@ -179,7 +179,7 @@ function FallbackPanel({ postcode }: { postcode: string | null }) {
     >
       <span style={{ fontSize: 12, color: "#8E8E93" }}>Location unavailable</span>
       {postcode ? (
-        <span style={{ fontSize: 13, fontWeight: 600, color: "#0A0F29" }}>{postcode}</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: "#1F3A8A" }}>{postcode}</span>
       ) : null}
     </div>
   );
@@ -480,7 +480,7 @@ function MapHeroLiveImpl({
           width: 44,
           height: 44,
           borderRadius: "50%",
-          background: "#0A0F29",
+          background: "#1F3A8A",
           color: "#FFFFFF",
           display: "flex",
           alignItems: "center",
@@ -528,10 +528,10 @@ function MapHeroLiveImpl({
         }}
         aria-label={expanded ? "Collapse details" : "Expand details"}
       >
-        <span style={{ fontSize: 9, fontWeight: 600, color: "#0A0F29" }}>Details</span>
+        <span style={{ fontSize: 9, fontWeight: 600, color: "#1F3A8A" }}>Details</span>
         <ChevronDown
           size={9}
-          color="#0A0F29"
+          color="#1F3A8A"
           style={{
             transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
             transition: "transform 200ms ease",
