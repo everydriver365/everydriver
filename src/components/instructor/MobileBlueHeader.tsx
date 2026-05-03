@@ -63,6 +63,17 @@ export function MobileBlueHeader({
             </button>
           ) : null}
           <img src={dsmLogo} alt="DSM" className="h-9 w-auto object-contain shrink-0" />
+          <span
+            className="truncate"
+            style={{
+              fontSize: 15,
+              fontWeight: 600,
+              letterSpacing: -0.2,
+              color: "hsl(var(--dsm-text-primary, 240 6% 11%))",
+            }}
+          >
+            Driving School Manager
+          </span>
         </div>
 
         {/* Right: bell, +, avatar, menu */}
