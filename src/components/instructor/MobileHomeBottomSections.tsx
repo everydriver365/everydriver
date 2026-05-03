@@ -240,9 +240,9 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
   }, [enriched, isToday, now]);
 
   return (
-    <div style={{ padding: "0 14px", marginBottom: 14 }}>
+    <div style={{ padding: "0 20px", marginBottom: 18 }}>
       <SectionHeader
-        label="Schedule"
+        label="Today's schedule"
         rightLabel="View all →"
         onRightPress={() => navigate("/instructor/schedule")}
       />
