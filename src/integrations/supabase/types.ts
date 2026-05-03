@@ -14211,7 +14211,9 @@ export type Database = {
         Row: {
           amount_due: number | null
           booking_status: string | null
+          cancellation_note: string | null
           cancellation_reason: string | null
+          cancelled_at: string | null
           cancelled_by: string | null
           check_in_responded_at: string | null
           check_in_sent_at: string | null
@@ -14255,7 +14257,9 @@ export type Database = {
         Insert: {
           amount_due?: number | null
           booking_status?: string | null
+          cancellation_note?: string | null
           cancellation_reason?: string | null
+          cancelled_at?: string | null
           cancelled_by?: string | null
           check_in_responded_at?: string | null
           check_in_sent_at?: string | null
@@ -14299,7 +14303,9 @@ export type Database = {
         Update: {
           amount_due?: number | null
           booking_status?: string | null
+          cancellation_note?: string | null
           cancellation_reason?: string | null
+          cancelled_at?: string | null
           cancelled_by?: string | null
           check_in_responded_at?: string | null
           check_in_sent_at?: string | null
