@@ -326,18 +326,18 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
               e.status === "inProgress"
                 ? "#F2FBF5"
                 : e.status === "upcoming"
-                  ? "#F5F8FF"
+                  ? BLUE_TINT
                   : "#FFF";
             const bandColor =
               e.status === "inProgress"
                 ? "#1A7A3C"
                 : e.status === "upcoming"
-                  ? "#3D55A1"
+                  ? BLUE
                   : e.status === "cancelled"
                     ? "#B23A3F"
                     : "#E0E5EE";
             const timeColor =
-              e.status === "upcoming" ? "#3D55A1" : "#1A1A1A";
+              e.status === "upcoming" ? BLUE : "#1A1A1A";
             const minutesUntil =
               e.status === "upcoming" && e.start
                 ? Math.max(0, Math.round((e.start.getTime() - now.getTime()) / 60_000))
@@ -444,7 +444,7 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                   )}
                   {e.status === "upcoming" && (
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
-                      <span style={{ fontSize: 9, fontWeight: 700, color: "#3D55A1" }}>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: BLUE }}>
                         {minutesUntil}m
                       </span>
                       {fee > 0 && (
