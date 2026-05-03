@@ -398,7 +398,7 @@ export function InstructorSearchOverlay({ open, onOpenChange, instructorId }: Pr
         position: "fixed",
         inset: 0,
         background: "rgba(15,20,30,0.55)",
-        zIndex: 100,
+        zIndex: 9999,
         display: "flex",
         flexDirection: "column",
         alignItems: "stretch",
