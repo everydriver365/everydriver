@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { AlertTriangle } from "lucide-react";
+import { enrichFaultCode } from "@/lib/obdCodeLookup";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle2,
