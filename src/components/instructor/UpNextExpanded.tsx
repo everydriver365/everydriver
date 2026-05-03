@@ -597,6 +597,7 @@ export function UpNextExpanded({
           data={weather.data}
           hasPostcode={!!pickupPostcode}
         />
+        <AlertsRow alerts={drivingAlerts.alerts} loading={drivingAlerts.loading} />
 
         <Divider />
 
