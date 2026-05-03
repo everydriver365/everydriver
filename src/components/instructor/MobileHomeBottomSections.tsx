@@ -404,7 +404,28 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                     {e.lesson.pickupLocation ? ` · ${e.lesson.pickupLocation}` : ""}
                   </div>
                 </div>
-                <StatusPill status={e.status} label={e.label} />
+                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  {(() => {
+                    const paid = e.lesson.paymentStatus === "paid";
+                    return (
+                      <span
+                        style={{
+                          fontSize: 9,
+                          fontWeight: 700,
+                          padding: "2px 6px",
+                          borderRadius: 999,
+                          letterSpacing: 0.2,
+                          textTransform: "uppercase",
+                          color: paid ? "#1A7A3C" : "#CC2229",
+                          background: paid ? "rgba(26,122,60,0.12)" : "rgba(204,34,41,0.12)",
+                        }}
+                      >
+                        {paid ? "Paid" : "Unpaid"}
+                      </span>
+                    );
+                  })()}
+                  <StatusPill status={e.status} label={e.label} />
+                </div>
               </div>
 
               {/* NOW line between past and future */}
