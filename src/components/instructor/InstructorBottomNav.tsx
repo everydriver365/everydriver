@@ -171,40 +171,8 @@ export function InstructorBottomNav({ wallpaperColor, voiceState = "idle", onVoi
         boxShadow: '0 -4px 16px rgba(0,0,0,0.08), 0 -1px 4px rgba(0,0,0,0.05)',
       }}
     >
-      <div className="relative flex items-start justify-between" style={{ padding: '10px 12px 16px', gap: 4 }}>
-        <div className="flex flex-1 items-start justify-around">{leftItems.map(renderTab)}</div>
-
-        {/* Center mic FAB */}
-        <div className="flex items-start justify-center" style={{ width: 72 }}>
-          <motion.button
-            type="button"
-            onClick={handleVoiceTap}
-            whileTap={{ scale: 0.92 }}
-            aria-label="Hey ED"
-            className="relative flex items-center justify-center"
-            style={{
-              width: 60,
-              height: 60,
-              borderRadius: 30,
-              marginTop: -22,
-              background: micGradient,
-              color: 'white',
-              boxShadow: '0 8px 20px rgba(61,85,161,0.35), 0 2px 6px rgba(0,0,0,0.12)',
-              border: '4px solid hsl(var(--dsm-card))',
-            }}
-          >
-            {voiceState === "idle" && <Mic size={24} strokeWidth={2.2} />}
-            {voiceState === "listening" && (
-              <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ repeat: Infinity, duration: 1 }}>
-                <Mic size={24} strokeWidth={2.2} />
-              </motion.div>
-            )}
-            {voiceState === "processing" && <Loader2 size={24} className="animate-spin" />}
-            {voiceState === "speaking" && <Volume2 size={24} strokeWidth={2.2} />}
-          </motion.button>
-        </div>
-
-        <div className="flex flex-1 items-start justify-around">{rightItems.map(renderTab)}</div>
+      <div className="flex items-start justify-around" style={{ padding: '10px 8px 16px' }}>
+        {navItems.map(renderTab)}
       </div>
       <div className="h-safe-area-inset-bottom" style={{ background: 'hsl(var(--dsm-card))' }} />
     </nav>
