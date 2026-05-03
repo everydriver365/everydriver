@@ -807,7 +807,7 @@ export function MobileHomeRedesign({
   const pendingJobs = usePendingJobsCount();
   const { data: unread = 0 } = useUnreadMessagesCount(instructorId);
   const { data: paymentsSummary } = useInstructorPupilsPaymentSummary(instructorId);
-  const { gapSlots } = useRealGapSlots(instructorId, 7);
+  const { data: gapData } = useRealGapSlots(instructorId);
 
   const lessonsToday = today?.lessonCount ?? 0;
   const earningsToday = today?.expectedEarnings ?? 0;
