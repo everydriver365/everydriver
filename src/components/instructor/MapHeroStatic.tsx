@@ -97,6 +97,31 @@ export function MapHeroStatic({ centerQuery, countdown, startTime, whenLabel }: 
         <FallbackMap />
       )}
 
+      {/* Centered pin overlay — always visible regardless of static-map cropping */}
+      {src && (
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -100%)",
+            pointerEvents: "none",
+          }}
+        >
+          <svg width="28" height="36" viewBox="0 0 28 36">
+            <ellipse cx="14" cy="33" rx="6" ry="2" fill="rgba(0,0,0,0.18)" />
+            <path
+              d="M14 1 C21 1 26 6 26 13 C26 22 14 33 14 33 C14 33 2 22 2 13 C2 6 7 1 14 1 Z"
+              fill={RED}
+              stroke="#FFFFFF"
+              strokeWidth="1.5"
+            />
+            <circle cx="14" cy="13" r="4" fill="#FFFFFF" />
+          </svg>
+        </div>
+      )}
+
       {/* Frosted countdown pill */}
       <div
         style={{
