@@ -594,135 +594,229 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetContent
                 side="right"
-                className={cn(
-                  "dsm-instructor a11y-scope flex w-[84vw] max-w-[360px] flex-col border-0 !bg-[hsl(var(--dsm-bg))] bg-none p-0 text-[hsl(var(--dsm-text))] opacity-100 backdrop-blur-none [&>button]:hidden",
-                  (resolvedTheme === "dark" || resolvedTheme === "oled") && "dsm-dark"
-                )}
+                className="dsm-instructor a11y-scope flex w-[84vw] max-w-[360px] flex-col border-0 bg-none p-0 opacity-100 backdrop-blur-none [&>button]:hidden"
                 style={{
-                  backgroundColor: "hsl(var(--dsm-bg))",
-                  borderTopLeftRadius: 18,
-                  borderBottomLeftRadius: 18,
+                  backgroundColor: "#F2F4F8",
+                  borderTopLeftRadius: 24,
+                  borderBottomLeftRadius: 24,
                   boxShadow: "-12px 0 40px rgba(0,0,0,0.18)",
                   overflow: "hidden",
                 }}
               >
-                {/* Compact profile header */}
-                <SheetHeader className="px-5 pt-5 pb-3 text-left space-y-0">
+                <SheetHeader className="space-y-0 text-left">
                   <SheetTitle className="sr-only">Instructor menu</SheetTitle>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9 border border-[hsl(var(--dsm-border))]">
-                      <AvatarImage src={instructor?.profile_image_url || undefined} />
-                      <AvatarFallback className="bg-[hsl(var(--dsm-tile-icon-bg))] text-[hsl(var(--dsm-text))] text-[13px] font-semibold">
-                        {instructor?.name?.charAt(0) || "I"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1 text-left">
-                      <p className="truncate text-[15px] font-semibold leading-[18px] tracking-[-0.2px] text-[hsl(var(--dsm-text))]">
-                        {instructor?.name || "Instructor"}
-                      </p>
-                      <p className="truncate text-[12px] leading-4 tracking-normal text-[hsl(var(--dsm-text-secondary))]">
-                        {instructor?.email}
-                      </p>
+                  <div style={{ backgroundColor: "#1A52A0", padding: "20px 16px 18px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
+                        <div
+                          style={{
+                            width: 42,
+                            height: 42,
+                            borderRadius: 21,
+                            backgroundColor: "#CC2229",
+                            border: "2px solid rgba(255,255,255,0.3)",
+                            overflow: "hidden",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {instructor?.profile_image_url ? (
+                            <img
+                              src={instructor.profile_image_url}
+                              alt=""
+                              style={{ width: 42, height: 42, objectFit: "cover" }}
+                            />
+                          ) : (
+                            <span style={{ fontSize: 16, fontWeight: 700, color: "#FFF" }}>
+                              {instructor?.name?.charAt(0)?.toUpperCase() || "I"}
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div
+                            style={{
+                              fontSize: 14,
+                              fontWeight: 700,
+                              color: "#FFF",
+                              letterSpacing: -0.2,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {instructor?.name || "Instructor"}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 10,
+                              color: "rgba(255,255,255,0.6)",
+                              marginTop: 1,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {instructor?.email}
+                          </div>
+                        </div>
+                      </div>
+                      <SheetClose
+                        aria-label="Close menu"
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: 14,
+                          background: "rgba(255,255,255,0.15)",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          border: 0,
+                          flexShrink: 0,
+                          cursor: "pointer",
+                        }}
+                      >
+                        <X size={14} strokeWidth={2} color="#FFF" />
+                      </SheetClose>
                     </div>
-                    <SheetClose
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[hsl(var(--dsm-text-secondary))] hover:bg-[hsl(var(--dsm-card)/0.7)]"
-                      aria-label="Close menu"
-                    >
-                      <X className="h-[18px] w-[18px]" strokeWidth={1.8} />
-                    </SheetClose>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {[
+                        { value: String(todayOverview?.lessonCount ?? 0), label: "lessons today" },
+                        { value: String(activePupilsCount), label: "active pupils" },
+                        { value: `£${todayOverview?.expectedEarnings ?? 0}`, label: "today" },
+                      ].map((stat, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            flex: 1,
+                            backgroundColor: "rgba(255,255,255,0.12)",
+                            borderRadius: 10,
+                            padding: "7px 8px",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                          }}
+                        >
+                          <span style={{ fontSize: 14, fontWeight: 700, color: "#FFF", lineHeight: "17px" }}>
+                            {stat.value}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: 8,
+                              color: "rgba(255,255,255,0.6)",
+                              marginTop: 2,
+                              textAlign: "center",
+                            }}
+                          >
+                            {stat.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </SheetHeader>
 
-                {/* Grouped navigation */}
                 <nav
-                  className="flex-1 overflow-y-auto px-3 pb-3"
-                  style={{ maxHeight: "calc(100dvh - 140px)" }}
+                  className="flex-1 overflow-y-auto"
+                  style={{ padding: "8px 12px", maxHeight: "calc(100dvh - 180px)" }}
                 >
                   <DrawerSectionLabel>Primary</DrawerSectionLabel>
-                  <div className="space-y-0.5">
-                    {drawerPrimary.map((link) => {
-                      const isActive = location.pathname === link.href;
-                      return (
-                        <DrawerRow
-                          key={link.href}
-                          icon={link.icon}
-                          label={friendlyLabel(link.label)}
-                          active={isActive}
-                          onClick={() => handleNavClick(link.href)}
-                        >
-                          {renderDrawerBadge(link, isActive)}
-                        </DrawerRow>
-                      );
-                    })}
-                  </div>
+                  {drawerPrimary.map((link) => {
+                    const isActive = location.pathname === link.href;
+                    return (
+                      <DrawerRow
+                        key={link.href}
+                        icon={link.icon}
+                        label={friendlyLabel(link.label)}
+                        active={isActive}
+                        onClick={() => handleNavClick(link.href)}
+                      >
+                        {renderDrawerBadge(link, isActive)}
+                      </DrawerRow>
+                    );
+                  })}
 
                   <DrawerSectionLabel>Secondary</DrawerSectionLabel>
-                  <div className="space-y-0.5">
-                    {drawerSecondary.map((link) => {
-                      const isActive = location.pathname === link.href;
-                      return (
-                        <DrawerRow
-                          key={link.href}
-                          icon={link.icon}
-                          label={friendlyLabel(link.label)}
-                          active={isActive}
-                          onClick={() => handleNavClick(link.href)}
-                        >
-                          {renderDrawerBadge(link, isActive)}
-                        </DrawerRow>
-                      );
-                    })}
-                  </div>
+                  {drawerSecondary.map((link) => {
+                    const isActive = location.pathname === link.href;
+                    const isPending = link.href === "/instructor/pending-scheduling";
+                    return (
+                      <DrawerRow
+                        key={link.href}
+                        icon={link.icon}
+                        label={friendlyLabel(link.label)}
+                        active={isActive}
+                        onClick={() => handleNavClick(link.href)}
+                      >
+                        {!isActive && isPending && pendingCount > 0 ? (
+                          <span
+                            style={{
+                              backgroundColor: "#FFF6E6",
+                              color: "#B45309",
+                              borderRadius: 8,
+                              minWidth: 16,
+                              height: 16,
+                              padding: "0 4px",
+                              fontSize: 8,
+                              fontWeight: 700,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            {pendingCount}
+                          </span>
+                        ) : (
+                          renderDrawerBadge(link, isActive)
+                        )}
+                      </DrawerRow>
+                    );
+                  })}
 
                   <DrawerSectionLabel>Tools</DrawerSectionLabel>
-                  <div className="space-y-0.5">
-                    <DrawerRow
-                      icon={Search}
-                      label="Search"
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        setMobileSearchOpen(true);
-                        setMobileSearchQuery("");
-                        setMobileSearchResults([]);
-                      }}
-                    />
-                    <DrawerRow
-                      icon={Headphones}
-                      label="Voice assistant"
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        handleVoiceTap();
-                      }}
-                    />
-                  </div>
+                  <DrawerRow
+                    icon={Search}
+                    label="Search"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setMobileSearchOpen(true);
+                      setMobileSearchQuery("");
+                      setMobileSearchResults([]);
+                    }}
+                  />
+                  <DrawerRow
+                    icon={Headphones}
+                    label="Voice assistant"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      handleVoiceTap();
+                    }}
+                  />
 
                   {drawerExtraGroups.map((group) => (
                     <div key={group.label}>
                       <DrawerSectionLabel>
                         {group.label.charAt(0) + group.label.slice(1).toLowerCase()}
                       </DrawerSectionLabel>
-                      <div className="space-y-0.5">
-                        {group.items.map((link) => {
-                          const isActive = location.pathname === link.href;
-                          return (
-                            <DrawerRow
-                              key={link.href}
-                              icon={link.icon}
-                              label={friendlyLabel(link.label)}
-                              active={isActive}
-                              onClick={() => handleNavClick(link.href)}
-                            >
-                              {renderDrawerBadge(link, isActive)}
-                            </DrawerRow>
-                          );
-                        })}
-                      </div>
+                      {group.items.map((link) => {
+                        const isActive = location.pathname === link.href;
+                        return (
+                          <DrawerRow
+                            key={link.href}
+                            icon={link.icon}
+                            label={friendlyLabel(link.label)}
+                            active={isActive}
+                            onClick={() => handleNavClick(link.href)}
+                          >
+                            {renderDrawerBadge(link, isActive)}
+                          </DrawerRow>
+                        );
+                      })}
                     </div>
                   ))}
-                </nav>
 
-                {/* Footer */}
-                <div className="mt-auto border-t border-[hsl(var(--dsm-border)/0.7)] px-3 py-2.5">
+                  <DrawerSectionLabel>Account</DrawerSectionLabel>
                   <DrawerRow
                     icon={LogOut}
                     label="Sign out"
@@ -732,7 +826,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       setIsMobileMenuOpen(false);
                     }}
                   />
-                </div>
+                </nav>
               </SheetContent>
             </Sheet>
 
