@@ -16,6 +16,7 @@ import { CustomizeFrequentlyUsedSheet } from "@/components/instructor/quickAcces
 import { InstructorSearchOverlay } from "@/components/instructor/InstructorSearchOverlay";
 
 const BLUE = "#3D55A1";
+const BLUE_TINT = "#EDF2FE";
 const TEXT = "#1A1A1A";
 const MUTED = "#8E8E93";
 const BORDER = "rgba(26,82,160,0.08)";
@@ -122,7 +123,7 @@ type LessonStatus = "done" | "upcoming" | "inProgress" | "cancelled";
 
 const STATUS_CFG: Record<LessonStatus, { bg: string; color: string }> = {
   done: { bg: "#F2F4F8", color: "#8E8E93" },
-  upcoming: { bg: "#EEF3FF", color: "#3D55A1" },
+  upcoming: { bg: BLUE_TINT, color: BLUE },
   inProgress: { bg: "#E8F8ED", color: "#1A7A3C" },
   cancelled: { bg: "#FFF0F0", color: "#B23A3F" },
 };
