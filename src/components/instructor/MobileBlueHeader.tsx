@@ -12,6 +12,8 @@ interface Props {
   showGreeting?: boolean;
   /** Background colour for the header + safe-area zone. Defaults to page bg. */
   surface?: "page" | "white";
+  isHomePage?: boolean;
+  pageTitle?: string;
   onBack?: () => void;
   onSOS: () => void;
   onPlus: () => void;
@@ -25,6 +27,8 @@ export function MobileBlueHeader({
   profileImageUrl,
   showBackButton = false,
   surface = "page",
+  isHomePage = false,
+  pageTitle,
   onBack,
   onPlus,
   onMenu,
@@ -32,10 +36,6 @@ export function MobileBlueHeader({
   const navigate = useNavigate();
   const { total: notifCount } = useCombinedNotificationCount(instructorId);
 
-  // Header and the safe-area zone always share the page background, so the
-  // top of every screen reads as one continuous surface (no white block, no
-  // grey panel, no border). The `surface` prop is kept for API compatibility
-  // but no longer changes the colour.
   void surface;
   const bg = "hsl(var(--dsm-page-bg,var(--dsm-bg)))";
 
@@ -43,37 +43,51 @@ export function MobileBlueHeader({
     <header
       className="sticky top-0 z-40"
       style={{
-        // The native/app shell already owns the status-bar safe area. Adding
-        // env(safe-area-inset-top) here duplicates it and creates the grey
-        // blank banner above the Home header.
         paddingTop: 0,
         backgroundColor: bg,
       }}
     >
       <div className="flex h-14 items-center justify-between px-5" style={{ marginTop: 2 }}>
-        {/* Left: DSM logo + wordmark (or back) */}
+        {/* Left: logo+wordmark on home; back+title on other tab roots; back+title on subpages */}
         <div className="flex items-center gap-2.5 min-w-0" style={{ opacity: 0.95 }}>
-          {showBackButton ? (
+          {showBackButton && (
             <button
               onClick={onBack}
-              className="h-8 w-8 flex items-center justify-center -ml-1"
+              className="h-8 w-8 flex items-center justify-center -ml-1 shrink-0"
               aria-label="Back"
             >
-              <ChevronLeft size={20} strokeWidth={1.7} color={ICON_COLOR} />
+              <ChevronLeft size={22} strokeWidth={1.7} color={ICON_COLOR} />
             </button>
-          ) : null}
-          <img src={dsmLogo} alt="DSM" className="h-9 w-auto object-contain shrink-0" />
-          <span
-            className="truncate"
-            style={{
-              fontSize: 15,
-              fontWeight: 600,
-              letterSpacing: -0.2,
-              color: "hsl(var(--dsm-text-primary, 240 6% 11%))",
-            }}
-          >
-            Driving School Manager
-          </span>
+          )}
+          {isHomePage ? (
+            <>
+              <img src={dsmLogo} alt="DSM" className="h-9 w-auto object-contain shrink-0" />
+              <span
+                className="truncate"
+                style={{
+                  fontSize: 15,
+                  fontWeight: 600,
+                  letterSpacing: -0.2,
+                  color: "hsl(var(--dsm-text-primary, 240 6% 11%))",
+                }}
+              >
+                Driving School Manager
+              </span>
+            </>
+          ) : (
+            <h1
+              className="truncate"
+              style={{
+                margin: 0,
+                fontSize: 18,
+                fontWeight: 600,
+                letterSpacing: -0.3,
+                color: "hsl(var(--dsm-text-primary, 240 6% 11%))",
+              }}
+            >
+              {pageTitle}
+            </h1>
+          )}
         </div>
 
         {/* Right: bell, +, avatar, menu */}
