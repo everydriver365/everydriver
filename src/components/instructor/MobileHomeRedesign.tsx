@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { NextUpTile as NextUpTileFull } from "@/components/instructor/NextUpTile";
+import { UpNextExpanded } from "@/components/instructor/UpNextExpanded";
 import { useNavigate } from "react-router-dom";
 import { format, parse, parseISO, isToday, isTomorrow, differenceInMinutes } from "date-fns";
 import {
