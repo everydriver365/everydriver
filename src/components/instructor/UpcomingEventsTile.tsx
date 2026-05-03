@@ -186,9 +186,30 @@ export function UpcomingEventsTile({ instructorId }: Props) {
                 >
                   <ChevronLeft size={12} color="#5B6B8A" strokeWidth={1.8} />
                 </button>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#1A1A1A" }}>
-                  {monthLabel}
-                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#1A1A1A" }}>
+                    {monthLabel}
+                  </span>
+                  {!visibleDays.some((d) => isSameDay(d, today)) && (
+                    <button
+                      onClick={() => setStripStart(subDays(startOfDay(new Date()), 4))}
+                      style={{
+                        height: 22,
+                        padding: "0 10px",
+                        borderRadius: 11,
+                        background: "#EEF3FF",
+                        border: "none",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: BLUE,
+                        cursor: "pointer",
+                      }}
+                      aria-label="Jump to today"
+                    >
+                      Today
+                    </button>
+                  )}
+                </div>
                 <button
                   onClick={() => setStripStart((d) => addDays(d, 7))}
                   style={stripBtn}
@@ -269,7 +290,7 @@ export function UpcomingEventsTile({ instructorId }: Props) {
             {top4.map((e, idx) => (
               <div key={e.id}>
                 <button
-                  onClick={() => navigate(e.destinationPath)}
+                  onClick={() => navigate(`/instructor/events/${encodeURIComponent(e.id)}`)}
                   style={{
                     width: "100%",
                     display: "flex",
