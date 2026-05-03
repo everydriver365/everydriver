@@ -215,6 +215,7 @@ export function AddLessonSheet({
   const [selectedExaminer, setSelectedExaminer] = useState('');
   const [checklistOpen, setChecklistOpen] = useState(true);
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
+  const [isHardOverlap, setIsHardOverlap] = useState(false);
   const [travelDetailsOpen, setTravelDetailsOpen] = useState(false);
   const [checkingConflict, setCheckingConflict] = useState(false);
   const pendingCheckRef = useRef<Promise<void> | null>(null);
