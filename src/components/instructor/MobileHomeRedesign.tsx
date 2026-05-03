@@ -26,6 +26,16 @@ import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { MapHeroStatic } from "@/components/instructor/MapHeroStatic";
 import { MapHeroLive } from "@/components/instructor/upNext/MapHeroLive";
 
+/* Restored sections from legacy home */
+import { QuickAccessSwipeablePaged } from "@/components/instructor/quickAccess/QuickAccessSwipeablePaged";
+import { ImpactAlertCard } from "@/components/instructor/ImpactAlertCard";
+import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
+import { TelematicsTile } from "@/components/instructor/TelematicsTile";
+import { VehicleHealthCard } from "@/components/instructor/VehicleHealthCard";
+import { IdleTimeCostCard } from "@/components/instructor/IdleTimeCostCard";
+import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
+import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
+
 /* ---------- Brand tokens ---------- */
 const RED = "#CC2229";
 const BLUE = "#1A52A0";
