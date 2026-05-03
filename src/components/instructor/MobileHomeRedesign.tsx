@@ -579,15 +579,13 @@ function UpNextTile({
   );
 
   return (
-    <div style={{ padding: "0 14px 14px" }}>
+    <div style={{ padding: "0 20px 16px" }}>
       <div
         role="button"
         onClick={open}
+        className="home-v2-card"
         style={{
-          background: "#FFFFFF",
-          borderRadius: 20,
           overflow: "hidden",
-          border: `0.5px solid ${BORDER}`,
           cursor: "pointer",
         }}
       >
@@ -607,32 +605,42 @@ function UpNextTile({
           instructorId={instructorId}
         />
 
-        <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
-          {/* Date · time chip */}
-          <div
-            style={{
-              alignSelf: "flex-start",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "5px 10px",
-              borderRadius: 999,
-              background: BLUE_TINT,
-              border: `0.5px solid ${BORDER}`,
-            }}
-          >
-            <Calendar size={12} strokeWidth={2.4} style={{ color: BLUE }} />
+        <div style={{ padding: "14px 16px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
+          {/* Section eyebrow + date chip */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
             <span
               style={{
                 fontSize: 11,
                 fontWeight: 600,
-                color: CHARCOAL,
-                letterSpacing: 0.4,
+                color: "#6B7A90",
+                letterSpacing: "0.12em",
                 textTransform: "uppercase",
-                fontVariantNumeric: "tabular-nums",
               }}
             >
-              {`${whenLabel} ${dayNum} ${monthName}`} · {start}
+              Next lesson
+            </span>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "4px 10px",
+                borderRadius: 999,
+                background: "#E6EEFB",
+              }}
+            >
+              <Calendar size={11} strokeWidth={2.4} style={{ color: "#315FAE" }} />
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: "#315FAE",
+                  letterSpacing: 0.3,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {`${whenLabel} ${dayNum} ${monthName}`} · {start}
+              </span>
             </span>
           </div>
 
@@ -640,10 +648,10 @@ function UpNextTile({
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
             <div
               style={{
-                fontSize: 19,
-                fontWeight: 700,
-                color: CHARCOAL,
-                letterSpacing: "-0.4px",
+                fontSize: 22,
+                fontWeight: 600,
+                color: "#0B1220",
+                letterSpacing: "-0.5px",
                 lineHeight: 1.15,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -657,7 +665,7 @@ function UpNextTile({
               size={18}
               strokeWidth={2}
               style={{
-                color: MUTED,
+                color: "#94A3B8",
                 flexShrink: 0,
                 transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
                 transition: "transform 200ms ease",
@@ -671,8 +679,8 @@ function UpNextTile({
               <IconTile>
                 <Clock size={13} strokeWidth={2.2} />
               </IconTile>
-              <div style={{ fontSize: 13, color: CHARCOAL, fontWeight: 500 }}>
-                Standard lesson · <span style={{ color: MUTED, fontWeight: 400 }}>{hoursLong(durationMinutes)}</span>
+              <div style={{ fontSize: 13, color: "#0B1220", fontWeight: 500 }}>
+                Standard lesson · <span style={{ color: "#64748B", fontWeight: 400 }}>{hoursLong(durationMinutes)}</span>
               </div>
             </div>
 
@@ -683,7 +691,7 @@ function UpNextTile({
               <div
                 style={{
                   fontSize: 13,
-                  color: CHARCOAL,
+                  color: "#0B1220",
                   fontWeight: 500,
                   minWidth: 0,
                   overflow: "hidden",
@@ -693,7 +701,7 @@ function UpNextTile({
               >
                 {pickupPostcode || "Pick-up TBC"}
                 {pickupLocation && (
-                  <span style={{ color: MUTED, fontWeight: 400 }}> · {pickupLocation}</span>
+                  <span style={{ color: "#64748B", fontWeight: 400 }}> · {pickupLocation}</span>
                 )}
               </div>
             </div>
@@ -709,9 +717,9 @@ function UpNextTile({
                 flex: 1,
                 height: 44,
                 borderRadius: 14,
-                background: BLUE,
-                color: "#FFFFFF",
-                border: "none",
+                background: "#E8F5EE",
+                color: "#1F8A4D",
+                border: "1px solid rgba(31,138,77,0.18)",
                 fontSize: 14,
                 fontWeight: 600,
                 letterSpacing: 0.1,
@@ -721,7 +729,6 @@ function UpNextTile({
                 gap: 6,
                 opacity: pupilPhone ? 1 : 0.5,
                 cursor: pupilPhone ? "pointer" : "not-allowed",
-                boxShadow: "0 4px 12px -4px rgba(41,82,179,0.45)",
               }}
             >
               <Phone size={15} strokeWidth={2.2} /> Call
@@ -733,9 +740,9 @@ function UpNextTile({
                 flex: 1,
                 height: 44,
                 borderRadius: 14,
-                background: BLUE_TINT,
-                color: BLUE,
-                border: `0.5px solid ${BORDER}`,
+                background: "#E6EEFB",
+                color: "#315FAE",
+                border: "1px solid rgba(49,95,174,0.18)",
                 fontSize: 14,
                 fontWeight: 600,
                 letterSpacing: 0.1,
@@ -756,9 +763,9 @@ function UpNextTile({
                 flex: 1,
                 height: 44,
                 borderRadius: 14,
-                background: BLUE_TINT,
-                color: BLUE,
-                border: `0.5px solid ${BORDER}`,
+                background: "#FFFFFF",
+                color: "#315FAE",
+                border: "1px solid rgba(49,95,174,0.22)",
                 fontSize: 14,
                 fontWeight: 600,
                 letterSpacing: 0.1,
