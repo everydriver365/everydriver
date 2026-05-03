@@ -297,7 +297,72 @@ function WeatherRow({
   );
 }
 
-export function UpNextExpanded({
+const ALERT_TINTS: Record<DrivingAlert["severity"], { bg: string; fg: string; border: string }> = {
+  low: { bg: "#EEF3FF", fg: "#1A52A0", border: "rgba(26,82,160,0.18)" },
+  moderate: { bg: "#FFF6E6", fg: "#A86A00", border: "rgba(168,106,0,0.22)" },
+  severe: { bg: "#FBECEC", fg: "#A03030", border: "rgba(160,48,48,0.25)" },
+};
+
+function AlertsRow({ alerts, loading }: { alerts: DrivingAlert[]; loading: boolean }) {
+  if (loading && alerts.length === 0) return null;
+  if (!alerts || alerts.length === 0) {
+    return (
+      <div
+        style={{
+          margin: "0 16px 12px",
+          background: "#EEF7EE",
+          borderRadius: 12,
+          padding: "10px 12px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          fontSize: 12,
+          color: "#2E6B3E",
+        }}
+      >
+        <CheckCircle2 size={16} strokeWidth={2.2} />
+        No traffic or weather alerts in your area
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ margin: "0 16px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
+      {alerts.slice(0, 3).map((a, i) => {
+        const tint = ALERT_TINTS[a.severity] || ALERT_TINTS.moderate;
+        const Icon = a.type === "traffic" || a.type === "road" ? NavIcon : CloudRain;
+        return (
+          <div
+            key={i}
+            style={{
+              background: tint.bg,
+              border: `0.5px solid ${tint.border}`,
+              borderRadius: 12,
+              padding: "10px 12px",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 10,
+            }}
+          >
+            <Icon size={16} color={tint.fg} strokeWidth={2.2} style={{ marginTop: 1, flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: CHARCOAL, lineHeight: 1.25 }}>
+                {a.title}
+                {a.delay ? ` · +${a.delay}m delay` : ""}
+              </div>
+              <div style={{ fontSize: 11, color: MUTED, marginTop: 2, lineHeight: 1.35 }}>
+                {a.description}
+                {a.roadName ? ` · ${a.roadName}` : ""}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+
   lessonId,
   pupilId,
   pupilName,
