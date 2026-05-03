@@ -718,9 +718,9 @@ export function NextUpTile({
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="overflow-hidden"
-            style={{ marginLeft: 0, marginRight: 0, marginBottom: -16, marginTop: 4 }}
+            style={{ marginLeft: 0, marginRight: 0, marginBottom: hideHeader ? 0 : -16, marginTop: hideHeader ? 0 : 4 }}
           >
-          <div style={{ padding: "16px 0 20px", display: "flex", flexDirection: "column", gap: 16, borderTop: "0.5px solid #c6c6c8", background: "transparent" }}>
+          <div style={{ padding: hideHeader ? 0 : "16px 0 20px", display: "flex", flexDirection: "column", gap: 16, borderTop: hideHeader ? "none" : "0.5px solid #c6c6c8", background: "transparent" }}>
 
           {/* ── HERO CARD — native iOS UIKit grouped table view style ── */}
           <div style={{
