@@ -246,6 +246,53 @@ export function AddCalendarEventDialog({
     }
   };
 
+  const handleAddEvent = async () => {
+    const nextErrors: Record<string, string> = {};
+    if (!eventTitle) nextErrors.eventTitle = 'Title is required';
+    if (!eventDate) nextErrors.eventDate = 'Date is required';
+    if (Object.keys(nextErrors).length) {
+      setErrors(nextErrors);
+      return;
+    }
+    setErrors({});
+
+    setLoading(true);
+    try {
+      const startDateTime = new Date(eventDate!);
+      const [sh, sm] = eventStartTime.split(':').map(Number);
+      startDateTime.setHours(sh, sm, 0, 0);
+      const endDateTime = new Date(eventDate!);
+      const [eh, em] = eventEndTime.split(':').map(Number);
+      endDateTime.setHours(eh, em, 0, 0);
+
+      const notesParts = [eventLocation && `Location: ${eventLocation}`, eventNotes].filter(Boolean);
+
+      const { error } = await supabase
+        .from('instructor_manual_blocks')
+        .insert({
+          instructor_id: instructorId,
+          title: eventTitle,
+          start_datetime: startDateTime.toISOString(),
+          end_datetime: endDateTime.toISOString(),
+          block_type: 'event',
+          color: '#6B21A8',
+          notes: notesParts.join('\n') || null,
+        });
+      if (error) throw error;
+
+      toast.success('Event added');
+      setEventTitle('');
+      setEventLocation('');
+      setEventNotes('');
+      onSuccess();
+    } catch (error) {
+      console.error('Error adding event:', error);
+      toast.error('Failed to add event');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const timeSlots = Array.from({ length: 28 }, (_, i) => {
     const hour = 7 + Math.floor(i / 2);
     const min = (i % 2) * 30;
