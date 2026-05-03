@@ -34,11 +34,11 @@ const FONT_STACK =
 
 const PALETTE = {
   light: {
-    bg: "#FFFFFF",
-    border: "#E5E5EA",
+    bg: "#F2F4F8",
+    border: "transparent",
     title: "#000000",
     icon: "#6E6E73",
-    badgeRing: "#FFFFFF",
+    badgeRing: "#F2F4F8",
   },
   dark: {
     bg: "#1C1C1E",
@@ -224,8 +224,7 @@ export function AppHeader({
         role="banner"
         className="sticky top-0 z-40"
         style={{
-          background: "#FFFFFF",
-          borderBottom: "0.5px solid #F0F3F8",
+          background: "#F2F4F8",
         }}
       >
         <div
@@ -317,7 +316,7 @@ export function AppHeader({
                   width: 27,
                   height: 27,
                   borderRadius: 14,
-                  background: "#F2F4F8",
+                  background: "#FFFFFF",
                   border: "none",
                   display: "inline-flex",
                   alignItems: "center",
@@ -341,7 +340,7 @@ export function AppHeader({
                 width: 27,
                 height: 27,
                 borderRadius: 14,
-                background: "#F2F4F8",
+                background: "#FFFFFF",
                 border: "none",
                 display: "inline-flex",
                 alignItems: "center",
