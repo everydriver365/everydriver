@@ -699,32 +699,29 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
       <button
         type="button"
         onClick={() => setSearchOpen(true)}
+        className="home-v2-tile"
         style={{
           width: "100%",
-          background: "#FFF",
-          borderRadius: 12,
-          padding: "8px 12px",
+          padding: "10px 14px",
           display: "flex",
           alignItems: "center",
-          gap: 7,
-          marginBottom: 10,
-          border: `0.5px solid ${BORDER_STRONG}`,
+          gap: 8,
+          marginBottom: 12,
           cursor: "pointer",
         }}
       >
-        <Search size={12} color={MUTED} />
-        <span style={{ fontSize: 11, color: "#C7C7CC", flex: 1, textAlign: "left" }}>
+        <Search size={14} color="#94A3B8" />
+        <span style={{ fontSize: 13, color: "#94A3B8", flex: 1, textAlign: "left" }}>
           Search tools, pupils, lessons
         </span>
         <span
           style={{
-            background: "#F2F4F8",
-            borderRadius: 5,
-            padding: "2px 6px",
-            border: "0.5px solid #E0E5EE",
-            fontSize: 9,
+            background: "rgba(15,35,65,0.05)",
+            borderRadius: 6,
+            padding: "2px 7px",
+            fontSize: 10,
             fontWeight: 600,
-            color: MUTED,
+            color: "#6B7A90",
           }}
         >
           ⌘K
