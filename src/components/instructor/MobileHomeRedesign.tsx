@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Briefcase,
   CalendarPlus,
+  Calendar,
   PoundSterling,
   type LucideIcon,
 } from "lucide-react";
@@ -542,179 +543,171 @@ function UpNextTile({
           instructorId={instructorId}
         />
 
-        <div style={{ display: "flex", minHeight: 130 }}>
-          {/* Left blue rail */}
+        <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
+          {/* Date · time chip */}
           <div
             style={{
-              width: 68,
-              background: BLUE,
-              padding: "16px 8px",
-              display: "flex",
-              flexDirection: "column",
+              alignSelf: "flex-start",
+              display: "inline-flex",
               alignItems: "center",
-              justifyContent: "center",
-              gap: 14,
-              color: "#FFFFFF",
+              gap: 6,
+              padding: "5px 10px",
+              borderRadius: 999,
+              background: BLUE_TINT,
+              border: `0.5px solid ${BORDER}`,
             }}
           >
-            <div style={{ textAlign: "center", lineHeight: 1 }}>
-              <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.4px" }}>
-                {dayNum}
-              </div>
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "rgba(255,255,255,0.7)",
-                  marginTop: 2,
-                }}
-              >
-                {monthName}
-              </div>
-            </div>
-            <div
+            <Calendar size={12} strokeWidth={2.4} style={{ color: BLUE }} />
+            <span
               style={{
-                width: 36,
-                height: 1,
-                background: "rgba(255,255,255,0.25)",
-              }}
-            />
-            <div
-              style={{
-                fontSize: 16,
-                fontWeight: 700,
-                color: "#FFFFFF",
-                letterSpacing: "-0.3px",
+                fontSize: 11,
+                fontWeight: 600,
+                color: CHARCOAL,
+                letterSpacing: 0.4,
+                textTransform: "uppercase",
                 fontVariantNumeric: "tabular-nums",
-                lineHeight: 1,
               }}
             >
-              {start}
-            </div>
+              {`${whenLabel} ${dayNum} ${monthName}`} · {start}
+            </span>
           </div>
 
-          {/* Right column */}
-          <div style={{ flex: 1, padding: "12px 13px", minWidth: 0 }}>
+          {/* Pupil name + chevron */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
             <div
               style={{
-                fontSize: 15,
+                fontSize: 19,
                 fontWeight: 700,
                 color: CHARCOAL,
-                letterSpacing: "-0.2px",
-                marginBottom: 6,
+                letterSpacing: "-0.4px",
+                lineHeight: 1.15,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
+                minWidth: 0,
               }}
             >
               {toSentence(pupilName)}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <ChevronDown
+              size={18}
+              strokeWidth={2}
+              style={{
+                color: MUTED,
+                flexShrink: 0,
+                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 200ms ease",
+              }}
+            />
+          </div>
+
+          {/* Info rows */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <IconTile>
-                <Clock size={14} strokeWidth={2.2} />
+                <Clock size={13} strokeWidth={2.2} />
               </IconTile>
-              <div style={{ fontSize: 13, color: CHARCOAL, minWidth: 0, flex: 1 }}>
-                <span style={{ fontWeight: 700 }}>{hoursLong(durationMinutes)}</span>{" "}
-                <span style={{ color: MUTED }}>· Standard lesson</span>
+              <div style={{ fontSize: 13, color: CHARCOAL, fontWeight: 500 }}>
+                Standard lesson · <span style={{ color: MUTED, fontWeight: 400 }}>{hoursLong(durationMinutes)}</span>
               </div>
-              <ChevronDown
-                size={16}
-                strokeWidth={2.2}
-                style={{
-                  color: BLUE,
-                  transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                  transition: "transform 180ms ease",
-                  flexShrink: 0,
-                }}
-              />
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
               <IconTile>
-                <MapPin size={14} strokeWidth={2.2} />
+                <MapPin size={13} strokeWidth={2.2} />
               </IconTile>
               <div
                 style={{
                   fontSize: 13,
                   color: CHARCOAL,
+                  fontWeight: 500,
                   minWidth: 0,
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
                 }}
               >
-                <span style={{ fontWeight: 700 }}>
-                  {pickupPostcode || "Pick-up"}
-                </span>{" "}
-                <span style={{ color: BLUE }}>
-                  · {pickupLocation ? "pick-up" : "TBC"}
-                </span>
+                {pickupPostcode || "Pick-up TBC"}
+                {pickupLocation && (
+                  <span style={{ color: MUTED, fontWeight: 400 }}> · {pickupLocation}</span>
+                )}
               </div>
             </div>
+          </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <button
-                type="button"
-                onClick={call}
-                disabled={!pupilPhone}
-                style={{
-                  flex: 1,
-                  height: 34,
-                  borderRadius: 9,
-                  background: RED,
-                  color: "#FFFFFF",
-                  border: "none",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 6,
-                  opacity: pupilPhone ? 1 : 0.5,
-                  cursor: pupilPhone ? "pointer" : "not-allowed",
-                }}
-              >
-                <Phone size={14} strokeWidth={2.4} /> Call
-              </button>
-              <button
-                type="button"
-                onClick={message}
-                aria-label="Message"
-                style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: 9,
-                  background: BLUE_TINT,
-                  color: BLUE,
-                  border: "none",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                }}
-              >
-                <MessageSquare size={15} strokeWidth={2.2} />
-              </button>
-              <button
-                type="button"
-                onClick={navTo}
-                aria-label="Navigate"
-                style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: 9,
-                  background: BLUE_TINT,
-                  color: BLUE,
-                  border: "none",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                }}
-              >
-                <NavIcon size={15} strokeWidth={2.2} />
-              </button>
-            </div>
+          {/* Action row — Call / Text / Navigate */}
+          <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+            <button
+              type="button"
+              onClick={call}
+              disabled={!pupilPhone}
+              style={{
+                flex: 1,
+                height: 44,
+                borderRadius: 14,
+                background: BLUE,
+                color: "#FFFFFF",
+                border: "none",
+                fontSize: 14,
+                fontWeight: 600,
+                letterSpacing: 0.1,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                opacity: pupilPhone ? 1 : 0.5,
+                cursor: pupilPhone ? "pointer" : "not-allowed",
+                boxShadow: "0 4px 12px -4px rgba(41,82,179,0.45)",
+              }}
+            >
+              <Phone size={15} strokeWidth={2.2} /> Call
+            </button>
+            <button
+              type="button"
+              onClick={message}
+              style={{
+                flex: 1,
+                height: 44,
+                borderRadius: 14,
+                background: BLUE_TINT,
+                color: BLUE,
+                border: `0.5px solid ${BORDER}`,
+                fontSize: 14,
+                fontWeight: 600,
+                letterSpacing: 0.1,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                cursor: "pointer",
+              }}
+            >
+              <MessageSquare size={15} strokeWidth={2.2} /> Text
+            </button>
+            <button
+              type="button"
+              onClick={navTo}
+              disabled={!(pickupPostcode || pickupLocation)}
+              style={{
+                flex: 1,
+                height: 44,
+                borderRadius: 14,
+                background: BLUE_TINT,
+                color: BLUE,
+                border: `0.5px solid ${BORDER}`,
+                fontSize: 14,
+                fontWeight: 600,
+                letterSpacing: 0.1,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                opacity: (pickupPostcode || pickupLocation) ? 1 : 0.5,
+                cursor: (pickupPostcode || pickupLocation) ? "pointer" : "not-allowed",
+              }}
+            >
+              <NavIcon size={15} strokeWidth={2.2} /> Go
+            </button>
           </div>
         </div>
       </div>
