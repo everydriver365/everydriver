@@ -1,12 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, parse } from "date-fns";
-import {
-  Plus, Search, ChevronsLeftRight,
-  CalendarDays, MessageSquare, CalendarPlus, PoundSterling,
-  Users, FileBarChart, ArrowLeftRight,
-  type LucideIcon,
-} from "lucide-react";
+import { Plus, Search, ChevronsLeftRight } from "lucide-react";
 
 import { useDayLessons } from "@/hooks/useDayLessons";
 import { useDayLessonHistory, eolKey } from "@/hooks/useDayLessonHistory";
@@ -565,23 +560,23 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
 }
 
 /* ────────────────────────────────────────────────────── */
-/* Section 2 — Quick Actions                              */
+/* Section 2 — Quick Access (merged Quick Actions + Tools)*/
 /* ────────────────────────────────────────────────────── */
 
-interface QuickActionDef {
-  id: string;
-  label: string;
-  Icon: LucideIcon;
-  iconBg: string;
-  iconColor: string;
-  badge?: number;
-  onPress: () => void;
-}
+const TONE_PALETTE: Record<string, { bg: string; fg: string }> = {
+  blue: { bg: "#EEF3FF", fg: BLUE },
+  green: { bg: "#E8F8ED", fg: "#1A7A3C" },
+  amber: { bg: "#FFF6E6", fg: "#B45309" },
+  purple: { bg: "#F0EEFF", fg: "#5B47C9" },
+  red: { bg: "#FFF0F0", fg: "#CC2229" },
+  grey: { bg: "#F2F4F8", fg: "#5B6B8A" },
+};
 
-function QuickActionsSection({ instructorId }: { instructorId: string }) {
+function QuickAccessSection({ instructorId }: { instructorId: string }) {
   const navigate = useNavigate();
   const [editOpen, setEditOpen] = useState(false);
   const { pinnedIds, setPins, isSaving } = useInstructorPinnedTiles(instructorId);
+
   const { data: unread = 0 } = useUnreadMessagesCount(instructorId);
   const pendingJobs = usePendingJobsCount();
   const { data: gapData } = useRealGapSlots(instructorId);
@@ -593,166 +588,18 @@ function QuickActionsSection({ instructorId }: { instructorId: string }) {
   );
   const debtors = paymentsSummary?.debtors ?? 0;
 
-  const actions: QuickActionDef[] = [
-    {
-      id: "add-lesson",
-      label: "Add lesson",
-      Icon: Plus,
-      iconBg: "#EEF3FF",
-      iconColor: BLUE,
-      onPress: () => navigate("/instructor/schedule?action=add"),
-    },
-    {
-      id: "message",
-      label: "Message",
-      Icon: MessageSquare,
-      iconBg: "#EEF3FF",
-      iconColor: BLUE,
-      badge: unread,
-      onPress: () => navigate("/instructor/messages"),
-    },
-    {
-      id: "fill-gap",
-      label: "Fill gap",
-      Icon: CalendarPlus,
-      iconBg: "#FFF6E6",
-      iconColor: "#B45309",
-      badge: openGapCount,
-      onPress: () => navigate("/instructor/gaps"),
-    },
-    {
-      id: "payment",
-      label: "Payment",
-      Icon: PoundSterling,
-      iconBg: "#FFF6E6",
-      iconColor: "#B45309",
-      badge: debtors,
-      onPress: () => navigate("/instructor/pay"),
-    },
-    {
-      id: "schedule",
-      label: "Schedule",
-      Icon: CalendarDays,
-      iconBg: "#EEF3FF",
-      iconColor: BLUE,
-      onPress: () => navigate("/instructor/schedule"),
-    },
-    {
-      id: "pupils",
-      label: "Pupils",
-      Icon: Users,
-      iconBg: "#E8F8ED",
-      iconColor: "#1A7A3C",
-      onPress: () => navigate("/instructor/pupils"),
-    },
-    {
-      id: "earnings",
-      label: "Earnings",
-      Icon: FileBarChart,
-      iconBg: "#FFF6E6",
-      iconColor: "#B45309",
-      onPress: () => navigate("/instructor/month-end"),
-    },
-    {
-      id: "tests",
-      label: "Tests",
-      Icon: ArrowLeftRight,
-      iconBg: "#E8F8ED",
-      iconColor: "#1A7A3C",
-      badge: pendingJobs,
-      onPress: () => navigate("/instructor/test-requests"),
-    },
-  ];
-
-  const renderTile = (a: QuickActionDef) => (
-    <button
-      key={a.id}
-      type="button"
-      onClick={a.onPress}
-      style={{
-        position: "relative",
-        background: "#FFF",
-        borderRadius: 13,
-        padding: "10px 4px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 4,
-        border: `0.5px solid ${BORDER}`,
-        cursor: "pointer",
-      }}
-    >
-      {a.badge && a.badge > 0 ? <BadgeDot count={a.badge} /> : null}
-      <div
-        style={{
-          width: 32,
-          height: 32,
-          borderRadius: 9,
-          background: a.iconBg,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <a.Icon size={15} color={a.iconColor} strokeWidth={1.6} />
-      </div>
-      <span
-        style={{
-          fontSize: 9,
-          fontWeight: 600,
-          color: TEXT,
-          textAlign: "center",
-          lineHeight: 1.2,
-        }}
-      >
-        {a.label}
-      </span>
-    </button>
-  );
-
-  return (
-    <div style={{ padding: "0 14px", marginBottom: 14 }}>
-      <SectionHeader
-        label="Quick actions"
-        rightLabel="Edit"
-        onRightPress={() => setEditOpen(true)}
-      />
-      <CustomizeFrequentlyUsedSheet
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        initialPinnedIds={pinnedIds}
-        onSave={async (ids) => {
-          await setPins(ids);
-          setEditOpen(false);
-        }}
-        saving={isSaving}
-      />
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: 7,
-        }}
-      >
-        {actions.map(renderTile)}
-      </div>
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────────────── */
-/* Section 3 — Tools                                      */
-/* ────────────────────────────────────────────────────── */
-
-function ToolsSection({ instructorId }: { instructorId: string }) {
-  const navigate = useNavigate();
-  const { pinnedIds } = useInstructorPinnedTiles(instructorId);
+  const badgeFor = (tileId: string): number => {
+    switch (tileId) {
+      case "messages": return unread;
+      case "tests": return pendingJobs;
+      case "fill-gaps": return openGapCount;
+      case "take-payment": return debtors;
+      default: return 0;
+    }
+  };
 
   const tiles = useMemo(
-    () =>
-      pinnedIds
-        .map((id) => QUICK_ACCESS_TILES_BY_ID[id])
-        .filter(Boolean),
+    () => pinnedIds.map((id) => QUICK_ACCESS_TILES_BY_ID[id]).filter(Boolean),
     [pinnedIds],
   );
 
@@ -768,7 +615,6 @@ function ToolsSection({ instructorId }: { instructorId: string }) {
 
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
-
   const onScroll = () => {
     const el = scrollerRef.current;
     if (!el) return;
@@ -778,7 +624,59 @@ function ToolsSection({ instructorId }: { instructorId: string }) {
 
   return (
     <div style={{ padding: "0 14px", marginBottom: 14 }}>
-      <SectionHeader label="Tools" />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 8,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: MUTED,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+          }}
+        >
+          Quick access
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button
+            type="button"
+            onClick={() => setEditOpen(true)}
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: BLUE,
+              background: "transparent",
+              border: "none",
+              padding: 0,
+              cursor: "pointer",
+            }}
+          >
+            Edit
+          </button>
+          {pages.length > 1 && (
+            <div style={{ display: "flex", gap: 3 }}>
+              {pages.map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    height: 3,
+                    borderRadius: 2,
+                    width: i === currentPage ? 12 : 5,
+                    background: i === currentPage ? BLUE : "#D0D5DD",
+                    transition: "width 0.2s ease",
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Search bar */}
       <button
@@ -816,43 +714,16 @@ function ToolsSection({ instructorId }: { instructorId: string }) {
         </span>
       </button>
 
-      {/* Frequently used header w/ page dots */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 8,
+      <CustomizeFrequentlyUsedSheet
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        initialPinnedIds={pinnedIds}
+        onSave={async (ids) => {
+          await setPins(ids);
+          setEditOpen(false);
         }}
-      >
-        <div
-          style={{
-            fontSize: 10,
-            fontWeight: 700,
-            color: MUTED,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-          }}
-        >
-          Frequently used
-        </div>
-        {pages.length > 1 && (
-          <div style={{ display: "flex", gap: 3 }}>
-            {pages.map((_, i) => (
-              <div
-                key={i}
-                style={{
-                  height: 3,
-                  borderRadius: 2,
-                  width: i === currentPage ? 12 : 5,
-                  background: i === currentPage ? BLUE : "#D0D5DD",
-                  transition: "width 0.2s ease",
-                }}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+        saving={isSaving}
+      />
 
       {/* Swipeable paged grid */}
       {pages.length === 0 ? (
@@ -880,7 +751,7 @@ function ToolsSection({ instructorId }: { instructorId: string }) {
             scrollbarWidth: "none",
             margin: "0 -2px",
           }}
-          className="tools-scroller"
+          className="quick-access-scroller"
         >
           {pages.map((pageTiles, pageIdx) => (
             <div
@@ -902,16 +773,8 @@ function ToolsSection({ instructorId }: { instructorId: string }) {
                 {pageTiles.map((tile, idx) => {
                   const isPrimary = pageIdx === 0 && idx === 0;
                   const Icon = tile.icon;
-                  // tone → iconBg/color (kept simple, mapped from existing tone palette)
-                  const tonePalette: Record<string, { bg: string; fg: string }> = {
-                    blue: { bg: "#EEF3FF", fg: BLUE },
-                    green: { bg: "#E8F8ED", fg: "#1A7A3C" },
-                    amber: { bg: "#FFF6E6", fg: "#B45309" },
-                    purple: { bg: "#F0EEFF", fg: "#5B47C9" },
-                    red: { bg: "#FFF0F0", fg: "#CC2229" },
-                    grey: { bg: "#F2F4F8", fg: "#5B6B8A" },
-                  };
-                  const tonePair = tonePalette[tile.tone] ?? tonePalette.blue;
+                  const tonePair = TONE_PALETTE[tile.tone] ?? TONE_PALETTE.blue;
+                  const badge = badgeFor(tile.id);
                   return (
                     <button
                       key={tile.id}
@@ -930,6 +793,7 @@ function ToolsSection({ instructorId }: { instructorId: string }) {
                         cursor: "pointer",
                       }}
                     >
+                      {badge > 0 && <BadgeDot count={badge} />}
                       <div
                         style={{
                           width: 32,
@@ -985,7 +849,7 @@ function ToolsSection({ instructorId }: { instructorId: string }) {
       )}
 
       <style>{`
-        .tools-scroller::-webkit-scrollbar { display: none; }
+        .quick-access-scroller::-webkit-scrollbar { display: none; }
       `}</style>
     </div>
   );
@@ -1003,8 +867,7 @@ export function MobileHomeBottomSections({
   return (
     <>
       <ScheduleSection instructorId={instructorId} />
-      <QuickActionsSection instructorId={instructorId} />
-      <ToolsSection instructorId={instructorId} />
+      <QuickAccessSection instructorId={instructorId} />
     </>
   );
 }

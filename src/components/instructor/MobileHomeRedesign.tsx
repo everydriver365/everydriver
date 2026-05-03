@@ -27,15 +27,13 @@ import { MapHeroStatic } from "@/components/instructor/MapHeroStatic";
 import { MapHeroLive } from "@/components/instructor/upNext/MapHeroLive";
 
 /* Restored sections from legacy home */
-import { QuickAccessSwipeablePaged } from "@/components/instructor/quickAccess/QuickAccessSwipeablePaged";
 import { MobileHomeBottomSections } from "@/components/instructor/MobileHomeBottomSections";
-import { ImpactAlertCard } from "@/components/instructor/ImpactAlertCard";
-import { InsightTilesGrid } from "@/components/instructor/InsightTilesGrid";
-import { TelematicsTile } from "@/components/instructor/TelematicsTile";
-import { VehicleHealthCard } from "@/components/instructor/VehicleHealthCard";
-import { IdleTimeCostCard } from "@/components/instructor/IdleTimeCostCard";
-import { UpcomingEventsCard } from "@/components/instructor/UpcomingEventsCard";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
+import { useDormantPupilsCount } from "@/hooks/useDormantPupilsCount";
+import { Wrench, Users as UsersIcon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { differenceInDays, isPast } from "date-fns";
 
 /* ---------- Brand tokens ---------- */
 const RED = "#CC2229";
@@ -721,8 +719,10 @@ function UpNextTile({
 }
 
 /* ---------- Attention items ---------- */
+type AttentionGroup = "urgent" | "todo";
 interface AttentionRow {
   key: string;
+  group: AttentionGroup;
   Icon: LucideIcon;
   iconBg: string;
   iconColor: string;
@@ -732,99 +732,139 @@ interface AttentionRow {
   onClick: () => void;
 }
 
-function AttentionCard({ rows }: { rows: AttentionRow[] }) {
+function AttentionGroupCard({
+  rows,
+  groupLabel,
+  groupColor,
+  groupBorder,
+}: {
+  rows: AttentionRow[];
+  groupLabel: string;
+  groupColor: string;
+  groupBorder: string;
+}) {
   if (rows.length === 0) return null;
   return (
-    <div style={{ padding: "0 14px 14px" }}>
-      <div
-        style={{
-          background: "#FFFFFF",
-          borderRadius: 16,
-          overflow: "hidden",
-          border: `0.5px solid ${BORDER}`,
-        }}
-      >
-        {rows.map((r, i) => (
-          <button
-            key={r.key}
-            type="button"
-            onClick={r.onClick}
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              padding: "12px 14px",
-              background: "transparent",
-              border: "none",
-              borderTop: i === 0 ? "none" : `0.5px solid ${ROW_BORDER}`,
-              cursor: "pointer",
-              textAlign: "left",
-            }}
-          >
-            <span
+    <>
+      <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "0 14px", marginBottom: 4 }}>
+        <span style={{ fontSize: 9, fontWeight: 700, color: groupColor, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+          {groupLabel}
+        </span>
+        <span style={{ flex: 1, height: 0.5, background: groupBorder }} />
+      </div>
+      <div style={{ padding: "0 14px", marginBottom: 8 }}>
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 14,
+            overflow: "hidden",
+            border: `0.5px solid ${groupLabel === "Urgent" ? "rgba(204,34,41,0.12)" : BORDER}`,
+          }}
+        >
+          {rows.map((r, i) => (
+            <button
+              key={r.key}
+              type="button"
+              onClick={r.onClick}
               style={{
-                width: 34,
-                height: 34,
-                borderRadius: 10,
-                background: r.iconBg,
-                color: r.iconColor,
-                display: "inline-flex",
+                width: "100%",
+                display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
+                gap: 10,
+                padding: "10px 12px",
+                background: "transparent",
+                border: "none",
+                borderTop: i === 0 ? "none" : `0.5px solid ${ROW_BORDER}`,
+                cursor: "pointer",
+                textAlign: "left",
               }}
             >
-              <r.Icon size={16} strokeWidth={2.2} />
-            </span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: CHARCOAL,
-                  letterSpacing: "-0.1px",
-                }}
-              >
-                {r.title}
-              </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: MUTED,
-                  marginTop: 2,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {r.subtitle}
-              </div>
-            </div>
-            {r.badge && (
               <span
                 style={{
-                  minWidth: 22,
-                  height: 22,
-                  padding: "0 7px",
-                  borderRadius: 11,
-                  background: r.badge.bg,
-                  color: "#FFFFFF",
-                  fontSize: 11,
-                  fontWeight: 700,
+                  width: 30,
+                  height: 30,
+                  borderRadius: 8,
+                  background: r.iconBg,
+                  color: r.iconColor,
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontVariantNumeric: "tabular-nums",
+                  flexShrink: 0,
                 }}
               >
-                {r.badge.label}
+                <r.Icon size={13} strokeWidth={1.8} />
               </span>
-            )}
-            <ChevronRight size={16} color={MUTED} strokeWidth={2} />
-          </button>
-        ))}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A" }}>{r.title}</div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    color: MUTED,
+                    marginTop: 1,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {r.subtitle}
+                </div>
+              </div>
+              {r.badge && (
+                <span
+                  style={{
+                    minWidth: 20,
+                    height: 20,
+                    padding: "0 6px",
+                    borderRadius: 10,
+                    background: r.badge.bg,
+                    color: "#FFFFFF",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {r.badge.label}
+                </span>
+              )}
+              <ChevronRight size={14} color="#C7C7CC" strokeWidth={1.8} />
+            </button>
+          ))}
+        </div>
       </div>
+    </>
+  );
+}
+
+function AttentionCard({ rows }: { rows: AttentionRow[] }) {
+  const urgent = rows.filter((r) => r.group === "urgent");
+  const todo = rows.filter((r) => r.group === "todo");
+
+  if (rows.length === 0) {
+    return (
+      <div style={{ padding: "0 14px 14px" }}>
+        <div
+          style={{
+            background: "#FFF",
+            borderRadius: 13,
+            padding: 16,
+            textAlign: "center",
+            border: `0.5px solid ${BORDER}`,
+          }}
+        >
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A", marginBottom: 3 }}>All clear</div>
+          <div style={{ fontSize: 10, color: MUTED }}>Nothing needs your attention right now</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ paddingBottom: 14 }}>
+      <AttentionGroupCard rows={urgent} groupLabel="Urgent" groupColor="#CC2229" groupBorder="#F0CCCC" />
+      <AttentionGroupCard rows={todo} groupLabel="To do" groupColor="#B45309" groupBorder="#E8D5B0" />
     </div>
   );
 }
@@ -866,11 +906,48 @@ export function MobileHomeRedesign({
     }
   }, [nextLesson]);
 
+  // Vehicle fault detection (replaces standalone VehicleHealthCard rendering)
+  const { data: vehicle } = useQuery({
+    queryKey: ["vehicle-health-attention", instructorId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("instructor_vehicles")
+        .select("registration, make, model, mot_expiry, insurance_expiry, tax_expiry, current_odometer_km, next_service_due_km")
+        .eq("instructor_id", instructorId)
+        .eq("is_primary", true)
+        .maybeSingle();
+      return data as any;
+    },
+  });
+  const { data: dormantCount = 0 } = useDormantPupilsCount(instructorId);
+
+  const vehicleFault = useMemo(() => {
+    if (!vehicle) return null;
+    const checks: Array<{ label: string; date: string | null; expired: boolean; soon: boolean }> = [
+      { label: "MOT", date: vehicle.mot_expiry, expired: false, soon: false },
+      { label: "Tax", date: vehicle.tax_expiry, expired: false, soon: false },
+      { label: "Insurance", date: vehicle.insurance_expiry, expired: false, soon: false },
+    ].map((c) => {
+      if (!c.date) return c;
+      const d = new Date(c.date);
+      return { ...c, expired: isPast(d), soon: !isPast(d) && differenceInDays(d, new Date()) <= 30 };
+    });
+    const expired = checks.find((c) => c.expired);
+    const soon = checks.find((c) => c.soon);
+    const serviceDue =
+      vehicle.next_service_due_km && vehicle.current_odometer_km && vehicle.current_odometer_km >= vehicle.next_service_due_km;
+    if (expired) return { label: `${expired.label} expired`, urgent: true };
+    if (serviceDue) return { label: "Service due", urgent: true };
+    if (soon) return { label: `${soon.label} due soon`, urgent: false };
+    return null;
+  }, [vehicle]);
+
   const attentionRows: AttentionRow[] = [];
 
   if (pendingJobs > 0) {
     attentionRows.push({
       key: "jobs",
+      group: "urgent",
       Icon: Briefcase,
       iconBg: "#FFF0F0",
       iconColor: RED,
@@ -881,10 +958,24 @@ export function MobileHomeRedesign({
     });
   }
 
+  if (vehicleFault) {
+    attentionRows.push({
+      key: "vehicle",
+      group: vehicleFault.urgent ? "urgent" : "todo",
+      Icon: Wrench,
+      iconBg: vehicleFault.urgent ? "#FFF0F0" : "#FFF6E6",
+      iconColor: vehicleFault.urgent ? RED : "#B45309",
+      title: vehicleFault.urgent ? "Vehicle fault detected" : "Vehicle attention",
+      subtitle: `${vehicleFault.label}${vehicle?.registration ? " · " + vehicle.registration : ""}`,
+      onClick: () => navigate("/instructor/vehicle-health"),
+    });
+  }
+
   const openSlots = (gapData ?? []).reduce((sum, g) => sum + (g.slots?.length ?? 0), 0);
   if (openSlots > 0) {
     attentionRows.push({
       key: "gaps",
+      group: "todo",
       Icon: CalendarPlus,
       iconBg: BLUE_TINT,
       iconColor: BLUE,
@@ -895,9 +986,24 @@ export function MobileHomeRedesign({
     });
   }
 
+  if (dormantCount > 0) {
+    attentionRows.push({
+      key: "dormant",
+      group: "todo",
+      Icon: UsersIcon,
+      iconBg: "#FFF6E6",
+      iconColor: "#B45309",
+      title: `${dormantCount} dormant pupil${dormantCount === 1 ? "" : "s"}`,
+      subtitle: "No lesson in 2+ weeks",
+      badge: { label: String(dormantCount), bg: "#B45309" },
+      onClick: () => navigate("/instructor/pupils?filter=dormant"),
+    });
+  }
+
   if (unread > 0) {
     attentionRows.push({
       key: "messages",
+      group: "todo",
       Icon: MessageSquare,
       iconBg: BLUE_TINT,
       iconColor: BLUE,
@@ -912,6 +1018,7 @@ export function MobileHomeRedesign({
   if (debt > 0) {
     attentionRows.push({
       key: "balance",
+      group: "todo",
       Icon: PoundSterling,
       iconBg: "#F1F4F8",
       iconColor: CHARCOAL,
@@ -989,48 +1096,15 @@ export function MobileHomeRedesign({
         </>
       )}
 
-      {attentionRows.length > 0 && (
-        <>
-          <SectionLabel>Needs attention</SectionLabel>
-          <AttentionCard rows={attentionRows} />
-        </>
-      )}
-
-      {/* Schedule + Quick actions + Tools (redesigned) */}
+      {/* Schedule + Quick Access */}
       <div style={{ marginTop: 14 }}>
         <MobileHomeBottomSections instructorId={instructorId} />
       </div>
 
-      {/* Impact alerts */}
-      <div style={{ padding: "0 16px", marginTop: 20 }}>
-        <ImpactAlertCard instructorId={instructorId} />
-      </div>
-
-      {/* Insights */}
-      <div style={{ marginTop: 20 }}>
-        <div style={{ padding: "0 16px" }}>
-          <SectionLabel>Insights</SectionLabel>
-        </div>
-        <InsightTilesGrid instructorId={instructorId} gapCount={(gapData ?? []).length} />
-      </div>
-
-      {/* Telematics */}
-      <div style={{ marginTop: 20 }}>
-        <div style={{ padding: "0 16px" }}>
-          <SectionLabel>Telematics</SectionLabel>
-        </div>
-        <div style={{ marginTop: 8 }}>
-          <TelematicsTile />
-        </div>
-      </div>
-
-      {/* Vehicle health & idle */}
-      <div style={{ padding: "0 16px", marginTop: 12 }}>
-        <VehicleHealthCard instructorId={instructorId} className="mt-3" />
-        <IdleTimeCostCard instructorId={instructorId} className="mt-3" />
-        <div style={{ marginTop: 20 }}>
-          <UpcomingEventsCard className="mb-6" />
-        </div>
+      {/* Needs attention (merged) */}
+      <div style={{ marginTop: 6 }}>
+        <SectionLabel>Needs attention</SectionLabel>
+        <AttentionCard rows={attentionRows} />
       </div>
 
       {/* Floating session bar */}
