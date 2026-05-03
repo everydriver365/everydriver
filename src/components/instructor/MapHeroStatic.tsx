@@ -82,12 +82,27 @@ export function MapHeroStatic({ centerQuery, countdown, startTime, whenLabel, di
 
   return (
     <div
+      onClick={dest ? openDirections : undefined}
+      role={dest ? "button" : undefined}
+      tabIndex={dest ? 0 : undefined}
+      aria-label={dest ? "Open directions in Google Maps" : undefined}
+      onKeyDown={
+        dest
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openDirections(e as unknown as React.MouseEvent);
+              }
+            }
+          : undefined
+      }
       style={{
         position: "relative",
         height: 126,
         width: "100%",
         background: "#E9EEF5",
         overflow: "hidden",
+        cursor: dest ? "pointer" : "default",
       }}
     >
       {src ? (
