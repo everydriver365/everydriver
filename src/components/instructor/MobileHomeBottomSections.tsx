@@ -47,7 +47,7 @@ function SectionHeader({
     >
       <div
         style={{
-          fontSize: 10,
+          fontSize: 12,
           fontWeight: 700,
           color: "#000",
           letterSpacing: "0.12em",
