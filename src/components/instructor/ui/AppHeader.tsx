@@ -156,7 +156,11 @@ export function HeaderIconButton({
 /* ---------------- AppHeader ---------------- */
 
 export interface AppHeaderProps {
+  /** Visual variant. 'home' = existing DSM logo header. 'screen' = title/subtitle screen header. */
+  mode?: "home" | "screen";
   title: string;
+  /** Subtitle line (screen mode only). Hidden when falsy. */
+  subtitle?: string;
   /** Optional override for the back-chevron condition. Defaults to: any non-root route. */
   showBack?: boolean;
   /** Override the default `navigate(-1)` behaviour. */
@@ -166,6 +170,11 @@ export interface AppHeaderProps {
   onBellPress: () => void;
   onAddPress: () => void;
   onMenuPress: () => void;
+  /** Screen mode: show the + add affordance (defaults true to match existing home behaviour). */
+  showAdd?: boolean;
+  /** Screen mode: show an Edit pill instead of +. Mutually exclusive with showAdd. */
+  showEdit?: boolean;
+  onEdit?: () => void;
   /** Optional trailing slot before the menu icon (e.g. offline-sync indicator). */
   trailing?: ReactNode;
   /** Path treated as the "root" — on this route the back chevron is hidden by default. */
@@ -173,20 +182,25 @@ export interface AppHeaderProps {
 }
 
 export function AppHeader({
+  mode = "home",
   title,
+  subtitle,
   showBack,
   onBack,
   notificationCount = 0,
   onBellPress,
   onAddPress,
   onMenuPress,
+  showAdd,
+  showEdit,
+  onEdit,
   trailing,
   rootPath,
 }: AppHeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { mode, toggle } = useInstructorTheme();
-  const isDark = mode === "dark";
+  const { mode: themeMode, toggle } = useInstructorTheme();
+  const isDark = themeMode === "dark";
   const palette = isDark ? PALETTE.dark : PALETTE.light;
 
   const computedShowBack =
@@ -202,6 +216,148 @@ export function AppHeader({
     haptics.selection();
     cb();
   };
+
+  if (mode === "screen") {
+    const showAddBtn = !!showAdd && !showEdit;
+    return (
+      <header
+        role="banner"
+        className="sticky top-0 z-40"
+        style={{
+          background: "#FFFFFF",
+          borderBottom: "0.5px solid #F0F3F8",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "12px 16px",
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 0, marginRight: 12 }}>
+            <h1
+              style={{
+                margin: 0,
+                fontFamily: FONT_STACK,
+                fontSize: 22,
+                fontWeight: 700,
+                letterSpacing: -0.4,
+                lineHeight: "26px",
+                color: "#1A1A1A",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {title}
+            </h1>
+            {subtitle ? (
+              <div
+                style={{
+                  fontFamily: FONT_STACK,
+                  fontSize: 10,
+                  color: "#8E8E93",
+                  marginTop: 2,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {subtitle}
+              </div>
+            ) : null}
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              flexShrink: 0,
+            }}
+          >
+            <HeaderIconButton
+              icon={BellHeaderIcon}
+              onPress={handleTap(onBellPress)}
+              ariaLabel="Notifications"
+              badgeCount={notificationCount}
+              iconColour="#1A1A1A"
+              badgeRingColour="#FFFFFF"
+            />
+
+            {showEdit && (
+              <button
+                type="button"
+                onClick={handleTap(onEdit ?? (() => {}))}
+                style={{
+                  background: "#EEF3FF",
+                  border: "none",
+                  borderRadius: 20,
+                  padding: "5px 10px",
+                  fontFamily: FONT_STACK,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: "#1A52A0",
+                  cursor: "pointer",
+                  WebkitTapHighlightColor: "transparent",
+                }}
+              >
+                Edit
+              </button>
+            )}
+
+            {showAddBtn && (
+              <button
+                type="button"
+                onClick={handleTap(onAddPress)}
+                aria-label="Add"
+                style={{
+                  width: 27,
+                  height: 27,
+                  borderRadius: 14,
+                  background: "#F2F4F8",
+                  border: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#5B6B8A",
+                  cursor: "pointer",
+                  WebkitTapHighlightColor: "transparent",
+                }}
+              >
+                <PlusHeaderIcon size={13} />
+              </button>
+            )}
+
+            {trailing}
+
+            <button
+              type="button"
+              onClick={handleTap(onMenuPress)}
+              aria-label="Menu"
+              style={{
+                width: 27,
+                height: 27,
+                borderRadius: 14,
+                background: "#F2F4F8",
+                border: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#5B6B8A",
+                cursor: "pointer",
+                WebkitTapHighlightColor: "transparent",
+              }}
+            >
+              <MenuHeaderIcon size={13} />
+            </button>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header
@@ -298,3 +454,4 @@ export function AppHeader({
     </header>
   );
 }
+
