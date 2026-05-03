@@ -22,6 +22,7 @@ import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useInstructorPupilsPaymentSummary } from "@/hooks/usePupilPaymentStatus";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { MapHeroStatic } from "@/components/instructor/MapHeroStatic";
+import { NextUpTile } from "@/components/instructor/NextUpTile";
 
 /* ---------- Brand tokens ---------- */
 const RED = "#CC2229";
