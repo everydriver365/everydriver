@@ -134,9 +134,23 @@
   /* Light mode (default when present without .dsm-dark) */
   .instructor-portal,
   .dsm-instructor {
-    --dsm-bg: 220 30% 96%;          /* #F2F4F8 */
-    --dsm-page-bg: 220 30% 96%;     /* #F2F4F8 */
-    --background: 220 30% 96%;      /* match for bg-background pages */
+    --dsm-bg: 210 33% 95%;          /* #EEF3F8 — premium iOS cool blue-grey */
+    --dsm-page-bg: 210 33% 95%;     /* #EEF3F8 */
+    --background: 210 33% 95%;      /* match for bg-background pages */
+    /* Home v2 premium tokens (scoped via .ios-home-v2 wrapper) */
+    --home-v2-card-radius: 22px;
+    --home-v2-tile-radius: 18px;
+    --home-v2-card-border: 0 0% 100% / 0;
+    --home-v2-card-hairline: rgba(15, 35, 65, 0.08);
+    --home-v2-shadow:
+      0 8px 24px rgba(15, 35, 65, 0.08),
+      0 2px 6px rgba(15, 35, 65, 0.04);
+    --home-v2-text: #0B1220;
+    --home-v2-text-secondary: #64748B;
+    --home-v2-text-muted: #94A3B8;
+    --home-v2-section-label: #6B7A90;
+    --home-v2-accent: #315FAE;
+    --home-v2-accent-tint: #E6EEFB;
     --dsm-card: 0 0% 100%;          /* #FFFFFF */
     --dsm-text: 217 51% 12%;        /* #0F1B2D */
     --dsm-text-secondary: 213 22% 57%; /* #7A8FAA */
