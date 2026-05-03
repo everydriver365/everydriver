@@ -29,6 +29,11 @@ import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import heroImage from "@/assets/every-instructor-hero.webp";
+import { useMemo } from "react";
+import {
+  loadQuickActionsPrefs,
+  type QuickActionId,
+} from "@/lib/quickActionsPrefs";
 
 /* ── Section with refined header ─────────────────────── */
 function Section({
