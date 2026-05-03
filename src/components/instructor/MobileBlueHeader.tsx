@@ -66,10 +66,10 @@ export function MobileBlueHeader({
                 className="flex flex-col min-w-0 leading-none"
                 style={{ color: "hsl(var(--dsm-text-primary, 240 6% 11%))" }}
               >
-                <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: -0.2 }}>
-                  DrivingSchool
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: -0.1 }}>
+                  Driving School
                 </span>
-                <span style={{ fontSize: 12, fontWeight: 400, letterSpacing: -0.1, marginTop: 2 }}>
+                <span style={{ fontSize: 10, fontWeight: 400, letterSpacing: -0.1, marginTop: 2 }}>
                   Manager
                 </span>
               </div>
