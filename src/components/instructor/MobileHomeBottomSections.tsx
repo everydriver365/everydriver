@@ -792,8 +792,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                   gap: 7,
                 }}
               >
-                {pageTiles.map((tile, idx) => {
-                  const isPrimary = pageIdx === 0 && idx === 0;
+                {pageTiles.map((tile) => {
                   const Icon = tile.icon;
                   const tonePair = TONE_PALETTE[tile.tone] ?? TONE_PALETTE.blue;
                   const badge = badgeFor(tile.id);
@@ -804,14 +803,14 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                       onClick={() => navigate(tile.route)}
                       style={{
                         position: "relative",
-                        background: isPrimary ? BLUE : "#FFF",
+                        background: "#FFF",
                         borderRadius: 13,
                         padding: "10px 4px",
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "center",
                         gap: 4,
-                        border: isPrimary ? "none" : `0.5px solid ${BORDER}`,
+                        border: `0.5px solid ${BORDER}`,
                         cursor: "pointer",
                       }}
                     >
@@ -821,7 +820,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                           width: 32,
                           height: 32,
                           borderRadius: 9,
-                          background: isPrimary ? "rgba(255,255,255,0.15)" : tonePair.bg,
+                          background: tonePair.bg,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -829,7 +828,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                       >
                         <Icon
                           size={15}
-                          color={isPrimary ? "#FFF" : tonePair.fg}
+                          color={tonePair.fg}
                           strokeWidth={1.6}
                         />
                       </div>
@@ -838,7 +837,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                           fontSize: 9,
                           fontWeight: 600,
                           textAlign: "center",
-                          color: isPrimary ? "#FFF" : TEXT,
+                          color: TEXT,
                           lineHeight: 1.2,
                         }}
                       >
