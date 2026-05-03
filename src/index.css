@@ -126,6 +126,8 @@
      --schedule-success: 160 84% 32%;
      --schedule-success-soft: 152 81% 96%;
      --schedule-rail: 220 13% 91%;
+      --instructor-mobile-blue: 226 45% 44%;
+      --instructor-mobile-blue-tint: 220 88% 96%;
   }
 
   /* ===== Instructor app theme tokens (scoped to app shell and portalled drawers) ===== */
