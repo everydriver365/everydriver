@@ -613,6 +613,20 @@ function UpNextTile({
 
           {/* Right column */}
           <div style={{ flex: 1, padding: "12px 13px", minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 700,
+                color: CHARCOAL,
+                letterSpacing: "-0.2px",
+                marginBottom: 6,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {toSentence(pupilName)}
+            </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
               <IconTile>
                 <Clock size={14} strokeWidth={2.2} />
