@@ -969,21 +969,28 @@ export function UpNextExpanded({
                     })()
                   : "";
                 const topics = l.skills_practiced || [];
+                const isCancelled = l.status === "cancelled";
+                const cancelReason = isCancelled
+                  ? (l.cancellation_reason || "").split(" — ")[0].trim() || "No reason given"
+                  : "";
+                const cancelNote = isCancelled
+                  ? (l.cancellation_note || "").trim()
+                  : "";
                 return (
                   <button
                     key={l.id}
                     type="button"
-                    onClick={() => setSelectedHistoryLesson(l)}
+                    onClick={() => !isCancelled && setSelectedHistoryLesson(l)}
                     style={{
                       textAlign: "left",
-                      background: "#FAFBFD",
-                      border: `0.5px solid ${ROW_BORDER}`,
+                      background: isCancelled ? "#FEF4F4" : "#FAFBFD",
+                      border: `0.5px solid ${isCancelled ? "#F4D4D4" : ROW_BORDER}`,
                       borderRadius: 12,
                       padding: 12,
                       display: "flex",
                       flexDirection: "column",
                       gap: 6,
-                      cursor: "pointer",
+                      cursor: isCancelled ? "default" : "pointer",
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -996,28 +1003,42 @@ export function UpNextExpanded({
                           ★ {l.rating}
                         </span>
                       )}
-                      <span style={{ fontSize: 11, fontWeight: 600, color: MUTED, background: "#F1F4F8", padding: "2px 8px", borderRadius: 999 }}>
-                        {l.duration_minutes} min
-                      </span>
+                      {isCancelled ? (
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#B42318", background: "#FEE4E2", padding: "2px 8px", borderRadius: 999 }}>
+                          Cancelled
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: 11, fontWeight: 600, color: MUTED, background: "#F1F4F8", padding: "2px 8px", borderRadius: 999 }}>
+                          {l.duration_minutes} min
+                        </span>
+                      )}
                     </div>
-                    {topics.length > 0 && (
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                        {topics.slice(0, 3).map((t, i) => (
-                          <span key={`${t}-${i}`} style={{ background: BLUE_TINT, color: BLUE, fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999 }}>
-                            {t}
-                          </span>
-                        ))}
-                        {topics.length > 3 && (
-                          <span style={{ background: "#F1F4F8", color: MUTED, fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999 }}>
-                            +{topics.length - 3}
-                          </span>
+                    {isCancelled ? (
+                      <div style={{ fontSize: 12, color: "#B42318", lineHeight: 1.4 }}>
+                        Cancelled · {cancelReason}{cancelNote ? ` · ${cancelNote}` : ""}
+                      </div>
+                    ) : (
+                      <>
+                        {topics.length > 0 && (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                            {topics.slice(0, 3).map((t, i) => (
+                              <span key={`${t}-${i}`} style={{ background: BLUE_TINT, color: BLUE, fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999 }}>
+                                {t}
+                              </span>
+                            ))}
+                            {topics.length > 3 && (
+                              <span style={{ background: "#F1F4F8", color: MUTED, fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999 }}>
+                                +{topics.length - 3}
+                              </span>
+                            )}
+                          </div>
                         )}
-                      </div>
-                    )}
-                    {l.notes && (
-                      <div style={{ fontSize: 12, color: MUTED, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {l.notes}
-                      </div>
+                        {l.notes && (
+                          <div style={{ fontSize: 12, color: MUTED, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {l.notes}
+                          </div>
+                        )}
+                      </>
                     )}
                   </button>
                 );
