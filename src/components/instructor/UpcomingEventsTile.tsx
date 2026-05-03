@@ -13,6 +13,8 @@ import {
   subDays,
 } from "date-fns";
 import { useUpcomingEvents, UpcomingEvent, UpcomingEventType } from "@/hooks/useUpcomingEvents";
+import { AddCalendarEventDialog } from "@/components/instructor/AddCalendarEventDialog";
+import { useQueryClient } from "@tanstack/react-query";
 
 const eventTypeConfig: Record<
   UpcomingEventType,
@@ -37,7 +39,9 @@ interface Props {
 
 export function UpcomingEventsTile({ instructorId }: Props) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: events = [], isLoading } = useUpcomingEvents(instructorId);
+  const [addOpen, setAddOpen] = useState(false);
   const [stripStart, setStripStart] = useState<Date>(() =>
     subDays(startOfDay(new Date()), 4),
   );
@@ -147,7 +151,7 @@ export function UpcomingEventsTile({ instructorId }: Props) {
               No tests, MOTs, tasks or training in the next 30 days
             </div>
             <button
-              onClick={() => navigate("/instructor/schedule")}
+              onClick={() => setAddOpen(true)}
               style={{
                 marginTop: 4,
                 background: "#EEF3FF",
@@ -373,6 +377,16 @@ export function UpcomingEventsTile({ instructorId }: Props) {
           </>
         )}
       </div>
+
+      <AddCalendarEventDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        instructorId={instructorId}
+        onSuccess={() => {
+          setAddOpen(false);
+          queryClient.invalidateQueries({ queryKey: ["upcoming-events-home", instructorId] });
+        }}
+      />
     </div>
   );
 }
