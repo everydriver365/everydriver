@@ -1058,31 +1058,46 @@ export default function InstructorLiveSession() {
             </>
           ) : (
             <>
-              {/* 1. HEADER — compact, inline */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                <div style={{ minWidth: 0 }}>
-                  <h1 style={{ fontSize: 26, fontWeight: 600, letterSpacing: -0.5, color: "#000", margin: 0, lineHeight: 1.15 }}>
+              {/* 1. HEADER */}
+              <div style={{
+                background: "#FFF",
+                margin: "-12px -16px 0",
+                padding: "10px 16px 12px",
+                borderBottom: "0.5px solid #F0F3F8",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}>
+                <div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.4 }}>
                     Track
-                  </h1>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4, fontSize: 13, color: "#8E8E93" }}>
-                    <span aria-hidden style={{ width: 6, height: 6, borderRadius: "50%", background: statusColor, flexShrink: 0 }} />
-                    <span>{statusLabel}</span>
-                    {selectedPupil && (
-                      <>
-                        <span style={{ opacity: 0.5 }}>·</span>
-                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedPupil.name}</span>
-                      </>
-                    )}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: 3, background: isConnected ? "#34C759" : "#C7C7CC" }} />
+                    <span style={{ fontSize: 10, color: "#8E8E93", fontWeight: 500 }}>
+                      {isConnected
+                        ? `GPS connected${device.device_name ? ` · ${device.device_name}` : ""}`
+                        : "GPS not connected"}
+                    </span>
                   </div>
                 </div>
-                {!isConnected && (
+                {isConnected ? (
+                  <div style={{
+                    background: "#E8F8ED", borderRadius: 20,
+                    padding: "4px 10px",
+                    display: "inline-flex", alignItems: "center", gap: 4,
+                  }}>
+                    <span style={{ width: 5, height: 5, borderRadius: 3, background: "#34C759" }} />
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#1A7A3C" }}>Live</span>
+                  </div>
+                ) : (
                   <button
                     type="button"
                     onClick={manualReconnect}
                     style={{
                       background: "transparent", border: "0.5px solid #E5E5EA", borderRadius: 8,
                       padding: "6px 10px", fontSize: 12, fontWeight: 500, color: "#2B7BC8",
-                      cursor: "pointer", display: "flex", alignItems: "center", gap: 4,
+                      cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4,
                       fontFamily: FONT_STACK,
                     }}
                   >
@@ -1092,166 +1107,253 @@ export default function InstructorLiveSession() {
                 )}
               </div>
 
-              {/* 2. MAP — context only, ~28vh */}
+              <div style={{ height: 14 }} />
+
+              {/* 2. MAP — unchanged */}
               <div style={{
-                height: "28vh", minHeight: 180, maxHeight: 260,
-                borderRadius: 12, overflow: "hidden", border: "0.5px solid #E5E5EA",
-                opacity: 0.96,
+                borderRadius: 16, overflow: "hidden",
+                marginBottom: 14,
+                border: "0.5px solid rgba(26,82,160,0.08)",
               }}>
-                <MiniLiveMap
-                  latitude={device.last_latitude}
-                  longitude={device.last_longitude}
-                  heading={device.last_heading}
-                  speedKmh={device.last_speed_kmh}
-                  lastSeenAt={device.last_seen_at}
-                  isActive={isConnected}
-                  sessionId={device.current_session_id}
-                />
+                <div style={{ height: "28vh", minHeight: 180, maxHeight: 260 }}>
+                  <MiniLiveMap
+                    latitude={device.last_latitude}
+                    longitude={device.last_longitude}
+                    heading={device.last_heading}
+                    speedKmh={device.last_speed_kmh}
+                    lastSeenAt={device.last_seen_at}
+                    isActive={isConnected}
+                    sessionId={device.current_session_id}
+                  />
+                </div>
               </div>
 
-              {/* 3. PUPIL SELECTOR — compact inline */}
-              <div style={{ position: "relative" }}>
-                <PupilSelectorRow
-                  pupilId={selectedPupilId || null}
-                  pupilName={selectedPupil?.name ?? null}
-                  selectedSubtitle={selectedPupil ? "Tap to change" : "No pupil selected"}
-                  expanded={showPupilPicker}
-                  onPress={() => setShowPupilPicker((p) => !p)}
-                />
-                <AnimatePresence>
-                  {showPupilPicker && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                      transition={{ duration: 0.18 }}
-                      style={{
-                        position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 50,
-                        background: "#FFFFFF", border: "0.5px solid #E5E5EA", borderRadius: 12,
-                        overflow: "hidden", maxHeight: 256, overflowY: "auto",
-                      }}
-                    >
+              {/* 3. MODE selector */}
+              <SectionLabel label="Mode" />
+              <div style={{
+                background: "#FFF", borderRadius: 14, overflow: "hidden",
+                border: "0.5px solid rgba(26,82,160,0.08)", marginBottom: 14,
+              }}>
+                {(
+                  [
+                    { key: "liveLesson", label: "Live lesson", subtitle: "Track with a pupil · records route", iconBg: "#1A52A0", iconColor: "#FFF", Icon: Play },
+                    { key: "testRoute", label: "Test route", subtitle: "Practice route without a pupil", iconBg: "#EEF3FF", iconColor: "#1A52A0", Icon: MapPin },
+                    { key: "recordTest", label: "Record driving test", subtitle: "Log a pupil's DVSA test", iconBg: "#E8F8ED", iconColor: "#1A7A3C", Icon: ShieldCheck },
+                  ] as const
+                ).map((mode, idx, arr) => {
+                  const active = selectedMode === mode.key;
+                  return (
+                    <div key={mode.key}>
                       <button
                         type="button"
-                        onClick={() => { setSelectedPupilId(""); setShowPupilPicker(false); }}
+                        onClick={() => {
+                          setSelectedMode(mode.key);
+                          if (mode.key === "testRoute") setSelectedPupilId("");
+                        }}
                         style={{
-                          width: "100%", display: "flex", alignItems: "center", gap: 12,
-                          padding: "10px 12px", background: !selectedPupilId ? "#F2F2F4" : "transparent",
-                          border: "none", cursor: "pointer", textAlign: "left", fontFamily: FONT_STACK,
+                          width: "100%", textAlign: "left", border: "none", cursor: "pointer",
+                          display: "flex", alignItems: "center", gap: 10,
+                          padding: "11px 14px",
+                          background: active ? "#F5F8FF" : "#FFF",
                         }}
                       >
-                        <span style={{
-                          width: 28, height: 28, borderRadius: 8, background: "#F2F2F4",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: 11, color: "#6E6E73", flexShrink: 0,
-                        }}>—</span>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 13, fontWeight: 500, color: "#000" }}>No pupil</div>
-                          <div style={{ fontSize: 11, color: "#6E6E73" }}>Test route only</div>
+                        <div style={{
+                          width: 30, height: 30, borderRadius: 8,
+                          background: active ? "#1A52A0" : mode.iconBg,
+                          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        }}>
+                          <mode.Icon size={13} color={active ? "#FFF" : mode.iconColor} strokeWidth={1.7} />
                         </div>
-                        {!selectedPupilId && <CheckCircle size={16} strokeWidth={2} color="#2B7BC8" />}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{
+                            fontSize: 12,
+                            fontWeight: active ? 700 : 600,
+                            color: active ? "#1A52A0" : "#1A1A1A",
+                          }}>{mode.label}</div>
+                          <div style={{ fontSize: 10, color: "#8E8E93", marginTop: 1 }}>{mode.subtitle}</div>
+                        </div>
+                        <div style={{
+                          width: 18, height: 18, borderRadius: 9,
+                          border: `${active ? 2 : 1.5}px solid ${active ? "#1A52A0" : "#E0E5EE"}`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          {active && <span style={{ width: 8, height: 8, borderRadius: 4, background: "#1A52A0" }} />}
+                        </div>
                       </button>
-                      {pupils.filter((p) => p.id && p.id.trim() !== "").map((pupil) => {
-                        const active = selectedPupilId === pupil.id;
-                        return (
+                      {idx < arr.length - 1 && (
+                        <div style={{ height: 0.5, background: "#F0F3F8", marginLeft: 14, marginRight: 14 }} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 4. PUPIL selector — hidden when testRoute */}
+              {selectedMode !== "testRoute" && (
+                <>
+                  <SectionLabel label="Pupil" />
+                  <div style={{ position: "relative", marginBottom: 20 }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowPupilPicker((p) => !p)}
+                      style={{
+                        width: "100%", background: "#FFF", borderRadius: 14,
+                        border: "0.5px solid rgba(26,82,160,0.08)",
+                        display: "flex", alignItems: "center", gap: 10,
+                        padding: "12px 14px", cursor: "pointer", textAlign: "left",
+                      }}
+                    >
+                      {selectedPupil ? (
+                        <>
+                          <div style={{
+                            width: 34, height: 34, borderRadius: 17,
+                            background: "#1A52A0",
+                            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                            color: "#FFF", fontSize: 13, fontWeight: 700,
+                          }}>
+                            {(selectedPupil.name || "?").charAt(0).toUpperCase()}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: "#1A1A1A", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {selectedPupil.name}
+                            </div>
+                            <div style={{ fontSize: 10, color: "#8E8E93", marginTop: 1 }}>Tap to change</div>
+                          </div>
+                          <span
+                            role="button"
+                            onClick={(e) => { e.stopPropagation(); setSelectedPupilId(""); }}
+                            style={{
+                              width: 22, height: 22, borderRadius: 11, background: "#F2F4F8",
+                              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                            }}
+                          >
+                            <X size={9} color="#5B6B8A" strokeWidth={2} />
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <div style={{
+                            width: 34, height: 34, borderRadius: 17, background: "#F2F4F8",
+                            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                          }}>
+                            <User size={15} color="#C7C7CC" strokeWidth={1.5} />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: "#C7C7CC" }}>Select pupil</div>
+                            <div style={{ fontSize: 10, color: "#C7C7CC", marginTop: 1 }}>Choose from your pupil list</div>
+                          </div>
+                          <ChevronRight size={14} color="#C7C7CC" strokeWidth={1.8} />
+                        </>
+                      )}
+                    </button>
+                    <AnimatePresence>
+                      {showPupilPicker && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                          transition={{ duration: 0.18 }}
+                          style={{
+                            position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 50,
+                            background: "#FFFFFF", border: "0.5px solid #E5E5EA", borderRadius: 12,
+                            overflow: "hidden", maxHeight: 256, overflowY: "auto",
+                          }}
+                        >
                           <button
-                            key={pupil.id}
                             type="button"
-                            onClick={() => { setSelectedPupilId(pupil.id); setShowPupilPicker(false); }}
+                            onClick={() => { setSelectedPupilId(""); setShowPupilPicker(false); }}
                             style={{
                               width: "100%", display: "flex", alignItems: "center", gap: 12,
-                              padding: "10px 12px", background: active ? "#F2F2F4" : "transparent",
+                              padding: "10px 12px", background: !selectedPupilId ? "#F2F2F4" : "transparent",
                               border: "none", cursor: "pointer", textAlign: "left", fontFamily: FONT_STACK,
                             }}
                           >
                             <span style={{
-                              width: 28, height: 28, borderRadius: "50%", background: "#E6F1FB",
-                              color: "#2B7BC8", fontSize: 12, fontWeight: 500,
-                              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                            }}>{(pupil.name || "?").charAt(0).toUpperCase()}</span>
-                            <span style={{
-                              flex: 1, fontSize: 13, fontWeight: 500, color: "#000",
-                              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                            }}>{pupil.name}</span>
-                            {active && <CheckCircle size={16} strokeWidth={2} color="#2B7BC8" />}
+                              width: 28, height: 28, borderRadius: 8, background: "#F2F2F4",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              fontSize: 11, color: "#6E6E73", flexShrink: 0,
+                            }}>—</span>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: 13, fontWeight: 500, color: "#000" }}>No pupil</div>
+                              <div style={{ fontSize: 11, color: "#6E6E73" }}>Test route only</div>
+                            </div>
+                            {!selectedPupilId && <CheckCircle size={16} strokeWidth={2} color="#2B7BC8" />}
                           </button>
-                        );
-                      })}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                          {pupils.filter((p) => p.id && p.id.trim() !== "").map((pupil) => {
+                            const active = selectedPupilId === pupil.id;
+                            return (
+                              <button
+                                key={pupil.id}
+                                type="button"
+                                onClick={() => { setSelectedPupilId(pupil.id); setShowPupilPicker(false); }}
+                                style={{
+                                  width: "100%", display: "flex", alignItems: "center", gap: 12,
+                                  padding: "10px 12px", background: active ? "#F2F2F4" : "transparent",
+                                  border: "none", cursor: "pointer", textAlign: "left", fontFamily: FONT_STACK,
+                                }}
+                              >
+                                <span style={{
+                                  width: 28, height: 28, borderRadius: "50%", background: "#E6F1FB",
+                                  color: "#2B7BC8", fontSize: 12, fontWeight: 500,
+                                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                                }}>{(pupil.name || "?").charAt(0).toUpperCase()}</span>
+                                <span style={{
+                                  flex: 1, fontSize: 13, fontWeight: 500, color: "#000",
+                                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                                }}>{pupil.name}</span>
+                                {active && <CheckCircle size={16} strokeWidth={2} color="#2B7BC8" />}
+                              </button>
+                            );
+                          })}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </>
+              )}
 
-              {/* 4. PRIMARY ACTIONS — dominant */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
-                {/* Start lesson — primary, requires pupil */}
-                <button
-                  type="button"
-                  onClick={() => startSession("practice")}
-                  disabled={!canStartLesson}
-                  style={{
-                    width: "100%", background: canStartLesson ? "#2B7BC8" : "#B8C4D6",
-                    border: "none", borderRadius: 12, padding: "18px 20px",
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-                    color: "#FFFFFF", fontSize: 16, fontWeight: 600,
-                    cursor: canStartLesson ? "pointer" : "not-allowed",
-                    fontFamily: FONT_STACK, transition: "transform 150ms, background 200ms",
-                    boxShadow: canStartLesson ? "0 6px 20px -8px rgba(43,123,200,0.55)" : "none",
-                  }}
-                  onPointerDown={(e) => canStartLesson && (e.currentTarget.style.transform = "scale(0.98)")}
-                  onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                  onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                >
-                  {isStarting ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} strokeWidth={2.4} fill="#FFFFFF" />}
-                  <span>{selectedPupil ? `Start lesson` : "Select a pupil to start lesson"}</span>
-                </button>
-
-                {/* Start test route — secondary primary */}
-                <button
-                  type="button"
-                  onClick={() => startSession("test")}
-                  disabled={isStarting || !isConnected}
-                  style={{
-                    width: "100%", background: "#F4F6F9",
-                    border: "0.5px solid #E5E5EA", borderRadius: 12, padding: "16px 20px",
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-                    color: "#000", fontSize: 15, fontWeight: 600,
-                    cursor: isStarting || !isConnected ? "not-allowed" : "pointer",
-                    fontFamily: FONT_STACK, transition: "transform 150ms",
-                    opacity: isStarting || !isConnected ? 0.55 : 1,
-                  }}
-                  onPointerDown={(e) => !isStarting && isConnected && (e.currentTarget.style.transform = "scale(0.98)")}
-                  onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                  onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                >
-                  <MapPin size={17} strokeWidth={2} color="#2B7BC8" />
-                  <span>Start test route</span>
-                </button>
-
-                {/* Record official driving test */}
-                <button
-                  type="button"
-                  onClick={() => setShowDrivingTestDialog(true)}
-                  disabled={isStarting}
-                  style={{
-                    width: "100%", background: "#FFFFFF",
-                    border: "0.5px solid #E5E5EA", borderRadius: 12, padding: "16px 20px",
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-                    color: "#000", fontSize: 15, fontWeight: 600,
-                    cursor: isStarting ? "not-allowed" : "pointer",
-                    fontFamily: FONT_STACK, transition: "transform 150ms",
-                    opacity: isStarting ? 0.55 : 1,
-                  }}
-                  onPointerDown={(e) => !isStarting && (e.currentTarget.style.transform = "scale(0.98)")}
-                  onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                  onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                >
-                  <ShieldCheck size={17} strokeWidth={2} color="#000" />
-                  <span>Record driving test</span>
-                </button>
-              </div>
-
-              {/* Resume active session banner */}
+              {/* 5. PRIMARY CTA */}
+              {(() => {
+                const ctaConfig = {
+                  liveLesson: { label: "Start live lesson", Icon: Play, onClick: () => startSession("practice") },
+                  testRoute: { label: "Start test route", Icon: MapPin, onClick: () => startSession("test") },
+                  recordTest: { label: "Record driving test", Icon: ShieldCheck, onClick: () => setShowDrivingTestDialog(true) },
+                } as const;
+                const requiresPupil = selectedMode !== "testRoute";
+                const canStart =
+                  (!requiresPupil || !!selectedPupilId) &&
+                  !isStarting &&
+                  (selectedMode === "recordTest" || isConnected);
+                const cta = ctaConfig[selectedMode];
+                return (
+                  <>
+                    <button
+                      type="button"
+                      onClick={canStart ? cta.onClick : undefined}
+                      disabled={!canStart}
+                      style={{
+                        width: "100%", background: canStart ? "#1A52A0" : "#C7C7CC",
+                        border: "none", borderRadius: 14, padding: "14px 16px",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                        marginBottom: 8, cursor: canStart ? "pointer" : "not-allowed",
+                        color: "#FFF", fontSize: 14, fontWeight: 700, fontFamily: FONT_STACK,
+                      }}
+                    >
+                      {isStarting ? <Loader2 size={14} className="animate-spin" /> : <cta.Icon size={14} color="#FFF" strokeWidth={2} />}
+                      <span>{cta.label}</span>
+                    </button>
+                    {!canStart && (
+                      <div style={{ fontSize: 10, color: "#C7C7CC", textAlign: "center" }}>
+                        {requiresPupil && !selectedPupilId
+                          ? "Select a pupil to start tracking"
+                          : !isConnected
+                          ? "Waiting for GPS connection"
+                          : ""}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
               {isSessionActive && (
                 <div
                   style={{
