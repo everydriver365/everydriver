@@ -416,43 +416,74 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
       <button
         type="button"
         onClick={onClick}
-        className={cn(
-          "relative flex w-full items-center gap-3 rounded-[10px] px-2.5 py-2 text-left transition-colors",
-          active
-            ? "bg-[hsl(var(--dsm-tint-blue-bg)/0.85)]"
-            : "hover:bg-[hsl(var(--dsm-card)/0.6)] active:bg-[hsl(var(--dsm-card)/0.8)]"
-        )}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          width: "100%",
+          padding: "10px 12px",
+          borderRadius: 12,
+          marginBottom: 2,
+          background: active ? "#EEF3FF" : "transparent",
+          border: 0,
+          cursor: "pointer",
+          textAlign: "left",
+        }}
       >
-        <Icon
-          className="h-[18px] w-[18px] shrink-0"
-          strokeWidth={1.8}
-          style={{
-            color: active
-              ? "hsl(var(--dsm-tint-blue-fg))"
-              : destructive
-                ? "hsl(var(--dsm-tint-red-fg))"
-                : "hsl(var(--dsm-text-secondary))",
-          }}
-        />
         <span
-          className={cn(
-            "min-w-0 flex-1 truncate text-[14.5px] leading-5 tracking-[-0.1px]",
-            active
-              ? "font-semibold text-[hsl(var(--dsm-tint-blue-fg))]"
-              : destructive
-                ? "font-medium text-[hsl(var(--dsm-tint-red-fg))]"
-                : "font-medium text-[hsl(var(--dsm-text))]"
-          )}
+          style={{
+            width: 30,
+            height: 30,
+            borderRadius: 8,
+            flexShrink: 0,
+            background: destructive ? "#FFF0F0" : active ? "#1A52A0" : "#F2F4F8",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Icon
+            size={14}
+            strokeWidth={1.6}
+            color={destructive ? "#CC2229" : active ? "#FFFFFF" : "#5B6B8A"}
+          />
+        </span>
+        <span
+          style={{
+            flex: 1,
+            minWidth: 0,
+            fontSize: 13,
+            fontWeight: active ? 700 : 600,
+            color: destructive ? "#CC2229" : active ? "#1A52A0" : "#1A1A1A",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
         >
           {label}
         </span>
-        {children}
+        {active ? (
+          <span style={{ width: 6, height: 6, borderRadius: 3, background: "#1A52A0", flexShrink: 0 }} />
+        ) : children ? (
+          children
+        ) : !destructive ? (
+          <ChevronRight size={12} color="#C7C7CC" strokeWidth={1.8} />
+        ) : null}
       </button>
     );
   };
 
   const DrawerSectionLabel = ({ children }: { children: ReactNode }) => (
-    <div className="px-2.5 pt-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.6px] text-[hsl(var(--dsm-text-secondary)/0.75)]">
+    <div
+      style={{
+        padding: "12px 4px 4px",
+        fontSize: 9,
+        fontWeight: 700,
+        letterSpacing: 1.2,
+        textTransform: "uppercase",
+        color: "#8E8E93",
+      }}
+    >
       {children}
     </div>
   );
