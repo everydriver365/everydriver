@@ -506,7 +506,15 @@ function UpNextTile({
         }}
       >
         <MapHeroStatic
-          centerQuery={pickupPostcode || pickupLocation || null}
+          centerQuery={
+            pickupLocation && pickupPostcode
+              ? `${pickupLocation}, ${pickupPostcode}, UK`
+              : pickupLocation
+                ? `${pickupLocation}, UK`
+                : pickupPostcode
+                  ? `${pickupPostcode}, UK`
+                  : null
+          }
           countdown={countdown}
           startTime={start}
           whenLabel={whenLabel}
