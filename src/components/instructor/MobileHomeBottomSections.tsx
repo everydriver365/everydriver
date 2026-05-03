@@ -728,7 +728,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
       {/* Search bar */}
       <button
         type="button"
-        onClick={() => navigate("/instructor/menu")}
+        onClick={() => setSearchOpen(true)}
         style={{
           width: "100%",
           background: "#FFF",
