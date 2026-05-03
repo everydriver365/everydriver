@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { AlertTriangle } from "lucide-react";
+import { enrichFaultCode } from "@/lib/obdCodeLookup";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle2,
@@ -862,6 +863,58 @@ export function UpNextExpanded({
           );
         })()}
 
+
+        {obdDevice && (obdDevice.last_fault_codes?.length ?? 0) > 0 && (
+          <>
+            <Divider />
+            <SectionLabel>Fault codes</SectionLabel>
+            <div style={{ padding: "0 16px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
+              {(obdDevice.last_fault_codes || []).map((f, i) => {
+                const enriched = enrichFaultCode(f);
+                const sev = (enriched.severity || "").toLowerCase();
+                const isCritical = sev === "critical" || sev === "high";
+                const isWarn = sev === "medium" || sev === "warning";
+                const bg = isCritical
+                  ? "rgba(204,34,41,0.08)"
+                  : isWarn
+                  ? "#FFF8E6"
+                  : "#F1F4F8";
+                const fg = isCritical ? RED : isWarn ? "#A66B00" : MUTED;
+                return (
+                  <div
+                    key={`${enriched.code}-${i}`}
+                    onClick={() => navigate("/instructor/vehicle-health")}
+                    style={{
+                      background: bg,
+                      borderRadius: 12,
+                      padding: "8px 12px",
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 10,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <AlertTriangle size={14} color={fg} strokeWidth={2.4} style={{ marginTop: 2, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: fg }}>{enriched.code}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: fg, textTransform: "uppercase", letterSpacing: "0.04em", opacity: 0.8 }}>
+                          {enriched.severity}
+                        </span>
+                        {enriched.source && (
+                          <span style={{ fontSize: 10, color: MUTED, marginLeft: "auto" }}>{enriched.source}</span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: 12, color: CHARCOAL, lineHeight: 1.4, marginTop: 2 }}>
+                        {enriched.description}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
 
         <Divider />
 
