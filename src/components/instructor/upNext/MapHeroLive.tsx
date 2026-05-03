@@ -292,6 +292,40 @@ function MapHeroLiveImpl({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lessonId, coords?.lat, coords?.lng]);
 
+  // Fetch driving route when both endpoints known.
+  const [routePath, setRoutePath] = useState<google.maps.LatLngLiteral[] | null>(
+    () => routeCache.get(lessonId) ?? null
+  );
+  useEffect(() => {
+    if (!visible || !sdkLoaded || !coords || !origin) return;
+    // Skip if very close (< 150m) — just show pin.
+    if (haversineMeters(origin, coords) < 150) {
+      setRoutePath(null);
+      return;
+    }
+    let cancelled = false;
+    fetchRoute(lessonId, origin, coords).then((path) => {
+      if (!cancelled) setRoutePath(path);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [visible, sdkLoaded, lessonId, coords?.lat, coords?.lng, origin?.lat, origin?.lng]);
+
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const onMapLoad = (map: google.maps.Map) => {
+    mapRef.current = map;
+  };
+
+  // Fit bounds to route when available.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !routePath || routePath.length < 2) return;
+    const bounds = new google.maps.LatLngBounds();
+    routePath.forEach((p) => bounds.extend(p));
+    map.fitBounds(bounds, { top: 36, right: 36, bottom: 36, left: 36 });
+  }, [routePath]);
+
   const showFallback = coords === null;
 
   return (
@@ -312,7 +346,50 @@ function MapHeroLiveImpl({
           center={center}
           zoom={15}
           options={MAP_OPTIONS}
+          onLoad={onMapLoad}
         >
+          {routePath && routePath.length > 1 ? (
+            <>
+              <PolylineF
+                path={routePath}
+                options={{
+                  strokeColor: "#FFFFFF",
+                  strokeOpacity: 0.95,
+                  strokeWeight: 7,
+                  zIndex: 1,
+                  clickable: false,
+                }}
+              />
+              <PolylineF
+                path={routePath}
+                options={{
+                  strokeColor: "#CC2229",
+                  strokeOpacity: 0.95,
+                  strokeWeight: 4,
+                  zIndex: 2,
+                  clickable: false,
+                }}
+              />
+            </>
+          ) : null}
+          {origin ? (
+            <OverlayViewF
+              position={origin}
+              mapPaneName={OVERLAY_MOUSE_TARGET}
+              getPixelPositionOffset={(w, h) => ({ x: -(w / 2), y: -(h / 2) })}
+            >
+              <div
+                style={{
+                  width: 14,
+                  height: 14,
+                  borderRadius: "50%",
+                  background: "#10B981",
+                  border: "2px solid #FFFFFF",
+                  boxShadow: "0 0 0 2px rgba(16,185,129,0.35), 0 1px 3px rgba(0,0,0,0.25)",
+                }}
+              />
+            </OverlayViewF>
+          ) : null}
           <OverlayViewF
             position={center}
             mapPaneName={OVERLAY_MOUSE_TARGET}
