@@ -584,6 +584,44 @@ const TONE_PALETTE: Record<string, { bg: string; fg: string }> = {
 function QuickAccessSection({ instructorId }: { instructorId: string }) {
   const navigate = useNavigate();
   const [editOpen, setEditOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [pupilResults, setPupilResults] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen((o) => !o);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
+    if (!searchOpen || !instructorId) return;
+    const q = searchQuery.trim();
+    if (q.length < 2) {
+      setPupilResults([]);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      const { data } = await supabase
+        .from("pupils")
+        .select("id, name")
+        .eq("instructor_id", instructorId)
+        .ilike("name", `%${q}%`)
+        .limit(8);
+      if (!cancelled) setPupilResults((data as any) || []);
+    }, 180);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [searchQuery, searchOpen, instructorId]);
+
   const { pinnedIds, setPins, isSaving } = useInstructorPinnedTiles(instructorId);
 
   const { data: unread = 0 } = useUnreadMessagesCount(instructorId);
