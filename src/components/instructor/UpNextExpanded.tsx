@@ -372,6 +372,8 @@ export function UpNextExpanded({
   pupilPhone,
   pickupLocation,
   pickupPostcode,
+  pickupWhat3words,
+  pickupNotes,
   startTime,
   durationMinutes,
   accountBalance,
