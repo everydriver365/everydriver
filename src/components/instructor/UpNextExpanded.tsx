@@ -218,6 +218,7 @@ export function UpNextExpanded({
   const [lateOpen, setLateOpen] = useState(false);
 
   const eta = useTrafficETA(pickupPostcode);
+  const weather = useLessonWeather(pickupPostcode);
   const etaMinutes = eta.durationMinutes || 0;
   const fullAddress = [pickupLocation, pickupPostcode].filter(Boolean).join(", ");
   const lessonFee = (durationMinutes / 60) * 40;
