@@ -3,10 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Reorder, motion } from "framer-motion";
 import {
   ChevronLeft,
-  Briefcase,
-  MessageSquare,
+  CalendarPlus,
+  MessageCircle,
+  Clock,
   PoundSterling,
+  CalendarDays,
   Users,
+  Wallet,
+  ClipboardCheck,
   GripVertical,
 } from "lucide-react";
 import { EveryInstructorLayout } from "@/components/layout/EveryInstructorLayout";
@@ -22,30 +26,14 @@ const META: Record<
   QuickActionId,
   { label: string; icon: any; accent: string; subtitle: string }
 > = {
-  jobs: {
-    label: "Job Offers",
-    icon: Briefcase,
-    accent: "#AF52DE",
-    subtitle: "New pupil requests",
-  },
-  messages: {
-    label: "Messages",
-    icon: MessageSquare,
-    accent: "#FF9500",
-    subtitle: "Inbox & chats",
-  },
-  "take-payment": {
-    label: "Take Payment",
-    icon: PoundSterling,
-    accent: "#34C759",
-    subtitle: "Record a payment",
-  },
-  pupils: {
-    label: "Pupils",
-    icon: Users,
-    accent: "#007AFF",
-    subtitle: "Your learners",
-  },
+  "add-lesson": { label: "Add lesson", icon: CalendarPlus, accent: "#007AFF", subtitle: "Schedule a new booking" },
+  message: { label: "Message", icon: MessageCircle, accent: "#5856D6", subtitle: "Open inbox" },
+  "fill-gap": { label: "Fill gap", icon: Clock, accent: "#FF9500", subtitle: "Find pupils for free slots" },
+  payment: { label: "Payment", icon: PoundSterling, accent: "#34C759", subtitle: "Take a payment" },
+  schedule: { label: "Schedule", icon: CalendarDays, accent: "#007AFF", subtitle: "View your diary" },
+  pupils: { label: "Pupils", icon: Users, accent: "#5856D6", subtitle: "Your learners" },
+  earnings: { label: "Earnings", icon: Wallet, accent: "#34C759", subtitle: "Money & invoices" },
+  tests: { label: "Tests", icon: ClipboardCheck, accent: "#FF9500", subtitle: "Test bookings" },
 };
 
 export default function EveryInstructorQuickActionsEdit() {
@@ -72,7 +60,7 @@ export default function EveryInstructorQuickActionsEdit() {
   const handleSave = () => {
     if (!canSave) return;
     saveQuickActionsPrefs({ order, hidden });
-    navigate("/every-instructor");
+    navigate(-1);
   };
 
   const handleBack = () => {
@@ -82,7 +70,7 @@ export default function EveryInstructorQuickActionsEdit() {
     ) {
       return;
     }
-    navigate("/every-instructor");
+    navigate(-1);
   };
 
   const handleReset = () => {
