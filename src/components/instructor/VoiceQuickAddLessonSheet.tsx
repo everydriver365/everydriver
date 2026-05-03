@@ -12,6 +12,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { invalidateLessonQueries } from "@/lib/invalidateLessonQueries";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { checkLessonClash } from "@/lib/lessonClashCheck";
 
 interface VoiceQuickAddLessonSheetProps {
   open: boolean;
