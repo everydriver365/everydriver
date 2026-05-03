@@ -295,9 +295,9 @@ export function AddCalendarEventDialog({
           <div
             role="tablist"
             aria-label="Event type"
-            className="grid grid-cols-2 gap-1 p-[3px] rounded-[10px] bg-[#E5E5EA]/70"
+            className="grid grid-cols-3 gap-1 p-[3px] rounded-[10px] bg-[#E5E5EA]/70"
           >
-            {(['block', 'lesson'] as const).map((t) => {
+            {(['block', 'lesson', 'event'] as const).map((t) => {
               const active = tab === t;
               return (
                 <button
@@ -313,7 +313,7 @@ export function AddCalendarEventDialog({
                       : 'text-[#3C3C43]/60 font-medium'
                   )}
                 >
-                  {t === 'block' ? 'Block Time' : 'Add Lesson'}
+                  {t === 'block' ? 'Block Time' : t === 'lesson' ? 'Add Lesson' : 'Add Event'}
                 </button>
               );
             })}
