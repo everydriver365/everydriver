@@ -62,6 +62,8 @@ interface Props {
   pupilPhone: string | null;
   pickupLocation: string | null;
   pickupPostcode: string | null;
+  pickupWhat3words?: string | null;
+  pickupNotes?: string | null;
   startTime: string;
   durationMinutes: number;
   accountBalance: number;
