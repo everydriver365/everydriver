@@ -138,12 +138,28 @@ export function VoiceQuickAddLessonSheet({
     }
     setSaving(true);
     try {
+      const startTime = draft.start_time.length === 5 ? draft.start_time : draft.start_time.slice(0, 5);
+      const durationMinutes = draft.duration_minutes || 60;
+
+      // Block clashes before insert
+      const clash = await checkLessonClash({
+        instructorId,
+        date: draft.lesson_date,
+        startTime,
+        durationMinutes,
+      });
+      if (clash.hardOverlap) {
+        toast.error(clash.message || "This time clashes with another lesson");
+        setSaving(false);
+        return;
+      }
+
       const { error } = await supabase.from("scheduled_lessons").insert({
         instructor_id: instructorId,
         pupil_id: matchedPupilId,
         lesson_date: draft.lesson_date,
-        start_time: draft.start_time.length === 5 ? `${draft.start_time}:00` : draft.start_time,
-        duration_minutes: draft.duration_minutes || 60,
+        start_time: `${startTime}:00`,
+        duration_minutes: durationMinutes,
         pickup_location: draft.location || matchedPupil?.address || null,
         pickup_postcode: matchedPupil?.postcode || null,
         notes: draft.notes || null,
