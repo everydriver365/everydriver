@@ -50,10 +50,11 @@ export function useInstructorPinnedTiles(instructorId: string | undefined) {
       // Replace strategy: delete then insert. Stores the user's full
       // ordered list of visible tiles (no hard cap — used by both the
       // 6-pin Frequently used UI and the full-order swipeable customize).
-      await supabase
+      const { error: deleteError } = await supabase
         .from("instructor_pinned_tiles")
         .delete()
         .eq("instructor_id", instructorId);
+      if (deleteError) throw deleteError;
 
       if (tileIds.length === 0) return;
 
@@ -63,7 +64,28 @@ export function useInstructorPinnedTiles(instructorId: string | undefined) {
         position: idx,
       }));
 
-      await supabase.from("instructor_pinned_tiles").insert(rows);
+      const { error: insertError } = await supabase.from("instructor_pinned_tiles").insert(rows);
+      if (insertError) throw insertError;
+    },
+    onMutate: async (tileIds) => {
+      await queryClient.cancelQueries({ queryKey: QUERY_KEY(instructorId) });
+      const previous = queryClient.getQueryData<PinnedTile[]>(QUERY_KEY(instructorId));
+
+      if (instructorId) {
+        queryClient.setQueryData<PinnedTile[]>(
+          QUERY_KEY(instructorId),
+          tileIds.map((tile_id, position) => ({
+            id: `${instructorId}-${tile_id}`,
+            tile_id,
+            position,
+          })),
+        );
+      }
+
+      return { previous };
+    },
+    onError: (_error, _tileIds, context) => {
+      queryClient.setQueryData(QUERY_KEY(instructorId), context?.previous);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY(instructorId) });
