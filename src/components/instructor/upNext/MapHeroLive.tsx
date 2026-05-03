@@ -96,8 +96,8 @@ const MAP_OPTIONS: google.maps.MapOptions = {
   fullscreenControl: false,
   rotateControl: false,
   scaleControl: false,
-  styles: dsmMapStyle,
 };
+const _trailing = null;
 
 function PulsingDot() {
   return (
