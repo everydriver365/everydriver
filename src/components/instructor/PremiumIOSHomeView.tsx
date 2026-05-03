@@ -39,6 +39,8 @@ import { useLastWeekComparison } from "@/hooks/useLastWeekComparison";
 import { useHomeActions } from "@/components/instructor/WarmHomeTiles";
 import { getTimeOfDayGreeting } from "@/lib/composeStatusSubtitle";
 import { GraduationCap } from "lucide-react";
+import { loadQuickActionsPrefs } from "@/lib/quickActionsPrefs";
+import { QUICK_ACTIONS_BY_ID } from "@/lib/quickActionsCatalog";
 
 interface Props {
   instructorId: string | undefined;
