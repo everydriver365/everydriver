@@ -149,6 +149,7 @@ function MapHeroLiveImpl({
   onToggleExpanded,
   pupilName,
   pupilPhone,
+  pupilProfileImage,
 }: Props) {
   const eta = useTrafficETA(pickupPostcode);
   const etaMinutes = eta.durationMinutes || 0;
