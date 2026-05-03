@@ -132,7 +132,7 @@ export function NextUpTile({
 }: NextUpTileProps) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(forceExpanded);
   const [nudgeSentAt, setNudgeSentAt] = useState<number | null>(null);
   // Auto-clear "Reminder sent" chip back to Awaiting after ~3s
   useEffect(() => {
