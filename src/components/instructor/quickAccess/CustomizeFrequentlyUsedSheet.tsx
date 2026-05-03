@@ -30,7 +30,7 @@ const TONE_TO_CATEGORY: Record<TileTone, string> = {
 };
 
 const CATEGORY_COLORS: Record<string, { iconBg: string; iconColor: string }> = {
-  Scheduling: { iconBg: "#EEF4FF", iconColor: "#2F63D3" },
+  Scheduling: { iconBg: "#EEF4FF", iconColor: "#2952B3" },
   Finance: { iconBg: "#FFF6E6", iconColor: "#B45309" },
   Pupils: { iconBg: "#E8F8ED", iconColor: "#1A7A3C" },
   Vehicle: { iconBg: "#FFF0F0", iconColor: "#B23A3F" },
@@ -148,7 +148,7 @@ export function CustomizeFrequentlyUsedSheet({
             onClick={handleDone}
             disabled={saving}
             style={{
-              background: "#2F63D3",
+              background: "#2952B3",
               borderRadius: 20,
               padding: "6px 16px",
               border: "none",
@@ -268,7 +268,7 @@ export function CustomizeFrequentlyUsedSheet({
                           width: 30,
                           height: 30,
                           borderRadius: 8,
-                          background: isPrimary ? "#2F63D3" : colors.iconBg,
+                          background: isPrimary ? "#2952B3" : colors.iconBg,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -299,7 +299,7 @@ export function CustomizeFrequentlyUsedSheet({
                         <div
                           style={{
                             fontSize: 10,
-                            color: isPrimary ? "#2F63D3" : "#8E8E93",
+                            color: isPrimary ? "#2952B3" : "#8E8E93",
                             marginTop: 1,
                             fontWeight: isPrimary ? 500 : 400,
                           }}
@@ -320,7 +320,7 @@ export function CustomizeFrequentlyUsedSheet({
                             style={{
                               fontSize: 9,
                               fontWeight: 600,
-                              color: "#2F63D3",
+                              color: "#2952B3",
                             }}
                           >
                             1st
@@ -390,7 +390,7 @@ export function CustomizeFrequentlyUsedSheet({
                   style={{
                     borderRadius: 20,
                     padding: "4px 11px",
-                    background: active ? "#2F63D3" : "#FFF",
+                    background: active ? "#2952B3" : "#FFF",
                     border: active
                       ? "none"
                       : "0.5px solid rgba(26,82,160,0.15)",

@@ -21,7 +21,7 @@ const IOS = {
   tertiaryLabel: "rgba(60,60,67,.30)",
   opaqueSeparator: "#E5E5EA",
   fill: "#F2F2F4",
-  systemBlue: "#2F63D3",
+  systemBlue: "#2952B3",
   systemGreen: "#3B8B3B",
   systemRed: "#C8434F",
   systemAmber: "#B8801F",
