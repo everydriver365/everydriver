@@ -960,6 +960,8 @@ export function MobileHomeRedesign({
               pupilPhone={nextLesson.pupilPhone}
               pickupLocation={nextLesson.pickupLocation}
               pickupPostcode={nextLesson.pickupPostcode}
+              pickupWhat3words={nextLesson.pickupWhat3words}
+              pickupNotes={nextLesson.pickupNotes}
               startTime={nextLesson.startTime}
               durationMinutes={nextLesson.durationMinutes}
               accountBalance={(nextLesson as any).accountBalance ?? 0}
