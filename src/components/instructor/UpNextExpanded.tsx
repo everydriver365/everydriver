@@ -52,7 +52,7 @@ import { toast } from "sonner";
 import { haptics } from "@/lib/haptics";
 
 /* Brand tokens */
-const RED = "#CC2229";
+const RED = "#B23A3F";
 const BLUE = "#0A0F29";
 const CHARCOAL = "#2B2B2B";
 const MUTED = "#5B6B8A";

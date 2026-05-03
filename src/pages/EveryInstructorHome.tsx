@@ -461,7 +461,7 @@ export default function EveryInstructorHome() {
           title="Tracking"
           subtitle="GPS & telematics"
           icon={Radio}
-          accent="#FF3B30"
+          accent="#E15D5A"
           accentLight="#FF6B6B"
           onClick={() => navigate("/every-instructor/tracking")}
         />

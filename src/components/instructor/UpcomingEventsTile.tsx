@@ -20,8 +20,8 @@ const eventTypeConfig: Record<
   UpcomingEventType,
   { dotColor: string; pillBg: string; pillText: string; pilotLabel: (d: number) => string }
 > = {
-  drivingTest: { dotColor: "#CC2229", pillBg: "#FFF0F0", pillText: "#CC2229", pilotLabel: (d) => (d === 0 ? "Today" : `${d}d`) },
-  theoryTest: { dotColor: "#CC2229", pillBg: "#FFF0F0", pillText: "#CC2229", pilotLabel: (d) => (d === 0 ? "Today" : `${d}d`) },
+  drivingTest: { dotColor: "#B23A3F", pillBg: "#FFF0F0", pillText: "#B23A3F", pilotLabel: (d) => (d === 0 ? "Today" : `${d}d`) },
+  theoryTest: { dotColor: "#B23A3F", pillBg: "#FFF0F0", pillText: "#B23A3F", pilotLabel: (d) => (d === 0 ? "Today" : `${d}d`) },
   mot: { dotColor: "#1A7A3C", pillBg: "#E8F8ED", pillText: "#1A7A3C", pilotLabel: (d) => (d === 0 ? "Today" : `${d}d`) },
   insuranceRenewal: { dotColor: "#1A7A3C", pillBg: "#E8F8ED", pillText: "#1A7A3C", pilotLabel: (d) => (d === 0 ? "Today" : `${d}d`) },
   task: { dotColor: "#B45309", pillBg: "#FFF6E6", pillText: "#B45309", pilotLabel: (d) => (d === 0 ? "Today" : `${d}d`) },

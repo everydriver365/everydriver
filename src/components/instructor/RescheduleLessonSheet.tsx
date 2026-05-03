@@ -394,7 +394,7 @@ export function RescheduleLessonSheet({
                 width: 28,
                 height: 28,
                 borderRadius: 14,
-                backgroundColor: "#CC2229",
+                backgroundColor: "#B23A3F",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -429,8 +429,8 @@ export function RescheduleLessonSheet({
               marginTop: 8,
             }}
           >
-            <Clock size={11} color="#CC2229" />
-            <span style={{ fontSize: 11, fontWeight: 600, color: "#CC2229" }}>
+            <Clock size={11} color="#B23A3F" />
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#B23A3F" }}>
               {format(currentDateObj, "EEE")} {format(currentDateObj, "d MMM")} · {currentTime.slice(0, 5)} · {durationMinutes} min
             </span>
           </div>
@@ -599,7 +599,7 @@ export function RescheduleLessonSheet({
                 <div
                   style={{
                     background: "#FFF0F0",
-                    color: "#CC2229",
+                    color: "#B23A3F",
                     borderRadius: 14,
                     padding: 12,
                     fontSize: 12,
@@ -775,7 +775,7 @@ export function RescheduleLessonSheet({
                   width: "100%",
                 }}
               >
-                <span style={{ fontSize: 13, fontWeight: 600, color: "#CC2229" }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "#B23A3F" }}>
                   Keep original lesson
                 </span>
               </button>

@@ -181,7 +181,7 @@ export function WeatherAlertBanner({
                 <a
                   href={`sms:${nextLessonPupilPhone}?body=${encodeURIComponent(body)}`}
                   className="shrink-0 inline-flex flex-col items-center justify-center gap-0.5 h-11 px-3 rounded-xl text-[10px] font-bold uppercase tracking-wider text-white shadow-lg shadow-red-500/30 active:scale-95 transition-transform"
-                  style={{ background: "linear-gradient(135deg, #FF3B30, #C81E14)" }}
+                  style={{ background: "linear-gradient(135deg, #E15D5A, #C81E14)" }}
                 >
                   <MessageSquare className="h-3.5 w-3.5" />
                   Notify

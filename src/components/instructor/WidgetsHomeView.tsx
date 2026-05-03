@@ -136,7 +136,7 @@ function NextLessonWidget({ instructorId }: { instructorId: string | undefined }
             <p className="text-[13px] text-[#8E8E93]">{nextLesson.startTime} · {nextLesson.durationMinutes || 60}min</p>
           </div>
         </div>
-        <div className={`px-2.5 py-1 rounded-full text-xs font-bold ${isNow ? "bg-[#FF3B30]/10 text-[#FF3B30]" : "bg-[#007AFF]/10 text-[#007AFF]"}`}>
+        <div className={`px-2.5 py-1 rounded-full text-xs font-bold ${isNow ? "bg-[#E15D5A]/10 text-[#E15D5A]" : "bg-[#007AFF]/10 text-[#007AFF]"}`}>
           {countdownText}
         </div>
       </div>
@@ -234,7 +234,7 @@ function QuickNavGrid() {
     { icon: Receipt, label: "Expenses", path: "/instructor/expenses", bg: "#8E8E93", bgLight: "#8E8E93/10" },
     { icon: Wallet, label: "Accounts", path: "/instructor/accounts", bg: "#007AFF", bgLight: "#007AFF/10" },
     { icon: Navigation, label: "Routes", path: "/instructor/routes", bg: "#34C759", bgLight: "#34C759/10" },
-    { icon: Car, label: "Fleet", path: "/instructor/fleet-dashboard", bg: "#FF3B30", bgLight: "#FF3B30/10" },
+    { icon: Car, label: "Fleet", path: "/instructor/fleet-dashboard", bg: "#E15D5A", bgLight: "#E15D5A/10" },
     { icon: Camera, label: "Dashcam", path: "/instructor/dashcam", bg: "#1C1C1E", bgLight: "#1C1C1E/10" },
     { icon: BookOpen, label: "Resources", path: "/instructor/resources", bg: "#FF9500", bgLight: "#FF9500/10" },
     { icon: Settings, label: "Settings", path: "/instructor/settings", bg: "#8E8E93", bgLight: "#8E8E93/10" },

@@ -154,7 +154,7 @@ function PulsingDot() {
           width: 6,
           height: 6,
           borderRadius: 3,
-          background: "#CC2229",
+          background: "#B23A3F",
           display: "inline-block",
           animation: "dsmPulse 1.2s ease-in-out infinite",
         }}
@@ -363,7 +363,7 @@ function MapHeroLiveImpl({
               <PolylineF
                 path={routePath}
                 options={{
-                  strokeColor: "#CC2229",
+                  strokeColor: "#B23A3F",
                   strokeOpacity: 0.95,
                   strokeWeight: 4,
                   zIndex: 2,
@@ -454,7 +454,7 @@ function MapHeroLiveImpl({
                 alignItems: "center",
                 gap: 3,
                 background: notified ? "rgba(255,255,255,0.25)" : "#FFFFFF",
-                color: notified ? "#FFFFFF" : "#CC2229",
+                color: notified ? "#FFFFFF" : "#B23A3F",
                 border: "none",
                 borderRadius: 999,
                 padding: "3px 8px",

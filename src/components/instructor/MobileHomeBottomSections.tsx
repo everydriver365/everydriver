@@ -83,7 +83,7 @@ function BadgeDot({ count }: { count: number }) {
         position: "absolute",
         top: 5,
         right: 5,
-        background: "#CC2229",
+        background: "#B23A3F",
         borderRadius: 8,
         minWidth: 13,
         height: 13,
@@ -124,7 +124,7 @@ const STATUS_CFG: Record<LessonStatus, { bg: string; color: string }> = {
   done: { bg: "#F2F4F8", color: "#8E8E93" },
   upcoming: { bg: "#EEF3FF", color: "#0A0F29" },
   inProgress: { bg: "#E8F8ED", color: "#1A7A3C" },
-  cancelled: { bg: "#FFF0F0", color: "#CC2229" },
+  cancelled: { bg: "#FFF0F0", color: "#B23A3F" },
 };
 
 function StatusPill({ status, label }: { status: LessonStatus; label: string }) {
@@ -333,7 +333,7 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                 : e.status === "upcoming"
                   ? "#0A0F29"
                   : e.status === "cancelled"
-                    ? "#CC2229"
+                    ? "#B23A3F"
                     : "#E0E5EE";
             const timeColor =
               e.status === "upcoming" ? "#0A0F29" : "#1A1A1A";
@@ -474,7 +474,7 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                         flexShrink: 0,
                       }}
                     >
-                      <span style={{ fontSize: 9, fontWeight: 700, color: "#CC2229" }}>Cancelled</span>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: "#B23A3F" }}>Cancelled</span>
                     </div>
                   )}
                 </div>
@@ -494,7 +494,7 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                         width: 5,
                         height: 5,
                         borderRadius: 3,
-                        background: "#CC2229",
+                        background: "#B23A3F",
                       }}
                     />
                     <div
@@ -508,7 +508,7 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                       style={{
                         fontSize: 9,
                         fontWeight: 700,
-                        color: "#CC2229",
+                        color: "#B23A3F",
                         flexShrink: 0,
                       }}
                     >
@@ -569,7 +569,7 @@ const TONE_PALETTE: Record<string, { bg: string; fg: string }> = {
   green: { bg: "#E8F8ED", fg: "#1A7A3C" },
   amber: { bg: "#FFF6E6", fg: "#B45309" },
   purple: { bg: "#F0EEFF", fg: "#5B47C9" },
-  red: { bg: "#FFF0F0", fg: "#CC2229" },
+  red: { bg: "#FFF0F0", fg: "#B23A3F" },
   grey: { bg: "#F2F4F8", fg: "#5B6B8A" },
 };
 

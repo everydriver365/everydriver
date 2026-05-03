@@ -209,7 +209,7 @@ function Row({
       {badge != null && badge > 0 && (
         <div
           style={{
-            background: badgeBg || "#CC2229",
+            background: badgeBg || "#B23A3F",
             borderRadius: 10,
             minWidth: 16,
             height: 16,
@@ -338,7 +338,7 @@ export function InstructorSearchOverlay({ open, onOpenChange, instructorId }: Pr
         title: `Message ${nextLesson.pupilName}`,
         subtitle: "Open conversation",
         badge: unreadCount > 0 ? unreadCount : null,
-        badgeBg: "#CC2229",
+        badgeBg: "#B23A3F",
         onPress: () => {
           onOpenChange(false);
           navigate(`/instructor/messages?pupilId=${nextLesson.pupilId}`);

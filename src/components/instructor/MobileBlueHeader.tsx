@@ -109,7 +109,7 @@ export function MobileBlueHeader({
                   height: 16,
                   padding: "0 4px",
                   borderRadius: 8,
-                  background: "#FF3B30",
+                  background: "#E15D5A",
                   color: "#FFFFFF",
                   fontSize: 9,
                   fontWeight: 600,

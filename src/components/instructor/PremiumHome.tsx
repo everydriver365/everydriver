@@ -86,7 +86,7 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
     attention.push({
       key: "jobs",
       iconBg: "#FFEDEA",
-      iconFg: "#FF3B30",
+      iconFg: "#E15D5A",
       icon: <Briefcase className="size-[20px]" />,
       title: `${pendingJobsCount} new job offer${pendingJobsCount === 1 ? "" : "s"}`,
       subtitle: "Respond now · +1 more",
@@ -120,7 +120,7 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
     });
 
   const pillCls: Record<Tone, string> = {
-    red: "bg-[#FFE3DE] text-[#FF3B30]",
+    red: "bg-[#FFE3DE] text-[#E15D5A]",
     amber: "bg-[#FFE9C9] text-[#C46E00]",
     green: "bg-[#D6F3DD] text-[#1F8E3F]",
   };
@@ -158,7 +158,7 @@ export function PremiumHome({ instructorId, instructor, onPaymentClick }: Props)
             {waitingCount > 0 && (
               <>
                 <span className="mx-1.5 text-[#3C3C43]/40">·</span>
-                <span className="text-[#FF3B30] font-medium">
+                <span className="text-[#E15D5A] font-medium">
                   {waitingCount} thing{waitingCount === 1 ? "" : "s"} waiting
                 </span>
               </>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchGoogleMapsKey } from "@/lib/googleMapsLoader";
 
-const RED = "#CC2229";
+const RED = "#B23A3F";
 const MUTED = "#5B6B8A";
 const BORDER = "rgba(26,82,160,0.10)";
 

@@ -895,7 +895,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
             { value: String(todaySummary.lessonCount), label: "Lessons", color: "#0A0F29", small: false },
             { value: `${Math.floor(todaySummary.scheduledMins / 60)}h`, label: "Scheduled", color: "#1A7A3C", small: false },
             { value: formatHm(todaySummary.freeMins), label: "Free", color: "#5B6B8A", small: true },
-            { value: String(todaySummary.overdueCount), label: "Overdue", color: "#CC2229", small: false },
+            { value: String(todaySummary.overdueCount), label: "Overdue", color: "#B23A3F", small: false },
           ].map((stat) => (
             <div
               key={stat.label}
@@ -1053,7 +1053,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                           style={{
                             fontSize: 11,
                             fontWeight: 700,
-                            color: "#FF3B30",
+                            color: "#E15D5A",
                             letterSpacing: "0.4px",
                             fontVariantNumeric: "tabular-nums",
                             textTransform: "uppercase",
@@ -1068,7 +1068,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                             width: 8,
                             height: 8,
                             borderRadius: "50%",
-                            backgroundColor: "#FF3B30",
+                            backgroundColor: "#E15D5A",
                             flexShrink: 0,
                             boxShadow: "0 0 0 3px rgba(255,59,48,0.18)",
                           }}
@@ -1077,7 +1077,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                           style={{
                             flex: 1,
                             height: 1.5,
-                            background: "linear-gradient(90deg, #FF3B30, rgba(255,59,48,0.05))",
+                            background: "linear-gradient(90deg, #E15D5A, rgba(255,59,48,0.05))",
                             borderRadius: 1,
                           }}
                         />

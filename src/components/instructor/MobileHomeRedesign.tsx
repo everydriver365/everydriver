@@ -37,7 +37,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { differenceInDays, isPast } from "date-fns";
 
 /* ---------- Brand tokens ---------- */
-const RED = "#CC2229";
+const RED = "#B23A3F";
 const BLUE = "#0A0F29";
 const CHARCOAL = "#2B2B2B";
 const BG = "#F2F4F8";
@@ -867,7 +867,7 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
 
   return (
     <div style={{ paddingBottom: 14 }}>
-      <AttentionGroupCard rows={urgent} groupLabel="Urgent" groupColor="#CC2229" groupBorder="#F0CCCC" />
+      <AttentionGroupCard rows={urgent} groupLabel="Urgent" groupColor="#B23A3F" groupBorder="#F0CCCC" />
       <AttentionGroupCard rows={todo} groupLabel="To do" groupColor="#B45309" groupBorder="#E8D5B0" />
     </div>
   );
