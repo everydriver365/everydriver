@@ -396,6 +396,19 @@ export function UpNextExpanded({
   const eta = useTrafficETA(pickupPostcode);
   const weather = useLessonWeather(pickupPostcode);
   const drivingAlerts = useDrivingAlerts(instructorId);
+  const { devices: obdDevices } = useVehicleHealth();
+  const obdDevice = useMemo(() => {
+    if (!obdDevices || obdDevices.length === 0) return null;
+    const connected = obdDevices.filter((d) => d.is_connected);
+    const withDiag = obdDevices.filter((d) => d.last_diagnostics_at != null);
+    const sortBySeen = (arr: typeof obdDevices) =>
+      [...arr].sort((a, b) => {
+        const ta = a.last_seen_at ? new Date(a.last_seen_at).getTime() : 0;
+        const tb = b.last_seen_at ? new Date(b.last_seen_at).getTime() : 0;
+        return tb - ta;
+      });
+    return sortBySeen(connected)[0] || sortBySeen(withDiag)[0] || sortBySeen(obdDevices)[0] || null;
+  }, [obdDevices]);
   const etaMinutes = eta.durationMinutes || 0;
   const fullAddress = [pickupLocation, pickupPostcode].filter(Boolean).join(", ");
   const lessonFee = (durationMinutes / 60) * 40;
