@@ -524,6 +524,8 @@ function UpNextTile({
           whenLabel={whenLabel}
           expanded={expanded}
           onToggleExpanded={onToggleExpanded}
+          pupilName={pupilName}
+          pupilPhone={pupilPhone}
         />
 
         <div style={{ display: "flex", minHeight: 130 }}>
