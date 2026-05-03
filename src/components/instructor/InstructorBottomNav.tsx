@@ -34,13 +34,19 @@ interface InstructorBottomNavProps {
   wallpaperColor?: string;
 }
 
-export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps) {
+interface InstructorBottomNavProps {
+  wallpaperColor?: string;
+  voiceState?: "idle" | "listening" | "processing" | "speaking";
+  onVoiceTap?: () => void;
+}
+
+export function InstructorBottomNav({ wallpaperColor, voiceState = "idle", onVoiceTap }: InstructorBottomNavProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const pendingJobsCount = usePendingJobsCount();
   const { instructor } = useInstructorAuth();
   const [isTrackingActive, setIsTrackingActive] = useState(false);
-  
+
   const { data: unreadCount = 0 } = useUnreadMessagesCount(instructor?.id);
   const { data: todayOverview } = useTodayOverview(instructor?.id);
   const todayLessonCount = todayOverview?.lessonCount || 0;
@@ -68,9 +74,96 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleVoiceTap = () => {
+    haptics.selection();
+    onVoiceTap?.();
+  };
+
+  // Split items so mic sits in the middle
+  const leftItems = navItems.slice(0, 2);
+  const rightItems = navItems.slice(2);
+
+  const renderTab = (item: NavItem) => {
+    const isActive = location.pathname === item.path;
+    const isTrack = item.isTrack;
+    const isSchedule = item.isSchedule;
+    const isMore = item.isMore;
+
+    let tabBadge = 0;
+    if (item.showBadge) tabBadge = pendingJobsCount;
+    if (isSchedule && todayLessonCount > 0) tabBadge = todayLessonCount;
+    if (isMore) tabBadge = pendingJobsCount + unreadCount;
+
+    const Icon = item.icon;
+    const activeColor = 'hsl(var(--dsm-accent-blue))';
+    const inactiveColor = 'hsl(var(--dsm-text-secondary))';
+    const trackActiveColor = isTrack && isTrackingActive && !isActive ? "#10b981" : undefined;
+
+    const showBadge = tabBadge > 0 && !(isSchedule && isActive);
+    const badgeLabel = tabBadge > 99 ? "99+" : `${tabBadge}`;
+
+    return (
+      <button
+        key={item.path}
+        onClick={() => handleNavClick(item.path)}
+        className="relative flex flex-col items-center cursor-pointer flex-1"
+        style={{ gap: 4, minWidth: 0 }}
+      >
+        <div
+          className="relative flex items-center justify-center"
+          style={{
+            width: 44,
+            height: 28,
+            borderRadius: 14,
+            background: isActive ? 'hsl(var(--dsm-accent-blue) / 0.12)' : 'transparent',
+          }}
+        >
+          <Icon
+            size={24}
+            strokeWidth={isActive ? 2.2 : 1.8}
+            color={isActive ? activeColor : trackActiveColor || inactiveColor}
+            style={{ strokeLinecap: 'round', strokeLinejoin: 'round' }}
+          />
+          {showBadge && (
+            <span
+              className="absolute flex items-center justify-center"
+              style={{
+                top: -4, right: -2, minWidth: 18, height: 18, borderRadius: 9,
+                padding: '0 5px', background: '#E15D5A', color: 'white',
+                fontSize: 11, fontWeight: 700, lineHeight: 1, letterSpacing: '-0.2px',
+                border: '2px solid hsl(var(--dsm-card))',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.15)',
+              }}
+            >
+              {badgeLabel}
+            </span>
+          )}
+          {isTrack && isTrackingActive && (
+            <span className="absolute top-1 right-3 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          )}
+        </div>
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: isActive ? 700 : 500,
+            color: isActive ? activeColor : inactiveColor,
+          }}
+        >
+          {item.label}
+        </span>
+      </button>
+    );
+  };
+
+  const micGradient =
+    voiceState === "listening" ? "linear-gradient(135deg, #ef4444, #dc2626)" :
+    voiceState === "processing" ? "linear-gradient(135deg, #f59e0b, #d97706)" :
+    voiceState === "speaking" ? "linear-gradient(135deg, #10b981, #059669)" :
+    "linear-gradient(135deg, hsl(var(--dsm-accent-blue)), #4F6BD9)";
+
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden overflow-hidden border-t-[0.5px]"
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t-[0.5px]"
       style={{
         background: 'hsl(var(--dsm-card))',
         borderColor: 'hsl(var(--dsm-border))',
@@ -78,97 +171,41 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
         boxShadow: '0 -4px 16px rgba(0,0,0,0.08), 0 -1px 4px rgba(0,0,0,0.05)',
       }}
     >
-      <div className="flex items-start justify-around" style={{ padding: '10px 8px 16px' }}>
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          const isTrack = item.isTrack;
-          const isSchedule = item.isSchedule;
-          const isMore = item.isMore;
+      <div className="relative flex items-start justify-between" style={{ padding: '10px 12px 16px', gap: 4 }}>
+        <div className="flex flex-1 items-start justify-around">{leftItems.map(renderTab)}</div>
 
-          // Per-tab badge count (iOS-style numbered pill)
-          let tabBadge = 0;
-          if (item.showBadge) tabBadge = pendingJobsCount; // Pupils
-          if (isSchedule && todayLessonCount > 0) tabBadge = todayLessonCount;
-          if (isMore) tabBadge = pendingJobsCount + unreadCount; // combined alerts
+        {/* Center mic FAB */}
+        <div className="flex items-start justify-center" style={{ width: 72 }}>
+          <motion.button
+            type="button"
+            onClick={handleVoiceTap}
+            whileTap={{ scale: 0.92 }}
+            aria-label="Hey ED"
+            className="relative flex items-center justify-center"
+            style={{
+              width: 60,
+              height: 60,
+              borderRadius: 30,
+              marginTop: -22,
+              background: micGradient,
+              color: 'white',
+              boxShadow: '0 8px 20px rgba(61,85,161,0.35), 0 2px 6px rgba(0,0,0,0.12)',
+              border: '4px solid hsl(var(--dsm-card))',
+            }}
+          >
+            {voiceState === "idle" && <Mic size={24} strokeWidth={2.2} />}
+            {voiceState === "listening" && (
+              <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ repeat: Infinity, duration: 1 }}>
+                <Mic size={24} strokeWidth={2.2} />
+              </motion.div>
+            )}
+            {voiceState === "processing" && <Loader2 size={24} className="animate-spin" />}
+            {voiceState === "speaking" && <Volume2 size={24} strokeWidth={2.2} />}
+          </motion.button>
+        </div>
 
-          const Icon = item.icon;
-          const activeColor = 'hsl(var(--dsm-accent-blue))';
-          const inactiveColor = 'hsl(var(--dsm-text-secondary))';
-          const trackActiveColor = isTrack && isTrackingActive && !isActive
-            ? "#10b981"
-            : undefined;
-
-          const showBadge = tabBadge > 0 && !(isSchedule && isActive);
-          const badgeLabel = tabBadge > 99 ? "99+" : tabBadge > 9 ? `${tabBadge}` : `${tabBadge}`;
-
-          return (
-            <button
-              key={item.path}
-              onClick={() => handleNavClick(item.path)}
-              className="relative flex flex-col items-center cursor-pointer"
-              style={{ gap: 4, minWidth: 60 }}
-            >
-              {/* Icon with optional rounded-pill accent background when active */}
-              <div
-                className="relative flex items-center justify-center"
-                style={{
-                  width: 44,
-                  height: 28,
-                  borderRadius: 14,
-                  background: isActive ? 'hsl(var(--dsm-accent-blue) / 0.12)' : 'transparent',
-                }}
-              >
-                <Icon
-                  size={26}
-                  strokeWidth={isActive ? 2.2 : 1.8}
-                  color={isActive ? activeColor : trackActiveColor || inactiveColor}
-                  style={{ strokeLinecap: 'round', strokeLinejoin: 'round' }}
-                />
-
-                {/* iOS-style numbered notification badge */}
-                {showBadge && (
-                  <span
-                    className="absolute flex items-center justify-center"
-                    style={{
-                      top: -4,
-                      right: -2,
-                      minWidth: 18,
-                      height: 18,
-                      borderRadius: 9,
-                      padding: '0 5px',
-                      background: '#E15D5A',
-                      color: 'white',
-                      fontSize: 11,
-                      fontWeight: 700,
-                      lineHeight: 1,
-                      letterSpacing: '-0.2px',
-                      border: '2px solid hsl(var(--dsm-card))',
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.15)',
-                    }}
-                  >
-                    {badgeLabel}
-                  </span>
-                )}
-
-                {/* Track active dot */}
-                {isTrack && isTrackingActive && (
-                  <span className="absolute top-1 right-3 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                )}
-              </div>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? activeColor : inactiveColor,
-                }}
-              >
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
+        <div className="flex flex-1 items-start justify-around">{rightItems.map(renderTab)}</div>
       </div>
-      {/* Safe area for iOS */}
       <div className="h-safe-area-inset-bottom" style={{ background: 'hsl(var(--dsm-card))' }} />
     </nav>
   );
