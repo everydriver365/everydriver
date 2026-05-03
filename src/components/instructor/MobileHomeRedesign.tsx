@@ -24,6 +24,7 @@ import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useInstructorPupilsPaymentSummary } from "@/hooks/usePupilPaymentStatus";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { MapHeroStatic } from "@/components/instructor/MapHeroStatic";
+import { MapHeroLive } from "@/components/instructor/upNext/MapHeroLive";
 
 /* ---------- Brand tokens ---------- */
 const RED = "#CC2229";
@@ -513,26 +514,16 @@ function UpNextTile({
           cursor: "pointer",
         }}
       >
-        <MapHeroStatic
-          centerQuery={
-            pickupLocation && pickupPostcode
-              ? `${pickupLocation}, ${pickupPostcode}, UK`
-              : pickupLocation
-                ? `${pickupLocation}, UK`
-                : pickupPostcode
-                  ? `${pickupPostcode}, UK`
-                  : null
-          }
-          directionsQuery={
-            pickupLocation && pickupPostcode
-              ? `${pickupLocation}, ${pickupPostcode}, UK`
-              : pickupLocation || pickupPostcode || null
-          }
+        <MapHeroLive
+          lessonId={lessonId}
+          pickupPostcode={pickupPostcode}
+          pickupLocation={pickupLocation}
           countdown={countdown}
+          minutesUntil={minutesUntil}
           startTime={start}
           whenLabel={whenLabel}
-          pupilName={pupilName}
-          pupilProfileImage={pupilProfileImage}
+          expanded={expanded}
+          onToggleExpanded={onToggleExpanded}
         />
 
         <div style={{ display: "flex", minHeight: 130 }}>
