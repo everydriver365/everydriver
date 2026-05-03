@@ -103,6 +103,9 @@ import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCou
 import { AdminMessageBadge } from "@/components/instructor/AdminMessageBadge";
 import { HeaderSearchBox } from "@/components/HeaderSearchBox";
 import { PendingSchedulingBadge } from "@/components/instructor/PendingSchedulingBadge";
+import { useTodayOverview } from "@/hooks/useTodayOverview";
+import { useActivePupilsCount } from "@/hooks/useActivePupilsCount";
+import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
 import planIcon from "@/assets/plan-icon.png";
 import { SOSEmergencySheet } from "@/components/instructor/SOSEmergencySheet";
