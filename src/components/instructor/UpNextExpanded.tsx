@@ -581,6 +581,50 @@ export function UpNextExpanded({
           <Copy size={14} color={MUTED} />
         </button>
 
+        {(pickupWhat3words || pickupNotes) && (
+          <div style={{ padding: "0 16px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
+            {pickupWhat3words && (
+              <a
+                href={`https://what3words.com/${pickupWhat3words}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  background: BLUE_TINT,
+                  borderRadius: 10,
+                  padding: "8px 12px",
+                  textDecoration: "none",
+                }}
+              >
+                <span style={{ fontSize: 14, fontWeight: 700, color: BLUE }}>///</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: BLUE, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {pickupWhat3words}
+                </span>
+              </a>
+            )}
+            {pickupNotes && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 10,
+                  background: "#FFF8E6",
+                  borderRadius: 10,
+                  padding: "8px 12px",
+                }}
+              >
+                <StickyNote size={14} color="#A66B00" strokeWidth={2.2} style={{ marginTop: 1, flexShrink: 0 }} />
+                <div style={{ fontSize: 12, color: CHARCOAL, lineHeight: 1.4, whiteSpace: "pre-wrap" }}>
+                  {pickupNotes}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <Divider />
 
         {/* SECTION 3 — Action grid */}
