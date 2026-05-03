@@ -440,7 +440,7 @@ export function RescheduleLessonSheet({
         <div style={{ padding: "14px 16px", paddingBottom: 28 }}>
           {loading ? (
             <div style={{ display: "flex", justifyContent: "center", padding: "48px 0" }}>
-              <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#1F3A8A" }} />
+              <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#2952B3" }} />
             </div>
           ) : (
             <>
@@ -469,7 +469,7 @@ export function RescheduleLessonSheet({
                     style={navBtnStyle}
                     aria-label="Previous month"
                   >
-                    <ChevronLeft size={14} color="#1F3A8A" />
+                    <ChevronLeft size={14} color="#2952B3" />
                   </button>
                   <span style={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A" }}>
                     {format(viewMonth, "MMMM yyyy")}
@@ -480,7 +480,7 @@ export function RescheduleLessonSheet({
                     style={navBtnStyle}
                     aria-label="Next month"
                   >
-                    <ChevronRight size={14} color="#1F3A8A" />
+                    <ChevronRight size={14} color="#2952B3" />
                   </button>
                 </div>
 
@@ -516,7 +516,7 @@ export function RescheduleLessonSheet({
                     let textDecoration: string | undefined;
 
                     if (isSelected) {
-                      bg = "#1F3A8A";
+                      bg = "#2952B3";
                       color = "#FFFFFF";
                       weight = 700;
                     } else if (isOriginal && inMonth) {
@@ -524,7 +524,7 @@ export function RescheduleLessonSheet({
                       textDecoration = "line-through";
                     } else if (available && inMonth) {
                       bg = "#EEF3FF";
-                      color = "#1F3A8A";
+                      color = "#2952B3";
                       weight = 600;
                     } else if (inMonth && !isPast) {
                       color = "#C7C7CC";
@@ -584,7 +584,7 @@ export function RescheduleLessonSheet({
                     borderTop: "0.5px solid #F0F3F8",
                   }}
                 >
-                  <LegendItem dot="#1F3A8A" label="Selected" />
+                  <LegendItem dot="#2952B3" label="Selected" />
                   <LegendItem dot="#EEF3FF" dotBorder="#C8D8F0" label="Available" />
                   <LegendItem dot="#F2F4F8" label="Unavailable" />
                 </div>
@@ -651,7 +651,7 @@ export function RescheduleLessonSheet({
                           key={time}
                           type="button"
                           onClick={() => setSelectedTime(time)}
-                          style={{ ...baseStyle, background: "#1F3A8A" }}
+                          style={{ ...baseStyle, background: "#2952B3" }}
                         >
                           <span style={{ fontSize: 14, fontWeight: 700, color: "#FFF" }}>{time}</span>
                           <span style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>
@@ -705,7 +705,7 @@ export function RescheduleLessonSheet({
                 <Switch
                   checked={notifyPupil}
                   onCheckedChange={setNotifyPupil}
-                  style={{ background: notifyPupil ? "#1F3A8A" : "#E0E5EE" }}
+                  style={{ background: notifyPupil ? "#2952B3" : "#E0E5EE" }}
                 />
               </div>
 
@@ -723,9 +723,9 @@ export function RescheduleLessonSheet({
                     marginBottom: 14,
                   }}
                 >
-                  <Clock size={14} color="#1F3A8A" style={{ marginTop: 2, flexShrink: 0 }} />
+                  <Clock size={14} color="#2952B3" style={{ marginTop: 2, flexShrink: 0 }} />
                   <div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#1F3A8A", marginBottom: 2 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#2952B3", marginBottom: 2 }}>
                       New lesson time
                     </div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A" }}>
@@ -741,7 +741,7 @@ export function RescheduleLessonSheet({
                 onClick={handleReschedule}
                 disabled={!selectedDate || !selectedTime || saving}
                 style={{
-                  background: selectedDate && selectedTime && !saving ? "#1F3A8A" : "#C7C7CC",
+                  background: selectedDate && selectedTime && !saving ? "#2952B3" : "#C7C7CC",
                   borderRadius: 14,
                   padding: 14,
                   display: "flex",
