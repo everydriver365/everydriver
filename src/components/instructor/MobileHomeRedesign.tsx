@@ -436,6 +436,8 @@ function UpNextTile({
   pickupLocation,
   pickupPostcode,
   minutesUntil,
+  expanded,
+  onToggleExpanded,
 }: {
   pupilId: string;
   lessonId: string;
@@ -448,6 +450,8 @@ function UpNextTile({
   pickupLocation: string | null;
   pickupPostcode: string | null;
   minutesUntil: number;
+  expanded: boolean;
+  onToggleExpanded: () => void;
 }) {
   const navigate = useNavigate();
   const date = (() => {
