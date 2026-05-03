@@ -23,11 +23,14 @@ import {
   PoundSterling,
   type LucideIcon,
 } from "lucide-react";
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
-import { toast } from "@/hooks/use-toast";
+import { RunningLateSheet } from "./RunningLateSheet";
+import { toast } from "sonner";
+import { haptics } from "@/lib/haptics";
 
 /* Brand tokens */
 const RED = "#CC2229";
