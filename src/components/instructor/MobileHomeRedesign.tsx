@@ -1134,8 +1134,9 @@ export function MobileHomeRedesign({
     iconBg: "#FFF0F0",
     iconColor: RED,
     title: "Calls",
-    subtitle: missedCallsCount > 0 ? "Missed calls to review" : "No missed calls",
-    badge: missedCallsCount > 0 ? { label: String(missedCallsCount), bg: RED } : undefined,
+    subtitle: missedCallsCount > 0 ? `${missedCallsCount} missed call${missedCallsCount !== 1 ? "s" : ""}` : "No missed calls",
+    badge: missedCallsCount > 0 ? { label: String(missedCallsCount), bg: "#CC2229" } : undefined,
+    isClear: missedCallsCount === 0,
     onClick: () => navigate("/instructor/calls"),
   });
 
@@ -1148,24 +1149,24 @@ export function MobileHomeRedesign({
     iconBg: "#FFF0F0",
     iconColor: RED,
     title: "Enquiries",
-    subtitle: enquiriesCount > 0 ? "New enquiries to review" : "No new enquiries",
-    badge: enquiriesCount > 0 ? { label: String(enquiriesCount), bg: RED } : undefined,
+    subtitle: enquiriesCount > 0 ? `${enquiriesCount} new enquir${enquiriesCount !== 1 ? "ies" : "y"}` : "No new enquiries",
+    badge: enquiriesCount > 0 ? { label: String(enquiriesCount), bg: "#CC2229" } : undefined,
+    isClear: enquiriesCount === 0,
     onClick: () => navigate("/instructor/enquiries"),
   });
 
-  if (pendingJobs > 0) {
-    attentionRows.push({
-      key: "jobs",
-      group: "urgent",
-      Icon: Briefcase,
-      iconBg: "#FFF0F0",
-      iconColor: RED,
-      title: "Job offers waiting",
-      subtitle: "Review new course enquiries",
-      badge: { label: String(pendingJobs), bg: RED },
-      onClick: () => navigate("/instructor/jobs"),
-    });
-  }
+  attentionRows.push({
+    key: "jobs",
+    group: "urgent",
+    Icon: Briefcase,
+    iconBg: "#FFF0F0",
+    iconColor: RED,
+    title: "Job offers waiting",
+    subtitle: "Review new course enquiries",
+    badge: pendingJobs > 0 ? { label: String(pendingJobs), bg: "#CC2229" } : undefined,
+    isClear: pendingJobs === 0,
+    onClick: () => navigate("/instructor/jobs"),
+  });
 
   if (vehicleFault) {
     attentionRows.push({
@@ -1181,33 +1182,31 @@ export function MobileHomeRedesign({
   }
 
   const openSlots = (gapData ?? []).reduce((sum, g) => sum + (g.slots?.length ?? 0), 0);
-  if (openSlots > 0) {
-    attentionRows.push({
-      key: "gaps",
-      group: "todo",
-      Icon: CalendarPlus,
-      iconBg: BLUE_TINT,
-      iconColor: BLUE,
-      title: "Open slots this week",
-      subtitle: "Fill gaps in your schedule",
-      badge: { label: String(openSlots), bg: BLUE },
-      onClick: () => navigate("/instructor/schedule"),
-    });
-  }
+  attentionRows.push({
+    key: "gaps",
+    group: "todo",
+    Icon: CalendarPlus,
+    iconBg: "#F2F4F8",
+    iconColor: "#5B6B8A",
+    title: "Open slots this week",
+    subtitle: "Fill gaps in your schedule",
+    badge: openSlots > 0 ? { label: String(openSlots), bg: "#EEF3FF", fg: "#1A52A0", variant: "pill" } : undefined,
+    isClear: openSlots === 0,
+    onClick: () => navigate("/instructor/schedule"),
+  });
 
-  if (dormantCount > 0) {
-    attentionRows.push({
-      key: "dormant",
-      group: "todo",
-      Icon: UsersIcon,
-      iconBg: "#FFF6E6",
-      iconColor: "#B45309",
-      title: `${dormantCount} dormant pupil${dormantCount === 1 ? "" : "s"}`,
-      subtitle: "No lesson in 2+ weeks",
-      badge: { label: String(dormantCount), bg: "#B45309" },
-      onClick: () => navigate("/instructor/pupils?filter=dormant"),
-    });
-  }
+  attentionRows.push({
+    key: "dormant",
+    group: "todo",
+    Icon: UsersIcon,
+    iconBg: "#F2F4F8",
+    iconColor: "#5B6B8A",
+    title: `${dormantCount} dormant pupil${dormantCount === 1 ? "" : "s"}`,
+    subtitle: "No lesson in 2+ weeks",
+    badge: dormantCount > 0 ? { label: String(dormantCount), bg: "#FFF6E6", fg: "#B45309", variant: "pill" } : undefined,
+    isClear: dormantCount === 0,
+    onClick: () => navigate("/instructor/pupils?filter=dormant"),
+  });
 
   if (unread > 0) {
     attentionRows.push({
@@ -1218,7 +1217,7 @@ export function MobileHomeRedesign({
       iconColor: BLUE,
       title: "Unread messages",
       subtitle: "Pupils waiting for a reply",
-      badge: { label: String(unread), bg: BLUE },
+      badge: { label: String(unread), bg: "#EEF3FF", fg: "#1A52A0", variant: "pill" },
       onClick: () => navigate("/instructor/messages"),
     });
   }
@@ -1239,40 +1238,50 @@ export function MobileHomeRedesign({
     });
   }
 
-  // Membership level (placeholder — to be wired later)
-  const membershipLevel = "Starter" as "Free" | "Starter" | "Pro" | "Premium";
-  const canUpgradeMembership = membershipLevel !== "Premium";
-  attentionRows.push({
-    key: "membership",
-    group: "todo",
-    Icon: Crown,
-    iconBg: "#FFF7E0",
-    iconColor: "#B45309",
-    title: `Membership · ${membershipLevel}`,
-    subtitle: canUpgradeMembership ? "Unlock more features and lower fees" : "You're on the top plan",
-    badge: canUpgradeMembership ? { label: "Upgrade", bg: "#B45309" } : undefined,
-    onClick: () => navigate("/instructor/subscription"),
-  });
+  // Total active attention count (for the section header pill).
+  // Sums real counts plus a +1 for boolean rows that don't carry a number.
+  const totalAttentionCount =
+    missedCallsCount +
+    enquiriesCount +
+    pendingJobs +
+    openSlots +
+    dormantCount +
+    unread +
+    (debt > 0 ? 1 : 0) +
+    (vehicleFault ? 1 : 0);
 
-  // Health cover (placeholder — to be wired later)
+  // Upgrade section (placeholders — to be wired later)
+  const membershipLevel = "Starter" as "Free" | "Starter" | "Pro" | "Premium";
   const healthCover = "Basic" as "None" | "Basic" | "Full";
-  const canUpgradeHealth = healthCover !== "Full";
-  attentionRows.push({
-    key: "health-cover",
-    group: "todo",
-    Icon: ShieldPlus,
-    iconBg: "#E8F1FF",
-    iconColor: BLUE,
-    title: `Health cover · ${healthCover}`,
-    subtitle:
-      healthCover === "None"
-        ? "Add cover to protect your earnings"
-        : canUpgradeHealth
-          ? "Upgrade for full income protection"
-          : "Full cover active",
-    badge: canUpgradeHealth ? { label: "Upgrade", bg: BLUE } : undefined,
-    onClick: () => navigate("/instructor/health-cover"),
-  });
+
+  const upgradeRows: UpgradeRowSpec[] = [
+    {
+      key: "membership",
+      Icon: Crown,
+      iconBg: "#FFF6E6",
+      iconColor: "#B45309",
+      label: "Membership",
+      tierLabel: membershipLevel,
+      tierBg: "#FFF6E6",
+      tierColor: "#B45309",
+      subtitle: "Unlock more features · lower fees",
+      upgradeBg: "#B45309",
+      onClick: () => navigate("/instructor/subscription"),
+    },
+    {
+      key: "health-cover",
+      Icon: ShieldPlus,
+      iconBg: "#EEF3FF",
+      iconColor: "#1A52A0",
+      label: "Health cover",
+      tierLabel: healthCover,
+      tierBg: "#EEF3FF",
+      tierColor: "#1A52A0",
+      subtitle: "Full income protection available",
+      upgradeBg: "#1A52A0",
+      onClick: () => navigate("/instructor/health-cover"),
+    },
+  ];
 
   return (
     <div
