@@ -1120,7 +1120,7 @@ export function MobileHomeRedesign({
       <div
         className="grid gap-2 items-stretch"
         style={{
-          gridTemplateColumns: "7fr 3fr 3fr",
+          gridTemplateColumns: "minmax(0,1.55fr) minmax(0,1fr) minmax(0,1fr)",
           padding: "0 14px 10px",
         }}
       >
