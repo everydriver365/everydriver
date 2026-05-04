@@ -230,11 +230,51 @@ export function FamulorCallLogDrawer({ row, onClose }: Props) {
                   <div className="text-[11px] text-muted-foreground mb-1.5">
                     {composer === "sms" ? "Send SMS" : "Send WhatsApp"} to <span className="font-mono">{phone}</span>
                   </div>
+
+                  {/* AI drafter */}
+                  <div className="mb-2 rounded-[10px] bg-[#F4F7F6] p-2">
+                    <div className="flex items-center gap-1 text-[10px] uppercase tracking-wide text-muted-foreground mb-1.5">
+                      <Sparkles className="h-3 w-3" style={{ color: ACCENT }} /> AI follow-up
+                    </div>
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {([
+                        { id: "friendly", label: "Friendly" },
+                        { id: "professional", label: "Professional" },
+                        { id: "booking_nudge", label: "Booking nudge" },
+                        { id: "apology", label: "Apology" },
+                      ] as const).map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setTone(t.id)}
+                          className={`text-[10px] px-2 py-0.5 rounded-full border transition ${
+                            tone === t.id
+                              ? "bg-[#1A52A0] text-white border-[#1A52A0]"
+                              : "bg-white text-[#1A52A0] border-[#E5E5EA] hover:border-[#1A52A0]"
+                          }`}
+                        >
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={drafting || busy !== null}
+                      onClick={() => draftWithAi(composer)}
+                      className="w-full h-7 text-[11px]"
+                    >
+                      <Wand2 className="h-3 w-3 mr-1" />
+                      {drafting ? "Drafting…" : message ? "Regenerate draft" : "Generate draft"}
+                    </Button>
+                  </div>
+
                   <Textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    placeholder={`Type your ${composer === "sms" ? "SMS" : "WhatsApp"} message…`}
-                    rows={3}
+                    placeholder={`Type your ${composer === "sms" ? "SMS" : "WhatsApp"} message — or tap Generate draft above`}
+                    rows={4}
                     maxLength={1000}
                     className="text-[13px]"
                   />
