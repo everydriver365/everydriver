@@ -96,21 +96,32 @@ export function TopStatsRow({
             />
             <span
               style={{
-                fontSize: 13,
-                fontWeight: 500,
-                color: NEAR_BLACK,
+                display: "inline-flex",
+                flexDirection: "column",
+                gap: 1,
+                minWidth: 0,
               }}
             >
-              Auto-divert
-            </span>
-            <span
-              style={{
-                fontSize: 12,
-                fontWeight: 400,
-                color: MUTED,
-              }}
-            >
-              {divertUntil}
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: NEAR_BLACK,
+                  lineHeight: 1.1,
+                }}
+              >
+                Auto-divert
+              </span>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 400,
+                  color: MUTED,
+                  lineHeight: 1.1,
+                }}
+              >
+                {divertUntil}
+              </span>
             </span>
           </span>
           <span
