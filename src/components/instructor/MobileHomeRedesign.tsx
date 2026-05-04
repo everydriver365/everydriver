@@ -228,12 +228,12 @@ function SummaryStatCard({
         background: "#FFFFFF",
         border: `0.5px solid ${BORDER}`,
         borderRadius: 14,
-        padding: "12px 12px",
+        padding: "10px 11px",
         minWidth: 0,
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        gap: 6,
+        gap: 4,
         boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
         height: "100%",
       }}
@@ -254,8 +254,8 @@ function SummaryStatCard({
         <span
           aria-hidden
           style={{
-            width: 26,
-            height: 26,
+            width: 24,
+            height: 24,
             borderRadius: 8,
             background: iconBg,
             color: iconColor,
@@ -265,13 +265,13 @@ function SummaryStatCard({
             flexShrink: 0,
           }}
         >
-          <Icon size={13} strokeWidth={2.2} />
+          <Icon size={12} strokeWidth={2.2} />
         </span>
       </div>
       <div>
         <div
           style={{
-            fontSize: 22,
+            fontSize: 19,
             fontWeight: 700,
             color: "#1A1A1A",
             letterSpacing: "-0.4px",
@@ -281,7 +281,7 @@ function SummaryStatCard({
         >
           {value}
         </div>
-        <div style={{ fontSize: 11, color: MUTED, marginTop: 4 }}>{sub}</div>
+        <div style={{ fontSize: 10.5, color: MUTED, marginTop: 3 }}>{sub}</div>
       </div>
     </div>
   );
@@ -1118,10 +1118,10 @@ export function MobileHomeRedesign({
 
       {/* Top summary row: AI Receptionist | Today | This Week */}
       <div
-        className="grid gap-3 items-stretch"
+        className="grid gap-2 items-stretch"
         style={{
-          gridTemplateColumns: "7fr 3fr 3fr",
-          padding: "0 14px 14px",
+          gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr) minmax(0,1fr)",
+          padding: "0 14px 10px",
         }}
       >
         <AIReceptionistCard

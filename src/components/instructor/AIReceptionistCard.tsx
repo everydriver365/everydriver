@@ -35,10 +35,10 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
           background: "#FFFFFF",
           borderRadius: 14,
           border: setupIssue ? "0.5px solid rgba(180,83,9,0.35)" : `0.5px solid ${BORDER}`,
-          padding: compact ? "10px 11px" : "12px 14px",
+          padding: compact ? "9px 10px" : "12px 14px",
           display: "flex",
           flexDirection: "column",
-          gap: compact ? 8 : 10,
+          gap: compact ? 6 : 10,
           boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
           height: "100%",
         }}
@@ -51,7 +51,7 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 10,
+            gap: compact ? 8 : 10,
             background: "transparent",
             border: "none",
             padding: 0,
@@ -62,8 +62,8 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
         >
           <span
             style={{
-              width: 32,
-              height: 32,
+              width: compact ? 28 : 32,
+              height: compact ? 28 : 32,
               borderRadius: 9,
               background: setupIssue ? AMBER_TINT : BLUE_TINT,
               color: setupIssue ? AMBER : BLUE,
@@ -74,9 +74,9 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
               position: "relative",
             }}
           >
-            <Phone size={14} strokeWidth={2.2} />
+            <Phone size={compact ? 12 : 14} strokeWidth={2.2} />
             <Sparkles
-              size={9}
+              size={compact ? 8 : 9}
               strokeWidth={2.4}
               style={{ position: "absolute", top: 4, right: 4 }}
             />
@@ -96,12 +96,15 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
             </div>
             <div
               style={{
-                fontSize: 14,
+                fontSize: compact ? 13 : 14,
                 fontWeight: 600,
                 color: CHARCOAL,
                 marginTop: 2,
                 lineHeight: 1.2,
                 letterSpacing: "-0.2px",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
               }}
             >
               Auto-divert during lessons
@@ -113,6 +116,9 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
                 marginTop: 3,
                 fontWeight: active ? 600 : 500,
                 fontVariantNumeric: "tabular-nums",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
               }}
             >
               {statusLine}
@@ -125,8 +131,8 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
             aria-checked={toggleOn}
             aria-label="Turn AI receptionist on or off"
             style={{
-              width: 38,
-              height: 22,
+              width: compact ? 34 : 38,
+              height: compact ? 20 : 22,
               borderRadius: 999,
               background: toggleOn ? (active ? GREEN : BLUE) : "#E5E7EB",
               position: "relative",
@@ -139,9 +145,9 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
               style={{
                 position: "absolute",
                 top: 2,
-                left: toggleOn ? 18 : 2,
-                width: 18,
-                height: 18,
+                left: toggleOn ? (compact ? 16 : 18) : 2,
+                width: compact ? 16 : 18,
+                height: compact ? 16 : 18,
                 borderRadius: "50%",
                 background: "#FFFFFF",
                 boxShadow: "0 1px 2px rgba(0,0,0,0.18)",
@@ -151,63 +157,65 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
           </span>
         </button>
 
-        {/* Segmented control */}
-        <div
-          role="tablist"
-          aria-label="AI call divert mode"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 4,
-            background: "#F2F4F8",
-            borderRadius: 9,
-            padding: 3,
-          }}
-        >
-          {SEGMENTS.map((seg) => {
-            const isActive = settings.mode === seg.value;
-            const activeBg =
-              seg.value === "off"
-                ? "#FFFFFF"
-                : seg.value === "on_now"
-                  ? GREEN
-                  : BLUE;
-            const activeColor = seg.value === "off" ? CHARCOAL : "#FFFFFF";
-            return (
-              <button
-                key={seg.value}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                aria-label={
-                  seg.value === "auto"
-                    ? "Set call divert mode to Auto during lessons"
-                    : seg.value === "on_now"
-                      ? "Turn AI receptionist on now"
-                      : "Turn AI receptionist off"
-                }
-                onClick={() => {
-                  void setMode(seg.value);
-                }}
-                style={{
-                  height: 30,
-                  border: "none",
-                  borderRadius: 7,
-                  background: isActive ? activeBg : "transparent",
-                  color: isActive ? activeColor : MUTED,
-                  fontSize: 12,
-                  fontWeight: isActive ? 600 : 500,
-                  letterSpacing: "-0.1px",
-                  cursor: "pointer",
-                  transition: "background 160ms ease, color 160ms ease",
-                  boxShadow: isActive && seg.value === "off" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
-                }}
-              >
-                {seg.label}
-              </button>
-            );
-          })}
-        </div>
+        {/* Segmented control — hidden in compact mode (use sheet to change mode) */}
+        {!compact && (
+          <div
+            role="tablist"
+            aria-label="AI call divert mode"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 4,
+              background: "#F2F4F8",
+              borderRadius: 9,
+              padding: 3,
+            }}
+          >
+            {SEGMENTS.map((seg) => {
+              const isActive = settings.mode === seg.value;
+              const activeBg =
+                seg.value === "off"
+                  ? "#FFFFFF"
+                  : seg.value === "on_now"
+                    ? GREEN
+                    : BLUE;
+              const activeColor = seg.value === "off" ? CHARCOAL : "#FFFFFF";
+              return (
+                <button
+                  key={seg.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-label={
+                    seg.value === "auto"
+                      ? "Set call divert mode to Auto during lessons"
+                      : seg.value === "on_now"
+                        ? "Turn AI receptionist on now"
+                        : "Turn AI receptionist off"
+                  }
+                  onClick={() => {
+                    void setMode(seg.value);
+                  }}
+                  style={{
+                    height: 30,
+                    border: "none",
+                    borderRadius: 7,
+                    background: isActive ? activeBg : "transparent",
+                    color: isActive ? activeColor : MUTED,
+                    fontSize: 12,
+                    fontWeight: isActive ? 600 : 500,
+                    letterSpacing: "-0.1px",
+                    cursor: "pointer",
+                    transition: "background 160ms ease, color 160ms ease",
+                    boxShadow: isActive && seg.value === "off" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+                  }}
+                >
+                  {seg.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
   );
 
