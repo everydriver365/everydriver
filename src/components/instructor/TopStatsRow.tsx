@@ -272,9 +272,9 @@ export function TopStatsRow({
         .ts-row {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 12px;
+          gap: 8px;
         }
-        @media (max-width: 640px) {
+        @media (max-width: 360px) {
           .ts-row {
             grid-template-columns: 1fr;
             gap: 10px;
