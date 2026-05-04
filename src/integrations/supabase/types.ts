@@ -3429,11 +3429,14 @@ export type Database = {
       }
       famulor_call_logs: {
         Row: {
+          agent_name: string | null
+          cost_pence: number | null
           created_at: string
           direction: string
           duration_seconds: number | null
           ended_at: string | null
           famulor_call_id: string | null
+          from_number: string | null
           id: string
           instructor_id: string
           lead_id: string | null
@@ -3443,16 +3446,21 @@ export type Database = {
           pupil_id: string | null
           purpose: string
           recording_url: string | null
+          started_at: string | null
           status: string
           summary: string | null
+          to_number: string | null
           transcript: Json | null
         }
         Insert: {
+          agent_name?: string | null
+          cost_pence?: number | null
           created_at?: string
           direction: string
           duration_seconds?: number | null
           ended_at?: string | null
           famulor_call_id?: string | null
+          from_number?: string | null
           id?: string
           instructor_id: string
           lead_id?: string | null
@@ -3462,16 +3470,21 @@ export type Database = {
           pupil_id?: string | null
           purpose: string
           recording_url?: string | null
+          started_at?: string | null
           status?: string
           summary?: string | null
+          to_number?: string | null
           transcript?: Json | null
         }
         Update: {
+          agent_name?: string | null
+          cost_pence?: number | null
           created_at?: string
           direction?: string
           duration_seconds?: number | null
           ended_at?: string | null
           famulor_call_id?: string | null
+          from_number?: string | null
           id?: string
           instructor_id?: string
           lead_id?: string | null
@@ -3481,8 +3494,10 @@ export type Database = {
           pupil_id?: string | null
           purpose?: string
           recording_url?: string | null
+          started_at?: string | null
           status?: string
           summary?: string | null
+          to_number?: string | null
           transcript?: Json | null
         }
         Relationships: [
@@ -17303,6 +17318,36 @@ export type Database = {
       }
     }
     Views: {
+      famulor_daily_stats: {
+        Row: {
+          call_count: number | null
+          completed_count: number | null
+          day: string | null
+          direction: string | null
+          failed_count: number | null
+          instructor_id: string | null
+          no_answer_count: number | null
+          purpose: string | null
+          total_cost_pence: number | null
+          total_duration_seconds: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "famulor_call_logs_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "famulor_call_logs_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       public_instructors: {
         Row: {
           allowed_lesson_lengths: number[] | null
