@@ -224,13 +224,14 @@ export function TopStatsRow({
         {/* CARD 3 — This week */}
         <div style={{ ...cardBase, minHeight: 130 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={upperLabel(MUTED)}>This week</div>
-            <span style={iconTile(28, TEAL_TINT, TEAL)}>
+            <div className="ts-label" style={upperLabel(MUTED)}>This week</div>
+            <span className="ts-icon-sm" style={iconTile(28, TEAL_TINT, TEAL)}>
               <Clock size={14} strokeWidth={2} />
             </span>
           </div>
           <div>
             <div
+              className="ts-value"
               style={{
                 fontSize: 26,
                 fontWeight: 500,
@@ -244,7 +245,7 @@ export function TopStatsRow({
               }}
             >
               {hoursThisWeek}h
-              <span style={{ fontSize: 16, fontWeight: 400, color: MUTED }}>
+              <span className="ts-value-sub" style={{ fontSize: 16, fontWeight: 400, color: MUTED }}>
                 / {hoursGoal}h
               </span>
             </div>
@@ -268,7 +269,7 @@ export function TopStatsRow({
                 }}
               />
             </div>
-            <div style={{ fontSize: 12, color: MUTED, marginTop: 6 }}>
+            <div className="ts-progress-label" style={{ fontSize: 12, color: MUTED, marginTop: 6 }}>
               {lessonsThisWeek} of {lessonsGoal} lesson{lessonsGoal === 1 ? "" : "s"}
             </div>
           </div>
