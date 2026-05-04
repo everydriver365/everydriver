@@ -181,6 +181,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   payments: { title: "Payment History", group: "Products & Booking", icon: CreditCard },
   // Communications - Additional
   campaigns: { title: "Campaigns", group: "Communications", icon: Megaphone },
+  "ai-voice": { title: "AI Voice Hub", group: "Communications", icon: MessageCircle },
   // Analytics
   analytics: { title: "Revenue Analytics", group: "Dashboard", icon: TrendingUp },
   commission: { title: "Commission Earned", group: "Dashboard", icon: Coins },
