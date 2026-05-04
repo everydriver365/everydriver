@@ -1364,7 +1364,7 @@ export function MobileHomeRedesign({
       </div>
 
       {/* Needs attention + Upgrade */}
-      <div style={{ padding: "14px 15px 24px" }}>
+      <div style={{ padding: "14px 16px 24px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
           <span
             style={{
