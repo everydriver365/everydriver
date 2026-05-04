@@ -115,7 +115,14 @@ export function UpcomingEventsTile({ instructorId }: Props) {
     return map;
   }, [events]);
 
-  const top4 = events.slice(0, 4);
+  /* Filter events to selected date; if none, fall back to next upcoming */
+  const eventsForSelected = useMemo(
+    () => events.filter((e) => isSameDay(e.date, selectedDate)),
+    [events, selectedDate],
+  );
+  const isToday = isSameDay(selectedDate, today);
+  const showFallback = eventsForSelected.length === 0;
+  const visibleEvents = showFallback ? events.slice(0, 4) : eventsForSelected.slice(0, 4);
 
   const goSeeAll = () => navigate("/instructor/schedule");
 
@@ -324,11 +331,23 @@ export function UpcomingEventsTile({ instructorId }: Props) {
 
             {/* PART 2: Event list */}
             <div>
-              {top4.map((e, idx) => (
+              {showFallback && !isToday && (
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: TEXT_SUBTLE,
+                    padding: "10px 14px 0",
+                  }}
+                >
+                  No events on {format(selectedDate, "EEE d MMM")} · showing next up
+                </div>
+              )}
+              {visibleEvents.map((e, idx) => (
                 <EventRow
                   key={e.id}
                   event={e}
-                  isLast={idx === top4.length - 1}
+                  isLast={idx === visibleEvents.length - 1}
                   onClick={() =>
                     navigate(`/instructor/events/${encodeURIComponent(e.id)}`)
                   }
