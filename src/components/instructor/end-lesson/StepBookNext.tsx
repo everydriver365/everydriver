@@ -681,6 +681,21 @@ export function StepBookNext({
     if (!slot) return;
     setBooking(true);
     try {
+      // Slot suggestions can be seconds out of date — re-check the slot is
+      // still free before inserting so we never write a clash.
+      const clash = await checkLessonClash({
+        instructorId,
+        date: slot.date,
+        startTime: slot.startTime,
+        durationMinutes,
+      });
+      if (clash.hardOverlap) {
+        toast.error("That slot was just taken — pick another");
+        await findSlots();
+        setBooking(false);
+        return;
+      }
+
       const { error } = await supabase.from("scheduled_lessons").insert({
         instructor_id: instructorId,
         pupil_id: pupilId,
@@ -690,7 +705,16 @@ export function StepBookNext({
         status: "scheduled",
         lesson_type: "Standard",
       });
-      if (error) throw error;
+      if (error) {
+        const friendly = describeLessonClashError(error);
+        if (friendly) {
+          toast.error(friendly);
+          await findSlots();
+          setBooking(false);
+          return;
+        }
+        throw error;
+      }
       invalidateLessonQueries(queryClient);
       const dt = parse(slot.date, "yyyy-MM-dd", new Date());
       toast.success(
