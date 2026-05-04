@@ -115,7 +115,14 @@ export function UpcomingEventsTile({ instructorId }: Props) {
     return map;
   }, [events]);
 
-  const top4 = events.slice(0, 4);
+  /* Filter events to selected date; if none, fall back to next upcoming */
+  const eventsForSelected = useMemo(
+    () => events.filter((e) => isSameDay(e.date, selectedDate)),
+    [events, selectedDate],
+  );
+  const isToday = isSameDay(selectedDate, today);
+  const showFallback = eventsForSelected.length === 0;
+  const visibleEvents = showFallback ? events.slice(0, 4) : eventsForSelected.slice(0, 4);
 
   const goSeeAll = () => navigate("/instructor/schedule");
 
