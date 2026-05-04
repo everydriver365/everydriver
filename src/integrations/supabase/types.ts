@@ -3427,6 +3427,160 @@ export type Database = {
           },
         ]
       }
+      famulor_call_logs: {
+        Row: {
+          created_at: string
+          direction: string
+          duration_seconds: number | null
+          ended_at: string | null
+          famulor_call_id: string | null
+          id: string
+          instructor_id: string
+          lead_id: string | null
+          metadata: Json | null
+          outcome: string | null
+          phone_number: string | null
+          pupil_id: string | null
+          purpose: string
+          recording_url: string | null
+          status: string
+          summary: string | null
+          transcript: Json | null
+        }
+        Insert: {
+          created_at?: string
+          direction: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          famulor_call_id?: string | null
+          id?: string
+          instructor_id: string
+          lead_id?: string | null
+          metadata?: Json | null
+          outcome?: string | null
+          phone_number?: string | null
+          pupil_id?: string | null
+          purpose: string
+          recording_url?: string | null
+          status?: string
+          summary?: string | null
+          transcript?: Json | null
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          famulor_call_id?: string | null
+          id?: string
+          instructor_id?: string
+          lead_id?: string | null
+          metadata?: Json | null
+          outcome?: string | null
+          phone_number?: string | null
+          pupil_id?: string | null
+          purpose?: string
+          recording_url?: string | null
+          status?: string
+          summary?: string | null
+          transcript?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "famulor_call_logs_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "famulor_call_logs_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "famulor_call_logs_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      famulor_settings: {
+        Row: {
+          auto_book_enabled: boolean
+          business_hours_only: boolean
+          created_at: string
+          daily_call_cap: number
+          dormant_days_threshold: number
+          dormant_winback_enabled: boolean
+          enabled: boolean
+          id: string
+          inbound_agent_id: string | null
+          inbound_phone_number: string | null
+          instructor_id: string
+          outbound_agent_id: string | null
+          reminder_hours_before: number
+          reminders_enabled: boolean
+          updated_at: string
+          voice_id: string | null
+        }
+        Insert: {
+          auto_book_enabled?: boolean
+          business_hours_only?: boolean
+          created_at?: string
+          daily_call_cap?: number
+          dormant_days_threshold?: number
+          dormant_winback_enabled?: boolean
+          enabled?: boolean
+          id?: string
+          inbound_agent_id?: string | null
+          inbound_phone_number?: string | null
+          instructor_id: string
+          outbound_agent_id?: string | null
+          reminder_hours_before?: number
+          reminders_enabled?: boolean
+          updated_at?: string
+          voice_id?: string | null
+        }
+        Update: {
+          auto_book_enabled?: boolean
+          business_hours_only?: boolean
+          created_at?: string
+          daily_call_cap?: number
+          dormant_days_threshold?: number
+          dormant_winback_enabled?: boolean
+          enabled?: boolean
+          id?: string
+          inbound_agent_id?: string | null
+          inbound_phone_number?: string | null
+          instructor_id?: string
+          outbound_agent_id?: string | null
+          reminder_hours_before?: number
+          reminders_enabled?: boolean
+          updated_at?: string
+          voice_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "famulor_settings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "famulor_settings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favourite_locations: {
         Row: {
           address: string | null

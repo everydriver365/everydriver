@@ -1,77 +1,75 @@
-# Lesson Clash Prevention — Close Remaining Gaps
+# Famulor AI Voice Integration
 
-## Current state
+Add Famulor as the AI voice layer powering three flows: inbound receptionist, outbound lesson reminders, and dormant pupil win-back. Configurable globally in Settings → Integrations and triggerable per-pupil from the pupil card.
 
-The database is already safe. Trigger `prevent_lesson_clash` on `scheduled_lessons` uses a transaction-scoped advisory lock keyed on `(instructor_id, lesson_date)` and raises `check_violation` on overlap — so no clashing row can ever be persisted, even under concurrent inserts.
+## 1. Database
 
-Pre-checks + friendly error mapping (`checkLessonClash` / `describeLessonClashError`) are wired into:
-- `AddLessonSheet` (incl. recurring series)
-- `RescheduleLessonSheet`
-- `end-lesson/StepBookNext`
-- `VoiceQuickAddLessonSheet`
-- `course-planner/CoursePlannerForm`
+New migration adds:
 
-So why do clashes still appear to "go through"? Two reasons in the remaining write paths:
+- `famulor_settings` (one row per instructor)
+  - `instructor_id`, `enabled`, `inbound_agent_id`, `outbound_agent_id`, `inbound_phone_number`, `voice_id`, `business_hours_only`, `auto_book_enabled`, `reminder_hours_before` (default 24), `dormant_days_threshold` (default 60)
+- `famulor_call_logs`
+  - `id`, `instructor_id`, `pupil_id` (nullable for unknown inbound), `lead_id` (nullable), `direction` (`inbound`/`outbound`), `purpose` (`receptionist`/`reminder`/`win_back`), `famulor_call_id`, `phone_number`, `status` (`queued`/`in_progress`/`completed`/`failed`/`no_answer`), `duration_seconds`, `transcript` (jsonb), `summary` (text), `outcome` (text — e.g. `confirmed`, `cancelled`, `booked`, `not_interested`), `recording_url`, `created_at`, `ended_at`
+- RLS on both using `public.get_instructor_id_for_user(auth.uid())`
+- Index on `(instructor_id, created_at desc)` and `(famulor_call_id)`
 
-1. They never call `checkLessonClash`, so the trigger fires and the user sees a raw Postgres error toast (or a silent failure) — easy to mistake for a successful booking.
-2. A few paths swallow the error or only show `error.message` without the "That slot is already booked" mapping.
+## 2. Secrets
 
-## What to change (UX/wiring only — no schema work needed)
+Request `FAMULOR_API_KEY` and `FAMULOR_WEBHOOK_SECRET` (HMAC verification) via the secret tool once the plan is approved.
 
-Add a pre-check via `checkLessonClash` and map errors via `describeLessonClashError` in every remaining lesson-write path:
+## 3. Edge functions
 
-**Pupil-side self-booking**
-- `src/components/pupil-portal/SelfBookingCalendar.tsx` (insert at lines ~136 and ~164)
-- `src/components/pupil-portal/PupilPortalSchedule.tsx` (insert at ~498; updates at ~571/~581 — pass `excludeLessonId`)
-- `src/components/pupil-portal/PupilPortalGaps.tsx` (insert at ~189)
+All under `supabase/functions/`, each with CORS + Zod input validation + JWT verification (except the webhook which uses HMAC):
 
-**Instructor flows missing the check**
-- `src/components/instructor/ScheduleLessonsDialog.tsx` (~126)
-- `src/components/instructor/AddCalendarEventDialog.tsx` (~224 — only when creating a *lesson* row, not a calendar block)
-- `src/components/instructor/bulk-ops/BulkRescheduleTab.tsx` (~69) — validate every lesson in the batch against the new date and abort the whole batch on any clash, listing offenders
+- **`famulor-trigger-call`** — Authed. Body `{ pupil_id, purpose }`. Looks up the pupil, builds context (name, next lesson date/time, balance, instructor name), calls Famulor REST `POST /calls` with the right agent + dynamic variables, inserts a `famulor_call_logs` row.
+- **`famulor-webhook`** — Public, HMAC-verified using `FAMULOR_WEBHOOK_SECRET`. Handles `call.completed` events: updates `famulor_call_logs` with transcript / summary / outcome, and depending on purpose:
+  - `reminder` + outcome `cancelled` → calls existing cancel-lesson logic
+  - `receptionist` + outcome `booked` → creates a `lead_inbox` row (and a draft `pupils` row if confident) using existing clash check
+  - `win_back` → just logs
+- **`famulor-cron-reminders`** — Scheduled via `pg_cron` hourly. Finds lessons starting in `reminder_hours_before ± 30 min` for instructors with `enabled = true` and reminders on, then invokes `famulor-trigger-call` for each.
+- **`famulor-cron-dormant`** — Scheduled daily 10:00 UK. Finds pupils with no lesson in `dormant_days_threshold` days, instructor opted in, and queues win-back calls (rate-limited to N per day per instructor).
 
-**Admin / public booking**
-- `src/components/admin/BespokeBookingModal.tsx` (~184)
-- `src/components/admin/PupilRecordsManager.tsx` (insert ~205; updates ~407 and ~436)
-- `src/pages/BookingConfirmation.tsx` (~176)
-- `src/components/booking/LessonScheduler.tsx` (~268)
+## 4. UI
 
-**Auto-scheduler**
-- `src/utils/autoScheduler.ts` (~130) — add a final per-slot `checkLessonClash` immediately before insert and skip-with-log on clash so a long batch can't be aborted by one race; rely on the DB trigger as the ultimate guard.
+### Settings → Integrations → "AI Voice Agent (Famulor)" card
+- Enable toggle
+- Inbound agent ID + assigned phone number (read-only display once Famulor returns it)
+- Outbound agent ID
+- Voice picker (fetched from Famulor `/voices`)
+- Toggles: Lesson reminders, Dormant win-back, Auto-book inbound leads
+- Numeric: reminder hours before, dormant threshold days
+- "Send test call to my number" button → calls `famulor-trigger-call` with `purpose=test`
+- Recent calls table (last 20 from `famulor_call_logs` with summary + outcome chip)
 
-## Pattern applied to each path
+### Per-pupil action
+- New menu item on pupil card / dormant list: **"AI call this pupil"** → opens a small confirm sheet (purpose: reminder / win-back / custom note) → invokes `famulor-trigger-call`. Disabled if Famulor not enabled.
 
-```ts
-const clash = await checkLessonClash({
-  instructorId,
-  lessonDate,           // 'YYYY-MM-DD'
-  startTime,            // 'HH:MM:SS'
-  durationMinutes,
-  excludeLessonId,      // only when updating
-});
-if (clash.hardOverlap) {
-  toast.error(clash.message ?? 'That slot is already booked.');
-  return;
-}
+### Call log drawer
+- Click any row in the recent calls table → side drawer with full transcript, recording playback, and outcome.
 
-const { error } = await supabase.from('scheduled_lessons').insert(...);
-if (error) {
-  const friendly = describeLessonClashError(error);
-  toast.error(friendly ?? error.message);
-  return;
-}
-```
+## 5. Files to create / edit
 
-For `BulkRescheduleTab`, run the checks in parallel first, collect offenders, and only proceed if none clash.
+**New:**
+- `supabase/migrations/<ts>_famulor.sql`
+- `supabase/functions/famulor-trigger-call/index.ts`
+- `supabase/functions/famulor-webhook/index.ts`
+- `supabase/functions/famulor-cron-reminders/index.ts`
+- `supabase/functions/famulor-cron-dormant/index.ts`
+- `src/components/instructor/integrations/FamulorSettingsCard.tsx`
+- `src/components/instructor/integrations/FamulorCallLogDrawer.tsx`
+- `src/components/instructor/pupils/AiCallPupilSheet.tsx`
+- `src/hooks/useFamulorSettings.ts`
+- `src/lib/famulorClient.ts` (thin wrapper around `supabase.functions.invoke`)
 
-## Out of scope
+**Edited:**
+- `src/pages/instructor/Settings.tsx` (or equivalent integrations page) — mount `FamulorSettingsCard`
+- Pupil card / dormant list component — add "AI call this pupil" action
+- `mem://index.md` + new `mem://features/communication/famulor-voice-integration.md`
 
-- No schema changes. The trigger + advisory lock already guarantee atomicity.
-- No changes to `calendar_events` (non-lesson blocks).
-- No new libraries, no navigation changes.
+## 6. Open points (defaults unless you say otherwise)
 
-## Acceptance
+- **Inbound number**: Famulor provisions a UK number per agent. Instructor forwards their existing line to it (we'll show forwarding instructions in the card). Not building number porting.
+- **Cost guardrails**: hard-cap dormant calls at 20/instructor/day to prevent runaway spend.
+- **Language/voice**: default to a UK English voice; instructor can override.
 
-- Booking a slot that overlaps an existing lesson — from any portal (instructor, pupil, admin, public, auto-scheduler, bulk reschedule) — is blocked before the insert and shows "That slot is already booked."
-- Concurrent attempts on the same slot: one succeeds, the other gets the friendly clash toast (DB-trigger safety net).
-- Bulk reschedule aborts cleanly with a list of clashing pupils instead of partially applying.
+Once you approve, I'll request the two secrets, then build it end-to-end.
