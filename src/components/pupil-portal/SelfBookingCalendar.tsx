@@ -37,6 +37,7 @@ import { format, addDays, startOfWeek, isBefore, isToday, parseISO, isSameDay } 
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import confetti from 'canvas-confetti';
+import { checkLessonClash, describeLessonClashError } from '@/lib/lessonClashCheck';
 
 interface SelfBookingCalendarProps {
   pupilId: string;
@@ -160,6 +161,17 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
       const bookingStatus = 'confirmed';
       const pupilData = pupil as { address: string | null; postcode: string | null };
 
+      // Pre-check for clashes so the user gets a clean message instead of a raw DB error.
+      const clash = await checkLessonClash({
+        instructorId,
+        date: slot.date,
+        startTime: slot.startTime,
+        durationMinutes: selectedDuration,
+      });
+      if (clash.hardOverlap) {
+        throw new Error(clash.message ?? 'That slot is already booked. Please pick another time.');
+      }
+
       const { error } = await supabase
         .from('scheduled_lessons')
         .insert({
@@ -174,7 +186,10 @@ const SelfBookingCalendar: React.FC<SelfBookingCalendarProps> = ({
           pickup_postcode: pupilData.postcode,
         });
 
-      if (error) throw error;
+      if (error) {
+        const friendly = describeLessonClashError(error);
+        throw new Error(friendly ?? error.message);
+      }
       return bookingStatus;
     },
     onSuccess: (bookingStatus) => {

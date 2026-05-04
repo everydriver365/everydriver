@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, parseISO, isBefore, isAfter, startOfDay } from "date-fns";
 import { toast } from "@/hooks/use-toast";
+import { checkLessonClash, describeLessonClashError } from "@/lib/lessonClashCheck";
 
 interface PupilPortalGapsProps {
   pupilId: string;
@@ -184,6 +185,26 @@ export function PupilPortalGaps({
         .eq("id", pupilId)
         .single();
 
+      // Pre-check for a clash before inserting.
+      const clash = await checkLessonClash({
+        instructorId,
+        date: slot.date,
+        startTime: slot.startTime,
+        durationMinutes: 60,
+      });
+      if (clash.hardOverlap) {
+        toast({
+          title: "Slot just got booked",
+          description: clash.message ?? "That slot is already booked. Please pick another time.",
+          variant: "destructive",
+        });
+        // Drop it from the visible list so the pupil can pick another.
+        setAvailableSlots(prev => prev.filter(s =>
+          !(s.date === slot.date && s.startTime === slot.startTime)
+        ));
+        return;
+      }
+
       // Create the booking (1 hour lesson at slot start)
       const { error } = await supabase
         .from("scheduled_lessons")
@@ -200,7 +221,14 @@ export function PupilPortalGaps({
           payment_status: 'not_paid'
         });
 
-      if (error) throw error;
+      if (error) {
+        const friendly = describeLessonClashError(error);
+        if (friendly) {
+          toast({ title: "Slot just got booked", description: friendly, variant: "destructive" });
+          return;
+        }
+        throw error;
+      }
 
       toast({ title: "Lesson booked!", description: "Your instructor will confirm shortly" });
       

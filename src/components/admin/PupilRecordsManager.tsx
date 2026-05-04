@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { PupilJourneyTimeline } from "./PupilJourneyTimeline";
+import { checkLessonClash, describeLessonClashError } from "@/lib/lessonClashCheck";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import {
@@ -403,6 +404,18 @@ export function PupilRecordsManager() {
   const addScheduledLesson = async () => {
     if (!selectedPupil || !newLesson.date) return;
     try {
+      // Pre-check for a clash so the admin gets a friendly message.
+      const clash = await checkLessonClash({
+        instructorId: selectedPupil.instructor_id,
+        date: newLesson.date,
+        startTime: newLesson.time,
+        durationMinutes: parseInt(newLesson.duration),
+      });
+      if (clash.hardOverlap) {
+        toast.error(clash.message ?? "That slot is already booked for this instructor.");
+        return;
+      }
+
       const { data, error } = await supabase
         .from("scheduled_lessons")
         .insert({
@@ -418,14 +431,22 @@ export function PupilRecordsManager() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        const friendly = describeLessonClashError(error);
+        if (friendly) {
+          toast.error(friendly);
+          return;
+        }
+        throw error;
+      }
       setScheduledLessons([data, ...scheduledLessons]);
       setNewLesson({ date: "", time: "09:00", duration: "60", type: "Standard" });
       setAddingLesson(false);
       toast.success("Lesson scheduled");
     } catch (error) {
       console.error("Error adding lesson:", error);
-      toast.error("Failed to schedule lesson");
+      const friendly = describeLessonClashError(error);
+      toast.error(friendly ?? "Failed to schedule lesson");
     }
   };
 
