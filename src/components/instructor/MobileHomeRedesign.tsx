@@ -1087,7 +1087,7 @@ export function MobileHomeRedesign({
   });
 
   // Health cover (placeholder — to be wired later)
-  const healthCover: "None" | "Basic" | "Full" = "Basic";
+  const healthCover = "Basic" as "None" | "Basic" | "Full";
   const canUpgradeHealth = healthCover !== "Full";
   attentionRows.push({
     key: "health-cover",
