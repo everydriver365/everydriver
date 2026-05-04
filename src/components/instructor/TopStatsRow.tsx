@@ -1,46 +1,28 @@
+import { useMemo } from "react";
 import type { AICallDivertState } from "@/hooks/useAICallDivert";
 
 /* Spec tokens */
 const PURPLE = "#534AB7";
 const GREEN = "#1D9E75";
-const RED = "#E5484D";
+const CONTAINER_BG = "#F1EFE8";
 const NEAR_BLACK = "#1A1A1A";
 const MUTED = "#6B7280";
 const BORDER = "rgba(15,23,42,0.08)";
 const FONT =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", system-ui, sans-serif';
 
-const cardBase: React.CSSProperties = {
+const tileBase: React.CSSProperties = {
   background: "#FFFFFF",
   border: `0.5px solid ${BORDER}`,
-  borderRadius: 12,
-  padding: "4px 10px",
+  borderRadius: 8,
+  padding: "8px 12px",
   display: "flex",
-  flexDirection: "column",
+  alignItems: "center",
   justifyContent: "space-between",
   minWidth: 0,
   fontFamily: FONT,
-  gap: 6,
+  minHeight: 36,
 };
-
-const upperLabel = (color: string): React.CSSProperties => ({
-  fontSize: 10,
-  fontWeight: 500,
-  color,
-  letterSpacing: "0.04em",
-  textTransform: "uppercase",
-  lineHeight: 1.1,
-});
-
-const dot = (color: string, pulse = false): React.CSSProperties => ({
-  width: 6,
-  height: 6,
-  borderRadius: "50%",
-  background: color,
-  flexShrink: 0,
-  display: "inline-block",
-  animation: pulse ? "ts-pulse 1.4s ease-in-out infinite" : undefined,
-});
 
 interface TopStatsRowProps {
   ai: AICallDivertState;
@@ -52,7 +34,6 @@ interface TopStatsRowProps {
   hoursGoal: number;
   lessonsThisWeek: number;
   lessonsGoal: number;
-  /** Number of items waiting on the user (e.g. unread/needs-action). When > 0, shows pulsing red dot on Today card. */
   waitingCount?: number;
 }
 
@@ -60,50 +41,107 @@ export function TopStatsRow({
   ai,
   onOpenAISheet,
   earningsToday,
-  todayLessons,
-  earningsDelta,
   hoursThisWeek,
   hoursGoal,
-  lessonsThisWeek,
-  lessonsGoal,
-  waitingCount = 0,
 }: TopStatsRowProps) {
   const aiOn = ai.toggleOn;
-  const weekProgress = hoursGoal > 0 ? Math.min(100, (hoursThisWeek / hoursGoal) * 100) : 0;
-  const showDelta = typeof earningsDelta === "number" && earningsDelta > 0;
-  const hasWaiting = waitingCount > 0;
+
+  const divertUntil = useMemo(() => {
+    if (!aiOn) return "off";
+    if (ai.windowEnd) {
+      return `until ${ai.windowEnd.toLocaleTimeString("en-GB", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      })}`;
+    }
+    return ai.statusLine;
+  }, [aiOn, ai.windowEnd, ai.statusLine]);
+
+  const toggleAI = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    ai.setMode(aiOn ? "off" : "auto");
+  };
 
   return (
     <div style={{ padding: "0 14px 12px" }}>
-      <div className="ts-row">
-        {/* CARD 1 — AI Receptionist */}
-        <button
-          type="button"
-          onClick={onOpenAISheet}
-          aria-label="Open AI receptionist settings"
-          style={{ ...cardBase, cursor: "pointer", textAlign: "left" }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>
-              {aiOn && <span style={dot(GREEN)} aria-label="AI divert active" />}
-              <span className="ts-label" style={upperLabel(PURPLE)}>AI</span>
+      <h2 className="sr-only">
+        Tutoring dashboard: AI auto-divert status, today's earnings, weekly hours.
+      </h2>
+      <div
+        className="ts-container"
+        style={{
+          background: CONTAINER_BG,
+          borderRadius: 12,
+          padding: 8,
+        }}
+      >
+        <div className="ts-row">
+          {/* TILE 1 — AI Auto-divert */}
+          <button
+            type="button"
+            onClick={onOpenAISheet}
+            aria-label="Open AI receptionist settings"
+            style={{ ...tileBase, gap: 10, cursor: "pointer", textAlign: "left" }}
+          >
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                minWidth: 0,
+                flex: 1,
+              }}
+            >
+              <span
+                aria-hidden
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: aiOn ? GREEN : "#D1D5DB",
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: NEAR_BLACK,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Auto-divert
+              </span>
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 400,
+                  color: MUTED,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  minWidth: 0,
+                }}
+              >
+                {divertUntil}
+              </span>
             </div>
             <span
               role="switch"
               aria-checked={aiOn}
-              onClick={(e) => {
-                e.stopPropagation();
-                ai.setMode(aiOn ? "off" : "auto");
-              }}
+              aria-label="Toggle AI auto-divert"
+              onClick={toggleAI}
               style={{
-                width: 30,
-                height: 18,
+                width: 28,
+                height: 16,
                 borderRadius: 999,
                 background: aiOn ? PURPLE : "#D1D5DB",
                 position: "relative",
                 transition: "background 180ms ease",
                 cursor: "pointer",
                 flexShrink: 0,
+                display: "inline-block",
               }}
             >
               <span
@@ -111,137 +149,60 @@ export function TopStatsRow({
                   position: "absolute",
                   top: 2,
                   left: aiOn ? 14 : 2,
-                  width: 14,
-                  height: 14,
+                  width: 12,
+                  height: 12,
                   borderRadius: "50%",
                   background: "#FFFFFF",
                   transition: "left 180ms ease",
-                  boxShadow: "0 1px 2px rgba(0,0,0,0.18)",
                 }}
               />
             </span>
-          </div>
-          <div>
-            <div
-              className="ts-main"
-              style={{
-                fontSize: 12,
-                fontWeight: 500,
-                color: NEAR_BLACK,
-                lineHeight: 1.2,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {aiOn ? "Auto-divert on" : "Auto-divert off"}
-            </div>
-            <div
-              className="ts-sub"
-              style={{
-                fontSize: 11,
-                color: MUTED,
-                marginTop: 2,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {ai.statusLine}
-            </div>
-          </div>
-        </button>
+          </button>
 
-        {/* CARD 2 — Today */}
-        <div style={cardBase}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>
-              {hasWaiting && <span style={dot(RED, true)} aria-label={`${waitingCount} waiting`} />}
-              <span className="ts-label" style={upperLabel(MUTED)}>Today</span>
-            </div>
-          </div>
-          <div>
-            <div
-              className="ts-value"
+          {/* TILE 2 — Today's earnings */}
+          <div style={{ ...tileBase, gap: 6, alignItems: "baseline" }}>
+            <span
               style={{
-                fontSize: 20,
+                fontSize: 16,
                 fontWeight: 500,
                 color: NEAR_BLACK,
-                lineHeight: 1.05,
                 fontVariantNumeric: "tabular-nums",
-                letterSpacing: "-0.3px",
+                lineHeight: 1,
               }}
             >
               £{Math.round(earningsToday)}
-              {showDelta && (
-                <span
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 500,
-                    color: GREEN,
-                    marginLeft: 6,
-                    fontVariantNumeric: "tabular-nums",
-                    letterSpacing: 0,
-                  }}
-                >
-                  +£{Math.round(earningsDelta!)}
-                </span>
-              )}
-            </div>
-            <div className="ts-sub" style={{ fontSize: 11, color: MUTED, marginTop: 2 }}>
-              {todayLessons} lesson{todayLessons === 1 ? "" : "s"}
-            </div>
+            </span>
+            <span style={{ fontSize: 11, fontWeight: 400, color: MUTED, lineHeight: 1 }}>
+              today
+            </span>
           </div>
-        </div>
 
-        {/* CARD 3 — This week */}
-        <div style={cardBase}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
-            <span className="ts-label" style={upperLabel(MUTED)}>Week</span>
-          </div>
-          <div>
-            <div
-              className="ts-value"
+          {/* TILE 3 — Week hours */}
+          <div style={{ ...tileBase, gap: 6, alignItems: "baseline" }}>
+            <span
               style={{
-                fontSize: 20,
+                fontSize: 16,
                 fontWeight: 500,
                 color: NEAR_BLACK,
-                lineHeight: 1.05,
                 fontVariantNumeric: "tabular-nums",
-                letterSpacing: "-0.3px",
-                display: "inline-flex",
-                alignItems: "baseline",
-                gap: 3,
+                lineHeight: 1,
               }}
             >
               {hoursThisWeek}h
-              <span style={{ fontSize: 12, fontWeight: 400, color: MUTED }}>
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 400,
+                  color: MUTED,
+                  marginLeft: 3,
+                }}
+              >
                 / {hoursGoal}h
               </span>
-            </div>
-            <div
-              style={{
-                marginTop: 5,
-                height: 3,
-                background: "#E1F5EE",
-                borderRadius: 999,
-                overflow: "hidden",
-              }}
-              aria-hidden
-            >
-              <div
-                style={{
-                  width: `${weekProgress}%`,
-                  height: "100%",
-                  background: GREEN,
-                  borderRadius: 999,
-                  transition: "width 240ms ease",
-                }}
-              />
-            </div>
-            <div style={{ fontSize: 11, color: MUTED, marginTop: 3 }}>
-              {lessonsThisWeek}/{lessonsGoal} lesson{lessonsGoal === 1 ? "" : "s"}
-            </div>
+            </span>
+            <span style={{ fontSize: 11, fontWeight: 400, color: MUTED, lineHeight: 1 }}>
+              week
+            </span>
           </div>
         </div>
       </div>
@@ -249,12 +210,13 @@ export function TopStatsRow({
       <style>{`
         .ts-row {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: 2.4fr 1fr 1fr;
           gap: 6px;
         }
-        @keyframes ts-pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.55; transform: scale(1.25); }
+        @media (max-width: 640px) {
+          .ts-row {
+            /* keep single row on mobile per current product direction */
+          }
         }
       `}</style>
     </div>
