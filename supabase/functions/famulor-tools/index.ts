@@ -137,6 +137,154 @@ Deno.serve(async (req) => {
       return json({ request_id: data.id });
     }
 
+    if (p.tool === "verify_parent") {
+      let q = admin
+        .from("pupils")
+        .select("id, name, phone, email, date_of_birth")
+        .eq("instructor_id", p.instructor_id)
+        .is("deleted_at", null);
+
+      if (p.phone) {
+        q = q.eq("phone", p.phone);
+      } else if (p.pupil_name && p.date_of_birth) {
+        q = q.ilike("name", p.pupil_name).eq("date_of_birth", p.date_of_birth);
+      } else {
+        return json({ error: "Provide phone, or pupil_name + date_of_birth" }, 400);
+      }
+
+      const { data } = await q.maybeSingle();
+      if (!data) return json({ verified: false, pupil: null });
+      return json({ verified: true, pupil: { id: data.id, name: data.name } });
+    }
+
+    if (p.tool === "get_pupil_lessons") {
+      const cutoff = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+      const { data } = await admin
+        .from("scheduled_lessons")
+        .select("id, lesson_date, start_time, duration_minutes, status")
+        .eq("instructor_id", p.instructor_id)
+        .eq("pupil_id", p.pupil_id)
+        .neq("status", "cancelled")
+        .is("deleted_at", null)
+        .order("lesson_date", { ascending: true })
+        .limit(20);
+
+      const eligible = (data ?? []).filter((l: any) => {
+        const start = new Date(`${l.lesson_date}T${l.start_time}`);
+        return start.toISOString() > cutoff;
+      });
+      return json({ lessons: eligible });
+    }
+
+    if (p.tool === "request_reschedule") {
+      const { data: lesson } = await admin
+        .from("scheduled_lessons")
+        .select("id, instructor_id, pupil_id, lesson_date, start_time, duration_minutes, status, deleted_at")
+        .eq("id", p.lesson_id)
+        .maybeSingle();
+
+      if (!lesson || lesson.instructor_id !== p.instructor_id || lesson.pupil_id !== p.pupil_id) {
+        return json({ error: "Lesson not found for this pupil" }, 404);
+      }
+      if (lesson.status === "cancelled" || lesson.deleted_at) {
+        return json({ error: "Lesson is cancelled and cannot be rescheduled" }, 400);
+      }
+
+      const originalStart = new Date(`${lesson.lesson_date}T${lesson.start_time}`);
+      const now = new Date();
+      const hoursToOriginal = (originalStart.getTime() - now.getTime()) / 36e5;
+      if (hoursToOriginal < 2) {
+        return json({ error: "Lessons within 2 hours cannot be rescheduled via AI chat" }, 400);
+      }
+
+      const newStart = new Date(p.requested_start);
+      const hoursToNew = (newStart.getTime() - now.getTime()) / 36e5;
+      if (hoursToNew < 2) {
+        return json({ error: "New time must be at least 2 hours from now" }, 400);
+      }
+
+      const newDuration = p.requested_duration_minutes ?? lesson.duration_minutes;
+      const dayStr = newStart.toISOString().slice(0, 10);
+      const newStartMin = newStart.getUTCHours() * 60 + newStart.getUTCMinutes();
+      const newEndMin = newStartMin + newDuration;
+
+      const { data: sameDay } = await admin
+        .from("scheduled_lessons")
+        .select("id, start_time, duration_minutes")
+        .eq("instructor_id", p.instructor_id)
+        .eq("lesson_date", dayStr)
+        .neq("status", "cancelled")
+        .is("deleted_at", null);
+
+      const hasClash = (sameDay ?? []).some((l: any) => {
+        if (l.id === p.lesson_id) return false;
+        const [h, m] = String(l.start_time).split(":").map(Number);
+        const s = h * 60 + m;
+        const e = s + l.duration_minutes;
+        return s < newEndMin && e > newStartMin;
+      });
+
+      const willAutoApprove = hoursToNew >= 24 && !hasClash;
+
+      const { data: requestRow, error: insertErr } = await admin
+        .from("ai_reschedule_requests")
+        .insert({
+          instructor_id: p.instructor_id,
+          lesson_id: p.lesson_id,
+          pupil_id: p.pupil_id,
+          source_channel: p.source_channel,
+          contact_name: p.contact_name ?? null,
+          contact_phone: p.contact_phone ?? null,
+          contact_email: p.contact_email ?? null,
+          original_start: originalStart.toISOString(),
+          original_duration_minutes: lesson.duration_minutes,
+          requested_start: newStart.toISOString(),
+          requested_duration_minutes: newDuration,
+          notes: p.notes ?? null,
+          status: willAutoApprove ? "auto_approved" : "pending",
+          auto_approved: willAutoApprove,
+          decided_at: willAutoApprove ? new Date().toISOString() : null,
+        })
+        .select("id")
+        .single();
+
+      if (insertErr) return json({ error: insertErr.message }, 400);
+
+      if (willAutoApprove) {
+        const { error: updErr } = await admin
+          .from("scheduled_lessons")
+          .update({
+            lesson_date: dayStr,
+            start_time: newStart.toISOString().slice(11, 19),
+            duration_minutes: newDuration,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", p.lesson_id);
+
+        if (updErr) {
+          await admin.from("ai_reschedule_requests").update({
+            status: "pending", auto_approved: false, decided_at: null,
+            notes: (p.notes ?? "") + ` [auto-approve failed: ${updErr.message}]`,
+          }).eq("id", requestRow.id);
+          return json({
+            request_id: requestRow.id,
+            status: "pending",
+            message: "Sent to instructor for approval (auto-approve failed).",
+          });
+        }
+      }
+
+      return json({
+        request_id: requestRow.id,
+        status: willAutoApprove ? "auto_approved" : "pending",
+        message: willAutoApprove
+          ? "Lesson rescheduled. A confirmation will be sent shortly."
+          : hasClash
+            ? "Slot conflicts with another lesson — sent to instructor for approval."
+            : "Less than 24h notice — sent to instructor for approval.",
+      });
+    }
+
     return json({ error: "Unknown tool" }, 400);
   } catch (err) {
     return json({ error: err instanceof Error ? err.message : "Unknown error" }, 500);
