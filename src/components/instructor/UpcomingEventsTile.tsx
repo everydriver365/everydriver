@@ -4,34 +4,78 @@ import {
   ChevronLeft,
   ChevronRight,
   Calendar as CalendarIcon,
+  Car,
+  BookOpen,
+  Wrench,
+  ShieldCheck,
+  ListTodo,
+  GraduationCap,
+  AlertCircle,
 } from "lucide-react";
 import {
   addDays,
+  addMonths,
   format,
   isSameDay,
+  isSameMonth,
   startOfDay,
-  subDays,
+  startOfWeek,
+  subMonths,
 } from "date-fns";
-import { useUpcomingEvents, UpcomingEvent, UpcomingEventType } from "@/hooks/useUpcomingEvents";
+import {
+  useUpcomingEvents,
+  UpcomingEvent,
+  UpcomingEventType,
+} from "@/hooks/useUpcomingEvents";
 import { AddCalendarEventDialog } from "@/components/instructor/AddCalendarEventDialog";
 import { useQueryClient } from "@tanstack/react-query";
 
-const eventTypeConfig: Record<
-  UpcomingEventType,
-  { dotColor: string; pillBg: string; pillText: string; pilotLabel: (d: number) => string }
-> = {
-  drivingTest: { dotColor: "#B23A3F", pillBg: "#FFF0F0", pillText: "#B23A3F", pilotLabel: (d) => (d === 0 ? "Today" : `${d}d`) },
-  theoryTest: { dotColor: "#B23A3F", pillBg: "#FFF0F0", pillText: "#B23A3F", pilotLabel: (d) => (d === 0 ? "Today" : `${d}d`) },
-  mot: { dotColor: "#1A7A3C", pillBg: "#E8F8ED", pillText: "#1A7A3C", pilotLabel: (d) => (d === 0 ? "Today" : `${d}d`) },
-  insuranceRenewal: { dotColor: "#1A7A3C", pillBg: "#E8F8ED", pillText: "#1A7A3C", pilotLabel: (d) => (d === 0 ? "Today" : `${d}d`) },
-  task: { dotColor: "#B45309", pillBg: "#FFF6E6", pillText: "#B45309", pilotLabel: (d) => (d === 0 ? "Today" : `${d}d`) },
-  training: { dotColor: "#6B21A8", pillBg: "#F0EEFF", pillText: "#6B21A8", pilotLabel: (d) => (d === 0 ? "Today" : `${d}d`) },
-};
+/* -------------------------------------------------------------------------- */
+/* Tokens                                                                     */
+/* -------------------------------------------------------------------------- */
 
 const FONT =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif';
-const ROW_BORDER = "#F0F3F8";
+
 const BLUE = "#3D55A1";
+const BLUE_TINT = "#EDF2FE";
+const TEXT = "#1A1A1A";
+const TEXT_MUTED = "#6E6E73";
+const TEXT_SUBTLE = "#8E8E93";
+const TEXT_DISABLED = "#C7C7CC";
+const HAIRLINE = "rgba(60,60,67,0.10)";
+const CARD_BORDER = "rgba(60,60,67,0.08)";
+const CHIP_BG = "#F2F4F8";
+
+/* Per-type icon styling */
+const typeStyle: Record<
+  UpcomingEventType,
+  { icon: React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>; iconBg: string; iconColor: string }
+> = {
+  drivingTest:      { icon: Car,            iconBg: "#FFE9EA", iconColor: "#B23A3F" },
+  theoryTest:       { icon: BookOpen,       iconBg: "#EAF1FF", iconColor: "#3D55A1" },
+  mot:              { icon: Wrench,         iconBg: "#E6F6EC", iconColor: "#1A7A3C" },
+  insuranceRenewal: { icon: ShieldCheck,    iconBg: "#E6F6EC", iconColor: "#1A7A3C" },
+  task:             { icon: ListTodo,       iconBg: "#FFF4E0", iconColor: "#B45309" },
+  training:         { icon: GraduationCap,  iconBg: "#F0EBFF", iconColor: "#6B21A8" },
+};
+
+/* Soft countdown pill colour by urgency */
+function countdownStyle(daysUntil: number): { bg: string; text: string } {
+  if (daysUntil <= 3) return { bg: "#FFE9EA", text: "#B23A3F" };
+  if (daysUntil <= 14) return { bg: "#FFF1DD", text: "#B45309" };
+  return { bg: "#E6F1EC", text: "#1A7A3C" };
+}
+
+function countdownLabel(d: number): string {
+  if (d === 0) return "Today";
+  if (d === 1) return "1d";
+  return `${d}d`;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Component                                                                  */
+/* -------------------------------------------------------------------------- */
 
 interface Props {
   instructorId: string;
@@ -40,25 +84,30 @@ interface Props {
 export function UpcomingEventsTile({ instructorId }: Props) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: events = [], isLoading } = useUpcomingEvents(instructorId);
+  const { data: events = [], isLoading, isError, refetch } = useUpcomingEvents(instructorId);
   const [addOpen, setAddOpen] = useState(false);
-  const [stripStart, setStripStart] = useState<Date>(() =>
-    subDays(startOfDay(new Date()), 4),
-  );
 
-  const visibleDays = useMemo(
-    () => Array.from({ length: 9 }, (_, i) => addDays(stripStart, i)),
-    [stripStart],
-  );
+  const today = startOfDay(new Date());
+  const [viewMonth, setViewMonth] = useState<Date>(today);
+  const [selectedDate, setSelectedDate] = useState<Date>(today);
 
-  const monthLabel = format(visibleDays[0], "MMMM yyyy");
+  /* 9-day window centred on the selected date, anchored to the visible month */
+  const visibleDays = useMemo(() => {
+    // Anchor: week containing the selected date, but start 1 day earlier
+    const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
+    const start = addDays(weekStart, -1);
+    return Array.from({ length: 9 }, (_, i) => addDays(start, i));
+  }, [selectedDate]);
 
+  const monthLabel = format(viewMonth, "MMMM yyyy");
+
+  /* Map of dots per day for indicators */
   const dotsByDay = useMemo(() => {
     const map = new Map<string, string[]>();
     for (const e of events) {
       const key = format(e.date, "yyyy-MM-dd");
       const arr = map.get(key) || [];
-      const c = eventTypeConfig[e.type].dotColor;
+      const c = typeStyle[e.type].iconColor;
       if (!arr.includes(c)) arr.push(c);
       map.set(key, arr);
     }
@@ -66,28 +115,38 @@ export function UpcomingEventsTile({ instructorId }: Props) {
   }, [events]);
 
   const top4 = events.slice(0, 4);
-  const today = startOfDay(new Date());
 
   const goSeeAll = () => navigate("/instructor/schedule");
 
+  const handlePrevMonth = () => {
+    const next = subMonths(viewMonth, 1);
+    setViewMonth(next);
+    setSelectedDate(startOfDay(next));
+  };
+  const handleNextMonth = () => {
+    const next = addMonths(viewMonth, 1);
+    setViewMonth(next);
+    setSelectedDate(startOfDay(next));
+  };
+
   return (
     <div style={{ marginTop: 14, padding: "0 16px", fontFamily: FONT }}>
-      {/* Header */}
+      {/* Section header */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: 8,
-          padding: "0 2px",
+          marginBottom: 10,
+          padding: "0 4px",
         }}
       >
         <span
           style={{
-            fontSize: 10,
-            fontWeight: 700,
-            color: "#8E8E93",
-            letterSpacing: 1.2,
+            fontSize: 11,
+            fontWeight: 600,
+            color: TEXT_MUTED,
+            letterSpacing: 0.6,
             textTransform: "uppercase",
           }}
         >
@@ -99,167 +158,142 @@ export function UpcomingEventsTile({ instructorId }: Props) {
             background: "none",
             border: "none",
             padding: 0,
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 600,
             color: BLUE,
             cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 2,
           }}
         >
-          View all →
+          View all <ChevronRight size={12} color={BLUE} strokeWidth={2} />
         </button>
       </div>
 
       {/* Card */}
       <div
         style={{
-          backgroundColor: "#FFF",
-          borderRadius: 14,
+          backgroundColor: "#FFFFFF",
+          borderRadius: 16,
           overflow: "hidden",
-          border: "0.5px solid rgba(26,82,160,0.08)",
+          border: `0.5px solid ${CARD_BORDER}`,
+          boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 4px 16px rgba(16,24,40,0.04)",
           marginBottom: 24,
         }}
       >
         {isLoading ? (
-          <div style={{ padding: "10px 0" }}>
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                style={{
-                  height: 32,
-                  background: "#F2F4F8",
-                  borderRadius: 8,
-                  margin: "6px 12px",
-                }}
-              />
-            ))}
-          </div>
+          <LoadingState />
+        ) : isError ? (
+          <ErrorState onRetry={() => refetch()} />
         ) : events.length === 0 ? (
-          <div
-            style={{
-              padding: "20px 16px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            <CalendarIcon size={24} color="#C7C7CC" strokeWidth={1.4} />
-            <div style={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A", marginTop: 4 }}>
-              Nothing coming up
-            </div>
-            <div style={{ fontSize: 10, color: "#8E8E93", textAlign: "center" }}>
-              No tests, MOTs, tasks or training in the next 30 days
-            </div>
-            <button
-              onClick={() => setAddOpen(true)}
-              style={{
-                marginTop: 4,
-                background: "#EEF3FF",
-                border: "none",
-                borderRadius: 20,
-                padding: "6px 14px",
-                fontSize: 11,
-                fontWeight: 600,
-                color: BLUE,
-                cursor: "pointer",
-              }}
-            >
-              Add event
-            </button>
-          </div>
+          <EmptyState onAdd={() => setAddOpen(true)} />
         ) : (
           <>
-            {/* Calendar strip */}
-            <div style={{ padding: "10px 12px 8px" }}>
+            {/* PART 1: Mini calendar header */}
+            <div style={{ padding: "14px 14px 10px" }}>
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  marginBottom: 8,
+                  marginBottom: 12,
                 }}
               >
                 <button
-                  onClick={() => setStripStart((d) => subDays(d, 7))}
-                  style={stripBtn}
-                  aria-label="Previous week"
+                  onClick={handlePrevMonth}
+                  style={circleBtn}
+                  aria-label="Previous month"
                 >
-                  <ChevronLeft size={12} color="#5B6B8A" strokeWidth={1.8} />
+                  <ChevronLeft size={14} color={BLUE} strokeWidth={2.2} />
                 </button>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "#1A1A1A" }}>
-                    {monthLabel}
-                  </span>
-                  {!visibleDays.some((d) => isSameDay(d, today)) && (
-                    <button
-                      onClick={() => setStripStart(subDays(startOfDay(new Date()), 4))}
-                      style={{
-                        height: 22,
-                        padding: "0 10px",
-                        borderRadius: 11,
-                        background: "#EEF3FF",
-                        border: "none",
-                        fontSize: 10,
-                        fontWeight: 700,
-                        color: BLUE,
-                        cursor: "pointer",
-                      }}
-                      aria-label="Jump to today"
-                    >
-                      Today
-                    </button>
-                  )}
-                </div>
-                <button
-                  onClick={() => setStripStart((d) => addDays(d, 7))}
-                  style={stripBtn}
-                  aria-label="Next week"
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: TEXT,
+                    letterSpacing: -0.1,
+                  }}
                 >
-                  <ChevronRight size={12} color="#5B6B8A" strokeWidth={1.8} />
+                  {monthLabel}
+                </span>
+                <button
+                  onClick={handleNextMonth}
+                  style={circleBtn}
+                  aria-label="Next month"
+                >
+                  <ChevronRight size={14} color={BLUE} strokeWidth={2.2} />
                 </button>
               </div>
 
+              {/* Date strip */}
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 {visibleDays.map((day) => {
-                  const isT = isSameDay(day, today);
-                  const isPastDay = day < today;
+                  const isSelected = isSameDay(day, selectedDate);
+                  const isOutside = !isSameMonth(day, viewMonth);
+                  const isPast = day < today && !isSameDay(day, today);
                   const dots = dotsByDay.get(format(day, "yyyy-MM-dd")) || [];
+
+                  const weekdayColor = isSelected
+                    ? BLUE
+                    : isOutside || isPast
+                      ? TEXT_DISABLED
+                      : TEXT_SUBTLE;
+                  const dateColor = isSelected
+                    ? "#FFFFFF"
+                    : isOutside || isPast
+                      ? TEXT_DISABLED
+                      : TEXT;
+
                   return (
-                    <div
+                    <button
                       key={day.toISOString()}
+                      onClick={() => {
+                        setSelectedDate(day);
+                        if (!isSameMonth(day, viewMonth)) setViewMonth(day);
+                      }}
                       style={{
                         flex: 1,
+                        background: "transparent",
+                        border: "none",
+                        padding: "2px 0",
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "center",
-                        gap: 2,
+                        gap: 4,
+                        cursor: "pointer",
                       }}
+                      aria-label={format(day, "EEEE d MMMM")}
                     >
                       <span
                         style={{
-                          fontSize: 8,
-                          fontWeight: isT ? 700 : 500,
-                          color: isT ? BLUE : isPastDay ? "#C7C7CC" : "#8E8E93",
+                          fontSize: 10,
+                          fontWeight: 600,
+                          color: weekdayColor,
+                          letterSpacing: 0.2,
                         }}
                       >
                         {format(day, "EEEEE")}
                       </span>
                       <div
                         style={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: 12,
-                          background: isT ? BLUE : "transparent",
+                          width: 28,
+                          height: 28,
+                          borderRadius: 14,
+                          background: isSelected ? BLUE : "transparent",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
+                          boxShadow: isSelected
+                            ? "0 2px 6px rgba(61,85,161,0.30)"
+                            : "none",
                         }}
                       >
                         <span
                           style={{
-                            fontSize: 11,
-                            fontWeight: 600,
-                            color: isT ? "#FFF" : isPastDay ? "#C7C7CC" : "#1A1A1A",
+                            fontSize: 13,
+                            fontWeight: isSelected ? 700 : 500,
+                            color: dateColor,
                           }}
                         >
                           {format(day, "d")}
@@ -273,111 +307,41 @@ export function UpcomingEventsTile({ instructorId }: Props) {
                               width: 4,
                               height: 4,
                               borderRadius: 2,
-                              background: c,
+                              background: isSelected ? "#FFFFFF" : c,
+                              opacity: isSelected ? 0.95 : 1,
                             }}
                           />
                         ))}
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
             </div>
 
-            <div style={{ height: 0.5, background: ROW_BORDER }} />
+            <div style={{ height: 0.5, background: HAIRLINE }} />
 
-            {/* Event list */}
-            {top4.map((e, idx) => (
-              <div key={e.id}>
-                <button
-                  onClick={() => navigate(`/instructor/events/${encodeURIComponent(e.id)}`)}
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    padding: "8px 12px",
-                    background: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    textAlign: "left",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: 3,
-                      background: eventTypeConfig[e.type].dotColor,
-                      flexShrink: 0,
-                      marginLeft: 2,
-                    }}
-                  />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: "#1A1A1A",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {e.title}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 9,
-                        color: "#8E8E93",
-                        marginTop: 1,
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {e.dateLabel} · {e.timeLabel} · {e.locationLabel}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      background: eventTypeConfig[e.type].pillBg,
-                      borderRadius: 20,
-                      padding: "2px 7px",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: 9,
-                        fontWeight: 700,
-                        color: eventTypeConfig[e.type].pillText,
-                      }}
-                    >
-                      {eventTypeConfig[e.type].pilotLabel(e.daysUntil)}
-                    </span>
-                  </div>
-                  <ChevronRight size={12} color="#C7C7CC" strokeWidth={1.8} />
-                </button>
-                {idx < top4.length - 1 && (
-                  <div
-                    style={{
-                      height: 0.5,
-                      background: ROW_BORDER,
-                      margin: "0 12px",
-                    }}
-                  />
-                )}
-              </div>
-            ))}
+            {/* PART 2: Event list */}
+            <div>
+              {top4.map((e, idx) => (
+                <EventRow
+                  key={e.id}
+                  event={e}
+                  isLast={idx === top4.length - 1}
+                  onClick={() =>
+                    navigate(`/instructor/events/${encodeURIComponent(e.id)}`)
+                  }
+                />
+              ))}
+            </div>
 
-            {/* Footer */}
+            {/* PART 3: Footer */}
             <button
               onClick={goSeeAll}
               style={{
                 width: "100%",
-                borderTop: `0.5px solid ${ROW_BORDER}`,
-                padding: "8px 0",
+                borderTop: `0.5px solid ${HAIRLINE}`,
+                padding: "12px 0",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -386,14 +350,14 @@ export function UpcomingEventsTile({ instructorId }: Props) {
                 border: "none",
                 borderTopWidth: 0.5,
                 borderTopStyle: "solid",
-                borderTopColor: ROW_BORDER,
+                borderTopColor: HAIRLINE,
                 cursor: "pointer",
               }}
             >
-              <span style={{ fontSize: 11, fontWeight: 600, color: BLUE }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: BLUE }}>
                 See all events
               </span>
-              <ChevronRight size={12} color={BLUE} strokeWidth={1.8} />
+              <ChevronRight size={14} color={BLUE} strokeWidth={2} />
             </button>
           </>
         )}
@@ -405,21 +369,338 @@ export function UpcomingEventsTile({ instructorId }: Props) {
         instructorId={instructorId}
         onSuccess={() => {
           setAddOpen(false);
-          queryClient.invalidateQueries({ queryKey: ["upcoming-events-home", instructorId] });
+          queryClient.invalidateQueries({
+            queryKey: ["upcoming-events-home", instructorId],
+          });
         }}
       />
     </div>
   );
 }
 
-const stripBtn: React.CSSProperties = {
-  width: 22,
-  height: 22,
-  borderRadius: 11,
-  background: "#F2F4F8",
+/* -------------------------------------------------------------------------- */
+/* Event row                                                                  */
+/* -------------------------------------------------------------------------- */
+
+function EventRow({
+  event,
+  isLast,
+  onClick,
+}: {
+  event: UpcomingEvent;
+  isLast: boolean;
+  onClick: () => void;
+}) {
+  const cfg = typeStyle[event.type];
+  const Icon = cfg.icon;
+  const pill = countdownStyle(event.daysUntil);
+
+  return (
+    <div>
+      <button
+        onClick={onClick}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "12px 14px",
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
+          textAlign: "left",
+        }}
+      >
+        {/* Icon tile */}
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 10,
+            background: cfg.iconBg,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Icon size={18} color={cfg.iconColor} strokeWidth={2} />
+        </div>
+
+        {/* Title + meta */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: TEXT,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              letterSpacing: -0.1,
+            }}
+          >
+            {event.title}
+          </div>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 500,
+              color: TEXT_SUBTLE,
+              marginTop: 2,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {event.dateLabel} · {event.timeLabel} · {event.locationLabel}
+          </div>
+        </div>
+
+        {/* Countdown pill */}
+        <div
+          style={{
+            background: pill.bg,
+            borderRadius: 999,
+            padding: "3px 9px",
+            flexShrink: 0,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: pill.text,
+              letterSpacing: 0.1,
+            }}
+          >
+            {countdownLabel(event.daysUntil)}
+          </span>
+        </div>
+
+        <ChevronRight size={14} color={TEXT_DISABLED} strokeWidth={2} />
+      </button>
+
+      {!isLast && (
+        <div
+          style={{
+            height: 0.5,
+            background: HAIRLINE,
+            marginLeft: 66,
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* States                                                                     */
+/* -------------------------------------------------------------------------- */
+
+function LoadingState() {
+  return (
+    <div style={{ padding: "14px" }}>
+      {/* Calendar skeleton */}
+      <div
+        style={{
+          height: 22,
+          width: 140,
+          background: CHIP_BG,
+          borderRadius: 6,
+          margin: "0 auto 12px",
+        }}
+      />
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+        {Array.from({ length: 9 }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              width: 28,
+              height: 44,
+              background: CHIP_BG,
+              borderRadius: 8,
+              opacity: 0.7,
+            }}
+          />
+        ))}
+      </div>
+      <div style={{ height: 0.5, background: HAIRLINE, margin: "0 -14px 10px" }} />
+      {/* Row skeletons */}
+      {[0, 1].map((i) => (
+        <div
+          key={i}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "8px 0",
+          }}
+        >
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              background: CHIP_BG,
+            }}
+          />
+          <div style={{ flex: 1 }}>
+            <div
+              style={{
+                height: 12,
+                width: "60%",
+                background: CHIP_BG,
+                borderRadius: 4,
+              }}
+            />
+            <div
+              style={{
+                height: 10,
+                width: "40%",
+                background: CHIP_BG,
+                borderRadius: 4,
+                marginTop: 6,
+                opacity: 0.7,
+              }}
+            />
+          </div>
+          <div
+            style={{
+              width: 36,
+              height: 18,
+              borderRadius: 9,
+              background: CHIP_BG,
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EmptyState({ onAdd }: { onAdd: () => void }) {
+  return (
+    <div
+      style={{
+        padding: "28px 20px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 8,
+      }}
+    >
+      <div
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 12,
+          background: BLUE_TINT,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: 4,
+        }}
+      >
+        <CalendarIcon size={20} color={BLUE} strokeWidth={2} />
+      </div>
+      <div style={{ fontSize: 14, fontWeight: 600, color: TEXT }}>
+        No upcoming events
+      </div>
+      <div
+        style={{
+          fontSize: 12,
+          color: TEXT_SUBTLE,
+          textAlign: "center",
+          maxWidth: 260,
+          lineHeight: 1.4,
+        }}
+      >
+        Add meetings, reminders or instructor events to keep your week organised.
+      </div>
+      <button
+        onClick={onAdd}
+        style={{
+          marginTop: 8,
+          background: BLUE,
+          border: "none",
+          borderRadius: 999,
+          padding: "8px 18px",
+          fontSize: 13,
+          fontWeight: 600,
+          color: "#FFFFFF",
+          cursor: "pointer",
+          boxShadow: "0 2px 6px rgba(61,85,161,0.25)",
+        }}
+      >
+        Add event
+      </button>
+    </div>
+  );
+}
+
+function ErrorState({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div
+      style={{
+        padding: "28px 20px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 8,
+      }}
+    >
+      <div
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 12,
+          background: "#FFE9EA",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: 4,
+        }}
+      >
+        <AlertCircle size={20} color="#B23A3F" strokeWidth={2} />
+      </div>
+      <div style={{ fontSize: 14, fontWeight: 600, color: TEXT }}>
+        Couldn't load events
+      </div>
+      <div style={{ fontSize: 12, color: TEXT_SUBTLE, textAlign: "center" }}>
+        Try again
+      </div>
+      <button
+        onClick={onRetry}
+        style={{
+          marginTop: 8,
+          background: BLUE,
+          border: "none",
+          borderRadius: 999,
+          padding: "8px 18px",
+          fontSize: 13,
+          fontWeight: 600,
+          color: "#FFFFFF",
+          cursor: "pointer",
+        }}
+      >
+        Retry
+      </button>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+
+const circleBtn: React.CSSProperties = {
+  width: 30,
+  height: 30,
+  borderRadius: 15,
+  background: BLUE_TINT,
   border: "none",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   cursor: "pointer",
+  boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
 };
