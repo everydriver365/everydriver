@@ -178,13 +178,14 @@ export function TopStatsRow({
         {/* CARD 2 — Today */}
         <div style={{ ...cardBase, minHeight: 130 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={upperLabel(MUTED)}>Today</div>
-            <span style={iconTile(28, BLUE_TINT, BLUE)}>
+            <div className="ts-label" style={upperLabel(MUTED)}>Today</div>
+            <span className="ts-icon-sm" style={iconTile(28, BLUE_TINT, BLUE)}>
               <Wallet size={14} strokeWidth={2} />
             </span>
           </div>
           <div>
             <div
+              className="ts-value"
               style={{
                 fontSize: 26,
                 fontWeight: 500,
@@ -197,11 +198,12 @@ export function TopStatsRow({
               £{Math.round(earningsToday)}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 12, color: MUTED }}>
+              <span className="ts-sub" style={{ fontSize: 12, color: MUTED }}>
                 {todayLessons} lesson{todayLessons === 1 ? "" : "s"}
               </span>
               {showDelta && (
                 <span
+                  className="ts-pill"
                   style={{
                     fontSize: 11,
                     fontWeight: 500,
