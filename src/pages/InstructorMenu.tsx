@@ -13,7 +13,7 @@ import {
   Clock, Bell, FileText, Palette, Layout, Sparkles, PoundSterling,
   BookOpen, Trash2, Database, FileSignature, Banknote, Shield, CalendarClock,
   ImageIcon, Video, ImagePlus, Paintbrush, Tag, ClipboardList, AlertTriangle,
-  Gift, LayoutGrid, Satellite,
+  Gift, LayoutGrid, Satellite, Phone,
 } from "lucide-react";
 
 // Custom PNG icons (only Square logo still used for branded tile)
