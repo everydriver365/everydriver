@@ -1,75 +1,77 @@
-## Why clashes are slipping through
+# Lesson Clash Prevention — Close Remaining Gaps
 
-There is a clash helper (`src/lib/lessonClashCheck.ts`) but **most write paths either skip it or only use it for a UI warning**. The database has no exclusion constraint either, so the final `INSERT`/`UPDATE` is unguarded.
+## Current state
 
-Audit of every place that writes to `scheduled_lessons`:
+The database is already safe. Trigger `prevent_lesson_clash` on `scheduled_lessons` uses a transaction-scoped advisory lock keyed on `(instructor_id, lesson_date)` and raises `check_violation` on overlap — so no clashing row can ever be persisted, even under concurrent inserts.
 
-| File | What it does | Clash check today |
-|---|---|---|
-| `components/instructor/AddLessonSheet.tsx` (existing + new pupil, recurring) | Manual add | Live UI banner only. `handleAddLessonExisting` / `handleAddLessonNew` block on the in-memory `conflictWarning` flag, but that flag depends on `pendingCheckRef` resolving and only covers the **first** lesson — recurring weeks 2..N are inserted with no check |
-| `components/instructor/RescheduleLessonSheet.tsx` | Move a lesson | Filters slot picker, but `handleReschedule` does **no** final check — clicking an unfiltered time or a stale slot writes through |
-| `components/instructor/end-lesson/StepBookNext.tsx` | "Book next" suggestion | `isAvailable` used while building suggestions; `handleBook` inserts with **no** re-check |
-| `components/instructor/VoiceQuickAddLessonSheet.tsx` | Voice add | Uses `checkLessonClash` and blocks on `hardOverlap` ✅ |
-| `components/course-planner/CoursePlannerForm.tsx` | Course planner bulk insert | Uses `checkLessonClash` and blocks on `hardOverlap` ✅ |
-| `components/instructor/MultiDayScheduleView.tsx` (no-show only writes here) | Status update | N/A |
-| `utils/autoScheduler.ts` → callers (`InstructorPendingScheduling`, etc.) | Auto schedule | Uses internal `blockedSlots` for selection, but does **not** re-check at insert time, so two parallel auto-schedule runs or stale data can collide |
+Pre-checks + friendly error mapping (`checkLessonClash` / `describeLessonClashError`) are wired into:
+- `AddLessonSheet` (incl. recurring series)
+- `RescheduleLessonSheet`
+- `end-lesson/StepBookNext`
+- `VoiceQuickAddLessonSheet`
+- `course-planner/CoursePlannerForm`
 
-Also: `lessonClashCheck` itself doesn't exclude `deleted_at IS NOT NULL` from `instructor_calendar_events` (only on lessons), and the `excludeLessonId` option exists but isn't passed by `RescheduleLessonSheet`.
+So why do clashes still appear to "go through"? Two reasons in the remaining write paths:
 
-## Plan
+1. They never call `checkLessonClash`, so the trigger fires and the user sees a raw Postgres error toast (or a silent failure) — easy to mistake for a successful booking.
+2. A few paths swallow the error or only show `error.message` without the "That slot is already booked" mapping.
 
-### 1. Make `checkLessonClash` the single gate before every write
+## What to change (UX/wiring only — no schema work needed)
 
-Wire the existing helper into the three unguarded paths so the insert/update only runs after `hardOverlap === false` (and after explicit user override of buffer-only warnings).
+Add a pre-check via `checkLessonClash` and map errors via `describeLessonClashError` in every remaining lesson-write path:
 
-- **`AddLessonSheet.tsx`** — replace the `conflictWarning` short-circuit in `handleAddLessonExisting` and `handleAddLessonNew` with an authoritative `await checkLessonClash(...)` call. Run the check **for every recurring date**, not just the first. If any week clashes, abort the whole batch (recurring lessons should be all-or-nothing) and surface which date clashed in the toast.
-- **`RescheduleLessonSheet.tsx`** — call `checkLessonClash({ instructorId, date: selectedDate, startTime: selectedTime, durationMinutes, bufferMinutes, excludeLessonId: lessonId })` in `handleReschedule` before the update; block on `hardOverlap`, prompt confirm on `bufferOnly`.
-- **`StepBookNext.tsx`** — call `checkLessonClash` inside `handleBook` immediately before the insert; if it clashes, refresh suggestions and toast "That slot was just taken — pick another".
+**Pupil-side self-booking**
+- `src/components/pupil-portal/SelfBookingCalendar.tsx` (insert at lines ~136 and ~164)
+- `src/components/pupil-portal/PupilPortalSchedule.tsx` (insert at ~498; updates at ~571/~581 — pass `excludeLessonId`)
+- `src/components/pupil-portal/PupilPortalGaps.tsx` (insert at ~189)
 
-### 2. Tighten `lessonClashCheck.ts`
+**Instructor flows missing the check**
+- `src/components/instructor/ScheduleLessonsDialog.tsx` (~126)
+- `src/components/instructor/AddCalendarEventDialog.tsx` (~224 — only when creating a *lesson* row, not a calendar block)
+- `src/components/instructor/bulk-ops/BulkRescheduleTab.tsx` (~69) — validate every lesson in the batch against the new date and abort the whole batch on any clash, listing offenders
 
-- Add `.is('deleted_at', null)` to the `instructor_calendar_events` query (matches the lessons query).
-- Make `bufferMinutes` default to the instructor's saved buffer when the caller passes `undefined` (currently silently 0).
-- Return the clashing lesson IDs in `ClashResult.clashes` so callers can link straight to the conflict.
+**Admin / public booking**
+- `src/components/admin/BespokeBookingModal.tsx` (~184)
+- `src/components/admin/PupilRecordsManager.tsx` (insert ~205; updates ~407 and ~436)
+- `src/pages/BookingConfirmation.tsx` (~176)
+- `src/components/booking/LessonScheduler.tsx` (~268)
 
-### 3. Database safety net
+**Auto-scheduler**
+- `src/utils/autoScheduler.ts` (~130) — add a final per-slot `checkLessonClash` immediately before insert and skip-with-log on clash so a long batch can't be aborted by one race; rely on the DB trigger as the ultimate guard.
 
-Add a migration that prevents two non-cancelled, non-deleted lessons for the same instructor from overlapping, regardless of which client wrote them:
+## Pattern applied to each path
 
-```text
-EXCLUDE USING gist (
-  instructor_id WITH =,
-  tstzrange(
-    (lesson_date + start_time)::timestamptz,
-    (lesson_date + start_time + (duration_minutes || ' minutes')::interval)::timestamptz
-  ) WITH &&
-) WHERE (status <> 'cancelled' AND deleted_at IS NULL)
+```ts
+const clash = await checkLessonClash({
+  instructorId,
+  lessonDate,           // 'YYYY-MM-DD'
+  startTime,            // 'HH:MM:SS'
+  durationMinutes,
+  excludeLessonId,      // only when updating
+});
+if (clash.hardOverlap) {
+  toast.error(clash.message ?? 'That slot is already booked.');
+  return;
+}
+
+const { error } = await supabase.from('scheduled_lessons').insert(...);
+if (error) {
+  const friendly = describeLessonClashError(error);
+  toast.error(friendly ?? error.message);
+  return;
+}
 ```
 
-Requires enabling the `btree_gist` extension. This is the only guarantee that races / future code paths can't reintroduce the bug. Surface the Postgres error code (`23P01`) as a friendly "That slot is already booked" toast in the three sheets above.
-
-### 4. Auto-scheduler hardening
-
-In `utils/autoScheduler.ts` callers, after `findOptimalSlots` returns, run `checkLessonClash` per slot just before insertion (the slot list can be stale by seconds). Skip + log any that now collide rather than aborting the whole run.
-
-### 5. Tests
-
-Add focused vitest cases mirroring the existing `gapFeasibility.test.ts` style:
-- `lessonClashCheck` returns `hardOverlap` for exact, partial, and contained overlaps; `bufferOnly` only inside the buffer window; ignores cancelled + soft-deleted; honours `excludeLessonId`; ignores non-blocking all-day calendar events.
-- `AddLessonSheet` recurring path aborts when week 3 clashes.
-
-## Files to change
-
-- `src/lib/lessonClashCheck.ts` (deleted_at filter, default buffer, return ids)
-- `src/components/instructor/AddLessonSheet.tsx` (gate + per-week recurring check)
-- `src/components/instructor/RescheduleLessonSheet.tsx` (gate + excludeLessonId)
-- `src/components/instructor/end-lesson/StepBookNext.tsx` (gate before insert)
-- `src/utils/autoScheduler.ts` callers (re-check at insert time)
-- New migration: enable `btree_gist`, add exclusion constraint on `scheduled_lessons`
-- New tests under `src/lib/__tests__/lessonClashCheck.test.ts`
+For `BulkRescheduleTab`, run the checks in parallel first, collect offenders, and only proceed if none clash.
 
 ## Out of scope
 
-- Visual changes to any sheet (warnings already styled).
-- Changing how buffer minutes are configured.
-- Pupil-side public booking on `PublicAvailability` / `BookingConfirmation` — these go through different validators; happy to add to a follow-up if you've seen clashes coming from the pupil flow specifically.
+- No schema changes. The trigger + advisory lock already guarantee atomicity.
+- No changes to `calendar_events` (non-lesson blocks).
+- No new libraries, no navigation changes.
+
+## Acceptance
+
+- Booking a slot that overlaps an existing lesson — from any portal (instructor, pupil, admin, public, auto-scheduler, bulk reschedule) — is blocked before the insert and shows "That slot is already booked."
+- Concurrent attempts on the same slot: one succeeds, the other gets the friendly clash toast (DB-trigger safety net).
+- Bulk reschedule aborts cleanly with a list of clashing pupils instead of partially applying.
