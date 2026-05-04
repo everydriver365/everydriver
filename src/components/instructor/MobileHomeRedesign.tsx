@@ -194,16 +194,6 @@ function GreetingBlock({
       >
         {greet}, {firstName}.
       </h1>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 12 }}>
-        <Pill
-          label={`${lessonsToday} lesson${lessonsToday === 1 ? "" : "s"}`}
-          tone="blue"
-        />
-        <Pill label={`£${Math.round(earningsToday)} today`} tone="blue" />
-        {pendingJobs > 0 && (
-          <Pill label={`${pendingJobs} waiting`} tone="red" />
-        )}
-      </div>
     </div>
   );
 }
