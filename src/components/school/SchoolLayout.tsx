@@ -90,6 +90,7 @@ const sidebarGroups: PortalNavGroup[] = [
     items: [
       { key: "discount-codes", label: "Discount Codes", icon: Tag },
       { key: "campaigns", label: "Campaigns", icon: Megaphone },
+      { key: "ai-voice", label: "AI Voice Hub", icon: PhoneCall },
     ],
   },
   {
