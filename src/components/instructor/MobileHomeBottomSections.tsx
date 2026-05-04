@@ -343,6 +343,11 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                 ? Math.max(0, Math.round((e.start.getTime() - now.getTime()) / 60_000))
                 : 0;
             const fee = e.lesson.amountDue ?? 0;
+            const eolDone = e.lesson.pupilId
+              ? (eolSet?.has(eolKey(e.lesson.pupilId, e.lesson.startTime || "")) ?? false)
+              : false;
+            const isPaid = e.lesson.paymentStatus === "paid";
+            const showPayPill = fee > 0;
 
             return (
               <div key={e.lesson.id}>
