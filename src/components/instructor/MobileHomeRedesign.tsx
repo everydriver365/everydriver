@@ -985,6 +985,20 @@ export function MobileHomeRedesign({
     onClick: () => navigate("/instructor/calls"),
   });
 
+  // Enquiries (counter to be wired later)
+  const enquiriesCount = 0;
+  attentionRows.push({
+    key: "enquiries",
+    group: "urgent",
+    Icon: Inbox,
+    iconBg: "#FFF0F0",
+    iconColor: RED,
+    title: "Enquiries",
+    subtitle: enquiriesCount > 0 ? "New enquiries to review" : "No new enquiries",
+    badge: enquiriesCount > 0 ? { label: String(enquiriesCount), bg: RED } : undefined,
+    onClick: () => navigate("/instructor/enquiries"),
+  });
+
   if (pendingJobs > 0) {
     attentionRows.push({
       key: "jobs",
