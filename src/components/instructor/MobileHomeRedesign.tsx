@@ -775,91 +775,145 @@ function AttentionGroupCard({
   if (rows.length === 0) return null;
   return (
     <>
-      <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "0 14px", marginBottom: 4 }}>
+function AttentionGroupCard({
+  rows,
+  groupLabel,
+  groupColor,
+  groupBorder,
+  cardBorder,
+  marginBottom,
+}: {
+  rows: AttentionRow[];
+  groupLabel: string;
+  groupColor: string;
+  groupBorder: string;
+  cardBorder: string;
+  marginBottom: number;
+}) {
+  if (rows.length === 0) return null;
+  return (
+    <>
+      <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
         <span style={{ fontSize: 9, fontWeight: 700, color: groupColor, letterSpacing: "0.1em", textTransform: "uppercase" }}>
           {groupLabel}
         </span>
         <span style={{ flex: 1, height: 0.5, background: groupBorder }} />
       </div>
-      <div style={{ padding: "0 14px", marginBottom: 8 }}>
+      <div style={{ marginBottom }}>
         <div
           style={{
             background: "#FFFFFF",
             borderRadius: 14,
             overflow: "hidden",
-            border: `0.5px solid ${groupLabel === "Urgent" ? "rgba(204,34,41,0.12)" : BORDER}`,
+            border: `0.5px solid ${cardBorder}`,
           }}
         >
           {rows.map((r, i) => (
-            <button
-              key={r.key}
-              type="button"
-              onClick={r.onClick}
-              style={{
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "10px 12px",
-                background: "transparent",
-                border: "none",
-                borderTop: i === 0 ? "none" : `0.5px solid ${ROW_BORDER}`,
-                cursor: "pointer",
-                textAlign: "left",
-              }}
-            >
-              <span
+            <div key={r.key}>
+              {i > 0 && (
+                <div style={{ height: 0.5, background: "#F0F3F8", marginLeft: 14, marginRight: 14 }} />
+              )}
+              <button
+                type="button"
+                onClick={r.onClick}
                 style={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: 8,
-                  background: r.iconBg,
-                  color: r.iconColor,
-                  display: "inline-flex",
+                  width: "100%",
+                  display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
+                  gap: 10,
+                  padding: "10px 12px",
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  opacity: r.isClear ? 0.45 : 1,
                 }}
               >
-                <r.Icon size={13} strokeWidth={1.8} />
-              </span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "#1A1A1A" }}>{r.title}</div>
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: MUTED,
-                    marginTop: 1,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {r.subtitle}
-                </div>
-              </div>
-              {r.badge && (
                 <span
                   style={{
-                    minWidth: 20,
-                    height: 20,
-                    padding: "0 6px",
-                    borderRadius: 10,
-                    background: r.badge.bg,
-                    color: "#FFFFFF",
-                    fontSize: 10,
-                    fontWeight: 700,
+                    width: 30,
+                    height: 30,
+                    borderRadius: 8,
+                    background: r.isClear ? "#F2F4F8" : r.iconBg,
+                    color: r.isClear ? "#5B6B8A" : r.iconColor,
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontVariantNumeric: "tabular-nums",
+                    flexShrink: 0,
                   }}
                 >
-                  {r.badge.label}
+                  <r.Icon size={13} strokeWidth={1.6} />
                 </span>
-              )}
-              <ChevronRight size={14} color="#C7C7CC" strokeWidth={1.8} />
-            </button>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: r.isClear ? 600 : 700, color: "#1A1A1A" }}>{r.title}</div>
+                  <div
+                    style={{
+                      fontSize: 10,
+                      color: MUTED,
+                      marginTop: 1,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {r.subtitle}
+                  </div>
+                </div>
+                {r.isClear ? (
+                  <span
+                    style={{
+                      background: "#E8F8ED",
+                      color: "#1A7A3C",
+                      borderRadius: 20,
+                      padding: "2px 7px",
+                      fontSize: 9,
+                      fontWeight: 600,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Clear
+                  </span>
+                ) : r.badge ? (
+                  r.badge.variant === "pill" ? (
+                    <span
+                      style={{
+                        background: r.badge.bg,
+                        color: r.badge.fg ?? "#FFFFFF",
+                        borderRadius: 20,
+                        padding: "2px 8px",
+                        fontSize: 9,
+                        fontWeight: 700,
+                        flexShrink: 0,
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {r.badge.label}
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        minWidth: 18,
+                        height: 18,
+                        padding: "0 5px",
+                        borderRadius: 20,
+                        background: r.badge.bg,
+                        color: r.badge.fg ?? "#FFFFFF",
+                        fontSize: 9,
+                        fontWeight: 700,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontVariantNumeric: "tabular-nums",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {r.badge.label}
+                    </span>
+                  )
+                ) : null}
+                <ChevronRight size={14} color="#C7C7CC" strokeWidth={1.8} />
+              </button>
+            </div>
           ))}
         </div>
       </div>
@@ -873,7 +927,7 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
 
   if (rows.length === 0) {
     return (
-      <div style={{ padding: "0 14px 14px" }}>
+      <div>
         <div
           style={{
             background: "#FFF",
@@ -891,14 +945,113 @@ function AttentionCard({ rows }: { rows: AttentionRow[] }) {
   }
 
   return (
-    <div style={{ paddingBottom: 14 }}>
-      <AttentionGroupCard rows={urgent} groupLabel="Urgent" groupColor="#B23A3F" groupBorder="#F0CCCC" />
-      <AttentionGroupCard rows={todo} groupLabel="To do" groupColor="#B45309" groupBorder="#E8D5B0" />
+    <div>
+      <AttentionGroupCard
+        rows={urgent}
+        groupLabel="Urgent"
+        groupColor="#CC2229"
+        groupBorder="#F0CCCC"
+        cardBorder="rgba(204,34,41,0.12)"
+        marginBottom={8}
+      />
+      <AttentionGroupCard
+        rows={todo}
+        groupLabel="To do"
+        groupColor="#B45309"
+        groupBorder="#E8D5B0"
+        cardBorder="rgba(26,82,160,0.08)"
+        marginBottom={12}
+      />
     </div>
   );
 }
 
-/* ---------- Main ---------- */
+function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
+  if (rows.length === 0) return null;
+  return (
+    <div
+      style={{
+        background: "#FFFFFF",
+        borderRadius: 14,
+        overflow: "hidden",
+        border: "0.5px solid rgba(26,82,160,0.08)",
+      }}
+    >
+      {rows.map((r, i) => (
+        <div key={r.key}>
+          {i > 0 && (
+            <div style={{ height: 0.5, background: "#F0F3F8", marginLeft: 14, marginRight: 14 }} />
+          )}
+          <button
+            type="button"
+            onClick={r.onClick}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "10px 12px",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              textAlign: "left",
+            }}
+          >
+            <span
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: 8,
+                background: r.iconBg,
+                color: r.iconColor,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <r.Icon size={13} strokeWidth={1.6} />
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 1 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#1A1A1A" }}>{r.label}</span>
+                <span
+                  style={{
+                    background: r.tierBg,
+                    color: r.tierColor,
+                    borderRadius: 20,
+                    padding: "1px 6px",
+                    fontSize: 8,
+                    fontWeight: 700,
+                  }}
+                >
+                  {r.tierLabel}
+                </span>
+              </div>
+              <div style={{ fontSize: 10, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {r.subtitle}
+              </div>
+            </div>
+            <span
+              style={{
+                background: r.upgradeBg,
+                color: "#FFFFFF",
+                borderRadius: 20,
+                padding: "4px 10px",
+                fontSize: 10,
+                fontWeight: 700,
+                flexShrink: 0,
+              }}
+            >
+              Upgrade
+            </span>
+            <ChevronRight size={14} color="#C7C7CC" strokeWidth={1.8} />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
 interface MobileHomeRedesignProps {
   instructorId: string;
   instructorName?: string | null;
