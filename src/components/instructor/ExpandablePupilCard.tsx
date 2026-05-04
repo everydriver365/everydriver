@@ -1416,6 +1416,14 @@ export function ExpandablePupilCard({
           />
         </SheetContent>
       </Sheet>
+
+      <AiCallPupilSheet
+        open={showAiCallSheet}
+        onOpenChange={setShowAiCallSheet}
+        pupilId={pupil.id}
+        pupilName={pupil.name}
+        pupilPhone={pupil.phone}
+      />
       </motion.div>
     </div>
   );
