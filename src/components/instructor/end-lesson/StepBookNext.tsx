@@ -5,6 +5,7 @@ import { format, addDays, parse, differenceInCalendarDays } from "date-fns";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateLessonQueries } from "@/lib/invalidateLessonQueries";
+import { checkLessonClash, describeLessonClashError } from "@/lib/lessonClashCheck";
 
 import { titleCaseName } from "@/lib/titleCase";
 import { UserAvatar } from "@/components/instructor/UserAvatar";
