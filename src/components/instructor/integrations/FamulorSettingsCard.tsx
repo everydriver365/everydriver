@@ -27,7 +27,14 @@ interface Settings {
   reminder_hours_before: number;
   dormant_days_threshold: number;
   daily_call_cap: number;
+  auto_fallback_enabled: boolean;
+  auto_fallback_channel: "whatsapp_first" | "sms_only";
+  fallback_template: string | null;
+  draft_followup_enabled: boolean;
 }
+
+const DEFAULT_FALLBACK_TEMPLATE =
+  "Hi {name}, sorry we just missed you on the phone. If you'd like to chat or book a lesson, reply here{booking_suffix}. Thanks, {instructor}.";
 
 const DEFAULTS: Settings = {
   enabled: false,
@@ -42,6 +49,10 @@ const DEFAULTS: Settings = {
   reminder_hours_before: 24,
   dormant_days_threshold: 60,
   daily_call_cap: 20,
+  auto_fallback_enabled: true,
+  auto_fallback_channel: "whatsapp_first",
+  fallback_template: null,
+  draft_followup_enabled: true,
 };
 
 const ACCENT = "#1A52A0";
