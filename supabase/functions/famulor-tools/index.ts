@@ -85,10 +85,10 @@ Deno.serve(async (req) => {
     if (p.tool === "get_prices") {
       const { data } = await admin
         .from("instructors")
-        .select("hourly_rate, currency")
+        .select("hourly_rate")
         .eq("id", p.instructor_id)
         .maybeSingle();
-      return json({ pricing: data ?? null });
+      return json({ pricing: { ...(data ?? {}), currency: "GBP" } });
     }
 
     if (p.tool === "create_booking_request") {
