@@ -1,7 +1,11 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, PhoneIncoming, PhoneOutgoing, Sparkles } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { ExternalLink, MessageCircle, MessageSquare, PhoneCall, PhoneIncoming, PhoneOutgoing, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import type { FamulorCallRow } from "@/hooks/useFamulorCalls";
 
 const ACCENT = "#1A52A0";
@@ -39,6 +43,55 @@ export function FamulorCallLogDrawer({ row, onClose }: Props) {
   const open = row !== null;
   const turns = normaliseTranscript(row?.transcript);
   const colour = row ? STATUS_COLOUR[row.status] ?? "#6B7280" : "#6B7280";
+  const phone = row?.phone_number ?? row?.from_number ?? row?.to_number ?? null;
+
+  const [composer, setComposer] = useState<null | "sms" | "whatsapp">(null);
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState<null | "call" | "sms" | "whatsapp">(null);
+
+  const resetComposer = () => {
+    setComposer(null);
+    setMessage("");
+  };
+
+  const triggerCallback = async () => {
+    if (!phone && !row?.pupil_id) return toast.error("No phone number on this call");
+    setBusy("call");
+    try {
+      const { error } = await supabase.functions.invoke("famulor-trigger-call", {
+        body: {
+          pupil_id: row?.pupil_id ?? undefined,
+          phone_number: row?.pupil_id ? undefined : (phone ?? undefined),
+          purpose: "custom",
+          custom_prompt: `Follow-up callback regarding the previous ${row?.purpose?.replace("_", " ") ?? ""} call.`,
+        },
+      });
+      if (error) throw error;
+      toast.success("Callback queued");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to start callback");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const sendMessage = async (channel: "sms" | "whatsapp") => {
+    if (!phone) return toast.error("No phone number on this call");
+    if (!message.trim()) return toast.error("Write a message first");
+    setBusy(channel);
+    try {
+      const { error } = await supabase.functions.invoke("famulor-send-message", {
+        body: { channel, to: phone, message: message.trim(), call_log_id: row?.id },
+      });
+      if (error) throw error;
+      toast.success(channel === "sms" ? "SMS sent" : "WhatsApp sent");
+      resetComposer();
+    } catch (e: any) {
+      toast.error(e?.message ?? `Failed to send ${channel}`);
+    } finally {
+      setBusy(null);
+    }
+  };
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
@@ -108,8 +161,76 @@ export function FamulorCallLogDrawer({ row, onClose }: Props) {
               </div>
             )}
 
+            <div className="mt-5 border-t border-[#E5E5EA] pt-4">
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-2">Actions</div>
+              <div className="grid grid-cols-3 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={busy !== null || (!phone && !row.pupil_id)}
+                  onClick={triggerCallback}
+                  className="flex-col h-auto py-2"
+                >
+                  <PhoneCall className="h-4 w-4 mb-1" style={{ color: ACCENT }} />
+                  <span className="text-[11px]">{busy === "call" ? "…" : "Call back"}</span>
+                </Button>
+                <Button
+                  variant={composer === "sms" ? "default" : "outline"}
+                  size="sm"
+                  disabled={busy !== null || !phone}
+                  onClick={() => setComposer(composer === "sms" ? null : "sms")}
+                  className="flex-col h-auto py-2"
+                >
+                  <MessageSquare className="h-4 w-4 mb-1" />
+                  <span className="text-[11px]">SMS</span>
+                </Button>
+                <Button
+                  variant={composer === "whatsapp" ? "default" : "outline"}
+                  size="sm"
+                  disabled={busy !== null || !phone}
+                  onClick={() => setComposer(composer === "whatsapp" ? null : "whatsapp")}
+                  className="flex-col h-auto py-2"
+                >
+                  <MessageCircle className="h-4 w-4 mb-1" style={{ color: "#25D366" }} />
+                  <span className="text-[11px]">WhatsApp</span>
+                </Button>
+              </div>
+
+              {composer && (
+                <div className="mt-3 rounded-[12px] border border-[#E5E5EA] bg-white p-2.5">
+                  <div className="text-[11px] text-muted-foreground mb-1.5">
+                    {composer === "sms" ? "Send SMS" : "Send WhatsApp"} to <span className="font-mono">{phone}</span>
+                  </div>
+                  <Textarea
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder={`Type your ${composer === "sms" ? "SMS" : "WhatsApp"} message…`}
+                    rows={3}
+                    maxLength={1000}
+                    className="text-[13px]"
+                  />
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground">{message.length}/1000</span>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="sm" onClick={resetComposer} disabled={busy !== null}>
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => sendMessage(composer)}
+                        disabled={busy !== null || !message.trim()}
+                        style={{ backgroundColor: ACCENT }}
+                      >
+                        {busy === composer ? "Sending…" : "Send"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {row.pupil_id && (
-              <div className="mt-4">
+              <div className="mt-3">
                 <Button
                   variant="outline"
                   size="sm"
