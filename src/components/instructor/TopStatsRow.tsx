@@ -2,9 +2,9 @@ import { useMemo } from "react";
 import type { AICallDivertState } from "@/hooks/useAICallDivert";
 
 /* Spec tokens (Option C) */
-const RED = "#DC2626";
-const SOFT_RED = "#FEF2F2";
-const DARK_RED = "#991B1B";
+const GREEN = "#10A37F";
+const SOFT_GREEN = "#ECFDF5";
+const DARK_GREEN = "#065F46";
 const BLUE = "#2563EB";
 const NEAR_BLACK = "#1A1A1A";
 const WARM_GRAY = "#F5F5F4";
@@ -74,7 +74,7 @@ export function TopStatsRow({
           onClick={onOpenAISheet}
           aria-label="Open AI receptionist settings"
           style={{
-            background: SOFT_RED,
+            background: aiOn ? SOFT_GREEN : "#FFFFFF",
             border: "none",
             borderRadius: 8,
             padding: "10px 14px",
@@ -114,7 +114,7 @@ export function TopStatsRow({
                   position: "absolute",
                   inset: 0,
                   borderRadius: "50%",
-                  background: aiOn ? RED : "#D1D5DB",
+                  background: aiOn ? GREEN : "#D1D5DB",
                 }}
               />
               {aiOn && (
@@ -123,7 +123,7 @@ export function TopStatsRow({
                     position: "absolute",
                     inset: -3,
                     borderRadius: "50%",
-                    background: RED,
+                    background: GREEN,
                     animation: "ts-pulse 2s ease-out infinite",
                   }}
                 />
@@ -150,7 +150,7 @@ export function TopStatsRow({
                 style={{
                   fontSize: 11,
                   fontWeight: 400,
-                  color: DARK_RED,
+                  color: aiOn ? DARK_GREEN : "#6B7280",
                   lineHeight: 1.3,
                 }}
               >
@@ -167,7 +167,7 @@ export function TopStatsRow({
               width: 26,
               height: 15,
               borderRadius: 999,
-              background: aiOn ? RED : "#D1D5DB",
+              background: aiOn ? GREEN : "#D1D5DB",
               position: "relative",
               transition: "background 180ms ease",
               cursor: "pointer",
