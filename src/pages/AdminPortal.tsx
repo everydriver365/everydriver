@@ -95,6 +95,7 @@ import { AdminSchoolFranchiseFees } from "@/components/admin/AdminSchoolFranchis
 import { AdminEventsManager } from "@/components/admin/AdminEventsManager";
 import { FindAppointmentModal } from "@/components/shared/FindAppointmentModal";
 import type { AvailableSlot } from "@/hooks/useInstructorAvailabilitySearch";
+import { FamulorHub } from "@/components/famulor/FamulorHub";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -181,6 +182,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   payments: { title: "Payment History", group: "Products & Booking", icon: CreditCard },
   // Communications - Additional
   campaigns: { title: "Campaigns", group: "Communications", icon: Megaphone },
+  "ai-voice": { title: "AI Voice Hub", group: "Communications", icon: MessageCircle },
   // Analytics
   analytics: { title: "Revenue Analytics", group: "Dashboard", icon: TrendingUp },
   commission: { title: "Commission Earned", group: "Dashboard", icon: Coins },
@@ -1129,6 +1131,14 @@ export default function AdminPortal() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminEventsManager />
+          </motion.div>
+        );
+
+      case "ai-voice":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <FamulorHub scope="admin" />
           </motion.div>
         );
 

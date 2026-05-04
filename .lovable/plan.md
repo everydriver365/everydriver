@@ -1,75 +1,110 @@
-# Famulor AI Voice Integration
 
-Add Famulor as the AI voice layer powering three flows: inbound receptionist, outbound lesson reminders, and dormant pupil win-back. Configurable globally in Settings → Integrations and triggerable per-pupil from the pupil card.
+# AI Voice (Famulor) Hub — Unified Dashboard Section
 
-## 1. Database
+Today the only Famulor surface is a settings card buried in the instructor Menu. We'll promote it to a proper **Hub** that lives in three portals — Instructor, School, Admin — each scoped to what that role should see.
 
-New migration adds:
+## What the Hub shows (tabs)
 
-- `famulor_settings` (one row per instructor)
-  - `instructor_id`, `enabled`, `inbound_agent_id`, `outbound_agent_id`, `inbound_phone_number`, `voice_id`, `business_hours_only`, `auto_book_enabled`, `reminder_hours_before` (default 24), `dormant_days_threshold` (default 60)
-- `famulor_call_logs`
-  - `id`, `instructor_id`, `pupil_id` (nullable for unknown inbound), `lead_id` (nullable), `direction` (`inbound`/`outbound`), `purpose` (`receptionist`/`reminder`/`win_back`), `famulor_call_id`, `phone_number`, `status` (`queued`/`in_progress`/`completed`/`failed`/`no_answer`), `duration_seconds`, `transcript` (jsonb), `summary` (text), `outcome` (text — e.g. `confirmed`, `cancelled`, `booked`, `not_interested`), `recording_url`, `created_at`, `ended_at`
-- RLS on both using `public.get_instructor_id_for_user(auth.uid())`
-- Index on `(instructor_id, created_at desc)` and `(famulor_call_id)`
+```text
+┌─ AI Voice (Famulor) ────────────────────────────────────┐
+│  Overview │ Calls │ Campaigns │ Agents │ Settings │ Logs │
+└──────────────────────────────────────────────────────────┘
+```
 
-## 2. Secrets
+### 1. Overview (default tab)
+KPI tiles + charts for the selected period (Today / 7d / 30d):
+- Total calls (inbound vs outbound split)
+- Answer rate %, avg call duration, avg cost (£)
+- Outcomes: Confirmed / Cancelled / Booked / No-answer / Voicemail
+- Calls by purpose: Reminder · Win-back · Receptionist · Manual
+- Sparkline of calls/day and £ saved (vs. estimated SMS+admin time)
+- "Live now" strip — any call currently in progress (polled every 5s)
 
-Request `FAMULOR_API_KEY` and `FAMULOR_WEBHOOK_SECRET` (HMAC verification) via the secret tool once the plan is approved.
+### 2. Calls (the explorer)
+Searchable, filterable table of `famulor_call_logs`:
+- Filters: direction, purpose, status, date range, pupil, agent
+- Row: pupil avatar + name, time, duration, outcome badge, cost
+- Click row → side drawer (`FamulorCallLogDrawer`) with:
+  - Full transcript (chat-style bubbles)
+  - Audio player for `recording_url`
+  - AI-generated summary
+  - Linked lesson / lead / payment (deep-link buttons)
+  - Re-trigger / mark-resolved actions
 
-## 3. Edge functions
+### 3. Campaigns (outbound automations)
+One card per automation with on/off toggle, last-run, next-run, success rate:
+- Lesson reminders (24h before) — threshold slider
+- Dormant win-back (>N days inactive) — threshold + script preview
+- Test-day pep call
+- Failed-test follow-up
+- Payment-due reminder
+- "Run now" button for ad-hoc batch triggers (admin/school only)
 
-All under `supabase/functions/`, each with CORS + Zod input validation + JWT verification (except the webhook which uses HMAC):
+### 4. Agents
+List of configured Famulor agents (inbound + outbound) pulled from Famulor's API:
+- Agent name, voice, language, phone number
+- "Test call me" button (rings instructor's mobile with that agent)
+- Edit prompt / introduction script in-app (saved to `famulor_settings`)
 
-- **`famulor-trigger-call`** — Authed. Body `{ pupil_id, purpose }`. Looks up the pupil, builds context (name, next lesson date/time, balance, instructor name), calls Famulor REST `POST /calls` with the right agent + dynamic variables, inserts a `famulor_call_logs` row.
-- **`famulor-webhook`** — Public, HMAC-verified using `FAMULOR_WEBHOOK_SECRET`. Handles `call.completed` events: updates `famulor_call_logs` with transcript / summary / outcome, and depending on purpose:
-  - `reminder` + outcome `cancelled` → calls existing cancel-lesson logic
-  - `receptionist` + outcome `booked` → creates a `lead_inbox` row (and a draft `pupils` row if confident) using existing clash check
-  - `win_back` → just logs
-- **`famulor-cron-reminders`** — Scheduled via `pg_cron` hourly. Finds lessons starting in `reminder_hours_before ± 30 min` for instructors with `enabled = true` and reminders on, then invokes `famulor-trigger-call` for each.
-- **`famulor-cron-dormant`** — Scheduled daily 10:00 UK. Finds pupils with no lesson in `dormant_days_threshold` days, instructor opted in, and queues win-back calls (rate-limited to N per day per instructor).
+### 5. Settings
+Existing `FamulorSettingsCard` content — agent IDs, thresholds, quiet-hours, consent defaults, recording disclosure toggle.
 
-## 4. UI
+### 6. Logs (admin-only tab)
+Raw webhook events + edge function invocations for debugging — read from `famulor_call_logs` + edge logs.
 
-### Settings → Integrations → "AI Voice Agent (Famulor)" card
-- Enable toggle
-- Inbound agent ID + assigned phone number (read-only display once Famulor returns it)
-- Outbound agent ID
-- Voice picker (fetched from Famulor `/voices`)
-- Toggles: Lesson reminders, Dormant win-back, Auto-book inbound leads
-- Numeric: reminder hours before, dormant threshold days
-- "Send test call to my number" button → calls `famulor-trigger-call` with `purpose=test`
-- Recent calls table (last 20 from `famulor_call_logs` with summary + outcome chip)
+## Per-portal scoping
 
-### Per-pupil action
-- New menu item on pupil card / dormant list: **"AI call this pupil"** → opens a small confirm sheet (purpose: reminder / win-back / custom note) → invokes `famulor-trigger-call`. Disabled if Famulor not enabled.
+| Portal | Sees | Can do |
+|---|---|---|
+| **Instructor** | Own pupils' calls only | Toggle own campaigns, trigger manual calls, view transcripts |
+| **School** | All instructors in the school | All instructor actions + per-instructor breakdown, school-wide campaigns |
+| **Admin** | All schools/instructors platform-wide | Everything + Logs tab, cost monitoring, force-disable abusive accounts |
 
-### Call log drawer
-- Click any row in the recent calls table → side drawer with full transcript, recording playback, and outcome.
+Scoping enforced via RLS using `get_instructor_id_for_user(auth.uid())` and `is_school_owner(school_id)`, plus `has_role(auth.uid(), 'admin')` for the admin tab.
 
-## 5. Files to create / edit
+## Files to create
 
-**New:**
-- `supabase/migrations/<ts>_famulor.sql`
-- `supabase/functions/famulor-trigger-call/index.ts`
-- `supabase/functions/famulor-webhook/index.ts`
-- `supabase/functions/famulor-cron-reminders/index.ts`
-- `supabase/functions/famulor-cron-dormant/index.ts`
-- `src/components/instructor/integrations/FamulorSettingsCard.tsx`
-- `src/components/instructor/integrations/FamulorCallLogDrawer.tsx`
-- `src/components/instructor/pupils/AiCallPupilSheet.tsx`
-- `src/hooks/useFamulorSettings.ts`
-- `src/lib/famulorClient.ts` (thin wrapper around `supabase.functions.invoke`)
+- `src/components/famulor/FamulorHub.tsx` — tabbed shell, role-aware
+- `src/components/famulor/tabs/FamulorOverviewTab.tsx` — KPI tiles + charts (recharts)
+- `src/components/famulor/tabs/FamulorCallsTab.tsx` — table + filters
+- `src/components/famulor/FamulorCallLogDrawer.tsx` — transcript + audio + actions
+- `src/components/famulor/tabs/FamulorCampaignsTab.tsx`
+- `src/components/famulor/tabs/FamulorAgentsTab.tsx`
+- `src/components/famulor/tabs/FamulorLogsTab.tsx` (admin only)
+- `src/hooks/useFamulorStats.ts` — aggregations from `famulor_call_logs`
+- `src/hooks/useFamulorCalls.ts` — paginated/filtered list + realtime subscription
 
-**Edited:**
-- `src/pages/instructor/Settings.tsx` (or equivalent integrations page) — mount `FamulorSettingsCard`
-- Pupil card / dormant list component — add "AI call this pupil" action
-- `mem://index.md` + new `mem://features/communication/famulor-voice-integration.md`
+## Files to edit
 
-## 6. Open points (defaults unless you say otherwise)
+- `src/pages/InstructorMenu.tsx` — replace `FamulorSettingsCard` case with `<FamulorHub scope="instructor" />` and rename tile to "AI Voice Hub"
+- `src/pages/SchoolPortal.tsx` — add new menu item "AI Voice" → `<FamulorHub scope="school" schoolId={...} />`
+- `src/pages/AdminPortal.tsx` — add admin nav entry → `<FamulorHub scope="admin" />`
+- `src/components/instructor/InstructorBottomNav.tsx` (if applicable) — no mobile layout changes per memory rule; desktop nav only
 
-- **Inbound number**: Famulor provisions a UK number per agent. Instructor forwards their existing line to it (we'll show forwarding instructions in the card). Not building number porting.
-- **Cost guardrails**: hard-cap dormant calls at 20/instructor/day to prevent runaway spend.
-- **Language/voice**: default to a UK English voice; instructor can override.
+## Backend additions
 
-Once you approve, I'll request the two secrets, then build it end-to-end.
+- New edge function `famulor-list-agents` — proxies Famulor REST `/agents` so the Agents tab can show what's available without exposing the API key.
+- Realtime: `ALTER PUBLICATION supabase_realtime ADD TABLE public.famulor_call_logs;` so the Live strip and Calls table update instantly.
+- Add columns to `famulor_call_logs` if missing: `cost_pence integer`, `agent_name text`, `from_number text`, `to_number text` (idempotent migration).
+- New view `famulor_daily_stats` for fast Overview aggregations (calls, minutes, cost grouped by `date_trunc('day')` + `instructor_id`).
+
+## Compliance guards (reflected in UI)
+
+- Quiet-hours banner (20:00–08:00 UK) on Campaigns tab — outbound disabled.
+- Consent badge on each pupil row in Calls tab (green = consented, amber = no record).
+- 12-month auto-purge note shown on Logs tab.
+
+## Memory I'll add after build
+
+`mem://features/instructor/famulor-voice-hub` — describes the hub's tab structure, role scoping, and that the Overview KPI period defaults to 7d.
+
+## Out of scope (will offer as follow-ups)
+
+- Speed-to-lead auto-callback on new website leads
+- Live transfer / warm hand-off to instructor mobile
+- Multi-language voice picker per pupil
+- Parent-update post-lesson auto-calls
+
+## Approve to proceed?
+
+Once you approve, I'll build it in this order: migration + realtime → Hub shell + routing in all 3 portals → Overview → Calls + Drawer → Campaigns → Agents → Logs → memory update.

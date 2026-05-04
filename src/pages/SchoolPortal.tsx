@@ -41,6 +41,7 @@ import SchoolSubscriptionSection from "@/components/school/SchoolSubscriptionSec
 import SchoolPupilProgressSection from "@/components/school/SchoolPupilProgressSection";
 import SchoolWebsiteSection from "@/components/school/SchoolWebsiteSection";
 import SchoolPassRatesSection from "@/components/school/SchoolPassRatesSection";
+import { FamulorHub } from "@/components/famulor/FamulorHub";
 
 export default function SchoolPortal() {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -152,6 +153,8 @@ export default function SchoolPortal() {
         return <SchoolDiscountCodesSection schoolId={school.id} />;
       case "campaigns":
         return <SchoolCampaignsSection schoolId={school.id} />;
+      case "ai-voice":
+        return <FamulorHub scope="school" schoolId={school.id} instructorIds={instructorIds} />;
       case "profile":
         return <SchoolProfileSection school={school} onRefresh={refetch} />;
       case "branding":

@@ -73,7 +73,7 @@ import { GDPRRetentionWidget } from "@/components/instructor/GDPRRetentionWidget
 import { ReminderSettings } from "@/components/instructor/ReminderSettings";
 import { FeatureTogglesSettings } from "@/components/instructor/FeatureTogglesSettings";
 import { CallAnsweringSettings } from "@/components/instructor/CallAnsweringSettings";
-import { FamulorSettingsCard } from "@/components/instructor/integrations/FamulorSettingsCard";
+import { FamulorHub } from "@/components/famulor/FamulorHub";
 import { useDemoMode } from "@/context/DemoModeContext";
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -169,7 +169,7 @@ const allTiles: TileDef[] = [
   { id: "dashboard-layout", title: "Dashboard Layout", description: "Customize your home screen tiles", icon: LayoutGrid, tintBg: "#E8ECF1", tintColor: "#2A394F", category: "preferences" },
   { id: "notifications", title: "Notifications", description: "Cadence, quiet hours, and smart filters", icon: Bell, tintBg: "#FEF3C7", tintColor: "#92400E", category: "preferences" },
   { id: "call-answering", title: "Call Answering", description: "Choose how incoming calls are answered", icon: Phone, tintBg: "#DBEAFE", tintColor: "#1E40AF", category: "preferences" },
-  { id: "famulor", title: "AI Voice Agent (Famulor)", description: "Inbound receptionist, reminder calls & dormant win-back", icon: Mic, tintBg: "#EDF2FE", tintColor: "#1A52A0", category: "preferences" },
+  { id: "famulor", title: "AI Voice Hub", description: "Calls, campaigns, agents & analytics — Famulor", icon: Mic, tintBg: "#EDF2FE", tintColor: "#1A52A0", category: "preferences" },
   { id: "gdpr", title: "GDPR Data Retention", description: "Auto-flag stale pupil records", icon: Shield, tintBg: "#DBEAFE", tintColor: "#1E40AF", category: "preferences" },
   { id: "data-backup", title: "Data Export & Backup", description: "Download your data for backup", icon: Database, tintBg: "#F4F4F5", tintColor: "#52525B", category: "preferences" },
   { id: "reset-stats", title: "Reset Statistics", description: "Clear lesson history, payments, or progress", icon: Trash2, tintBg: "#FEF2F2", tintColor: "#DC2626", category: "preferences" },
@@ -617,7 +617,7 @@ export default function InstructorMenu() {
       case "call-answering":
         return <CallAnsweringSettings instructorId={instructorId} />;
       case "famulor":
-        return <FamulorSettingsCard instructorId={instructorId} />;
+        return <FamulorHub scope="instructor" instructorId={instructorId} />;
       case "gdpr":
         return <GDPRRetentionWidget instructorId={instructorId} />;
       case "data-backup":
