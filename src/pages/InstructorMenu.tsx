@@ -612,6 +612,8 @@ export default function InstructorMenu() {
             <NotificationPreferencesPanel instructorId={instructorId} />
           </div>
         );
+      case "call-answering":
+        return <CallAnsweringSettings instructorId={instructorId} />;
       case "gdpr":
         return <GDPRRetentionWidget instructorId={instructorId} />;
       case "data-backup":
