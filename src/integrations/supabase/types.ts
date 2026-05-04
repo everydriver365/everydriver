@@ -651,6 +651,99 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_booking_requests: {
+        Row: {
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          decided_at: string | null
+          duration_minutes: number
+          id: string
+          instructor_id: string
+          notes: string | null
+          pupil_id: string | null
+          requested_start: string
+          resulting_lesson_id: string | null
+          source_call_log_id: string | null
+          source_channel: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          decided_at?: string | null
+          duration_minutes: number
+          id?: string
+          instructor_id: string
+          notes?: string | null
+          pupil_id?: string | null
+          requested_start: string
+          resulting_lesson_id?: string | null
+          source_call_log_id?: string | null
+          source_channel: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          decided_at?: string | null
+          duration_minutes?: number
+          id?: string
+          instructor_id?: string
+          notes?: string | null
+          pupil_id?: string | null
+          requested_start?: string
+          resulting_lesson_id?: string | null
+          source_call_log_id?: string | null
+          source_channel?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_booking_requests_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_booking_requests_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_booking_requests_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_booking_requests_resulting_lesson_id_fkey"
+            columns: ["resulting_lesson_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_booking_requests_source_call_log_id_fkey"
+            columns: ["source_call_log_id"]
+            isOneToOne: false
+            referencedRelation: "famulor_call_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_command_logs: {
         Row: {
           command_text: string
@@ -3430,6 +3523,7 @@ export type Database = {
       famulor_call_logs: {
         Row: {
           agent_name: string | null
+          channel: string
           cost_pence: number | null
           created_at: string
           direction: string
@@ -3454,6 +3548,7 @@ export type Database = {
         }
         Insert: {
           agent_name?: string | null
+          channel?: string
           cost_pence?: number | null
           created_at?: string
           direction: string
@@ -3478,6 +3573,7 @@ export type Database = {
         }
         Update: {
           agent_name?: string | null
+          channel?: string
           cost_pence?: number | null
           created_at?: string
           direction?: string
@@ -3527,6 +3623,7 @@ export type Database = {
       famulor_settings: {
         Row: {
           auto_book_enabled: boolean
+          auto_confirm_bookings: boolean
           auto_fallback_channel: string
           auto_fallback_enabled: boolean
           business_hours_only: boolean
@@ -3546,13 +3643,22 @@ export type Database = {
           last_verified_message: string | null
           last_verified_status: string | null
           outbound_agent_id: string | null
+          per_channel_status: Json
+          phone_inbound_enabled: boolean
+          phone_outbound_enabled: boolean
           reminder_hours_before: number
           reminders_enabled: boolean
           updated_at: string
           voice_id: string | null
+          webchat_agent_id: string | null
+          webchat_enabled: boolean
+          webchat_widget_token: string | null
+          whatsapp_agent_id: string | null
+          whatsapp_enabled: boolean
         }
         Insert: {
           auto_book_enabled?: boolean
+          auto_confirm_bookings?: boolean
           auto_fallback_channel?: string
           auto_fallback_enabled?: boolean
           business_hours_only?: boolean
@@ -3572,13 +3678,22 @@ export type Database = {
           last_verified_message?: string | null
           last_verified_status?: string | null
           outbound_agent_id?: string | null
+          per_channel_status?: Json
+          phone_inbound_enabled?: boolean
+          phone_outbound_enabled?: boolean
           reminder_hours_before?: number
           reminders_enabled?: boolean
           updated_at?: string
           voice_id?: string | null
+          webchat_agent_id?: string | null
+          webchat_enabled?: boolean
+          webchat_widget_token?: string | null
+          whatsapp_agent_id?: string | null
+          whatsapp_enabled?: boolean
         }
         Update: {
           auto_book_enabled?: boolean
+          auto_confirm_bookings?: boolean
           auto_fallback_channel?: string
           auto_fallback_enabled?: boolean
           business_hours_only?: boolean
@@ -3598,10 +3713,18 @@ export type Database = {
           last_verified_message?: string | null
           last_verified_status?: string | null
           outbound_agent_id?: string | null
+          per_channel_status?: Json
+          phone_inbound_enabled?: boolean
+          phone_outbound_enabled?: boolean
           reminder_hours_before?: number
           reminders_enabled?: boolean
           updated_at?: string
           voice_id?: string | null
+          webchat_agent_id?: string | null
+          webchat_enabled?: boolean
+          webchat_widget_token?: string | null
+          whatsapp_agent_id?: string | null
+          whatsapp_enabled?: boolean
         }
         Relationships: [
           {

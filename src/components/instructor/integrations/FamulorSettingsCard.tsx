@@ -35,6 +35,9 @@ interface Settings {
   last_verified_at: string | null;
   last_verified_status: string | null;
   last_verified_message: string | null;
+  whatsapp_agent_id: string | null;
+  webchat_agent_id: string | null;
+  auto_confirm_bookings: boolean;
 }
 
 const DEFAULT_FALLBACK_TEMPLATE =
@@ -61,6 +64,9 @@ const DEFAULTS: Settings = {
   last_verified_at: null,
   last_verified_status: null,
   last_verified_message: null,
+  whatsapp_agent_id: "",
+  webchat_agent_id: "",
+  auto_confirm_bookings: false,
 };
 
 const ACCENT = "#1A52A0";
@@ -314,6 +320,30 @@ export function FamulorSettingsCard({ instructorId }: Props) {
               placeholder="UK English by default"
             />
           </div>
+          <div>
+            <Label className="text-[12px]">WhatsApp agent ID</Label>
+            <Input
+              value={settings.whatsapp_agent_id ?? ""}
+              onChange={(e) => update({ whatsapp_agent_id: e.target.value })}
+              placeholder="e.g. agent_wa_…"
+            />
+          </div>
+          <div>
+            <Label className="text-[12px]">Web chat agent ID</Label>
+            <Input
+              value={settings.webchat_agent_id ?? ""}
+              onChange={(e) => update({ webchat_agent_id: e.target.value })}
+              placeholder="e.g. agent_chat_…"
+            />
+          </div>
+        </div>
+        <div className="pt-2 border-t border-[#F1F4F8] mt-2">
+          <ToggleRow
+            title="Auto-confirm AI bookings"
+            subtitle="Skip your approval — let the AI book lessons straight into your calendar."
+            checked={settings.auto_confirm_bookings}
+            onChange={(v) => update({ auto_confirm_bookings: v })}
+          />
         </div>
       </div>
 
