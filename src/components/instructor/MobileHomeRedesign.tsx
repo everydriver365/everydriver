@@ -454,6 +454,7 @@ function UpNextTile({
   expanded,
   onToggleExpanded,
   instructorId,
+  aiStatusLine,
 }: {
   pupilId: string;
   lessonId: string;
@@ -469,6 +470,7 @@ function UpNextTile({
   expanded: boolean;
   onToggleExpanded: () => void;
   instructorId: string;
+  aiStatusLine?: string;
 }) {
   const navigate = useNavigate();
   const date = (() => {
