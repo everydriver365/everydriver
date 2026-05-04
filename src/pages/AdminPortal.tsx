@@ -95,6 +95,7 @@ import { AdminSchoolFranchiseFees } from "@/components/admin/AdminSchoolFranchis
 import { AdminEventsManager } from "@/components/admin/AdminEventsManager";
 import { FindAppointmentModal } from "@/components/shared/FindAppointmentModal";
 import type { AvailableSlot } from "@/hooks/useInstructorAvailabilitySearch";
+import { FamulorHub } from "@/components/famulor/FamulorHub";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
