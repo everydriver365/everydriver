@@ -1121,6 +1121,7 @@ export function MobileHomeRedesign({
         <AIReceptionistCard
           state={aiDivert}
           onOpenSheet={() => setDivertSheetOpen(true)}
+          compact
         />
         <div className="grid gap-2 items-stretch" style={{ gridTemplateColumns: "1fr 1fr" }}>
           <SummaryStatCard
