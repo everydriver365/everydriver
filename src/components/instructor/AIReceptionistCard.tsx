@@ -209,6 +209,8 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
           })}
         </div>
       </div>
-    </div>
   );
+
+  if (compact) return inner;
+  return <div style={{ padding: "0 14px 14px" }}>{inner}</div>;
 }
