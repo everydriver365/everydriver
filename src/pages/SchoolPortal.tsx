@@ -153,6 +153,8 @@ export default function SchoolPortal() {
         return <SchoolDiscountCodesSection schoolId={school.id} />;
       case "campaigns":
         return <SchoolCampaignsSection schoolId={school.id} />;
+      case "ai-voice":
+        return <FamulorHub scope="school" schoolId={school.id} instructorIds={instructorIds} />;
       case "profile":
         return <SchoolProfileSection school={school} onRefresh={refetch} />;
       case "branding":
