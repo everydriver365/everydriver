@@ -263,8 +263,58 @@ export function FamulorSettingsCard({ instructorId }: Props) {
               value={settings.daily_call_cap}
               onChange={(e) => update({ daily_call_cap: parseInt(e.target.value || "20", 10) })}
             />
+        </div>
+      </div>
+
+      {/* Smart follow-ups */}
+      <div className="rounded-[12px] border border-[#E5E5EA] bg-white p-4 flex flex-col gap-3">
+        <div className="text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Smart follow-ups
+        </div>
+        <ToggleRow
+          title="Auto-message on missed calls"
+          subtitle="When an outbound call goes unanswered, automatically send a short text or WhatsApp."
+          checked={settings.auto_fallback_enabled}
+          onChange={(v) => update({ auto_fallback_enabled: v })}
+        />
+        <div>
+          <Label className="text-[12px]">Channel preference</Label>
+          <div className="flex gap-2 mt-1 flex-wrap">
+            {(["whatsapp_first", "sms_only"] as const).map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => update({ auto_fallback_channel: c })}
+                className={`text-[12px] px-3 py-1.5 rounded-[10px] border transition ${
+                  settings.auto_fallback_channel === c
+                    ? "bg-[#1A52A0] text-white border-[#1A52A0]"
+                    : "bg-white text-foreground border-[#E5E5EA] hover:border-[#1A52A0]"
+                }`}
+              >
+                {c === "whatsapp_first" ? "WhatsApp, fall back to SMS" : "SMS only"}
+              </button>
+            ))}
           </div>
         </div>
+        <div>
+          <Label className="text-[12px]">Fallback message template</Label>
+          <textarea
+            value={settings.fallback_template ?? ""}
+            onChange={(e) => update({ fallback_template: e.target.value || null })}
+            placeholder={DEFAULT_FALLBACK_TEMPLATE}
+            rows={3}
+            className="mt-1 w-full text-[13px] rounded-[10px] border border-[#E5E5EA] p-2 bg-white"
+          />
+          <div className="text-[11px] text-muted-foreground mt-1">
+            Placeholders: <code>{"{name}"}</code>, <code>{"{instructor}"}</code>, <code>{"{booking_link}"}</code>, <code>{"{booking_suffix}"}</code>. Leave blank for default.
+          </div>
+        </div>
+        <ToggleRow
+          title="Show AI follow-up drafter in call drawer"
+          subtitle="Generate a follow-up message from the call transcript with one tap."
+          checked={settings.draft_followup_enabled}
+          onChange={(v) => update({ draft_followup_enabled: v })}
+        />
       </div>
 
       <div className="flex gap-2">
