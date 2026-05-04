@@ -697,7 +697,11 @@ export function AddLessonSheet({
         });
       }
       const { error: lessonError } = await supabase.from('scheduled_lessons').insert(lessons);
-      if (lessonError) throw lessonError;
+      if (lessonError) {
+        const friendly = describeLessonClashError(lessonError);
+        if (friendly) { toast.error(friendly); setLoading(false); return; }
+        throw lessonError;
+      }
       toast.success(isDrivingTest ? 'Pupil created & test scheduled!' : isRecurring ? `Pupil created & ${weeks} lessons scheduled` : 'Pupil created & lesson scheduled');
       handlePostSavePayment(newPupil.id);
       invalidateLessonQueries(queryClient);
