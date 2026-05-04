@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mic, BarChart3, PhoneCall, Megaphone, Users, Settings as SettingsIcon, ScrollText } from "lucide-react";
+import { Mic, BarChart3, PhoneCall, Megaphone, Users, Settings as SettingsIcon, ScrollText, Network } from "lucide-react";
 import { FamulorOverviewTab } from "./tabs/FamulorOverviewTab";
 import { FamulorCallsTab } from "./tabs/FamulorCallsTab";
 import { FamulorCampaignsTab } from "./tabs/FamulorCampaignsTab";
 import { FamulorAgentsTab } from "./tabs/FamulorAgentsTab";
 import { FamulorLogsTab } from "./tabs/FamulorLogsTab";
+import { FamulorChannelsTab } from "./tabs/FamulorChannelsTab";
+import { FamulorChannelsMatrix } from "./FamulorChannelsMatrix";
+import { AIBookingRequestsCard } from "./AIBookingRequestsCard";
 import { FamulorSettingsCard } from "@/components/instructor/integrations/FamulorSettingsCard";
 
 export type FamulorHubScope = "instructor" | "school" | "admin";
