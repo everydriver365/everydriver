@@ -206,36 +206,29 @@ function GreetingBlock({
 }
 
 /* ---------- Stats row ---------- */
-function StatsRow({
-  todaySessions,
-  todayEarnings,
-  weekHours,
-  weekSessions,
+function SummaryStatCard({
+  label,
+  value,
+  valueColor,
+  sub,
 }: {
-  todaySessions: number;
-  todayEarnings: number;
-  weekHours: number;
-  weekSessions: number;
+  label: string;
+  value: string;
+  valueColor: string;
+  sub: string;
 }) {
-  const Card = ({
-    label,
-    value,
-    valueColor,
-    sub,
-  }: {
-    label: string;
-    value: string;
-    valueColor: string;
-    sub: string;
-  }) => (
+  return (
     <div
       style={{
-        flex: 1,
         background: "#FFFFFF",
         border: `0.5px solid ${BORDER}`,
-        borderRadius: 12,
-        padding: "8px 10px",
+        borderRadius: 14,
+        padding: "10px 10px",
         minWidth: 0,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
       }}
     >
       <div
@@ -244,14 +237,14 @@ function StatsRow({
           fontWeight: 700,
           color: MUTED,
           letterSpacing: "0.08em",
-          marginBottom: 3,
+          marginBottom: 4,
         }}
       >
         {label}
       </div>
       <div
         style={{
-          fontSize: 16,
+          fontSize: 18,
           fontWeight: 700,
           color: valueColor,
           letterSpacing: "-0.3px",
@@ -261,24 +254,7 @@ function StatsRow({
       >
         {value}
       </div>
-      <div style={{ fontSize: 10, color: MUTED, marginTop: 2 }}>{sub}</div>
-    </div>
-  );
-
-  return (
-    <div style={{ display: "flex", gap: 8, padding: "0 14px 14px" }}>
-      <Card
-        label="TODAY"
-        value={`£${Math.round(todayEarnings)}`}
-        valueColor={RED}
-        sub={`${todaySessions} lesson${todaySessions === 1 ? "" : "s"}`}
-      />
-      <Card
-        label="THIS WEEK"
-        value={`${weekHours}h`}
-        valueColor={BLUE}
-        sub={`${weekSessions} lesson${weekSessions === 1 ? "" : "s"}`}
-      />
+      <div style={{ fontSize: 10, color: MUTED, marginTop: 3 }}>{sub}</div>
     </div>
   );
 }
