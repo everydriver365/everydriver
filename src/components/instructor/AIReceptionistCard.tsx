@@ -51,7 +51,7 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
           style={{
             display: "flex",
             alignItems: "center",
-            gap: compact ? 8 : 10,
+            gap: compact ? 6 : 10,
             background: "transparent",
             border: "none",
             padding: 0,
