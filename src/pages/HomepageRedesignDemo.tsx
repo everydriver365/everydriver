@@ -58,18 +58,18 @@ export default function HomepageRedesignDemo() {
                 No credit card required.
               </p>
 
-              <div className="flex flex-wrap gap-2 mb-8">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                  <Check className="h-3 w-3" /> Free forever
+              <div className="flex flex-nowrap items-center gap-1 mb-8 w-full overflow-hidden">
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary whitespace-nowrap shrink-0">
+                  <Check className="h-2.5 w-2.5" /> Free
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                  <Check className="h-3 w-3" /> Multi-instructor ready
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary whitespace-nowrap shrink-0">
+                  <Check className="h-2.5 w-2.5" /> Multi-instructor
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                  <Check className="h-3 w-3" /> White-label options
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary whitespace-nowrap shrink-0">
+                  <Check className="h-2.5 w-2.5" /> White-label
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                  <Check className="h-3 w-3" /> GDPR compliant
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary whitespace-nowrap shrink-0">
+                  <Check className="h-2.5 w-2.5" /> GDPR
                 </span>
               </div>
 
