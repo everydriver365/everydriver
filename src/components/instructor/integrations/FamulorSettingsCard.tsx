@@ -230,6 +230,50 @@ export function FamulorSettingsCard({ instructorId }: Props) {
         </div>
       </div>
 
+      {/* Inbound AI answering — real toggle wired to Famulor */}
+      <div className="rounded-[12px] border border-[#E5E5EA] bg-white p-4 flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <div className="font-medium text-[14px]">AI answers inbound calls</div>
+              {verifyPill()}
+            </div>
+            <div className="text-[12px] text-muted-foreground mt-0.5">
+              When on, your Famulor agent picks up calls forwarded to your inbound number.
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {togglingAnswer && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            <Switch
+              checked={settings.inbound_answering_enabled}
+              disabled={togglingAnswer || !settings.enabled}
+              onCheckedChange={toggleAnswering}
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap pt-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={verifyConnection}
+            disabled={verifying}
+            className="rounded-[10px] h-8 text-[12px]"
+          >
+            {verifying ? (
+              <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />Testing…</>
+            ) : (
+              <><PhoneCall className="h-3.5 w-3.5 mr-1.5" />Test connection</>
+            )}
+          </Button>
+          {settings.last_verified_message && (
+            <span className="text-[11px] text-muted-foreground">
+              {settings.last_verified_message}
+            </span>
+          )}
+        </div>
+      </div>
+
       <div className="rounded-[12px] border border-[#E5E5EA] bg-white p-4 flex flex-col gap-3">
         <div className="text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
           Agents & voice
