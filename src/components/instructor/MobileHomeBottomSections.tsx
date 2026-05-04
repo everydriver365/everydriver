@@ -160,8 +160,27 @@ function StatusPill({ status, label }: { status: LessonStatus; label: string }) 
 
 function ScheduleSection({ instructorId }: { instructorId: string }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [selectedDay, setSelectedDay] = useState<"Today" | "Tomorrow">("Today");
   const [showAdd, setShowAdd] = useState(false);
+  const [wizardLesson, setWizardLesson] = useState<TodayLesson | null>(null);
+  const [wizardBalance, setWizardBalance] = useState(0);
+
+  const openEOLWizard = async (lesson: TodayLesson) => {
+    let balance = 0;
+    try {
+      const { data } = await supabase
+        .from("pupils")
+        .select("account_balance")
+        .eq("id", lesson.pupilId)
+        .single();
+      balance = Number(data?.account_balance ?? 0);
+    } catch {
+      balance = 0;
+    }
+    setWizardBalance(balance);
+    setWizardLesson(lesson);
+  };
 
   const dayDate = useMemo(() => {
     const d = new Date();
