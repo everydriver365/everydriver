@@ -1088,15 +1088,32 @@ export function MobileHomeRedesign({
         </button>
       </div>
 
-      {/* AI Receptionist control */}
-      <AIReceptionistCard state={aiDivert} onOpenSheet={() => setDivertSheetOpen(true)} />
-
-      <StatsRow
-        todaySessions={todaySessions}
-        todayEarnings={earningsToday}
-        weekHours={hoursThisWeek || 0}
-        weekSessions={lessonsThisWeek}
-      />
+      {/* Top summary row: AI Receptionist | Today | This Week */}
+      <div
+        className="grid gap-3 items-stretch"
+        style={{
+          gridTemplateColumns: "1.8fr 1fr 1fr",
+          padding: "0 14px 14px",
+        }}
+      >
+        <AIReceptionistCard
+          state={aiDivert}
+          onOpenSheet={() => setDivertSheetOpen(true)}
+          compact
+        />
+        <SummaryStatCard
+          label="TODAY"
+          value={`£${Math.round(earningsToday)}`}
+          valueColor={RED}
+          sub={`${todaySessions} lesson${todaySessions === 1 ? "" : "s"}`}
+        />
+        <SummaryStatCard
+          label="THIS WEEK"
+          value={`${hoursThisWeek || 0}h`}
+          valueColor={BLUE}
+          sub={`${lessonsThisWeek} lesson${lessonsThisWeek === 1 ? "" : "s"}`}
+        />
+      </div>
 
       {nextLesson && (
         <>
