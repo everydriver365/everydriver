@@ -72,6 +72,7 @@ import { PricingRulesSettings } from "@/components/instructor/PricingRulesSettin
 import { GDPRRetentionWidget } from "@/components/instructor/GDPRRetentionWidget";
 import { ReminderSettings } from "@/components/instructor/ReminderSettings";
 import { FeatureTogglesSettings } from "@/components/instructor/FeatureTogglesSettings";
+import { CallAnsweringSettings } from "@/components/instructor/CallAnsweringSettings";
 import { useDemoMode } from "@/context/DemoModeContext";
 
 // ─── Types ───────────────────────────────────────────────────────────
