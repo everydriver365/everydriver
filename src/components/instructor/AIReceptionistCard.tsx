@@ -60,27 +60,29 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
             width: "100%",
           }}
         >
-          <span
-            style={{
-              width: compact ? 28 : 32,
-              height: compact ? 28 : 32,
-              borderRadius: 9,
-              background: setupIssue ? AMBER_TINT : BLUE_TINT,
-              color: setupIssue ? AMBER : BLUE,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-              position: "relative",
-            }}
-          >
-            <Phone size={compact ? 12 : 14} strokeWidth={2.2} />
-            <Sparkles
-              size={compact ? 8 : 9}
-              strokeWidth={2.4}
-              style={{ position: "absolute", top: 4, right: 4 }}
-            />
-          </span>
+          {!compact && (
+            <span
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 9,
+                background: setupIssue ? AMBER_TINT : BLUE_TINT,
+                color: setupIssue ? AMBER : BLUE,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                position: "relative",
+              }}
+            >
+              <Phone size={14} strokeWidth={2.2} />
+              <Sparkles
+                size={9}
+                strokeWidth={2.4}
+                style={{ position: "absolute", top: 4, right: 4 }}
+              />
+            </span>
+          )}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
