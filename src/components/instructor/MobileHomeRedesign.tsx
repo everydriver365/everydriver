@@ -640,6 +640,22 @@ function UpNextTile({
             </div>
           </div>
 
+          {aiStatusLine && (
+            <div
+              style={{
+                fontSize: 11,
+                color: MUTED,
+                fontWeight: 500,
+                paddingLeft: 2,
+                marginTop: -2,
+              }}
+            >
+              <span style={{ color: BLUE, fontWeight: 600 }}>Tracking ready</span>
+              {" · "}
+              <span>{aiStatusLine}</span>
+            </div>
+          )}
+
           {/* Action row — Call / Text / Navigate */}
           <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
             <button
