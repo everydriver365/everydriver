@@ -258,3 +258,5 @@ verify_jwt = false
 [functions.auto-stop-lesson-tracker]
 verify_jwt = false
 
+[functions.famulor-webhook]
+verify_jwt = false
