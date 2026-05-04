@@ -33,7 +33,7 @@ import { MobileHomeBottomSections } from "@/components/instructor/MobileHomeBott
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { UpcomingEventsTile } from "@/components/instructor/UpcomingEventsTile";
 import { useDormantPupilsCount } from "@/hooks/useDormantPupilsCount";
-import { Wrench, Users as UsersIcon, Phone } from "lucide-react";
+import { Wrench, Users as UsersIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { differenceInDays, isPast } from "date-fns";
