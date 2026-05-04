@@ -1,7 +1,11 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, PhoneIncoming, PhoneOutgoing, Sparkles } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { ExternalLink, MessageCircle, MessageSquare, PhoneCall, PhoneIncoming, PhoneOutgoing, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import type { FamulorCallRow } from "@/hooks/useFamulorCalls";
 
 const ACCENT = "#1A52A0";
