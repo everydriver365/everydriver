@@ -28,6 +28,7 @@ import {
   ClipboardList,
   Car,
   Radio,
+  Mic,
   PoundSterling,
   QrCode,
   MoreVertical,
