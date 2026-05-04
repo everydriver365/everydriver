@@ -186,7 +186,7 @@ export function TopStatsRow({
                   lineHeight: 1.3,
                 }}
               >
-                {aiOn ? resumesText : "Tap to handle missed calls"}
+                {aiOn ? resumesText : "Tap to take calls"}
               </span>
             </span>
           </span>
