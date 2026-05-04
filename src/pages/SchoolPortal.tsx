@@ -41,6 +41,7 @@ import SchoolSubscriptionSection from "@/components/school/SchoolSubscriptionSec
 import SchoolPupilProgressSection from "@/components/school/SchoolPupilProgressSection";
 import SchoolWebsiteSection from "@/components/school/SchoolWebsiteSection";
 import SchoolPassRatesSection from "@/components/school/SchoolPassRatesSection";
+import { FamulorHub } from "@/components/famulor/FamulorHub";
 
 export default function SchoolPortal() {
   const [activeSection, setActiveSection] = useState("dashboard");
