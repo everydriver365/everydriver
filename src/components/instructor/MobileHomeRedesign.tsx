@@ -1131,14 +1131,18 @@ export function MobileHomeRedesign({
         <SummaryStatCard
           label="TODAY"
           value={`£${Math.round(earningsToday)}`}
-          valueColor={RED}
           sub={`${todaySessions} lesson${todaySessions === 1 ? "" : "s"}`}
+          icon={Wallet}
+          iconBg={BLUE_TINT}
+          iconColor={BLUE}
         />
         <SummaryStatCard
           label="THIS WEEK"
           value={`${hoursThisWeek || 0}h`}
-          valueColor={BLUE}
           sub={`${lessonsThisWeek} lesson${lessonsThisWeek === 1 ? "" : "s"}`}
+          icon={Clock}
+          iconBg="#E7F7EF"
+          iconColor="#10A37F"
         />
       </div>
 
