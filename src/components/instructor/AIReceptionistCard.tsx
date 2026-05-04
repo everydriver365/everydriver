@@ -136,8 +136,8 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
             aria-checked={toggleOn}
             aria-label="Turn AI receptionist on or off"
             style={{
-              width: compact ? 34 : 38,
-              height: compact ? 20 : 22,
+              width: compact ? 30 : 38,
+              height: compact ? 18 : 22,
               borderRadius: 999,
               background: toggleOn ? (active ? GREEN : BLUE) : "#E5E7EB",
               position: "relative",
@@ -150,9 +150,9 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
               style={{
                 position: "absolute",
                 top: 2,
-                left: toggleOn ? (compact ? 16 : 18) : 2,
-                width: compact ? 16 : 18,
-                height: compact ? 16 : 18,
+                left: toggleOn ? (compact ? 14 : 18) : 2,
+                width: compact ? 14 : 18,
+                height: compact ? 14 : 18,
                 borderRadius: "50%",
                 background: "#FFFFFF",
                 boxShadow: "0 1px 2px rgba(0,0,0,0.18)",
