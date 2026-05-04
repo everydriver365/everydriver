@@ -1181,6 +1181,12 @@ export function MobileHomeRedesign({
 
       {/* Floating session bar */}
       <FloatingSessionBar instructorId={instructorId} />
+
+      <AICallDivertSheet
+        open={divertSheetOpen}
+        onOpenChange={setDivertSheetOpen}
+        state={aiDivert}
+      />
     </div>
   );
 }
