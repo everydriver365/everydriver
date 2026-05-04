@@ -102,9 +102,6 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
                 marginTop: 2,
                 lineHeight: 1.2,
                 letterSpacing: "-0.2px",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
               }}
             >
               Auto-divert during lessons
@@ -116,9 +113,6 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
                 marginTop: 3,
                 fontWeight: active ? 600 : 500,
                 fontVariantNumeric: "tabular-nums",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
               }}
             >
               {statusLine}
@@ -157,65 +151,64 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
           </span>
         </button>
 
-        {/* Segmented control — hidden in compact mode (use sheet to change mode) */}
-        {!compact && (
-          <div
-            role="tablist"
-            aria-label="AI call divert mode"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: 4,
-              background: "#F2F4F8",
-              borderRadius: 9,
-              padding: 3,
-            }}
-          >
-            {SEGMENTS.map((seg) => {
-              const isActive = settings.mode === seg.value;
-              const activeBg =
-                seg.value === "off"
-                  ? "#FFFFFF"
-                  : seg.value === "on_now"
-                    ? GREEN
-                    : BLUE;
-              const activeColor = seg.value === "off" ? CHARCOAL : "#FFFFFF";
-              return (
-                <button
-                  key={seg.value}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  aria-label={
-                    seg.value === "auto"
-                      ? "Set call divert mode to Auto during lessons"
-                      : seg.value === "on_now"
-                        ? "Turn AI receptionist on now"
-                        : "Turn AI receptionist off"
-                  }
-                  onClick={() => {
-                    void setMode(seg.value);
-                  }}
-                  style={{
-                    height: 30,
-                    border: "none",
-                    borderRadius: 7,
-                    background: isActive ? activeBg : "transparent",
-                    color: isActive ? activeColor : MUTED,
-                    fontSize: 12,
-                    fontWeight: isActive ? 600 : 500,
-                    letterSpacing: "-0.1px",
-                    cursor: "pointer",
-                    transition: "background 160ms ease, color 160ms ease",
-                    boxShadow: isActive && seg.value === "off" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
-                  }}
-                >
-                  {seg.label}
-                </button>
-              );
-            })}
-          </div>
-        )}
+        {/* Segmented control */}
+        <div
+          role="tablist"
+          aria-label="AI call divert mode"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 4,
+            background: "#F2F4F8",
+            borderRadius: 9,
+            padding: 3,
+          }}
+        >
+          {SEGMENTS.map((seg) => {
+            const isActive = settings.mode === seg.value;
+            const activeBg =
+              seg.value === "off"
+                ? "#FFFFFF"
+                : seg.value === "on_now"
+                  ? GREEN
+                  : "#FFFFFF";
+            const activeColor =
+              seg.value === "on_now" ? "#FFFFFF" : seg.value === "auto" ? BLUE : CHARCOAL;
+            return (
+              <button
+                key={seg.value}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                aria-label={
+                  seg.value === "auto"
+                    ? "Set call divert mode to Auto during lessons"
+                    : seg.value === "on_now"
+                      ? "Turn AI receptionist on now"
+                      : "Turn AI receptionist off"
+                }
+                onClick={() => {
+                  void setMode(seg.value);
+                }}
+                style={{
+                  height: compact ? 26 : 30,
+                  border: "none",
+                  borderRadius: 7,
+                  background: isActive ? activeBg : "transparent",
+                  color: isActive ? activeColor : MUTED,
+                  fontSize: compact ? 11 : 12,
+                  fontWeight: isActive ? 600 : 500,
+                  letterSpacing: "-0.1px",
+                  cursor: "pointer",
+                  transition: "background 160ms ease, color 160ms ease",
+                  boxShadow: isActive ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+                }}
+              >
+                {seg.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
   );
 
