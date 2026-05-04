@@ -206,6 +206,7 @@ export function ExpandablePupilCard({
   
   // Syllabus sheet state
   const [showSyllabusSheet, setShowSyllabusSheet] = useState(false);
+  const [showAiCallSheet, setShowAiCallSheet] = useState(false);
 
   // Fetch test stats on mount
   useEffect(() => {
