@@ -58,6 +58,20 @@ export default function HomepageRedesignDemo() {
                 No credit card required.
               </p>
 
+              <div className="flex flex-nowrap items-center gap-1 mb-8 w-full overflow-hidden">
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary whitespace-nowrap shrink-0">
+                  <Check className="h-2.5 w-2.5" /> Free
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary whitespace-nowrap shrink-0">
+                  <Check className="h-2.5 w-2.5" /> Multi-instructor
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary whitespace-nowrap shrink-0">
+                  <Check className="h-2.5 w-2.5" /> White-label
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary whitespace-nowrap shrink-0">
+                  <Check className="h-2.5 w-2.5" /> GDPR
+                </span>
+              </div>
 
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
                 <Button size="lg" className="bg-[#0075c9] hover:bg-[#005a9e] text-white h-13 px-8 text-base rounded-xl shadow-lg shadow-[#0075c9]/20" asChild>
