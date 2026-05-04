@@ -12,6 +12,7 @@ import {
   GraduationCap,
   AlertCircle,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import {
   addDays,
   addMonths,
@@ -50,7 +51,7 @@ const CHIP_BG = "#F2F4F8";
 /* Per-type icon styling */
 const typeStyle: Record<
   UpcomingEventType,
-  { icon: React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>; iconBg: string; iconColor: string }
+  { icon: LucideIcon; iconBg: string; iconColor: string }
 > = {
   drivingTest:      { icon: Car,            iconBg: "#FFE9EA", iconColor: "#B23A3F" },
   theoryTest:       { icon: BookOpen,       iconBg: "#EAF1FF", iconColor: "#3D55A1" },
