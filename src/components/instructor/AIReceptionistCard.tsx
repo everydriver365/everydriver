@@ -102,9 +102,6 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
                 marginTop: 2,
                 lineHeight: 1.2,
                 letterSpacing: "-0.2px",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
               }}
             >
               Auto-divert during lessons
@@ -116,9 +113,6 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
                 marginTop: 3,
                 fontWeight: active ? 600 : 500,
                 fontVariantNumeric: "tabular-nums",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
               }}
             >
               {statusLine}
