@@ -786,6 +786,98 @@ export type Database = {
           },
         ]
       }
+      ai_reschedule_requests: {
+        Row: {
+          auto_approved: boolean
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          decided_at: string | null
+          id: string
+          instructor_id: string
+          lesson_id: string
+          notes: string | null
+          original_duration_minutes: number
+          original_start: string
+          pupil_id: string | null
+          requested_duration_minutes: number
+          requested_start: string
+          source_channel: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          auto_approved?: boolean
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          instructor_id: string
+          lesson_id: string
+          notes?: string | null
+          original_duration_minutes: number
+          original_start: string
+          pupil_id?: string | null
+          requested_duration_minutes: number
+          requested_start: string
+          source_channel: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          auto_approved?: boolean
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          instructor_id?: string
+          lesson_id?: string
+          notes?: string | null
+          original_duration_minutes?: number
+          original_start?: string
+          pupil_id?: string | null
+          requested_duration_minutes?: number
+          requested_start?: string
+          source_channel?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_reschedule_requests_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_reschedule_requests_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_reschedule_requests_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_reschedule_requests_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_workflows: {
         Row: {
           created_at: string
