@@ -1140,6 +1140,7 @@ export function MobileHomeRedesign({
             minutesUntil={liveMinutes}
             expanded={expanded}
             onToggleExpanded={() => setExpanded((v) => !v)}
+            aiStatusLine={aiDivert.upNextLine}
           />
           {expanded && (
             <UpNextExpanded
