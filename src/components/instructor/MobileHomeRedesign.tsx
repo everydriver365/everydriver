@@ -1116,31 +1116,35 @@ export function MobileHomeRedesign({
         </button>
       </div>
 
-      {/* Top summary: AI Receptionist (full width) + Today / This Week row */}
-      <div style={{ padding: "0 14px 10px", display: "flex", flexDirection: "column", gap: 8 }}>
+      {/* Top summary row: AI Receptionist | Today | This Week — single row */}
+      <div
+        className="grid gap-2 items-stretch"
+        style={{
+          gridTemplateColumns: "minmax(0,1.7fr) minmax(0,1fr) minmax(0,1fr)",
+          padding: "0 14px 10px",
+        }}
+      >
         <AIReceptionistCard
           state={aiDivert}
           onOpenSheet={() => setDivertSheetOpen(true)}
           compact
         />
-        <div className="grid gap-2 items-stretch" style={{ gridTemplateColumns: "1fr 1fr" }}>
-          <SummaryStatCard
-            label="TODAY"
-            value={`£${Math.round(earningsToday)}`}
-            sub={`${todaySessions} lesson${todaySessions === 1 ? "" : "s"}`}
-            icon={Wallet}
-            iconBg={BLUE_TINT}
-            iconColor={BLUE}
-          />
-          <SummaryStatCard
-            label="THIS WEEK"
-            value={`${hoursThisWeek || 0}h`}
-            sub={`${lessonsThisWeek} lesson${lessonsThisWeek === 1 ? "" : "s"}`}
-            icon={Clock}
-            iconBg="#E7F7EF"
-            iconColor="#10A37F"
-          />
-        </div>
+        <SummaryStatCard
+          label="TODAY"
+          value={`£${Math.round(earningsToday)}`}
+          sub={`${todaySessions} lesson${todaySessions === 1 ? "" : "s"}`}
+          icon={Wallet}
+          iconBg={BLUE_TINT}
+          iconColor={BLUE}
+        />
+        <SummaryStatCard
+          label="THIS WEEK"
+          value={`${hoursThisWeek || 0}h`}
+          sub={`${lessonsThisWeek} lesson${lessonsThisWeek === 1 ? "" : "s"}`}
+          icon={Clock}
+          iconBg="#E7F7EF"
+          iconColor="#10A37F"
+        />
       </div>
 
       {nextLesson && (
