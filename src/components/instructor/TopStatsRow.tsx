@@ -143,8 +143,9 @@ export function TopStatsRow({
 
           {/* Bottom: label + main + sub */}
           <div>
-            <div style={upperLabel(PURPLE)}>AI Receptionist</div>
+            <div className="ts-label" style={upperLabel(PURPLE)}>AI Receptionist</div>
             <div
+              className="ts-main"
               style={{
                 fontSize: 14,
                 fontWeight: 500,
@@ -159,6 +160,7 @@ export function TopStatsRow({
               {aiOn ? "Auto-divert on" : "Auto-divert off"}
             </div>
             <div
+              className="ts-sub"
               style={{
                 fontSize: 12,
                 color: MUTED,
