@@ -2,7 +2,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ExternalLink, MessageCircle, MessageSquare, PhoneCall, PhoneIncoming, PhoneOutgoing, Sparkles } from "lucide-react";
+import { ExternalLink, MessageCircle, MessageSquare, PhoneCall, PhoneIncoming, PhoneOutgoing, Sparkles, Wand2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
