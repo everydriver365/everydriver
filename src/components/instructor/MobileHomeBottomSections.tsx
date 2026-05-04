@@ -454,14 +454,21 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                   </div>
 
                   {/* EOL pill — strikethrough only when complete */}
-                  <div
+                  <button
+                    type="button"
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      openEOLWizard(e.lesson);
+                    }}
                     style={{
                       background: BLUE_TINT,
                       borderRadius: 20,
                       padding: "2px 7px",
                       flexShrink: 0,
+                      border: "none",
+                      cursor: "pointer",
                     }}
-                    aria-label={eolDone ? "End of lesson complete" : "End of lesson pending"}
+                    aria-label={eolDone ? "End of lesson complete — review" : "Complete end of lesson"}
                   >
                     <span
                       style={{
@@ -476,7 +483,7 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                     >
                       EOL
                     </span>
-                  </div>
+                  </button>
 
                   {/* Payment pill */}
                   {showPayPill && (
