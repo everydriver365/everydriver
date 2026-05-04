@@ -48,10 +48,39 @@ export function FamulorCallLogDrawer({ row, onClose }: Props) {
   const [composer, setComposer] = useState<null | "sms" | "whatsapp">(null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState<null | "call" | "sms" | "whatsapp">(null);
+  const [tone, setTone] = useState<"friendly" | "professional" | "booking_nudge" | "apology">(
+    row?.status === "no_answer" || row?.status === "failed" ? "apology" : "friendly",
+  );
+  const [drafting, setDrafting] = useState(false);
 
   const resetComposer = () => {
     setComposer(null);
     setMessage("");
+  };
+
+  const draftWithAi = async (channel: "sms" | "whatsapp") => {
+    if (!row) return;
+    setDrafting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("famulor-draft-followup", {
+        body: { call_log_id: row.id, channel, tone },
+      });
+      if (error) throw error;
+      const draft = (data as any)?.message?.toString() ?? "";
+      if (!draft) throw new Error("No draft returned");
+      setMessage(draft);
+    } catch (e: any) {
+      const msg = e?.message ?? "Failed to draft message";
+      if (msg.includes("402") || msg.toLowerCase().includes("credits")) {
+        toast.error("AI credits exhausted — top up in Workspace → Usage.");
+      } else if (msg.includes("429") || msg.toLowerCase().includes("rate")) {
+        toast.error("AI is busy — try again in a moment.");
+      } else {
+        toast.error(msg);
+      }
+    } finally {
+      setDrafting(false);
+    }
   };
 
   const triggerCallback = async () => {
