@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { invalidateLessonQueries } from '@/lib/invalidateLessonQueries';
+import { checkLessonClash, describeLessonClashError } from '@/lib/lessonClashCheck';
 import { cn } from '@/lib/utils';
 import { CompetencyPicker } from './CompetencyPicker';
 import { GoogleAddressAutocomplete } from '@/components/admin/GoogleAddressAutocomplete';
@@ -615,11 +616,14 @@ export function AddLessonSheet({
       const weeks = isRecurring ? parseInt(recurrenceWeeks) : 1;
       const testNotes = buildDrivingTestNotes();
       const lessons = [];
+      const dateStrs: string[] = [];
       for (let i = 0; i < weeks; i++) {
         const recurringDate = i === 0 ? lessonDate : addWeeks(lessonDate, i);
+        const dateStr = format(recurringDate, 'yyyy-MM-dd');
+        dateStrs.push(dateStr);
         lessons.push({
           instructor_id: instructorId, pupil_id: selectedPupil,
-          lesson_date: format(recurringDate, 'yyyy-MM-dd'), start_time: lessonStartTime,
+          lesson_date: dateStr, start_time: lessonStartTime,
           duration_minutes: durationMinutes, pickup_location: pickupAddress || null,
           status: 'scheduled', payment_status: paymentMethod === 'cash' ? 'cash' : 'not_paid', 
           payment_method: paymentMethod,
@@ -631,8 +635,26 @@ export function AddLessonSheet({
           ...(isDrivingTest && selectedExaminer ? { examiner_id: selectedExaminer } : {}),
         });
       }
+      // For recurring lessons, re-check every week (not just the first) so we
+      // never silently insert a clash on weeks 2..N.
+      if (weeks > 1) {
+        for (const dateStr of dateStrs) {
+          const c = await checkLessonClash({
+            instructorId, date: dateStr, startTime: lessonStartTime, durationMinutes,
+          });
+          if (c.hardOverlap) {
+            toast.error(`Week of ${dateStr}: ${c.message ?? 'slot already booked'} — no lessons scheduled`);
+            setLoading(false);
+            return;
+          }
+        }
+      }
       const { error } = await supabase.from('scheduled_lessons').insert(lessons);
-      if (error) throw error;
+      if (error) {
+        const friendly = describeLessonClashError(error);
+        if (friendly) { toast.error(friendly); setLoading(false); return; }
+        throw error;
+      }
       toast.success(isDrivingTest ? 'Test scheduled!' : isRecurring ? `${weeks} lessons scheduled` : 'Lesson scheduled');
       handlePostSavePayment(selectedPupil);
       invalidateLessonQueries(queryClient);
@@ -675,7 +697,11 @@ export function AddLessonSheet({
         });
       }
       const { error: lessonError } = await supabase.from('scheduled_lessons').insert(lessons);
-      if (lessonError) throw lessonError;
+      if (lessonError) {
+        const friendly = describeLessonClashError(lessonError);
+        if (friendly) { toast.error(friendly); setLoading(false); return; }
+        throw lessonError;
+      }
       toast.success(isDrivingTest ? 'Pupil created & test scheduled!' : isRecurring ? `Pupil created & ${weeks} lessons scheduled` : 'Pupil created & lesson scheduled');
       handlePostSavePayment(newPupil.id);
       invalidateLessonQueries(queryClient);

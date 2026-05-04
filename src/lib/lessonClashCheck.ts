@@ -149,3 +149,21 @@ export async function checkLessonClash(args: CheckArgs): Promise<ClashResult> {
 
   return { hardOverlap, bufferOnly, clashes, message };
 }
+
+/**
+ * Maps a Supabase / Postgres error from an insert or update on
+ * `scheduled_lessons` into a human-friendly clash message, or returns null
+ * when the error is unrelated. The DB trigger `prevent_lesson_clash` raises
+ * with ERRCODE `check_violation` (23514) and a message starting with
+ * "Lesson clash:". Some clients surface the code, others only the message.
+ */
+export function describeLessonClashError(err: unknown): string | null {
+  if (!err || typeof err !== 'object') return null;
+  const e = err as { code?: string; message?: string };
+  const msg = e.message || '';
+  if (e.code === '23514' || e.code === 'check_violation' || /Lesson clash/i.test(msg)) {
+    return "That slot is already booked. Please pick another time.";
+  }
+  return null;
+}
+
