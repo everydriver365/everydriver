@@ -766,20 +766,6 @@ function AttentionGroupCard({
   groupLabel,
   groupColor,
   groupBorder,
-}: {
-  rows: AttentionRow[];
-  groupLabel: string;
-  groupColor: string;
-  groupBorder: string;
-}) {
-  if (rows.length === 0) return null;
-  return (
-    <>
-function AttentionGroupCard({
-  rows,
-  groupLabel,
-  groupColor,
-  groupBorder,
   cardBorder,
   marginBottom,
 }: {
