@@ -1,98 +1,53 @@
-# Famulor follow-ups: AI-drafted messages + auto missed-call fallback
+## Goal
 
-WhatsApp **is** fully wired (per-instructor Meta Business tokens, `send-whatsapp` with SMS fallback, templates, inbox). We'll layer two features on top of the existing Famulor webhook + call-log drawer.
+Make the Famulor settings card honest:
+1. Add a real **"AI answers inbound calls"** master toggle that actually enables/disables the inbound agent on Famulor's side.
+2. Add a **"Test connection"** button that verifies the API key, agent ID, and inbound number are valid, with a clear ✅/❌ result.
 
----
+## What you'll see
 
-## Feature 1 — AI-drafted follow-up message in the call drawer
+On the Famulor settings card (Instructor → Famulor → Settings):
 
-When viewing a finished Famulor call, a **"Draft follow-up"** section appears. The instructor picks a tone + channel, an AI reads the transcript/summary and produces a message they can edit and one-tap send.
+- A new prominent toggle at the top: **"AI answers inbound calls"** with subtitle *"When on, your Famulor agent will pick up calls forwarded to your inbound number."*
+- A **"Test connection"** button next to the agent fields. Tapping it shows one of:
+  - ✅ *"Connected. Agent 'Reception' is live on +44…"*
+  - ❌ *"Inbound agent ID not found in your Famulor account."*
+  - ❌ *"Famulor API key missing or invalid."*
+  - ⚠️ *"Connected, but no inbound number is provisioned for this agent."*
+- A small inline status pill ("Live" / "Paused" / "Not configured") so you can tell at a glance without pressing the button.
 
-**UX (in `FamulorCallLogDrawer`)**
-- New "Smart follow-up" panel below the existing Actions row, only shown when `status` is `completed`/`no_answer`/`failed` and a phone number exists.
-- Channel toggle: WhatsApp (default if pupil phone is mobile) / SMS.
-- Tone chips: Friendly, Professional, Booking nudge, Apology (no-answer), Custom.
-- "Generate" button → calls new edge function → fills an editable textarea.
-- "Send" button reuses existing `famulor-send-message` edge function (already deployed).
-- "Regenerate" allowed; button disabled while AI is streaming.
+## Technical changes
 
-**New edge function: `famulor-draft-followup`**
-- Auth: instructor JWT, scoped to their own `famulor_call_logs` row.
-- Input: `{ call_log_id, channel: "sms"|"whatsapp", tone }`.
-- Loads the call log (transcript, summary, purpose, pupil name + instructor name).
-- Calls Lovable AI Gateway (`google/gemini-3-flash-preview`) with a system prompt:
-  - UK English, ≤320 chars for SMS, ≤600 chars for WhatsApp.
-  - No emojis on SMS; subtle on WhatsApp.
-  - Sign off as the instructor.
-  - Never invent dates/prices — only reference what's in the transcript/summary.
-- Returns `{ message }`. Surfaces 402/429 cleanly.
+**Database** (`famulor_settings`)
+- Add `inbound_answering_enabled BOOLEAN DEFAULT false`
+- Add `last_verified_at TIMESTAMPTZ`, `last_verified_status TEXT`, `last_verified_message TEXT` for the test result
 
----
+**New edge function: `famulor-toggle-inbound`**
+- Inputs: `{ enabled: boolean }`
+- Resolves instructor from JWT, reads their `inbound_agent_id`
+- Calls Famulor API to enable/disable the agent (`PATCH /agents/{id}` with active flag — exact field confirmed against Famulor docs at build time)
+- On success, persists `inbound_answering_enabled` to `famulor_settings`
+- On failure, returns the upstream error so the UI can show why
 
-## Feature 2 — Auto fallback message on missed/failed outbound calls
+**New edge function: `famulor-verify-connection`**
+- No inputs (reads instructor's saved settings)
+- Steps: (a) check `FAMULOR_API_KEY` exists, (b) `GET /agents/{inbound_agent_id}`, (c) confirm the inbound phone number is attached to that agent
+- Writes the outcome to `last_verified_*` columns and returns `{ outcome, message, agent_name, phone_number }`
 
-When Famulor reports `no_answer` or `failed` for an **outbound** call to a pupil, automatically send a short SMS/WhatsApp ("Sorry we missed you — call back / book here").
+**UI: `FamulorSettingsCard.tsx`**
+- New `ToggleRow` for `inbound_answering_enabled` — calls `famulor-toggle-inbound` instead of just writing to the DB. Optimistic update with revert + toast on failure.
+- New "Test connection" button (secondary style, `--portal-radius-button`) that calls `famulor-verify-connection`, shows a loading spinner, then renders the result inline.
+- Status pill near the toggle reflecting `last_verified_status` (`live` → green, `paused` → grey, `failed` → red, `unknown` → neutral).
 
-**Where**: extend `supabase/functions/famulor-webhook/index.ts` (already receives status updates).
+**Files**
+- New: `supabase/functions/famulor-toggle-inbound/index.ts`
+- New: `supabase/functions/famulor-verify-connection/index.ts`
+- New: `supabase/migrations/<ts>_famulor_inbound_toggle.sql`
+- Edited: `src/components/instructor/integrations/FamulorSettingsCard.tsx`
+- Edited: `src/integrations/supabase/types.ts` (auto-regenerated)
 
-**Trigger conditions** (all must be true):
-- `direction = outbound`
-- New status is `no_answer` or `failed` (and previous status wasn't already that — idempotency).
-- Instructor's `famulor_settings.auto_fallback_enabled = true` (new column, default `true`).
-- Within UK quiet-hours window 08:00–20:00 (reuse same guard used by reminders campaign).
-- We have a destination phone number on the row.
+## Out of scope
 
-**What it sends**: instructor-customisable template stored on `famulor_settings.fallback_template` with placeholders `{name}`, `{instructor}`, `{booking_link}`. Default:
-> "Hi {name}, sorry we just missed you on the phone. If you'd like to chat or book a lesson, reply here or book online: {booking_link}. Thanks, {instructor}."
-
-**How**: webhook calls the existing `send-whatsapp` function (which already falls back to Twilio SMS if WhatsApp isn't connected). Result is stamped onto `famulor_call_logs.metadata.auto_fallback`.
-
-**Idempotency**: skip if `metadata.auto_fallback` already set, or if the same pupil already received a fallback within the last 6 hours.
-
----
-
-## Settings UI
-
-Extend the existing `FamulorSettingsCard` (and the Famulor Hub → Settings tab):
-- Toggle: "Auto-message on missed calls" (default ON).
-- Channel preference: WhatsApp first / SMS only.
-- Editable fallback template (textarea) with live placeholder preview.
-- Toggle: "Show AI follow-up drafter in call drawer" (default ON).
-
----
-
-## Technical details
-
-**Database migration**
-- `ALTER TABLE famulor_settings ADD COLUMN auto_fallback_enabled boolean DEFAULT true`
-- `ALTER TABLE famulor_settings ADD COLUMN auto_fallback_channel text DEFAULT 'whatsapp_first'` (`'whatsapp_first' | 'sms_only'`)
-- `ALTER TABLE famulor_settings ADD COLUMN fallback_template text` (nullable; falls back to default in code)
-- `ALTER TABLE famulor_settings ADD COLUMN draft_followup_enabled boolean DEFAULT true`
-- No new RLS policies needed (table already restricted by instructor).
-
-**New edge function**
-- `supabase/functions/famulor-draft-followup/index.ts`
-  - JWT verification, ownership check on `call_log_id`.
-  - Calls Lovable AI Gateway with the transcript + summary + tone.
-  - Non-streaming JSON response `{ message }` (small payload, no need for SSE).
-
-**Modified edge function**
-- `supabase/functions/famulor-webhook/index.ts`
-  - After updating the call row, if conditions match, invoke `send-whatsapp` via internal HTTP (service role auth) using the instructor's auth context isn't available — so we'll fetch the instructor's WhatsApp account directly (same pattern as `dormant-pupil-reengage`) and call `send-whatsapp` server-to-server, then write `metadata.auto_fallback`.
-
-**Frontend files**
-- `src/components/famulor/FamulorCallLogDrawer.tsx` — add "Smart follow-up" panel + AI draft hook.
-- `src/components/famulor/tabs/FamulorOverviewTab.tsx` — small KPI tile "Auto-fallbacks sent (7d)" (reads from `metadata` in `famulor_call_logs`).
-- `src/components/instructor/integrations/FamulorSettingsCard.tsx` — new toggles + template editor.
-- `src/hooks/useFamulorDraftFollowup.ts` — calls the new edge function.
-
-**Design**
-- Reuse `--portal-*` tokens, `rounded-[12px]` for cards, accent `#1A52A0`.
-- Tone chips use existing `Badge` styles; channel toggle = small segmented control.
-
----
-
-## Out of scope (will not build now)
-- AI-drafted bulk follow-ups across many calls.
-- Inbound-call auto-replies (separate feature; needs more careful WhatsApp template approval).
-- Multi-language drafting (UK English only for now).
+- Forwarding your business landline/mobile to the Famulor number — that's a carrier-side step (we'll surface copy-paste instructions in the card but can't automate it).
+- Provisioning new Famulor numbers from inside this app (still done in Famulor's dashboard for now).
+- Any changes to outbound calling, reminders, or the SMS/WhatsApp fallback already wired up.

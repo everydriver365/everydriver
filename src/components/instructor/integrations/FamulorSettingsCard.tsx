@@ -31,6 +31,10 @@ interface Settings {
   auto_fallback_channel: "whatsapp_first" | "sms_only";
   fallback_template: string | null;
   draft_followup_enabled: boolean;
+  inbound_answering_enabled: boolean;
+  last_verified_at: string | null;
+  last_verified_status: string | null;
+  last_verified_message: string | null;
 }
 
 const DEFAULT_FALLBACK_TEMPLATE =
@@ -53,6 +57,10 @@ const DEFAULTS: Settings = {
   auto_fallback_channel: "whatsapp_first",
   fallback_template: null,
   draft_followup_enabled: true,
+  inbound_answering_enabled: false,
+  last_verified_at: null,
+  last_verified_status: null,
+  last_verified_message: null,
 };
 
 const ACCENT = "#1A52A0";
@@ -62,6 +70,8 @@ export function FamulorSettingsCard({ instructorId }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [togglingAnswer, setTogglingAnswer] = useState(false);
   const [recent, setRecent] = useState<any[]>([]);
 
   const load = async () => {
@@ -116,6 +126,66 @@ export function FamulorSettingsCard({ instructorId }: Props) {
     }
   };
 
+  const toggleAnswering = async (next: boolean) => {
+    // Optimistic
+    const prev = settings.inbound_answering_enabled;
+    update({ inbound_answering_enabled: next });
+    setTogglingAnswer(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("famulor-toggle-inbound", {
+        body: { enabled: next },
+      });
+      if (error || (data as any)?.error) {
+        throw new Error((data as any)?.error ?? error?.message ?? "Toggle failed");
+      }
+      toast.success(next ? "AI answering enabled" : "AI answering paused");
+      load();
+    } catch (e: any) {
+      update({ inbound_answering_enabled: prev });
+      toast.error(e?.message ?? "Couldn't update Famulor");
+    } finally {
+      setTogglingAnswer(false);
+    }
+  };
+
+  const verifyConnection = async () => {
+    setVerifying(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("famulor-verify-connection");
+      if (error) throw new Error(error.message);
+      const outcome = (data as any)?.outcome;
+      const message = (data as any)?.message ?? "Done";
+      if (outcome === "ok") toast.success(message);
+      else if (outcome === "warning") toast.warning(message);
+      else toast.error(message);
+      load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Verification failed");
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const verifyPill = () => {
+    const s = settings.last_verified_status;
+    if (!s) return null;
+    const map: Record<string, { bg: string; fg: string; label: string }> = {
+      live: { bg: "#10B98119", fg: "#059669", label: "Live" },
+      paused: { bg: "#6B728019", fg: "#4B5563", label: "Paused" },
+      warning: { bg: "#F59E0B19", fg: "#B45309", label: "Check setup" },
+      failed: { bg: "#EF444419", fg: "#B91C1C", label: "Not connected" },
+    };
+    const m = map[s] ?? map.failed;
+    return (
+      <span
+        className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+        style={{ backgroundColor: m.bg, color: m.fg }}
+      >
+        {m.label}
+      </span>
+    );
+  };
+
   const statusChip = (status: string, outcome: string | null) => {
     const colour =
       status === "completed" ? "#10B981" :
@@ -157,6 +227,50 @@ export function FamulorSettingsCard({ instructorId }: Props) {
             </div>
           </div>
           <Switch checked={settings.enabled} onCheckedChange={(v) => update({ enabled: v })} />
+        </div>
+      </div>
+
+      {/* Inbound AI answering — real toggle wired to Famulor */}
+      <div className="rounded-[12px] border border-[#E5E5EA] bg-white p-4 flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <div className="font-medium text-[14px]">AI answers inbound calls</div>
+              {verifyPill()}
+            </div>
+            <div className="text-[12px] text-muted-foreground mt-0.5">
+              When on, your Famulor agent picks up calls forwarded to your inbound number.
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {togglingAnswer && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            <Switch
+              checked={settings.inbound_answering_enabled}
+              disabled={togglingAnswer || !settings.enabled}
+              onCheckedChange={toggleAnswering}
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap pt-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={verifyConnection}
+            disabled={verifying}
+            className="rounded-[10px] h-8 text-[12px]"
+          >
+            {verifying ? (
+              <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />Testing…</>
+            ) : (
+              <><PhoneCall className="h-3.5 w-3.5 mr-1.5" />Test connection</>
+            )}
+          </Button>
+          {settings.last_verified_message && (
+            <span className="text-[11px] text-muted-foreground">
+              {settings.last_verified_message}
+            </span>
+          )}
         </div>
       </div>
 

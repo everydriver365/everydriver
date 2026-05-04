@@ -3539,8 +3539,12 @@ export type Database = {
           fallback_template: string | null
           id: string
           inbound_agent_id: string | null
+          inbound_answering_enabled: boolean
           inbound_phone_number: string | null
           instructor_id: string
+          last_verified_at: string | null
+          last_verified_message: string | null
+          last_verified_status: string | null
           outbound_agent_id: string | null
           reminder_hours_before: number
           reminders_enabled: boolean
@@ -3561,8 +3565,12 @@ export type Database = {
           fallback_template?: string | null
           id?: string
           inbound_agent_id?: string | null
+          inbound_answering_enabled?: boolean
           inbound_phone_number?: string | null
           instructor_id: string
+          last_verified_at?: string | null
+          last_verified_message?: string | null
+          last_verified_status?: string | null
           outbound_agent_id?: string | null
           reminder_hours_before?: number
           reminders_enabled?: boolean
@@ -3583,8 +3591,12 @@ export type Database = {
           fallback_template?: string | null
           id?: string
           inbound_agent_id?: string | null
+          inbound_answering_enabled?: boolean
           inbound_phone_number?: string | null
           instructor_id?: string
+          last_verified_at?: string | null
+          last_verified_message?: string | null
+          last_verified_status?: string | null
           outbound_agent_id?: string | null
           reminder_hours_before?: number
           reminders_enabled?: boolean
