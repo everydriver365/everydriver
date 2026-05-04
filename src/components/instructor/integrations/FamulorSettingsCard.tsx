@@ -126,6 +126,66 @@ export function FamulorSettingsCard({ instructorId }: Props) {
     }
   };
 
+  const toggleAnswering = async (next: boolean) => {
+    // Optimistic
+    const prev = settings.inbound_answering_enabled;
+    update({ inbound_answering_enabled: next });
+    setTogglingAnswer(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("famulor-toggle-inbound", {
+        body: { enabled: next },
+      });
+      if (error || (data as any)?.error) {
+        throw new Error((data as any)?.error ?? error?.message ?? "Toggle failed");
+      }
+      toast.success(next ? "AI answering enabled" : "AI answering paused");
+      load();
+    } catch (e: any) {
+      update({ inbound_answering_enabled: prev });
+      toast.error(e?.message ?? "Couldn't update Famulor");
+    } finally {
+      setTogglingAnswer(false);
+    }
+  };
+
+  const verifyConnection = async () => {
+    setVerifying(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("famulor-verify-connection");
+      if (error) throw new Error(error.message);
+      const outcome = (data as any)?.outcome;
+      const message = (data as any)?.message ?? "Done";
+      if (outcome === "ok") toast.success(message);
+      else if (outcome === "warning") toast.warning(message);
+      else toast.error(message);
+      load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Verification failed");
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const verifyPill = () => {
+    const s = settings.last_verified_status;
+    if (!s) return null;
+    const map: Record<string, { bg: string; fg: string; label: string }> = {
+      live: { bg: "#10B98119", fg: "#059669", label: "Live" },
+      paused: { bg: "#6B728019", fg: "#4B5563", label: "Paused" },
+      warning: { bg: "#F59E0B19", fg: "#B45309", label: "Check setup" },
+      failed: { bg: "#EF444419", fg: "#B91C1C", label: "Not connected" },
+    };
+    const m = map[s] ?? map.failed;
+    return (
+      <span
+        className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+        style={{ backgroundColor: m.bg, color: m.fg }}
+      >
+        {m.label}
+      </span>
+    );
+  };
+
   const statusChip = (status: string, outcome: string | null) => {
     const colour =
       status === "completed" ? "#10B981" :
