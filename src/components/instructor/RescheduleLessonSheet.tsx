@@ -284,6 +284,26 @@ export function RescheduleLessonSheet({
     try {
       const newDateStr = format(selectedDate, "yyyy-MM-dd");
 
+      // Final clash check immediately before the write — slots can become
+      // stale between rendering and the user clicking "Reschedule".
+      const clash = await checkLessonClash({
+        instructorId,
+        date: newDateStr,
+        startTime: selectedTime,
+        durationMinutes,
+        bufferMinutes,
+        excludeLessonId: lessonId,
+      });
+      if (clash.hardOverlap) {
+        toast({
+          title: "That slot is already booked",
+          description: clash.message ?? "Please pick another time.",
+          variant: "destructive",
+        });
+        setSaving(false);
+        return;
+      }
+
       const { error: updateErr } = await supabase
         .from("scheduled_lessons")
         .update({
@@ -292,7 +312,15 @@ export function RescheduleLessonSheet({
         })
         .eq("id", lessonId);
 
-      if (updateErr) throw updateErr;
+      if (updateErr) {
+        const friendly = describeLessonClashError(updateErr);
+        if (friendly) {
+          toast({ title: "Clash detected", description: friendly, variant: "destructive" });
+          setSaving(false);
+          return;
+        }
+        throw updateErr;
+      }
 
       if (notifyPupil) {
         try {
