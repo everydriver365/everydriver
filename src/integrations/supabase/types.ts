@@ -8082,6 +8082,10 @@ export type Database = {
           adi_certificate_url: string | null
           adi_code_of_practice: boolean | null
           ai_auto_invoices_enabled: boolean
+          ai_call_divert_buffer_after_minutes: number
+          ai_call_divert_buffer_before_minutes: number
+          ai_call_divert_enabled: boolean
+          ai_call_divert_mode: string
           ai_cancellation_risk_enabled: boolean
           ai_lesson_plans_enabled: boolean
           ai_morning_briefing_enabled: boolean
@@ -8247,6 +8251,10 @@ export type Database = {
           adi_certificate_url?: string | null
           adi_code_of_practice?: boolean | null
           ai_auto_invoices_enabled?: boolean
+          ai_call_divert_buffer_after_minutes?: number
+          ai_call_divert_buffer_before_minutes?: number
+          ai_call_divert_enabled?: boolean
+          ai_call_divert_mode?: string
           ai_cancellation_risk_enabled?: boolean
           ai_lesson_plans_enabled?: boolean
           ai_morning_briefing_enabled?: boolean
@@ -8412,6 +8420,10 @@ export type Database = {
           adi_certificate_url?: string | null
           adi_code_of_practice?: boolean | null
           ai_auto_invoices_enabled?: boolean
+          ai_call_divert_buffer_after_minutes?: number
+          ai_call_divert_buffer_before_minutes?: number
+          ai_call_divert_enabled?: boolean
+          ai_call_divert_mode?: string
           ai_cancellation_risk_enabled?: boolean
           ai_lesson_plans_enabled?: boolean
           ai_morning_briefing_enabled?: boolean

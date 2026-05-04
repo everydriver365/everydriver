@@ -36,6 +36,9 @@ import { Wrench, Users as UsersIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { differenceInDays, isPast } from "date-fns";
+import { useAICallDivert } from "@/hooks/useAICallDivert";
+import { AIReceptionistCard } from "@/components/instructor/AIReceptionistCard";
+import { AICallDivertSheet } from "@/components/instructor/AICallDivertSheet";
 
 /* ---------- Brand tokens ---------- */
 const RED = "#B23A3F";
@@ -451,6 +454,7 @@ function UpNextTile({
   expanded,
   onToggleExpanded,
   instructorId,
+  aiStatusLine,
 }: {
   pupilId: string;
   lessonId: string;
@@ -466,6 +470,7 @@ function UpNextTile({
   expanded: boolean;
   onToggleExpanded: () => void;
   instructorId: string;
+  aiStatusLine?: string;
 }) {
   const navigate = useNavigate();
   const date = (() => {
@@ -634,6 +639,22 @@ function UpNextTile({
               </div>
             </div>
           </div>
+
+          {aiStatusLine && (
+            <div
+              style={{
+                fontSize: 11,
+                color: MUTED,
+                fontWeight: 500,
+                paddingLeft: 2,
+                marginTop: -2,
+              }}
+            >
+              <span style={{ color: BLUE, fontWeight: 600 }}>Tracking ready</span>
+              {" · "}
+              <span>{aiStatusLine}</span>
+            </div>
+          )}
 
           {/* Action row — Call / Text / Navigate */}
           <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
@@ -887,6 +908,18 @@ export function MobileHomeRedesign({
   const { data: paymentsSummary } = useInstructorPupilsPaymentSummary(instructorId);
   const { data: gapData } = useRealGapSlots(instructorId);
   const [expanded, setExpanded] = useState(false);
+  const [divertSheetOpen, setDivertSheetOpen] = useState(false);
+
+  const aiDivert = useAICallDivert(
+    instructorId,
+    nextLesson
+      ? {
+          startTime: nextLesson.startTime,
+          durationMinutes: nextLesson.durationMinutes,
+          lessonDate: nextLesson.lessonDate,
+        }
+      : null,
+  );
 
   const lessonsToday = today?.lessonCount ?? 0;
   const earningsToday = today?.expectedEarnings ?? 0;
@@ -1045,6 +1078,43 @@ export function MobileHomeRedesign({
         pendingJobs={pendingJobs}
       />
 
+      {/* AI divert status pill — sits just below the greeting pills */}
+      <div style={{ padding: "0 18px 8px", marginTop: -4 }}>
+        <button
+          type="button"
+          onClick={() => setDivertSheetOpen(true)}
+          aria-label="Open AI call divert settings"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            height: 26,
+            padding: "0 11px",
+            borderRadius: 999,
+            fontSize: 12,
+            fontWeight: 600,
+            background: "#FFFFFF",
+            color: aiDivert.active ? "#10A37F" : BLUE,
+            border: `0.5px solid ${aiDivert.active ? "rgba(16,163,127,0.45)" : BLUE}`,
+            letterSpacing: "-0.1px",
+            cursor: "pointer",
+          }}
+        >
+          <span
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              background: aiDivert.active ? "#10A37F" : BLUE,
+            }}
+          />
+          {aiDivert.pillLabel}
+        </button>
+      </div>
+
+      {/* AI Receptionist control */}
+      <AIReceptionistCard state={aiDivert} onOpenSheet={() => setDivertSheetOpen(true)} />
+
       <StatsRow
         todaySessions={todaySessions}
         todayEarnings={earningsToday}
@@ -1070,6 +1140,7 @@ export function MobileHomeRedesign({
             minutesUntil={liveMinutes}
             expanded={expanded}
             onToggleExpanded={() => setExpanded((v) => !v)}
+            aiStatusLine={aiDivert.upNextLine}
           />
           {expanded && (
             <UpNextExpanded
@@ -1110,6 +1181,12 @@ export function MobileHomeRedesign({
 
       {/* Floating session bar */}
       <FloatingSessionBar instructorId={instructorId} />
+
+      <AICallDivertSheet
+        open={divertSheetOpen}
+        onOpenChange={setDivertSheetOpen}
+        state={aiDivert}
+      />
     </div>
   );
 }
