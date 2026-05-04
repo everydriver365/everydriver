@@ -176,17 +176,17 @@ export function TopStatsRow({
                   lineHeight: 1.2,
                 }}
               >
-                {aiOn ? "Auto-divert active" : "Auto-divert"}
+                Auto-divert
               </span>
               <span
                 style={{
                   fontSize: 11,
-                  fontWeight: aiOn ? 400 : 500,
+                  fontWeight: 500,
                   color: aiOn ? "rgba(26,26,26,0.55)" : RED,
                   lineHeight: 1.3,
                 }}
               >
-                {aiOn ? resumesText : "Tap to take calls"}
+                {aiOn ? "On" : "Off"}
               </span>
             </span>
           </span>
