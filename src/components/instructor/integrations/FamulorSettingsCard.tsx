@@ -71,7 +71,7 @@ export function FamulorSettingsCard({ instructorId }: Props) {
       .select("*")
       .eq("instructor_id", instructorId)
       .maybeSingle();
-    if (data) setSettings({ ...DEFAULTS, ...data });
+    if (data) setSettings({ ...DEFAULTS, ...(data as any) } as Settings);
     const { data: logs } = await supabase
       .from("famulor_call_logs")
       .select("id, created_at, direction, purpose, status, outcome, summary, phone_number, duration_seconds")
