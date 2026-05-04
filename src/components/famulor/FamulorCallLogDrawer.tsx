@@ -43,6 +43,55 @@ export function FamulorCallLogDrawer({ row, onClose }: Props) {
   const open = row !== null;
   const turns = normaliseTranscript(row?.transcript);
   const colour = row ? STATUS_COLOUR[row.status] ?? "#6B7280" : "#6B7280";
+  const phone = row?.phone_number ?? row?.from_number ?? row?.to_number ?? null;
+
+  const [composer, setComposer] = useState<null | "sms" | "whatsapp">(null);
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState<null | "call" | "sms" | "whatsapp">(null);
+
+  const resetComposer = () => {
+    setComposer(null);
+    setMessage("");
+  };
+
+  const triggerCallback = async () => {
+    if (!phone && !row?.pupil_id) return toast.error("No phone number on this call");
+    setBusy("call");
+    try {
+      const { error } = await supabase.functions.invoke("famulor-trigger-call", {
+        body: {
+          pupil_id: row?.pupil_id ?? undefined,
+          phone_number: row?.pupil_id ? undefined : (phone ?? undefined),
+          purpose: "custom",
+          custom_prompt: `Follow-up callback regarding the previous ${row?.purpose?.replace("_", " ") ?? ""} call.`,
+        },
+      });
+      if (error) throw error;
+      toast.success("Callback queued");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to start callback");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const sendMessage = async (channel: "sms" | "whatsapp") => {
+    if (!phone) return toast.error("No phone number on this call");
+    if (!message.trim()) return toast.error("Write a message first");
+    setBusy(channel);
+    try {
+      const { error } = await supabase.functions.invoke("famulor-send-message", {
+        body: { channel, to: phone, message: message.trim(), call_log_id: row?.id },
+      });
+      if (error) throw error;
+      toast.success(channel === "sms" ? "SMS sent" : "WhatsApp sent");
+      resetComposer();
+    } catch (e: any) {
+      toast.error(e?.message ?? `Failed to send ${channel}`);
+    } finally {
+      setBusy(null);
+    }
+  };
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
