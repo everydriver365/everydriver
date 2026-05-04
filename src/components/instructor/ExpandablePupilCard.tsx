@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PupilAvatarUpload } from "@/components/instructor/PupilAvatarUpload";
+import { AiCallPupilSheet } from "@/components/instructor/pupils/AiCallPupilSheet";
 import { LessonRouteViewer } from "@/components/instructor/LessonRouteViewer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
