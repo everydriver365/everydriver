@@ -96,7 +96,10 @@ export function TopStatsRow({
         >
           {/* Top row: icon tile + toggle */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ ...iconTile(32, PURPLE_TINT, PURPLE), position: "relative" }}>
+            <span
+              className="ts-icon-lg"
+              style={{ ...iconTile(32, PURPLE_TINT, PURPLE), position: "relative" }}
+            >
               <Phone size={15} strokeWidth={2} />
               <Sparkles
                 size={9}
