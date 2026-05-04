@@ -70,6 +70,8 @@ export function FamulorSettingsCard({ instructorId }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [togglingAnswer, setTogglingAnswer] = useState(false);
   const [recent, setRecent] = useState<any[]>([]);
 
   const load = async () => {
