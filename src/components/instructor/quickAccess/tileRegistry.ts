@@ -81,6 +81,7 @@ export const QUICK_ACCESS_TILES: QuickAccessTile[] = [
   { id: "end-of-day",       title: "End of day",       subtitle: "Day summary",           icon: Moon,            tone: "grey",   route: "/instructor/end-of-day" },
   { id: "waiting-room",     title: "Waiting room",     subtitle: "Weekly Zoom",           icon: Users,           tone: "green",  route: "/instructor/waiting-room" },
   { id: "platform-updates", title: "Platform updates", subtitle: "News & ideas",          icon: Megaphone,       tone: "grey",   route: "/instructor/platform-updates" },
+  { id: "call-answering",   title: "Call answering",   subtitle: "Divert mode",           icon: Phone,           tone: "blue",   route: "/instructor/menu?open=call-answering" },
 ];
 
 export const QUICK_ACCESS_TILES_BY_ID: Record<string, QuickAccessTile> =
