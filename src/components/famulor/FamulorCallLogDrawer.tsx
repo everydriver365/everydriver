@@ -161,8 +161,76 @@ export function FamulorCallLogDrawer({ row, onClose }: Props) {
               </div>
             )}
 
+            <div className="mt-5 border-t border-[#E5E5EA] pt-4">
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-2">Actions</div>
+              <div className="grid grid-cols-3 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={busy !== null || (!phone && !row.pupil_id)}
+                  onClick={triggerCallback}
+                  className="flex-col h-auto py-2"
+                >
+                  <PhoneCall className="h-4 w-4 mb-1" style={{ color: ACCENT }} />
+                  <span className="text-[11px]">{busy === "call" ? "…" : "Call back"}</span>
+                </Button>
+                <Button
+                  variant={composer === "sms" ? "default" : "outline"}
+                  size="sm"
+                  disabled={busy !== null || !phone}
+                  onClick={() => setComposer(composer === "sms" ? null : "sms")}
+                  className="flex-col h-auto py-2"
+                >
+                  <MessageSquare className="h-4 w-4 mb-1" />
+                  <span className="text-[11px]">SMS</span>
+                </Button>
+                <Button
+                  variant={composer === "whatsapp" ? "default" : "outline"}
+                  size="sm"
+                  disabled={busy !== null || !phone}
+                  onClick={() => setComposer(composer === "whatsapp" ? null : "whatsapp")}
+                  className="flex-col h-auto py-2"
+                >
+                  <MessageCircle className="h-4 w-4 mb-1" style={{ color: "#25D366" }} />
+                  <span className="text-[11px]">WhatsApp</span>
+                </Button>
+              </div>
+
+              {composer && (
+                <div className="mt-3 rounded-[12px] border border-[#E5E5EA] bg-white p-2.5">
+                  <div className="text-[11px] text-muted-foreground mb-1.5">
+                    {composer === "sms" ? "Send SMS" : "Send WhatsApp"} to <span className="font-mono">{phone}</span>
+                  </div>
+                  <Textarea
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder={`Type your ${composer === "sms" ? "SMS" : "WhatsApp"} message…`}
+                    rows={3}
+                    maxLength={1000}
+                    className="text-[13px]"
+                  />
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground">{message.length}/1000</span>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="sm" onClick={resetComposer} disabled={busy !== null}>
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => sendMessage(composer)}
+                        disabled={busy !== null || !message.trim()}
+                        style={{ backgroundColor: ACCENT }}
+                      >
+                        {busy === composer ? "Sending…" : "Send"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {row.pupil_id && (
-              <div className="mt-4">
+              <div className="mt-3">
                 <Button
                   variant="outline"
                   size="sm"
