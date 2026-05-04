@@ -1134,6 +1134,14 @@ export default function AdminPortal() {
           </motion.div>
         );
 
+      case "ai-voice":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <FamulorHub scope="admin" />
+          </motion.div>
+        );
+
       default:
         return null;
     }
