@@ -84,35 +84,44 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
-                fontSize: 10,
+                fontSize: compact ? 9 : 10,
                 fontWeight: 700,
                 color: setupIssue ? AMBER : BLUE,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
                 lineHeight: 1.1,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
               }}
             >
-              AI Receptionist
+              {compact ? "AI RECEPTION" : "AI Receptionist"}
             </div>
             <div
               style={{
-                fontSize: compact ? 13 : 14,
+                fontSize: compact ? 12 : 14,
                 fontWeight: 600,
                 color: CHARCOAL,
                 marginTop: 2,
                 lineHeight: 1.2,
                 letterSpacing: "-0.2px",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
               }}
             >
-              Auto-divert during lessons
+              {compact ? "Auto-divert" : "Auto-divert during lessons"}
             </div>
             <div
               style={{
-                fontSize: 11,
+                fontSize: compact ? 10 : 11,
                 color: setupIssue ? AMBER : active ? GREEN : MUTED,
                 marginTop: 3,
                 fontWeight: active ? 600 : 500,
                 fontVariantNumeric: "tabular-nums",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
               }}
             >
               {statusLine}
