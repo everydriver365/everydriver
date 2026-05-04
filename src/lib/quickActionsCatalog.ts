@@ -65,6 +65,7 @@ const CATEGORY_BY_ID: Record<string, string> = {
   settings: "Admin",
   accessibility: "Admin",
   "to-do": "Admin",
+  "call-answering": "Admin",
 };
 
 const BADGE_BY_ID: Record<string, QuickActionEntry["badgeKey"]> = {
