@@ -2,7 +2,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ExternalLink, MessageCircle, MessageSquare, PhoneCall, PhoneIncoming, PhoneOutgoing, Sparkles } from "lucide-react";
+import { ExternalLink, MessageCircle, MessageSquare, PhoneCall, PhoneIncoming, PhoneOutgoing, Sparkles, Wand2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -48,10 +48,39 @@ export function FamulorCallLogDrawer({ row, onClose }: Props) {
   const [composer, setComposer] = useState<null | "sms" | "whatsapp">(null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState<null | "call" | "sms" | "whatsapp">(null);
+  const [tone, setTone] = useState<"friendly" | "professional" | "booking_nudge" | "apology">(
+    row?.status === "no_answer" || row?.status === "failed" ? "apology" : "friendly",
+  );
+  const [drafting, setDrafting] = useState(false);
 
   const resetComposer = () => {
     setComposer(null);
     setMessage("");
+  };
+
+  const draftWithAi = async (channel: "sms" | "whatsapp") => {
+    if (!row) return;
+    setDrafting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("famulor-draft-followup", {
+        body: { call_log_id: row.id, channel, tone },
+      });
+      if (error) throw error;
+      const draft = (data as any)?.message?.toString() ?? "";
+      if (!draft) throw new Error("No draft returned");
+      setMessage(draft);
+    } catch (e: any) {
+      const msg = e?.message ?? "Failed to draft message";
+      if (msg.includes("402") || msg.toLowerCase().includes("credits")) {
+        toast.error("AI credits exhausted — top up in Workspace → Usage.");
+      } else if (msg.includes("429") || msg.toLowerCase().includes("rate")) {
+        toast.error("AI is busy — try again in a moment.");
+      } else {
+        toast.error(msg);
+      }
+    } finally {
+      setDrafting(false);
+    }
   };
 
   const triggerCallback = async () => {
@@ -201,11 +230,51 @@ export function FamulorCallLogDrawer({ row, onClose }: Props) {
                   <div className="text-[11px] text-muted-foreground mb-1.5">
                     {composer === "sms" ? "Send SMS" : "Send WhatsApp"} to <span className="font-mono">{phone}</span>
                   </div>
+
+                  {/* AI drafter */}
+                  <div className="mb-2 rounded-[10px] bg-[#F4F7F6] p-2">
+                    <div className="flex items-center gap-1 text-[10px] uppercase tracking-wide text-muted-foreground mb-1.5">
+                      <Sparkles className="h-3 w-3" style={{ color: ACCENT }} /> AI follow-up
+                    </div>
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {([
+                        { id: "friendly", label: "Friendly" },
+                        { id: "professional", label: "Professional" },
+                        { id: "booking_nudge", label: "Booking nudge" },
+                        { id: "apology", label: "Apology" },
+                      ] as const).map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setTone(t.id)}
+                          className={`text-[10px] px-2 py-0.5 rounded-full border transition ${
+                            tone === t.id
+                              ? "bg-[#1A52A0] text-white border-[#1A52A0]"
+                              : "bg-white text-[#1A52A0] border-[#E5E5EA] hover:border-[#1A52A0]"
+                          }`}
+                        >
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={drafting || busy !== null}
+                      onClick={() => draftWithAi(composer)}
+                      className="w-full h-7 text-[11px]"
+                    >
+                      <Wand2 className="h-3 w-3 mr-1" />
+                      {drafting ? "Drafting…" : message ? "Regenerate draft" : "Generate draft"}
+                    </Button>
+                  </div>
+
                   <Textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    placeholder={`Type your ${composer === "sms" ? "SMS" : "WhatsApp"} message…`}
-                    rows={3}
+                    placeholder={`Type your ${composer === "sms" ? "SMS" : "WhatsApp"} message — or tap Generate draft above`}
+                    rows={4}
                     maxLength={1000}
                     className="text-[13px]"
                   />

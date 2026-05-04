@@ -3527,12 +3527,16 @@ export type Database = {
       famulor_settings: {
         Row: {
           auto_book_enabled: boolean
+          auto_fallback_channel: string
+          auto_fallback_enabled: boolean
           business_hours_only: boolean
           created_at: string
           daily_call_cap: number
           dormant_days_threshold: number
           dormant_winback_enabled: boolean
+          draft_followup_enabled: boolean
           enabled: boolean
+          fallback_template: string | null
           id: string
           inbound_agent_id: string | null
           inbound_phone_number: string | null
@@ -3545,12 +3549,16 @@ export type Database = {
         }
         Insert: {
           auto_book_enabled?: boolean
+          auto_fallback_channel?: string
+          auto_fallback_enabled?: boolean
           business_hours_only?: boolean
           created_at?: string
           daily_call_cap?: number
           dormant_days_threshold?: number
           dormant_winback_enabled?: boolean
+          draft_followup_enabled?: boolean
           enabled?: boolean
+          fallback_template?: string | null
           id?: string
           inbound_agent_id?: string | null
           inbound_phone_number?: string | null
@@ -3563,12 +3571,16 @@ export type Database = {
         }
         Update: {
           auto_book_enabled?: boolean
+          auto_fallback_channel?: string
+          auto_fallback_enabled?: boolean
           business_hours_only?: boolean
           created_at?: string
           daily_call_cap?: number
           dormant_days_threshold?: number
           dormant_winback_enabled?: boolean
+          draft_followup_enabled?: boolean
           enabled?: boolean
+          fallback_template?: string | null
           id?: string
           inbound_agent_id?: string | null
           inbound_phone_number?: string | null
