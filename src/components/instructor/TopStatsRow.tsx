@@ -3,8 +3,10 @@ import { Phone } from "lucide-react";
 import type { AICallDivertState } from "@/hooks/useAICallDivert";
 
 /* Brand tokens */
-const RED = "#10A37F";
-const SOFT_RED = "#ECFDF5";
+const RED = "#DC2626";
+const GREEN = "#10A37F";
+const SOFT_GREEN = "#ECFDF5";
+const SOFT_RED = "#FEF2F2";
 const LIGHT_GRAY = "#E5E5E5";
 const BLUE = "#2563EB";
 const NEAR_BLACK = "#1A1A1A";
@@ -35,6 +37,8 @@ export function TopStatsRow({
   hoursGoal,
 }: TopStatsRowProps) {
   const aiOn = ai.toggleOn;
+  const ACCENT = aiOn ? GREEN : RED;
+  const ACCENT_SOFT = aiOn ? SOFT_GREEN : SOFT_RED;
 
   const resumesText = useMemo(() => {
     const target = ai.windowEnd && ai.insideWindow
@@ -97,7 +101,7 @@ export function TopStatsRow({
               bottom: 0,
               left: 0,
               width: 3,
-              background: RED,
+              background: ACCENT,
             }}
           />
 
@@ -118,14 +122,14 @@ export function TopStatsRow({
                 width: 32,
                 height: 32,
                 borderRadius: 9,
-                background: SOFT_RED,
+                background: ACCENT_SOFT,
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
               }}
             >
-              <Phone size={16} strokeWidth={2} color={RED} />
+              <Phone size={16} strokeWidth={2} color={ACCENT} />
               {aiOn && (
                 <span
                   aria-hidden
@@ -142,7 +146,7 @@ export function TopStatsRow({
                       position: "absolute",
                       inset: 0,
                       borderRadius: "50%",
-                      background: RED,
+                      background: ACCENT,
                       border: "1.5px solid #FFFFFF",
                       boxSizing: "border-box",
                     }}
@@ -152,7 +156,7 @@ export function TopStatsRow({
                       position: "absolute",
                       inset: 0,
                       borderRadius: "50%",
-                      background: RED,
+                      background: ACCENT,
                       animation: "ts-pulse 2s ease-out infinite",
                     }}
                   />
@@ -182,7 +186,7 @@ export function TopStatsRow({
                 style={{
                   fontSize: 11,
                   fontWeight: 500,
-                  color: aiOn ? "rgba(26,26,26,0.55)" : RED,
+                  color: ACCENT,
                   lineHeight: 1.3,
                 }}
               >
@@ -201,7 +205,7 @@ export function TopStatsRow({
               width: 30,
               height: 17,
               borderRadius: 999,
-              background: aiOn ? RED : LIGHT_GRAY,
+              background: aiOn ? ACCENT : LIGHT_GRAY,
               position: "relative",
               transition: "background 180ms ease",
               cursor: "pointer",
