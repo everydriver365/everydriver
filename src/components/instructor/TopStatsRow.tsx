@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import type { AICallDivertState } from "@/hooks/useAICallDivert";
 
 /* Spec tokens (Option C) */
@@ -34,24 +33,7 @@ export function TopStatsRow({
 }: TopStatsRowProps) {
   const aiOn = ai.toggleOn;
 
-  const divertSubtext = useMemo(() => {
-    if (!aiOn) return "Off";
-    if (ai.windowEnd && ai.insideWindow) {
-      return `Resumes ${ai.windowEnd.toLocaleTimeString("en-GB", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })}`;
-    }
-    if (ai.windowStart) {
-      return `Starts ${ai.windowStart.toLocaleTimeString("en-GB", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })}`;
-    }
-    return ai.statusLine;
-  }, [aiOn, ai.windowEnd, ai.windowStart, ai.insideWindow, ai.statusLine]);
+  const divertSubtext = aiOn ? "On" : "Off";
 
   const toggleAI = (e: React.MouseEvent) => {
     e.stopPropagation();
