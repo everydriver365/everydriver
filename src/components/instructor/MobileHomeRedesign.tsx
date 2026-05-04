@@ -1363,10 +1363,53 @@ export function MobileHomeRedesign({
         <MobileHomeBottomSections instructorId={instructorId} />
       </div>
 
-      {/* Needs attention (merged) */}
-      <div style={{ marginTop: 6 }}>
-        <SectionLabel>Needs attention</SectionLabel>
+      {/* Needs attention + Upgrade */}
+      <div style={{ padding: "14px 15px 24px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: "#8E8E93",
+              letterSpacing: 1.2,
+              textTransform: "uppercase",
+            }}
+          >
+            Needs attention
+          </span>
+          {totalAttentionCount > 0 && (
+            <span
+              style={{
+                background: "#CC2229",
+                color: "#FFFFFF",
+                borderRadius: 10,
+                padding: "1px 7px",
+                fontSize: 9,
+                fontWeight: 700,
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {totalAttentionCount}
+            </span>
+          )}
+        </div>
         <AttentionCard rows={attentionRows} />
+
+        <div
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: "#8E8E93",
+            letterSpacing: 1.2,
+            textTransform: "uppercase",
+            marginTop: 4,
+            marginBottom: 8,
+            paddingLeft: 2,
+          }}
+        >
+          Upgrade
+        </div>
+        <UpgradeCard rows={upgradeRows} />
       </div>
 
       {/* Upcoming events */}
