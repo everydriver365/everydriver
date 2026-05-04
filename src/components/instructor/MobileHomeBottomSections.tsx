@@ -12,6 +12,10 @@ import { useInstructorPupilsPaymentSummary } from "@/hooks/usePupilPaymentStatus
 import { useInstructorPinnedTiles } from "@/hooks/useInstructorPinnedTiles";
 import { QUICK_ACCESS_TILES, QUICK_ACCESS_TILES_BY_ID } from "@/components/instructor/quickAccess/tileRegistry";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import type { TodayLesson } from "@/hooks/useTodayRemainingLessons";
 import { CustomizeFrequentlyUsedSheet } from "@/components/instructor/quickAccess/CustomizeFrequentlyUsedSheet";
 import { InstructorSearchOverlay } from "@/components/instructor/InstructorSearchOverlay";
 
@@ -156,8 +160,27 @@ function StatusPill({ status, label }: { status: LessonStatus; label: string }) 
 
 function ScheduleSection({ instructorId }: { instructorId: string }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [selectedDay, setSelectedDay] = useState<"Today" | "Tomorrow">("Today");
   const [showAdd, setShowAdd] = useState(false);
+  const [wizardLesson, setWizardLesson] = useState<TodayLesson | null>(null);
+  const [wizardBalance, setWizardBalance] = useState(0);
+
+  const openEOLWizard = async (lesson: TodayLesson) => {
+    let balance = 0;
+    try {
+      const { data } = await supabase
+        .from("pupils")
+        .select("account_balance")
+        .eq("id", lesson.pupilId)
+        .single();
+      balance = Number(data?.account_balance ?? 0);
+    } catch {
+      balance = 0;
+    }
+    setWizardBalance(balance);
+    setWizardLesson(lesson);
+  };
 
   const dayDate = useMemo(() => {
     const d = new Date();
@@ -431,14 +454,21 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                   </div>
 
                   {/* EOL pill — strikethrough only when complete */}
-                  <div
+                  <button
+                    type="button"
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      openEOLWizard(e.lesson);
+                    }}
                     style={{
                       background: BLUE_TINT,
                       borderRadius: 20,
                       padding: "2px 7px",
                       flexShrink: 0,
+                      border: "none",
+                      cursor: "pointer",
                     }}
-                    aria-label={eolDone ? "End of lesson complete" : "End of lesson pending"}
+                    aria-label={eolDone ? "End of lesson complete — review" : "Complete end of lesson"}
                   >
                     <span
                       style={{
@@ -453,7 +483,7 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                     >
                       EOL
                     </span>
-                  </div>
+                  </button>
 
                   {/* Payment pill */}
                   {showPayPill && (
@@ -623,6 +653,30 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
         defaultDate={dayDate}
         onSuccess={() => setShowAdd(false)}
       />
+
+      {wizardLesson && (
+        <EndLessonWizard
+          open={!!wizardLesson}
+          onOpenChange={(open) => {
+            if (!open) setWizardLesson(null);
+          }}
+          lessonId={wizardLesson.id}
+          pupilId={wizardLesson.pupilId}
+          pupilName={wizardLesson.pupilName}
+          instructorId={instructorId}
+          durationMinutes={wizardLesson.durationMinutes}
+          lessonDate={format(dayDate, "yyyy-MM-dd")}
+          startTime={wizardLesson.startTime}
+          currentBalance={wizardBalance}
+          onCompleted={() => {
+            setWizardLesson(null);
+            queryClient.invalidateQueries({ queryKey: ["day-lessons"] });
+            queryClient.invalidateQueries({ queryKey: ["day-lesson-history"] });
+            queryClient.invalidateQueries({ queryKey: ["today-overview"] });
+            queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+          }}
+        />
+      )}
     </div>
   );
 }
