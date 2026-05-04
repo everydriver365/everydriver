@@ -52,7 +52,13 @@ export function FamulorHub({ scope, instructorId, instructorIds, schoolId }: Pro
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="w-full justify-start overflow-x-auto rounded-[12px] bg-white border border-[#E5E5EA] p-1 h-auto">
           <TabsTrigger value="overview" className="gap-1.5"><BarChart3 className="h-3.5 w-3.5" />Overview</TabsTrigger>
-          <TabsTrigger value="calls" className="gap-1.5"><PhoneCall className="h-3.5 w-3.5" />Calls</TabsTrigger>
+          {scope === "instructor" && (
+            <TabsTrigger value="channels" className="gap-1.5"><Network className="h-3.5 w-3.5" />Channels</TabsTrigger>
+          )}
+          {(scope === "school" || scope === "admin") && (
+            <TabsTrigger value="matrix" className="gap-1.5"><Network className="h-3.5 w-3.5" />Channels</TabsTrigger>
+          )}
+          <TabsTrigger value="calls" className="gap-1.5"><PhoneCall className="h-3.5 w-3.5" />Conversations</TabsTrigger>
           <TabsTrigger value="campaigns" className="gap-1.5"><Megaphone className="h-3.5 w-3.5" />Campaigns</TabsTrigger>
           <TabsTrigger value="agents" className="gap-1.5"><Users className="h-3.5 w-3.5" />Agents</TabsTrigger>
           {showSettings && (
@@ -64,8 +70,21 @@ export function FamulorHub({ scope, instructorId, instructorIds, schoolId }: Pro
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
+          {scope === "instructor" && instructorId && (
+            <div className="mb-4"><AIBookingRequestsCard instructorId={instructorId} /></div>
+          )}
           <FamulorOverviewTab scope={scope} instructorId={instructorId} instructorIds={instructorIds} />
         </TabsContent>
+        {scope === "instructor" && instructorId && (
+          <TabsContent value="channels" className="mt-4">
+            <FamulorChannelsTab instructorId={instructorId} />
+          </TabsContent>
+        )}
+        {(scope === "school" || scope === "admin") && (
+          <TabsContent value="matrix" className="mt-4">
+            <FamulorChannelsMatrix instructorIds={instructorIds} />
+          </TabsContent>
+        )}
         <TabsContent value="calls" className="mt-4">
           <FamulorCallsTab scope={scope} instructorId={instructorId} instructorIds={instructorIds} />
         </TabsContent>
