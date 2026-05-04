@@ -274,10 +274,35 @@ export function TopStatsRow({
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 8px;
         }
-        @media (max-width: 360px) {
-          .ts-row {
-            grid-template-columns: 1fr;
-            gap: 10px;
+        @media (max-width: 480px) {
+          .ts-row > * {
+            padding: 10px 11px !important;
+            min-height: 116px !important;
+          }
+          .ts-row .ts-value {
+            font-size: 20px !important;
+          }
+          .ts-row .ts-value-sub {
+            font-size: 13px !important;
+          }
+          .ts-row .ts-main {
+            font-size: 13px !important;
+          }
+          .ts-row .ts-sub,
+          .ts-row .ts-pill,
+          .ts-row .ts-progress-label {
+            font-size: 11px !important;
+          }
+          .ts-row .ts-label {
+            font-size: 10px !important;
+          }
+          .ts-row .ts-icon-lg {
+            width: 26px !important;
+            height: 26px !important;
+          }
+          .ts-row .ts-icon-sm {
+            width: 24px !important;
+            height: 24px !important;
           }
         }
       `}</style>
