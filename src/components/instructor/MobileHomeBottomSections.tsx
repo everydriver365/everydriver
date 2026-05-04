@@ -343,6 +343,11 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                 ? Math.max(0, Math.round((e.start.getTime() - now.getTime()) / 60_000))
                 : 0;
             const fee = e.lesson.amountDue ?? 0;
+            const eolDone = e.lesson.pupilId
+              ? (eolSet?.has(eolKey(e.lesson.pupilId, e.lesson.startTime || "")) ?? false)
+              : false;
+            const isPaid = e.lesson.paymentStatus === "paid";
+            const showPayPill = fee > 0;
 
             return (
               <div key={e.lesson.id}>
@@ -424,6 +429,67 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                       {e.lesson.pickupLocation ? ` · ${e.lesson.pickupLocation}` : ""}
                     </div>
                   </div>
+
+                  {/* EOL pill — strikethrough only when complete */}
+                  <div
+                    style={{
+                      background: BLUE_TINT,
+                      borderRadius: 20,
+                      padding: "2px 7px",
+                      flexShrink: 0,
+                    }}
+                    aria-label={eolDone ? "End of lesson complete" : "End of lesson pending"}
+                  >
+                    <span
+                      style={{
+                        fontSize: 9,
+                        fontWeight: 700,
+                        color: BLUE,
+                        letterSpacing: 0.2,
+                        textTransform: "uppercase",
+                        textDecoration: eolDone ? "line-through" : "none",
+                        opacity: eolDone ? 0.6 : 1,
+                      }}
+                    >
+                      EOL
+                    </span>
+                  </div>
+
+                  {/* Payment pill */}
+                  {showPayPill && (
+                    <div
+                      style={{
+                        background: isPaid ? "#E8F8ED" : "#FFECEC",
+                        borderRadius: 20,
+                        padding: "2px 7px",
+                        flexShrink: 0,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 3,
+                      }}
+                      aria-label={isPaid ? "Paid" : "Not paid"}
+                    >
+                      <div
+                        style={{
+                          width: 5,
+                          height: 5,
+                          borderRadius: 3,
+                          background: isPaid ? "#1A7A3C" : "#D33B3B",
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontSize: 9,
+                          fontWeight: 700,
+                          color: isPaid ? "#1A7A3C" : "#D33B3B",
+                          letterSpacing: 0.2,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {isPaid ? "Paid" : "Not paid"}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Right status / fee area */}
                   {e.status === "inProgress" && (
