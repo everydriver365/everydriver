@@ -50,6 +50,16 @@ Deno.serve(async (req) => {
       await admin.from("ai_booking_requests").update({
         status: "declined", decided_at: new Date().toISOString(),
       }).eq("id", request_id);
+      notify({
+        kind: "booking_declined",
+        instructor_id: instructorRow.id,
+        pupil_id: reqRow.pupil_id,
+        request_id,
+        contact_name: reqRow.contact_name,
+        contact_phone: reqRow.contact_phone,
+        source_channel: reqRow.source_channel,
+        requested_start: reqRow.requested_start,
+      });
       return json({ success: true, status: "declined" });
     }
 
@@ -91,6 +101,18 @@ Deno.serve(async (req) => {
       resulting_lesson_id: lesson.id,
     }).eq("id", request_id);
 
+    notify({
+      kind: "booking_approved",
+      instructor_id: instructorRow.id,
+      pupil_id: reqRow.pupil_id,
+      request_id,
+      lesson_id: lesson.id,
+      contact_name: reqRow.contact_name,
+      contact_phone: reqRow.contact_phone,
+      source_channel: reqRow.source_channel,
+      requested_start: reqRow.requested_start,
+    });
+
     return json({ success: true, status: "approved", lesson_id: lesson.id });
   } catch (err) {
     return json({ error: err instanceof Error ? err.message : "Unknown error" }, 500);
@@ -102,4 +124,15 @@ function json(body: unknown, status = 200) {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+function notify(body: Record<string, unknown>) {
+  fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/notify-ai-event`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+    },
+    body: JSON.stringify(body),
+  }).catch((e) => console.error("[famulor-booking-decision] notify failed", e));
 }
