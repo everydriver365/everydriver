@@ -742,7 +742,22 @@ interface AttentionRow {
   iconColor: string;
   title: string;
   subtitle: string;
-  badge?: { label: string; bg: string };
+  badge?: { label: string; bg: string; fg?: string; variant?: "circle" | "pill" };
+  isClear?: boolean;
+  onClick: () => void;
+}
+
+interface UpgradeRowSpec {
+  key: string;
+  Icon: LucideIcon;
+  iconBg: string;
+  iconColor: string;
+  label: string;
+  tierLabel: string;
+  tierBg: string;
+  tierColor: string;
+  subtitle: string;
+  upgradeBg: string;
   onClick: () => void;
 }
 
