@@ -209,13 +209,17 @@ function GreetingBlock({
 function SummaryStatCard({
   label,
   value,
-  valueColor,
   sub,
+  icon: Icon,
+  iconBg,
+  iconColor,
 }: {
   label: string;
   value: string;
-  valueColor: string;
   sub: string;
+  icon: LucideIcon;
+  iconBg: string;
+  iconColor: string;
 }) {
   return (
     <div
@@ -223,38 +227,61 @@ function SummaryStatCard({
         background: "#FFFFFF",
         border: `0.5px solid ${BORDER}`,
         borderRadius: 14,
-        padding: "10px 10px",
+        padding: "12px 12px",
         minWidth: 0,
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
+        justifyContent: "space-between",
+        gap: 6,
         boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
+        height: "100%",
       }}
     >
-      <div
-        style={{
-          fontSize: 9,
-          fontWeight: 700,
-          color: MUTED,
-          letterSpacing: "0.08em",
-          marginBottom: 4,
-        }}
-      >
-        {label}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 6 }}>
+        <div
+          style={{
+            fontSize: 9,
+            fontWeight: 700,
+            color: MUTED,
+            letterSpacing: "0.08em",
+            lineHeight: 1.1,
+            paddingTop: 2,
+          }}
+        >
+          {label}
+        </div>
+        <span
+          aria-hidden
+          style={{
+            width: 26,
+            height: 26,
+            borderRadius: 8,
+            background: iconBg,
+            color: iconColor,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Icon size={13} strokeWidth={2.2} />
+        </span>
       </div>
-      <div
-        style={{
-          fontSize: 18,
-          fontWeight: 700,
-          color: valueColor,
-          letterSpacing: "-0.3px",
-          lineHeight: 1.1,
-          fontVariantNumeric: "tabular-nums",
-        }}
-      >
-        {value}
+      <div>
+        <div
+          style={{
+            fontSize: 22,
+            fontWeight: 700,
+            color: "#1A1A1A",
+            letterSpacing: "-0.4px",
+            lineHeight: 1.05,
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          {value}
+        </div>
+        <div style={{ fontSize: 11, color: MUTED, marginTop: 4 }}>{sub}</div>
       </div>
-      <div style={{ fontSize: 10, color: MUTED, marginTop: 3 }}>{sub}</div>
     </div>
   );
 }
