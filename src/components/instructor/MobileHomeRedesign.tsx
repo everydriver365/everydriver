@@ -36,6 +36,9 @@ import { Wrench, Users as UsersIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { differenceInDays, isPast } from "date-fns";
+import { useAICallDivert } from "@/hooks/useAICallDivert";
+import { AIReceptionistCard } from "@/components/instructor/AIReceptionistCard";
+import { AICallDivertSheet } from "@/components/instructor/AICallDivertSheet";
 
 /* ---------- Brand tokens ---------- */
 const RED = "#B23A3F";
