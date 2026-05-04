@@ -82,7 +82,7 @@ export function FamulorHub({ scope, instructorId, instructorIds, schoolId }: Pro
         )}
         {(scope === "school" || scope === "admin") && (
           <TabsContent value="matrix" className="mt-4">
-            <FamulorChannelsMatrix instructorIds={instructorIds} />
+            <FamulorChannelsMatrix instructorIds={instructorIds} canManage={scope === "admin"} />
           </TabsContent>
         )}
         <TabsContent value="calls" className="mt-4">
