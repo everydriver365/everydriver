@@ -1071,6 +1071,41 @@ export function MobileHomeRedesign({
     });
   }
 
+  // Membership level (placeholder — to be wired later)
+  const membershipLevel: "Free" | "Starter" | "Pro" | "Premium" = "Starter";
+  const canUpgradeMembership = membershipLevel !== "Premium";
+  attentionRows.push({
+    key: "membership",
+    group: "todo",
+    Icon: Crown,
+    iconBg: "#FFF7E0",
+    iconColor: "#B45309",
+    title: `Membership · ${membershipLevel}`,
+    subtitle: canUpgradeMembership ? "Unlock more features and lower fees" : "You're on the top plan",
+    badge: canUpgradeMembership ? { label: "Upgrade", bg: "#B45309" } : undefined,
+    onClick: () => navigate("/instructor/subscription"),
+  });
+
+  // Health cover (placeholder — to be wired later)
+  const healthCover: "None" | "Basic" | "Full" = "Basic";
+  const canUpgradeHealth = healthCover !== "Full";
+  attentionRows.push({
+    key: "health-cover",
+    group: "todo",
+    Icon: ShieldPlus,
+    iconBg: "#E8F1FF",
+    iconColor: BLUE,
+    title: `Health cover · ${healthCover}`,
+    subtitle:
+      healthCover === "None"
+        ? "Add cover to protect your earnings"
+        : canUpgradeHealth
+          ? "Upgrade for full income protection"
+          : "Full cover active",
+    badge: canUpgradeHealth ? { label: "Upgrade", bg: BLUE } : undefined,
+    onClick: () => navigate("/instructor/health-cover"),
+  });
+
   return (
     <div
       style={{
