@@ -9,6 +9,7 @@ import { FamulorLogsTab } from "./tabs/FamulorLogsTab";
 import { FamulorChannelsTab } from "./tabs/FamulorChannelsTab";
 import { FamulorChannelsMatrix } from "./FamulorChannelsMatrix";
 import { AIBookingRequestsCard } from "./AIBookingRequestsCard";
+import { AIRescheduleRequestsCard } from "./AIRescheduleRequestsCard";
 import { FamulorSettingsCard } from "@/components/instructor/integrations/FamulorSettingsCard";
 
 export type FamulorHubScope = "instructor" | "school" | "admin";
@@ -72,6 +73,9 @@ export function FamulorHub({ scope, instructorId, instructorIds, schoolId }: Pro
         <TabsContent value="overview" className="mt-4">
           {scope === "instructor" && instructorId && (
             <div className="mb-4"><AIBookingRequestsCard instructorId={instructorId} /></div>
+          )}
+          {scope === "instructor" && instructorId && (
+            <div className="mb-4"><AIRescheduleRequestsCard instructorId={instructorId} /></div>
           )}
           <FamulorOverviewTab scope={scope} instructorId={instructorId} instructorIds={instructorIds} />
         </TabsContent>
