@@ -190,7 +190,7 @@ export function TopStatsRow({
       <style>{`
         .ts-row {
           display: grid;
-          grid-template-columns: 3fr 1fr 1fr;
+          grid-template-columns: minmax(0, 1fr) auto auto;
           align-items: stretch;
           gap: 6px;
         }
