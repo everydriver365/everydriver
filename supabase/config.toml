@@ -260,3 +260,9 @@ verify_jwt = false
 
 [functions.famulor-webhook]
 verify_jwt = false
+
+[functions.famulor-cron-reminders]
+verify_jwt = false
+
+[functions.famulor-cron-dormant]
+verify_jwt = false
