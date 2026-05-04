@@ -194,16 +194,6 @@ function GreetingBlock({
       >
         {greet}, {firstName}.
       </h1>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 12 }}>
-        <Pill
-          label={`${lessonsToday} lesson${lessonsToday === 1 ? "" : "s"}`}
-          tone="blue"
-        />
-        <Pill label={`£${Math.round(earningsToday)} today`} tone="blue" />
-        {pendingJobs > 0 && (
-          <Pill label={`${pendingJobs} waiting`} tone="red" />
-        )}
-      </div>
     </div>
   );
 }
@@ -1085,39 +1075,6 @@ export function MobileHomeRedesign({
         pendingJobs={pendingJobs}
       />
 
-      {/* AI divert status pill — sits just below the greeting pills */}
-      <div style={{ padding: "0 18px 8px", marginTop: -4 }}>
-        <button
-          type="button"
-          onClick={() => setDivertSheetOpen(true)}
-          aria-label="Open AI call divert settings"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            height: 26,
-            padding: "0 11px",
-            borderRadius: 999,
-            fontSize: 12,
-            fontWeight: 600,
-            background: "#FFFFFF",
-            color: aiDivert.active ? "#10A37F" : BLUE,
-            border: `0.5px solid ${aiDivert.active ? "rgba(16,163,127,0.45)" : BLUE}`,
-            letterSpacing: "-0.1px",
-            cursor: "pointer",
-          }}
-        >
-          <span
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: "50%",
-              background: aiDivert.active ? "#10A37F" : BLUE,
-            }}
-          />
-          {aiDivert.pillLabel}
-        </button>
-      </div>
 
       {/* Top summary row: AI Receptionist | Today | This Week */}
       <TopStatsRow
