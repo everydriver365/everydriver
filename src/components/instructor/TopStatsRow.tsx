@@ -231,7 +231,7 @@ export function TopStatsRow({
             background: "#FFFFFF",
             boxShadow: TILE_INSET,
             borderRadius: 10,
-            padding: "8px 12px",
+            padding: "8px 8px",
             minHeight: 52,
             display: "flex",
             flexDirection: "column",
@@ -241,10 +241,10 @@ export function TopStatsRow({
             minWidth: 0,
           }}
         >
-          <span style={{ display: "inline-flex", alignItems: "baseline", gap: 4 }}>
+          <span style={{ display: "inline-flex", alignItems: "baseline", gap: 3 }}>
             <span
               style={{
-                fontSize: 20,
+                fontSize: 17,
                 fontWeight: 500,
                 color: NEAR_BLACK,
                 fontVariantNumeric: "tabular-nums",
@@ -256,7 +256,7 @@ export function TopStatsRow({
             {typeof earningsDelta === "number" && earningsDelta !== 0 && (
               <span
                 style={{
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: 500,
                   color: BLUE,
                   fontVariantNumeric: "tabular-nums",
@@ -277,7 +277,7 @@ export function TopStatsRow({
               lineHeight: 1,
             }}
           >
-            today · {todayLessons} {todayLessons === 1 ? "lesson" : "lessons"}
+            {todayLessons} today
           </span>
         </div>
 
@@ -287,7 +287,7 @@ export function TopStatsRow({
             background: "#FFFFFF",
             boxShadow: TILE_INSET,
             borderRadius: 10,
-            padding: "8px 12px",
+            padding: "8px 8px",
             minHeight: 52,
             display: "flex",
             flexDirection: "column",
@@ -297,29 +297,12 @@ export function TopStatsRow({
             minWidth: 0,
           }}
         >
-          <span style={{ whiteSpace: "nowrap", display: "inline-flex", alignItems: "baseline", gap: 4 }}>
-            <span
-              style={{
-                fontSize: 20,
-                fontWeight: 500,
-                color: NEAR_BLACK,
-                fontVariantNumeric: "tabular-nums",
-                lineHeight: 1,
-              }}
-            >
-              {hoursThisWeek}h
+          <span style={{ whiteSpace: "nowrap", display: "inline-flex", alignItems: "baseline", gap: 3 }}>
+            <span style={{ fontSize: 17, fontWeight: 500, color: NEAR_BLACK, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
+              {hoursThisWeek}
             </span>
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 400,
-                color: NEAR_BLACK,
-                opacity: 0.5,
-                fontVariantNumeric: "tabular-nums",
-                lineHeight: 1,
-              }}
-            >
-              / {hoursGoal}h
+            <span style={{ fontSize: 10, fontWeight: 400, color: NEAR_BLACK, opacity: 0.5, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
+              /{hoursGoal}h
             </span>
           </span>
           <div
