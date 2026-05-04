@@ -320,6 +320,30 @@ export function FamulorSettingsCard({ instructorId }: Props) {
               placeholder="UK English by default"
             />
           </div>
+          <div>
+            <Label className="text-[12px]">WhatsApp agent ID</Label>
+            <Input
+              value={settings.whatsapp_agent_id ?? ""}
+              onChange={(e) => update({ whatsapp_agent_id: e.target.value })}
+              placeholder="e.g. agent_wa_…"
+            />
+          </div>
+          <div>
+            <Label className="text-[12px]">Web chat agent ID</Label>
+            <Input
+              value={settings.webchat_agent_id ?? ""}
+              onChange={(e) => update({ webchat_agent_id: e.target.value })}
+              placeholder="e.g. agent_chat_…"
+            />
+          </div>
+        </div>
+        <div className="pt-2 border-t border-[#F1F4F8] mt-2">
+          <ToggleRow
+            title="Auto-confirm AI bookings"
+            subtitle="Skip your approval — let the AI book lessons straight into your calendar."
+            checked={settings.auto_confirm_bookings}
+            onChange={(v) => update({ auto_confirm_bookings: v })}
+          />
         </div>
       </div>
 
