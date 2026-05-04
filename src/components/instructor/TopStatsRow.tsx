@@ -1,14 +1,16 @@
+import { useMemo } from "react";
+import { Phone } from "lucide-react";
 import type { AICallDivertState } from "@/hooks/useAICallDivert";
 
-/* Spec tokens (Option C) */
-const GREEN = "#10A37F";
-const SOFT_GREEN = "#ECFDF5";
-const DARK_GREEN = "#065F46";
+/* Brand tokens */
+const RED = "#DC2626";
+const SOFT_RED = "#FEF2F2";
+const LIGHT_GRAY = "#E5E5E5";
 const BLUE = "#2563EB";
 const NEAR_BLACK = "#1A1A1A";
-const WARM_GRAY = "#F5F5F4";
 const FONT =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", system-ui, sans-serif';
+const TILE_INSET = "inset 0 0 0 0.5px rgba(26,26,26,0.08)";
 
 interface TopStatsRowProps {
   ai: AICallDivertState;
@@ -27,13 +29,24 @@ export function TopStatsRow({
   ai,
   onOpenAISheet,
   earningsToday,
+  todayLessons,
   earningsDelta,
   hoursThisWeek,
   hoursGoal,
 }: TopStatsRowProps) {
   const aiOn = ai.toggleOn;
 
-  const divertSubtext = aiOn ? "On" : "Off";
+  const resumesText = useMemo(() => {
+    const target = ai.windowEnd && ai.insideWindow
+      ? ai.windowEnd
+      : ai.windowStart ?? null;
+    if (!target) return "Calls handled by AI";
+    return `Resumes calls at ${target.toLocaleTimeString("en-GB", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })}`;
+  }, [ai.windowEnd, ai.windowStart, ai.insideWindow]);
 
   const toggleAI = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -56,11 +69,14 @@ export function TopStatsRow({
           onClick={onOpenAISheet}
           aria-label="Open AI receptionist settings"
           style={{
-            background: aiOn ? SOFT_GREEN : WARM_GRAY,
+            position: "relative",
+            overflow: "hidden",
+            background: "#FFFFFF",
+            boxShadow: TILE_INSET,
             border: "none",
-            borderRadius: 8,
+            borderRadius: 10,
             padding: "10px 14px",
-            minHeight: 44,
+            minHeight: 52,
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -72,45 +88,79 @@ export function TopStatsRow({
             fontFamily: FONT,
           }}
         >
+          {/* Always-visible red side stripe */}
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              left: 0,
+              width: 3,
+              background: RED,
+            }}
+          />
+
+          {/* Left content */}
           <span
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: 10,
+              gap: 12,
               minWidth: 0,
+              paddingLeft: 4,
             }}
           >
-            {/* Pulsing status dot */}
+            {/* Icon tile */}
             <span
-              aria-hidden
               style={{
                 position: "relative",
-                width: 7,
-                height: 7,
+                width: 32,
+                height: 32,
+                borderRadius: 9,
+                background: SOFT_RED,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
                 flexShrink: 0,
-                display: "inline-block",
               }}
             >
-              <span
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  borderRadius: "50%",
-                  background: aiOn ? GREEN : "#D1D5DB",
-                }}
-              />
+              <Phone size={16} strokeWidth={2} color={RED} />
               {aiOn && (
                 <span
+                  aria-hidden
                   style={{
                     position: "absolute",
-                    inset: -3,
-                    borderRadius: "50%",
-                    background: GREEN,
-                    animation: "ts-pulse 2s ease-out infinite",
+                    top: -2,
+                    right: -2,
+                    width: 8,
+                    height: 8,
                   }}
-                />
+                >
+                  <span
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      borderRadius: "50%",
+                      background: RED,
+                      border: "1.5px solid #FFFFFF",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                  <span
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      borderRadius: "50%",
+                      background: RED,
+                      animation: "ts-pulse 2s ease-out infinite",
+                    }}
+                  />
+                </span>
               )}
             </span>
+
+            {/* Text block */}
             <span
               style={{
                 display: "inline-flex",
@@ -126,30 +176,32 @@ export function TopStatsRow({
                   lineHeight: 1.2,
                 }}
               >
-                Auto-divert
+                {aiOn ? "Auto-divert active" : "Auto-divert"}
               </span>
               <span
                 style={{
                   fontSize: 11,
-                  fontWeight: 400,
-                  color: aiOn ? DARK_GREEN : "#6B7280",
+                  fontWeight: aiOn ? 400 : 500,
+                  color: aiOn ? "rgba(26,26,26,0.55)" : RED,
                   lineHeight: 1.3,
                 }}
               >
-                {divertSubtext}
+                {aiOn ? resumesText : "Tap to handle missed calls"}
               </span>
             </span>
           </span>
+
+          {/* Toggle */}
           <span
             role="switch"
             aria-checked={aiOn}
-            aria-label="Toggle AI auto-divert"
+            aria-label="Toggle auto-divert"
             onClick={toggleAI}
             style={{
-              width: 26,
-              height: 15,
+              width: 30,
+              height: 17,
               borderRadius: 999,
-              background: aiOn ? GREEN : "#D1D5DB",
+              background: aiOn ? RED : LIGHT_GRAY,
               position: "relative",
               transition: "background 180ms ease",
               cursor: "pointer",
@@ -161,11 +213,12 @@ export function TopStatsRow({
               style={{
                 position: "absolute",
                 top: 2,
-                left: aiOn ? 13 : 2,
-                width: 11,
-                height: 11,
+                left: aiOn ? 15 : 2,
+                width: 13,
+                height: 13,
                 borderRadius: "50%",
                 background: "#FFFFFF",
+                boxShadow: "0 1px 2px rgba(0,0,0,0.15)",
                 transition: "left 180ms ease",
               }}
             />
@@ -175,10 +228,11 @@ export function TopStatsRow({
         {/* TILE 2 — Today's earnings */}
         <div
           style={{
-            background: WARM_GRAY,
-            borderRadius: 8,
+            background: "#FFFFFF",
+            boxShadow: TILE_INSET,
+            borderRadius: 10,
             padding: "8px 12px",
-            minHeight: 44,
+            minHeight: 52,
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
@@ -190,7 +244,7 @@ export function TopStatsRow({
           <span style={{ display: "inline-flex", alignItems: "baseline", gap: 4 }}>
             <span
               style={{
-                fontSize: 16,
+                fontSize: 20,
                 fontWeight: 500,
                 color: NEAR_BLACK,
                 fontVariantNumeric: "tabular-nums",
@@ -218,22 +272,23 @@ export function TopStatsRow({
               fontSize: 10,
               fontWeight: 400,
               color: NEAR_BLACK,
-              opacity: 0.55,
-              marginTop: 2,
+              opacity: 0.5,
+              marginTop: 3,
               lineHeight: 1,
             }}
           >
-            today
+            today · {todayLessons} {todayLessons === 1 ? "lesson" : "lessons"}
           </span>
         </div>
 
         {/* TILE 3 — Week hours */}
         <div
           style={{
-            background: WARM_GRAY,
-            borderRadius: 8,
+            background: "#FFFFFF",
+            boxShadow: TILE_INSET,
+            borderRadius: 10,
             padding: "8px 12px",
-            minHeight: 44,
+            minHeight: 52,
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
@@ -245,7 +300,7 @@ export function TopStatsRow({
           <span style={{ whiteSpace: "nowrap", display: "inline-flex", alignItems: "baseline", gap: 4 }}>
             <span
               style={{
-                fontSize: 16,
+                fontSize: 20,
                 fontWeight: 500,
                 color: NEAR_BLACK,
                 fontVariantNumeric: "tabular-nums",
@@ -270,11 +325,11 @@ export function TopStatsRow({
           <div
             style={{
               width: "100%",
-              height: 2,
-              background: "rgba(26,26,26,0.1)",
+              height: 3,
+              background: "rgba(26,26,26,0.08)",
               borderRadius: 999,
               overflow: "hidden",
-              marginTop: 4,
+              marginTop: 5,
             }}
           >
             <div
@@ -293,7 +348,7 @@ export function TopStatsRow({
           display: grid;
           grid-template-columns: 3fr 1fr 1fr;
           align-items: stretch;
-          gap: 6px;
+          gap: 8px;
         }
         @media (max-width: 640px) {
           .ts-row {
@@ -301,7 +356,7 @@ export function TopStatsRow({
           }
         }
         @keyframes ts-pulse {
-          0% { transform: scale(1); opacity: 0.25; }
+          0% { transform: scale(1); opacity: 0.4; }
           100% { transform: scale(2.5); opacity: 0; }
         }
       `}</style>
