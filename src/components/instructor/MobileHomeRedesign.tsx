@@ -1119,36 +1119,18 @@ export function MobileHomeRedesign({
         </button>
       </div>
 
-      {/* Top summary row: AI Receptionist | Today | This Week — single row */}
-      <div
-        className="grid gap-2 items-stretch"
-        style={{
-          gridTemplateColumns: "minmax(0,1.9fr) minmax(0,1fr) minmax(0,1fr)",
-          padding: "0 14px 10px",
-        }}
-      >
-        <AIReceptionistCard
-          state={aiDivert}
-          onOpenSheet={() => setDivertSheetOpen(true)}
-          compact
-        />
-        <SummaryStatCard
-          label="TODAY"
-          value={`£${Math.round(earningsToday)}`}
-          sub={`${todaySessions} lesson${todaySessions === 1 ? "" : "s"}`}
-          icon={Wallet}
-          iconBg={BLUE_TINT}
-          iconColor={BLUE}
-        />
-        <SummaryStatCard
-          label="THIS WEEK"
-          value={`${hoursThisWeek || 0}h`}
-          sub={`${lessonsThisWeek} lesson${lessonsThisWeek === 1 ? "" : "s"}`}
-          icon={Clock}
-          iconBg="#E7F7EF"
-          iconColor="#10A37F"
-        />
-      </div>
+      {/* Top summary row: AI Receptionist | Today | This Week */}
+      <TopStatsRow
+        ai={aiDivert}
+        onOpenAISheet={() => setDivertSheetOpen(true)}
+        earningsToday={earningsToday}
+        todayLessons={todaySessions}
+        earningsDelta={null}
+        hoursThisWeek={weekly?.hoursThisWeek ?? hoursThisWeek ?? 0}
+        hoursGoal={weekly?.hoursGoal ?? 30}
+        lessonsThisWeek={weekly?.lessonsThisWeek ?? lessonsThisWeek ?? 0}
+        lessonsGoal={Math.max(weekly?.lessonsThisWeek ?? 0, 8)}
+      />
 
       {nextLesson && (
         <>
