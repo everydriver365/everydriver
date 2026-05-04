@@ -69,7 +69,7 @@ export function useAICallDivert(
       const { data, error } = await supabase
         .from("instructors")
         .select(
-          "ai_call_divert_mode, ai_call_divert_enabled, ai_call_divert_buffer_before_minutes, ai_call_divert_buffer_after_minutes, ai_receptionist_phone_number",
+          "ai_call_divert_mode, ai_call_divert_enabled, ai_call_divert_buffer_before_minutes, ai_call_divert_buffer_after_minutes",
         )
         .eq("id", instructorId)
         .maybeSingle();
@@ -80,13 +80,11 @@ export function useAICallDivert(
         mode: ((row.ai_call_divert_mode as AICallDivertMode) || "auto"),
         bufferBeforeMinutes: Number(row.ai_call_divert_buffer_before_minutes ?? 5),
         bufferAfterMinutes: Number(row.ai_call_divert_buffer_after_minutes ?? 5),
-        // Treat the connection as OK if the column doesn't exist (back-compat) or
-        // if we have a value. The UI only flags "Number not connected" when this
-        // is explicitly false.
-        numberConnected:
-          row.ai_receptionist_phone_number === undefined
-            ? true
-            : Boolean(row.ai_receptionist_phone_number),
+        // TODO: when the AI Receptionist phone number is wired up (Vapi/Retell/
+        // Twilio), populate this from instructors.ai_receptionist_phone_number.
+        // For now we assume the number is connected so the UI doesn't false-
+        // positive on the "Number not connected" warning.
+        numberConnected: true,
       };
     },
     enabled: !!instructorId,
