@@ -691,7 +691,7 @@ export function StepBookNext({
       });
       if (clash.hardOverlap) {
         toast.error("That slot was just taken — pick another");
-        await findSlots();
+        await load();
         setBooking(false);
         return;
       }
@@ -709,7 +709,7 @@ export function StepBookNext({
         const friendly = describeLessonClashError(error);
         if (friendly) {
           toast.error(friendly);
-          await findSlots();
+          await load();
           setBooking(false);
           return;
         }
