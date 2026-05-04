@@ -40,6 +40,8 @@ import { differenceInDays, isPast } from "date-fns";
 import { useAICallDivert } from "@/hooks/useAICallDivert";
 import { AIReceptionistCard } from "@/components/instructor/AIReceptionistCard";
 import { AICallDivertSheet } from "@/components/instructor/AICallDivertSheet";
+import { TopStatsRow } from "@/components/instructor/TopStatsRow";
+import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 
 /* ---------- Brand tokens ---------- */
 const RED = "#B23A3F";
