@@ -146,23 +146,42 @@ export function TopStatsRow({
         </button>
 
         {/* TILE 2 — Today's earnings */}
-        <div style={{ ...tileBase, gap: 6 }}>
+        <div
+          style={{
+            ...tileBase,
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 1,
+          }}
+        >
           <span
             style={{
               fontSize: 16,
               fontWeight: 500,
               color: NEAR_BLACK,
               fontVariantNumeric: "tabular-nums",
+              lineHeight: 1,
             }}
           >
             £{Math.round(earningsToday)}
           </span>
-          <span style={{ fontSize: 11, fontWeight: 400, color: MUTED }}>today</span>
+          <span style={{ fontSize: 11, fontWeight: 400, color: MUTED, lineHeight: 1 }}>
+            today
+          </span>
         </div>
 
         {/* TILE 3 — Week hours */}
-        <div style={{ ...tileBase, gap: 6 }}>
-          <span style={{ whiteSpace: "nowrap" }}>
+        <div
+          style={{
+            ...tileBase,
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 1,
+          }}
+        >
+          <span style={{ whiteSpace: "nowrap", lineHeight: 1 }}>
             <span
               style={{
                 fontSize: 16,
@@ -183,7 +202,9 @@ export function TopStatsRow({
               {" "}/ {hoursGoal}h
             </span>
           </span>
-          <span style={{ fontSize: 11, fontWeight: 400, color: MUTED }}>week</span>
+          <span style={{ fontSize: 11, fontWeight: 400, color: MUTED, lineHeight: 1 }}>
+            week
+          </span>
         </div>
       </div>
 
