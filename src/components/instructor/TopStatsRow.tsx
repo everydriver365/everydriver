@@ -1,14 +1,9 @@
-import { Phone, Sparkles, Wallet, Clock } from "lucide-react";
 import type { AICallDivertState } from "@/hooks/useAICallDivert";
 
 /* Spec tokens */
 const PURPLE = "#534AB7";
-const PURPLE_TINT = "#EEEDFE";
-const BLUE = "#185FA5";
-const BLUE_TINT = "#E6F1FB";
-const TEAL = "#0F6E56";
-const TEAL_DARK = "#1D9E75";
-const TEAL_TINT = "#E1F5EE";
+const GREEN = "#1D9E75";
+const RED = "#E5484D";
 const NEAR_BLACK = "#1A1A1A";
 const MUTED = "#6B7280";
 const BORDER = "rgba(15,23,42,0.08)";
@@ -19,16 +14,17 @@ const cardBase: React.CSSProperties = {
   background: "#FFFFFF",
   border: `0.5px solid ${BORDER}`,
   borderRadius: 12,
-  padding: "14px 16px",
+  padding: "4px 10px",
   display: "flex",
   flexDirection: "column",
   justifyContent: "space-between",
   minWidth: 0,
   fontFamily: FONT,
+  gap: 6,
 };
 
 const upperLabel = (color: string): React.CSSProperties => ({
-  fontSize: 11,
+  fontSize: 10,
   fontWeight: 500,
   color,
   letterSpacing: "0.04em",
@@ -36,16 +32,14 @@ const upperLabel = (color: string): React.CSSProperties => ({
   lineHeight: 1.1,
 });
 
-const iconTile = (size: number, bg: string, color: string): React.CSSProperties => ({
-  width: size,
-  height: size,
-  borderRadius: 8,
-  background: bg,
-  color,
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
+const dot = (color: string, pulse = false): React.CSSProperties => ({
+  width: 6,
+  height: 6,
+  borderRadius: "50%",
+  background: color,
   flexShrink: 0,
+  display: "inline-block",
+  animation: pulse ? "ts-pulse 1.4s ease-in-out infinite" : undefined,
 });
 
 interface TopStatsRowProps {
@@ -58,6 +52,8 @@ interface TopStatsRowProps {
   hoursGoal: number;
   lessonsThisWeek: number;
   lessonsGoal: number;
+  /** Number of items waiting on the user (e.g. unread/needs-action). When > 0, shows pulsing red dot on Today card. */
+  waitingCount?: number;
 }
 
 export function TopStatsRow({
@@ -70,53 +66,38 @@ export function TopStatsRow({
   hoursGoal,
   lessonsThisWeek,
   lessonsGoal,
+  waitingCount = 0,
 }: TopStatsRowProps) {
   const aiOn = ai.toggleOn;
   const weekProgress = hoursGoal > 0 ? Math.min(100, (hoursThisWeek / hoursGoal) * 100) : 0;
   const showDelta = typeof earningsDelta === "number" && earningsDelta > 0;
+  const hasWaiting = waitingCount > 0;
 
   return (
-    <div
-      style={{
-        padding: "0 14px 12px",
-      }}
-    >
+    <div style={{ padding: "0 14px 12px" }}>
       <div className="ts-row">
         {/* CARD 1 — AI Receptionist */}
         <button
           type="button"
           onClick={onOpenAISheet}
           aria-label="Open AI receptionist settings"
-          style={{
-            ...cardBase,
-            cursor: "pointer",
-            textAlign: "left",
-            minHeight: 130,
-          }}
+          style={{ ...cardBase, cursor: "pointer", textAlign: "left" }}
         >
-          {/* Top row: icon tile + toggle */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span
-              className="ts-icon-lg"
-              style={{ ...iconTile(32, PURPLE_TINT, PURPLE), position: "relative" }}
-            >
-              <Phone size={15} strokeWidth={2} />
-              <Sparkles
-                size={9}
-                strokeWidth={2.2}
-                style={{ position: "absolute", top: 4, right: 4 }}
-              />
-            </span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+              {aiOn && <span style={dot(GREEN)} aria-label="AI divert active" />}
+              <span className="ts-label" style={upperLabel(PURPLE)}>AI</span>
+            </div>
             <span
               role="switch"
               aria-checked={aiOn}
               onClick={(e) => {
                 e.stopPropagation();
-                void ai.toggleOn === aiOn && ai.setMode(aiOn ? "off" : "auto");
+                ai.setMode(aiOn ? "off" : "auto");
               }}
               style={{
-                width: 36,
-                height: 20,
+                width: 30,
+                height: 18,
                 borderRadius: 999,
                 background: aiOn ? PURPLE : "#D1D5DB",
                 position: "relative",
@@ -129,9 +110,9 @@ export function TopStatsRow({
                 style={{
                   position: "absolute",
                   top: 2,
-                  left: aiOn ? 18 : 2,
-                  width: 16,
-                  height: 16,
+                  left: aiOn ? 14 : 2,
+                  width: 14,
+                  height: 14,
                   borderRadius: "50%",
                   background: "#FFFFFF",
                   transition: "left 180ms ease",
@@ -140,17 +121,13 @@ export function TopStatsRow({
               />
             </span>
           </div>
-
-          {/* Bottom: label + main + sub */}
           <div>
-            <div className="ts-label" style={upperLabel(PURPLE)}>AI Receptionist</div>
             <div
               className="ts-main"
               style={{
-                fontSize: 14,
+                fontSize: 12,
                 fontWeight: 500,
                 color: NEAR_BLACK,
-                marginTop: 4,
                 lineHeight: 1.2,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
@@ -162,9 +139,9 @@ export function TopStatsRow({
             <div
               className="ts-sub"
               style={{
-                fontSize: 12,
+                fontSize: 11,
                 color: MUTED,
-                marginTop: 3,
+                marginTop: 2,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -176,84 +153,77 @@ export function TopStatsRow({
         </button>
 
         {/* CARD 2 — Today */}
-        <div style={{ ...cardBase, minHeight: 130 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div className="ts-label" style={upperLabel(MUTED)}>Today</div>
-            <span className="ts-icon-sm" style={iconTile(28, BLUE_TINT, BLUE)}>
-              <Wallet size={14} strokeWidth={2} />
-            </span>
+        <div style={cardBase}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+              {hasWaiting && <span style={dot(RED, true)} aria-label={`${waitingCount} waiting`} />}
+              <span className="ts-label" style={upperLabel(MUTED)}>Today</span>
+            </div>
           </div>
           <div>
             <div
               className="ts-value"
               style={{
-                fontSize: 26,
+                fontSize: 20,
                 fontWeight: 500,
                 color: NEAR_BLACK,
                 lineHeight: 1.05,
                 fontVariantNumeric: "tabular-nums",
-                letterSpacing: "-0.5px",
+                letterSpacing: "-0.3px",
               }}
             >
               £{Math.round(earningsToday)}
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
-              <span className="ts-sub" style={{ fontSize: 12, color: MUTED }}>
-                {todayLessons} lesson{todayLessons === 1 ? "" : "s"}
-              </span>
               {showDelta && (
                 <span
-                  className="ts-pill"
                   style={{
-                    fontSize: 11,
+                    fontSize: 12,
                     fontWeight: 500,
-                    color: TEAL,
-                    background: TEAL_TINT,
-                    padding: "2px 7px",
-                    borderRadius: 999,
+                    color: GREEN,
+                    marginLeft: 6,
                     fontVariantNumeric: "tabular-nums",
+                    letterSpacing: 0,
                   }}
                 >
                   +£{Math.round(earningsDelta!)}
                 </span>
               )}
             </div>
+            <div className="ts-sub" style={{ fontSize: 11, color: MUTED, marginTop: 2 }}>
+              {todayLessons} lesson{todayLessons === 1 ? "" : "s"}
+            </div>
           </div>
         </div>
 
         {/* CARD 3 — This week */}
-        <div style={{ ...cardBase, minHeight: 130 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div className="ts-label" style={upperLabel(MUTED)}>This week</div>
-            <span className="ts-icon-sm" style={iconTile(28, TEAL_TINT, TEAL)}>
-              <Clock size={14} strokeWidth={2} />
-            </span>
+        <div style={cardBase}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+            <span className="ts-label" style={upperLabel(MUTED)}>Week</span>
           </div>
           <div>
             <div
               className="ts-value"
               style={{
-                fontSize: 26,
+                fontSize: 20,
                 fontWeight: 500,
                 color: NEAR_BLACK,
                 lineHeight: 1.05,
                 fontVariantNumeric: "tabular-nums",
-                letterSpacing: "-0.5px",
+                letterSpacing: "-0.3px",
                 display: "inline-flex",
                 alignItems: "baseline",
-                gap: 4,
+                gap: 3,
               }}
             >
               {hoursThisWeek}h
-              <span className="ts-value-sub" style={{ fontSize: 16, fontWeight: 400, color: MUTED }}>
+              <span style={{ fontSize: 12, fontWeight: 400, color: MUTED }}>
                 / {hoursGoal}h
               </span>
             </div>
             <div
               style={{
-                marginTop: 8,
-                height: 4,
-                background: TEAL_TINT,
+                marginTop: 5,
+                height: 3,
+                background: "#E1F5EE",
                 borderRadius: 999,
                 overflow: "hidden",
               }}
@@ -263,14 +233,14 @@ export function TopStatsRow({
                 style={{
                   width: `${weekProgress}%`,
                   height: "100%",
-                  background: TEAL_DARK,
+                  background: GREEN,
                   borderRadius: 999,
                   transition: "width 240ms ease",
                 }}
               />
             </div>
-            <div className="ts-progress-label" style={{ fontSize: 12, color: MUTED, marginTop: 6 }}>
-              {lessonsThisWeek} of {lessonsGoal} lesson{lessonsGoal === 1 ? "" : "s"}
+            <div style={{ fontSize: 11, color: MUTED, marginTop: 3 }}>
+              {lessonsThisWeek}/{lessonsGoal} lesson{lessonsGoal === 1 ? "" : "s"}
             </div>
           </div>
         </div>
@@ -280,38 +250,11 @@ export function TopStatsRow({
         .ts-row {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 8px;
+          gap: 6px;
         }
-        @media (max-width: 480px) {
-          .ts-row > * {
-            padding: 10px 11px !important;
-            min-height: 116px !important;
-          }
-          .ts-row .ts-value {
-            font-size: 20px !important;
-          }
-          .ts-row .ts-value-sub {
-            font-size: 13px !important;
-          }
-          .ts-row .ts-main {
-            font-size: 13px !important;
-          }
-          .ts-row .ts-sub,
-          .ts-row .ts-pill,
-          .ts-row .ts-progress-label {
-            font-size: 11px !important;
-          }
-          .ts-row .ts-label {
-            font-size: 10px !important;
-          }
-          .ts-row .ts-icon-lg {
-            width: 26px !important;
-            height: 26px !important;
-          }
-          .ts-row .ts-icon-sm {
-            width: 24px !important;
-            height: 24px !important;
-          }
+        @keyframes ts-pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.55; transform: scale(1.25); }
         }
       `}</style>
     </div>
