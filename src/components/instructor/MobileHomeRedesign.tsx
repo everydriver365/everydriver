@@ -1072,7 +1072,7 @@ export function MobileHomeRedesign({
   }
 
   // Membership level (placeholder — to be wired later)
-  const membershipLevel: "Free" | "Starter" | "Pro" | "Premium" = "Starter";
+  const membershipLevel = "Starter" as "Free" | "Starter" | "Pro" | "Premium";
   const canUpgradeMembership = membershipLevel !== "Premium";
   attentionRows.push({
     key: "membership",
