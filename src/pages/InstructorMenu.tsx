@@ -617,7 +617,7 @@ export default function InstructorMenu() {
       case "call-answering":
         return <CallAnsweringSettings instructorId={instructorId} />;
       case "famulor":
-        return <FamulorSettingsCard instructorId={instructorId} />;
+        return <FamulorHub scope="instructor" instructorId={instructorId} />;
       case "gdpr":
         return <GDPRRetentionWidget instructorId={instructorId} />;
       case "data-backup":
