@@ -74,7 +74,7 @@ export function TopStatsRow({
           onClick={onOpenAISheet}
           aria-label="Open AI receptionist settings"
           style={{
-            background: aiOn ? SOFT_GREEN : "#FFFFFF",
+            background: aiOn ? SOFT_GREEN : WARM_GRAY,
             border: "none",
             borderRadius: 8,
             padding: "10px 14px",
