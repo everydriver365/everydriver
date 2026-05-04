@@ -1126,7 +1126,7 @@ export function MobileHomeRedesign({
   const attentionRows: AttentionRow[] = [];
 
   // Calls (counter to be wired later)
-  const missedCallsCount = 0;
+  const missedCallsCount: number = 0;
   attentionRows.push({
     key: "calls",
     group: "urgent",
