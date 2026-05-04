@@ -34,6 +34,7 @@ import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, CheckCircle, ArrowRight, ArrowLeft } from "lucide-react";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
+import { checkLessonClash, describeLessonClashError } from "@/lib/lessonClashCheck";
 
 const formSchema = z.object({
   customerName: z.string().trim().min(1, "Name is required").max(200),
@@ -180,6 +181,19 @@ export function BespokeBookingModal({ open, onOpenChange, prefill }: BespokeBook
         if (pupilError) throw pupilError;
 
         const today = new Date().toISOString().split("T")[0];
+
+        // Pre-check for a clash so the admin gets a clear message.
+        const clash = await checkLessonClash({
+          instructorId: selectedInstructorId,
+          date: today,
+          startTime: "09:00",
+          durationMinutes: values.courseHours * 60,
+        });
+        if (clash.hardOverlap) {
+          toast.error(clash.message ?? "That slot is already booked for this instructor.");
+          return;
+        }
+
         const { error: lessonError } = await supabase
           .from("scheduled_lessons")
           .insert({
@@ -194,7 +208,14 @@ export function BespokeBookingModal({ open, onOpenChange, prefill }: BespokeBook
             amount_due: values.totalCost,
             notes: `Bespoke: ${values.courseTitle} (${values.courseHours}hrs) - ${values.transmission}`,
           });
-        if (lessonError) throw lessonError;
+        if (lessonError) {
+          const friendly = describeLessonClashError(lessonError);
+          if (friendly) {
+            toast.error(friendly);
+            return;
+          }
+          throw lessonError;
+        }
 
         if (paymentMethod !== "not_paid") {
           const { error: paymentError } = await supabase
@@ -215,7 +236,8 @@ export function BespokeBookingModal({ open, onOpenChange, prefill }: BespokeBook
       setIsComplete(true);
     } catch (err) {
       console.error("Bespoke booking error:", err);
-      toast.error(err instanceof Error ? err.message : "Failed to create booking");
+      const friendly = describeLessonClashError(err);
+      toast.error(friendly ?? (err instanceof Error ? err.message : "Failed to create booking"));
     } finally {
       setIsSubmitting(false);
     }

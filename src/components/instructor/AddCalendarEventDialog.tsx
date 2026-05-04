@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { checkLessonClash, describeLessonClashError } from '@/lib/lessonClashCheck';
 
 const BLOCK_COLOR_PRESETS = [
   '#3b82f6', // blue
@@ -219,13 +220,26 @@ export function AddCalendarEventDialog({
     try {
       const durationHours = parseFloat(lessonDuration);
       const durationMinutes = durationHours * 60;
+      const dateStr = format(lessonDate!, 'yyyy-MM-dd');
+
+      // Pre-check for a clash so the user gets a friendly message.
+      const clash = await checkLessonClash({
+        instructorId,
+        date: dateStr,
+        startTime: lessonStartTime,
+        durationMinutes,
+      });
+      if (clash.hardOverlap) {
+        toast.error(clash.message ?? 'That slot is already booked.');
+        return;
+      }
 
       const { error } = await supabase
         .from('scheduled_lessons')
         .insert({
           instructor_id: instructorId,
           pupil_id: selectedPupil,
-          lesson_date: format(lessonDate!, 'yyyy-MM-dd'),
+          lesson_date: dateStr,
           start_time: lessonStartTime,
           duration_minutes: durationMinutes,
           pickup_location: pickupAddress || null,
@@ -233,14 +247,22 @@ export function AddCalendarEventDialog({
           payment_status: 'unpaid',
         });
 
-      if (error) throw error;
+      if (error) {
+        const friendly = describeLessonClashError(error);
+        if (friendly) {
+          toast.error(friendly);
+          return;
+        }
+        throw error;
+      }
 
       toast.success('Lesson scheduled');
       resetForm();
       onSuccess();
     } catch (error) {
       console.error('Error adding lesson:', error);
-      toast.error('Failed to schedule lesson');
+      const friendly = describeLessonClashError(error);
+      toast.error(friendly ?? 'Failed to schedule lesson');
     } finally {
       setLoading(false);
     }

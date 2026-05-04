@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SelfBookingCalendar from "./SelfBookingCalendar";
 import { CancellationPolicyCard } from "./CancellationPolicyCard";
+import { checkLessonClash, describeLessonClashError } from "@/lib/lessonClashCheck";
 
 interface PupilPortalScheduleProps {
   pupilId: string;
@@ -566,6 +567,23 @@ function RescheduleBookingCalendar({
         .eq("id", pupilId)
         .single();
 
+      // Pre-check for a clash on the new slot, ignoring the lesson being rescheduled.
+      const clash = await checkLessonClash({
+        instructorId,
+        date: slot.date,
+        startTime: slot.startTime,
+        durationMinutes: originalDuration,
+        excludeLessonId: originalLessonId,
+      });
+      if (clash.hardOverlap) {
+        toast({
+          title: "Slot just got booked",
+          description: clash.message ?? "That slot is already booked. Please pick another time.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Cancel old lesson
       await supabase
         .from("scheduled_lessons")
@@ -594,7 +612,15 @@ function RescheduleBookingCalendar({
           original_lesson_id: originalLessonId,
         });
 
-      if (error) throw error;
+      if (error) {
+        const friendly = describeLessonClashError(error);
+        toast({
+          title: friendly ? "Slot just got booked" : "Error",
+          description: friendly ?? "Failed to reschedule lesson",
+          variant: "destructive",
+        });
+        return;
+      }
 
       toast({
         title: requireApproval ? "Reschedule Requested!" : "Lesson Rescheduled!",

@@ -13,6 +13,7 @@ import { Calendar as CalendarIcon, Clock, Plus, Trash2, Loader2, MapPin } from "
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CompetencyPicker } from "./CompetencyPicker";
+import { checkLessonClash, describeLessonClashError } from "@/lib/lessonClashCheck";
 
 interface LessonSlot {
   id: string;
@@ -108,6 +109,26 @@ export function ScheduleLessonsDialog({
 
     setIsSaving(true);
     try {
+      // Pre-check every slot in the batch for clashes against existing lessons.
+      const clashChecks = await Promise.all(
+        slots.map(slot =>
+          checkLessonClash({
+            instructorId,
+            date: format(slot.date, 'yyyy-MM-dd'),
+            startTime: slot.startTime,
+            durationMinutes: slot.duration * 60,
+          }).then(result => ({ slot, result }))
+        )
+      );
+      const offenders = clashChecks.filter(c => c.result.hardOverlap);
+      if (offenders.length > 0) {
+        const list = offenders
+          .map(o => `${format(o.slot.date, 'EEE d MMM')} ${o.slot.startTime}`)
+          .join(', ');
+        toast.error(`These slots clash with existing lessons: ${list}`);
+        return;
+      }
+
       // Create all lessons
       const lessonInserts = slots.map(slot => ({
         instructor_id: instructorId,
@@ -126,7 +147,14 @@ export function ScheduleLessonsDialog({
         .from('scheduled_lessons')
         .insert(lessonInserts);
 
-      if (lessonsError) throw lessonsError;
+      if (lessonsError) {
+        const friendly = describeLessonClashError(lessonsError);
+        if (friendly) {
+          toast.error(friendly);
+          return;
+        }
+        throw lessonsError;
+      }
 
       // Update pupil scheduling status if fully scheduled
       const newTotalScheduled = (pupil.scheduled_hours || 0) + totalScheduledHours;
@@ -167,7 +195,8 @@ export function ScheduleLessonsDialog({
       onSuccess();
     } catch (error) {
       console.error("Error scheduling lessons:", error);
-      toast.error("Failed to schedule lessons");
+      const friendly = describeLessonClashError(error);
+      toast.error(friendly ?? "Failed to schedule lessons");
     } finally {
       setIsSaving(false);
     }

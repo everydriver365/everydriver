@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { checkLessonClash, describeLessonClashError } from "@/lib/lessonClashCheck";
 
 interface Lesson {
   id: string;
@@ -62,21 +63,55 @@ export function BulkRescheduleTab({ instructorId }: BulkRescheduleTabProps) {
       toast.error("Select a target date and at least one lesson");
       return;
     }
+    if (!instructorId) {
+      toast.error("Missing instructor");
+      return;
+    }
     setSaving(true);
     try {
-      const results = await Promise.allSettled(
-        selectedLessons.map(id =>
-          supabase.from("scheduled_lessons").update({ lesson_date: targetDate }).eq("id", id)
+      // Pre-check every selected lesson against the target date so we don't half-apply.
+      const selected = lessons.filter(l => selectedLessons.includes(l.id));
+      const checks = await Promise.all(
+        selected.map(l =>
+          checkLessonClash({
+            instructorId,
+            date: targetDate,
+            startTime: l.start_time,
+            durationMinutes: l.duration_minutes,
+            excludeLessonId: l.id,
+          }).then(result => ({ lesson: l, result }))
         )
       );
-      const ok = results.filter(r => r.status === "fulfilled").length;
+      const offenders = checks.filter(c => c.result.hardOverlap);
+      if (offenders.length > 0) {
+        const list = offenders.map(o => `${o.lesson.pupil_name} (${o.lesson.start_time?.slice(0, 5)})`).join(", ");
+        toast.error(`Cannot move — these lessons clash on ${format(new Date(targetDate), "EEE dd MMM")}: ${list}`);
+        return;
+      }
+
+      const results = await Promise.allSettled(
+        selected.map(l =>
+          supabase.from("scheduled_lessons").update({ lesson_date: targetDate }).eq("id", l.id)
+        )
+      );
+      const failed = results.filter(r => r.status === "rejected" || (r.status === "fulfilled" && (r as any).value?.error));
+      if (failed.length > 0) {
+        const firstErr = failed
+          .map(r => (r.status === "fulfilled" ? (r as any).value?.error : (r as any).reason))
+          .find(Boolean);
+        const friendly = describeLessonClashError(firstErr);
+        toast.error(friendly ?? `Failed to move ${failed.length} lesson${failed.length > 1 ? "s" : ""}`);
+        return;
+      }
+      const ok = results.length;
       toast.success(`Rescheduled ${ok} lesson${ok > 1 ? "s" : ""} to ${format(new Date(targetDate), "EEE dd MMM")}`);
       setLessons([]);
       setSelectedLessons([]);
       setSourceDate("");
       setTargetDate("");
-    } catch {
-      toast.error("Failed to reschedule");
+    } catch (err) {
+      const friendly = describeLessonClashError(err);
+      toast.error(friendly ?? "Failed to reschedule");
     } finally {
       setSaving(false);
     }
