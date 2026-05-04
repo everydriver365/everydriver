@@ -12,6 +12,11 @@ import { useInstructorPupilsPaymentSummary } from "@/hooks/usePupilPaymentStatus
 import { useInstructorPinnedTiles } from "@/hooks/useInstructorPinnedTiles";
 import { QUICK_ACCESS_TILES, QUICK_ACCESS_TILES_BY_ID } from "@/components/instructor/quickAccess/tileRegistry";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { format as formatDate } from "date-fns";
+import type { TodayLesson } from "@/hooks/useTodayRemainingLessons";
 import { CustomizeFrequentlyUsedSheet } from "@/components/instructor/quickAccess/CustomizeFrequentlyUsedSheet";
 import { InstructorSearchOverlay } from "@/components/instructor/InstructorSearchOverlay";
 
