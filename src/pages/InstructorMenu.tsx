@@ -73,6 +73,7 @@ import { GDPRRetentionWidget } from "@/components/instructor/GDPRRetentionWidget
 import { ReminderSettings } from "@/components/instructor/ReminderSettings";
 import { FeatureTogglesSettings } from "@/components/instructor/FeatureTogglesSettings";
 import { CallAnsweringSettings } from "@/components/instructor/CallAnsweringSettings";
+import { FamulorSettingsCard } from "@/components/instructor/integrations/FamulorSettingsCard";
 import { useDemoMode } from "@/context/DemoModeContext";
 
 // ─── Types ───────────────────────────────────────────────────────────
