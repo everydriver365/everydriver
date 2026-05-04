@@ -31,6 +31,10 @@ interface Settings {
   auto_fallback_channel: "whatsapp_first" | "sms_only";
   fallback_template: string | null;
   draft_followup_enabled: boolean;
+  inbound_answering_enabled: boolean;
+  last_verified_at: string | null;
+  last_verified_status: string | null;
+  last_verified_message: string | null;
 }
 
 const DEFAULT_FALLBACK_TEMPLATE =
@@ -53,6 +57,10 @@ const DEFAULTS: Settings = {
   auto_fallback_channel: "whatsapp_first",
   fallback_template: null,
   draft_followup_enabled: true,
+  inbound_answering_enabled: false,
+  last_verified_at: null,
+  last_verified_status: null,
+  last_verified_message: null,
 };
 
 const ACCENT = "#1A52A0";
