@@ -1141,7 +1141,7 @@ export function MobileHomeRedesign({
   });
 
   // Enquiries (counter to be wired later)
-  const enquiriesCount = 0;
+  const enquiriesCount: number = 0;
   attentionRows.push({
     key: "enquiries",
     group: "urgent",
