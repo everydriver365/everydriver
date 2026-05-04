@@ -971,6 +971,20 @@ export function MobileHomeRedesign({
 
   const attentionRows: AttentionRow[] = [];
 
+  // Calls (counter to be wired later)
+  const missedCallsCount = 0;
+  attentionRows.push({
+    key: "calls",
+    group: "urgent",
+    Icon: Phone,
+    iconBg: "#FFF0F0",
+    iconColor: RED,
+    title: "Calls",
+    subtitle: missedCallsCount > 0 ? "Missed calls to review" : "No missed calls",
+    badge: missedCallsCount > 0 ? { label: String(missedCallsCount), bg: RED } : undefined,
+    onClick: () => navigate("/instructor/calls"),
+  });
+
   if (pendingJobs > 0) {
     attentionRows.push({
       key: "jobs",
