@@ -263,6 +263,7 @@ export function FamulorSettingsCard({ instructorId }: Props) {
               value={settings.daily_call_cap}
               onChange={(e) => update({ daily_call_cap: parseInt(e.target.value || "20", 10) })}
             />
+          </div>
         </div>
       </div>
 
