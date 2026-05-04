@@ -683,6 +683,18 @@ export function ExpandablePupilCard({
                   className="gap-1.5 shrink-0 h-8"
                   onClick={(e) => {
                     e.stopPropagation();
+                    setShowAiCallSheet(true);
+                  }}
+                >
+                  <Mic className="h-3.5 w-3.5" style={{ color: "#1A52A0" }} />
+                  <span className="text-xs">AI call</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 shrink-0 h-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setShowRecordPaymentModal(true);
                   }}
                 >
