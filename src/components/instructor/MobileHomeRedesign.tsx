@@ -908,6 +908,18 @@ export function MobileHomeRedesign({
   const { data: paymentsSummary } = useInstructorPupilsPaymentSummary(instructorId);
   const { data: gapData } = useRealGapSlots(instructorId);
   const [expanded, setExpanded] = useState(false);
+  const [divertSheetOpen, setDivertSheetOpen] = useState(false);
+
+  const aiDivert = useAICallDivert(
+    instructorId,
+    nextLesson
+      ? {
+          startTime: nextLesson.startTime,
+          durationMinutes: nextLesson.durationMinutes,
+          lessonDate: nextLesson.lessonDate,
+        }
+      : null,
+  );
 
   const lessonsToday = today?.lessonCount ?? 0;
   const earningsToday = today?.expectedEarnings ?? 0;
