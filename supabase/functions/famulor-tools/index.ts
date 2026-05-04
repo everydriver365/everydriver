@@ -134,6 +134,26 @@ Deno.serve(async (req) => {
         .select("id")
         .single();
       if (error) return json({ error: error.message }, 400);
+
+      // Fire-and-forget in-app notification fan-out.
+      fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/notify-ai-event`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+        },
+        body: JSON.stringify({
+          kind: "booking_created",
+          instructor_id: p.instructor_id,
+          pupil_id: p.pupil_id ?? null,
+          request_id: data.id,
+          contact_name: p.contact_name ?? null,
+          contact_phone: p.contact_phone ?? null,
+          source_channel: p.source_channel,
+          requested_start: p.requested_start,
+        }),
+      }).catch((e) => console.error("[famulor-tools] notify failed", e));
+
       return json({ request_id: data.id });
     }
 
@@ -273,6 +293,27 @@ Deno.serve(async (req) => {
           });
         }
       }
+
+      // Fire-and-forget in-app notification fan-out.
+      fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/notify-ai-event`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+        },
+        body: JSON.stringify({
+          kind: willAutoApprove ? "reschedule_auto_approved" : "reschedule_created",
+          instructor_id: p.instructor_id,
+          pupil_id: p.pupil_id,
+          request_id: requestRow.id,
+          lesson_id: p.lesson_id,
+          contact_name: p.contact_name ?? null,
+          contact_phone: p.contact_phone ?? null,
+          source_channel: p.source_channel,
+          requested_start: newStart.toISOString(),
+          original_start: originalStart.toISOString(),
+        }),
+      }).catch((e) => console.error("[famulor-tools] notify failed", e));
 
       return json({
         request_id: requestRow.id,
