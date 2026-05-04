@@ -40,6 +40,31 @@ const Tool = z.discriminatedUnion("tool", [
     notes: z.string().optional(),
     source_call_log_id: z.string().uuid().optional(),
   }),
+  z.object({
+    tool: z.literal("verify_parent"),
+    instructor_id: z.string().uuid(),
+    phone: z.string().optional(),
+    pupil_name: z.string().optional(),
+    date_of_birth: z.string().optional(), // YYYY-MM-DD
+  }),
+  z.object({
+    tool: z.literal("get_pupil_lessons"),
+    instructor_id: z.string().uuid(),
+    pupil_id: z.string().uuid(),
+  }),
+  z.object({
+    tool: z.literal("request_reschedule"),
+    instructor_id: z.string().uuid(),
+    source_channel: z.enum(["phone_in", "phone_out", "whatsapp", "webchat"]),
+    pupil_id: z.string().uuid(),
+    lesson_id: z.string().uuid(),
+    requested_start: z.string().datetime(),
+    requested_duration_minutes: z.number().int().min(30).max(480).optional(),
+    contact_name: z.string().optional(),
+    contact_phone: z.string().optional(),
+    contact_email: z.string().email().optional(),
+    notes: z.string().optional(),
+  }),
 ]);
 
 Deno.serve(async (req) => {
