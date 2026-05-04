@@ -35,7 +35,7 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
           background: "#FFFFFF",
           borderRadius: 14,
           border: setupIssue ? "0.5px solid rgba(180,83,9,0.35)" : `0.5px solid ${BORDER}`,
-          padding: compact ? "9px 10px" : "12px 14px",
+          padding: compact ? "8px 9px" : "12px 14px",
           display: "flex",
           flexDirection: "column",
           gap: compact ? 6 : 10,
