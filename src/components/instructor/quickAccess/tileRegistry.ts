@@ -4,7 +4,7 @@ import {
   Wrench, Fuel, ClipboardCheck, ArrowLeftRight, Target,
   MessageSquare, MapPinned, BookOpen, Settings,
   Gift, Clock, Receipt, FileBarChart, BarChart3, Moon,
-  Megaphone, GraduationCap, Accessibility,
+  Megaphone, GraduationCap, Accessibility, Phone,
   type LucideIcon,
 } from "lucide-react";
 
