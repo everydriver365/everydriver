@@ -33,7 +33,7 @@ import { MobileHomeBottomSections } from "@/components/instructor/MobileHomeBott
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { UpcomingEventsTile } from "@/components/instructor/UpcomingEventsTile";
 import { useDormantPupilsCount } from "@/hooks/useDormantPupilsCount";
-import { Wrench, Users as UsersIcon } from "lucide-react";
+import { Wrench, Users as UsersIcon, Crown, ShieldPlus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { differenceInDays, isPast } from "date-fns";
@@ -1070,6 +1070,41 @@ export function MobileHomeRedesign({
       onClick: () => navigate("/instructor/pay"),
     });
   }
+
+  // Membership level (placeholder — to be wired later)
+  const membershipLevel = "Starter" as "Free" | "Starter" | "Pro" | "Premium";
+  const canUpgradeMembership = membershipLevel !== "Premium";
+  attentionRows.push({
+    key: "membership",
+    group: "todo",
+    Icon: Crown,
+    iconBg: "#FFF7E0",
+    iconColor: "#B45309",
+    title: `Membership · ${membershipLevel}`,
+    subtitle: canUpgradeMembership ? "Unlock more features and lower fees" : "You're on the top plan",
+    badge: canUpgradeMembership ? { label: "Upgrade", bg: "#B45309" } : undefined,
+    onClick: () => navigate("/instructor/subscription"),
+  });
+
+  // Health cover (placeholder — to be wired later)
+  const healthCover = "Basic" as "None" | "Basic" | "Full";
+  const canUpgradeHealth = healthCover !== "Full";
+  attentionRows.push({
+    key: "health-cover",
+    group: "todo",
+    Icon: ShieldPlus,
+    iconBg: "#E8F1FF",
+    iconColor: BLUE,
+    title: `Health cover · ${healthCover}`,
+    subtitle:
+      healthCover === "None"
+        ? "Add cover to protect your earnings"
+        : canUpgradeHealth
+          ? "Upgrade for full income protection"
+          : "Full cover active",
+    badge: canUpgradeHealth ? { label: "Upgrade", bg: BLUE } : undefined,
+    onClick: () => navigate("/instructor/health-cover"),
+  });
 
   return (
     <div
