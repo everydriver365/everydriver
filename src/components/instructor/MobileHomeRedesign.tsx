@@ -33,7 +33,7 @@ import { MobileHomeBottomSections } from "@/components/instructor/MobileHomeBott
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { UpcomingEventsTile } from "@/components/instructor/UpcomingEventsTile";
 import { useDormantPupilsCount } from "@/hooks/useDormantPupilsCount";
-import { Wrench, Users as UsersIcon, Crown, ShieldPlus } from "lucide-react";
+import { Wrench, Users as UsersIcon, Crown, ShieldPlus, Inbox } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { differenceInDays, isPast } from "date-fns";
@@ -983,6 +983,20 @@ export function MobileHomeRedesign({
     subtitle: missedCallsCount > 0 ? "Missed calls to review" : "No missed calls",
     badge: missedCallsCount > 0 ? { label: String(missedCallsCount), bg: RED } : undefined,
     onClick: () => navigate("/instructor/calls"),
+  });
+
+  // Enquiries (counter to be wired later)
+  const enquiriesCount = 0;
+  attentionRows.push({
+    key: "enquiries",
+    group: "urgent",
+    Icon: Inbox,
+    iconBg: "#FFF0F0",
+    iconColor: RED,
+    title: "Enquiries",
+    subtitle: enquiriesCount > 0 ? "New enquiries to review" : "No new enquiries",
+    badge: enquiriesCount > 0 ? { label: String(enquiriesCount), bg: RED } : undefined,
+    onClick: () => navigate("/instructor/enquiries"),
   });
 
   if (pendingJobs > 0) {
