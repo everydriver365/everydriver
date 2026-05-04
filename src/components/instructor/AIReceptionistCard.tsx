@@ -97,7 +97,7 @@ export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIRe
                 textOverflow: "ellipsis",
               }}
             >
-              {compact ? "AI RECEPTION" : "AI Receptionist"}
+              {compact ? "AI RECEPTIONIST" : "AI Receptionist"}
             </div>
             <div
               style={{
