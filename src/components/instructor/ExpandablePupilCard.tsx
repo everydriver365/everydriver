@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PupilAvatarUpload } from "@/components/instructor/PupilAvatarUpload";
+import { AiCallPupilSheet } from "@/components/instructor/pupils/AiCallPupilSheet";
 import { LessonRouteViewer } from "@/components/instructor/LessonRouteViewer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -28,6 +29,7 @@ import {
   ClipboardList,
   Car,
   Radio,
+  Mic,
   PoundSterling,
   QrCode,
   MoreVertical,
@@ -205,6 +207,7 @@ export function ExpandablePupilCard({
   
   // Syllabus sheet state
   const [showSyllabusSheet, setShowSyllabusSheet] = useState(false);
+  const [showAiCallSheet, setShowAiCallSheet] = useState(false);
 
   // Fetch test stats on mount
   useEffect(() => {
@@ -676,6 +679,18 @@ export function ExpandablePupilCard({
                 >
                   <MessageSquare className="h-3.5 w-3.5 text-purple-500" />
                   <span className="text-xs">Message</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 shrink-0 h-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowAiCallSheet(true);
+                  }}
+                >
+                  <Mic className="h-3.5 w-3.5" style={{ color: "#1A52A0" }} />
+                  <span className="text-xs">AI call</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -1402,6 +1417,14 @@ export function ExpandablePupilCard({
           />
         </SheetContent>
       </Sheet>
+
+      <AiCallPupilSheet
+        open={showAiCallSheet}
+        onOpenChange={setShowAiCallSheet}
+        pupilId={pupil.id}
+        pupilName={pupil.name}
+        pupilPhone={pupil.phone}
+      />
       </motion.div>
     </div>
   );
