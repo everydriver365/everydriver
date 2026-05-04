@@ -14,6 +14,7 @@ import {
   CalendarPlus,
   Calendar,
   PoundSterling,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 
