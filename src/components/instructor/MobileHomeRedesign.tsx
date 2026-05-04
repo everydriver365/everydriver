@@ -913,6 +913,7 @@ export function MobileHomeRedesign({
   const { data: unread = 0 } = useUnreadMessagesCount(instructorId);
   const { data: paymentsSummary } = useInstructorPupilsPaymentSummary(instructorId);
   const { data: gapData } = useRealGapSlots(instructorId);
+  const { data: weekly } = useWeeklyGoals(instructorId);
   const [expanded, setExpanded] = useState(false);
   const [divertSheetOpen, setDivertSheetOpen] = useState(false);
 
