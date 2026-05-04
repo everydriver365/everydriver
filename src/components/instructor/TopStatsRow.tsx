@@ -3,8 +3,8 @@ import { Phone } from "lucide-react";
 import type { AICallDivertState } from "@/hooks/useAICallDivert";
 
 /* Brand tokens */
-const RED = "#DC2626";
-const SOFT_RED = "#FEF2F2";
+const RED = "#10A37F";
+const SOFT_RED = "#ECFDF5";
 const LIGHT_GRAY = "#E5E5E5";
 const BLUE = "#2563EB";
 const NEAR_BLACK = "#1A1A1A";
