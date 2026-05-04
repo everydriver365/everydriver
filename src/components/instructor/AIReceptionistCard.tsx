@@ -13,6 +13,8 @@ const GREEN = "#10A37F";
 interface AIReceptionistCardProps {
   state: AICallDivertState;
   onOpenSheet: () => void;
+  /** When true, drops outer page padding so it can sit inside a parent grid row. */
+  compact?: boolean;
 }
 
 const SEGMENTS: { value: AICallDivertMode; label: string }[] = [
@@ -21,12 +23,11 @@ const SEGMENTS: { value: AICallDivertMode; label: string }[] = [
   { value: "auto", label: "Auto" },
 ];
 
-export function AIReceptionistCard({ state, onOpenSheet }: AIReceptionistCardProps) {
+export function AIReceptionistCard({ state, onOpenSheet, compact = false }: AIReceptionistCardProps) {
   const { settings, toggleOn, active, statusLine, setMode } = state;
   const setupIssue = !settings.numberConnected;
 
-  return (
-    <div style={{ padding: "0 14px 14px" }}>
+  const inner = (
       <div
         role="group"
         aria-label="AI call divert"
@@ -34,11 +35,12 @@ export function AIReceptionistCard({ state, onOpenSheet }: AIReceptionistCardPro
           background: "#FFFFFF",
           borderRadius: 14,
           border: setupIssue ? "0.5px solid rgba(180,83,9,0.35)" : `0.5px solid ${BORDER}`,
-          padding: "12px 14px",
+          padding: compact ? "10px 11px" : "12px 14px",
           display: "flex",
           flexDirection: "column",
-          gap: 10,
+          gap: compact ? 8 : 10,
           boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
+          height: "100%",
         }}
       >
         {/* Top row: icon + title + toggle */}
