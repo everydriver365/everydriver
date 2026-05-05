@@ -51,7 +51,7 @@ const AccountingCallback = lazy(() => import("@/pages/instructor/AccountingCallb
 const SquareCallback = lazy(() => import("@/pages/instructor/SquareCallback"));
 
 // Communication
-const InstructorMessages = lazy(() => import("@/pages/InstructorUnifiedInbox"));
+const InstructorMessages = lazy(() => import("@/pages/instructor-app/InstructorInboxRouter"));
 
 const InstructorAdminChat = lazy(() => import("@/pages/InstructorAdminChat"));
 const InstructorContact = lazy(() => import("@/pages/InstructorContact"));
