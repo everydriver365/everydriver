@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
   Search, Plus, Download, Phone, MessageSquare, X,
-  ChevronLeft, ChevronRight, MoreVertical, ChevronDown,
+  ChevronLeft, ChevronRight, MoreVertical, ChevronDown, Loader2,
 } from "lucide-react";
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -12,8 +12,11 @@ import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCou
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
