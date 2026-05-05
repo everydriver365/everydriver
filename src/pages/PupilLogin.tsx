@@ -352,6 +352,9 @@ export default function PupilLogin() {
                           exit={{ opacity: 0, x: -20 }}
                           onSubmit={handleLogin}
                           className="space-y-4"
+                          name="pupil-login"
+                          method="post"
+                          action="#"
                         >
                           <div className="space-y-3">
                             <div className="space-y-2">
@@ -360,7 +363,12 @@ export default function PupilLogin() {
                                 <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                                 <Input
                                   id="email"
+                                  name="email"
                                   type="email"
+                                  inputMode="email"
+                                  autoCapitalize="none"
+                                  autoCorrect="off"
+                                  spellCheck={false}
                                   placeholder="your@email.com"
                                   value={email}
                                   onChange={(e) => setEmail(e.target.value)}
@@ -385,6 +393,7 @@ export default function PupilLogin() {
                                 <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                                 <Input
                                   id="password"
+                                  name="password"
                                   type="password"
                                   placeholder="••••••••"
                                   value={password}
