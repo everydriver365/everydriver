@@ -191,7 +191,7 @@ type SortKey = "lessonsLeft" | "lastLesson" | "nextLesson" | "balance" | null;
 export default function InstructorPupilsDesktop() {
   const navigate = useNavigate();
   const { instructor, signOut } = useInstructorAuth();
-  const notificationCount = useCombinedNotificationCount();
+  const { total: notificationCount } = useCombinedNotificationCount(instructor?.id);
 
   const [pupils, setPupils] = useState<Pupil[]>(() => buildPupils());
   const [search, setSearch] = useState("");
