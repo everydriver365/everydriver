@@ -386,10 +386,11 @@ export function PaymentsExportDialog({ open, onOpenChange, transactions, filtere
           {/* Format */}
           <div>
             <Label className="text-xs text-muted-foreground mb-2 block">Format</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {([
-                { id: "csv" as const, label: "CSV", desc: "Spreadsheet-friendly", Icon: FileSpreadsheet },
-                { id: "pdf" as const, label: "PDF", desc: "Printable report", Icon: FileText },
+                { id: "csv" as const, label: "CSV", desc: "Raw transactions", Icon: FileSpreadsheet },
+                { id: "pdf" as const, label: "PDF", desc: "Formatted report", Icon: FileText },
+                { id: "tax" as const, label: "Tax", desc: "HMRC SA103 summary", Icon: Receipt },
               ]).map(({ id, label, desc, Icon }) => (
                 <button
                   key={id}
