@@ -991,13 +991,13 @@ export default function InstructorLiveSession() {
 
           {/* Sat-Nav Live Map — same style as preview, fullscreen */}
           <SatNavLiveMap
-            latitude={device.last_latitude}
-            longitude={device.last_longitude}
-            heading={device.last_heading}
-            speedKmh={device.last_speed_kmh}
-            speedLimitKmh={device.last_speed_limit_kmh ?? speedLimitKmh}
-            roadName={device.last_road_name}
-            lastSeenAt={device.last_seen_at}
+            latitude={mapLatitude}
+            longitude={mapLongitude}
+            heading={mapHeading}
+            speedKmh={mapSpeedKmh}
+            speedLimitKmh={mapSpeedLimitKmh}
+            roadName={isPhoneProvider ? null : device.last_road_name}
+            lastSeenAt={mapLastSeenAt}
             isActive={isConnected}
             sessionId={device.current_session_id}
             ignitionOn={device.last_ignition_status}
