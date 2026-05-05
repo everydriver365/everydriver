@@ -699,7 +699,7 @@ function RetentionCard({ steps, avgLessonsBeforeTest }: { steps: ReportsRetentio
 }
 
 // ---------- Top Pupils ----------
-function TopPupilsCard() {
+function TopPupilsCard({ pupils }: { pupils: ReportsTopPupil[] }) {
   return (
     <div style={{ ...card, padding: 14 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
