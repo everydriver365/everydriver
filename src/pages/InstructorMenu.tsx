@@ -694,7 +694,10 @@ export default function InstructorMenu() {
         <div id={`settings-tile-${tile.id}`} className={cardClass}>
           <button
             className="w-full flex items-center gap-3 px-4 py-[14px]"
-            onClick={() => window.open(tile.externalUrl, "_blank", "noopener,noreferrer")}
+            onClick={() => {
+              if (tile.externalUrl?.startsWith("/")) navigate(tile.externalUrl);
+              else window.open(tile.externalUrl, "_blank", "noopener,noreferrer");
+            }}
           >
             {renderIconTile(tile.icon, tile.tintBg, tile.tintColor, tile.iconSrc)}
             <div className="flex-1 text-left min-w-0">
