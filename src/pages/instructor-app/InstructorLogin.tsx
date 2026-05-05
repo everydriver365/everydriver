@@ -21,6 +21,7 @@ import {
 } from "@/lib/biometricAuth";
 import { setRememberMe, getRememberMe } from "@/lib/sessionPersistence";
 import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailConfirmation";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -419,6 +420,13 @@ export default function InstructorLogin() {
                 )}
                 Sign in with {biometryLabel}
               </Button>
+            )}
+
+            {!isForgotPassword && (
+              <GoogleSignInButton
+                redirectTo={`${window.location.origin}/instructor`}
+                className="w-full h-12 bg-white hover:bg-white/90 text-slate-900 border-slate-300"
+              />
             )}
 
             {biometricAvailable && !isForgotPassword && (

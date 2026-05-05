@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PupilRegister from "@/components/pupil/PupilRegister";
 import { setRememberMe as persistRememberMe } from "@/lib/sessionPersistence";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
 type LoginView = "login" | "forgot" | "reset-code" | "new-password";
 
@@ -341,6 +342,21 @@ export default function PupilLogin() {
                     <TabsTrigger value="login" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white text-slate-300">Sign In</TabsTrigger>
                     <TabsTrigger value="register" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white text-slate-300">Register</TabsTrigger>
                   </TabsList>
+
+                  <div className="mb-4 space-y-3">
+                    <GoogleSignInButton
+                      redirectTo={`${window.location.origin}/pupil`}
+                      className="w-full bg-white hover:bg-white/90 text-slate-900 border-slate-300"
+                    />
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-white/10" />
+                      </div>
+                      <div className="relative flex justify-center text-xs">
+                        <span className="px-2 bg-transparent text-slate-400">OR</span>
+                      </div>
+                    </div>
+                  </div>
 
                   <TabsContent value="login">
                     <AnimatePresence mode="wait">
