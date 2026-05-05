@@ -40,6 +40,8 @@ import { DeviceSelectorDropdown } from "@/components/instructor/tracking/DeviceS
 import { TrackingProviderDropdown } from "@/components/instructor/tracking/TrackingProviderDropdown";
 import { usePhoneTrackingStreamer } from "@/hooks/usePhoneTrackingStreamer";
 import { useLivePupilPosition } from "@/hooks/useLivePupilPosition";
+import { useLocationPermission } from "@/hooks/useLocationPermission";
+import { PhoneTrackingPermissionBanner } from "@/components/instructor/tracking/PhoneTrackingPermissionBanner";
 
 import { SatNavLiveMap } from "@/components/instructor/tracking/SatNavLiveMap";
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
@@ -129,9 +131,17 @@ export default function InstructorLiveSession() {
 
   const isPhoneProvider = activeProvider === "phone";
 
-  // Stream phone GPS into live_pupil_positions when "phone" provider is active.
+  // Location permission gate for Phone tracking.
+  const { status: locationPermissionStatus } = useLocationPermission();
+  const phoneTrackingReady = isPhoneProvider && locationPermissionStatus === "granted";
+
+  // Stream phone GPS into live_pupil_positions only after permission is granted.
   usePhoneTrackingStreamer({
-    provider: activeProvider === "radius" ? "radius" : activeProvider === null ? null : "phone",
+    provider: activeProvider === "radius"
+      ? "radius"
+      : phoneTrackingReady
+        ? "phone"
+        : null,
     pupilId: selectedPupilId || null,
   });
 
@@ -1477,9 +1487,10 @@ export default function InstructorLiveSession() {
                     instructorId={instructor.id}
                     value={(activeProvider === "radius" ? "radius" : "phone")}
                     onChange={(choice) => {
-                      setActiveProvider(choice === "radius" ? "radius" : null);
+                      setActiveProvider(choice === "radius" ? "radius" : "phone");
                     }}
                   />
+                  <PhoneTrackingPermissionBanner active={isPhoneProvider} />
                   {device?.id && (
                     <DeviceSelectorDropdown
                       instructorId={instructor.id}
