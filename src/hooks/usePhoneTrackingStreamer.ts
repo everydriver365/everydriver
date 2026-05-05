@@ -67,6 +67,17 @@ export function usePhoneTrackingStreamer({
         lastSentRef.current = now;
 
         const { latitude, longitude, speed, heading, accuracy } = pos.coords;
+        const speedKmh = speed != null && !Number.isNaN(speed) ? speed * 3.6 : 0;
+        try {
+          onPosition?.({
+            latitude,
+            longitude,
+            speedKmh,
+            heading: heading != null && !Number.isNaN(heading) ? heading : null,
+            accuracy: accuracy ?? null,
+            timestamp: pos.timestamp ?? now,
+          });
+        } catch { /* ignore consumer errors */ }
         try {
           await supabase.rpc("update_live_position", {
             p_pupil_id: pupilId,
