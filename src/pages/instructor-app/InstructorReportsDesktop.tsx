@@ -8,6 +8,7 @@ import {
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { useInstructorReportsData, type ReportsRangeId, type ReportsLessonTypeRow, type ReportsRetentionStep, type ReportsTopPupil, type ReportsTaxYear } from "@/hooks/useInstructorReportsData";
 
 // ---------- palette ----------
 const ramp: Record<string, { bg: string; text: string }> = {
@@ -143,25 +144,56 @@ const RANGES = [
 export default function InstructorReportsDesktop() {
   const { instructor, signOut } = useInstructorAuth();
   const { total: notificationCount } = useCombinedNotificationCount(instructor?.id);
-  const [rangeId, setRangeId] = useState<typeof RANGES[number]["id"]>("90d");
+  const [rangeId, setRangeId] = useState<ReportsRangeId>("90d");
   const [datePopOpen, setDatePopOpen] = useState(false);
 
   const days = RANGES.find((r) => r.id === rangeId)!.days;
 
-  const dailyRevenue = useMemo(() => genDailyRevenue(days), [days]);
-  const ma7 = useMemo(() => movingAvg(dailyRevenue, 7), [dailyRevenue]);
-  const heatmap = useMemo(() => genHeatmap(), []);
+  const { data: reportsData, isLoading } = useInstructorReportsData(instructor?.id, rangeId);
 
-  // Scale stats slightly with range so the count animation has something to do
-  const scale = days / 90;
+  const live = reportsData ?? {
+    topStats: {
+      revenue: { value: 0, prev: 0 },
+      hours: { value: 0, prev: 0 },
+      avgPerHr: { value: 0, prev: 0 },
+      passRate: { value: 0, prev: 0 },
+    },
+    daily: Array.from({ length: days }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (days - 1 - i));
+      return { date: d.toISOString().slice(0, 10), amount: 0 };
+    }),
+    byLessonType: [] as typeof reports.byLessonType,
+    heatmap: Array.from({ length: 7 }, () => Array(11).fill(0)) as number[][],
+    retention: reports.retention.map((s) => ({ ...s, count: 0, share: 0 })),
+    avgLessonsBeforeTest: 0,
+    topPupils: [] as typeof reports.topPupils,
+    taxYear: {
+      label: reports.taxYear.label,
+      grossIncome: 0,
+      deductions: [] as { label: string; amount: number }[],
+      taxableProfit: 0,
+      estimatedTax: 0,
+      note: "",
+    },
+    rangeStart: "",
+    rangeEnd: "",
+  };
+
+  const ma7 = useMemo(() => movingAvg(live.daily, 7), [live.daily]);
+
   const stats = {
-    revenue:  reports.topStats.revenue.value * scale,
-    hours:    Math.round(reports.topStats.hours.value * scale),
-    avgPerHr: reports.topStats.avgPerHr.value,
-    passRate: reports.topStats.passRate.value,
+    revenue: live.topStats.revenue.value,
+    hours: live.topStats.hours.value,
+    avgPerHr: live.topStats.avgPerHr.value,
+    passRate: live.topStats.passRate.value,
   };
 
   const initials = (instructor?.name || "DSM").split(" ").map(s => s[0]).slice(0,2).join("").toUpperCase();
+
+  const rangeLabel = reportsData
+    ? `${new Date(reportsData.rangeStart).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} – ${new Date(reportsData.rangeEnd).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`
+    : `Last ${days} days`;
 
   return (
     <DashboardShell
@@ -178,7 +210,7 @@ export default function InstructorReportsDesktop() {
           <div>
             <h1 style={{ fontSize: 22, fontWeight: 500, color: "#0F172A", margin: 0 }}>Reports</h1>
             <div style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>
-              A clear view of how your business is going.
+              A clear view of how your business is going.{isLoading ? " · Loading…" : ""}
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, position: "relative" }}>
@@ -191,7 +223,7 @@ export default function InstructorReportsDesktop() {
               }}
             >
               <CalendarIcon size={12} />
-              <span>Last {days} days · 5 Feb – 5 May</span>
+              <span>Last {days} days · {rangeLabel}</span>
               <ChevronDown size={11} />
             </button>
 
@@ -247,28 +279,28 @@ export default function InstructorReportsDesktop() {
 
         {/* Top stat cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 12 }}>
-          <StatCard label="REVENUE"     value={stats.revenue}  prev={reports.topStats.revenue.prev}  fmt="currency" />
-          <StatCard label="HOURS TAUGHT" value={stats.hours}    prev={reports.topStats.hours.prev}    fmt="hours" />
-          <StatCard label="AVG £/HOUR"  value={stats.avgPerHr} prev={reports.topStats.avgPerHr.prev} fmt="currency2" />
-          <StatCard label="PASS RATE"   value={stats.passRate} prev={reports.topStats.passRate.prev} fmt="percent" />
+          <StatCard label="REVENUE"     value={stats.revenue}  prev={live.topStats.revenue.prev}  fmt="currency" />
+          <StatCard label="HOURS TAUGHT" value={stats.hours}    prev={live.topStats.hours.prev}    fmt="hours" />
+          <StatCard label="AVG £/HOUR"  value={stats.avgPerHr} prev={live.topStats.avgPerHr.prev} fmt="currency2" />
+          <StatCard label="PASS RATE"   value={stats.passRate} prev={live.topStats.passRate.prev} fmt="percent" />
         </div>
 
         {/* Revenue trend + lesson type */}
         <div style={{ display: "grid", gridTemplateColumns: "1.55fr 1fr", gap: 12, marginBottom: 12 }}>
-          <RevenueTrend daily={dailyRevenue} ma7={ma7} />
-          <LessonTypeCard />
+          <RevenueTrend daily={live.daily} ma7={ma7} />
+          <LessonTypeCard rows={live.byLessonType} />
         </div>
 
         {/* Heatmap + retention */}
         <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 12, marginBottom: 12 }}>
-          <HeatmapCard grid={heatmap} />
-          <RetentionCard />
+          <HeatmapCard grid={live.heatmap} />
+          <RetentionCard steps={live.retention} avgLessonsBeforeTest={live.avgLessonsBeforeTest} />
         </div>
 
         {/* Top pupils + tax */}
         <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 12, marginBottom: 24 }}>
-          <TopPupilsCard />
-          <TaxYearCard />
+          <TopPupilsCard pupils={live.topPupils} />
+          <TaxYearCard taxYear={live.taxYear} />
         </div>
       </div>
     </DashboardShell>
@@ -450,48 +482,57 @@ function RevenueTrend({ daily, ma7 }: {
 }
 
 // ---------- Lesson Type Card ----------
-function LessonTypeCard() {
+function LessonTypeCard({ rows }: { rows: typeof reports.byLessonType }) {
+  const best = rows.length > 0
+    ? rows.reduce((a, b) => (b.perHour > a.perHour ? b : a))
+    : null;
   return (
     <div style={{ ...card, padding: 14 }}>
       <div style={{ fontSize: 13, fontWeight: 500, color: "#0F172A", marginBottom: 12 }}>By lesson type</div>
 
-      <div style={{
-        display: "flex", height: 22, borderRadius: 5, overflow: "hidden", marginBottom: 14,
-      }}>
-        {reports.byLessonType.map((t) => (
-          <div key={t.type} style={{ flex: t.share, background: t.color }} title={`${t.type} ${(t.share*100).toFixed(0)}%`} />
-        ))}
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-        {reports.byLessonType.map((t) => (
-          <div key={t.type} style={{ display: "grid", gridTemplateColumns: "12px 1fr auto", gap: 10, alignItems: "center" }}>
-            <div style={{ width: 8, height: 8, borderRadius: 2, background: t.color }} />
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 11, color: "#0F172A" }}>{t.type}</div>
-              <div style={{ fontSize: 9, color: "#94A3B8" }}>
-                {t.hours} hours · {(t.share * 100).toFixed(0)}% of revenue
-              </div>
-            </div>
-            <div style={{ fontSize: 11, fontFamily: "ui-monospace, monospace", color: "#0F172A", fontWeight: 500 }}>
-              {gbp0(t.amount)}
-            </div>
+      {rows.length === 0 ? (
+        <div style={{ fontSize: 11, color: "#94A3B8", padding: "20px 0", textAlign: "center" }}>No lessons in this range</div>
+      ) : (
+        <>
+          <div style={{
+            display: "flex", height: 22, borderRadius: 5, overflow: "hidden", marginBottom: 14,
+          }}>
+            {rows.map((t) => (
+              <div key={t.type} style={{ flex: t.share, background: t.color }} title={`${t.type} ${(t.share*100).toFixed(0)}%`} />
+            ))}
           </div>
-        ))}
-      </div>
 
-      <div style={{
-        marginTop: 14, paddingTop: 10, borderTop: "0.5px solid #E2E8F0",
-        display: "flex", justifyContent: "space-between", fontSize: 10,
-      }}>
-        <span style={{ color: "#64748B" }}>Most profitable per hour</span>
-        <span style={{ color: "#0F172A", fontWeight: 500 }}>Motorway · £42.57</span>
-      </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+            {rows.map((t) => (
+              <div key={t.type} style={{ display: "grid", gridTemplateColumns: "12px 1fr auto", gap: 10, alignItems: "center" }}>
+                <div style={{ width: 8, height: 8, borderRadius: 2, background: t.color }} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 11, color: "#0F172A" }}>{t.type}</div>
+                  <div style={{ fontSize: 9, color: "#94A3B8" }}>
+                    {t.hours} hours · {(t.share * 100).toFixed(0)}% of revenue
+                  </div>
+                </div>
+                <div style={{ fontSize: 11, fontFamily: "ui-monospace, monospace", color: "#0F172A", fontWeight: 500 }}>
+                  {gbp0(t.amount)}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {best && (
+            <div style={{
+              marginTop: 14, paddingTop: 10, borderTop: "0.5px solid #E2E8F0",
+              display: "flex", justifyContent: "space-between", fontSize: 10,
+            }}>
+              <span style={{ color: "#64748B" }}>Most profitable per hour</span>
+              <span style={{ color: "#0F172A", fontWeight: 500 }}>{best.type} · {gbp2(best.perHour)}</span>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
-
-// ---------- Heatmap ----------
 function HeatmapCard({ grid }: { grid: number[][] }) {
   const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
   const hours = [8,9,10,11,12,13,14,15,16,17,18];
@@ -608,7 +649,7 @@ function DayRow({ day, row, d, colorFor, off, setHover }: {
 }
 
 // ---------- Retention Funnel ----------
-function RetentionCard() {
+function RetentionCard({ steps, avgLessonsBeforeTest }: { steps: ReportsRetentionStep[]; avgLessonsBeforeTest: number }) {
   return (
     <div style={{ ...card, padding: 14 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
@@ -622,7 +663,7 @@ function RetentionCard() {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {reports.retention.map((step) => (
+        {steps.map((step) => (
           <div key={step.step}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
               <span style={{ fontSize: 11, color: "#0F172A" }}>{step.step}</span>
@@ -651,14 +692,14 @@ function RetentionCard() {
         display: "flex", justifyContent: "space-between", fontSize: 10,
       }}>
         <span style={{ color: "#64748B" }}>Avg lessons before test</span>
-        <span style={{ color: "#0F172A", fontWeight: 500 }}>{reports.avgLessonsBeforeTest}</span>
+        <span style={{ color: "#0F172A", fontWeight: 500 }}>{avgLessonsBeforeTest}</span>
       </div>
     </div>
   );
 }
 
 // ---------- Top Pupils ----------
-function TopPupilsCard() {
+function TopPupilsCard({ pupils }: { pupils: ReportsTopPupil[] }) {
   return (
     <div style={{ ...card, padding: 14 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
@@ -677,7 +718,9 @@ function TopPupilsCard() {
         <span style={{ textAlign: "right" }}>Spend</span>
       </div>
 
-      {reports.topPupils.map((p) => {
+      {pupils.length === 0 ? (
+        <div style={{ fontSize: 11, color: "#94A3B8", padding: "20px 0", textAlign: "center" }}>No paying pupils in this range</div>
+      ) : pupils.map((p) => {
         const c = ramp[p.avatarColor] || ramp.blue;
         return (
           <div key={p.pupilId} style={{
@@ -711,8 +754,8 @@ function TopPupilsCard() {
 }
 
 // ---------- Tax Year ----------
-function TaxYearCard() {
-  const t = reports.taxYear;
+function TaxYearCard({ taxYear }: { taxYear: ReportsTaxYear }) {
+  const t = taxYear;
   return (
     <div style={{ ...card, padding: 14 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
