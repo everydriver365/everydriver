@@ -126,7 +126,7 @@ function EditorToolbar({
   );
 }
 
-function EditorPane() {
+function EditorPane({ domain }: { domain: string }) {
   const { site, update, setSection, savedSections, markSaved } = useSiteEditor();
   const [openSection, setOpenSection] = useState<string>("brand");
   const toggle = (s: string) => setOpenSection(prev => (prev === s ? "" : s));
