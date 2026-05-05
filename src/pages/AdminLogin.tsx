@@ -427,7 +427,7 @@ export default function AdminLogin() {
                         </div>
                       </div>
                       <GoogleSignInButton
-                        redirectTo={`${window.location.origin}/admin`}
+                        redirectTo={`${window.location.origin}/auth/redirect?portal=admin`}
                         className="w-full h-12 bg-white hover:bg-white/90 text-slate-900 border-slate-300"
                       />
                     </>

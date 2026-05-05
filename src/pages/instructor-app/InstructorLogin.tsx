@@ -424,7 +424,7 @@ export default function InstructorLogin() {
 
             {!isForgotPassword && (
               <GoogleSignInButton
-                redirectTo={`${window.location.origin}/instructor`}
+                redirectTo={`${window.location.origin}/auth/redirect?portal=instructor`}
                 className="w-full h-12 bg-white hover:bg-white/90 text-slate-900 border-slate-300"
               />
             )}
