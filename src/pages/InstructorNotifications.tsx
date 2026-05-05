@@ -623,7 +623,7 @@ export default function InstructorNotifications() {
           setActionFor(null);
           setSnoozeFor(target);
         }}
-        onMuteType={() => navigate("/instructor/menu?open=notifications")}
+        onMuteType={() => navigate("/instructor/settings/notifications")}
       />
 
       {/* Snooze sheet */}
