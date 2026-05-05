@@ -796,19 +796,23 @@ export default function InstructorPupilsDesktop() {
           <div className="space-y-3 py-2">
             <div className="space-y-1">
               <Label htmlFor="add-name">Name *</Label>
-              <Input id="add-name" value={addForm.name} onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))} placeholder="Full name" autoFocus />
+              <Input id="add-name" value={addForm.name} aria-invalid={!!addErrors.name} onChange={e => { setAddForm(f => ({ ...f, name: e.target.value })); if (addErrors.name) setAddErrors(er => ({ ...er, name: undefined })); }} placeholder="Full name" autoFocus className={addErrors.name ? "border-destructive focus-visible:ring-destructive" : ""} />
+              {addErrors.name && <p className="text-xs text-destructive">{addErrors.name}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="add-phone">Phone</Label>
-              <Input id="add-phone" value={addForm.phone} onChange={e => setAddForm(f => ({ ...f, phone: e.target.value }))} placeholder="07…" />
+              <Input id="add-phone" value={addForm.phone} aria-invalid={!!addErrors.phone} onChange={e => { setAddForm(f => ({ ...f, phone: e.target.value })); if (addErrors.phone) setAddErrors(er => ({ ...er, phone: undefined })); }} placeholder="07…" className={addErrors.phone ? "border-destructive focus-visible:ring-destructive" : ""} />
+              {addErrors.phone && <p className="text-xs text-destructive">{addErrors.phone}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="add-email">Email</Label>
-              <Input id="add-email" type="email" value={addForm.email} onChange={e => setAddForm(f => ({ ...f, email: e.target.value }))} placeholder="name@example.com" />
+              <Input id="add-email" type="email" value={addForm.email} aria-invalid={!!addErrors.email} onChange={e => { setAddForm(f => ({ ...f, email: e.target.value })); if (addErrors.email) setAddErrors(er => ({ ...er, email: undefined })); }} placeholder="name@example.com" className={addErrors.email ? "border-destructive focus-visible:ring-destructive" : ""} />
+              {addErrors.email && <p className="text-xs text-destructive">{addErrors.email}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="add-postcode">Postcode</Label>
-              <Input id="add-postcode" value={addForm.postcode} onChange={e => setAddForm(f => ({ ...f, postcode: e.target.value }))} placeholder="SO22 4AB" />
+              <Input id="add-postcode" value={addForm.postcode} aria-invalid={!!addErrors.postcode} onChange={e => { setAddForm(f => ({ ...f, postcode: e.target.value })); if (addErrors.postcode) setAddErrors(er => ({ ...er, postcode: undefined })); }} placeholder="SO22 4AB" className={addErrors.postcode ? "border-destructive focus-visible:ring-destructive" : ""} />
+              {addErrors.postcode && <p className="text-xs text-destructive">{addErrors.postcode}</p>}
             </div>
           </div>
           <DialogFooter>
