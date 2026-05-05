@@ -209,7 +209,66 @@ export default function InstructorPupilsDesktop() {
     setReloadTick(t => t + 1);
   };
 
-  // Load real pupils for this instructor
+  // ---- Edit pupil ----
+  const [editOpen, setEditOpen] = useState(false);
+  const [editTargetId, setEditTargetId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", postcode: "" });
+  const [editSaving, setEditSaving] = useState(false);
+
+  const openEdit = async (id: string) => {
+    setEditTargetId(id);
+    setEditOpen(true);
+    setEditForm({ name: "", phone: "", email: "", postcode: "" });
+    const { data } = await supabase
+      .from("pupils")
+      .select("name, phone, email, postcode")
+      .eq("id", id)
+      .maybeSingle();
+    if (data) setEditForm({
+      name: data.name || "",
+      phone: data.phone || "",
+      email: data.email || "",
+      postcode: data.postcode || "",
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editTargetId) return;
+    if (!editForm.name.trim()) { toast.error("Name is required"); return; }
+    setEditSaving(true);
+    const { error } = await supabase.from("pupils").update({
+      name: editForm.name.trim(),
+      phone: editForm.phone.trim() || null,
+      email: editForm.email.trim() || null,
+      postcode: editForm.postcode.trim() || null,
+    }).eq("id", editTargetId);
+    setEditSaving(false);
+    if (error) { toast.error(`Could not save: ${error.message}`); return; }
+    toast.success("Pupil updated");
+    setEditOpen(false);
+    setEditTargetId(null);
+    setReloadTick(t => t + 1);
+  };
+
+  // ---- Delete pupil (soft delete) ----
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    const { error } = await supabase.from("pupils")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", deleteTarget.id);
+    setDeleting(false);
+    if (error) { toast.error(`Could not delete: ${error.message}`); return; }
+    toast.success(`Removed ${deleteTarget.name}`);
+    if (openId === deleteTarget.id) setOpenId(null);
+    setDeleteTarget(null);
+    setReloadTick(t => t + 1);
+  };
+
+
   useEffect(() => {
     const instructorId = instructor?.id;
     if (!instructorId) return;
