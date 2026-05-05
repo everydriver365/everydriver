@@ -19,6 +19,7 @@ import {
   getBiometryLabel,
   isNativePlatform,
 } from "@/lib/biometricAuth";
+import { setRememberMe, getRememberMe } from "@/lib/sessionPersistence";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -46,7 +47,7 @@ export default function InstructorLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberMe, setRememberMeState] = useState(getRememberMe());
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -212,6 +213,7 @@ export default function InstructorLogin() {
           setError(signInError.message);
         }
       } else {
+        setRememberMe(rememberMe);
         // Save credentials if remember me is checked
         if (rememberMe) {
           await saveCredentialsForBiometric(email.trim(), password);
@@ -448,7 +450,7 @@ export default function InstructorLogin() {
                 <Checkbox
                   id="rememberMe"
                   checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  onCheckedChange={(checked) => setRememberMeState(checked as boolean)}
                 />
                 <Label 
                   htmlFor="rememberMe" 

@@ -4,13 +4,16 @@ import { useSchoolAuth } from "@/context/SchoolAuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Building2 } from "lucide-react";
 import { toast } from "sonner";
+import { setRememberMe, getRememberMe } from "@/lib/sessionPersistence";
 
 export default function SchoolLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMeState] = useState(getRememberMe());
   const { signIn } = useSchoolAuth();
   const navigate = useNavigate();
 
@@ -22,6 +25,7 @@ export default function SchoolLogin() {
     if (error) {
       toast.error(error.message);
     } else {
+      setRememberMe(rememberMe);
       navigate("/school/dashboard");
     }
   };
@@ -67,6 +71,16 @@ export default function SchoolLogin() {
               required
               className="bg-white/5 border-white/10 text-white"
             />
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="school-remember"
+              checked={rememberMe}
+              onCheckedChange={(v) => setRememberMeState(v === true)}
+            />
+            <Label htmlFor="school-remember" className="text-sm text-white/70 cursor-pointer">
+              Keep me signed in
+            </Label>
           </div>
           <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
