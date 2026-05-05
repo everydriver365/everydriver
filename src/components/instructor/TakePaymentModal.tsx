@@ -124,11 +124,11 @@ export function TakePaymentModal({
     }
   };
 
-  // Generate Square payment link then send via SMS/email
+  // Generate Square payment link then send via SMS (email is admin-only)
   const handleSendLink = async () => {
     if (!instructorId) return;
-    if (!manualPhone && !manualEmail) return;
-    const method = sendViaSms && sendViaEmail ? "both" : sendViaSms ? "sms" : "email";
+    if (!manualPhone) return;
+    const method = "sms";
     setSending(true);
     try {
       const isManualOnly = selectedPupilId === "_manual" || !selectedPupilId;
@@ -519,18 +519,7 @@ export function TakePaymentModal({
                     />
                   </div>
 
-                  {/* Manual email */}
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Email address</Label>
-                    <Input
-                      type="email"
-                      placeholder="name@example.com"
-                      value={manualEmail}
-                      onChange={(e) => setManualEmail(e.target.value)}
-                    />
-                  </div>
-
-                  {/* Send method checkboxes */}
+                  {/* Send method (SMS only — email is admin-only) */}
                   <div className="space-y-2">
                     <Label className="text-xs font-medium">Send via</Label>
                     <div className="flex items-center gap-4">
@@ -543,21 +532,12 @@ export function TakePaymentModal({
                         <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="text-sm">SMS</span>
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <Checkbox
-                          checked={sendViaEmail}
-                          onCheckedChange={(c) => setSendViaEmail(!!c)}
-                          disabled={!manualEmail.trim()}
-                        />
-                        <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-sm">Email</span>
-                      </label>
                     </div>
                   </div>
 
                   <Button
                     className="w-full"
-                    disabled={(!sendViaSms && !sendViaEmail) || sending || parsedAmount <= 0}
+                    disabled={!sendViaSms || sending || parsedAmount <= 0}
                     onClick={handleSendLink}
                   >
                     {sending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

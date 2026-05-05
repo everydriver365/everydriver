@@ -1456,31 +1456,7 @@ export function AddLessonSheet({
         <div className="space-y-3 pt-2">
           {paymentMethod === 'send_link' && savedPupilId && (
             <>
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-3 h-12"
-                onClick={async () => {
-                  if (!savedPupilId) return;
-                  try {
-                    const { data: pupilData } = await supabase.from("pupils").select("name, email").eq("id", savedPupilId).single();
-                    if (pupilData?.email) {
-                      await supabase.functions.invoke("send-payment-link", {
-                        body: { instructorId, pupilId: savedPupilId, method: "email" },
-                      });
-                      toast.success(`Payment link sent to ${pupilData.email}`);
-                    } else {
-                      toast.error("No email address on file");
-                    }
-                  } catch { toast.error("Failed to send payment link"); }
-                  setShowPostPayment(false);
-                }}
-              >
-                <Mail className="h-5 w-5 text-muted-foreground" />
-                <div className="text-left">
-                  <p className="font-medium text-sm">Send via Email</p>
-                  <p className="text-xs text-muted-foreground">Email a payment link to the pupil</p>
-                </div>
-              </Button>
+              {/* Email send option removed — instructor email actions disabled */}
               <Button
                 variant="outline"
                 className="w-full justify-start gap-3 h-12"
