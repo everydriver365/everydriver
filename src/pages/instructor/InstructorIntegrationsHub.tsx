@@ -7,7 +7,93 @@ import { GoogleServiceAccountSetup } from "@/components/instructor/GoogleService
 import { SquareConnectSettings } from "@/components/instructor/SquareConnectSettings";
 import { XeroExport } from "@/components/instructor/XeroExport";
 import { IntegrationStatusBadge, IntegrationStatusKind } from "@/components/instructor/integrations/IntegrationStatusBadge";
+import { IntegrationInstructions } from "@/components/instructor/integrations/IntegrationInstructions";
 import { useIntegrationStatuses } from "@/hooks/useIntegrationStatuses";
+
+const GOOGLE_STEPS = [
+  {
+    title: "Open Google Calendar settings",
+    body: (
+      <>
+        Go to{" "}
+        <a className="text-primary underline" href="https://calendar.google.com/calendar/r/settings" target="_blank" rel="noreferrer">
+          calendar.google.com → Settings
+        </a>
+        , then pick the calendar you want to sync from the left sidebar.
+      </>
+    ),
+  },
+  {
+    title: "Share with our service email",
+    body: (
+      <>Under <b>Share with specific people</b>, add the email shown below with permission set to <b>Make changes to events</b>.</>
+    ),
+  },
+  {
+    title: "Copy your Calendar ID",
+    body: (
+      <>Scroll to <b>Integrate calendar</b> and copy the <b>Calendar ID</b> (usually your Gmail address). Paste it into the field below and click <b>Test Connection</b>.</>
+    ),
+  },
+  {
+    title: "Connect & sync",
+    body: <>Click <b>Connect Calendar</b>. Lessons will sync both ways automatically — use <b>Preview Sync</b> to see pending changes.</>,
+  },
+];
+
+const SQUARE_STEPS = [
+  {
+    title: "Create or sign in to Square",
+    body: (
+      <>
+        Don't have an account?{" "}
+        <a className="text-primary underline" href="https://squareup.com/i/EVERYDRIVE" target="_blank" rel="noreferrer">
+          Sign up free via our partner link
+        </a>{" "}
+        to get free processing on your first £1,000.
+      </>
+    ),
+  },
+  {
+    title: "Click Connect Square Account",
+    body: <>This opens Square in a popup. Sign in and approve access for Drive365 to take payments on your behalf.</>,
+  },
+  {
+    title: "Verify the connection",
+    body: <>Once approved you'll see <b>Square Connected</b> with your merchant ID. Pupil card payments now go straight to your Square account.</>,
+  },
+  {
+    title: "Payouts & service fee",
+    body: <>Square sends funds to your linked bank on its standard schedule. The platform Service Fee (1.5–2% + 25p) is deducted automatically.</>,
+  },
+];
+
+const XERO_STEPS = [
+  {
+    title: "Choose a period",
+    body: <>Pick <b>This Month</b> or <b>This Year</b> for expenses, or <b>Year Income</b> for invoices.</>,
+  },
+  {
+    title: "Download the CSV",
+    body: <>Click the export button. The file is formatted for Xero's standard import templates (Bills for expenses, Invoices for income).</>,
+  },
+  {
+    title: "Import into Xero",
+    body: (
+      <>
+        In Xero go to <b>Business → Bills to pay → Import</b> (or <b>Sales → Invoices → Import</b>), upload the CSV and map the columns Xero suggests. See the{" "}
+        <a className="text-primary underline" href="https://central.xero.com/s/article/Import-bills-or-credit-notes" target="_blank" rel="noreferrer">
+          Xero import guide
+        </a>.
+      </>
+    ),
+  },
+  {
+    title: "Mark as synced",
+    body: <>After a successful import, click <b>Mark as Synced</b> so they aren't exported again. Use <b>Reset Sync State</b> if you need to re-export.</>,
+  },
+];
+
 
 const TABS = [
   { id: "google-calendar", label: "Google Calendar", icon: Calendar, blurb: "Sync your lessons to your Google Calendar." },
