@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useModules } from "@/context/ModulesContext";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
 interface NavItem { label: string; to: string; icon: React.ElementType; badge?: string; moduleId?: string; }
 interface NavSection { label: string; items: NavItem[]; }
@@ -57,6 +58,13 @@ interface Props {
 export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, onSignOut }: Props) {
   const { pathname } = useLocation();
   const { isActive: isModuleActive } = useModules();
+  let instructorLogo: string | null = null;
+  let instructorName = "DSM";
+  try {
+    const { instructor } = useInstructorAuth();
+    if (instructor?.logo_url) instructorLogo = instructor.logo_url;
+    if (instructor?.name) instructorName = instructor.name;
+  } catch {}
 
   const visibleSections = SECTIONS.map(s => ({
     ...s,
@@ -76,15 +84,25 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
       {/* Brand */}
       <div className="flex items-center justify-between" style={{ padding: "16px 12px" }}>
         <Link to="/instructor" className="flex items-center gap-2 min-w-0">
-          <div className="flex items-center gap-0.5" aria-label="DSM logo">
-            <span style={{ width: 10, height: 10, background: "#EF4444", borderRadius: 2, transform: "skewY(-8deg)" }} />
-            <span style={{ width: 10, height: 10, background: "#3B82F6", borderRadius: 2, transform: "skewY(-8deg)" }} />
-            <span style={{ width: 10, height: 10, background: "#1F2937", borderRadius: 2, transform: "skewY(-8deg)" }} />
-          </div>
-          {!collapsed && (
-            <span style={{ fontSize: 14, fontWeight: 600, letterSpacing: "-0.2px", color: "var(--d2-text-1)" }}>
-              DSM
-            </span>
+          {instructorLogo ? (
+            <img
+              src={instructorLogo}
+              alt={instructorName}
+              style={{ height: 24, width: "auto", objectFit: "contain", flexShrink: 0 }}
+            />
+          ) : (
+            <>
+              <div className="flex items-center gap-0.5" aria-label="DSM logo">
+                <span style={{ width: 10, height: 10, background: "#EF4444", borderRadius: 2, transform: "skewY(-8deg)" }} />
+                <span style={{ width: 10, height: 10, background: "#3B82F6", borderRadius: 2, transform: "skewY(-8deg)" }} />
+                <span style={{ width: 10, height: 10, background: "#1F2937", borderRadius: 2, transform: "skewY(-8deg)" }} />
+              </div>
+              {!collapsed && (
+                <span style={{ fontSize: 14, fontWeight: 600, letterSpacing: "-0.2px", color: "var(--d2-text-1)" }}>
+                  DSM
+                </span>
+              )}
+            </>
           )}
         </Link>
         <button
