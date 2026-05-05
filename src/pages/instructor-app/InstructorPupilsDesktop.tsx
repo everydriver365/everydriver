@@ -162,7 +162,8 @@ export default function InstructorPupilsDesktop() {
   const { instructor, signOut } = useInstructorAuth();
   const { total: notificationCount } = useCombinedNotificationCount(instructor?.id);
 
-  const [pupils, setPupils] = useState<Pupil[]>(() => buildPupils());
+  const [pupils, setPupils] = useState<Pupil[]>([]);
+  const [loadingPupils, setLoadingPupils] = useState(true);
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -170,9 +171,104 @@ export default function InstructorPupilsDesktop() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 12;
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [openId, setOpenId] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [openId, setOpenId] = useState<string | null>(null);
   const [tab, setTab] = useState<"overview" | "lessons" | "progress" | "payments" | "notes">("overview");
+
+  // Load real pupils for this instructor
+  useEffect(() => {
+    const instructorId = instructor?.id;
+    if (!instructorId) return;
+    let cancelled = false;
+    (async () => {
+      setLoadingPupils(true);
+      try {
+        const { data: pupilRows, error } = await supabase
+          .from("pupils")
+          .select("id, name, phone, account_balance, course_status, created_at, address, postcode, lessons_completed")
+          .eq("instructor_id", instructorId)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false });
+        if (error) throw error;
+
+        const ids = (pupilRows || []).map((p: any) => p.id);
+        let nextByPupil = new Map<string, { date: string; time: string }>();
+        let lastByPupil = new Map<string, string>();
+        let hoursByPupil = new Map<string, number>();
+
+        if (ids.length) {
+          const todayIso = new Date().toISOString().slice(0, 10);
+          const { data: upcoming } = await supabase
+            .from("scheduled_lessons")
+            .select("pupil_id, lesson_date, start_time, duration_minutes")
+            .eq("instructor_id", instructorId)
+            .in("pupil_id", ids)
+            .gte("lesson_date", todayIso)
+            .neq("status", "cancelled")
+            .is("deleted_at", null)
+            .order("lesson_date", { ascending: true })
+            .order("start_time", { ascending: true });
+          (upcoming || []).forEach((l: any) => {
+            if (!nextByPupil.has(l.pupil_id)) nextByPupil.set(l.pupil_id, { date: l.lesson_date, time: l.start_time });
+          });
+
+          const { data: past } = await supabase
+            .from("scheduled_lessons")
+            .select("pupil_id, lesson_date, duration_minutes, status")
+            .eq("instructor_id", instructorId)
+            .in("pupil_id", ids)
+            .lt("lesson_date", todayIso)
+            .order("lesson_date", { ascending: false });
+          (past || []).forEach((l: any) => {
+            if (!lastByPupil.has(l.pupil_id)) lastByPupil.set(l.pupil_id, l.lesson_date);
+            const mins = Number(l.duration_minutes) || 0;
+            hoursByPupil.set(l.pupil_id, (hoursByPupil.get(l.pupil_id) || 0) + mins / 60);
+          });
+        }
+
+        const mapped: Pupil[] = (pupilRows || []).map((p: any, i: number) => {
+          const { initials, avatarColor } = deriveAvatar(p.name || "Pupil", i);
+          const nxt = nextByPupil.get(p.id);
+          const next = formatNextLesson(nxt?.date || null, nxt?.time || null);
+          const lastDate = lastByPupil.get(p.id) || null;
+          const lastDays = daysSince(lastDate);
+          const balanceNum = Number(p.account_balance ?? 0);
+          const status: Status =
+            (p.course_status === "paused" && "paused") ||
+            (p.course_status === "completed" && "test-ready") ||
+            (lastDays > 30 ? "at-risk" : "active");
+          const since = p.created_at
+            ? new Date(p.created_at).toLocaleDateString("en-GB", { month: "short", year: "numeric" })
+            : "";
+          return {
+            id: p.id,
+            name: p.name || "Pupil",
+            phone: p.phone || "",
+            initials,
+            avatarColor,
+            lessonsLeft: balanceNum < 0 ? 0 : Math.max(0, Math.floor(balanceNum / 35)),
+            lastLesson: formatLastLesson(lastDays),
+            lastLessonDays: lastDays,
+            nextLesson: next.label,
+            nextLessonRank: next.rank,
+            balance: balanceNum < 0 ? Math.abs(balanceNum) : 0,
+            status,
+            since,
+            totalHours: Math.round((hoursByPupil.get(p.id) || 0) * 10) / 10,
+            pickupAddress: p.address || p.postcode || undefined,
+          };
+        });
+
+        if (!cancelled) setPupils(mapped);
+      } catch (e) {
+        console.error("Failed to load pupils", e);
+      } finally {
+        if (!cancelled) setLoadingPupils(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [instructor?.id]);
+
 
   // Debounce search
   useEffect(() => {
