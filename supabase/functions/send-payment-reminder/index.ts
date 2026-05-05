@@ -17,6 +17,23 @@ interface PaymentReminderRequest {
   manualName?: string; // name for manual-only sends
 }
 
+async function callerIsAdmin(req: Request): Promise<boolean> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) return false;
+  const token = authHeader.replace("Bearer ", "");
+  const supa = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: authHeader } } },
+  );
+  const { data: claims } = await supa.auth.getClaims(token);
+  if (!claims?.claims?.sub) return false;
+  const { data: isAdmin } = await supa.rpc("has_role", {
+    _user_id: claims.claims.sub, _role: "admin",
+  });
+  return Boolean(isAdmin);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -32,7 +49,15 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const data: PaymentReminderRequest = await req.json();
-    const method = data.method || "sms";
+    let method = data.method || "sms";
+
+    // Email channel is admin-only. Downgrade non-admin email/both requests to SMS.
+    if (method === "email" || method === "both") {
+      const isAdmin = await callerIsAdmin(req);
+      if (!isAdmin) {
+        method = "sms";
+      }
+    }
 
     console.log("Payment reminder request:", { ...data, method });
 

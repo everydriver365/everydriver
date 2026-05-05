@@ -216,9 +216,36 @@ function buildEmailHtml(params: {
 </html>`;
 }
 
+async function isAuthorizedCaller(req: Request): Promise<boolean> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) return false;
+  const token = authHeader.replace("Bearer ", "");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  // Allow internal server-to-server calls (booking flows).
+  if (token === serviceKey) return true;
+  // Otherwise require admin role.
+  const supa = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: authHeader } } },
+  );
+  const { data: claims } = await supa.auth.getClaims(token);
+  if (!claims?.claims?.sub) return false;
+  const { data: isAdmin } = await supa.rpc("has_role", {
+    _user_id: claims.claims.sub, _role: "admin",
+  });
+  return Boolean(isAdmin);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  if (!(await isAuthorizedCaller(req))) {
+    return new Response(JSON.stringify({ error: "Forbidden" }), {
+      status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
