@@ -9,7 +9,7 @@ const InstructorPortalLogin = lazy(() => import("@/pages/InstructorPortalLogin")
 const InstructorPortal = lazy(() => import("@/pages/InstructorPortal"));
 const InstructorPupils = lazy(() => import("@/pages/instructor-app/InstructorPupilsRouter"));
 const PremiumPupilProfile = lazy(() => import("@/pages/PremiumPupilProfile"));
-const InstructorSchedule = lazy(() => import("@/pages/InstructorSchedule"));
+const InstructorSchedule = lazy(() => import("@/pages/instructor-app/InstructorScheduleRouter"));
 const InstructorEventDetails = lazy(() => import("@/pages/InstructorEventDetails"));
 const InstructorDiary = lazy(() => import("@/pages/InstructorDiary"));
 const InstructorMenu = lazy(() => import("@/pages/InstructorMenu"));
