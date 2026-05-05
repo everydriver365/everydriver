@@ -60,8 +60,8 @@ export default function InstructorSignup() {
     setLoading(true);
     
     try {
-      const { error: signUpError } = await signUp(email, password, name);
-      
+      const { error: signUpError, needsEmailConfirmation } = await signUp(email, password, name);
+
       if (signUpError) {
         if (signUpError.message.includes("already registered")) {
           setError("An account with this email already exists. Please sign in.");
@@ -69,12 +69,16 @@ export default function InstructorSignup() {
           setError(signUpError.message);
         }
       } else {
-        // Fire-and-forget signup_started funnel event (instructor row may not exist yet — null instructor_id is allowed)
         void import("@/lib/funnelTracker").then(({ trackFunnelEvent }) =>
           trackFunnelEvent("signup_started", { data: { plan: selectedPlan } })
         );
-        toast.success("Account created! Let's set up your profile.");
-        navigate(`/instructor-app/onboarding?step=1&plan=${selectedPlan}${promo ? `&promo=${promo}` : ""}`);
+        if (needsEmailConfirmation) {
+          toast.success("Check your inbox to verify your email before signing in.");
+          navigate(`/instructor-app/login?verify=1&email=${encodeURIComponent(email)}`);
+        } else {
+          toast.success("Account created! Let's set up your profile.");
+          navigate(`/instructor-app/onboarding?step=1&plan=${selectedPlan}${promo ? `&promo=${promo}` : ""}`);
+        }
       }
     } catch (err) {
       setError("An unexpected error occurred");

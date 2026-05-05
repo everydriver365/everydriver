@@ -17,6 +17,7 @@ import {
   isNativePlatform,
 } from "@/lib/biometricAuth";
 import { setRememberMe, getRememberMe } from "@/lib/sessionPersistence";
+import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailConfirmation";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -191,7 +192,10 @@ export default function InstructorPortalLogin() {
       const { error: signInError } = await signIn(email.trim(), password);
       
       if (signInError) {
-        if (signInError.message.includes("Invalid login")) {
+        if (isEmailNotConfirmedError(signInError)) {
+          setError("Please verify your email before signing in. Check your inbox for the confirmation link.");
+          void resendSignupConfirmation(email.trim(), `${window.location.origin}/instructor/login`);
+        } else if (signInError.message.includes("Invalid login")) {
           setError("Invalid email or password");
         } else {
           setError(signInError.message);
@@ -371,7 +375,26 @@ export default function InstructorPortalLogin() {
                       >
                         <Alert variant="destructive" className="py-2 bg-red-500/10 border-red-500/20">
                           <AlertCircle className="h-4 w-4" />
-                          <AlertDescription className="text-sm">{error}</AlertDescription>
+                          <AlertDescription className="text-sm">
+                            {error}
+                            {error.toLowerCase().includes("verify your email") && (
+                              <button
+                                type="button"
+                                className="block mt-1 underline font-medium"
+                                onClick={async () => {
+                                  if (!email.trim()) return;
+                                  const { error: resendErr } = await resendSignupConfirmation(
+                                    email.trim(),
+                                    `${window.location.origin}/instructor/login`
+                                  );
+                                  if (resendErr) toast.error(resendErr.message);
+                                  else toast.success("Confirmation email sent. Check your inbox.");
+                                }}
+                              >
+                                Resend confirmation email
+                              </button>
+                            )}
+                          </AlertDescription>
                         </Alert>
                       </motion.div>
                     )}

@@ -73,7 +73,7 @@ interface InstructorAuthContextType {
   instructor: InstructorProfile | null;
   subscription: Subscription | null;
   loading: boolean;
-  signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null; needsEmailConfirmation?: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
@@ -178,10 +178,9 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   };
 
   const signUp = async (email: string, password: string, name: string) => {
-    // Always redirect to Drive365 domain for instructor signups
-    const redirectUrl = "https://drive365.co.uk/instructor";
-    
-    const { error } = await supabase.auth.signUp({
+    const redirectUrl = `${window.location.origin}/instructor-app/login`;
+
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -193,51 +192,47 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
       }
     });
 
-    if (!error) {
-      // Create instructor record and subscription
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData?.user) {
-        // Generate unique slug
-        let slug = email.split('@')[0].toLowerCase().replace(/\./g, '-');
-        const { data: existingSlug } = await supabase
-          .from('instructors')
-          .select('app_slug')
-          .eq('app_slug', slug)
-          .maybeSingle();
-        
-        if (existingSlug) {
-          slug = `${slug}-${Math.floor(Math.random() * 1000)}`;
-        }
+    if (error) {
+      return { error: error as Error | null, needsEmailConfirmation: false };
+    }
 
-        // Create instructor
-        const { data: newInstructor, error: instructorError } = await supabase
-          .from('instructors')
-          .insert({
-            auth_user_id: userData.user.id,
-            name,
-            email,
-            app_slug: slug,
-            home_postcode: 'TBC',
-            car_type: 'Manual',
-            is_active: false
-          })
-          .select()
-          .single();
+    const newUserId = data.user?.id;
+    const hasSession = !!data.session;
 
-        if (instructorError) {
-          console.error('Error creating instructor:', instructorError);
-          return { error: instructorError };
-        }
+    if (newUserId) {
+      // Generate unique slug
+      let slug = email.split('@')[0].toLowerCase().replace(/\./g, '-');
+      const { data: existingSlug } = await supabase
+        .from('instructors')
+        .select('app_slug')
+        .eq('app_slug', slug)
+        .maybeSingle();
 
-        // Add instructor role
+      if (existingSlug) {
+        slug = `${slug}-${Math.floor(Math.random() * 1000)}`;
+      }
+
+      // Create instructor row (works even without active session because
+      // policies allow self-insert, and email-confirmation flow has no session)
+      const { data: newInstructor, error: instructorError } = await supabase
+        .from('instructors')
+        .insert({
+          auth_user_id: newUserId,
+          name,
+          email,
+          app_slug: slug,
+          home_postcode: 'TBC',
+          car_type: 'Manual',
+          is_active: false
+        })
+        .select()
+        .single();
+
+      if (!instructorError) {
         await supabase
           .from('user_roles')
-          .insert({
-            user_id: userData.user.id,
-            role: 'instructor'
-          });
+          .insert({ user_id: newUserId, role: 'instructor' });
 
-        // Get free plan and create subscription
         const { data: freePlan } = await supabase
           .from('subscription_plans')
           .select('id')
@@ -253,10 +248,12 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
               status: 'active'
             });
         }
+      } else {
+        console.error('Error creating instructor:', instructorError);
       }
     }
 
-    return { error: error as Error | null };
+    return { error: null, needsEmailConfirmation: !hasSession };
   };
 
   const signIn = async (email: string, password: string) => {

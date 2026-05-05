@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import dsmLogo from "@/assets/dsm-logo.png";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,7 @@ import {
   isNativePlatform,
 } from "@/lib/biometricAuth";
 import { setRememberMe, getRememberMe } from "@/lib/sessionPersistence";
+import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailConfirmation";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -60,6 +61,14 @@ export default function InstructorLogin() {
   const [isInstalled, setIsInstalled] = useState(false);
   const { signIn, resetPassword } = useInstructorAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const showVerifyBanner = searchParams.get("verify") === "1";
+
+  useEffect(() => {
+    const prefill = searchParams.get("email");
+    if (prefill && !email) setEmail(prefill);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Check install state, platform, and biometric availability
   useEffect(() => {
@@ -207,7 +216,11 @@ export default function InstructorLogin() {
       const { error: signInError } = await signIn(email.trim(), password);
       
       if (signInError) {
-        if (signInError.message.includes("Invalid login")) {
+        if (isEmailNotConfirmedError(signInError)) {
+          setError("Please verify your email before signing in. Check your inbox for the confirmation link.");
+          // Auto-resend in the background so the user always has a fresh link
+          void resendSignupConfirmation(email.trim(), `${window.location.origin}/instructor-app/login`);
+        } else if (signInError.message.includes("Invalid login")) {
           setError("Invalid email or password");
         } else {
           setError(signInError.message);
@@ -348,6 +361,14 @@ export default function InstructorLogin() {
           className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-xl"
         >
           <form onSubmit={handleSubmit} className="space-y-4" name="instructor-login" method="post" action="#">
+            {showVerifyBanner && !error && (
+              <Alert className="py-2 border-amber-300 bg-amber-50 text-amber-900">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  Almost there — check your inbox and click the confirmation link to activate your account before signing in.
+                </AlertDescription>
+              </Alert>
+            )}
             <AnimatePresence mode="wait">
               {error && (
                 <motion.div
@@ -357,7 +378,26 @@ export default function InstructorLogin() {
                 >
                   <Alert variant="destructive" className="py-2">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertDescription className="text-sm">{error}</AlertDescription>
+                    <AlertDescription className="text-sm">
+                      {error}
+                      {error.toLowerCase().includes("verify your email") && (
+                        <button
+                          type="button"
+                          className="block mt-1 underline font-medium"
+                          onClick={async () => {
+                            if (!email.trim()) return;
+                            const { error: resendErr } = await resendSignupConfirmation(
+                              email.trim(),
+                              `${window.location.origin}/instructor-app/login`
+                            );
+                            if (resendErr) toast.error(resendErr.message);
+                            else toast.success("Confirmation email sent. Check your inbox.");
+                          }}
+                        >
+                          Resend confirmation email
+                        </button>
+                      )}
+                    </AlertDescription>
                   </Alert>
                 </motion.div>
               )}
