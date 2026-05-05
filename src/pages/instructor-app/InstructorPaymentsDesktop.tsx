@@ -11,6 +11,7 @@ import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCou
 import { motion, AnimatePresence } from "framer-motion";
 import { useInstructorPaymentsData, type PaymentTx, type PaymentStatus, type PaymentMethod } from "@/hooks/useInstructorPaymentsData";
 import { PaymentsExportDialog } from "@/components/instructor/payments/PaymentsExportDialog";
+import { SendAllRemindersDialog } from "@/components/instructor/payments/SendAllRemindersDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 
