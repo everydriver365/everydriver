@@ -129,6 +129,12 @@ export default function InstructorScheduleDesktop() {
     return () => clearInterval(t);
   }, []);
 
+  // Debounce search input (200ms) so filtering doesn't run on every keystroke
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedPrompt(aiPrompt), 200);
+    return () => clearTimeout(t);
+  }, [aiPrompt]);
+
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
   const totals = useMemo(() => {
