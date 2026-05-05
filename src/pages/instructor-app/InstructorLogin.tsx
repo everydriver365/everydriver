@@ -375,7 +375,7 @@ export default function InstructorLogin() {
                 ) : (
                   <Fingerprint className="h-5 w-5" />
                 )}
-                Sign in with Face ID / Touch ID
+                Sign in with {biometryLabel}
               </Button>
             )}
 
@@ -454,7 +454,7 @@ export default function InstructorLogin() {
                   htmlFor="rememberMe" 
                   className="text-sm font-normal cursor-pointer text-muted-foreground"
                 >
-                  Remember me (enables Face ID / Touch ID)
+                  Remember me (enables {biometryLabel})
                 </Label>
               </div>
             )}
