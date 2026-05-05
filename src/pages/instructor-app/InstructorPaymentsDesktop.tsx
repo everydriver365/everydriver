@@ -91,6 +91,7 @@ export default function InstructorPaymentsDesktop() {
   const [period, setPeriod] = useState<"week" | "month" | "year">("month");
   const [takeOpen, setTakeOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [pupilSheet, setPupilSheet] = useState<{ id: string; name: string } | null>(null);
   const [page, setPage] = useState(1);
   const PAGE = 25;
 
@@ -289,7 +290,7 @@ export default function InstructorPaymentsDesktop() {
                     borderBottom: i === outstanding.length - 1 ? "none" : "0.5px solid var(--d2-border)",
                     cursor: "pointer",
                   }}
-                  onClick={() => navigate(`/instructor/pupils/${o.id}`)}
+                  onClick={() => setPupilSheet({ id: o.id, name: o.name })}
                 >
                   <Avatar id={o.id} name={o.name} size={24} />
                   <div className="flex-1 min-w-0">
@@ -459,6 +460,35 @@ export default function InstructorPaymentsDesktop() {
         transactions={transactions}
         instructorName={instructor?.name}
       />
+
+      <AnimatePresence>
+        {pupilSheet && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setPupilSheet(null)}
+              style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.25)", zIndex: 60 }}
+            />
+            <motion.div
+              initial={{ x: 440 }} animate={{ x: 0 }} exit={{ x: 440 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                position: "fixed", top: 0, right: 0, bottom: 0, width: 420,
+                background: "#fff", borderLeft: "0.5px solid var(--d2-border)",
+                padding: 16, zIndex: 61, overflowY: "auto",
+              }}
+            >
+              <PupilPaymentsSheet
+                pupilId={pupilSheet.id}
+                pupilName={pupilSheet.name}
+                instructorId={instructor?.id}
+                onClose={() => setPupilSheet(null)}
+                onTakePayment={() => { setPupilSheet(null); setTakeOpen(true); }}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </DashboardShell>
   );
 }
@@ -746,6 +776,213 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <div>
       <div style={{ fontSize: 10, color: "var(--d2-text-3)", fontWeight: 500, letterSpacing: "0.4px", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
       {children}
+    </div>
+  );
+}
+
+// ─── Pupil payments slide-over ───────────────────────────────
+type LedgerRow = {
+  id: string;
+  recorded_at: string;
+  amount: number;
+  payment_method: string | null;
+  notes: string | null;
+};
+
+function PupilPaymentsSheet({
+  pupilId, pupilName, instructorId, onClose, onTakePayment,
+}: {
+  pupilId: string;
+  pupilName: string;
+  instructorId?: string;
+  onClose: () => void;
+  onTakePayment: () => void;
+}) {
+  const [tab, setTab] = useState<"payments" | "details">("payments");
+  const [loading, setLoading] = useState(true);
+  const [balance, setBalance] = useState<number>(0);
+  const [pupilMeta, setPupilMeta] = useState<{ phone: string | null; email: string | null; balance_due_date: string | null } | null>(null);
+  const [rows, setRows] = useState<LedgerRow[]>([]);
+
+  useEffect(() => {
+    if (!instructorId || !pupilId) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const [pupilRes, txRes] = await Promise.all([
+        supabase
+          .from("pupils")
+          .select("account_balance, phone, email, balance_due_date")
+          .eq("id", pupilId)
+          .maybeSingle(),
+        supabase
+          .from("payment_history")
+          .select("id, recorded_at, amount, payment_method, notes")
+          .eq("instructor_id", instructorId)
+          .eq("pupil_id", pupilId)
+          .is("deleted_at", null)
+          .order("recorded_at", { ascending: false })
+          .limit(50),
+      ]);
+      if (cancelled) return;
+      setBalance(Number(pupilRes.data?.account_balance || 0));
+      setPupilMeta({
+        phone: pupilRes.data?.phone ?? null,
+        email: pupilRes.data?.email ?? null,
+        balance_due_date: pupilRes.data?.balance_due_date ?? null,
+      });
+      setRows((txRes.data || []) as LedgerRow[]);
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [pupilId, instructorId]);
+
+  const owed = balance < 0 ? Math.abs(balance) : 0;
+  const credit = balance > 0 ? balance : 0;
+
+  const totalIn = rows.filter(r => r.amount > 0).reduce((s, r) => s + Number(r.amount), 0);
+  const totalOut = rows.filter(r => r.amount < 0).reduce((s, r) => s + Math.abs(Number(r.amount)), 0);
+
+  return (
+    <div className="flex flex-col" style={{ gap: 14 }}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center" style={{ gap: 8 }}>
+          <Avatar id={pupilId} name={pupilName} size={28} />
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: "var(--d2-text-1)" }}>{pupilName}</div>
+            <div style={{ fontSize: 10, color: "var(--d2-text-3)" }}>
+              {pupilMeta?.phone || pupilMeta?.email || "No contact on file"}
+            </div>
+          </div>
+        </div>
+        <button onClick={onClose} style={{ color: "var(--d2-text-3)" }}><X size={14} /></button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex items-center" style={{ background: "#F1F5F9", borderRadius: 8, padding: 3, gap: 2 }}>
+        {(["payments", "details"] as const).map(t => {
+          const a = t === tab;
+          return (
+            <button key={t} onClick={() => setTab(t)} style={{
+              flex: 1, padding: "5px 8px", borderRadius: 6, fontSize: 11,
+              background: a ? "#fff" : "transparent",
+              color: a ? "var(--d2-text-1)" : "var(--d2-text-2)",
+              fontWeight: a ? 500 : 400, textTransform: "capitalize",
+              boxShadow: a ? "0 1px 2px rgba(15,23,42,0.06)" : "none",
+            }}>{t}</button>
+          );
+        })}
+      </div>
+
+      {tab === "payments" && (
+        <>
+          {/* Balance card */}
+          <div style={{
+            background: owed > 0 ? "#FFF1F2" : credit > 0 ? "#ECFDF5" : "#F8FAFC",
+            color: owed > 0 ? "#BE123C" : credit > 0 ? "#047857" : "var(--d2-text-1)",
+            borderRadius: 8, padding: 12,
+          }}>
+            <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.5px", opacity: 0.8 }}>
+              {owed > 0 ? "OWES" : credit > 0 ? "IN CREDIT" : "BALANCE"}
+            </div>
+            <div style={{
+              fontSize: 24, fontWeight: 500, fontFamily: "var(--d2-mono)", fontVariantNumeric: "tabular-nums",
+              marginTop: 2, lineHeight: 1.1,
+            }}>
+              {gbp(Math.abs(balance))}
+            </div>
+            <div style={{ fontSize: 10, opacity: 0.75, marginTop: 2 }}>
+              {pupilMeta?.balance_due_date && owed > 0
+                ? `Due ${new Date(pupilMeta.balance_due_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`
+                : `${rows.length} transactions on file`}
+            </div>
+          </div>
+
+          {/* Quick totals */}
+          <div className="grid grid-cols-2" style={{ gap: 8 }}>
+            <div style={{ background: "#F8FAFC", borderRadius: 8, padding: 10 }}>
+              <div style={{ fontSize: 9, color: "var(--d2-text-3)", fontWeight: 600, letterSpacing: "0.4px" }}>RECEIVED</div>
+              <div style={{ fontSize: 14, fontWeight: 500, fontFamily: "var(--d2-mono)", color: "#047857", marginTop: 2 }}>
+                {gbp(totalIn)}
+              </div>
+            </div>
+            <div style={{ background: "#F8FAFC", borderRadius: 8, padding: 10 }}>
+              <div style={{ fontSize: 9, color: "var(--d2-text-3)", fontWeight: 600, letterSpacing: "0.4px" }}>CHARGED</div>
+              <div style={{ fontSize: 14, fontWeight: 500, fontFamily: "var(--d2-mono)", color: "var(--d2-text-1)", marginTop: 2 }}>
+                {gbp(totalOut)}
+              </div>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center" style={{ gap: 6 }}>
+            <button onClick={onTakePayment} style={{ ...primaryBtn, flex: 1, justifyContent: "center" }}>
+              <Plus size={12} /> Take payment
+            </button>
+            <button
+              onClick={() => toast.success("Reminder sent")}
+              style={{ ...outlineBtn, flex: 1, justifyContent: "center" }}
+            >
+              Send reminder
+            </button>
+          </div>
+
+          {/* Ledger */}
+          <div>
+            <div style={{ fontSize: 10, color: "var(--d2-text-3)", fontWeight: 500, letterSpacing: "0.4px", textTransform: "uppercase", marginBottom: 6 }}>
+              Recent transactions
+            </div>
+            {loading ? (
+              <div style={{ padding: "16px 0", fontSize: 11, color: "var(--d2-text-3)" }}>Loading…</div>
+            ) : rows.length === 0 ? (
+              <div style={{ padding: "16px 0", fontSize: 11, color: "var(--d2-text-3)" }}>No transactions yet.</div>
+            ) : (
+              <div className="flex flex-col">
+                {rows.map((r, i) => {
+                  const isCharge = r.amount < 0;
+                  const d = new Date(r.recorded_at);
+                  return (
+                    <div key={r.id} className="flex items-center" style={{
+                      gap: 8, padding: "8px 0",
+                      borderBottom: i === rows.length - 1 ? "none" : "0.5px solid var(--d2-border)",
+                    }}>
+                      <div style={{
+                        width: 24, height: 24, borderRadius: 6,
+                        background: isCharge ? "#FFF1F2" : "#ECFDF5",
+                        color: isCharge ? "#BE123C" : "#047857",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 12, fontWeight: 600,
+                      }}>{isCharge ? "−" : "+"}</div>
+                      <div className="flex-1 min-w-0">
+                        <div style={{ fontSize: 11, fontWeight: 500, color: "var(--d2-text-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {r.notes || r.payment_method || "Payment"}
+                        </div>
+                        <div style={{ fontSize: 9, color: "var(--d2-text-3)" }}>
+                          {d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} · {r.payment_method || "—"}
+                        </div>
+                      </div>
+                      <div style={{
+                        fontSize: 11, fontFamily: "var(--d2-mono)", fontVariantNumeric: "tabular-nums",
+                        color: isCharge ? "#BE123C" : "#047857", fontWeight: 500,
+                      }}>
+                        {isCharge ? "-" : "+"}{gbp(Math.abs(Number(r.amount)))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {tab === "details" && (
+        <div className="flex flex-col" style={{ gap: 8, fontSize: 12, color: "var(--d2-text-2)" }}>
+          <div><span style={{ color: "var(--d2-text-3)" }}>Phone:</span> {pupilMeta?.phone || "—"}</div>
+          <div><span style={{ color: "var(--d2-text-3)" }}>Email:</span> {pupilMeta?.email || "—"}</div>
+          <div><span style={{ color: "var(--d2-text-3)" }}>Balance due:</span> {pupilMeta?.balance_due_date ? new Date(pupilMeta.balance_due_date).toLocaleDateString("en-GB") : "—"}</div>
+        </div>
+      )}
     </div>
   );
 }
