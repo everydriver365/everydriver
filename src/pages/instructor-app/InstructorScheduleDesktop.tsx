@@ -785,12 +785,12 @@ function WeekGrid({
 }
 
 function DayColumn({
-  day, rows, lessons, isToday, nowTop, onSelectLesson,
+  day, rows, lessons, isToday, nowTop, onSelectLesson, off,
 }: {
   day: Day; rows: number; lessons: Lesson[]; isToday: boolean; nowTop: number;
-  onSelectLesson: (l: Lesson) => void;
+  onSelectLesson: (l: Lesson) => void; off: boolean;
 }) {
-  const off = availability[day] === "off";
+  const { setNodeRef, isOver } = useDroppable({ id: `col-${day}`, data: { day }, disabled: off });
   const { setNodeRef, isOver } = useDroppable({ id: `col-${day}`, data: { day }, disabled: off });
   const height = rows * HOUR_PX;
 
