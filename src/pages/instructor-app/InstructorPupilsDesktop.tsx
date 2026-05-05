@@ -832,19 +832,23 @@ export default function InstructorPupilsDesktop() {
           <div className="space-y-3 py-2">
             <div className="space-y-1">
               <Label htmlFor="edit-name">Name *</Label>
-              <Input id="edit-name" value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} autoFocus />
+              <Input id="edit-name" value={editForm.name} aria-invalid={!!editErrors.name} onChange={e => { setEditForm(f => ({ ...f, name: e.target.value })); if (editErrors.name) setEditErrors(er => ({ ...er, name: undefined })); }} autoFocus className={editErrors.name ? "border-destructive focus-visible:ring-destructive" : ""} />
+              {editErrors.name && <p className="text-xs text-destructive">{editErrors.name}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="edit-phone">Phone</Label>
-              <Input id="edit-phone" value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} />
+              <Input id="edit-phone" value={editForm.phone} aria-invalid={!!editErrors.phone} onChange={e => { setEditForm(f => ({ ...f, phone: e.target.value })); if (editErrors.phone) setEditErrors(er => ({ ...er, phone: undefined })); }} className={editErrors.phone ? "border-destructive focus-visible:ring-destructive" : ""} />
+              {editErrors.phone && <p className="text-xs text-destructive">{editErrors.phone}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="edit-email">Email</Label>
-              <Input id="edit-email" type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} />
+              <Input id="edit-email" type="email" value={editForm.email} aria-invalid={!!editErrors.email} onChange={e => { setEditForm(f => ({ ...f, email: e.target.value })); if (editErrors.email) setEditErrors(er => ({ ...er, email: undefined })); }} className={editErrors.email ? "border-destructive focus-visible:ring-destructive" : ""} />
+              {editErrors.email && <p className="text-xs text-destructive">{editErrors.email}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="edit-postcode">Postcode</Label>
-              <Input id="edit-postcode" value={editForm.postcode} onChange={e => setEditForm(f => ({ ...f, postcode: e.target.value }))} />
+              <Input id="edit-postcode" value={editForm.postcode} aria-invalid={!!editErrors.postcode} onChange={e => { setEditForm(f => ({ ...f, postcode: e.target.value })); if (editErrors.postcode) setEditErrors(er => ({ ...er, postcode: undefined })); }} className={editErrors.postcode ? "border-destructive focus-visible:ring-destructive" : ""} />
+              {editErrors.postcode && <p className="text-xs text-destructive">{editErrors.postcode}</p>}
             </div>
           </div>
           <DialogFooter>
