@@ -62,12 +62,14 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
   let instructorName = "DSM";
   let brandColour: string | null = null;
   let brandFont: string | null = null;
+  let profileImage: string | null = null;
   try {
     const { instructor } = useInstructorAuth();
     if (instructor?.logo_url) instructorLogo = instructor.logo_url;
     if (instructor?.name) instructorName = instructor.name;
     if (instructor?.brand_colour) brandColour = instructor.brand_colour;
     if ((instructor as any)?.website_font) brandFont = (instructor as any).website_font;
+    if ((instructor as any)?.profile_image_url) profileImage = (instructor as any).profile_image_url;
   } catch {}
 
   const visibleSections = SECTIONS.map(s => ({
@@ -146,7 +148,7 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
             }}
           >
             <div
-              className="flex items-center justify-center shrink-0"
+              className="flex items-center justify-center shrink-0 overflow-hidden"
               style={{
                 width: 28, height: 28, borderRadius: "50%",
                 background: "var(--d2-indigo-bg)",
@@ -154,7 +156,9 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
                 fontSize: 11, fontWeight: 600,
               }}
             >
-              {userInitials}
+              {profileImage ? (
+                <img src={profileImage} alt={userName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : userInitials}
             </div>
             <div className="min-w-0">
               <p style={{ fontSize: 12, fontWeight: 500, color: "var(--d2-text-1)", margin: 0, lineHeight: 1.2 }}>
