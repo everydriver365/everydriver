@@ -718,10 +718,14 @@ const smallBtn: React.CSSProperties = {
 
 // ---- Week grid ----
 function WeekGrid({
-  lessons, now, onSelectLesson,
-}: { lessons: Lesson[]; now: Date; onSelectLesson: (l: Lesson) => void }) {
+  lessons, now, onSelectLesson, weekStart, todayDay, availability,
+}: {
+  lessons: Lesson[]; now: Date; onSelectLesson: (l: Lesson) => void;
+  weekStart: Date; todayDay: Day;
+  availability: Record<Day, "off" | { start: string; end: string }>;
+}) {
   const rows = HOUR_END - HOUR_START + 1;
-  const dates = ["4", "5", "6", "7", "8", "9", "10"];
+  const dates = DAYS.map((_, i) => String(addDays(weekStart, i).getDate()));
   const nowMin = now.getHours() * 60 + now.getMinutes();
   const nowTop = ((nowMin - HOUR_START * 60) / 60) * HOUR_PX;
 
@@ -730,14 +734,13 @@ function WeekGrid({
       background: "#fff", border: "0.5px solid var(--d2-border)", borderRadius: 6,
       overflow: "hidden",
     }}>
-      {/* Day header row */}
       <div style={{
         display: "grid", gridTemplateColumns: "38px repeat(7, 1fr)",
         background: "#F8FAFC", borderBottom: "0.5px solid var(--d2-border)",
       }}>
         <div />
         {DAYS.map((d, i) => {
-          const isToday = d === TODAY;
+          const isToday = d === todayDay;
           return (
             <div key={d} style={{
               padding: 7, textAlign: "center",
@@ -751,9 +754,7 @@ function WeekGrid({
         })}
       </div>
 
-      {/* Body */}
       <div style={{ display: "grid", gridTemplateColumns: "38px repeat(7, 1fr)" }}>
-        {/* Time col */}
         <div>
           {Array.from({ length: rows }).map((_, i) => (
             <div key={i} style={{
@@ -772,9 +773,10 @@ function WeekGrid({
             day={d}
             rows={rows}
             lessons={lessons.filter(l => l.day === d)}
-            isToday={d === TODAY}
+            isToday={d === todayDay}
             nowTop={nowTop}
             onSelectLesson={onSelectLesson}
+            off={availability[d] === "off"}
           />
         ))}
       </div>
