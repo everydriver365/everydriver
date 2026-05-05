@@ -133,10 +133,7 @@ const settingsCategories = [
 ];
 
 const allTiles: TileDef[] = [
-  { id: "profile", title: "Profile", description: "Your public instructor profile", icon: User, tintBg: "#DBEAFE", tintColor: "#1E40AF", category: "profile" },
-  { id: "details", title: "Vehicle & Qualifications", description: "Car details, skills & social links", icon: Car, tintBg: "#EDE9FE", tintColor: "#5B21B6", category: "profile" },
-  { id: "images", title: "Images & Media", description: "Car photo, QR code & video", icon: ImageIcon, tintBg: "#EDE9FE", tintColor: "#5B21B6", category: "profile" },
-  { id: "compliance", title: "Compliance & CPD", description: "Track ADI badge, insurance, MOT & CPD hours", icon: Shield, tintBg: "#ECFDF5", tintColor: "#059669", category: "teaching" },
+  { id: "account", title: "Account", description: "Profile, vehicle, media, compliance & billing", icon: User, tintBg: "#DBEAFE", tintColor: "#1E40AF", category: "profile", externalUrl: "/instructor/profile" },
   { id: "test-centres", title: "Test Centres & Examiners", description: "Manage test centres and examiners", icon: MapPin, tintBg: "#FEF2F2", tintColor: "#DC2626", category: "teaching" },
   { id: "terms", title: "Terms & Conditions", description: "Create terms for pupils to sign", icon: FileSignature, tintBg: "#F4F4F5", tintColor: "#52525B", category: "teaching" },
   { id: "courses-mgr", title: "My Courses", description: "Manage your course offerings & pricing", icon: BookOpen, tintBg: "#ECFDF5", tintColor: "#059669", category: "courses" },
