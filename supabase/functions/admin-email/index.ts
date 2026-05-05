@@ -467,6 +467,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const adminCheck = await requireAdmin(req);
+  if (adminCheck) return adminCheck;
+
   const imap = new IMAPClient();
   const smtp = new SMTPClient();
 
