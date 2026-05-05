@@ -506,10 +506,14 @@ export default function InstructorPupilsDesktop() {
             {/* Rows */}
             {visiblePage.length === 0 ? (
               <div className="flex flex-col items-center text-center" style={{ padding: "48px 16px", gap: 8 }}>
-                <div style={{ fontSize: 13, color: "var(--d2-text-2)" }}>No pupils match these filters</div>
-                <button onClick={() => { setSearch(""); setFilter("all"); }} style={{ fontSize: 12, color: "#4F46E5", fontWeight: 500 }}>
-                  Clear filters
-                </button>
+                <div style={{ fontSize: 13, color: "var(--d2-text-2)" }}>
+                  {loadingPupils ? "Loading pupils…" : pupils.length === 0 ? "No pupils yet — add your first pupil to get started." : "No pupils match these filters"}
+                </div>
+                {!loadingPupils && pupils.length > 0 && (
+                  <button onClick={() => { setSearch(""); setFilter("all"); }} style={{ fontSize: 12, color: "#4F46E5", fontWeight: 500 }}>
+                    Clear filters
+                  </button>
+                )}
               </div>
             ) : visiblePage.map((p, i) => {
               const selected = openId === p.id;
