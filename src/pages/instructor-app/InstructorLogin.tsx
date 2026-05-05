@@ -74,6 +74,13 @@ export default function InstructorLogin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Tick down the resend cooldown
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
+
   // Check install state, platform, and biometric availability
   useEffect(() => {
     const checkInstallState = () => {
