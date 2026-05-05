@@ -465,6 +465,15 @@ export default function InstructorPaymentsDesktop() {
         instructorName={instructor?.name}
       />
 
+      <SendAllRemindersDialog
+        open={remindersOpen}
+        onOpenChange={setRemindersOpen}
+        outstanding={outstanding}
+        allPupils={allPupils}
+        instructorId={instructor?.id}
+        instructorName={instructor?.name}
+      />
+
       <AnimatePresence>
         {pupilSheet && (
           <>
