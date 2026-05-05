@@ -127,11 +127,29 @@ export default function InstructorLiveSession() {
   const [pendingRouteType, setPendingRouteType] = useState<"practice" | "test" | "driving_test">("practice");
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
 
+  const isPhoneProvider = activeProvider === "phone";
+
   // Stream phone GPS into live_pupil_positions when "phone" provider is active.
   usePhoneTrackingStreamer({
     provider: activeProvider === "radius" ? "radius" : activeProvider === null ? null : "phone",
     pupilId: selectedPupilId || null,
   });
+
+  // When phone provider is active, subscribe to phone-streamed positions and
+  // use them as the live map source instead of the Radius hardware feed.
+  const phonePosition = useLivePupilPosition(
+    isPhoneProvider ? (device?.current_pupil_id ?? selectedPupilId ?? null) : null,
+    isPhoneProvider,
+  );
+
+  const mapLatitude = isPhoneProvider ? (phonePosition?.latitude ?? null) : (device?.last_latitude ?? null);
+  const mapLongitude = isPhoneProvider ? (phonePosition?.longitude ?? null) : (device?.last_longitude ?? null);
+  const mapHeading = isPhoneProvider ? (phonePosition?.heading ?? null) : (device?.last_heading ?? null);
+  const mapSpeedKmh = isPhoneProvider ? (phonePosition?.speed_kmh ?? null) : (device?.last_speed_kmh ?? null);
+  const mapSpeedLimitKmh = isPhoneProvider
+    ? (phonePosition?.speed_limit_kmh ?? speedLimitKmh)
+    : (device?.last_speed_limit_kmh ?? speedLimitKmh);
+  const mapLastSeenAt = isPhoneProvider ? (phonePosition?.updated_at ?? null) : (device?.last_seen_at ?? null);
   const [showDrivingTestDialog, setShowDrivingTestDialog] = useState(false);
   const [drivingTestDetails, setDrivingTestDetails] = useState<{
     testCentreId: string | null;
