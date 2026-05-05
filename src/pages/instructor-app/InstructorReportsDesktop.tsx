@@ -144,25 +144,56 @@ const RANGES = [
 export default function InstructorReportsDesktop() {
   const { instructor, signOut } = useInstructorAuth();
   const { total: notificationCount } = useCombinedNotificationCount(instructor?.id);
-  const [rangeId, setRangeId] = useState<typeof RANGES[number]["id"]>("90d");
+  const [rangeId, setRangeId] = useState<ReportsRangeId>("90d");
   const [datePopOpen, setDatePopOpen] = useState(false);
 
   const days = RANGES.find((r) => r.id === rangeId)!.days;
 
-  const dailyRevenue = useMemo(() => genDailyRevenue(days), [days]);
-  const ma7 = useMemo(() => movingAvg(dailyRevenue, 7), [dailyRevenue]);
-  const heatmap = useMemo(() => genHeatmap(), []);
+  const { data: reportsData, isLoading } = useInstructorReportsData(instructor?.id, rangeId);
 
-  // Scale stats slightly with range so the count animation has something to do
-  const scale = days / 90;
+  const live = reportsData ?? {
+    topStats: {
+      revenue: { value: 0, prev: 0 },
+      hours: { value: 0, prev: 0 },
+      avgPerHr: { value: 0, prev: 0 },
+      passRate: { value: 0, prev: 0 },
+    },
+    daily: Array.from({ length: days }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (days - 1 - i));
+      return { date: d.toISOString().slice(0, 10), amount: 0 };
+    }),
+    byLessonType: [] as typeof reports.byLessonType,
+    heatmap: Array.from({ length: 7 }, () => Array(11).fill(0)) as number[][],
+    retention: reports.retention.map((s) => ({ ...s, count: 0, share: 0 })),
+    avgLessonsBeforeTest: 0,
+    topPupils: [] as typeof reports.topPupils,
+    taxYear: {
+      label: reports.taxYear.label,
+      grossIncome: 0,
+      deductions: [] as { label: string; amount: number }[],
+      taxableProfit: 0,
+      estimatedTax: 0,
+      note: "",
+    },
+    rangeStart: "",
+    rangeEnd: "",
+  };
+
+  const ma7 = useMemo(() => movingAvg(live.daily, 7), [live.daily]);
+
   const stats = {
-    revenue:  reports.topStats.revenue.value * scale,
-    hours:    Math.round(reports.topStats.hours.value * scale),
-    avgPerHr: reports.topStats.avgPerHr.value,
-    passRate: reports.topStats.passRate.value,
+    revenue: live.topStats.revenue.value,
+    hours: live.topStats.hours.value,
+    avgPerHr: live.topStats.avgPerHr.value,
+    passRate: live.topStats.passRate.value,
   };
 
   const initials = (instructor?.name || "DSM").split(" ").map(s => s[0]).slice(0,2).join("").toUpperCase();
+
+  const rangeLabel = reportsData
+    ? `${new Date(reportsData.rangeStart).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} – ${new Date(reportsData.rangeEnd).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`
+    : `Last ${days} days`;
 
   return (
     <DashboardShell
@@ -179,7 +210,7 @@ export default function InstructorReportsDesktop() {
           <div>
             <h1 style={{ fontSize: 22, fontWeight: 500, color: "#0F172A", margin: 0 }}>Reports</h1>
             <div style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>
-              A clear view of how your business is going.
+              A clear view of how your business is going.{isLoading ? " · Loading…" : ""}
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, position: "relative" }}>
@@ -192,7 +223,7 @@ export default function InstructorReportsDesktop() {
               }}
             >
               <CalendarIcon size={12} />
-              <span>Last {days} days · 5 Feb – 5 May</span>
+              <span>Last {days} days · {rangeLabel}</span>
               <ChevronDown size={11} />
             </button>
 
@@ -248,28 +279,28 @@ export default function InstructorReportsDesktop() {
 
         {/* Top stat cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 12 }}>
-          <StatCard label="REVENUE"     value={stats.revenue}  prev={reports.topStats.revenue.prev}  fmt="currency" />
-          <StatCard label="HOURS TAUGHT" value={stats.hours}    prev={reports.topStats.hours.prev}    fmt="hours" />
-          <StatCard label="AVG £/HOUR"  value={stats.avgPerHr} prev={reports.topStats.avgPerHr.prev} fmt="currency2" />
-          <StatCard label="PASS RATE"   value={stats.passRate} prev={reports.topStats.passRate.prev} fmt="percent" />
+          <StatCard label="REVENUE"     value={stats.revenue}  prev={live.topStats.revenue.prev}  fmt="currency" />
+          <StatCard label="HOURS TAUGHT" value={stats.hours}    prev={live.topStats.hours.prev}    fmt="hours" />
+          <StatCard label="AVG £/HOUR"  value={stats.avgPerHr} prev={live.topStats.avgPerHr.prev} fmt="currency2" />
+          <StatCard label="PASS RATE"   value={stats.passRate} prev={live.topStats.passRate.prev} fmt="percent" />
         </div>
 
         {/* Revenue trend + lesson type */}
         <div style={{ display: "grid", gridTemplateColumns: "1.55fr 1fr", gap: 12, marginBottom: 12 }}>
-          <RevenueTrend daily={dailyRevenue} ma7={ma7} />
-          <LessonTypeCard />
+          <RevenueTrend daily={live.daily} ma7={ma7} />
+          <LessonTypeCard rows={live.byLessonType} />
         </div>
 
         {/* Heatmap + retention */}
         <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 12, marginBottom: 12 }}>
-          <HeatmapCard grid={heatmap} />
-          <RetentionCard />
+          <HeatmapCard grid={live.heatmap} />
+          <RetentionCard steps={live.retention} avgLessonsBeforeTest={live.avgLessonsBeforeTest} />
         </div>
 
         {/* Top pupils + tax */}
         <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 12, marginBottom: 24 }}>
-          <TopPupilsCard />
-          <TaxYearCard />
+          <TopPupilsCard pupils={live.topPupils} />
+          <TaxYearCard taxYear={live.taxYear} />
         </div>
       </div>
     </DashboardShell>
