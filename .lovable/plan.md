@@ -1,69 +1,38 @@
 ## Goal
-Surface the major instructor features that are currently hidden behind `/instructor/menu`. Restructure `DashboardSidebar.tsx` so the nav reflects what the portal can actually do.
+Bundle the disjointed Profile / Vehicle / Images / Compliance / Billing settings into a single tabbed **Account** hub at `/instructor/profile` so instructors have one predictable place for "everything about me".
 
-## New sidebar structure
+## New page: `src/pages/instructor/AccountHub.tsx`
+A single tabbed page with 5 tabs:
 
-**Overview**
-- Dashboard → `/instructor`
-- Schedule → `/instructor/schedule`
-- Diary → `/instructor/diary`
-- Inbox → `/instructor/messages` (badge)
+| Tab | Contents | Source of truth |
+|---|---|---|
+| Profile | Avatar, name, email, phone, bio | `instructors` table — same fields as the current Profile tile |
+| Vehicle & ADI | Car details, qualifications, social links | Reuse existing `<InstructorDetailsEditor />` |
+| Media | Banner, car photo, welcome video URL, ADI certificate | Same uploads as the current Images tile |
+| Compliance | Insurance, MOT, CPD hours | Reuse existing `<ComplianceTracker />` |
+| Plan & Billing | Subscription summary + button to open `/instructor/billing` | Link out (page is heavy, keep separate) |
 
-**Teaching**
-- Pupils → `/instructor/pupils`
-- Course Planner → `/instructor/course-planner`
-- Waiting List → `/instructor/waiting-list`
-- Fill Gaps → `/instructor/gaps`
-- Test Bookings → `/instructor/test-bookings`
-- Test Results → `/instructor/test-results`
-- Test Swap → `/instructor/test-swap`
-- Slot Finder → `/instructor/test-slot-finder`
-- Standards Check → `/instructor/standards-check`
-- CPD → `/instructor/cpd`
+- Tab state is mirrored to `?tab=…` so deep links work (`/instructor/profile?tab=media`).
+- Uses the instructor portal design tokens (`rounded-2xl`, `bg-card`, `--d2-bg`).
+- Reuses `useInstructorAuth`, `CMSImageUpload`, and the existing avatar-upload logic from `InstructorMenu.tsx`.
 
-**Vehicle & Tracking** *(new section, gated by `telematics` module where applicable)*
-- Live Tracking → `/instructor/tracking`
-- Fleet Map → `/instructor/fleet-map`
-- Vehicle Health → `/instructor/vehicle-health`
-- SatNav → `/instructor/satnav`
-- Dashcam → `/instructor/dashcam`
-- Mileage → `/instructor/mileage`
-- Fuel → `/instructor/fuel`
-- Saved Routes → `/instructor/routes`
+## Routing
+- Add a new route `/instructor/profile` → `AccountHub` in `src/routes/instructorPortalRoutes.tsx`.
+- Keep `/instructor/settings` (legacy redirect) and `/instructor/menu` working as-is — the menu page still lists every other setting tile, just no longer the "front door" for identity.
 
-**AI Voice** *(new)*
-- AI Voice Hub → `/instructor/menu?open=famulor`
+## Sidebar wiring
+Update `DashboardSidebar.tsx`:
+- **Profile** entry → `/instructor/profile` (currently `/instructor/settings`).
 
-**Business**
-- Take Payment → `/instructor/take-payment`
-- Payments → `/instructor/pay`
-- Invoices → `/instructor/invoices`
-- Pending → `/instructor/pending-scheduling`
-- Expenses → `/instructor/expenses`
-- Tax → `/instructor/tax`
-- Reports → `/instructor/income`
-- Reviews → `/instructor/reviews`
-- Referrals → `/instructor/referrals`
-- Automations → `/instructor/automations`
+## Menu cleanup (`src/pages/InstructorMenu.tsx`)
+Remove the now-duplicated tiles from `allTiles`:
+- `profile`, `details`, `images`, `compliance`
+Add a single replacement tile at the top of the `profile` category:
+- **Account** → links to `/instructor/profile`.
 
-**Website**
-- My Site → `/website/my-site`
-- Branding → `/instructor/menu?open=appearance`
-- Domain → `/instructor/domains`
-- SEO → `/instructor/seo`
-
-**Settings**
-- Profile → `/instructor/settings`
-- Plan & Billing → `/instructor/billing`
-- Modules → `/instructor/modules`
-- Integrations → `/instructor/integrations`
-- More tools → `/instructor/menu` *(catch-all for Notes, Todos, Doodlepad, Document Vault, Workflows, etc.)*
-
-## Implementation
-- Edit only `src/components/instructor/dashboardV2/DashboardSidebar.tsx`: replace the `SECTIONS` array with the structure above, add the new lucide icons (`Mic`, `MapPin`, `Map`, `Gauge`, `Navigation`, `Video`, `Route`, `Fuel`, `NotebookPen`, `BookOpenCheck`, `GraduationCap`, `Star`, `Share2`, `Zap`, `Banknote`, `Receipt`, `Coins`, `MoreHorizontal`).
-- Keep existing `moduleId` filtering so users without a module don't see those rows.
-- No route or backend changes required — every destination already exists.
+The existing render handlers for those four tiles can stay (used by deep-link `?open=`) but they're no longer surfaced in the grid.
 
 ## Out of scope
-- No mobile sidebar changes (per mobile update policy).
-- No changes to `/instructor/menu` itself.
+- No mobile changes (`InstructorProfileRouter` / `InstructorProfileDesktop` untouched per mobile-update policy).
+- No schema changes.
+- No edits to the Plan & Billing page itself — just linked to.

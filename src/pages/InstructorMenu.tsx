@@ -133,10 +133,7 @@ const settingsCategories = [
 ];
 
 const allTiles: TileDef[] = [
-  { id: "profile", title: "Profile", description: "Your public instructor profile", icon: User, tintBg: "#DBEAFE", tintColor: "#1E40AF", category: "profile" },
-  { id: "details", title: "Vehicle & Qualifications", description: "Car details, skills & social links", icon: Car, tintBg: "#EDE9FE", tintColor: "#5B21B6", category: "profile" },
-  { id: "images", title: "Images & Media", description: "Car photo, QR code & video", icon: ImageIcon, tintBg: "#EDE9FE", tintColor: "#5B21B6", category: "profile" },
-  { id: "compliance", title: "Compliance & CPD", description: "Track ADI badge, insurance, MOT & CPD hours", icon: Shield, tintBg: "#ECFDF5", tintColor: "#059669", category: "teaching" },
+  { id: "account", title: "Account", description: "Profile, vehicle, media, compliance & billing", icon: User, tintBg: "#DBEAFE", tintColor: "#1E40AF", category: "profile", externalUrl: "/instructor/profile" },
   { id: "test-centres", title: "Test Centres & Examiners", description: "Manage test centres and examiners", icon: MapPin, tintBg: "#FEF2F2", tintColor: "#DC2626", category: "teaching" },
   { id: "terms", title: "Terms & Conditions", description: "Create terms for pupils to sign", icon: FileSignature, tintBg: "#F4F4F5", tintColor: "#52525B", category: "teaching" },
   { id: "courses-mgr", title: "My Courses", description: "Manage your course offerings & pricing", icon: BookOpen, tintBg: "#ECFDF5", tintColor: "#059669", category: "courses" },
@@ -697,13 +694,16 @@ export default function InstructorMenu() {
         <div id={`settings-tile-${tile.id}`} className={cardClass}>
           <button
             className="w-full flex items-center gap-3 px-4 py-[14px]"
-            onClick={() => window.open(tile.externalUrl, "_blank", "noopener,noreferrer")}
+            onClick={() => {
+              if (tile.externalUrl?.startsWith("/")) navigate(tile.externalUrl);
+              else window.open(tile.externalUrl, "_blank", "noopener,noreferrer");
+            }}
           >
             {renderIconTile(tile.icon, tile.tintBg, tile.tintColor, tile.iconSrc)}
             <div className="flex-1 text-left min-w-0">
               <span style={titleStyle}>{tile.title}</span>
             </div>
-            <ExternalLink size={14} strokeWidth={1.6} color="#6E6E73" className="shrink-0" />
+            <ExternalLink size={14} strokeWidth={1.6} color="#6E6E73" className={cn("shrink-0", tile.externalUrl?.startsWith("/") && "hidden")} />
           </button>
         </div>
       );
