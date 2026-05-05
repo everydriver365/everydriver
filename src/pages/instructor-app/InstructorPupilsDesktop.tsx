@@ -10,6 +10,10 @@ import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShe
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 // ----------------------------- Types & data -----------------------------
 type Status = "active" | "at-risk" | "test-ready" | "paused" | "archived";
@@ -174,6 +178,30 @@ export default function InstructorPupilsDesktop() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [openId, setOpenId] = useState<string | null>(null);
   const [tab, setTab] = useState<"overview" | "lessons" | "progress" | "payments" | "notes">("overview");
+  const [reloadTick, setReloadTick] = useState(0);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm, setAddForm] = useState({ name: "", phone: "", email: "", postcode: "" });
+  const [addSaving, setAddSaving] = useState(false);
+
+  const handleAddPupil = async () => {
+    const instructorId = instructor?.id;
+    if (!instructorId) { toast.error("Not signed in"); return; }
+    if (!addForm.name.trim()) { toast.error("Name is required"); return; }
+    setAddSaving(true);
+    const { error } = await supabase.from("pupils").insert({
+      instructor_id: instructorId,
+      name: addForm.name.trim(),
+      phone: addForm.phone.trim() || null,
+      email: addForm.email.trim() || null,
+      postcode: addForm.postcode.trim() || null,
+    });
+    setAddSaving(false);
+    if (error) { toast.error(`Could not add pupil: ${error.message}`); return; }
+    toast.success(`Added ${addForm.name.trim()}`);
+    setAddForm({ name: "", phone: "", email: "", postcode: "" });
+    setAddOpen(false);
+    setReloadTick(t => t + 1);
+  };
 
   // Load real pupils for this instructor
   useEffect(() => {
@@ -267,7 +295,7 @@ export default function InstructorPupilsDesktop() {
       }
     })();
     return () => { cancelled = true; };
-  }, [instructor?.id]);
+  }, [instructor?.id, reloadTick]);
 
 
   // Debounce search
@@ -406,7 +434,7 @@ export default function InstructorPupilsDesktop() {
                 <Download size={12} /> Export
               </button>
               <button
-                onClick={() => toast("Add pupil")}
+                onClick={() => setAddOpen(true)}
                 style={{
                   fontSize: 11, padding: "6px 10px", borderRadius: 8,
                   background: "#4F46E5", color: "#fff", fontWeight: 500,
@@ -653,6 +681,37 @@ export default function InstructorPupilsDesktop() {
           )}
         </AnimatePresence>
       </div>
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add pupil</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1">
+              <Label htmlFor="add-name">Name *</Label>
+              <Input id="add-name" value={addForm.name} onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))} placeholder="Full name" autoFocus />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="add-phone">Phone</Label>
+              <Input id="add-phone" value={addForm.phone} onChange={e => setAddForm(f => ({ ...f, phone: e.target.value }))} placeholder="07…" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="add-email">Email</Label>
+              <Input id="add-email" type="email" value={addForm.email} onChange={e => setAddForm(f => ({ ...f, email: e.target.value }))} placeholder="name@example.com" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="add-postcode">Postcode</Label>
+              <Input id="add-postcode" value={addForm.postcode} onChange={e => setAddForm(f => ({ ...f, postcode: e.target.value }))} placeholder="SO22 4AB" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddOpen(false)} disabled={addSaving}>Cancel</Button>
+            <Button onClick={handleAddPupil} disabled={addSaving || !addForm.name.trim()}>
+              {addSaving ? "Adding…" : "Add pupil"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardShell>
   );
 }
