@@ -313,7 +313,7 @@ export default function InstructorPupilsDesktop() {
         what3words: d.what3words || "",
         date_of_birth: d.date_of_birth || "",
         sex: d.sex || "",
-        previous_experience_hours: d.previous_experience != null ? String(d.previous_experience) : "",
+        previous_experience_hours: d.previous_experience ? String(d.previous_experience).replace(/[^0-9.]/g, "") : "",
         transmission_type: d.transmission_type || "",
         special_needs: d.special_needs || "",
         notes: d.notes || "",
