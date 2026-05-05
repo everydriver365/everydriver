@@ -157,6 +157,8 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/notifications" element={<InstructorNotifications />} />
     <Route path="/instructor/install" element={<InstallInstructor />} />
     <Route path="/instructor/modules" element={<InstructorModules />} />
+    <Route path="/website/my-site" element={<InstructorMySite />} />
+    <Route path="/instructor/website/my-site" element={<InstructorMySite />} />
     <Route path="/instructor/settings/modules" element={<InstructorModules />} />
 
     {/* Jobs & scheduling */}
