@@ -1,93 +1,56 @@
-# Redesign — Instructor Dashboard (`/instructor`, desktop only)
+## Goal
 
-A calm, Linear/Stripe-style SaaS dashboard. **Desktop view only** — the mobile layout (`isMobile` branch in `InstructorPortal.tsx`) is left untouched per the project's mobile-update policy.
+Replace the seed/in-memory state on the Availability page with real backend persistence. Edits to weekly hours, time off and booking rules are autosaved (debounced) and rehydrate correctly on refresh.
 
-## Scope
+## Backend changes (one migration)
 
-Replace the desktop branch of `src/pages/InstructorPortal.tsx` (lines ~241–450) and introduce a new dashboard-specific shell. The existing `InstructorPortalLayout` is kept available for all other instructor routes; the dashboard renders without it so it can own the full 3-column SaaS chrome.
+Tables already exist; add a few columns and use them as the source of truth.
 
-## Files
+1. `availability_windows` — already has `instructor_id, day_of_week (int), start_time, end_time, is_active, label`. We will use `day_of_week` with ISO convention `1=Mon … 7=Sun` and treat the absence of any active row for a day as "day off". RLS already exists for instructor self-access (verify and add if missing).
 
-New:
-- `src/components/instructor/dashboardV2/DashboardShell.tsx` — page wrapper: 260px sidebar + fluid main + 280px right rail + sticky 56px top bar.
-- `src/components/instructor/dashboardV2/DashboardSidebar.tsx` — 260px nav, collapsible to 64px, brand block, workspace card, 5 grouped sections, sign-out pinned bottom.
-- `src/components/instructor/dashboardV2/DashboardTopBar.tsx` — breadcrumb, ⌘K search, dark toggle, notifications bell, "Ask ED" indigo pill, avatar dropdown.
-- `src/components/instructor/dashboardV2/StatusStrip.tsx` — dismissible emerald "Square Connected — Auto-Payouts Active" band (state in `localStorage`).
-- `src/components/instructor/dashboardV2/GreetingBlock.tsx` — H1 greeting + online toggle pill.
-- `src/components/instructor/dashboardV2/StatCardV2.tsx` — label / mono number / 7-day sparkline (recharts `<LineChart>` with no axes).
-- `src/components/instructor/dashboardV2/TodaySchedulePanel.tsx` — header + segmented Today/Tomorrow/Fill Gaps tabs, wrapping the existing `TodayScheduleView`, `TomorrowScheduleView`, `GapsFiller`.
-- `src/components/instructor/dashboardV2/MoneyStack.tsx` — emerald "This Month" + rose "Outstanding" cards.
-- `src/components/instructor/dashboardV2/RetentionAlertsPanel.tsx` — re-skin of `usePupilRetentionAlerts` data into the chip-grid spec (replaces the current `RetentionAlertsTile` on this page only).
-- `src/components/instructor/dashboardV2/RightRail.tsx` — Quick Actions stack + Plan card with progress bar + indigo Upgrade button.
-- `src/components/instructor/dashboardV2/tokens.css` — CSS variables scoped to `.dashboard-v2` (background, surface, border, indigo, emerald/rose/amber pairs, text scale, radii). Loaded once from the shell.
+2. `availability_rules` — add columns to support the Time-off card:
+   - `title text`
+   - `category text` (`holiday | training | bank-holiday | personal | sick | other`)
+   - `notes text`
+   - `is_recurring boolean default false`
+   - `is_auto boolean default false`
+   We persist time-off entries as rows with `rule_type='holiday_block'`, `is_available=false`, `start_date`, `end_date`. Add RLS policies if missing (instructor self-access via `get_instructor_id_for_user(auth.uid())`).
 
-Modified:
-- `src/pages/InstructorPortal.tsx` — desktop branch returns `<DashboardShell>...</DashboardShell>` composed of the new components; mobile branch unchanged. Existing data hooks (`useInstructorLiveStats`, pupils, payments, etc.) are passed down as props so no business logic changes.
-- `index.html` — add Inter + JetBrains Mono Google Fonts `<link>` tags (Inter is likely already loaded; JetBrains Mono is new).
-- `tailwind.config.ts` — extend `fontFamily` with `mono: ['"JetBrains Mono"', ...]` and add `tabular-nums` utility usage; no global theme changes.
+3. `instructors` — add the missing booking-rule columns (use existing where possible):
+   - reuse `buffer_minutes` for travel buffer
+   - reuse `booking_advance_days` for booking horizon (store as days = weeks*7)
+   - add `min_lead_hours int default 24`
+   - add `slot_increment_minutes int default 30`
+   - add `allow_same_day_booking boolean default false`
+   - add `auto_block_bank_holidays boolean default true`
 
-## Visual tokens (scoped to `.dashboard-v2`, light + dark)
+## Frontend changes — `src/pages/instructor-app/InstructorAvailabilityDesktop.tsx`
 
-```text
---bg:        #F8FAFC   dark: #0B1120
---surface:   #FFFFFF   dark: #111827
---border:    #E2E8F0   dark: #1F2937   (always 0.5px)
---indigo:    #4F46E5
---indigo-bg: #EEF2FF   dark: #1E1B4B
---emerald-bg:#ECFDF5   --emerald-fg:#047857
---rose-bg:   #FFF1F2   --rose-fg:   #BE123C
---amber-bg:  #FEF3C7   --amber-fg:  #B45309
---text-1:    #0F172A   --text-2: #64748B   --text-3: #94A3B8
-radii: 12 / 8 / 6     gaps: 12 / 16 / 24 only
-```
+1. Add a `useAvailabilityData(instructorId)` hook (new file `src/hooks/useAvailabilityData.ts`) that:
+   - Fetches `availability_windows`, `availability_rules` (where `rule_type='holiday_block'`), and the booking-rule columns from `instructors` in parallel via React Query.
+   - Maps DB rows into the component's `WeeklyHours`, `TimeOff[]`, `BookingRules` shapes (and back).
 
-Numbers everywhere use `font-mono tabular-nums` with `font-feature-settings: "tnum"`.
+2. Replace `useState(seed*)` initial values with the loaded data. Show a light skeleton (or `null`) until the first fetch resolves so we don't flash seed data and immediately overwrite the DB.
 
-## Layout sketch
+3. Replace the fake `setSaveState("saved")` debounce with a real save pipeline:
+   - One debounced effect (600 ms) per slice (`weekly`, `timeOff`, `rules`) — each compares against the last-saved snapshot and only fires when it actually changed.
+   - **Weekly hours**: diff per day. For days that changed, run a single transaction-style upsert: delete existing rows for that `(instructor_id, day_of_week)` and insert the current windows (`is_active=true`). For disabled days, just delete the rows. Done via two awaited Supabase calls per changed day.
+   - **Time off**: track `id` per item (use real UUIDs from DB after insert). On add → insert; on update → update by id; on delete → delete by id. The `onAdd/onUpdate/onDelete` callbacks become async and update local state from the returned row.
+   - **Booking rules**: single `update` on `instructors` with the mapped columns (`booking_advance_days = horizonWeeks*7`, etc.).
+   - On any failure set `saveState='error'` and surface a toast with retry; on success set `'saved'`.
 
-```text
-┌───────────────────────────────────────────────────────────────┐
-│ Top bar (56, sticky, shadow-sm)                               │
-├──────────┬──────────────────────────────────────┬─────────────┤
-│ Sidebar  │ Status strip (emerald, dismissible)  │             │
-│ 260      │                                      │ Right rail  │
-│          │ Greeting + Online toggle             │ 280         │
-│ DSM logo │                                      │             │
-│ KD card  │ ┌──┬──┬──┬──┐  4 stat cards          │ QUICK       │
-│          │ └──┴──┴──┴──┘                        │ ACTIONS     │
-│ OVERVIEW │ ┌─────────────────┬──────────┐       │ + 4 cards   │
-│ TEACHING │ │ Today's schedule│ £1,840   │       │             │
-│ BUSINESS │ │ (1.6fr)         ├──────────┤       │ YOUR PLAN   │
-│ WEBSITE  │ │                 │ £2,875   │       │ Pro · 39/100│
-│ SETTINGS │ └─────────────────┴──────────┘       │ Upgrade CTA │
-│          │ Retention alerts (full-width)        │             │
-│ Sign out │                                      │             │
-└──────────┴──────────────────────────────────────┴─────────────┘
-```
+4. Keep the existing UI exactly as-is (toggles, drag timeline, sheet, preview). The "All changes saved / Saving / Couldn't save" indicator becomes truthful instead of cosmetic.
 
-Implemented as `grid-cols-[260px_minmax(0,1fr)_280px]`, with `min-h-screen` and `overflow-x: clip`. Sidebar collapsible toggles to `grid-cols-[64px_minmax(0,1fr)_280px]`. Right rail hides below `xl` (uses 2-col layout) so the design degrades cleanly on the user's current 957px viewport.
+5. Invalidate the React Query cache after each successful save so any other surfaces (e.g. `AvailabilityWindowsManager`) stay in sync.
 
-## Data wiring
+## Out of scope
 
-- Stats use `useInstructorLiveStats(instructorId)` already imported in `InstructorPortal.tsx` (today's lessons, month earnings, active pupils, week hours).
-- Sparkline data comes from existing `useLastWeekComparison` / `useDailyEarnings` (already in repo); fall back to flat line if unavailable.
-- "Outstanding" + count from existing `PaymentSummaryWidget` data hook (`usePupilPaymentStatus` aggregate already used elsewhere — reuse the query).
-- Retention chips use `usePupilRetentionAlerts(instructorId)` with the new chip styling; show first 3, horizontal-scroll the rest.
-- "Square Connected" strip reads the existing `useActiveTrackingProvider` / square connection flag (already used by `SquareCallback`); if Square not connected the strip is hidden.
-- Plan + pupil count: `useInstructorTierConfig` + `useActivePupilsCount` (both already in `src/hooks`).
+- No mobile changes (per project memory: do not alter mobile layouts unless explicitly asked).
+- No realtime subscription — rehydration on refresh is the requirement; we can add realtime later.
+- Bank-holiday auto-population stays a flag only; actually inserting holiday rows can be a follow-up.
 
-No new database tables, no new edge functions, no new API surface.
+## Files touched
 
-## Behaviour
-
-- Dark mode: top-bar toggle calls existing `useTheme().toggleTheme()`; tokens above respond to `.dark` ancestor.
-- Sidebar collapse state persisted in `localStorage("dsm.dashboard.sidebar")`.
-- Status strip dismissal persisted in `localStorage("dsm.dashboard.squareStrip.dismissed")`.
-- All hover states 150ms ease-out; nav-active uses `bg-[--indigo-bg]` + indigo text.
-- Empty schedule state: gray calendar icon, encouraging copy, soft-indigo "+ Add lesson" opens the existing `AddLessonSheet`.
-
-## Out of scope (this prompt)
-
-- Mobile dashboard (unchanged).
-- Other instructor routes (Pupils, Schedule, etc.) — sidebar links point at existing routes.
-- Real "Ask ED" AI panel — button opens the existing `AICommandCenter` already imported in `InstructorPortal.tsx`.
+- New: `supabase/migrations/<timestamp>_availability_persistence.sql`
+- New: `src/hooks/useAvailabilityData.ts`
+- Edit: `src/pages/instructor-app/InstructorAvailabilityDesktop.tsx`

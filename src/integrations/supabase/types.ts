@@ -929,41 +929,56 @@ export type Database = {
       availability_rules: {
         Row: {
           auto_notify_pupils: boolean
+          category: string | null
           created_at: string
           day_of_week: number | null
           description: string | null
           end_date: string | null
           id: string
           instructor_id: string
+          is_auto: boolean
           is_available: boolean
+          is_recurring: boolean
+          notes: string | null
           rule_type: Database["public"]["Enums"]["availability_rule_type"]
           start_date: string | null
+          title: string | null
           week_of_month: number | null
         }
         Insert: {
           auto_notify_pupils?: boolean
+          category?: string | null
           created_at?: string
           day_of_week?: number | null
           description?: string | null
           end_date?: string | null
           id?: string
           instructor_id: string
+          is_auto?: boolean
           is_available?: boolean
+          is_recurring?: boolean
+          notes?: string | null
           rule_type: Database["public"]["Enums"]["availability_rule_type"]
           start_date?: string | null
+          title?: string | null
           week_of_month?: number | null
         }
         Update: {
           auto_notify_pupils?: boolean
+          category?: string | null
           created_at?: string
           day_of_week?: number | null
           description?: string | null
           end_date?: string | null
           id?: string
           instructor_id?: string
+          is_auto?: boolean
           is_available?: boolean
+          is_recurring?: boolean
+          notes?: string | null
           rule_type?: Database["public"]["Enums"]["availability_rule_type"]
           start_date?: string | null
+          title?: string | null
           week_of_month?: number | null
         }
         Relationships: [
@@ -8504,9 +8519,11 @@ export type Database = {
           ai_test_readiness_enabled: boolean
           ai_waitlist_filling_enabled: boolean
           ai_weekly_report_enabled: boolean
+          allow_same_day_booking: boolean
           allowed_lesson_lengths: number[] | null
           app_slug: string | null
           auth_user_id: string | null
+          auto_block_bank_holidays: boolean
           auto_reengage_dormant: boolean
           auto_reengagement_enabled: boolean | null
           auto_start_tracker: boolean
@@ -8596,6 +8613,7 @@ export type Database = {
           lng: number | null
           location_name: string | null
           logo_url: string | null
+          min_lead_hours: number
           mini_website_domain_id: string | null
           morning_briefing_enabled: boolean | null
           motability_friendly: boolean
@@ -8621,6 +8639,7 @@ export type Database = {
           school_skim_amount: number | null
           school_skim_percentage: number | null
           secondary_colour: string | null
+          slot_increment_minutes: number
           special_skills: string | null
           square_access_token_encrypted: string | null
           square_connected_at: string | null
@@ -8673,9 +8692,11 @@ export type Database = {
           ai_test_readiness_enabled?: boolean
           ai_waitlist_filling_enabled?: boolean
           ai_weekly_report_enabled?: boolean
+          allow_same_day_booking?: boolean
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           auth_user_id?: string | null
+          auto_block_bank_holidays?: boolean
           auto_reengage_dormant?: boolean
           auto_reengagement_enabled?: boolean | null
           auto_start_tracker?: boolean
@@ -8765,6 +8786,7 @@ export type Database = {
           lng?: number | null
           location_name?: string | null
           logo_url?: string | null
+          min_lead_hours?: number
           mini_website_domain_id?: string | null
           morning_briefing_enabled?: boolean | null
           motability_friendly?: boolean
@@ -8790,6 +8812,7 @@ export type Database = {
           school_skim_amount?: number | null
           school_skim_percentage?: number | null
           secondary_colour?: string | null
+          slot_increment_minutes?: number
           special_skills?: string | null
           square_access_token_encrypted?: string | null
           square_connected_at?: string | null
@@ -8842,9 +8865,11 @@ export type Database = {
           ai_test_readiness_enabled?: boolean
           ai_waitlist_filling_enabled?: boolean
           ai_weekly_report_enabled?: boolean
+          allow_same_day_booking?: boolean
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
           auth_user_id?: string | null
+          auto_block_bank_holidays?: boolean
           auto_reengage_dormant?: boolean
           auto_reengagement_enabled?: boolean | null
           auto_start_tracker?: boolean
@@ -8934,6 +8959,7 @@ export type Database = {
           lng?: number | null
           location_name?: string | null
           logo_url?: string | null
+          min_lead_hours?: number
           mini_website_domain_id?: string | null
           morning_briefing_enabled?: boolean | null
           motability_friendly?: boolean
@@ -8959,6 +8985,7 @@ export type Database = {
           school_skim_amount?: number | null
           school_skim_percentage?: number | null
           secondary_colour?: string | null
+          slot_increment_minutes?: number
           special_skills?: string | null
           square_access_token_encrypted?: string | null
           square_connected_at?: string | null

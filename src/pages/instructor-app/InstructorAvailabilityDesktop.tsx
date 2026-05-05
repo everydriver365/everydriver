@@ -976,39 +976,136 @@ function FourWeekPreview({ weekly, timeOff }: { weekly: WeeklyHours; timeOff: Ti
 }
 
 // ---------- Page ----------
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  useAvailabilityData,
+  saveWeeklyDay,
+  insertTimeOff,
+  updateTimeOffRow,
+  deleteTimeOffRow,
+  saveBookingRules,
+  DEFAULT_RULES,
+} from "@/hooks/useAvailabilityData";
+
 export default function InstructorAvailabilityDesktop() {
   const { instructor, signOut } = useInstructorAuth();
   const initials = (instructor?.name?.split(" ").map((p) => p[0]).slice(0, 2).join("") || "IN").toUpperCase();
   const { total: notificationCount } = useCombinedNotificationCount(instructor?.id);
+  const queryClient = useQueryClient();
 
-  const [weekly, setWeekly] = useState<WeeklyHours>(seedWeekly);
-  const [timeOff, setTimeOff] = useState<TimeOff[]>(seedTimeOff);
-  const [rules, setRules] = useState<BookingRules>(seedRules);
+  const { data, isLoading } = useAvailabilityData(instructor?.id);
 
+  const [weekly, setWeekly] = useState<WeeklyHours | null>(null);
+  const [timeOff, setTimeOff] = useState<TimeOff[]>([]);
+  const [rules, setRules] = useState<BookingRules>(DEFAULT_RULES);
   const [saveState, setSaveState] = useState<"saved" | "saving" | "error">("saved");
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const firstRender = useRef(true);
+
+  // Hydrate from server once loaded
+  const hydrated = useRef(false);
+  const lastSavedWeekly = useRef<WeeklyHours | null>(null);
+  const lastSavedRules = useRef<BookingRules | null>(null);
 
   useEffect(() => {
-    if (firstRender.current) { firstRender.current = false; return; }
-    setSaveState("saving");
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setSaveState("saved");
-    }, 600);
-  }, [weekly, timeOff, rules]);
+    if (!data || hydrated.current) return;
+    setWeekly(data.weekly);
+    setTimeOff(data.timeOff);
+    setRules(data.rules);
+    lastSavedWeekly.current = data.weekly;
+    lastSavedRules.current = data.rules;
+    hydrated.current = true;
+  }, [data]);
 
-  const addTimeOff = useCallback((t: Omit<TimeOff, "id">) => {
-    setTimeOff((prev) => [...prev, { ...t, id: `to${Date.now()}` }]);
-    toast.success("Time off added");
-  }, []);
-  const updateTimeOff = useCallback((id: string, patch: Partial<TimeOff>) => {
+  // Debounced autosave for weekly hours (per-day diff)
+  const weeklyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!weekly || !instructor?.id || !lastSavedWeekly.current) return;
+    if (weeklyTimer.current) clearTimeout(weeklyTimer.current);
+    setSaveState("saving");
+    weeklyTimer.current = setTimeout(async () => {
+      try {
+        const prev = lastSavedWeekly.current!;
+        const changed = DAYS.filter((d) => JSON.stringify(prev[d]) !== JSON.stringify(weekly[d]));
+        for (const d of changed) {
+          await saveWeeklyDay(instructor.id, d, weekly[d]);
+        }
+        lastSavedWeekly.current = weekly;
+        setSaveState("saved");
+        if (changed.length) {
+          queryClient.invalidateQueries({ queryKey: ["availability-windows"] });
+        }
+      } catch (e) {
+        console.error(e);
+        setSaveState("error");
+        toast.error("Couldn't save weekly hours");
+      }
+    }, 600);
+    return () => { if (weeklyTimer.current) clearTimeout(weeklyTimer.current); };
+  }, [weekly, instructor?.id, queryClient]);
+
+  // Debounced autosave for booking rules
+  const rulesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!instructor?.id || !lastSavedRules.current) return;
+    if (JSON.stringify(rules) === JSON.stringify(lastSavedRules.current)) return;
+    if (rulesTimer.current) clearTimeout(rulesTimer.current);
+    setSaveState("saving");
+    rulesTimer.current = setTimeout(async () => {
+      try {
+        await saveBookingRules(instructor.id, rules);
+        lastSavedRules.current = rules;
+        setSaveState("saved");
+      } catch (e) {
+        console.error(e);
+        setSaveState("error");
+        toast.error("Couldn't save booking rules");
+      }
+    }, 600);
+    return () => { if (rulesTimer.current) clearTimeout(rulesTimer.current); };
+  }, [rules, instructor?.id]);
+
+  const addTimeOff = useCallback(async (t: Omit<TimeOff, "id">) => {
+    if (!instructor?.id) return;
+    setSaveState("saving");
+    try {
+      const created = await insertTimeOff(instructor.id, t);
+      setTimeOff((prev) => [...prev, created]);
+      setSaveState("saved");
+      toast.success("Time off added");
+    } catch (e) {
+      console.error(e);
+      setSaveState("error");
+      toast.error("Couldn't add time off");
+    }
+  }, [instructor?.id]);
+
+  const updateTimeOff = useCallback(async (id: string, patch: Partial<TimeOff>) => {
     setTimeOff(prev => prev.map(x => x.id === id ? { ...x, ...patch } : x));
+    setSaveState("saving");
+    try {
+      await updateTimeOffRow(id, patch);
+      setSaveState("saved");
+    } catch (e) {
+      console.error(e);
+      setSaveState("error");
+      toast.error("Couldn't update time off");
+    }
   }, []);
-  const deleteTimeOff = useCallback((id: string) => {
-    setTimeOff(prev => prev.filter(x => x.id !== id));
-    toast.success("Time off removed");
-  }, []);
+
+  const deleteTimeOff = useCallback(async (id: string) => {
+    const prev = timeOff;
+    setTimeOff((p) => p.filter(x => x.id !== id));
+    setSaveState("saving");
+    try {
+      await deleteTimeOffRow(id);
+      setSaveState("saved");
+      toast.success("Time off removed");
+    } catch (e) {
+      console.error(e);
+      setTimeOff(prev);
+      setSaveState("error");
+      toast.error("Couldn't remove time off");
+    }
+  }, [timeOff]);
 
   return (
     <DashboardShell
@@ -1049,14 +1146,23 @@ export default function InstructorAvailabilityDesktop() {
           </div>
         </div>
 
-        <WeeklyHoursCard weekly={weekly} setWeekly={setWeekly} avgRate={38} />
+        {!weekly || isLoading ? (
+          <div style={{ padding: 40, textAlign: "center", color: "#94A3B8", fontSize: 12 }}>
+            <Loader2 size={16} className="animate-spin" style={{ display: "inline-block", marginRight: 6, verticalAlign: "middle" }} />
+            Loading availability…
+          </div>
+        ) : (
+          <>
+            <WeeklyHoursCard weekly={weekly} setWeekly={setWeekly} avgRate={38} />
 
-        <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 10, marginBottom: 14 }}>
-          <TimeOffCard items={timeOff} onAdd={addTimeOff} onUpdate={updateTimeOff} onDelete={deleteTimeOff} />
-          <BookingRulesCard rules={rules} setRules={setRules} />
-        </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 10, marginBottom: 14 }}>
+              <TimeOffCard items={timeOff} onAdd={addTimeOff} onUpdate={updateTimeOff} onDelete={deleteTimeOff} />
+              <BookingRulesCard rules={rules} setRules={setRules} />
+            </div>
 
-        <FourWeekPreview weekly={weekly} timeOff={timeOff} />
+            <FourWeekPreview weekly={weekly} timeOff={timeOff} />
+          </>
+        )}
       </div>
     </DashboardShell>
   );
