@@ -216,9 +216,7 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
       toast.error("Couldn't understand that. Try again.");
       setState("idle");
     }
-  }, []);
-
-  const stopMediaCapture = useCallback(() => {
+  }, [processCommand]);
     try { mediaRecorderRef.current?.state !== "inactive" && mediaRecorderRef.current?.stop(); } catch {}
     mediaStreamRef.current?.getTracks().forEach((t) => t.stop());
     mediaStreamRef.current = null;
