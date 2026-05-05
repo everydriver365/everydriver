@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ import {
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
@@ -21,18 +22,26 @@ type LessonType = "standard" | "motorway" | "mock" | "test";
 type Day = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
 
 interface Lesson {
-  id: number;
+  id: string;
   pupil: string;
-  pupilId: number;
+  pupilId: string;
   day: Day;
   startMin: number; // minutes from 00:00
   durationMin: number;
   type: LessonType;
 }
 
+interface PupilLite {
+  id: string;
+  name: string;
+  initials: string;
+  avatarColor: string;
+  lastLessonDays: number | null;
+}
+
 const DAYS: Day[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const HOUR_START = 8;
-const HOUR_END = 17; // 8..16 inclusive (9 rows including end at 17)
+const HOUR_END = 17;
 const HOUR_PX = 50;
 
 const TYPE_COLOR: Record<LessonType, { line: string; bg: string; text: string; label: string }> = {
@@ -42,35 +51,43 @@ const TYPE_COLOR: Record<LessonType, { line: string; bg: string; text: string; l
   test:     { line: "#993556", bg: "#F7E1E8", text: "#4A1626", label: "Test" },
 };
 
-function parseStart(s: string): { day: Day; startMin: number } {
-  const [d, t] = s.split(" ");
-  const [h, m] = t.split(":").map(Number);
-  return { day: d as Day, startMin: h * 60 + m };
+// Map JS getDay() (0=Sun..6=Sat) → Day code
+const JS_DAY: Day[] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+// availability_windows.day_of_week uses 0=Sun..6=Sat (Postgres convention)
+const dayFromDOW = (dow: number): Day => JS_DAY[dow];
+
+function lessonTypeFromString(s: string | null | undefined): LessonType {
+  const v = (s || "").toLowerCase();
+  if (v.includes("motorway")) return "motorway";
+  if (v.includes("mock")) return "mock";
+  if (v.includes("test")) return "test";
+  return "standard";
 }
 
-const seedLessons: Lesson[] = [
-  { id: 1, pupil: "Lucy R.",   pupilId: 5, ...parseStart("Mon 09:00"), durationMin: 60,  type: "standard" },
-  { id: 2, pupil: "Marcus O.", pupilId: 7, ...parseStart("Mon 13:00"), durationMin: 120, type: "motorway" },
-  { id: 3, pupil: "Sarah M.",  pupilId: 2, ...parseStart("Tue 10:00"), durationMin: 60,  type: "standard" },
-  { id: 4, pupil: "James T.",  pupilId: 4, ...parseStart("Tue 14:00"), durationMin: 60,  type: "standard" },
-  { id: 5, pupil: "Marcus O.", pupilId: 7, ...parseStart("Wed 10:00"), durationMin: 120, type: "mock" },
-  { id: 6, pupil: "Sarah M.",  pupilId: 2, ...parseStart("Wed 16:30"), durationMin: 30,  type: "standard" },
-  { id: 7, pupil: "Lucy R.",   pupilId: 5, ...parseStart("Thu 09:00"), durationMin: 60,  type: "test" },
-  { id: 8, pupil: "Daniel K.", pupilId: 1, ...parseStart("Fri 11:00"), durationMin: 90,  type: "standard" },
-  { id: 9, pupil: "James T.",  pupilId: 4, ...parseStart("Fri 14:00"), durationMin: 60,  type: "standard" },
-  { id: 10, pupil: "Nadia B.", pupilId: 3, ...parseStart("Sat 09:00"), durationMin: 60,  type: "standard" },
-  { id: 11, pupil: "Priya G.", pupilId: 6, ...parseStart("Sat 11:00"), durationMin: 60,  type: "standard" },
-];
+function startOfWeek(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  const dow = x.getDay(); // 0=Sun
+  const diff = (dow + 6) % 7; // days since Monday
+  x.setDate(x.getDate() - diff);
+  return x;
+}
 
-const availability: Record<Day, "off" | { start: string; end: string }> = {
-  Mon: { start: "08:00", end: "17:00" },
-  Tue: { start: "08:00", end: "17:00" },
-  Wed: { start: "08:00", end: "18:00" },
-  Thu: { start: "08:00", end: "17:00" },
-  Fri: { start: "08:00", end: "17:00" },
-  Sat: { start: "09:00", end: "13:00" },
-  Sun: "off",
-};
+function addDays(d: Date, n: number): Date {
+  const x = new Date(d); x.setDate(x.getDate() + n); return x;
+}
+
+function ymd(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function timeToMin(t: string): number {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + (m || 0);
+}
 
 const palette: Record<string, { bg: string; text: string }> = {
   coral:  { bg: "#F0997B", text: "#4A1B0C" },
@@ -82,17 +99,20 @@ const palette: Record<string, { bg: string; text: string }> = {
   amber:  { bg: "#FAC775", text: "#412402" },
 };
 
-const unbookedSeed = [
-  { id: 1, name: "Daniel K.", initials: "DK", avatarColor: "coral",  lastLessonDays: 88 },
-  { id: 3, name: "Nadia B.",  initials: "NB", avatarColor: "green",  lastLessonDays: 36 },
-  { id: 99, name: "Ravi H.",  initials: "RH", avatarColor: "amber",  lastLessonDays: 12 },
-  { id: 88, name: "Amir H.",  initials: "AH", avatarColor: "pink",   lastLessonDays: 5 },
-];
+const PALETTE_KEYS = Object.keys(palette);
+function colorForId(id: string): string {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return PALETTE_KEYS[h % PALETTE_KEYS.length];
+}
 
-const TODAY: Day = (() => {
-  const map: Day[] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  return map[new Date().getDay()];
-})();
+function initialsOf(name: string): string {
+  return (name || "")
+    .split(/\s+/).filter(Boolean).slice(0, 2)
+    .map(s => s[0]).join("").toUpperCase() || "?";
+}
+
+
 
 function fmtTime(min: number) {
   const h = Math.floor(min / 60);
@@ -109,40 +129,162 @@ export default function InstructorScheduleDesktop() {
   const { total: notificationCount } = useCombinedNotificationCount(instructor?.id);
 
   const [view, setView] = useState<View>("week");
+  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
+  const weekEnd = useMemo(() => addDays(weekStart, 6), [weekStart]);
+  const todayDay: Day = useMemo(() => {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    if (today < weekStart || today > weekEnd) return "" as Day;
+    return JS_DAY[today.getDay()];
+  }, [weekStart, weekEnd]);
+
   const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [pupils, setPupils] = useState<PupilLite[]>([]);
+  const [availability, setAvailability] = useState<Record<Day, "off" | { start: string; end: string }>>({
+    Mon: "off", Tue: "off", Wed: "off", Thu: "off", Fri: "off", Sat: "off", Sun: "off",
+  });
+  const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(() => new Date());
-  const [activeDrag, setActiveDrag] = useState<{ kind: "pupil"; pupil: typeof unbookedSeed[number] } | { kind: "lesson"; lesson: Lesson } | null>(null);
+  const [activeDrag, setActiveDrag] = useState<
+    | { kind: "pupil"; pupil: PupilLite }
+    | { kind: "lesson"; lesson: Lesson }
+    | null
+  >(null);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [aiPrompt, setAiPrompt] = useState("");
   const [debouncedPrompt, setDebouncedPrompt] = useState("");
   const [aiSuggestions, setAiSuggestions] = useState<{ label: string }[] | null>(null);
   const [filterDays, setFilterDays] = useState<Day[]>([]);
-  const [filterFrom, setFilterFrom] = useState<string>(""); // "HH:MM"
+  const [filterFrom, setFilterFrom] = useState<string>("");
   const [filterTo, setFilterTo] = useState<string>("");
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const filterFromMin = filterFrom ? Number(filterFrom.slice(0, 2)) * 60 + Number(filterFrom.slice(3, 5)) : null;
-  const filterToMin = filterTo ? Number(filterTo.slice(0, 2)) * 60 + Number(filterTo.slice(3, 5)) : null;
+  const [pickerSlot, setPickerSlot] = useState<{ day: Day; startMin: number; durationMin: number } | null>(null);
+  const filterFromMin = filterFrom ? timeToMin(filterFrom) : null;
+  const filterToMin = filterTo ? timeToMin(filterTo) : null;
   const activeFilterCount = (filterDays.length > 0 ? 1 : 0) + (filterFrom ? 1 : 0) + (filterTo ? 1 : 0);
+
+  const instructorId = instructor?.id;
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(t);
   }, []);
 
-  // Debounce search input (200ms) so filtering doesn't run on every keystroke
+  // Debounce search input (200ms)
   useEffect(() => {
     const t = setTimeout(() => setDebouncedPrompt(aiPrompt), 200);
     return () => clearTimeout(t);
   }, [aiPrompt]);
+
+  // ---- Fetch availability windows ----
+  useEffect(() => {
+    if (!instructorId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("availability_windows")
+        .select("day_of_week, start_time, end_time, is_active")
+        .eq("instructor_id", instructorId)
+        .eq("is_active", true);
+      if (cancelled || error || !data) return;
+      const map: Record<Day, "off" | { start: string; end: string }> = {
+        Mon: "off", Tue: "off", Wed: "off", Thu: "off", Fri: "off", Sat: "off", Sun: "off",
+      };
+      // Merge windows: take earliest start / latest end per day
+      for (const w of data) {
+        const day = dayFromDOW(w.day_of_week);
+        const start = (w.start_time as string).slice(0, 5);
+        const end = (w.end_time as string).slice(0, 5);
+        const cur = map[day];
+        if (cur === "off") map[day] = { start, end };
+        else map[day] = { start: start < cur.start ? start : cur.start, end: end > cur.end ? end : cur.end };
+      }
+      setAvailability(map);
+    })();
+    return () => { cancelled = true; };
+  }, [instructorId]);
+
+  // ---- Fetch pupils ----
+  useEffect(() => {
+    if (!instructorId) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("pupils")
+        .select("id, name, next_lesson")
+        .eq("instructor_id", instructorId)
+        .is("deleted_at", null)
+        .order("name", { ascending: true });
+      if (cancelled || !data) return;
+      const mapped: PupilLite[] = data.map((p: any) => ({
+        id: p.id,
+        name: p.name || "Unnamed",
+        initials: initialsOf(p.name || ""),
+        avatarColor: colorForId(p.id),
+        lastLessonDays: null,
+      }));
+      setPupils(mapped);
+    })();
+    return () => { cancelled = true; };
+  }, [instructorId]);
+
+  // ---- Fetch lessons for current week ----
+  const reloadLessons = useCallback(async () => {
+    if (!instructorId) return;
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("scheduled_lessons")
+      .select("id, pupil_id, lesson_date, start_time, duration_minutes, lesson_type, status, pupils(name)")
+      .eq("instructor_id", instructorId)
+      .gte("lesson_date", ymd(weekStart))
+      .lte("lesson_date", ymd(weekEnd))
+      .neq("status", "cancelled")
+      .is("deleted_at", null);
+    setLoading(false);
+    if (error || !data) return;
+    const mapped: Lesson[] = data.map((row: any) => {
+      const date = new Date(row.lesson_date + "T00:00:00");
+      return {
+        id: row.id,
+        pupilId: row.pupil_id,
+        pupil: row.pupils?.name || "Pupil",
+        day: JS_DAY[date.getDay()],
+        startMin: timeToMin(row.start_time),
+        durationMin: row.duration_minutes,
+        type: lessonTypeFromString(row.lesson_type),
+      };
+    });
+    setLessons(mapped);
+  }, [instructorId, weekStart, weekEnd]);
+
+  useEffect(() => { reloadLessons(); }, [reloadLessons]);
+
+  // Live updates
+  useEffect(() => {
+    if (!instructorId) return;
+    const ch = supabase
+      .channel(`schedule-${instructorId}`)
+      .on("postgres_changes", {
+        event: "*", schema: "public", table: "scheduled_lessons",
+        filter: `instructor_id=eq.${instructorId}`,
+      }, () => { reloadLessons(); })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [instructorId, reloadLessons]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
   const totals = useMemo(() => {
     const count = lessons.length;
     const minutes = lessons.reduce((s, l) => s + l.durationMin, 0);
-    const earnings = Math.round((minutes / 60) * 34); // £34/h placeholder
+    const earnings = Math.round((minutes / 60) * 34);
     return { count, hours: (minutes / 60).toFixed(1), earnings };
   }, [lessons]);
+
+  // Pupils with no lesson this week
+  const unbookedPupils = useMemo<PupilLite[]>(() => {
+    const bookedIds = new Set(lessons.map(l => l.pupilId));
+    return pupils.filter(p => !bookedIds.has(p.id)).slice(0, 8);
+  }, [lessons, pupils]);
 
   // ---- Open slot search ----
   const openSlots = useMemo(() => {
@@ -150,10 +292,8 @@ export default function InstructorScheduleDesktop() {
     for (const day of DAYS) {
       const a = availability[day];
       if (a === "off") continue;
-      const [sh, sm] = a.start.split(":").map(Number);
-      const [eh, em] = a.end.split(":").map(Number);
-      const dayStart = sh * 60 + sm;
-      const dayEnd = eh * 60 + em;
+      const dayStart = timeToMin(a.start);
+      const dayEnd = timeToMin(a.end);
       const dayLessons = lessons
         .filter(l => l.day === day)
         .sort((x, y) => x.startMin - y.startMin);
@@ -165,14 +305,13 @@ export default function InstructorScheduleDesktop() {
       if (cursor < dayEnd) slots.push({ day, startMin: cursor, endMin: dayEnd });
     }
     return slots;
-  }, [lessons]);
+  }, [lessons, availability]);
 
   const slotMatches = useMemo(() => {
     const q = debouncedPrompt.trim().toLowerCase();
     const hasQuery = q.length > 0;
     const hasFilters = filterDays.length > 0 || filterFromMin !== null || filterToMin !== null;
     if (!hasQuery && !hasFilters) return [];
-    // duration: "2h", "90m", "1h30", "60 min"
     let needMin = 60;
     if (hasQuery) {
       const hM = q.match(/(\d+(?:\.\d+)?)\s*h(?:r|rs|our|ours)?(?:\s*(\d+)\s*m)?/);
@@ -180,7 +319,6 @@ export default function InstructorScheduleDesktop() {
       if (hM) needMin = Math.round(parseFloat(hM[1]) * 60) + (hM[2] ? parseInt(hM[2]) : 0);
       else if (mM) needMin = parseInt(mM[1]);
     }
-    // day from query
     const dayMap: Record<string, Day> = {
       mon: "Mon", monday: "Mon", tue: "Tue", tues: "Tue", tuesday: "Tue",
       wed: "Wed", weds: "Wed", wednesday: "Wed", thu: "Thu", thur: "Thu", thurs: "Thu", thursday: "Thu",
@@ -210,6 +348,44 @@ export default function InstructorScheduleDesktop() {
   const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
   const initials = (instructor?.name || "").split(" ").map(s => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "ID";
 
+  // ---- Booking persistence ----
+  const dayIndex = (d: Day) => DAYS.indexOf(d);
+  const dateForDay = (d: Day): Date => addDays(weekStart, dayIndex(d));
+
+  const bookLesson = useCallback(async (pupilId: string, pupilName: string, day: Day, startMin: number, durationMin = 60) => {
+    if (!instructorId) return;
+    const date = dateForDay(day);
+    const startTime = `${String(Math.floor(startMin / 60)).padStart(2, "0")}:${String(startMin % 60).padStart(2, "0")}:00`;
+    const { error } = await supabase.from("scheduled_lessons").insert({
+      instructor_id: instructorId,
+      pupil_id: pupilId,
+      lesson_date: ymd(date),
+      start_time: startTime,
+      duration_minutes: durationMin,
+      lesson_type: "Standard Lesson",
+      status: "confirmed",
+    });
+    if (error) { toast.error(`Could not book: ${error.message}`); return; }
+    toast.success(`Booked · ${pupilName} ${day} ${fmtTime(startMin)}`);
+    reloadLessons();
+  }, [instructorId, weekStart, reloadLessons]);
+
+  const moveLesson = useCallback(async (lesson: Lesson, day: Day, startMin: number) => {
+    const date = dateForDay(day);
+    const startTime = `${String(Math.floor(startMin / 60)).padStart(2, "0")}:${String(startMin % 60).padStart(2, "0")}:00`;
+    // Optimistic update
+    setLessons(ls => ls.map(l => l.id === lesson.id ? { ...l, day, startMin } : l));
+    const { error } = await supabase.from("scheduled_lessons")
+      .update({ lesson_date: ymd(date), start_time: startTime })
+      .eq("id", lesson.id);
+    if (error) {
+      toast.error(`Move failed: ${error.message}`);
+      reloadLessons();
+      return;
+    }
+    toast(`Moved to ${day} ${fmtTime(startMin)}`);
+  }, [weekStart, reloadLessons]);
+
   // ---- DnD handlers ----
   function onDragStart(e: DragStartEvent) {
     const data = e.active.data.current as any;
@@ -226,7 +402,6 @@ export default function InstructorScheduleDesktop() {
     const day = overData.day as Day;
     if (availability[day] === "off") return;
 
-    // Compute drop minute from cursor Y over the column
     const rect = (e.over.rect as any) as DOMRect;
     const pointerY = e.activatorEvent && "clientY" in e.activatorEvent
       ? (e.activatorEvent as PointerEvent).clientY + (e.delta?.y ?? 0)
@@ -235,18 +410,9 @@ export default function InstructorScheduleDesktop() {
     const startMin = HOUR_START * 60 + offsetMin;
 
     if (drag.kind === "pupil") {
-      const newL: Lesson = {
-        id: Date.now(), pupil: drag.pupil.name, pupilId: drag.pupil.id,
-        day, startMin, durationMin: 60, type: "standard",
-      };
-      setLessons(ls => [...ls, newL]);
-      toast(`Lesson booked · ${drag.pupil.name} ${day} ${fmtTime(startMin)}`);
+      bookLesson(drag.pupil.id, drag.pupil.name, day, startMin, 60);
     } else {
-      const moved = drag.lesson;
-      setLessons(ls => ls.map(l => l.id === moved.id ? { ...l, day, startMin } : l));
-      toast(`Moved to ${day} ${fmtTime(startMin)}`, {
-        action: { label: "Undo", onClick: () => setLessons(ls => ls.map(l => l.id === moved.id ? moved : l)) },
-      });
+      moveLesson(drag.lesson, day, startMin);
     }
   }
 
@@ -416,14 +582,7 @@ export default function InstructorScheduleDesktop() {
                     <button
                       key={`${s.day}-${s.startMin}-${i}`}
                       onClick={() => {
-                        const newL: Lesson = {
-                          id: Date.now() + i,
-                          pupil: "New lesson", pupilId: 0,
-                          day: s.day, startMin: s.startMin, durationMin: s.needMin,
-                          type: "standard",
-                        };
-                        setLessons(ls => [...ls, newL]);
-                        toast(`Booked ${s.day} ${fmtTime(s.startMin)} · ${s.needMin}m`);
+                        setPickerSlot({ day: s.day, startMin: s.startMin, durationMin: s.needMin });
                         setAiPrompt("");
                       }}
                       style={{
@@ -468,6 +627,9 @@ export default function InstructorScheduleDesktop() {
               lessons={lessons}
               now={now}
               onSelectLesson={setSelectedLesson}
+              weekStart={weekStart}
+              todayDay={todayDay}
+              availability={availability}
             />
           )}
           {view === "day" && <PlaceholderView text="Day view — single column with 30-min rows." />}
@@ -559,10 +721,14 @@ const smallBtn: React.CSSProperties = {
 
 // ---- Week grid ----
 function WeekGrid({
-  lessons, now, onSelectLesson,
-}: { lessons: Lesson[]; now: Date; onSelectLesson: (l: Lesson) => void }) {
+  lessons, now, onSelectLesson, weekStart, todayDay, availability,
+}: {
+  lessons: Lesson[]; now: Date; onSelectLesson: (l: Lesson) => void;
+  weekStart: Date; todayDay: Day;
+  availability: Record<Day, "off" | { start: string; end: string }>;
+}) {
   const rows = HOUR_END - HOUR_START + 1;
-  const dates = ["4", "5", "6", "7", "8", "9", "10"];
+  const dates = DAYS.map((_, i) => String(addDays(weekStart, i).getDate()));
   const nowMin = now.getHours() * 60 + now.getMinutes();
   const nowTop = ((nowMin - HOUR_START * 60) / 60) * HOUR_PX;
 
@@ -571,14 +737,13 @@ function WeekGrid({
       background: "#fff", border: "0.5px solid var(--d2-border)", borderRadius: 6,
       overflow: "hidden",
     }}>
-      {/* Day header row */}
       <div style={{
         display: "grid", gridTemplateColumns: "38px repeat(7, 1fr)",
         background: "#F8FAFC", borderBottom: "0.5px solid var(--d2-border)",
       }}>
         <div />
         {DAYS.map((d, i) => {
-          const isToday = d === TODAY;
+          const isToday = d === todayDay;
           return (
             <div key={d} style={{
               padding: 7, textAlign: "center",
@@ -592,9 +757,7 @@ function WeekGrid({
         })}
       </div>
 
-      {/* Body */}
       <div style={{ display: "grid", gridTemplateColumns: "38px repeat(7, 1fr)" }}>
-        {/* Time col */}
         <div>
           {Array.from({ length: rows }).map((_, i) => (
             <div key={i} style={{
@@ -613,9 +776,10 @@ function WeekGrid({
             day={d}
             rows={rows}
             lessons={lessons.filter(l => l.day === d)}
-            isToday={d === TODAY}
+            isToday={d === todayDay}
             nowTop={nowTop}
             onSelectLesson={onSelectLesson}
+            off={availability[d] === "off"}
           />
         ))}
       </div>
@@ -624,12 +788,11 @@ function WeekGrid({
 }
 
 function DayColumn({
-  day, rows, lessons, isToday, nowTop, onSelectLesson,
+  day, rows, lessons, isToday, nowTop, onSelectLesson, off,
 }: {
   day: Day; rows: number; lessons: Lesson[]; isToday: boolean; nowTop: number;
-  onSelectLesson: (l: Lesson) => void;
+  onSelectLesson: (l: Lesson) => void; off: boolean;
 }) {
-  const off = availability[day] === "off";
   const { setNodeRef, isOver } = useDroppable({ id: `col-${day}`, data: { day }, disabled: off });
   const height = rows * HOUR_PX;
 
@@ -740,7 +903,7 @@ function LessonGhost({ lesson }: { lesson: Lesson }) {
 function RightRail({
   unbooked, aiPrompt, setAiPrompt, aiSuggestions, onAskAi,
 }: {
-  unbooked: typeof unbookedSeed;
+  unbooked: PupilLite[];
   aiPrompt: string; setAiPrompt: (s: string) => void;
   aiSuggestions: { label: string }[] | null;
   onAskAi: () => void;
@@ -802,7 +965,7 @@ function RightRail({
   );
 }
 
-function PupilChip({ pupil }: { pupil: typeof unbookedSeed[number] }) {
+function PupilChip({ pupil }: { pupil: PupilLite }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `pupil-${pupil.id}`, data: { kind: "pupil", pupil },
   });
