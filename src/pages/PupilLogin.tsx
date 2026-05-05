@@ -14,6 +14,7 @@ import { AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PupilRegister from "@/components/pupil/PupilRegister";
+import { setRememberMe as persistRememberMe } from "@/lib/sessionPersistence";
 
 type LoginView = "login" | "forgot" | "reset-code" | "new-password";
 
@@ -125,6 +126,7 @@ export default function PupilLogin() {
         sessionStorage.setItem(`pupil_${data.instructorId}`, data.pupilId);
       }
       
+      persistRememberMe(rememberMe);
       if (rememberMe || localStorage.getItem("pupil_remembered_email")) {
         localStorage.setItem("pupil_remembered_email", loginEmail);
       }
