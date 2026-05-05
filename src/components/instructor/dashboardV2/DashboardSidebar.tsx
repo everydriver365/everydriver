@@ -66,7 +66,7 @@ const SECTIONS: NavSection[] = [
     { label: "SEO", to: "/instructor/seo", icon: TrendingUp, moduleId: "website" },
   ]},
   { label: "Settings", items: [
-    { label: "Profile", to: "/instructor/settings", icon: User },
+    { label: "Profile", to: "/instructor/profile", icon: User },
     { label: "Plan & Billing", to: "/instructor/billing", icon: Wallet },
     { label: "Modules", to: "/instructor/modules", icon: Boxes },
     { label: "Integrations", to: "/instructor/integrations", icon: Plug },

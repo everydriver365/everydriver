@@ -153,6 +153,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/course-planner" element={<CoursePlannerPage />} />
     <Route path="/instructor/diary" element={<InstructorDiary />} />
     <Route path="/instructor/menu" element={<InstructorMenu />} />
+    <Route path="/instructor/profile" element={<AccountHub />} />
     <Route path="/instructor/settings" element={<InstructorSettings />} />
     <Route path="/instructor/settings/profile" element={<InstructorProfile />} />
     <Route path="/settings/profile" element={<InstructorProfile />} />
