@@ -247,7 +247,7 @@ export default function AdminLogin() {
                 </p>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4" name="admin-login" method="post" action="#">
                   <AnimatePresence mode="wait">
                     {error && (
                       <motion.div
@@ -308,14 +308,19 @@ export default function AdminLogin() {
                         <Label htmlFor="email" className="text-sm font-medium text-slate-300">Email</Label>
                         <Input
                           id="email"
+                          name="email"
                           type="email"
+                          inputMode="email"
+                          autoCapitalize="none"
+                          autoCorrect="off"
+                          spellCheck={false}
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="admin@example.com"
                           required
                           disabled={loading}
                           className="h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
-                          autoComplete="email"
+                          autoComplete="username"
                         />
                       </div>
 
@@ -333,6 +338,7 @@ export default function AdminLogin() {
                           </div>
                           <Input
                             id="password"
+                            name="password"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}

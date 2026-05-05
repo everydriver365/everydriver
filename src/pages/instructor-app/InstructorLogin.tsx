@@ -347,7 +347,7 @@ export default function InstructorLogin() {
           transition={{ delay: 0.2 }}
           className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-xl"
         >
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" name="instructor-login" method="post" action="#">
             <AnimatePresence mode="wait">
               {error && (
                 <motion.div
@@ -398,14 +398,19 @@ export default function InstructorLogin() {
               <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
+                inputMode="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
                 className="h-12 bg-background/50 border-border/50 focus:border-primary"
-                autoComplete="email"
+                autoComplete="username"
                 maxLength={255}
               />
             </div>
@@ -422,6 +427,7 @@ export default function InstructorLogin() {
                   <div className="relative">
                     <Input
                       id="password"
+                      name="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={password}
