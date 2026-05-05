@@ -162,36 +162,43 @@ export default function InstructorScheduleDesktop() {
 
   const slotMatches = useMemo(() => {
     const q = aiPrompt.trim().toLowerCase();
-    if (!q) return [];
+    const hasQuery = q.length > 0;
+    const hasFilters = filterDays.length > 0 || filterFromMin !== null || filterToMin !== null;
+    if (!hasQuery && !hasFilters) return [];
     // duration: "2h", "90m", "1h30", "60 min"
     let needMin = 60;
-    const hM = q.match(/(\d+(?:\.\d+)?)\s*h(?:r|rs|our|ours)?(?:\s*(\d+)\s*m)?/);
-    const mM = q.match(/(\d+)\s*(?:m|min|mins|minutes)\b/);
-    if (hM) needMin = Math.round(parseFloat(hM[1]) * 60) + (hM[2] ? parseInt(hM[2]) : 0);
-    else if (mM) needMin = parseInt(mM[1]);
-    // day
+    if (hasQuery) {
+      const hM = q.match(/(\d+(?:\.\d+)?)\s*h(?:r|rs|our|ours)?(?:\s*(\d+)\s*m)?/);
+      const mM = q.match(/(\d+)\s*(?:m|min|mins|minutes)\b/);
+      if (hM) needMin = Math.round(parseFloat(hM[1]) * 60) + (hM[2] ? parseInt(hM[2]) : 0);
+      else if (mM) needMin = parseInt(mM[1]);
+    }
+    // day from query
     const dayMap: Record<string, Day> = {
       mon: "Mon", monday: "Mon", tue: "Tue", tues: "Tue", tuesday: "Tue",
       wed: "Wed", weds: "Wed", wednesday: "Wed", thu: "Thu", thur: "Thu", thurs: "Thu", thursday: "Thu",
       fri: "Fri", friday: "Fri", sat: "Sat", saturday: "Sat", sun: "Sun", sunday: "Sun",
     };
-    let needDay: Day | null = null;
-    for (const k of Object.keys(dayMap)) if (new RegExp(`\\b${k}\\b`).test(q)) { needDay = dayMap[k]; break; }
-    const morning = /\bmorning|am\b/.test(q);
-    const afternoon = /\bafternoon|pm\b/.test(q);
-    const evening = /\bevening\b/.test(q);
+    let queryDay: Day | null = null;
+    if (hasQuery) for (const k of Object.keys(dayMap)) if (new RegExp(`\\b${k}\\b`).test(q)) { queryDay = dayMap[k]; break; }
+    const morning = hasQuery && /\bmorning|am\b/.test(q);
+    const afternoon = hasQuery && /\bafternoon|pm\b/.test(q);
+    const evening = hasQuery && /\bevening\b/.test(q);
     return openSlots
       .filter(s => s.endMin - s.startMin >= needMin)
-      .filter(s => !needDay || s.day === needDay)
+      .filter(s => !queryDay || s.day === queryDay)
+      .filter(s => filterDays.length === 0 || filterDays.includes(s.day))
       .filter(s => {
         if (morning) return s.startMin < 12 * 60;
         if (afternoon) return s.startMin >= 12 * 60 && s.startMin < 17 * 60;
         if (evening) return s.startMin >= 17 * 60;
         return true;
       })
-      .slice(0, 8)
+      .filter(s => filterFromMin === null || s.startMin >= filterFromMin)
+      .filter(s => filterToMin === null || s.startMin + needMin <= filterToMin)
+      .slice(0, 12)
       .map(s => ({ ...s, needMin }));
-  }, [aiPrompt, openSlots]);
+  }, [aiPrompt, openSlots, filterDays, filterFromMin, filterToMin]);
 
   const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
   const initials = (instructor?.name || "").split(" ").map(s => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "ID";
