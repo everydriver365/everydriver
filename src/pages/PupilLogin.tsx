@@ -539,7 +539,9 @@ export default function PupilLogin() {
                               <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                                 <Input
+                                  name="confirm-password"
                                   type="password"
+                                  autoComplete="new-password"
                                   placeholder="••••••••"
                                   value={confirmPassword}
                                   onChange={(e) => setConfirmPassword(e.target.value)}
