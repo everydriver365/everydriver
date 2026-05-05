@@ -12,6 +12,13 @@ import { Loader2, AlertCircle, ArrowLeft, Fingerprint, Eye, EyeOff, Share, Plus,
 import { InstructorMarketingBottomNav } from "@/components/layout/InstructorMarketingBottomNav";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
+import {
+  isBiometricAvailable,
+  getBiometricCredentials,
+  saveBiometricCredentials,
+  getBiometryLabel,
+  isNativePlatform,
+} from "@/lib/biometricAuth";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -45,6 +52,7 @@ export default function InstructorLogin() {
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [biometricLoading, setBiometricLoading] = useState(false);
+  const [biometryLabel, setBiometryLabel] = useState("Face ID / Touch ID");
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIOS, setIsIOS] = useState(false);
@@ -70,10 +78,23 @@ export default function InstructorLogin() {
 
     const checkBiometricAvailability = async () => {
       try {
-        if ('credentials' in navigator && 'PasswordCredential' in window) {
-          const hasSavedCredentials = localStorage.getItem('instructor-biometric-enabled');
-          if (hasSavedCredentials) {
-            setBiometricAvailable(true);
+        const available = await isBiometricAvailable("instructor");
+        setBiometricAvailable(available);
+        if (available) {
+          setBiometryLabel(await getBiometryLabel());
+          // On native, auto-prompt Face ID immediately for a real "open app → unlock" feel
+          if (isNativePlatform()) {
+            const creds = await getBiometricCredentials("instructor", "Sign in to EveryDriver");
+            if (creds) {
+              setBiometricLoading(true);
+              const { error: signInError } = await signIn(creds.email, creds.password);
+              if (!signInError) {
+                toast.success("Welcome back!");
+                navigate("/instructor");
+                return;
+              }
+              setBiometricLoading(false);
+            }
           }
         }
       } catch (err) {
@@ -113,34 +134,22 @@ export default function InstructorLogin() {
     setShowInstallPrompt(false);
   };
 
-  // Handle biometric login (Face ID / Touch ID)
+  // Handle biometric login (Face ID / Touch ID / fingerprint)
   const handleBiometricLogin = async () => {
     setBiometricLoading(true);
     setError("");
-    
     try {
-      const credential = await navigator.credentials.get({
-        password: true,
-        mediation: 'optional'
-      } as CredentialRequestOptions);
-      
-      if (credential && 'password' in credential) {
-        const passwordCredential = credential as any;
-        const savedEmail = passwordCredential.id;
-        const savedPassword = passwordCredential.password;
-        
-        if (savedEmail && savedPassword) {
-          const { error: signInError } = await signIn(savedEmail, savedPassword);
-          
-          if (signInError) {
-            setError("Biometric login failed. Please use email and password.");
-          } else {
-            toast.success("Welcome back!");
-            navigate("/instructor");
-          }
-        }
-      } else {
+      const creds = await getBiometricCredentials("instructor", "Sign in to EveryDriver");
+      if (!creds) {
         setError("No saved credentials found. Please log in manually first.");
+        return;
+      }
+      const { error: signInError } = await signIn(creds.email, creds.password);
+      if (signInError) {
+        setError("Biometric login failed. Please use email and password.");
+      } else {
+        toast.success("Welcome back!");
+        navigate("/instructor");
       }
     } catch (err) {
       console.error("Biometric login error:", err);
@@ -152,21 +161,9 @@ export default function InstructorLogin() {
 
   // Save credentials for future biometric login
   const saveCredentialsForBiometric = async (emailToSave: string, passwordToSave: string) => {
-    try {
-      if ('credentials' in navigator && 'PasswordCredential' in window) {
-        const PasswordCredentialClass = (window as any).PasswordCredential;
-        const credential = new PasswordCredentialClass({
-          id: emailToSave,
-          password: passwordToSave,
-          name: 'EveryDriver Instructor'
-        });
-        await navigator.credentials.store(credential);
-        localStorage.setItem('instructor-biometric-enabled', 'true');
-        setBiometricAvailable(true);
-      }
-    } catch (err) {
-      console.log('Could not save credentials:', err);
-    }
+    await saveBiometricCredentials("instructor", emailToSave, passwordToSave);
+    setBiometricAvailable(true);
+    try { setBiometryLabel(await getBiometryLabel()); } catch {}
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -378,7 +375,7 @@ export default function InstructorLogin() {
                 ) : (
                   <Fingerprint className="h-5 w-5" />
                 )}
-                Sign in with Face ID / Touch ID
+                Sign in with {biometryLabel}
               </Button>
             )}
 
@@ -457,7 +454,7 @@ export default function InstructorLogin() {
                   htmlFor="rememberMe" 
                   className="text-sm font-normal cursor-pointer text-muted-foreground"
                 >
-                  Remember me (enables Face ID / Touch ID)
+                  Remember me (enables {biometryLabel})
                 </Label>
               </div>
             )}

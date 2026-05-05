@@ -10,6 +10,12 @@ import { toast } from "sonner";
 import { Loader2, AlertCircle, Eye, EyeOff, Share, Plus, Download, X, Fingerprint, ArrowRight, Shield, Lock, Award, Car } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
+import {
+  isBiometricAvailable,
+  getBiometricCredentials,
+  saveBiometricCredentials,
+  isNativePlatform,
+} from "@/lib/biometricAuth";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -63,10 +69,19 @@ export default function InstructorPortalLogin() {
 
     const checkBiometricAvailability = async () => {
       try {
-        if ('credentials' in navigator && 'PublicKeyCredential' in window) {
-          const hasSavedCredentials = localStorage.getItem('instructor-biometric-enabled');
-          if (hasSavedCredentials) {
-            setBiometricAvailable(true);
+        const available = await isBiometricAvailable("instructor");
+        setBiometricAvailable(available);
+        if (available && isNativePlatform()) {
+          const creds = await getBiometricCredentials("instructor", "Sign in to EveryDriver");
+          if (creds) {
+            setBiometricLoading(true);
+            const { error: signInError } = await signIn(creds.email, creds.password);
+            if (!signInError) {
+              toast.success("Welcome back!", { duration: 2000 });
+              navigate("/instructor");
+              return;
+            }
+            setBiometricLoading(false);
           }
         }
       } catch (err) {
@@ -104,30 +119,18 @@ export default function InstructorPortalLogin() {
   const handleBiometricLogin = async () => {
     setBiometricLoading(true);
     setError("");
-    
     try {
-      const credential = await navigator.credentials.get({
-        password: true,
-        mediation: 'optional'
-      } as CredentialRequestOptions);
-      
-      if (credential && 'password' in credential) {
-        const passwordCredential = credential as any;
-        const savedEmail = passwordCredential.id;
-        const savedPassword = passwordCredential.password;
-        
-        if (savedEmail && savedPassword) {
-          const { error: signInError } = await signIn(savedEmail, savedPassword);
-          
-          if (signInError) {
-            setError("Biometric login failed. Please use email and password.");
-          } else {
-            toast.success("Welcome back!", { duration: 2000 });
-            navigate("/instructor");
-          }
-        }
-      } else {
+      const creds = await getBiometricCredentials("instructor", "Sign in to EveryDriver");
+      if (!creds) {
         setError("No saved credentials found. Please log in manually first.");
+        return;
+      }
+      const { error: signInError } = await signIn(creds.email, creds.password);
+      if (signInError) {
+        setError("Biometric login failed. Please use email and password.");
+      } else {
+        toast.success("Welcome back!", { duration: 2000 });
+        navigate("/instructor");
       }
     } catch (err) {
       console.error("Biometric login error:", err);
@@ -138,21 +141,8 @@ export default function InstructorPortalLogin() {
   };
 
   const saveCredentialsForBiometric = async (emailToSave: string, passwordToSave: string) => {
-    try {
-      if ('credentials' in navigator && 'PasswordCredential' in window) {
-        const PasswordCredentialClass = (window as any).PasswordCredential;
-        const credential = new PasswordCredentialClass({
-          id: emailToSave,
-          password: passwordToSave,
-          name: 'Every Driver Instructor'
-        });
-        await navigator.credentials.store(credential);
-        localStorage.setItem('instructor-biometric-enabled', 'true');
-        setBiometricAvailable(true);
-      }
-    } catch (err) {
-      console.log('Could not save credentials:', err);
-    }
+    await saveBiometricCredentials("instructor", emailToSave, passwordToSave);
+    setBiometricAvailable(true);
   };
 
   const dismissInstallPrompt = () => {
