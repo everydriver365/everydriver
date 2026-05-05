@@ -4,8 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, FileSpreadsheet, Loader2, CheckCircle, AlertCircle, ExternalLink } from "lucide-react";
+import { Download, FileSpreadsheet, Loader2, CheckCircle, ExternalLink, Info, RotateCcw } from "lucide-react";
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface XeroExportProps {
   instructorId: string;
@@ -14,6 +25,25 @@ interface XeroExportProps {
 export function XeroExport({ instructorId }: XeroExportProps) {
   const [exporting, setExporting] = useState(false);
   const [markingSynced, setMarkingSynced] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  const resetSyncState = async () => {
+    setResetting(true);
+    try {
+      const { error } = await supabase
+        .from("instructor_expenses")
+        .update({ xero_synced: false })
+        .eq("instructor_id", instructorId)
+        .eq("xero_synced", true);
+      if (error) throw error;
+      toast.success("Sync state reset — all expenses can be re-exported");
+    } catch (err) {
+      console.error("Error resetting sync:", err);
+      toast.error("Failed to reset sync state");
+    } finally {
+      setResetting(false);
+    }
+  };
 
   const exportToCSV = async (period: "month" | "year") => {
     setExporting(true);
@@ -297,21 +327,57 @@ export function XeroExport({ instructorId }: XeroExportProps) {
           </div>
         </div>
 
-        <div className="pt-3 border-t">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={markAllAsSynced}
-            disabled={markingSynced}
-            className="w-full gap-2"
-          >
-            {markingSynced ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <CheckCircle className="h-4 w-4" />
-            )}
-            Mark All Expenses as Synced
-          </Button>
+        <div className="rounded-2xl border bg-muted/30 p-3 flex gap-2">
+          <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+          <p className="text-xs text-muted-foreground">
+            Xero export is manual CSV — no Xero credentials are stored, so there is nothing to disconnect. Use the buttons below to manage which expenses are marked as already imported.
+          </p>
+        </div>
+
+        <div className="pt-3 border-t flex flex-col gap-2 sm:flex-row">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="secondary" size="sm" disabled={markingSynced} className="w-full gap-2">
+                {markingSynced ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+                Mark All as Synced
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Mark all expenses as synced?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Every unsynced expense will be flagged as imported into Xero. They won't appear in future export reminders.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={markAllAsSynced}>Mark synced</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" disabled={resetting} className="w-full gap-2">
+                {resetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+                Reset Sync State
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reset Xero sync state?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  All expenses currently marked as synced will be reset, so you can re-export them. This does not change anything inside Xero itself.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={resetSyncState} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Reset
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
 
         <div className="p-3 rounded-2xl bg-muted/50 text-xs text-muted-foreground">

@@ -17,6 +17,17 @@ import {
 import { useGoogleServiceCalendar } from "@/hooks/useGoogleServiceCalendar";
 import { CalendarResyncRangePanel } from "@/components/instructor/CalendarResyncRangePanel";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface GoogleServiceAccountSetupProps {
   instructorId: string;
@@ -161,20 +172,54 @@ export function GoogleServiceAccountSetup({ instructorId }: GoogleServiceAccount
             )}
             Sync Now
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDisconnect}
-            disabled={isDisconnecting}
-            className="text-destructive hover:text-destructive"
-          >
-            {isDisconnecting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <X className="mr-2 h-4 w-4" />
-            )}
-            Disconnect
-          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" disabled={isDisconnecting}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Reconnect
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reconnect Google Calendar?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This clears your saved calendar link so you can re-share a calendar and enter a new Calendar ID. Existing synced lessons stay on your calendar.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDisconnect}>Reconnect</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="sm" disabled={isDisconnecting} className="text-destructive hover:text-destructive">
+                {isDisconnecting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <X className="mr-2 h-4 w-4" />
+                )}
+                Disconnect
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Disconnect Google Calendar?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Lessons will stop syncing both ways. Events already on your calendar are kept. You can reconnect at any time.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDisconnect} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Disconnect
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
 
         {/* Manual range re-sync */}

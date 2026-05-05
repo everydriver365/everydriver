@@ -2,9 +2,20 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Link2, Unlink, CheckCircle, ExternalLink } from "lucide-react";
+import { Loader2, Link2, Unlink, CheckCircle, ExternalLink, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface SquareConnectSettingsProps {
   instructorId: string;
@@ -43,22 +54,32 @@ export function SquareConnectSettings({ instructorId, squareMerchantId, squareCo
   };
 
   const handleDisconnect = async () => {
-    if (!confirm("Disconnect your Square account? Future payments will be collected by the platform and paid out manually.")) return;
     setDisconnecting(true);
     try {
       const { data, error } = await supabase.functions.invoke("square-oauth", {
         body: { action: "disconnect", instructor_id: instructorId },
       });
-
       if (error || data?.error) {
         toast.error("Failed to disconnect");
         return;
       }
-
       toast.success("Square account disconnected");
       onUpdate();
     } catch {
       toast.error("Failed to disconnect");
+    } finally {
+      setDisconnecting(false);
+    }
+  };
+
+  const handleReconnect = async () => {
+    setDisconnecting(true);
+    try {
+      await supabase.functions.invoke("square-oauth", {
+        body: { action: "disconnect", instructor_id: instructorId },
+      });
+      onUpdate();
+      await handleConnect();
     } finally {
       setDisconnecting(false);
     }
@@ -82,10 +103,51 @@ export function SquareConnectSettings({ instructorId, squareMerchantId, squareCo
           <p className="text-xs text-muted-foreground">
             Pupil payments go directly to your Square account. The platform service fee is deducted automatically.
           </p>
-          <Button variant="outline" size="sm" onClick={handleDisconnect} disabled={disconnecting}>
-            {disconnecting ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Unlink className="h-3.5 w-3.5 mr-1.5" />}
-            Disconnect Square
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" disabled={connecting || disconnecting}>
+                  {connecting || disconnecting ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5 mr-1.5" />}
+                  Reconnect
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reconnect Square account?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This clears your saved credentials and opens Square so you can sign in again. Use this if payments are failing or you've switched merchant accounts.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleReconnect}>Reconnect</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="sm" disabled={disconnecting} className="text-destructive hover:text-destructive">
+                  {disconnecting ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Unlink className="h-3.5 w-3.5 mr-1.5" />}
+                  Disconnect
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Disconnect Square?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Future pupil payments will be collected by the platform and paid out to you manually. You can reconnect at any time.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDisconnect} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    Disconnect
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </>
       ) : (
         <>
