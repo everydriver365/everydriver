@@ -180,7 +180,7 @@ function OutlineBtn({ children, onClick, color = "#0F172A", style }: {
 // ---------- main ----------
 export default function InstructorProfileDesktop() {
   const { instructor, signOut } = useInstructorAuth();
-  const notificationCount = useCombinedNotificationCount(instructor?.id);
+  const { total: notificationCount } = useCombinedNotificationCount(instructor?.id);
   const [profile, setProfile] = useState<Profile>(initialProfile);
   const [dirty, setDirty] = useState(false);
   const [activeSection, setActiveSection] = useState("personal");
