@@ -47,14 +47,14 @@ function dayLabel(d: Date) {
   return fmt;
 }
 
-const STATUS_STYLES: Record<Status, { bg: string; color: string }> = {
+const STATUS_STYLES: Record<PaymentStatus, { bg: string; color: string }> = {
   paid:     { bg: "#ECFDF5", color: "#047857" },
   pending:  { bg: "#FEF3C7", color: "#B45309" },
   refunded: { bg: "#F1F5F9", color: "#64748B" },
   failed:   { bg: "#FCEBEB", color: "#791F1F" },
 };
 
-function StatusPill({ s }: { s: Status }) {
+function StatusPill({ s }: { s: PaymentStatus }) {
   const sty = STATUS_STYLES[s];
   return (
     <span style={{
@@ -64,16 +64,15 @@ function StatusPill({ s }: { s: Status }) {
   );
 }
 
-function Avatar({ id, size = 22 }: { id: number; size?: number }) {
-  const p = PUPILS[id]; if (!p) return null;
-  const c = palette[p.color] || palette.gray;
+function Avatar({ id, name, size = 22 }: { id: string; name: string; size?: number }) {
+  const c = palette[pupilColor(id)] || palette.gray;
   return (
     <div style={{
       width: size, height: size, borderRadius: "50%",
       background: c.bg, color: c.text, display: "flex",
       alignItems: "center", justifyContent: "center",
       fontSize: Math.round(size * 0.42), fontWeight: 600, flexShrink: 0,
-    }}>{p.initials}</div>
+    }}>{pupilInitials(name)}</div>
   );
 }
 
