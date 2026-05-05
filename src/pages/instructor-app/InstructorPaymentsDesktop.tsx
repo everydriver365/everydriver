@@ -125,6 +125,8 @@ export default function InstructorPaymentsDesktop() {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [transactions, outstanding]);
 
+  useEffect(() => { if (error) toast.error(error); }, [error]);
+
   const initials = (instructor?.name || "").split(" ").map(s=>s[0]).filter(Boolean).slice(0,2).join("").toUpperCase() || "ID";
   const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
 
