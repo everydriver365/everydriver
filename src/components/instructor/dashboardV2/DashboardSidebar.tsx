@@ -6,36 +6,37 @@ import {
   Plug, LogOut, PanelLeftClose, PanelLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useModules } from "@/context/ModulesContext";
 
-interface NavItem { label: string; to: string; icon: React.ElementType; badge?: string; }
+interface NavItem { label: string; to: string; icon: React.ElementType; badge?: string; moduleId?: string; }
 interface NavSection { label: string; items: NavItem[]; }
 
 const SECTIONS: NavSection[] = [
   { label: "Overview", items: [
-    { label: "Dashboard", to: "/instructor", icon: LayoutDashboard },
-    { label: "Schedule", to: "/instructor/schedule", icon: Calendar },
-    { label: "Inbox", to: "/instructor/messages", icon: Inbox, badge: "9+" },
+    { label: "Dashboard", to: "/instructor", icon: LayoutDashboard, moduleId: "dashboard" },
+    { label: "Schedule", to: "/instructor/schedule", icon: Calendar, moduleId: "schedule" },
+    { label: "Inbox", to: "/instructor/messages", icon: Inbox, badge: "9+", moduleId: "inbox" },
   ]},
   { label: "Teaching", items: [
-    { label: "Pupils", to: "/instructor/pupils", icon: Users },
-    { label: "Lessons", to: "/instructor/schedule", icon: BookOpen },
-    { label: "Test Bookings", to: "/instructor/test-bookings", icon: ClipboardCheck },
-    { label: "Test Results", to: "/instructor/test-results", icon: Award },
-    { label: "Test Swap", to: "/instructor/test-swap", icon: Repeat2 },
-    { label: "Slot Finder", to: "/instructor/test-slot-finder", icon: Search },
+    { label: "Pupils", to: "/instructor/pupils", icon: Users, moduleId: "pupils" },
+    { label: "Lessons", to: "/instructor/schedule", icon: BookOpen, moduleId: "schedule" },
+    { label: "Test Bookings", to: "/instructor/test-bookings", icon: ClipboardCheck, moduleId: "tests" },
+    { label: "Test Results", to: "/instructor/test-results", icon: Award, moduleId: "tests" },
+    { label: "Test Swap", to: "/instructor/test-swap", icon: Repeat2, moduleId: "testswap" },
+    { label: "Slot Finder", to: "/instructor/test-slot-finder", icon: Search, moduleId: "slotfinder" },
     { label: "Availability", to: "/instructor/quick-availability", icon: CalendarClock },
   ]},
   { label: "Business", items: [
-    { label: "Payments", to: "/instructor/pay", icon: CreditCard },
-    { label: "Invoices", to: "/instructor/invoices", icon: Receipt },
+    { label: "Payments", to: "/instructor/pay", icon: CreditCard, moduleId: "payments" },
+    { label: "Invoices", to: "/instructor/invoices", icon: Receipt, moduleId: "invoices" },
     { label: "Pending", to: "/instructor/pending-scheduling", icon: Clock },
-    { label: "Reports", to: "/instructor/income", icon: BarChart3 },
+    { label: "Reports", to: "/instructor/income", icon: BarChart3, moduleId: "reports" },
   ]},
   { label: "Website", items: [
-    { label: "My Site", to: "/instructor/website", icon: Globe },
-    { label: "Branding", to: "/instructor/appearance", icon: Palette },
-    { label: "Domain", to: "/instructor/domains", icon: Link2 },
-    { label: "SEO", to: "/instructor/seo", icon: TrendingUp },
+    { label: "My Site", to: "/instructor/website", icon: Globe, moduleId: "website" },
+    { label: "Branding", to: "/instructor/appearance", icon: Palette, moduleId: "website" },
+    { label: "Domain", to: "/instructor/domains", icon: Link2, moduleId: "website" },
+    { label: "SEO", to: "/instructor/seo", icon: TrendingUp, moduleId: "website" },
   ]},
   { label: "Settings", items: [
     { label: "Profile", to: "/instructor/settings", icon: User },
@@ -55,6 +56,12 @@ interface Props {
 
 export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, onSignOut }: Props) {
   const { pathname } = useLocation();
+  const { isActive: isModuleActive } = useModules();
+
+  const visibleSections = SECTIONS.map(s => ({
+    ...s,
+    items: s.items.filter(i => !i.moduleId || isModuleActive(i.moduleId)),
+  })).filter(s => s.items.length > 0);
 
   return (
     <aside
@@ -129,7 +136,7 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto" style={{ padding: "0 8px 12px" }}>
-        {SECTIONS.map((section) => (
+        {visibleSections.map((section) => (
           <div key={section.label} style={{ marginBottom: 12 }}>
             {!collapsed && (
               <div

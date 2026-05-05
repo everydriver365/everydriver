@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { InstructorAuthProvider } from "@/context/InstructorAuthContext";
 import { DemoModeProvider } from "@/context/DemoModeContext";
+import { ModulesProvider } from "@/context/ModulesContext";
 import { AccessibilityProvider } from "@/context/AccessibilityContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { SchoolAuthProvider } from "@/context/SchoolAuthContext";
@@ -39,6 +40,7 @@ const App = () => (
           <SchoolAuthProvider>
             <InstructorAuthProvider>
               <DemoModeProvider>
+                <ModulesProvider>
                 <>
                   <DomainRouter />
                   <DynamicPWAMeta />
@@ -58,6 +60,7 @@ const App = () => (
                     </Routes>
                   </Suspense>
                 </>
+                </ModulesProvider>
               </DemoModeProvider>
             </InstructorAuthProvider>
           </SchoolAuthProvider>
