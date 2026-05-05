@@ -152,6 +152,8 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/diary" element={<InstructorDiary />} />
     <Route path="/instructor/menu" element={<InstructorMenu />} />
     <Route path="/instructor/settings" element={<InstructorSettings />} />
+    <Route path="/instructor/settings/profile" element={<InstructorProfile />} />
+    <Route path="/settings/profile" element={<InstructorProfile />} />
     <Route path="/instructor/settings/whatsapp" element={<InstructorWhatsAppSettings />} />
     <Route path="/instructor/settings/whatsapp/templates" element={<InstructorWhatsAppTemplates />} />
     <Route path="/instructor/settings/accessibility" element={<InstructorAccessibilitySettings />} />
