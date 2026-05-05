@@ -20,6 +20,7 @@ const InstallInstructor = lazy(() => import("@/pages/InstallInstructor"));
 const IconPreviewPage = lazy(() => import("@/pages/instructor/IconPreviewPage"));
 const QuickActionsRedesignDemo = lazy(() => import("@/pages/instructor/QuickActionsRedesignDemo"));
 const InstructorAccessibilitySettings = lazy(() => import("@/pages/instructor/InstructorAccessibilitySettings"));
+const InstructorModules = lazy(() => import("@/pages/instructor-app/InstructorModules"));
 
 // Jobs & scheduling
 const InstructorJobs = lazy(() => import("@/pages/InstructorJobs"));
@@ -154,6 +155,8 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/settings/:categoryId" element={<InstructorSettingsCategory />} />
     <Route path="/instructor/notifications" element={<InstructorNotifications />} />
     <Route path="/instructor/install" element={<InstallInstructor />} />
+    <Route path="/instructor/modules" element={<InstructorModules />} />
+    <Route path="/instructor/settings/modules" element={<InstructorModules />} />
 
     {/* Jobs & scheduling */}
     <Route path="/instructor/jobs" element={<InstructorJobs />} />
