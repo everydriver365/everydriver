@@ -443,6 +443,158 @@ serve(async (req: Request) => {
         break;
       }
 
+      // ---------- PAYOUT RECONCILIATION ----------
+      case "payout.sent":
+      case "payout.paid": {
+        const payout = data?.payout || data;
+        const payoutId: string | undefined = payout?.id;
+        const status: string = (payout?.status || "").toUpperCase();
+        const locationId: string | undefined = payout?.location_id;
+        const amountMoney = payout?.amount_money;
+        const amountPounds = amountMoney ? (amountMoney.amount || 0) / 100 : 0;
+        // Square sends `sent_at` / `arrival_date` / `created_at` depending on event
+        const arrivedAt = payout?.arrival_date || payout?.sent_at || payout?.created_at || new Date().toISOString();
+
+        if (!payoutId) {
+          console.log("payout event: missing payout id");
+          break;
+        }
+
+        // Find instructor by Square location id (OAuth installs)
+        let instructorId: string | null = null;
+        if (locationId) {
+          const { data: link } = await supabase
+            .from("instructor_square_oauth")
+            .select("instructor_id")
+            .eq("merchant_location_id", locationId)
+            .maybeSingle();
+          instructorId = link?.instructor_id || null;
+        }
+
+        // Build the update query: mark pending Square card payments as transferred.
+        // Scoped to the instructor when we can resolve one; otherwise platform-wide pending.
+        let q = supabase
+          .from("payment_history")
+          .update({
+            payout_status: "transferred",
+            transferred_at: arrivedAt,
+          })
+          .eq("payout_status", "pending")
+          .in("payment_method", ["square_checkout", "Square", "square_wallet"]);
+
+        if (instructorId) q = q.eq("instructor_id", instructorId);
+
+        const { data: updated, error: upErr } = await q.select("id, amount, instructor_id");
+        if (upErr) console.error("Payout reconcile update failed:", upErr);
+
+        const txCount = updated?.length || 0;
+        const txTotal = (updated || []).reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
+        console.log(`Payout ${payoutId} (${status}) reconciled: ${txCount} payments → £${txTotal.toFixed(2)} (Square reports £${amountPounds.toFixed(2)})`);
+
+        if (instructorId && txCount > 0 && status === "PAID") {
+          await supabase.from("instructor_payouts").insert({
+            instructor_id: instructorId,
+            amount: txTotal,
+            payment_ids: (updated || []).map((r: any) => r.id),
+            notes: `Square payout ${payoutId} arrived ${arrivedAt}`,
+          });
+        }
+        break;
+      }
+
+      // ---------- REFUNDS ----------
+      case "refund.created":
+      case "refund.updated": {
+        const refund = data?.refund || data;
+        const refundId: string | undefined = refund?.id;
+        const refundStatus: string = (refund?.status || "").toUpperCase();
+        const originalPaymentId: string | undefined = refund?.payment_id;
+        const refundAmount = refund?.amount_money?.amount ? refund.amount_money.amount / 100 : 0;
+
+        if (!refundId || !originalPaymentId || refundAmount <= 0) {
+          console.log("refund event: missing fields", { refundId, originalPaymentId, refundAmount });
+          break;
+        }
+        // Only act on completed/approved refunds
+        if (!["COMPLETED", "APPROVED"].includes(refundStatus)) {
+          console.log(`Skipping refund ${refundId} with status ${refundStatus}`);
+          break;
+        }
+
+        // Idempotency: skip if we already recorded this refund
+        const { data: existing } = await supabase
+          .from("payment_history")
+          .select("id")
+          .ilike("notes", `%Refund ${refundId}%`)
+          .limit(1)
+          .maybeSingle();
+        if (existing) {
+          console.log(`Refund ${refundId} already recorded, skipping`);
+          break;
+        }
+
+        // Find the original payment_history row via the Square payment id stored in notes
+        const { data: original } = await supabase
+          .from("payment_history")
+          .select("id, instructor_id, pupil_id, amount")
+          .ilike("notes", `%${originalPaymentId}%`)
+          .order("recorded_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (!original) {
+          console.warn(`Refund ${refundId}: no matching payment for ${originalPaymentId}`);
+          break;
+        }
+
+        const fullRefund = Math.abs(Number(original.amount || 0) - refundAmount) < 0.01;
+
+        // Insert a negative payment_history row tagged with refund id
+        const { error: insErr } = await supabase.from("payment_history").insert({
+          instructor_id: original.instructor_id,
+          pupil_id: original.pupil_id,
+          amount: -Math.abs(refundAmount),
+          payment_method: "Square Refund",
+          payout_status: "refunded",
+          notes: `Refund ${refundId} for payment ${originalPaymentId}${fullRefund ? " (full)" : " (partial)"}`,
+        });
+        if (insErr) console.error("Refund insert failed:", insErr);
+
+        // Decrement pupil balance
+        await supabase.rpc("increment_pupil_balance", {
+          p_pupil_id: original.pupil_id,
+          p_amount: -Math.abs(refundAmount),
+        });
+
+        // Mark original as refunded (or partially refunded)
+        await supabase
+          .from("payment_history")
+          .update({ payout_status: fullRefund ? "refunded" : "partially_refunded" })
+          .eq("id", original.id);
+
+        // Notify instructor
+        try {
+          await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${supabaseServiceKey}` },
+            body: JSON.stringify({
+              instructorId: original.instructor_id,
+              notification: {
+                title: "↩️ Refund processed",
+                body: `£${refundAmount.toFixed(2)} refunded to pupil${fullRefund ? "" : " (partial)"}`,
+                tag: `refund-${refundId}`,
+                data: { type: "refund", pupilId: original.pupil_id, amount: refundAmount },
+              },
+            }),
+          });
+        } catch (e) {
+          console.error("Refund notification error:", e);
+        }
+
+        console.log(`Refund ${refundId} processed: -£${refundAmount.toFixed(2)} for pupil ${original.pupil_id}`);
+        break;
+      }
+
       default:
         console.log("Unhandled event type:", eventType);
     }
