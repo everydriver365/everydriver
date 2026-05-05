@@ -58,6 +58,13 @@ interface Props {
 export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, onSignOut }: Props) {
   const { pathname } = useLocation();
   const { isActive: isModuleActive } = useModules();
+  let instructorLogo: string | null = null;
+  let instructorName = "DSM";
+  try {
+    const { instructor } = useInstructorAuth();
+    if (instructor?.logo_url) instructorLogo = instructor.logo_url;
+    if (instructor?.name) instructorName = instructor.name;
+  } catch {}
 
   const visibleSections = SECTIONS.map(s => ({
     ...s,
