@@ -1157,11 +1157,11 @@ export default function InstructorLiveSession() {
               }}>
                 <div style={{ height: "28vh", minHeight: 180, maxHeight: 260 }}>
                   <MiniLiveMap
-                    latitude={device.last_latitude}
-                    longitude={device.last_longitude}
-                    heading={device.last_heading}
-                    speedKmh={device.last_speed_kmh}
-                    lastSeenAt={device.last_seen_at}
+                    latitude={mapLatitude}
+                    longitude={mapLongitude}
+                    heading={mapHeading}
+                    speedKmh={mapSpeedKmh}
+                    lastSeenAt={mapLastSeenAt}
                     isActive={isConnected}
                     sessionId={device.current_session_id}
                   />
