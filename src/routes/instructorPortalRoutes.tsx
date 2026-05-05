@@ -30,7 +30,7 @@ const InstructorReports = lazy(() => import("@/pages/instructor-app/InstructorRe
 const InstructorJobs = lazy(() => import("@/pages/InstructorJobs"));
 const CoursePlannerPage = lazy(() => import("@/pages/instructor/CoursePlannerPage"));
 const InstructorPendingScheduling = lazy(() => import("@/pages/InstructorPendingScheduling"));
-const InstructorQuickAvailability = lazy(() => import("@/pages/InstructorQuickAvailability"));
+const InstructorQuickAvailability = lazy(() => import("@/pages/instructor-app/InstructorAvailabilityRouter"));
 const InstructorAvailabilityWindows = lazy(() => import("@/pages/InstructorAvailabilityWindows"));
 const InstructorGaps = lazy(() => import("@/pages/InstructorGaps"));
 const InstructorWaitingList = lazy(() => import("@/pages/InstructorWaitingList"));
