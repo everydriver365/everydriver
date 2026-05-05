@@ -10,6 +10,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { Checkbox } from '@/components/ui/checkbox';
+import { setRememberMe, getRememberMe } from '@/lib/sessionPersistence';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -32,6 +34,7 @@ export default function AdminLogin() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('login');
+  const [rememberMe, setRememberMeState] = useState(getRememberMe());
   const { signIn, isAdmin, user } = useAdminAuth();
   const navigate = useNavigate();
 
@@ -143,6 +146,8 @@ export default function AdminLogin() {
       setLoading(false);
       return;
     }
+
+    setRememberMe(rememberMe);
 
     setTimeout(() => {
       setLoading(false);
@@ -337,6 +342,19 @@ export default function AdminLogin() {
                             className="h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
                             autoComplete="current-password"
                           />
+                        </div>
+                      )}
+
+                      {viewMode === 'login' && (
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            id="admin-remember"
+                            checked={rememberMe}
+                            onCheckedChange={(v) => setRememberMeState(v === true)}
+                          />
+                          <Label htmlFor="admin-remember" className="text-sm text-slate-400 cursor-pointer">
+                            Keep me signed in
+                          </Label>
                         </div>
                       )}
                     </>
