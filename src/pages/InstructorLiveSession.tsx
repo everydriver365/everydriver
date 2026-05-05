@@ -989,20 +989,52 @@ export default function InstructorLiveSession() {
     );
   }
 
-  if (!device) {
+  if (!device && !isPhoneProvider) {
     return (
       <InstructorPortalLayout>
         <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center">
+          <div className="w-full max-w-md text-center">
             <WifiOff className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="font-semibold text-lg mb-2">No Device Configured</h3>
+            <h3 className="font-semibold text-lg mb-2">Choose how to track</h3>
             <p className="text-sm text-muted-foreground mb-6">
-              Set up a GPS device before starting a session
+              Use your phone's GPS, or set up a dedicated OBD tracker.
             </p>
-            <Button size="lg" onClick={() => navigate("/instructor/settings/gps")}>
-              <Settings className="h-5 w-5 mr-2" />
-              Setup Device
-            </Button>
+            <div className="grid gap-3">
+              <button
+                onClick={async () => {
+                  if (instructor?.id) {
+                    await supabase
+                      .from("instructors")
+                      .update({ preferred_tracking_provider: "phone" } as any)
+                      .eq("id", instructor.id);
+                  }
+                  setActiveProvider("phone");
+                }}
+                className="flex items-center gap-3 p-4 rounded-2xl border border-border/60 bg-white dark:bg-card hover:bg-muted/50 transition text-left"
+              >
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <MapPin className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-sm">Use Phone GPS</div>
+                  <div className="text-xs text-muted-foreground">Track using this device's location</div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+              <button
+                onClick={() => navigate("/instructor/settings/gps")}
+                className="flex items-center gap-3 p-4 rounded-2xl border border-border/60 bg-white dark:bg-card hover:bg-muted/50 transition text-left"
+              >
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Settings className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-sm">Set up OBD Tracker</div>
+                  <div className="text-xs text-muted-foreground">Connect a Radius hardware device</div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
           </div>
         </div>
       </InstructorPortalLayout>
