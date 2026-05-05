@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ import {
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
