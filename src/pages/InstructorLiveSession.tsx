@@ -131,14 +131,26 @@ export default function InstructorLiveSession() {
 
   const isPhoneProvider = activeProvider === "phone";
 
+  // Explicit user confirmation before phone GPS starts streaming.
+  const [phoneStreamingConfirmed, setPhoneStreamingConfirmed] = useState(false);
+
+  // Auto-stop streaming when provider/pupil changes or user leaves.
+  useEffect(() => {
+    if (!isPhoneProvider) setPhoneStreamingConfirmed(false);
+  }, [isPhoneProvider, selectedPupilId]);
+
   // Location permission gate for Phone tracking.
   const { status: locationPermissionStatus } = useLocationPermission({
     instructorId: instructor?.id ?? null,
     pupilId: selectedPupilId || null,
   });
-  const phoneTrackingReady = isPhoneProvider && locationPermissionStatus === "granted";
+  const phoneTrackingReady =
+    isPhoneProvider &&
+    locationPermissionStatus === "granted" &&
+    phoneStreamingConfirmed &&
+    !!selectedPupilId;
 
-  // Stream phone GPS into live_pupil_positions only after permission is granted.
+  // Stream phone GPS into live_pupil_positions only after the user confirms Start.
   usePhoneTrackingStreamer({
     provider: activeProvider === "radius"
       ? "radius"
@@ -1498,6 +1510,48 @@ export default function InstructorLiveSession() {
                     instructorId={instructor.id}
                     pupilId={selectedPupilId || null}
                   />
+                  {isPhoneProvider && locationPermissionStatus === "granted" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!selectedPupilId) {
+                          toast({
+                            title: "Select a pupil first",
+                            description: "Choose the pupil this lesson is for, then start phone tracking.",
+                          });
+                          return;
+                        }
+                        setPhoneStreamingConfirmed((v) => !v);
+                      }}
+                      style={{
+                        marginTop: 4,
+                        background: phoneStreamingConfirmed ? "#FEE2E2" : "#3D55A1",
+                        color: phoneStreamingConfirmed ? "#B91C1C" : "#FFFFFF",
+                        border: "none",
+                        borderRadius: 12,
+                        padding: "10px 14px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 8,
+                      }}
+                    >
+                      {phoneStreamingConfirmed ? (
+                        <>
+                          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#B91C1C" }} />
+                          Stop phone tracking
+                        </>
+                      ) : (
+                        <>
+                          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#34C759" }} />
+                          Start phone tracking
+                        </>
+                      )}
+                    </button>
+                  )}
                   {device?.id && (
                     <DeviceSelectorDropdown
                       instructorId={instructor.id}
