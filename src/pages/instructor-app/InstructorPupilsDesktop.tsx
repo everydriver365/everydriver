@@ -186,43 +186,79 @@ export default function InstructorPupilsDesktop() {
   const [tab, setTab] = useState<"overview" | "lessons" | "progress" | "payments" | "notes">("overview");
   const [reloadTick, setReloadTick] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
-  const [addForm, setAddForm] = useState({ name: "", phone: "", email: "", postcode: "" });
-  const [addErrors, setAddErrors] = useState<{ name?: string; email?: string; postcode?: string; phone?: string }>({});
+  const [addForm, setAddForm] = useState({
+    name: "", phone: "", email: "", address: "", postcode: "", what3words: "",
+    date_of_birth: "", sex: "", previous_experience_hours: "", transmission_type: "",
+    special_needs: "", notes: "", payment_method: "tbc",
+  });
+  const [addErrors, setAddErrors] = useState<{ email?: string; postcode?: string; phone?: string }>({});
   const [addSaving, setAddSaving] = useState(false);
+  const [addLookingW3W, setAddLookingW3W] = useState(false);
 
-  // UK postcode (loose, allows missing space)
+  // Format helpers (all fields optional — only validate format if user types something)
   const UK_POSTCODE_RE = /^(GIR 0AA|[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})$/i;
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const UK_PHONE_RE = /^(?:\+?44|0)\s?\d(?:[\s-]?\d){8,9}$/;
 
-  const validatePupilForm = (f: { name: string; phone: string; email: string; postcode: string }) => {
-    const errs: { name?: string; email?: string; postcode?: string; phone?: string } = {};
-    if (!f.name.trim()) errs.name = "Name is required";
-    else if (f.name.trim().length > 100) errs.name = "Name must be 100 characters or less";
+  const validateAddForm = (f: typeof addForm) => {
+    const errs: { email?: string; postcode?: string; phone?: string } = {};
     if (f.email.trim() && !EMAIL_RE.test(f.email.trim())) errs.email = "Enter a valid email address";
     if (f.postcode.trim() && !UK_POSTCODE_RE.test(f.postcode.trim())) errs.postcode = "Enter a valid UK postcode (e.g. SO22 4AB)";
     if (f.phone.trim() && !UK_PHONE_RE.test(f.phone.trim())) errs.phone = "Enter a valid UK phone number";
     return errs;
   };
 
+  const handlePostcodeAutoFill = async (postcode: string) => {
+    setAddForm(prev => ({ ...prev, postcode }));
+    if (!postcode.trim()) return;
+    setAddLookingW3W(true);
+    try {
+      const { data } = await supabase.functions.invoke("convert-to-what3words", { body: { postcode } });
+      if (data?.what3words) setAddForm(prev => ({ ...prev, what3words: data.what3words }));
+    } catch (e) {
+      console.warn("what3words lookup failed", e);
+    } finally {
+      setAddLookingW3W(false);
+    }
+  };
+
   const handleAddPupil = async () => {
     const instructorId = instructor?.id;
     if (!instructorId) { toast.error("Not signed in"); return; }
-    const errs = validatePupilForm(addForm);
+    const errs = validateAddForm(addForm);
     setAddErrors(errs);
     if (Object.keys(errs).length) return;
+    if (!addForm.name.trim() && !addForm.phone.trim() && !addForm.email.trim() && !addForm.address.trim()) {
+      toast.error("Add at least a name or contact detail");
+      return;
+    }
+    const hours = addForm.previous_experience_hours.trim();
+    const prevExp = hours ? `${hours} hours` : null;
     setAddSaving(true);
     const { error } = await supabase.from("pupils").insert({
       instructor_id: instructorId,
-      name: addForm.name.trim(),
+      name: addForm.name.trim() || "Unnamed pupil",
       phone: addForm.phone.trim() || null,
       email: addForm.email.trim() || null,
+      address: addForm.address.trim() || null,
       postcode: addForm.postcode.trim().toUpperCase() || null,
+      what3words: addForm.what3words.trim() || null,
+      date_of_birth: addForm.date_of_birth || null,
+      sex: addForm.sex || null,
+      previous_experience: prevExp,
+      transmission_type: addForm.transmission_type || null,
+      special_needs: addForm.special_needs.trim() || null,
+      notes: addForm.notes.trim() || null,
+      payment_method: addForm.payment_method || "tbc",
     });
     setAddSaving(false);
     if (error) { toast.error(`Could not add pupil: ${error.message}`); return; }
-    toast.success(`Added ${addForm.name.trim()}`);
-    setAddForm({ name: "", phone: "", email: "", postcode: "" });
+    toast.success(`Added ${addForm.name.trim() || "pupil"}`);
+    setAddForm({
+      name: "", phone: "", email: "", address: "", postcode: "", what3words: "",
+      date_of_birth: "", sex: "", previous_experience_hours: "", transmission_type: "",
+      special_needs: "", notes: "", payment_method: "tbc",
+    });
     setAddErrors({});
     setAddOpen(false);
     setReloadTick(t => t + 1);
