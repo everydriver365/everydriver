@@ -1279,7 +1279,7 @@ export function MobileHomeRedesign({
       tierColor: "#1A52A0",
       subtitle: "Full income protection available",
       upgradeBg: "#1A52A0",
-      onClick: () => navigate("/instructor/health-cover"),
+      onClick: () => navigate("/instructor/health"),
     },
   ];
 
