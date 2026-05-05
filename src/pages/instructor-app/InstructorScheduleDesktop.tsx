@@ -275,22 +275,65 @@ export default function InstructorScheduleDesktop() {
                 );
               })}
             </div>
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 6,
-              background: "#fff", border: "1px solid #E2E8F0", borderRadius: 8,
-              padding: "5px 9px", minWidth: 200,
-            }}>
-              <Search size={11} style={{ color: "var(--d2-text-2)" }} />
-              <input
-                type="search"
-                placeholder="Find a slot…"
-                value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
-                style={{
-                  flex: 1, border: "none", outline: "none", background: "transparent",
-                  fontSize: 11, color: "var(--d2-text-1)",
-                }}
-              />
+            <div style={{ position: "relative" }}>
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                background: "#fff", border: "1px solid #E2E8F0", borderRadius: 8,
+                padding: "5px 9px", minWidth: 240,
+              }}>
+                <Search size={11} style={{ color: "var(--d2-text-2)" }} />
+                <input
+                  type="search"
+                  placeholder='Find a slot — try "2h Tue morning"'
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  style={{
+                    flex: 1, border: "none", outline: "none", background: "transparent",
+                    fontSize: 11, color: "var(--d2-text-1)",
+                  }}
+                />
+              </div>
+              {aiPrompt.trim() && (
+                <div style={{
+                  position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 30,
+                  width: 280, background: "#fff", border: "1px solid #E2E8F0",
+                  borderRadius: 10, boxShadow: "0 8px 24px rgba(15,23,42,0.10)",
+                  padding: 6, maxHeight: 320, overflowY: "auto",
+                }}>
+                  {slotMatches.length === 0 ? (
+                    <div style={{ fontSize: 11, color: "var(--d2-text-2)", padding: "8px 10px" }}>
+                      No matching slots this week.
+                    </div>
+                  ) : slotMatches.map((s, i) => (
+                    <button
+                      key={`${s.day}-${s.startMin}-${i}`}
+                      onClick={() => {
+                        const newL: Lesson = {
+                          id: Date.now() + i,
+                          pupil: "New lesson", pupilId: 0,
+                          day: s.day, startMin: s.startMin, durationMin: s.needMin,
+                          type: "standard",
+                        };
+                        setLessons(ls => [...ls, newL]);
+                        toast(`Booked ${s.day} ${fmtTime(s.startMin)} · ${s.needMin}m`);
+                        setAiPrompt("");
+                      }}
+                      style={{
+                        display: "flex", justifyContent: "space-between", alignItems: "center",
+                        width: "100%", textAlign: "left", padding: "7px 10px",
+                        borderRadius: 6, fontSize: 11, color: "var(--d2-text-1)",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "#F1F5F9")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <span style={{ fontWeight: 500 }}>{s.day} · {fmtTime(s.startMin)}</span>
+                      <span style={{ color: "var(--d2-text-3)", fontFamily: "var(--d2-mono)" }}>
+                        {Math.round((s.endMin - s.startMin))}m free
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <button style={{
               fontSize: 11, padding: "6px 10px", borderRadius: 8,
