@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useGoogleServiceCalendar } from "@/hooks/useGoogleServiceCalendar";
 import { CalendarResyncRangePanel } from "@/components/instructor/CalendarResyncRangePanel";
+import { CalendarSyncPreview } from "@/components/instructor/CalendarSyncPreview";
 import { toast } from "sonner";
 import {
   AlertDialog,
