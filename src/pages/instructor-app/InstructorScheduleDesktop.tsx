@@ -627,6 +627,9 @@ export default function InstructorScheduleDesktop() {
               lessons={lessons}
               now={now}
               onSelectLesson={setSelectedLesson}
+              weekStart={weekStart}
+              todayDay={todayDay}
+              availability={availability}
             />
           )}
           {view === "day" && <PlaceholderView text="Day view — single column with 30-min rows." />}
