@@ -291,7 +291,12 @@ export default function InstructorPupilsDesktop() {
 
   const handleSaveEdit = async () => {
     if (!editTargetId) return;
-    const errs = validatePupilForm(editForm);
+    const errs: { name?: string; email?: string; postcode?: string; phone?: string } = {};
+    if (!editForm.name.trim()) errs.name = "Name is required";
+    else if (editForm.name.trim().length > 100) errs.name = "Name must be 100 characters or less";
+    if (editForm.email.trim() && !EMAIL_RE.test(editForm.email.trim())) errs.email = "Enter a valid email address";
+    if (editForm.postcode.trim() && !UK_POSTCODE_RE.test(editForm.postcode.trim())) errs.postcode = "Enter a valid UK postcode (e.g. SO22 4AB)";
+    if (editForm.phone.trim() && !UK_PHONE_RE.test(editForm.phone.trim())) errs.phone = "Enter a valid UK phone number";
     setEditErrors(errs);
     if (Object.keys(errs).length) return;
     setEditSaving(true);
