@@ -269,6 +269,7 @@ import { RightRail } from "@/components/instructor/dashboardV2/RightRail";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useDailyEarnings } from "@/hooks/useDailyEarnings";
+import { RealtimeHubProvider } from "@/hooks/useRealtimeHub";
 
 interface DesktopDashboardV2Props {
   instructorId: string;
