@@ -131,14 +131,26 @@ export default function InstructorLiveSession() {
 
   const isPhoneProvider = activeProvider === "phone";
 
+  // Explicit user confirmation before phone GPS starts streaming.
+  const [phoneStreamingConfirmed, setPhoneStreamingConfirmed] = useState(false);
+
+  // Auto-stop streaming when provider/pupil changes or user leaves.
+  useEffect(() => {
+    if (!isPhoneProvider) setPhoneStreamingConfirmed(false);
+  }, [isPhoneProvider, selectedPupilId]);
+
   // Location permission gate for Phone tracking.
   const { status: locationPermissionStatus } = useLocationPermission({
     instructorId: instructor?.id ?? null,
     pupilId: selectedPupilId || null,
   });
-  const phoneTrackingReady = isPhoneProvider && locationPermissionStatus === "granted";
+  const phoneTrackingReady =
+    isPhoneProvider &&
+    locationPermissionStatus === "granted" &&
+    phoneStreamingConfirmed &&
+    !!selectedPupilId;
 
-  // Stream phone GPS into live_pupil_positions only after permission is granted.
+  // Stream phone GPS into live_pupil_positions only after the user confirms Start.
   usePhoneTrackingStreamer({
     provider: activeProvider === "radius"
       ? "radius"
