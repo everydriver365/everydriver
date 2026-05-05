@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from "date-fns";
-import { CalendarIcon, FileText, FileSpreadsheet, Download } from "lucide-react";
+import { CalendarIcon, FileText, FileSpreadsheet, Download, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Label } from "@/components/ui/label";
 import type { PaymentTx } from "@/hooks/useInstructorPaymentsData";
 
-type FormatType = "csv" | "pdf";
+type FormatType = "csv" | "pdf" | "tax";
 type Preset = "7d" | "30d" | "thisMonth" | "lastMonth" | "ytd" | "custom";
 
 const PRESETS: { id: Preset; label: string }[] = [
