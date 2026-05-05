@@ -92,7 +92,18 @@ export default function InstructorIntegrationsHub() {
                   <IntegrationStatusBadge status={statusByTab[t.id]} size="md" />
                 </div>
 
-                {t.id === "google-calendar" && <GoogleServiceAccountSetup instructorId={instructorId} />}
+                <IntegrationInstructions
+                  steps={
+                    t.id === "google-calendar"
+                      ? GOOGLE_STEPS
+                      : t.id === "square"
+                      ? SQUARE_STEPS
+                      : XERO_STEPS
+                  }
+                  defaultOpen={statusByTab[t.id] !== "connected"}
+                />
+
+
                 {t.id === "square" && (
                   <SquareConnectSettings
                     instructorId={instructorId}
