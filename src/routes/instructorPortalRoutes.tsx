@@ -23,6 +23,7 @@ const InstructorAccessibilitySettings = lazy(() => import("@/pages/instructor/In
 const InstructorModules = lazy(() => import("@/pages/instructor-app/InstructorModules"));
 const InstructorMySite = lazy(() => import("@/pages/instructor-app/InstructorMySite"));
 const InstructorPlanBilling = lazy(() => import("@/pages/instructor-app/InstructorPlanBilling"));
+const InstructorProfile = lazy(() => import("@/pages/instructor-app/InstructorProfileRouter"));
 
 // Jobs & scheduling
 const InstructorJobs = lazy(() => import("@/pages/InstructorJobs"));
