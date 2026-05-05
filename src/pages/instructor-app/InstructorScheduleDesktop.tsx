@@ -582,14 +582,7 @@ export default function InstructorScheduleDesktop() {
                     <button
                       key={`${s.day}-${s.startMin}-${i}`}
                       onClick={() => {
-                        const newL: Lesson = {
-                          id: Date.now() + i,
-                          pupil: "New lesson", pupilId: 0,
-                          day: s.day, startMin: s.startMin, durationMin: s.needMin,
-                          type: "standard",
-                        };
-                        setLessons(ls => [...ls, newL]);
-                        toast(`Booked ${s.day} ${fmtTime(s.startMin)} · ${s.needMin}m`);
+                        setPickerSlot({ day: s.day, startMin: s.startMin, durationMin: s.needMin });
                         setAiPrompt("");
                       }}
                       style={{
