@@ -109,7 +109,7 @@ export default function InstructorScheduleDesktop() {
   const { total: notificationCount } = useCombinedNotificationCount(instructor?.id);
 
   const [view, setView] = useState<View>("week");
-  const [lessons, setLessons] = useState<Lesson[]>(seedLessons);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [now, setNow] = useState(() => new Date());
   const [activeDrag, setActiveDrag] = useState<{ kind: "pupil"; pupil: typeof unbookedSeed[number] } | { kind: "lesson"; lesson: Lesson } | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
@@ -183,7 +183,7 @@ export default function InstructorScheduleDesktop() {
       onBell={() => navigate("/instructor/notifications")}
       rightRail={
         <RightRail
-          unbooked={unbookedSeed}
+          unbooked={[]}
           aiPrompt={aiPrompt} setAiPrompt={setAiPrompt}
           aiSuggestions={aiSuggestions}
           onAskAi={() => {
