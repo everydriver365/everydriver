@@ -874,6 +874,7 @@ function WeekGrid({
             day={d}
             rows={rows}
             lessons={lessons.filter(l => l.day === d)}
+            externalBusy={externalBusy.filter(l => l.day === d)}
             isToday={d === todayDay}
             nowTop={nowTop}
             onSelectLesson={onSelectLesson}
