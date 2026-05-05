@@ -448,6 +448,12 @@ function MySiteInner() {
   const [publishing, setPublishing] = useState(false);
   const [hasChanges, setHasChanges] = useState(true);
 
+  const domain = useMemo(() => {
+    if (instructor?.custom_domain) return instructor.custom_domain;
+    if (instructor?.app_slug) return `${instructor.app_slug}.drive365.co.uk`;
+    return "your-site.drive365.co.uk";
+  }, [instructor?.custom_domain, instructor?.app_slug]);
+
   const initials = useMemo(
     () => (instructor?.name || "").split(" ").map(p => p[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "ID",
     [instructor?.name]
@@ -460,7 +466,7 @@ function MySiteInner() {
       setConfirmOpen(false);
       setHasChanges(false);
       toast.success("Site published", {
-        action: { label: "View live →", onClick: () => window.open("https://ken-d.drive365.co.uk", "_blank") },
+        action: { label: "View live →", onClick: () => window.open(`https://${domain}`, "_blank") },
       });
     }, 1500);
   };
@@ -481,10 +487,11 @@ function MySiteInner() {
           device={device} onDevice={setDevice}
           hasChanges={hasChanges} publishing={publishing}
           onPublish={() => setConfirmOpen(true)}
+          domain={domain}
         />
         <div className="flex-1 flex min-h-0">
           <EditorPane />
-          <PreviewPane device={device} />
+          <PreviewPane device={device} domain={domain} />
         </div>
       </div>
 
@@ -493,7 +500,7 @@ function MySiteInner() {
           <DialogHeader>
             <DialogTitle>Publish changes?</DialogTitle>
             <DialogDescription>
-              Your live site at <strong>ken-d.drive365.co.uk</strong> will update immediately.
+              Your live site at <strong>{domain}</strong> will update immediately.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
