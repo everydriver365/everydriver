@@ -125,6 +125,12 @@ export default function InstructorLiveSession() {
   const [speedLimitKmh, setSpeedLimitKmh] = useState<number | null>(null);
   const [pendingRouteType, setPendingRouteType] = useState<"practice" | "test" | "driving_test">("practice");
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
+
+  // Stream phone GPS into live_pupil_positions when "phone" provider is active.
+  usePhoneTrackingStreamer({
+    provider: activeProvider === "radius" ? "radius" : activeProvider === null ? null : "phone",
+    pupilId: selectedPupilId || null,
+  });
   const [showDrivingTestDialog, setShowDrivingTestDialog] = useState(false);
   const [drivingTestDetails, setDrivingTestDetails] = useState<{
     testCentreId: string | null;
