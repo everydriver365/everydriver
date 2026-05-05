@@ -40,6 +40,12 @@ export function useLocationPermission(opts: Options = {}) {
       await supabase
         .from("phone_tracking_permissions")
         .upsert([row] as any, { onConflict: "instructor_id,pupil_id" });
+      void logPhoneTrackingEvent({
+        instructorId,
+        pupilId,
+        event: "permission_changed",
+        status: next,
+      });
     },
     [instructorId, pupilId],
   );
