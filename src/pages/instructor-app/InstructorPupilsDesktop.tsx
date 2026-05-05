@@ -1054,7 +1054,18 @@ export default function InstructorPupilsDesktop() {
                     onChange={e => setEditForm(f => ({ ...f, date_of_birth: e.target.value }))} />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="edit-sex">Sex</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="edit-sex">Sex</Label>
+                    {editForm.sex && (
+                      <button
+                        type="button"
+                        onClick={() => setEditForm(f => ({ ...f, sex: "" }))}
+                        className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                      >
+                        <X className="h-3 w-3" /> Clear
+                      </button>
+                    )}
+                  </div>
                   <Select value={editForm.sex || "__none"} onValueChange={v => setEditForm(f => ({ ...f, sex: v === "__none" ? "" : v }))}>
                     <SelectTrigger id="edit-sex"><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>
@@ -1114,7 +1125,18 @@ export default function InstructorPupilsDesktop() {
                     placeholder="e.g. 10" />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="edit-trans">Transmission</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="edit-trans">Transmission</Label>
+                    {editForm.transmission_type && (
+                      <button
+                        type="button"
+                        onClick={() => setEditForm(f => ({ ...f, transmission_type: "" }))}
+                        className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                      >
+                        <X className="h-3 w-3" /> Clear
+                      </button>
+                    )}
+                  </div>
                   <Select value={editForm.transmission_type || "__none"} onValueChange={v => setEditForm(f => ({ ...f, transmission_type: v === "__none" ? "" : v }))}>
                     <SelectTrigger id="edit-trans"><SelectValue placeholder="Manual or automatic" /></SelectTrigger>
                     <SelectContent>
