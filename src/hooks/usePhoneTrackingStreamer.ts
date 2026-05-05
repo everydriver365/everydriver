@@ -37,6 +37,7 @@ export function usePhoneTrackingStreamer({
   pupilId,
   sessionId = null,
   minIntervalMs = 2000,
+  onPosition,
 }: Options) {
   const watchIdRef = useRef<number | null>(null);
   const lastSentRef = useRef<number>(0);
