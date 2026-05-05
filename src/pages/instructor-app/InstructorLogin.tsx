@@ -61,6 +61,14 @@ export default function InstructorLogin() {
   const [isInstalled, setIsInstalled] = useState(false);
   const { signIn, resetPassword } = useInstructorAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const showVerifyBanner = searchParams.get("verify") === "1";
+
+  useEffect(() => {
+    const prefill = searchParams.get("email");
+    if (prefill && !email) setEmail(prefill);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Check install state, platform, and biometric availability
   useEffect(() => {
