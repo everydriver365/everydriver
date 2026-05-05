@@ -819,9 +819,9 @@ const smallBtn: React.CSSProperties = {
 
 // ---- Week grid ----
 function WeekGrid({
-  lessons, now, onSelectLesson, weekStart, todayDay, availability,
+  lessons, externalBusy = [], now, onSelectLesson, weekStart, todayDay, availability,
 }: {
-  lessons: Lesson[]; now: Date; onSelectLesson: (l: Lesson) => void;
+  lessons: Lesson[]; externalBusy?: Lesson[]; now: Date; onSelectLesson: (l: Lesson) => void;
   weekStart: Date; todayDay: Day;
   availability: Record<Day, "off" | { start: string; end: string }>;
 }) {
