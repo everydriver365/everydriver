@@ -368,7 +368,7 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
   }, [startListening]);
 
   const stopListening = useCallback(() => {
-    recognitionRef.current?.stop();
+    stopMediaCapture();
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
@@ -380,10 +380,10 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
       silenceTimeoutRef.current = null;
     }
     setState("idle");
-  }, []);
+  }, [stopMediaCapture]);
 
   const cancel = useCallback(() => {
-    recognitionRef.current?.stop();
+    stopMediaCapture();
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
@@ -397,7 +397,7 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
     setState("idle");
     setTranscript("");
     setResponseText("");
-  }, []);
+  }, [stopMediaCapture]);
 
   return {
     state,
