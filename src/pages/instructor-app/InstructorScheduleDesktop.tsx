@@ -791,7 +791,6 @@ function DayColumn({
   onSelectLesson: (l: Lesson) => void; off: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `col-${day}`, data: { day }, disabled: off });
-  const { setNodeRef, isOver } = useDroppable({ id: `col-${day}`, data: { day }, disabled: off });
   const height = rows * HOUR_PX;
 
   return (
