@@ -295,7 +295,7 @@ export default function InstructorPupilsDesktop() {
       }
     })();
     return () => { cancelled = true; };
-  }, [instructor?.id]);
+  }, [instructor?.id, reloadTick]);
 
 
   // Debounce search
