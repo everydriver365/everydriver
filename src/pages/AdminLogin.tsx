@@ -268,7 +268,26 @@ export default function AdminLogin() {
                       >
                         <Alert variant="destructive" className="py-2 bg-red-500/10 border-red-500/20">
                           <AlertCircle className="h-4 w-4" />
-                          <AlertDescription className="text-sm">{error}</AlertDescription>
+                          <AlertDescription className="text-sm">
+                            {error}
+                            {error.toLowerCase().includes('verify your email') && (
+                              <button
+                                type="button"
+                                className="block mt-1 underline font-medium"
+                                onClick={async () => {
+                                  if (!email.trim()) return;
+                                  const { error: resendErr } = await resendSignupConfirmation(
+                                    email,
+                                    `${window.location.origin}/admin/login`
+                                  );
+                                  if (resendErr) setError(resendErr.message);
+                                  else setSuccess('Confirmation email sent. Check your inbox.');
+                                }}
+                              >
+                                Resend confirmation email
+                              </button>
+                            )}
+                          </AlertDescription>
                         </Alert>
                       </motion.div>
                     )}
