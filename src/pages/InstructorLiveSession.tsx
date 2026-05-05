@@ -190,14 +190,24 @@ export default function InstructorLiveSession() {
     isPhoneProvider,
   );
 
-  const mapLatitude = isPhoneProvider ? (phonePosition?.latitude ?? null) : (device?.last_latitude ?? null);
-  const mapLongitude = isPhoneProvider ? (phonePosition?.longitude ?? null) : (device?.last_longitude ?? null);
-  const mapHeading = isPhoneProvider ? (phonePosition?.heading ?? null) : (device?.last_heading ?? null);
-  const mapSpeedKmh = isPhoneProvider ? (phonePosition?.speed_kmh ?? null) : (device?.last_speed_kmh ?? null);
+  const mapLatitude = isPhoneProvider
+    ? (phonePosition?.latitude ?? lastPhoneFix?.latitude ?? null)
+    : (device?.last_latitude ?? null);
+  const mapLongitude = isPhoneProvider
+    ? (phonePosition?.longitude ?? lastPhoneFix?.longitude ?? null)
+    : (device?.last_longitude ?? null);
+  const mapHeading = isPhoneProvider
+    ? (phonePosition?.heading ?? lastPhoneFix?.heading ?? null)
+    : (device?.last_heading ?? null);
+  const mapSpeedKmh = isPhoneProvider
+    ? (phonePosition?.speed_kmh ?? lastPhoneFix?.speedKmh ?? null)
+    : (device?.last_speed_kmh ?? null);
   const mapSpeedLimitKmh = isPhoneProvider
     ? (phonePosition?.speed_limit_kmh ?? speedLimitKmh)
     : (device?.last_speed_limit_kmh ?? speedLimitKmh);
-  const mapLastSeenAt = isPhoneProvider ? (phonePosition?.updated_at ?? null) : (device?.last_seen_at ?? null);
+  const mapLastSeenAt = isPhoneProvider
+    ? (phonePosition?.updated_at ?? (lastPhoneFix ? new Date(lastPhoneFix.timestamp).toISOString() : null))
+    : (device?.last_seen_at ?? null);
   const [showDrivingTestDialog, setShowDrivingTestDialog] = useState(false);
   const [drivingTestDetails, setDrivingTestDetails] = useState<{
     testCentreId: string | null;
