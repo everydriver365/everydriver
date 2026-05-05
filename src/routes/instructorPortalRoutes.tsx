@@ -26,6 +26,8 @@ const InstructorPlanBilling = lazy(() => import("@/pages/instructor-app/Instruct
 const InstructorProfile = lazy(() => import("@/pages/instructor-app/InstructorProfileRouter"));
 const AccountHub = lazy(() => import("@/pages/instructor/AccountHub"));
 const InstructorIntegrationsHub = lazy(() => import("@/pages/instructor/InstructorIntegrationsHub"));
+const InstructorFamulorPage = lazy(() => import("@/pages/instructor/InstructorFamulorPage"));
+const InstructorBrandingPage = lazy(() => import("@/pages/instructor/InstructorBrandingPage"));
 const InstructorReports = lazy(() => import("@/pages/instructor-app/InstructorReportsRouter"));
 
 // Jobs & scheduling
@@ -156,6 +158,8 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/menu" element={<InstructorMenu />} />
     <Route path="/instructor/profile" element={<AccountHub />} />
     <Route path="/instructor/integrations" element={<InstructorIntegrationsHub />} />
+    <Route path="/instructor/famulor" element={<InstructorFamulorPage />} />
+    <Route path="/instructor/branding" element={<InstructorBrandingPage />} />
     <Route path="/instructor/settings" element={<InstructorSettings />} />
     <Route path="/instructor/settings/profile" element={<InstructorProfile />} />
     <Route path="/settings/profile" element={<InstructorProfile />} />

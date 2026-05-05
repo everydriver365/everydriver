@@ -45,7 +45,7 @@ const SECTIONS: NavSection[] = [
     { label: "Saved Routes", to: "/instructor/routes", icon: Route, moduleId: "telematics" },
   ]},
   { label: "AI Voice", items: [
-    { label: "AI Voice Hub", to: "/instructor/menu?open=famulor", icon: Mic },
+    { label: "AI Voice Hub", to: "/instructor/famulor", icon: Mic },
   ]},
   { label: "Business", items: [
     { label: "Take Payment", to: "/instructor/take-payment", icon: Banknote, moduleId: "payments" },
@@ -61,7 +61,7 @@ const SECTIONS: NavSection[] = [
   ]},
   { label: "Website", items: [
     { label: "My Site", to: "/website/my-site", icon: Globe, moduleId: "website" },
-    { label: "Branding", to: "/instructor/menu?open=appearance", icon: Palette, moduleId: "website" },
+    { label: "Branding", to: "/instructor/branding", icon: Palette, moduleId: "website" },
     { label: "Domain", to: "/instructor/domains", icon: Link2, moduleId: "website" },
     { label: "SEO", to: "/instructor/seo", icon: TrendingUp, moduleId: "website" },
   ]},
