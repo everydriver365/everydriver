@@ -345,7 +345,7 @@ export default function PupilLogin() {
 
                   <div className="mb-4 space-y-3">
                     <GoogleSignInButton
-                      redirectTo={`${window.location.origin}/pupil`}
+                      redirectTo={`${window.location.origin}/auth/redirect?portal=pupil`}
                       className="w-full bg-white hover:bg-white/90 text-slate-900 border-slate-300"
                     />
                     <div className="relative">
