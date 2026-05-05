@@ -342,7 +342,7 @@ export default function InstructorPupilsDesktop() {
     else { setSortKey(k); setSortDir("asc"); }
   };
 
-  const toggleRow = (id: number) => {
+  const toggleRow = (id: string) => {
     setSelectedIds(prev => {
       const n = new Set(prev);
       if (n.has(id)) n.delete(id); else n.add(id);
