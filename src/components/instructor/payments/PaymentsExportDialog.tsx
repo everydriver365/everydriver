@@ -206,6 +206,24 @@ export function PaymentsExportDialog({ open, onOpenChange, transactions, filtere
         </DialogHeader>
 
         <div className="space-y-4">
+          {hasActiveFilters && (
+            <label className="flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={useTableFilters}
+                onChange={e => setUseTableFilters(e.target.checked)}
+                className="mt-0.5"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium">Use current table filters</div>
+                <div className="text-xs text-muted-foreground truncate">{filterSummary}</div>
+              </div>
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {filteredTransactions?.length ?? 0} txns
+              </span>
+            </label>
+          )}
+
           {/* Preset chips */}
           <div>
             <Label className="text-xs text-muted-foreground mb-2 block">Date range</Label>
