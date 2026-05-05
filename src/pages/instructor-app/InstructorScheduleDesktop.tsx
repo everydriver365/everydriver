@@ -142,6 +142,13 @@ export default function InstructorScheduleDesktop() {
   const [availability, setAvailability] = useState<Record<Day, "off" | { start: string; end: string }>>({
     Mon: "off", Tue: "off", Wed: "off", Thu: "off", Fri: "off", Sat: "off", Sun: "off",
   });
+  // Instructor settings
+  const [bufferMinutes, setBufferMinutes] = useState<number>(15);
+  const [allowedDurations, setAllowedDurations] = useState<number[]>([60, 120]);
+  const [preferredDuration, setPreferredDuration] = useState<number>(60);
+  const [minNoticeHours, setMinNoticeHours] = useState<number>(0);
+  // Google Calendar busy events for current week (external)
+  const [externalBusy, setExternalBusy] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(() => new Date());
   const [activeDrag, setActiveDrag] = useState<
@@ -203,7 +210,78 @@ export default function InstructorScheduleDesktop() {
     return () => { cancelled = true; };
   }, [instructorId]);
 
-  // ---- Fetch pupils ----
+  // ---- Fetch instructor settings (buffer, durations, booking rules) ----
+  useEffect(() => {
+    if (!instructorId) return;
+    let cancelled = false;
+    (async () => {
+      const [{ data: ins }, { data: bs }] = await Promise.all([
+        supabase.from("instructors")
+          .select("buffer_minutes, preferred_lesson_length, allowed_lesson_lengths")
+          .eq("id", instructorId).maybeSingle(),
+        supabase.from("instructor_booking_settings")
+          .select("allowed_durations, min_notice_hours")
+          .eq("instructor_id", instructorId).maybeSingle(),
+      ]);
+      if (cancelled) return;
+      if (ins) {
+        setBufferMinutes(ins.buffer_minutes ?? 15);
+        setPreferredDuration(ins.preferred_lesson_length ?? 60);
+        if (ins.allowed_lesson_lengths?.length) setAllowedDurations(ins.allowed_lesson_lengths);
+      }
+      if (bs) {
+        if (bs.allowed_durations?.length) setAllowedDurations(bs.allowed_durations);
+        setMinNoticeHours(bs.min_notice_hours ?? 0);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [instructorId]);
+
+  // ---- Fetch Google Calendar external busy events for the week ----
+  const reloadExternalBusy = useCallback(async () => {
+    if (!instructorId) return;
+    const startISO = new Date(weekStart).toISOString();
+    const endISO = new Date(addDays(weekStart, 7)).toISOString();
+    const { data, error } = await supabase
+      .from("instructor_calendar_events")
+      .select("id, title, start_time, end_time, is_busy")
+      .eq("instructor_id", instructorId)
+      .eq("is_busy", true)
+      .gte("start_time", startISO)
+      .lt("start_time", endISO);
+    if (error || !data) return;
+    const mapped: Lesson[] = data.map((row: any) => {
+      const s = new Date(row.start_time);
+      const e = new Date(row.end_time);
+      const startMin = s.getHours() * 60 + s.getMinutes();
+      const durationMin = Math.max(15, Math.round((e.getTime() - s.getTime()) / 60000));
+      return {
+        id: `gcal-${row.id}`,
+        pupilId: "",
+        pupil: row.title || "Busy (Google)",
+        day: JS_DAY[s.getDay()],
+        startMin,
+        durationMin,
+        type: "standard" as LessonType,
+      };
+    });
+    setExternalBusy(mapped);
+  }, [instructorId, weekStart]);
+
+  useEffect(() => { reloadExternalBusy(); }, [reloadExternalBusy]);
+
+  // Realtime for external calendar events
+  useEffect(() => {
+    if (!instructorId) return;
+    const ch = supabase
+      .channel(`schedule-gcal-${instructorId}`)
+      .on("postgres_changes", {
+        event: "*", schema: "public", table: "instructor_calendar_events",
+        filter: `instructor_id=eq.${instructorId}`,
+      }, () => { reloadExternalBusy(); })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [instructorId, reloadExternalBusy]);
   useEffect(() => {
     if (!instructorId) return;
     let cancelled = false;
@@ -286,38 +364,46 @@ export default function InstructorScheduleDesktop() {
     return pupils.filter(p => !bookedIds.has(p.id)).slice(0, 8);
   }, [lessons, pupils]);
 
-  // ---- Open slot search ----
+  // ---- Open slot search (merges lessons + Google Calendar busy + buffer) ----
   const openSlots = useMemo(() => {
     const slots: { day: Day; startMin: number; endMin: number }[] = [];
+    const merged = [...lessons, ...externalBusy];
     for (const day of DAYS) {
       const a = availability[day];
       if (a === "off") continue;
       const dayStart = timeToMin(a.start);
       const dayEnd = timeToMin(a.end);
-      const dayLessons = lessons
+      const dayBusy = merged
         .filter(l => l.day === day)
         .sort((x, y) => x.startMin - y.startMin);
       let cursor = dayStart;
-      for (const l of dayLessons) {
-        if (l.startMin > cursor) slots.push({ day, startMin: cursor, endMin: Math.min(l.startMin, dayEnd) });
-        cursor = Math.max(cursor, l.startMin + l.durationMin);
+      for (const l of dayBusy) {
+        const blockStart = Math.max(dayStart, l.startMin - bufferMinutes);
+        const blockEnd = Math.min(dayEnd, l.startMin + l.durationMin + bufferMinutes);
+        if (blockStart > cursor) slots.push({ day, startMin: cursor, endMin: blockStart });
+        cursor = Math.max(cursor, blockEnd);
       }
       if (cursor < dayEnd) slots.push({ day, startMin: cursor, endMin: dayEnd });
     }
     return slots;
-  }, [lessons, availability]);
+  }, [lessons, externalBusy, availability, bufferMinutes]);
 
   const slotMatches = useMemo(() => {
     const q = debouncedPrompt.trim().toLowerCase();
     const hasQuery = q.length > 0;
     const hasFilters = filterDays.length > 0 || filterFromMin !== null || filterToMin !== null;
     if (!hasQuery && !hasFilters) return [];
-    let needMin = 60;
+    let needMin = preferredDuration || 60;
     if (hasQuery) {
       const hM = q.match(/(\d+(?:\.\d+)?)\s*h(?:r|rs|our|ours)?(?:\s*(\d+)\s*m)?/);
       const mM = q.match(/(\d+)\s*(?:m|min|mins|minutes)\b/);
       if (hM) needMin = Math.round(parseFloat(hM[1]) * 60) + (hM[2] ? parseInt(hM[2]) : 0);
       else if (mM) needMin = parseInt(mM[1]);
+    }
+    // Snap to nearest allowed duration if within 15min
+    if (allowedDurations.length && !allowedDurations.includes(needMin)) {
+      const closest = allowedDurations.reduce((a, b) => Math.abs(b - needMin) < Math.abs(a - needMin) ? b : a);
+      if (Math.abs(closest - needMin) <= 15) needMin = closest;
     }
     const dayMap: Record<string, Day> = {
       mon: "Mon", monday: "Mon", tue: "Tue", tues: "Tue", tuesday: "Tue",
@@ -329,8 +415,19 @@ export default function InstructorScheduleDesktop() {
     const morning = hasQuery && /\bmorning|am\b/.test(q);
     const afternoon = hasQuery && /\bafternoon|pm\b/.test(q);
     const evening = hasQuery && /\bevening\b/.test(q);
+
+    // min_notice: cutoff = now + minNoticeHours
+    const cutoff = new Date(now.getTime() + minNoticeHours * 3600_000);
+    const slotIsAfterCutoff = (s: { day: Day; startMin: number }) => {
+      const d = addDays(weekStart, DAYS.indexOf(s.day));
+      const slotDate = new Date(d);
+      slotDate.setHours(Math.floor(s.startMin / 60), s.startMin % 60, 0, 0);
+      return slotDate >= cutoff;
+    };
+
     return openSlots
       .filter(s => s.endMin - s.startMin >= needMin)
+      .filter(slotIsAfterCutoff)
       .filter(s => !queryDay || s.day === queryDay)
       .filter(s => filterDays.length === 0 || filterDays.includes(s.day))
       .filter(s => {
@@ -343,7 +440,7 @@ export default function InstructorScheduleDesktop() {
       .filter(s => filterToMin === null || s.startMin + needMin <= filterToMin)
       .slice(0, 12)
       .map(s => ({ ...s, needMin }));
-  }, [debouncedPrompt, openSlots, filterDays, filterFromMin, filterToMin]);
+  }, [debouncedPrompt, openSlots, filterDays, filterFromMin, filterToMin, preferredDuration, allowedDurations, minNoticeHours, now, weekStart]);
 
   const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
   const initials = (instructor?.name || "").split(" ").map(s => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "ID";
@@ -625,6 +722,7 @@ export default function InstructorScheduleDesktop() {
           {view === "week" && (
             <WeekGrid
               lessons={lessons}
+              externalBusy={externalBusy}
               now={now}
               onSelectLesson={setSelectedLesson}
               weekStart={weekStart}
@@ -721,9 +819,9 @@ const smallBtn: React.CSSProperties = {
 
 // ---- Week grid ----
 function WeekGrid({
-  lessons, now, onSelectLesson, weekStart, todayDay, availability,
+  lessons, externalBusy = [], now, onSelectLesson, weekStart, todayDay, availability,
 }: {
-  lessons: Lesson[]; now: Date; onSelectLesson: (l: Lesson) => void;
+  lessons: Lesson[]; externalBusy?: Lesson[]; now: Date; onSelectLesson: (l: Lesson) => void;
   weekStart: Date; todayDay: Day;
   availability: Record<Day, "off" | { start: string; end: string }>;
 }) {
@@ -776,6 +874,7 @@ function WeekGrid({
             day={d}
             rows={rows}
             lessons={lessons.filter(l => l.day === d)}
+            externalBusy={externalBusy.filter(l => l.day === d)}
             isToday={d === todayDay}
             nowTop={nowTop}
             onSelectLesson={onSelectLesson}
@@ -788,9 +887,9 @@ function WeekGrid({
 }
 
 function DayColumn({
-  day, rows, lessons, isToday, nowTop, onSelectLesson, off,
+  day, rows, lessons, externalBusy = [], isToday, nowTop, onSelectLesson, off,
 }: {
-  day: Day; rows: number; lessons: Lesson[]; isToday: boolean; nowTop: number;
+  day: Day; rows: number; lessons: Lesson[]; externalBusy?: Lesson[]; isToday: boolean; nowTop: number;
   onSelectLesson: (l: Lesson) => void; off: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `col-${day}`, data: { day }, disabled: off });
@@ -825,6 +924,26 @@ function DayColumn({
           letterSpacing: "0.5px", textTransform: "uppercase",
         }}>Day off</div>
       )}
+
+      {!off && externalBusy.map(l => {
+        const top = ((l.startMin - HOUR_START * 60) / 60) * HOUR_PX;
+        const h = (l.durationMin / 60) * HOUR_PX - 2;
+        if (h <= 0) return null;
+        return (
+          <div key={l.id} title={`Google Calendar: ${l.pupil}`} style={{
+            position: "absolute", top, left: 2, right: 2, height: h,
+            borderRadius: 4, padding: "3px 5px", overflow: "hidden",
+            background: "repeating-linear-gradient(45deg, rgba(100,116,139,0.10), rgba(100,116,139,0.10) 4px, rgba(100,116,139,0.18) 4px, rgba(100,116,139,0.18) 8px)",
+            border: "0.5px dashed rgba(71,85,105,0.5)",
+            fontSize: 9, color: "#334155", lineHeight: 1.1,
+          }}>
+            <div style={{ fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {l.pupil}
+            </div>
+            {h > 22 && <div style={{ opacity: 0.7 }}>Google · {fmtTime(l.startMin)}</div>}
+          </div>
+        );
+      })}
 
       {!off && lessons.map(l => (
         <LessonCard
