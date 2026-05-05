@@ -482,48 +482,57 @@ function RevenueTrend({ daily, ma7 }: {
 }
 
 // ---------- Lesson Type Card ----------
-function LessonTypeCard() {
+function LessonTypeCard({ rows }: { rows: typeof reports.byLessonType }) {
+  const best = rows.length > 0
+    ? rows.reduce((a, b) => (b.perHour > a.perHour ? b : a))
+    : null;
   return (
     <div style={{ ...card, padding: 14 }}>
       <div style={{ fontSize: 13, fontWeight: 500, color: "#0F172A", marginBottom: 12 }}>By lesson type</div>
 
-      <div style={{
-        display: "flex", height: 22, borderRadius: 5, overflow: "hidden", marginBottom: 14,
-      }}>
-        {reports.byLessonType.map((t) => (
-          <div key={t.type} style={{ flex: t.share, background: t.color }} title={`${t.type} ${(t.share*100).toFixed(0)}%`} />
-        ))}
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-        {reports.byLessonType.map((t) => (
-          <div key={t.type} style={{ display: "grid", gridTemplateColumns: "12px 1fr auto", gap: 10, alignItems: "center" }}>
-            <div style={{ width: 8, height: 8, borderRadius: 2, background: t.color }} />
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 11, color: "#0F172A" }}>{t.type}</div>
-              <div style={{ fontSize: 9, color: "#94A3B8" }}>
-                {t.hours} hours · {(t.share * 100).toFixed(0)}% of revenue
-              </div>
-            </div>
-            <div style={{ fontSize: 11, fontFamily: "ui-monospace, monospace", color: "#0F172A", fontWeight: 500 }}>
-              {gbp0(t.amount)}
-            </div>
+      {rows.length === 0 ? (
+        <div style={{ fontSize: 11, color: "#94A3B8", padding: "20px 0", textAlign: "center" }}>No lessons in this range</div>
+      ) : (
+        <>
+          <div style={{
+            display: "flex", height: 22, borderRadius: 5, overflow: "hidden", marginBottom: 14,
+          }}>
+            {rows.map((t) => (
+              <div key={t.type} style={{ flex: t.share, background: t.color }} title={`${t.type} ${(t.share*100).toFixed(0)}%`} />
+            ))}
           </div>
-        ))}
-      </div>
 
-      <div style={{
-        marginTop: 14, paddingTop: 10, borderTop: "0.5px solid #E2E8F0",
-        display: "flex", justifyContent: "space-between", fontSize: 10,
-      }}>
-        <span style={{ color: "#64748B" }}>Most profitable per hour</span>
-        <span style={{ color: "#0F172A", fontWeight: 500 }}>Motorway · £42.57</span>
-      </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+            {rows.map((t) => (
+              <div key={t.type} style={{ display: "grid", gridTemplateColumns: "12px 1fr auto", gap: 10, alignItems: "center" }}>
+                <div style={{ width: 8, height: 8, borderRadius: 2, background: t.color }} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 11, color: "#0F172A" }}>{t.type}</div>
+                  <div style={{ fontSize: 9, color: "#94A3B8" }}>
+                    {t.hours} hours · {(t.share * 100).toFixed(0)}% of revenue
+                  </div>
+                </div>
+                <div style={{ fontSize: 11, fontFamily: "ui-monospace, monospace", color: "#0F172A", fontWeight: 500 }}>
+                  {gbp0(t.amount)}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {best && (
+            <div style={{
+              marginTop: 14, paddingTop: 10, borderTop: "0.5px solid #E2E8F0",
+              display: "flex", justifyContent: "space-between", fontSize: 10,
+            }}>
+              <span style={{ color: "#64748B" }}>Most profitable per hour</span>
+              <span style={{ color: "#0F172A", fontWeight: 500 }}>{best.type} · {gbp2(best.perHour)}</span>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
-
-// ---------- Heatmap ----------
 function HeatmapCard({ grid }: { grid: number[][] }) {
   const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
   const hours = [8,9,10,11,12,13,14,15,16,17,18];
