@@ -427,7 +427,7 @@ function PreviewPane({ device, domain }: { device: Device; domain: string }) {
               border: "0.5px solid var(--d2-border)",
             }}
           >
-            ken-d.drive365.co.uk
+            {domain}
           </div>
         </div>
         <SitePreview site={site} />
