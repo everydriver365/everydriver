@@ -11,6 +11,8 @@ import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCou
 import { motion, AnimatePresence } from "framer-motion";
 import { useInstructorPaymentsData, type PaymentTx, type PaymentStatus, type PaymentMethod } from "@/hooks/useInstructorPaymentsData";
 import { PaymentsExportDialog } from "@/components/instructor/payments/PaymentsExportDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 
 // ---------- palette ----------
 const palette: Record<string, { bg: string; text: string }> = {
