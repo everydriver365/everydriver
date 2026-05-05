@@ -11894,6 +11894,57 @@ export type Database = {
           },
         ]
       }
+      phone_live_positions: {
+        Row: {
+          accuracy: number | null
+          battery_level: number | null
+          created_at: string
+          heading: number | null
+          id: string
+          instructor_id: string
+          latitude: number
+          longitude: number
+          provider: string
+          pupil_id: string
+          recorded_at: string
+          session_id: string | null
+          speed_kmh: number | null
+          updated_at: string
+        }
+        Insert: {
+          accuracy?: number | null
+          battery_level?: number | null
+          created_at?: string
+          heading?: number | null
+          id?: string
+          instructor_id: string
+          latitude: number
+          longitude: number
+          provider?: string
+          pupil_id: string
+          recorded_at?: string
+          session_id?: string | null
+          speed_kmh?: number | null
+          updated_at?: string
+        }
+        Update: {
+          accuracy?: number | null
+          battery_level?: number | null
+          created_at?: string
+          heading?: number | null
+          id?: string
+          instructor_id?: string
+          latitude?: number
+          longitude?: number
+          provider?: string
+          pupil_id?: string
+          recorded_at?: string
+          session_id?: string | null
+          speed_kmh?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pipeline_leads: {
         Row: {
           course_type: string | null
@@ -17938,6 +17989,20 @@ export type Database = {
       update_pupil_profile: {
         Args: { p_pupil_id: string; p_updates: Json }
         Returns: boolean
+      }
+      upsert_phone_live_position: {
+        Args: {
+          p_accuracy?: number
+          p_battery_level?: number
+          p_heading?: number
+          p_latitude: number
+          p_longitude: number
+          p_provider?: string
+          p_pupil_id: string
+          p_session_id?: string
+          p_speed_kmh?: number
+        }
+        Returns: string
       }
     }
     Enums: {
