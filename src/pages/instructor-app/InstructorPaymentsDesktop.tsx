@@ -134,12 +134,13 @@ export default function InstructorPaymentsDesktop() {
   }, [filtered]);
 
   const pupilOptions = useMemo(() => {
+    if (allPupils.length > 0) return allPupils.map(p => ({ id: p.id, name: p.name, phone: p.phone, email: p.email }));
     const seen = new Map<string, string>();
     transactions.forEach(t => { if (!seen.has(t.pupilId)) seen.set(t.pupilId, t.pupilName); });
     outstanding.forEach(o => { if (!seen.has(o.id)) seen.set(o.id, o.name); });
-    return Array.from(seen.entries()).map(([id, name]) => ({ id, name }))
+    return Array.from(seen.entries()).map(([id, name]) => ({ id, name, phone: null, email: null }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [transactions, outstanding]);
+  }, [transactions, outstanding, allPupils]);
 
   useEffect(() => { if (error) toast.error(error); }, [error]);
 
