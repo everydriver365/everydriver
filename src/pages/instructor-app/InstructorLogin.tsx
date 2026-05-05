@@ -286,11 +286,13 @@ export default function InstructorLogin() {
             />
           </div>
           <h1 className="text-2xl font-bold text-white">
-            {isForgotPassword ? "Reset Password" : "Welcome Back"}
+            {isForgotPassword ? (resetSent ? "Check your email" : "Reset Password") : "Welcome Back"}
           </h1>
           <p className="text-white/80 text-sm mt-1">
-            {isForgotPassword 
-              ? "Enter your email to receive a reset link"
+            {isForgotPassword
+              ? resetSent
+                ? `We've sent a reset link to ${resetSentTo}`
+                : "Enter your email and we'll send you a reset link"
               : "Sign in to your Driving School Manager account"}
           </p>
           <p className="text-white/40 text-[10px] mt-2">Build: {BUILD_MARKER}</p>
