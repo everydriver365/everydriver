@@ -466,11 +466,11 @@ function StatCard({
   );
 }
 
-function TakePaymentSheet({ onClose }: { onClose: () => void }) {
-  const [pupilId, setPupilId] = useState<number>(2);
+function TakePaymentSheet({ onClose, pupils }: { onClose: () => void; pupils: { id: string; name: string }[] }) {
+  const [pupilId, setPupilId] = useState<string>(pupils[0]?.id ?? "");
   const [forKind, setForKind] = useState("single");
   const [amount, setAmount] = useState("38.00");
-  const [method, setMethod] = useState<Method>("card");
+  const [method, setMethod] = useState<PaymentMethod>("card");
   const [note, setNote] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -493,9 +493,10 @@ function TakePaymentSheet({ onClose }: { onClose: () => void }) {
       </div>
 
       <Field label="Pupil">
-        <select value={pupilId} onChange={e => setPupilId(Number(e.target.value))} style={inputStyle}>
-          {Object.entries(PUPILS).map(([id, p]) => (
-            <option key={id} value={id}>{p.name}</option>
+        <select value={pupilId} onChange={e => setPupilId(e.target.value)} style={inputStyle}>
+          {pupils.length === 0 && <option value="">No pupils</option>}
+          {pupils.map(p => (
+            <option key={p.id} value={p.id}>{p.name}</option>
           ))}
         </select>
       </Field>
