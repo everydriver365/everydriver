@@ -1,23 +1,27 @@
 ## Goal
-Add proper **Disconnect** + **Reconnect** controls (with `AlertDialog` confirmations) to each integration on the Integrations hub. Replace the existing native `confirm()` prompts and ensure stored credentials are cleared.
+Let the instructor preview exactly which lessons will be **created**, **updated**, or **deleted** on Google Calendar before the next sync runs.
 
-## 1. Square — `src/components/instructor/SquareConnectSettings.tsx`
-- Replace native `confirm()` with shadcn `<AlertDialog>` for **Disconnect** ("Future payments collected by platform…").
-- Add a new **Reconnect** button (visible when connected): calls `square-oauth { action: "disconnect" }`, refreshes instructor state, then immediately calls the existing `handleConnect` flow to re-open the OAuth popup.
-- Both actions wrapped in AlertDialog with Cancel / confirm; destructive styling on Disconnect.
-- Existing edge function already supports `disconnect` and `authorize`.
+## What "to be synced" means
+Every lesson change pushes a row into the existing `calendar_sync_queue` table (`action ∈ {syncLesson, deleteLesson}`, `processed_at IS NULL` while pending). The cron job then calls Google. So the preview is simply: read the pending queue rows for the current instructor and classify them.
 
-## 2. Google Calendar — `src/components/instructor/GoogleServiceAccountSetup.tsx`
-- Wrap the existing **Disconnect** button in an `<AlertDialog>` ("Stop syncing lessons to Google Calendar?").
-- Add a **Reconnect** button beside it: calls `disconnect()` from `useGoogleServiceCalendar`, then re-renders the setup form so the instructor enters a fresh Calendar ID.
-- Keep "Sync Now" untouched.
+## New component
+`src/components/instructor/CalendarSyncPreview.tsx`
+- Fetches in one round trip:
+  - `calendar_sync_queue` where `instructor_id = me` and `processed_at IS NULL`, joined with the related `scheduled_lessons` rows (id, lesson_date, start_time, duration_minutes, status, google_event_id, pickup_location, pupils(name)).
+- Classifies each pending row:
+  - `action='deleteLesson'` OR (`syncLesson` + `status='cancelled'` + `google_event_id`) → **Delete**
+  - `syncLesson` + `google_event_id` present → **Update**
+  - `syncLesson` + no `google_event_id` → **Create**
+- Renders three grouped sections (Create / Update / Delete) inside a `<Dialog>` with badge counts, each row showing pupil name, date/time, duration, and pickup location.
+- Empty state: "Nothing pending — your calendar is up to date."
+- Footer buttons:
+  - **Refresh** (re-runs the query)
+  - **Sync Now** — triggers existing `syncExternalEvents()` (incoming) + invokes `process-calendar-queue` for outgoing pending items, then re-queries.
+  - **Close**
 
-## 3. Xero — `src/components/instructor/XeroExport.tsx`
-- Xero is **CSV-only** (no stored credentials/OAuth), so a true "disconnect" doesn't apply. Add a small banner clarifying this: *"Xero export is manual — no credentials are saved."*
-- Wrap the existing **Mark All Expenses as Synced** button in an `<AlertDialog>` confirmation, since that is the only persistent state.
-- Add a **Reset Sync State** action (also AlertDialog-confirmed) that flips `xero_synced` back to `false` for all of the instructor's expenses, so they can re-export.
+## Hook into existing UI
+In `GoogleServiceAccountSetup.tsx` (connected state, alongside Sync Now / Reconnect / Disconnect), add a **Preview Sync** button that opens the new dialog. No mobile changes.
 
 ## Out of scope
-- No new edge functions, no schema changes.
-- No mobile layout changes.
-- No changes to the broader Integrations hub layout.
+- No schema or edge function changes (queue + process-calendar-queue already exist).
+- Inbound (Google → app) preview not included — those events come from `fetchExternalEvents` which already provides counts after the fact, and a true pre-fetch diff is what `resyncRange` already does (already exposed via `CalendarResyncRangePanel`).
