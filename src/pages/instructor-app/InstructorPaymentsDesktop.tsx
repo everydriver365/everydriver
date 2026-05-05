@@ -415,7 +415,7 @@ export default function InstructorPaymentsDesktop() {
                 padding: 16, zIndex: 61, overflowY: "auto",
               }}
             >
-              <TakePaymentSheet onClose={() => setTakeOpen(false)} />
+              <TakePaymentSheet onClose={() => setTakeOpen(false)} pupils={pupilOptions} />
             </motion.div>
           </>
         )}
