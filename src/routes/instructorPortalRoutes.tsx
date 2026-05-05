@@ -21,6 +21,7 @@ const IconPreviewPage = lazy(() => import("@/pages/instructor/IconPreviewPage"))
 const QuickActionsRedesignDemo = lazy(() => import("@/pages/instructor/QuickActionsRedesignDemo"));
 const InstructorAccessibilitySettings = lazy(() => import("@/pages/instructor/InstructorAccessibilitySettings"));
 const InstructorModules = lazy(() => import("@/pages/instructor-app/InstructorModules"));
+const InstructorMySite = lazy(() => import("@/pages/instructor-app/InstructorMySite"));
 
 // Jobs & scheduling
 const InstructorJobs = lazy(() => import("@/pages/InstructorJobs"));
