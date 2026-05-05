@@ -38,7 +38,7 @@ export function useLocationPermission(opts: Options = {}) {
       if (next === "denied") row.denied_at = new Date().toISOString();
       await supabase
         .from("phone_tracking_permissions")
-        .upsert(row, { onConflict: "instructor_id,pupil_id" });
+        .upsert([row] as any, { onConflict: "instructor_id,pupil_id" });
     },
     [instructorId, pupilId],
   );
