@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { X, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -59,12 +59,19 @@ export function CustomizeFrequentlyUsedSheet({
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [dragId, setDragId] = useState<string | null>(null);
 
+  // Snapshot the latest initial list in a ref so background re-renders of the
+  // parent (which produce a new array reference for `initialPinnedIds` on
+  // every refetch) don't reset the user's in-progress edits while the sheet
+  // is open. The local state is only seeded when the sheet transitions open.
+  const initialRef = useRef(initialPinnedIds);
+  initialRef.current = initialPinnedIds;
+
   useEffect(() => {
     if (open) {
-      setPinnedIds(initialPinnedIds);
+      setPinnedIds(initialRef.current);
       setSelectedCategory("All");
     }
-  }, [open, initialPinnedIds]);
+  }, [open]);
 
   const reorder = (sourceId: string, targetId: string) => {
     if (sourceId === targetId) return;
