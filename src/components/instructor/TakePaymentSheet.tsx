@@ -159,23 +159,6 @@ export function TakePaymentSheet({
                             )}
                             SMS
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 text-xs gap-1"
-                            disabled={!pupil.email || sendingLink === `${pupil.id}-email`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSendPaymentLink(pupil.id, pupil.name, "email");
-                            }}
-                          >
-                            {sendingLink === `${pupil.id}-email` ? (
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                            ) : (
-                              <Mail className="h-3 w-3" />
-                            )}
-                            Email
-                          </Button>
                         </div>
                       )}
                     </div>
@@ -192,21 +175,6 @@ export function TakePaymentSheet({
               )}
             </div>
           )}
-
-          {/* Email Receipt */}
-          <button
-            disabled
-            className="w-full flex items-center gap-3 p-4 border border-border bg-card opacity-60 text-left"
-          >
-            <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0">
-              <Receipt className="h-5 w-5 text-amber-500" />
-            </div>
-            <div className="flex-1">
-              <p className="font-medium text-sm text-foreground">Email Receipt</p>
-              <p className="text-xs text-muted-foreground">Automatically sent after payment</p>
-            </div>
-            <Badge variant="outline" className="text-[10px]">Auto</Badge>
-          </button>
         </div>
       </SheetContent>
     </Sheet>
