@@ -205,7 +205,7 @@ export default function InstructorScheduleDesktop() {
       .filter(s => filterToMin === null || s.startMin + needMin <= filterToMin)
       .slice(0, 12)
       .map(s => ({ ...s, needMin }));
-  }, [aiPrompt, openSlots, filterDays, filterFromMin, filterToMin]);
+  }, [debouncedPrompt, openSlots, filterDays, filterFromMin, filterToMin]);
 
   const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
   const initials = (instructor?.name || "").split(" ").map(s => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "ID";
