@@ -192,7 +192,10 @@ export default function InstructorPortalLogin() {
       const { error: signInError } = await signIn(email.trim(), password);
       
       if (signInError) {
-        if (signInError.message.includes("Invalid login")) {
+        if (isEmailNotConfirmedError(signInError)) {
+          setError("Please verify your email before signing in. Check your inbox for the confirmation link.");
+          void resendSignupConfirmation(email.trim(), `${window.location.origin}/instructor/login`);
+        } else if (signInError.message.includes("Invalid login")) {
           setError("Invalid email or password");
         } else {
           setError(signInError.message);
