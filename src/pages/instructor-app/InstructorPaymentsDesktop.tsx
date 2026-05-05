@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Download, Plus, CreditCard, PoundSterling, Landmark,
-  MoreVertical, ChevronLeft, ChevronRight, X,
+  MoreVertical, ChevronLeft, ChevronRight, X, Search,
 } from "lucide-react";
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -95,6 +95,10 @@ export default function InstructorPaymentsDesktop() {
   const [pupilSheet, setPupilSheet] = useState<{ id: string; name: string } | null>(null);
   const [remindersOpen, setRemindersOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [methodFilter, setMethodFilter] = useState<"all" | PaymentMethod>("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const PAGE = 25;
 
   const { loading, error, stats, cashFlow, outstanding, transactions, refresh } = useInstructorPaymentsData(instructor?.id);
@@ -111,9 +115,30 @@ export default function InstructorPaymentsDesktop() {
       .then(({ data }) => setAllPupils(data || []));
   }, [instructor?.id]);
 
-  const filtered = useMemo(() =>
-    transactions.filter(t => filter === "all" || t.status === filter),
-  [filter, transactions]);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const fromMs = dateFrom ? new Date(dateFrom + "T00:00:00").getTime() : null;
+    const toMs = dateTo ? new Date(dateTo + "T23:59:59.999").getTime() : null;
+    return transactions.filter(t => {
+      if (filter !== "all" && t.status !== filter) return false;
+      if (methodFilter !== "all" && t.method !== methodFilter) return false;
+      const ts = new Date(t.dateTime).getTime();
+      if (fromMs !== null && ts < fromMs) return false;
+      if (toMs !== null && ts > toMs) return false;
+      if (q) {
+        const hay = `${t.pupilName} ${t.forText} ${t.note ?? ""} ${t.method} ${t.status}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [filter, methodFilter, dateFrom, dateTo, search, transactions]);
+
+  const filtersActive = search.trim() !== "" || methodFilter !== "all" || dateFrom !== "" || dateTo !== "" || filter !== "all";
+  const clearAllFilters = () => {
+    setSearch(""); setMethodFilter("all"); setDateFrom(""); setDateTo(""); setFilter("all"); setPage(1);
+  };
+
+  useEffect(() => { setPage(1); }, [search, methodFilter, dateFrom, dateTo]);
 
   const counts = useMemo(() => ({
     all: transactions.length,
