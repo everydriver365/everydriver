@@ -183,7 +183,7 @@ export default function InstructorSignup() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4" name="instructor-signup" method="post" action="#">
                   {error && (
                     <Alert variant="destructive">
                       <AlertCircle className="h-4 w-4" />
@@ -195,7 +195,9 @@ export default function InstructorSignup() {
                     <Label htmlFor="name">Full Name</Label>
                     <Input
                       id="name"
+                      name="name"
                       type="text"
+                      autoComplete="name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="John Smith"
@@ -208,7 +210,13 @@ export default function InstructorSignup() {
                     <Label htmlFor="email">Email Address</Label>
                     <Input
                       id="email"
+                      name="email"
                       type="email"
+                      autoComplete="username"
+                      inputMode="email"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="john@example.com"
@@ -221,7 +229,9 @@ export default function InstructorSignup() {
                     <Label htmlFor="password">Password</Label>
                     <Input
                       id="password"
+                      name="new-password"
                       type="password"
+                      autoComplete="new-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
@@ -235,7 +245,9 @@ export default function InstructorSignup() {
                     <Label htmlFor="confirmPassword">Confirm Password</Label>
                     <Input
                       id="confirmPassword"
+                      name="confirm-password"
                       type="password"
+                      autoComplete="new-password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
