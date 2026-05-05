@@ -450,7 +450,7 @@ export default function InstructorLogin() {
                 <Checkbox
                   id="rememberMe"
                   checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  onCheckedChange={(checked) => setRememberMeState(checked as boolean)}
                 />
                 <Label 
                   htmlFor="rememberMe" 
