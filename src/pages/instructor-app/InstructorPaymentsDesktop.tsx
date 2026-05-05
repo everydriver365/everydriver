@@ -9,6 +9,7 @@ import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShe
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { motion, AnimatePresence } from "framer-motion";
+import { useInstructorPaymentsData } from "@/hooks/useInstructorPaymentsData";
 
 // ---------- palette ----------
 const palette: Record<string, { bg: string; text: string }> = {
