@@ -380,7 +380,7 @@ function EditorPane({ domain }: { domain: string }) {
             <FieldLabel>Search preview</FieldLabel>
             <div style={{ padding: 10, border: "0.5px solid var(--d2-border)", borderRadius: 8, background: "var(--d2-surface)" }}>
               <div style={{ fontSize: 13, color: "#1A0DAB", lineHeight: 1.2 }}>{site.seo.title}</div>
-              <div style={{ fontSize: 10, color: "#006621", marginTop: 2 }}>ken-d.drive365.co.uk</div>
+              <div style={{ fontSize: 10, color: "#006621", marginTop: 2 }}>{domain}</div>
               <div style={{ fontSize: 11, color: "var(--d2-text-2)", marginTop: 3, lineHeight: 1.4 }}>{site.seo.description}</div>
             </div>
           </div>
