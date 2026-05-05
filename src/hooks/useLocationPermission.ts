@@ -119,28 +119,72 @@ export function useLocationPermission(opts: Options = {}) {
   const request = useCallback(async (): Promise<LocationPermissionStatus> => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setStatus("unavailable");
+      setError("This device/browser doesn't expose GPS.");
       return "unavailable";
     }
+
+    // Detect iframe without geolocation permissions-policy.
+    const inIframe = typeof window !== "undefined" && window.self !== window.top;
+    if (inIframe) {
+      try {
+        // @ts-ignore
+        const allowed = document.featurePolicy?.allowsFeature?.("geolocation");
+        if (allowed === false) {
+          setStatus("denied");
+          setError(
+            "Location is blocked inside the preview iframe. Open the app in its own tab to allow location.",
+          );
+          return "denied";
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+
     setError(null);
     return new Promise((resolve) => {
-      navigator.geolocation.getCurrentPosition(
-        () => {
-          setStatus("granted");
-          resolve("granted");
-        },
-        (err) => {
-          if (err.code === err.PERMISSION_DENIED) {
-            setStatus("denied");
-            setError("Location permission was denied.");
-            resolve("denied");
-          } else {
-            setError(err.message || "Unable to read location.");
-            setStatus("prompt");
-            resolve("prompt");
-          }
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
-      );
+      let settled = false;
+      const finish = (next: LocationPermissionStatus, msg?: string) => {
+        if (settled) return;
+        settled = true;
+        if (msg) setError(msg);
+        setStatus(next);
+        resolve(next);
+      };
+
+      // Hard fallback in case the browser never invokes either callback
+      // (happens inside some sandboxed iframes / WebViews).
+      const fallback = setTimeout(() => {
+        finish(
+          "denied",
+          "No response from the location service. If you're inside a preview, open the app in its own tab.",
+        );
+      }, 12000);
+
+      try {
+        navigator.geolocation.getCurrentPosition(
+          () => {
+            clearTimeout(fallback);
+            finish("granted");
+          },
+          (err) => {
+            clearTimeout(fallback);
+            if (err.code === err.PERMISSION_DENIED) {
+              finish("denied", "Location permission was denied.");
+            } else if (err.code === err.POSITION_UNAVAILABLE) {
+              finish("prompt", "Location is currently unavailable. Try again outdoors.");
+            } else if (err.code === err.TIMEOUT) {
+              finish("prompt", "Timed out waiting for GPS. Try again.");
+            } else {
+              finish("prompt", err.message || "Unable to read location.");
+            }
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+        );
+      } catch (e: any) {
+        clearTimeout(fallback);
+        finish("denied", e?.message || "Browser blocked the location request.");
+      }
     });
   }, []);
 
