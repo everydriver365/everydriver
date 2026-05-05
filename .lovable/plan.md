@@ -1,56 +1,69 @@
 ## Goal
+Surface the major instructor features that are currently hidden behind `/instructor/menu`. Restructure `DashboardSidebar.tsx` so the nav reflects what the portal can actually do.
 
-Replace the seed/in-memory state on the Availability page with real backend persistence. Edits to weekly hours, time off and booking rules are autosaved (debounced) and rehydrate correctly on refresh.
+## New sidebar structure
 
-## Backend changes (one migration)
+**Overview**
+- Dashboard → `/instructor`
+- Schedule → `/instructor/schedule`
+- Diary → `/instructor/diary`
+- Inbox → `/instructor/messages` (badge)
 
-Tables already exist; add a few columns and use them as the source of truth.
+**Teaching**
+- Pupils → `/instructor/pupils`
+- Course Planner → `/instructor/course-planner`
+- Waiting List → `/instructor/waiting-list`
+- Fill Gaps → `/instructor/gaps`
+- Test Bookings → `/instructor/test-bookings`
+- Test Results → `/instructor/test-results`
+- Test Swap → `/instructor/test-swap`
+- Slot Finder → `/instructor/test-slot-finder`
+- Standards Check → `/instructor/standards-check`
+- CPD → `/instructor/cpd`
 
-1. `availability_windows` — already has `instructor_id, day_of_week (int), start_time, end_time, is_active, label`. We will use `day_of_week` with ISO convention `1=Mon … 7=Sun` and treat the absence of any active row for a day as "day off". RLS already exists for instructor self-access (verify and add if missing).
+**Vehicle & Tracking** *(new section, gated by `telematics` module where applicable)*
+- Live Tracking → `/instructor/tracking`
+- Fleet Map → `/instructor/fleet-map`
+- Vehicle Health → `/instructor/vehicle-health`
+- SatNav → `/instructor/satnav`
+- Dashcam → `/instructor/dashcam`
+- Mileage → `/instructor/mileage`
+- Fuel → `/instructor/fuel`
+- Saved Routes → `/instructor/routes`
 
-2. `availability_rules` — add columns to support the Time-off card:
-   - `title text`
-   - `category text` (`holiday | training | bank-holiday | personal | sick | other`)
-   - `notes text`
-   - `is_recurring boolean default false`
-   - `is_auto boolean default false`
-   We persist time-off entries as rows with `rule_type='holiday_block'`, `is_available=false`, `start_date`, `end_date`. Add RLS policies if missing (instructor self-access via `get_instructor_id_for_user(auth.uid())`).
+**AI Voice** *(new)*
+- AI Voice Hub → `/instructor/menu?open=famulor`
 
-3. `instructors` — add the missing booking-rule columns (use existing where possible):
-   - reuse `buffer_minutes` for travel buffer
-   - reuse `booking_advance_days` for booking horizon (store as days = weeks*7)
-   - add `min_lead_hours int default 24`
-   - add `slot_increment_minutes int default 30`
-   - add `allow_same_day_booking boolean default false`
-   - add `auto_block_bank_holidays boolean default true`
+**Business**
+- Take Payment → `/instructor/take-payment`
+- Payments → `/instructor/pay`
+- Invoices → `/instructor/invoices`
+- Pending → `/instructor/pending-scheduling`
+- Expenses → `/instructor/expenses`
+- Tax → `/instructor/tax`
+- Reports → `/instructor/income`
+- Reviews → `/instructor/reviews`
+- Referrals → `/instructor/referrals`
+- Automations → `/instructor/automations`
 
-## Frontend changes — `src/pages/instructor-app/InstructorAvailabilityDesktop.tsx`
+**Website**
+- My Site → `/website/my-site`
+- Branding → `/instructor/menu?open=appearance`
+- Domain → `/instructor/domains`
+- SEO → `/instructor/seo`
 
-1. Add a `useAvailabilityData(instructorId)` hook (new file `src/hooks/useAvailabilityData.ts`) that:
-   - Fetches `availability_windows`, `availability_rules` (where `rule_type='holiday_block'`), and the booking-rule columns from `instructors` in parallel via React Query.
-   - Maps DB rows into the component's `WeeklyHours`, `TimeOff[]`, `BookingRules` shapes (and back).
+**Settings**
+- Profile → `/instructor/settings`
+- Plan & Billing → `/instructor/billing`
+- Modules → `/instructor/modules`
+- Integrations → `/instructor/integrations`
+- More tools → `/instructor/menu` *(catch-all for Notes, Todos, Doodlepad, Document Vault, Workflows, etc.)*
 
-2. Replace `useState(seed*)` initial values with the loaded data. Show a light skeleton (or `null`) until the first fetch resolves so we don't flash seed data and immediately overwrite the DB.
-
-3. Replace the fake `setSaveState("saved")` debounce with a real save pipeline:
-   - One debounced effect (600 ms) per slice (`weekly`, `timeOff`, `rules`) — each compares against the last-saved snapshot and only fires when it actually changed.
-   - **Weekly hours**: diff per day. For days that changed, run a single transaction-style upsert: delete existing rows for that `(instructor_id, day_of_week)` and insert the current windows (`is_active=true`). For disabled days, just delete the rows. Done via two awaited Supabase calls per changed day.
-   - **Time off**: track `id` per item (use real UUIDs from DB after insert). On add → insert; on update → update by id; on delete → delete by id. The `onAdd/onUpdate/onDelete` callbacks become async and update local state from the returned row.
-   - **Booking rules**: single `update` on `instructors` with the mapped columns (`booking_advance_days = horizonWeeks*7`, etc.).
-   - On any failure set `saveState='error'` and surface a toast with retry; on success set `'saved'`.
-
-4. Keep the existing UI exactly as-is (toggles, drag timeline, sheet, preview). The "All changes saved / Saving / Couldn't save" indicator becomes truthful instead of cosmetic.
-
-5. Invalidate the React Query cache after each successful save so any other surfaces (e.g. `AvailabilityWindowsManager`) stay in sync.
+## Implementation
+- Edit only `src/components/instructor/dashboardV2/DashboardSidebar.tsx`: replace the `SECTIONS` array with the structure above, add the new lucide icons (`Mic`, `MapPin`, `Map`, `Gauge`, `Navigation`, `Video`, `Route`, `Fuel`, `NotebookPen`, `BookOpenCheck`, `GraduationCap`, `Star`, `Share2`, `Zap`, `Banknote`, `Receipt`, `Coins`, `MoreHorizontal`).
+- Keep existing `moduleId` filtering so users without a module don't see those rows.
+- No route or backend changes required — every destination already exists.
 
 ## Out of scope
-
-- No mobile changes (per project memory: do not alter mobile layouts unless explicitly asked).
-- No realtime subscription — rehydration on refresh is the requirement; we can add realtime later.
-- Bank-holiday auto-population stays a flag only; actually inserting holiday rows can be a follow-up.
-
-## Files touched
-
-- New: `supabase/migrations/<timestamp>_availability_persistence.sql`
-- New: `src/hooks/useAvailabilityData.ts`
-- Edit: `src/pages/instructor-app/InstructorAvailabilityDesktop.tsx`
+- No mobile sidebar changes (per mobile update policy).
+- No changes to `/instructor/menu` itself.
