@@ -1339,13 +1339,6 @@ export default function InstructorLiveSession() {
                     }}
                     phoneStreamingConfirmed={phoneStreamingConfirmed}
                     onTogglePhoneStreaming={() => {
-                      if (!selectedPupilId) {
-                        toast({
-                          title: "Select a pupil first",
-                          description: "Choose the pupil this lesson is for, then start phone tracking.",
-                        });
-                        return;
-                      }
                       setPhoneStreamingConfirmed((v) => {
                         const next = !v;
                         void logPhoneTrackingEvent({
@@ -1354,6 +1347,12 @@ export default function InstructorLiveSession() {
                           event: next ? "tracking_started" : "tracking_stopped",
                           status: locationPermissionStatus,
                         });
+                        if (next && !selectedPupilId) {
+                          toast({
+                            title: "Preview only",
+                            description: "Tracking the map locally. Select a pupil to start saving the live route.",
+                          });
+                        }
                         return next;
                       });
                     }}
