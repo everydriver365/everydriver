@@ -174,6 +174,8 @@ export function GoogleServiceAccountSetup({ instructorId }: GoogleServiceAccount
             Sync Now
           </Button>
 
+          <CalendarSyncPreview instructorId={instructorId} onSynced={checkConnection} />
+
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="outline" size="sm" disabled={isDisconnecting}>
