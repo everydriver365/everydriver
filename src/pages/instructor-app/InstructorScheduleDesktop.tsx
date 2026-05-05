@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
-  ChevronLeft, ChevronRight, Plus, Search, Sparkles, GripVertical,
+  ChevronLeft, ChevronRight, Plus, Search, Sparkles, GripVertical, Filter,
 } from "lucide-react";
 import {
   DndContext, DragOverlay, PointerSensor, useDraggable, useDroppable,
