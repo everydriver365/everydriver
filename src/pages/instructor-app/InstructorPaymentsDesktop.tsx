@@ -10,6 +10,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInstructorPaymentsData, type PaymentTx, type PaymentStatus, type PaymentMethod } from "@/hooks/useInstructorPaymentsData";
+import { PaymentsExportDialog } from "@/components/instructor/payments/PaymentsExportDialog";
 
 // ---------- palette ----------
 const palette: Record<string, { bg: string; text: string }> = {
