@@ -537,7 +537,7 @@ export function TakePaymentModal({
 
                   <Button
                     className="w-full"
-                    disabled={(!sendViaSms && !sendViaEmail) || sending || parsedAmount <= 0}
+                    disabled={!sendViaSms || sending || parsedAmount <= 0}
                     onClick={handleSendLink}
                   >
                     {sending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
