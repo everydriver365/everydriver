@@ -8,7 +8,7 @@ import {
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
-import { useInstructorReportsData, type ReportsRangeId } from "@/hooks/useInstructorReportsData";
+import { useInstructorReportsData, type ReportsRangeId, type ReportsLessonTypeRow, type ReportsRetentionStep, type ReportsTopPupil, type ReportsTaxYear } from "@/hooks/useInstructorReportsData";
 
 // ---------- palette ----------
 const ramp: Record<string, { bg: string; text: string }> = {
