@@ -1521,7 +1521,16 @@ export default function InstructorLiveSession() {
                           });
                           return;
                         }
-                        setPhoneStreamingConfirmed((v) => !v);
+                        setPhoneStreamingConfirmed((v) => {
+                          const next = !v;
+                          void logPhoneTrackingEvent({
+                            instructorId: instructor.id,
+                            pupilId: selectedPupilId || null,
+                            event: next ? "tracking_started" : "tracking_stopped",
+                            status: locationPermissionStatus,
+                          });
+                          return next;
+                        });
                       }}
                       style={{
                         marginTop: 4,
