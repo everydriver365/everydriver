@@ -21,6 +21,7 @@ import {
 } from "@/lib/biometricAuth";
 import { setRememberMe, getRememberMe } from "@/lib/sessionPersistence";
 import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailConfirmation";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
