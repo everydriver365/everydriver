@@ -217,8 +217,9 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
             <ul className="space-y-0.5">
               {section.items.map((item) => {
                 const Icon = item.icon;
-                const active = pathname === item.to ||
-                  (item.to !== "/instructor" && pathname.startsWith(item.to));
+                const active = item.to === "/instructor"
+                  ? pathname === "/instructor"
+                  : pathname === item.to || pathname.startsWith(item.to + "/");
                 return (
                   <li key={item.label}>
                     <Link
