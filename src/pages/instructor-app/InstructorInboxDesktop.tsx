@@ -156,7 +156,7 @@ function TagChip({ tag }: { tag: string }) {
 // =============================================================
 export default function InstructorInboxDesktop() {
   const { instructor, signOut } = useInstructorAuth();
-  const notificationCount = useCombinedNotificationCount();
+  const { total: notificationCount } = useCombinedNotificationCount(instructor?.id);
 
   const [threads, setThreads] = useState<Thread[]>(initialThreads);
   const [filter, setFilter] = useState<"unread" | "all" | "pinned">("unread");
