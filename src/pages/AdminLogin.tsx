@@ -12,6 +12,7 @@ import { useAdminAuth } from '@/context/AdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Checkbox } from '@/components/ui/checkbox';
 import { setRememberMe, getRememberMe } from '@/lib/sessionPersistence';
+import { isEmailNotConfirmedError, resendSignupConfirmation } from '@/lib/emailConfirmation';
 import { z } from 'zod';
 
 const loginSchema = z.object({
