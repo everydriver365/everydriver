@@ -270,7 +270,9 @@ export default function AdminLogin() {
                         <Label htmlFor="newPassword" className="text-sm font-medium text-slate-300">New Password</Label>
                         <Input
                           id="newPassword"
+                          name="new-password"
                           type="password"
+                          autoComplete="new-password"
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           placeholder="••••••••"
@@ -283,7 +285,9 @@ export default function AdminLogin() {
                         <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-300">Confirm Password</Label>
                         <Input
                           id="confirmPassword"
+                          name="confirm-password"
                           type="password"
+                          autoComplete="new-password"
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           placeholder="••••••••"
