@@ -490,7 +490,7 @@ function MySiteInner() {
           domain={domain}
         />
         <div className="flex-1 flex min-h-0">
-          <EditorPane />
+          <EditorPane domain={domain} />
           <PreviewPane device={device} domain={domain} />
         </div>
       </div>
