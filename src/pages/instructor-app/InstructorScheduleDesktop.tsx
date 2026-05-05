@@ -168,7 +168,7 @@ export default function InstructorScheduleDesktop() {
   }, [lessons]);
 
   const slotMatches = useMemo(() => {
-    const q = aiPrompt.trim().toLowerCase();
+    const q = debouncedPrompt.trim().toLowerCase();
     const hasQuery = q.length > 0;
     const hasFilters = filterDays.length > 0 || filterFromMin !== null || filterToMin !== null;
     if (!hasQuery && !hasFilters) return [];
