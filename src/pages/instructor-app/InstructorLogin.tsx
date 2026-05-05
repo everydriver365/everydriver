@@ -422,6 +422,13 @@ export default function InstructorLogin() {
               </Button>
             )}
 
+            {!isForgotPassword && (
+              <GoogleSignInButton
+                redirectTo={`${window.location.origin}/instructor`}
+                className="w-full h-12 bg-white hover:bg-white/90 text-slate-900 border-slate-300"
+              />
+            )}
+
             {biometricAvailable && !isForgotPassword && (
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
