@@ -136,7 +136,7 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto" style={{ padding: "0 8px 12px" }}>
-        {SECTIONS.map((section) => (
+        {visibleSections.map((section) => (
           <div key={section.label} style={{ marginBottom: 12 }}>
             {!collapsed && (
               <div
