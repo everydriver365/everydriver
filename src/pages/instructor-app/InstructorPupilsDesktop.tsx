@@ -332,9 +332,8 @@ export default function InstructorPupilsDesktop() {
     if (editForm.phone.trim() && !UK_PHONE_RE.test(editForm.phone.trim())) errs.phone = "Enter a valid UK phone number";
     setEditErrors(errs);
     if (Object.keys(errs).length) return;
-    const prevExp = editForm.previous_experience_hours.trim() === ""
-      ? null
-      : Math.max(0, Number(editForm.previous_experience_hours));
+    const hoursTrim = editForm.previous_experience_hours.trim();
+    const prevExp = hoursTrim ? `${hoursTrim} hours` : null;
     setEditSaving(true);
     const { error } = await supabase.from("pupils").update({
       name: editForm.name.trim(),
