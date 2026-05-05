@@ -1,0 +1,61 @@
+/* Scoped tokens for the redesigned instructor dashboard */
+.dashboard-v2 {
+  --d2-bg: #F8FAFC;
+  --d2-surface: #FFFFFF;
+  --d2-surface-soft: #F8FAFC;
+  --d2-border: #E2E8F0;
+  --d2-indigo: #4F46E5;
+  --d2-indigo-hover: #4338CA;
+  --d2-indigo-bg: #EEF2FF;
+  --d2-emerald-bg: #ECFDF5;
+  --d2-emerald-fg: #047857;
+  --d2-rose-bg: #FFF1F2;
+  --d2-rose-fg: #BE123C;
+  --d2-amber-bg: #FEF3C7;
+  --d2-amber-fg: #B45309;
+  --d2-text-1: #0F172A;
+  --d2-text-2: #64748B;
+  --d2-text-3: #94A3B8;
+  --d2-hover: #F1F5F9;
+
+  background: var(--d2-bg);
+  color: var(--d2-text-1);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-feature-settings: "cv11", "ss01";
+}
+
+.dark .dashboard-v2 {
+  --d2-bg: #0B1120;
+  --d2-surface: #111827;
+  --d2-surface-soft: #0F172A;
+  --d2-border: #1F2937;
+  --d2-indigo: #6366F1;
+  --d2-indigo-hover: #818CF8;
+  --d2-indigo-bg: #1E1B4B;
+  --d2-emerald-bg: rgba(16, 185, 129, 0.10);
+  --d2-emerald-fg: #34D399;
+  --d2-rose-bg: rgba(244, 63, 94, 0.10);
+  --d2-rose-fg: #FB7185;
+  --d2-amber-bg: rgba(245, 158, 11, 0.10);
+  --d2-amber-fg: #FBBF24;
+  --d2-text-1: #F1F5F9;
+  --d2-text-2: #94A3B8;
+  --d2-text-3: #64748B;
+  --d2-hover: #1F2937;
+}
+
+.dashboard-v2 .d2-mono {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboard-v2 .d2-card {
+  background: var(--d2-surface);
+  border: 0.5px solid var(--d2-border);
+  border-radius: 12px;
+}
+
+.dashboard-v2 .d2-hairline {
+  border: 0.5px solid var(--d2-border);
+}

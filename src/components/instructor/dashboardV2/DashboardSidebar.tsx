@@ -1,0 +1,213 @@
+import { Link, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard, Calendar, Inbox, Users, BookOpen, ClipboardCheck,
+  Award, Repeat2, Search, CalendarClock, CreditCard, Receipt, Clock,
+  BarChart3, Globe, Palette, Link2, TrendingUp, User, Wallet, Boxes,
+  Plug, LogOut, PanelLeftClose, PanelLeft,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface NavItem { label: string; to: string; icon: React.ElementType; badge?: string; }
+interface NavSection { label: string; items: NavItem[]; }
+
+const SECTIONS: NavSection[] = [
+  { label: "Overview", items: [
+    { label: "Dashboard", to: "/instructor", icon: LayoutDashboard },
+    { label: "Schedule", to: "/instructor/schedule", icon: Calendar },
+    { label: "Inbox", to: "/instructor/messages", icon: Inbox, badge: "9+" },
+  ]},
+  { label: "Teaching", items: [
+    { label: "Pupils", to: "/instructor/pupils", icon: Users },
+    { label: "Lessons", to: "/instructor/schedule", icon: BookOpen },
+    { label: "Test Bookings", to: "/instructor/test-bookings", icon: ClipboardCheck },
+    { label: "Test Results", to: "/instructor/test-results", icon: Award },
+    { label: "Test Swap", to: "/instructor/test-swap", icon: Repeat2 },
+    { label: "Slot Finder", to: "/instructor/test-slot-finder", icon: Search },
+    { label: "Availability", to: "/instructor/quick-availability", icon: CalendarClock },
+  ]},
+  { label: "Business", items: [
+    { label: "Payments", to: "/instructor/pay", icon: CreditCard },
+    { label: "Invoices", to: "/instructor/invoices", icon: Receipt },
+    { label: "Pending", to: "/instructor/pending-scheduling", icon: Clock },
+    { label: "Reports", to: "/instructor/income", icon: BarChart3 },
+  ]},
+  { label: "Website", items: [
+    { label: "My Site", to: "/instructor/website", icon: Globe },
+    { label: "Branding", to: "/instructor/appearance", icon: Palette },
+    { label: "Domain", to: "/instructor/domains", icon: Link2 },
+    { label: "SEO", to: "/instructor/seo", icon: TrendingUp },
+  ]},
+  { label: "Settings", items: [
+    { label: "Profile", to: "/instructor/settings", icon: User },
+    { label: "Plan & Billing", to: "/instructor/billing", icon: Wallet },
+    { label: "Modules", to: "/instructor/modules", icon: Boxes },
+    { label: "Integrations", to: "/instructor/integrations", icon: Plug },
+  ]},
+];
+
+interface Props {
+  collapsed: boolean;
+  onToggle: () => void;
+  userInitials: string;
+  userName: string;
+  onSignOut: () => void;
+}
+
+export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, onSignOut }: Props) {
+  const { pathname } = useLocation();
+
+  return (
+    <aside
+      className="flex flex-col h-screen sticky top-0 z-30"
+      style={{
+        width: collapsed ? 64 : 260,
+        background: "var(--d2-surface)",
+        borderRight: "0.5px solid var(--d2-border)",
+        transition: "width 200ms ease-out",
+      }}
+    >
+      {/* Brand */}
+      <div className="flex items-center justify-between" style={{ padding: "16px 12px" }}>
+        <Link to="/instructor" className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-0.5" aria-label="DSM logo">
+            <span style={{ width: 10, height: 10, background: "#EF4444", borderRadius: 2, transform: "skewY(-8deg)" }} />
+            <span style={{ width: 10, height: 10, background: "#3B82F6", borderRadius: 2, transform: "skewY(-8deg)" }} />
+            <span style={{ width: 10, height: 10, background: "#1F2937", borderRadius: 2, transform: "skewY(-8deg)" }} />
+          </div>
+          {!collapsed && (
+            <span style={{ fontSize: 14, fontWeight: 600, letterSpacing: "-0.2px", color: "var(--d2-text-1)" }}>
+              DSM
+            </span>
+          )}
+        </Link>
+        <button
+          onClick={onToggle}
+          className="rounded-md p-1 transition-colors"
+          style={{ color: "var(--d2-text-3)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--d2-hover)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? <PanelLeft size={14} /> : <PanelLeftClose size={14} />}
+        </button>
+      </div>
+
+      {/* Workspace card */}
+      {!collapsed && (
+        <div style={{ padding: "0 12px 12px" }}>
+          <div
+            className="flex items-center gap-2"
+            style={{
+              padding: "8px",
+              borderRadius: 8,
+              border: "0.5px solid var(--d2-border)",
+              background: "var(--d2-surface-soft)",
+            }}
+          >
+            <div
+              className="flex items-center justify-center shrink-0"
+              style={{
+                width: 28, height: 28, borderRadius: "50%",
+                background: "var(--d2-indigo-bg)",
+                color: "var(--d2-indigo)",
+                fontSize: 11, fontWeight: 600,
+              }}
+            >
+              {userInitials}
+            </div>
+            <div className="min-w-0">
+              <p style={{ fontSize: 12, fontWeight: 500, color: "var(--d2-text-1)", margin: 0, lineHeight: 1.2 }}>
+                {userName}
+              </p>
+              <p style={{ fontSize: 10, color: "var(--d2-text-3)", margin: 0, lineHeight: 1.3 }}>
+                Personal workspace
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto" style={{ padding: "0 8px 12px" }}>
+        {SECTIONS.map((section) => (
+          <div key={section.label} style={{ marginBottom: 12 }}>
+            {!collapsed && (
+              <div
+                style={{
+                  fontSize: 10, fontWeight: 600, letterSpacing: "0.6px",
+                  color: "var(--d2-text-3)", textTransform: "uppercase",
+                  padding: "8px 8px 4px",
+                }}
+              >
+                {section.label}
+              </div>
+            )}
+            <ul className="space-y-0.5">
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                const active = pathname === item.to ||
+                  (item.to !== "/instructor" && pathname.startsWith(item.to));
+                return (
+                  <li key={item.label}>
+                    <Link
+                      to={item.to}
+                      title={collapsed ? item.label : undefined}
+                      className={cn("flex items-center gap-2 rounded-md transition-colors group")}
+                      style={{
+                        padding: collapsed ? "8px" : "6px 8px",
+                        justifyContent: collapsed ? "center" : "flex-start",
+                        background: active ? "var(--d2-indigo-bg)" : "transparent",
+                        color: active ? "var(--d2-indigo)" : "var(--d2-text-2)",
+                        fontSize: 12,
+                        fontWeight: active ? 500 : 400,
+                        transition: "background 150ms ease-out, color 150ms ease-out",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!active) e.currentTarget.style.background = "var(--d2-hover)";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!active) e.currentTarget.style.background = "transparent";
+                      }}
+                    >
+                      <Icon size={14} strokeWidth={1.75} />
+                      {!collapsed && <span className="truncate flex-1">{item.label}</span>}
+                      {!collapsed && item.badge && (
+                        <span
+                          style={{
+                            background: "#FEE2E2", color: "#B91C1C",
+                            fontSize: 10, fontWeight: 600,
+                            padding: "1px 6px", borderRadius: 999,
+                          }}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </nav>
+
+      {/* Sign out */}
+      <div style={{ padding: "12px", borderTop: "0.5px solid var(--d2-border)" }}>
+        <button
+          onClick={onSignOut}
+          className="flex items-center gap-2 w-full rounded-md transition-colors"
+          style={{
+            padding: collapsed ? "8px" : "6px 8px",
+            justifyContent: collapsed ? "center" : "flex-start",
+            color: "var(--d2-text-2)", fontSize: 12,
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--d2-hover)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          <LogOut size={14} strokeWidth={1.75} />
+          {!collapsed && "Sign out"}
+        </button>
+      </div>
+    </aside>
+  );
+}
