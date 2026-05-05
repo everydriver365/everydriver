@@ -332,24 +332,9 @@ export default function InstructorPupilsDesktop() {
     if (editForm.phone.trim() && !UK_PHONE_RE.test(editForm.phone.trim())) errs.phone = "Enter a valid UK phone number";
     setEditErrors(errs);
     if (Object.keys(errs).length) return;
-    const hoursTrim = editForm.previous_experience_hours.trim();
-    const prevExp = hoursTrim ? `${hoursTrim} hours` : null;
     setEditSaving(true);
-    const { error } = await supabase.from("pupils").update({
-      name: editForm.name.trim(),
-      phone: editForm.phone.trim() || null,
-      email: editForm.email.trim() || null,
-      postcode: editForm.postcode.trim().toUpperCase() || null,
-      address: editForm.address.trim() || null,
-      what3words: editForm.what3words.trim() || null,
-      date_of_birth: editForm.date_of_birth || null,
-      sex: editForm.sex || null,
-      previous_experience: prevExp,
-      transmission_type: editForm.transmission_type || null,
-      special_needs: editForm.special_needs.trim() || null,
-      notes: editForm.notes.trim() || null,
-      payment_method: editForm.payment_method || "tbc",
-    }).eq("id", editTargetId);
+    const payload = buildPupilUpdatePayload(editForm);
+    const { error } = await supabase.from("pupils").update(payload).eq("id", editTargetId);
     setEditSaving(false);
     if (error) { toast.error(`Could not save: ${error.message}`); return; }
     toast.success("Pupil updated");
