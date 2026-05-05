@@ -965,7 +965,7 @@ function RightRail({
   );
 }
 
-function PupilChip({ pupil }: { pupil: typeof unbookedSeed[number] }) {
+function PupilChip({ pupil }: { pupil: PupilLite }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `pupil-${pupil.id}`, data: { kind: "pupil", pupil },
   });
