@@ -233,7 +233,7 @@ export default function InstructorLiveSession() {
     
     try {
       // Fetch active devices and instructor preference in parallel
-      const [devicesRes] = await Promise.all([
+      const [devicesRes, prefRes] = await Promise.all([
         supabase
           .from("gps_devices")
           .select("*")
@@ -249,8 +249,13 @@ export default function InstructorLiveSession() {
 
       if (devicesRes.error) throw devicesRes.error;
       const devices = devicesRes.data;
-      
-      if (devices && devices.length > 0) {
+      const preferred = (prefRes.data as any)?.preferred_tracking_provider as string | null;
+
+      // Honour the instructor's saved preference. "phone" leaves device null
+      // so the streamer hook takes over.
+      if (preferred === "phone") {
+        setActiveProvider("phone");
+      } else if (devices && devices.length > 0) {
         setActiveProvider("radius");
 
         const providerDevices = devices;
