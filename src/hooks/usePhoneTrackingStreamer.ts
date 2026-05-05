@@ -1,6 +1,15 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+export interface PhoneFix {
+  latitude: number;
+  longitude: number;
+  speedKmh: number;
+  heading: number | null;
+  accuracy: number | null;
+  timestamp: number;
+}
+
 interface Options {
   /** Active provider — only streams when this is "phone". */
   provider: "phone" | "radius" | null;
@@ -10,6 +19,8 @@ interface Options {
   sessionId?: string | null;
   /** Throttle uploads to at most one per N ms (default 2000). */
   minIntervalMs?: number;
+  /** Optional callback fired on every accepted GPS fix (after throttling). */
+  onPosition?: (fix: PhoneFix) => void;
 }
 
 /**
