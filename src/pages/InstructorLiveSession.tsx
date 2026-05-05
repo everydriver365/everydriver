@@ -39,6 +39,7 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
 import { DeviceSelectorDropdown } from "@/components/instructor/tracking/DeviceSelectorDropdown";
 import { TrackingProviderDropdown } from "@/components/instructor/tracking/TrackingProviderDropdown";
 import { usePhoneTrackingStreamer } from "@/hooks/usePhoneTrackingStreamer";
+import { useLivePupilPosition } from "@/hooks/useLivePupilPosition";
 
 import { SatNavLiveMap } from "@/components/instructor/tracking/SatNavLiveMap";
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
@@ -126,11 +127,29 @@ export default function InstructorLiveSession() {
   const [pendingRouteType, setPendingRouteType] = useState<"practice" | "test" | "driving_test">("practice");
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
 
+  const isPhoneProvider = activeProvider === "phone";
+
   // Stream phone GPS into live_pupil_positions when "phone" provider is active.
   usePhoneTrackingStreamer({
     provider: activeProvider === "radius" ? "radius" : activeProvider === null ? null : "phone",
     pupilId: selectedPupilId || null,
   });
+
+  // When phone provider is active, subscribe to phone-streamed positions and
+  // use them as the live map source instead of the Radius hardware feed.
+  const phonePosition = useLivePupilPosition(
+    isPhoneProvider ? (device?.current_pupil_id ?? selectedPupilId ?? null) : null,
+    isPhoneProvider,
+  );
+
+  const mapLatitude = isPhoneProvider ? (phonePosition?.latitude ?? null) : (device?.last_latitude ?? null);
+  const mapLongitude = isPhoneProvider ? (phonePosition?.longitude ?? null) : (device?.last_longitude ?? null);
+  const mapHeading = isPhoneProvider ? (phonePosition?.heading ?? null) : (device?.last_heading ?? null);
+  const mapSpeedKmh = isPhoneProvider ? (phonePosition?.speed_kmh ?? null) : (device?.last_speed_kmh ?? null);
+  const mapSpeedLimitKmh = isPhoneProvider
+    ? (phonePosition?.speed_limit_kmh ?? speedLimitKmh)
+    : (device?.last_speed_limit_kmh ?? speedLimitKmh);
+  const mapLastSeenAt = isPhoneProvider ? (phonePosition?.updated_at ?? null) : (device?.last_seen_at ?? null);
   const [showDrivingTestDialog, setShowDrivingTestDialog] = useState(false);
   const [drivingTestDetails, setDrivingTestDetails] = useState<{
     testCentreId: string | null;
@@ -972,13 +991,13 @@ export default function InstructorLiveSession() {
 
           {/* Sat-Nav Live Map — same style as preview, fullscreen */}
           <SatNavLiveMap
-            latitude={device.last_latitude}
-            longitude={device.last_longitude}
-            heading={device.last_heading}
-            speedKmh={device.last_speed_kmh}
-            speedLimitKmh={device.last_speed_limit_kmh ?? speedLimitKmh}
-            roadName={device.last_road_name}
-            lastSeenAt={device.last_seen_at}
+            latitude={mapLatitude}
+            longitude={mapLongitude}
+            heading={mapHeading}
+            speedKmh={mapSpeedKmh}
+            speedLimitKmh={mapSpeedLimitKmh}
+            roadName={isPhoneProvider ? null : device.last_road_name}
+            lastSeenAt={mapLastSeenAt}
             isActive={isConnected}
             sessionId={device.current_session_id}
             ignitionOn={device.last_ignition_status}
@@ -1138,11 +1157,11 @@ export default function InstructorLiveSession() {
               }}>
                 <div style={{ height: "28vh", minHeight: 180, maxHeight: 260 }}>
                   <MiniLiveMap
-                    latitude={device.last_latitude}
-                    longitude={device.last_longitude}
-                    heading={device.last_heading}
-                    speedKmh={device.last_speed_kmh}
-                    lastSeenAt={device.last_seen_at}
+                    latitude={mapLatitude}
+                    longitude={mapLongitude}
+                    heading={mapHeading}
+                    speedKmh={mapSpeedKmh}
+                    lastSeenAt={mapLastSeenAt}
                     isActive={isConnected}
                     sessionId={device.current_session_id}
                   />
