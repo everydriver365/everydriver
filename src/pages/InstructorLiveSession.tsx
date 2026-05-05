@@ -1188,38 +1188,6 @@ export default function InstructorLiveSession() {
             </>
           ) : (
             <>
-              {/* TRACKER SOURCE — choose Phone / OBD + allow location switch (top of page) */}
-              {instructor?.id && (
-                <TrackerSourceCard
-                  instructorId={instructor.id}
-                  pupilId={selectedPupilId || null}
-                  activeProvider={activeProvider}
-                  onProviderChange={(choice) => {
-                    setActiveProvider(choice);
-                  }}
-                  phoneStreamingConfirmed={phoneStreamingConfirmed}
-                  onTogglePhoneStreaming={() => {
-                    if (!selectedPupilId) {
-                      toast({
-                        title: "Select a pupil first",
-                        description: "Choose the pupil this lesson is for, then start phone tracking.",
-                      });
-                      return;
-                    }
-                    setPhoneStreamingConfirmed((v) => {
-                      const next = !v;
-                      void logPhoneTrackingEvent({
-                        instructorId: instructor.id,
-                        pupilId: selectedPupilId || null,
-                        event: next ? "tracking_started" : "tracking_stopped",
-                        status: locationPermissionStatus,
-                      });
-                      return next;
-                    });
-                  }}
-                />
-              )}
-
               {/* PHONE LAST LOCATION + ROUTE PREVIEW — visible while phone tracking is active */}
               <PhoneLastLocationCard
                 active={phoneTrackingReady}
