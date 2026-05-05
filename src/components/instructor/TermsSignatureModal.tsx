@@ -494,7 +494,7 @@ export function TermsSignatureModal({
 
   const goToTermsSettings = () => {
     onOpenChange(false);
-    navigate("/instructor/menu?open=terms");
+    navigate("/instructor/settings/terms");
   };
 
   // Premium tile system tokens
