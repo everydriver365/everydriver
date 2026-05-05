@@ -124,11 +124,11 @@ export function TakePaymentModal({
     }
   };
 
-  // Generate Square payment link then send via SMS/email
+  // Generate Square payment link then send via SMS (email is admin-only)
   const handleSendLink = async () => {
     if (!instructorId) return;
-    if (!manualPhone && !manualEmail) return;
-    const method = sendViaSms && sendViaEmail ? "both" : sendViaSms ? "sms" : "email";
+    if (!manualPhone) return;
+    const method = "sms";
     setSending(true);
     try {
       const isManualOnly = selectedPupilId === "_manual" || !selectedPupilId;
