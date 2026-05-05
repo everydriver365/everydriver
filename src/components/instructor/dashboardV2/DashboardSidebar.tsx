@@ -225,29 +225,52 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
                     <Link
                       to={item.to}
                       title={collapsed ? item.label : undefined}
-                      className={cn("flex items-center gap-2 rounded-md transition-colors group")}
+                      aria-current={active ? "page" : undefined}
+                      className={cn("relative flex items-center gap-2 rounded-md transition-colors group")}
                       style={{
-                        padding: collapsed ? "8px" : "6px 8px",
+                        padding: collapsed ? "8px" : "6px 8px 6px 10px",
                         justifyContent: collapsed ? "center" : "flex-start",
-                        background: active ? "var(--d2-indigo-bg)" : "transparent",
-                        color: active ? "var(--d2-indigo)" : "var(--d2-text-2)",
+                        background: active ? "var(--d2-indigo)" : "transparent",
+                        color: active ? "#FFFFFF" : "var(--d2-text-2)",
                         fontSize: 12,
-                        fontWeight: active ? 500 : 400,
-                        transition: "background 150ms ease-out, color 150ms ease-out",
+                        fontWeight: active ? 600 : 400,
+                        boxShadow: active ? "0 1px 2px rgba(15,23,42,0.08), 0 1px 3px rgba(15,23,42,0.06)" : "none",
+                        transition: "background 150ms ease-out, color 150ms ease-out, box-shadow 150ms ease-out",
                       }}
                       onMouseEnter={(e) => {
-                        if (!active) e.currentTarget.style.background = "var(--d2-hover)";
+                        if (!active) {
+                          e.currentTarget.style.background = "var(--d2-hover)";
+                          e.currentTarget.style.color = "var(--d2-text-1)";
+                        }
                       }}
                       onMouseLeave={(e) => {
-                        if (!active) e.currentTarget.style.background = "transparent";
+                        if (!active) {
+                          e.currentTarget.style.background = "transparent";
+                          e.currentTarget.style.color = "var(--d2-text-2)";
+                        }
                       }}
                     >
-                      <Icon size={14} strokeWidth={1.75} />
+                      {active && !collapsed && (
+                        <span
+                          aria-hidden
+                          style={{
+                            position: "absolute",
+                            left: -8,
+                            top: 6,
+                            bottom: 6,
+                            width: 3,
+                            borderRadius: 2,
+                            background: "var(--d2-indigo)",
+                          }}
+                        />
+                      )}
+                      <Icon size={14} strokeWidth={active ? 2.25 : 1.75} style={{ color: active ? "#FFFFFF" : undefined }} />
                       {!collapsed && <span className="truncate flex-1">{item.label}</span>}
                       {!collapsed && item.badge && (
                         <span
                           style={{
-                            background: "#FEE2E2", color: "#B91C1C",
+                            background: active ? "rgba(255,255,255,0.22)" : "#FEE2E2",
+                            color: active ? "#FFFFFF" : "#B91C1C",
                             fontSize: 10, fontWeight: 600,
                             padding: "1px 6px", borderRadius: 999,
                           }}
