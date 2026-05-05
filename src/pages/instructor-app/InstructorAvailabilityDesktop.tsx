@@ -1146,14 +1146,23 @@ export default function InstructorAvailabilityDesktop() {
           </div>
         </div>
 
-        <WeeklyHoursCard weekly={weekly} setWeekly={setWeekly} avgRate={38} />
+        {!weekly || isLoading ? (
+          <div style={{ padding: 40, textAlign: "center", color: "#94A3B8", fontSize: 12 }}>
+            <Loader2 size={16} className="animate-spin" style={{ display: "inline-block", marginRight: 6, verticalAlign: "middle" }} />
+            Loading availability…
+          </div>
+        ) : (
+          <>
+            <WeeklyHoursCard weekly={weekly} setWeekly={setWeekly} avgRate={38} />
 
-        <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 10, marginBottom: 14 }}>
-          <TimeOffCard items={timeOff} onAdd={addTimeOff} onUpdate={updateTimeOff} onDelete={deleteTimeOff} />
-          <BookingRulesCard rules={rules} setRules={setRules} />
-        </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 10, marginBottom: 14 }}>
+              <TimeOffCard items={timeOff} onAdd={addTimeOff} onUpdate={updateTimeOff} onDelete={deleteTimeOff} />
+              <BookingRulesCard rules={rules} setRules={setRules} />
+            </div>
 
-        <FourWeekPreview weekly={weekly} timeOff={timeOff} />
+            <FourWeekPreview weekly={weekly} timeOff={timeOff} />
+          </>
+        )}
       </div>
     </DashboardShell>
   );
