@@ -122,6 +122,8 @@ export default function InstructorPaymentsDesktop() {
 
   // chart geometry
   const chartW = 460, chartH = 140, padL = 30, padB = 20, padT = 8, padR = 8;
+  const innerW = chartW - padL - padR;
+  const innerH = chartH - padT - padB;
   const maxAmt = Math.max(100, ...cashFlow.map(c => c.amount));
   const max = Math.ceil(maxAmt / 100) * 100;
   const barW = 24, gap = cashFlow.length > 1 ? (innerW - barW * cashFlow.length) / (cashFlow.length - 1) : 0;
