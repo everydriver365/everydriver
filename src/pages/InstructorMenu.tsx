@@ -703,7 +703,7 @@ export default function InstructorMenu() {
             <div className="flex-1 text-left min-w-0">
               <span style={titleStyle}>{tile.title}</span>
             </div>
-            <ExternalLink size={14} strokeWidth={1.6} color="#6E6E73" className="shrink-0" />
+            <ExternalLink size={14} strokeWidth={1.6} color="#6E6E73" className={cn("shrink-0", tile.externalUrl?.startsWith("/") && "hidden")} />
           </button>
         </div>
       );
