@@ -335,13 +335,12 @@ export default function InstructorPaymentsDesktop() {
               }}>{dayLabel(g.date)}</div>
 
               {g.items.map((t, i) => {
-                const p = PUPILS[t.pupilId];
                 const time = new Date(t.dateTime).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
                 const isLast = i === g.items.length - 1;
                 const negative = t.amount < 0;
                 return (
                   <div key={t.id}
-                    onClick={() => toast(`Opening ${t.id}…`)}
+                    onClick={() => navigate(`/instructor/pupils/${t.pupilId}`)}
                     style={{
                       display: "grid", gridTemplateColumns: cols,
                       padding: "9px 12px", alignItems: "center", gap: 8,
@@ -353,9 +352,9 @@ export default function InstructorPaymentsDesktop() {
                   >
                     <div style={{ fontFamily: "var(--d2-mono)", fontSize: 11, color: "var(--d2-text-2)" }}>{time}</div>
                     <div className="flex items-center" style={{ gap: 8, minWidth: 0 }}>
-                      <Avatar id={t.pupilId} />
+                      <Avatar id={t.pupilId} name={t.pupilName} />
                       <div style={{ fontSize: 12, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {p?.name || "—"}
+                        {t.pupilName}
                       </div>
                     </div>
                     <div className="flex items-center" style={{ gap: 5, fontSize: 10, color: "var(--d2-text-2)" }}>
