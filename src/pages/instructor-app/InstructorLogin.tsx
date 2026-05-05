@@ -361,6 +361,14 @@ export default function InstructorLogin() {
           className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-xl"
         >
           <form onSubmit={handleSubmit} className="space-y-4" name="instructor-login" method="post" action="#">
+            {showVerifyBanner && !error && (
+              <Alert className="py-2 border-amber-300 bg-amber-50 text-amber-900">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  Almost there — check your inbox and click the confirmation link to activate your account before signing in.
+                </AlertDescription>
+              </Alert>
+            )}
             <AnimatePresence mode="wait">
               {error && (
                 <motion.div
