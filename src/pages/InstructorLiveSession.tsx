@@ -1510,6 +1510,48 @@ export default function InstructorLiveSession() {
                     instructorId={instructor.id}
                     pupilId={selectedPupilId || null}
                   />
+                  {isPhoneProvider && locationPermissionStatus === "granted" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!selectedPupilId) {
+                          toast({
+                            title: "Select a pupil first",
+                            description: "Choose the pupil this lesson is for, then start phone tracking.",
+                          });
+                          return;
+                        }
+                        setPhoneStreamingConfirmed((v) => !v);
+                      }}
+                      style={{
+                        marginTop: 4,
+                        background: phoneStreamingConfirmed ? "#FEE2E2" : "#3D55A1",
+                        color: phoneStreamingConfirmed ? "#B91C1C" : "#FFFFFF",
+                        border: "none",
+                        borderRadius: 12,
+                        padding: "10px 14px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 8,
+                      }}
+                    >
+                      {phoneStreamingConfirmed ? (
+                        <>
+                          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#B91C1C" }} />
+                          Stop phone tracking
+                        </>
+                      ) : (
+                        <>
+                          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#34C759" }} />
+                          Start phone tracking
+                        </>
+                      )}
+                    </button>
+                  )}
                   {device?.id && (
                     <DeviceSelectorDropdown
                       instructorId={instructor.id}
