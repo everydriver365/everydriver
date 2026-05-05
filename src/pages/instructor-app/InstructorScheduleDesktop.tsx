@@ -130,6 +130,62 @@ export default function InstructorScheduleDesktop() {
     return { count, hours: (minutes / 60).toFixed(1), earnings };
   }, [lessons]);
 
+  // ---- Open slot search ----
+  const openSlots = useMemo(() => {
+    const slots: { day: Day; startMin: number; endMin: number }[] = [];
+    for (const day of DAYS) {
+      const a = availability[day];
+      if (a === "off") continue;
+      const [sh, sm] = a.start.split(":").map(Number);
+      const [eh, em] = a.end.split(":").map(Number);
+      const dayStart = sh * 60 + sm;
+      const dayEnd = eh * 60 + em;
+      const dayLessons = lessons
+        .filter(l => l.day === day)
+        .sort((x, y) => x.startMin - y.startMin);
+      let cursor = dayStart;
+      for (const l of dayLessons) {
+        if (l.startMin > cursor) slots.push({ day, startMin: cursor, endMin: Math.min(l.startMin, dayEnd) });
+        cursor = Math.max(cursor, l.startMin + l.durationMin);
+      }
+      if (cursor < dayEnd) slots.push({ day, startMin: cursor, endMin: dayEnd });
+    }
+    return slots;
+  }, [lessons]);
+
+  const slotMatches = useMemo(() => {
+    const q = aiPrompt.trim().toLowerCase();
+    if (!q) return [];
+    // duration: "2h", "90m", "1h30", "60 min"
+    let needMin = 60;
+    const hM = q.match(/(\d+(?:\.\d+)?)\s*h(?:r|rs|our|ours)?(?:\s*(\d+)\s*m)?/);
+    const mM = q.match(/(\d+)\s*(?:m|min|mins|minutes)\b/);
+    if (hM) needMin = Math.round(parseFloat(hM[1]) * 60) + (hM[2] ? parseInt(hM[2]) : 0);
+    else if (mM) needMin = parseInt(mM[1]);
+    // day
+    const dayMap: Record<string, Day> = {
+      mon: "Mon", monday: "Mon", tue: "Tue", tues: "Tue", tuesday: "Tue",
+      wed: "Wed", weds: "Wed", wednesday: "Wed", thu: "Thu", thur: "Thu", thurs: "Thu", thursday: "Thu",
+      fri: "Fri", friday: "Fri", sat: "Sat", saturday: "Sat", sun: "Sun", sunday: "Sun",
+    };
+    let needDay: Day | null = null;
+    for (const k of Object.keys(dayMap)) if (new RegExp(`\\b${k}\\b`).test(q)) { needDay = dayMap[k]; break; }
+    const morning = /\bmorning|am\b/.test(q);
+    const afternoon = /\bafternoon|pm\b/.test(q);
+    const evening = /\bevening\b/.test(q);
+    return openSlots
+      .filter(s => s.endMin - s.startMin >= needMin)
+      .filter(s => !needDay || s.day === needDay)
+      .filter(s => {
+        if (morning) return s.startMin < 12 * 60;
+        if (afternoon) return s.startMin >= 12 * 60 && s.startMin < 17 * 60;
+        if (evening) return s.startMin >= 17 * 60;
+        return true;
+      })
+      .slice(0, 8)
+      .map(s => ({ ...s, needMin }));
+  }, [aiPrompt, openSlots]);
+
   const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
   const initials = (instructor?.name || "").split(" ").map(s => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "ID";
 
@@ -219,22 +275,65 @@ export default function InstructorScheduleDesktop() {
                 );
               })}
             </div>
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 6,
-              background: "#fff", border: "1px solid #E2E8F0", borderRadius: 8,
-              padding: "5px 9px", minWidth: 200,
-            }}>
-              <Search size={11} style={{ color: "var(--d2-text-2)" }} />
-              <input
-                type="search"
-                placeholder="Find a slot…"
-                value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
-                style={{
-                  flex: 1, border: "none", outline: "none", background: "transparent",
-                  fontSize: 11, color: "var(--d2-text-1)",
-                }}
-              />
+            <div style={{ position: "relative" }}>
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                background: "#fff", border: "1px solid #E2E8F0", borderRadius: 8,
+                padding: "5px 9px", minWidth: 240,
+              }}>
+                <Search size={11} style={{ color: "var(--d2-text-2)" }} />
+                <input
+                  type="search"
+                  placeholder='Find a slot — try "2h Tue morning"'
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  style={{
+                    flex: 1, border: "none", outline: "none", background: "transparent",
+                    fontSize: 11, color: "var(--d2-text-1)",
+                  }}
+                />
+              </div>
+              {aiPrompt.trim() && (
+                <div style={{
+                  position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 30,
+                  width: 280, background: "#fff", border: "1px solid #E2E8F0",
+                  borderRadius: 10, boxShadow: "0 8px 24px rgba(15,23,42,0.10)",
+                  padding: 6, maxHeight: 320, overflowY: "auto",
+                }}>
+                  {slotMatches.length === 0 ? (
+                    <div style={{ fontSize: 11, color: "var(--d2-text-2)", padding: "8px 10px" }}>
+                      No matching slots this week.
+                    </div>
+                  ) : slotMatches.map((s, i) => (
+                    <button
+                      key={`${s.day}-${s.startMin}-${i}`}
+                      onClick={() => {
+                        const newL: Lesson = {
+                          id: Date.now() + i,
+                          pupil: "New lesson", pupilId: 0,
+                          day: s.day, startMin: s.startMin, durationMin: s.needMin,
+                          type: "standard",
+                        };
+                        setLessons(ls => [...ls, newL]);
+                        toast(`Booked ${s.day} ${fmtTime(s.startMin)} · ${s.needMin}m`);
+                        setAiPrompt("");
+                      }}
+                      style={{
+                        display: "flex", justifyContent: "space-between", alignItems: "center",
+                        width: "100%", textAlign: "left", padding: "7px 10px",
+                        borderRadius: 6, fontSize: 11, color: "var(--d2-text-1)",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "#F1F5F9")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <span style={{ fontWeight: 500 }}>{s.day} · {fmtTime(s.startMin)}</span>
+                      <span style={{ color: "var(--d2-text-3)", fontFamily: "var(--d2-mono)" }}>
+                        {Math.round((s.endMin - s.startMin))}m free
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <button style={{
               fontSize: 11, padding: "6px 10px", borderRadius: 8,
