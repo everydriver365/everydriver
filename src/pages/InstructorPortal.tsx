@@ -231,194 +231,171 @@ export default function InstructorPortal() {
     );
   }
 
-  // Desktop Layout — calm, system palette
-  
-  const lessonsTodayLabel =
-    todaysLessonCount > 0
-      ? `${todaysLessonCount} lesson${todaysLessonCount !== 1 ? "s" : ""} today`
-      : "No lessons today — perfect for catching up";
+  // Desktop Layout — redesigned (dashboardV2)
+  return (
+    <DesktopDashboardV2
+      instructorId={instructorId}
+      instructorData={instructorData}
+      authInstructor={authInstructor}
+      pupils={pupils}
+      todaysLessonCount={todaysLessonCount}
+      monthEarnings={monthEarnings}
+      hoursThisWeek={hoursThisWeek}
+      statsLoading={statsLoading}
+      isDemoMode={isDemoMode}
+      updatingVisibility={updatingVisibility}
+      onVisibilityToggle={handleVisibilityToggle}
+      onSignOut={handleSignOut}
+      paymentModalOpen={paymentModalOpen}
+      setPaymentModalOpen={setPaymentModalOpen}
+      availabilityModalOpen={availabilityModalOpen}
+      setAvailabilityModalOpen={setAvailabilityModalOpen}
+      getGreeting={getGreeting}
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Desktop redesign (calm SaaS dashboard)
+// ---------------------------------------------------------------------------
+import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
+import { StatusStrip } from "@/components/instructor/dashboardV2/StatusStrip";
+import { GreetingBlock } from "@/components/instructor/dashboardV2/GreetingBlock";
+import { StatCardV2 } from "@/components/instructor/dashboardV2/StatCardV2";
+import { TodaySchedulePanel } from "@/components/instructor/dashboardV2/TodaySchedulePanel";
+import { MoneyStack } from "@/components/instructor/dashboardV2/MoneyStack";
+import { RetentionAlertsPanel } from "@/components/instructor/dashboardV2/RetentionAlertsPanel";
+import { RightRail } from "@/components/instructor/dashboardV2/RightRail";
+import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { useDailyEarnings } from "@/hooks/useDailyEarnings";
+
+interface DesktopDashboardV2Props {
+  instructorId: string;
+  instructorData: InstructorData | null;
+  authInstructor: any;
+  pupils: Pupil[];
+  todaysLessonCount: number;
+  monthEarnings: number;
+  hoursThisWeek: number;
+  statsLoading: boolean;
+  isDemoMode: boolean;
+  updatingVisibility: boolean;
+  onVisibilityToggle: (v: boolean) => void;
+  onSignOut: () => void;
+  paymentModalOpen: boolean;
+  setPaymentModalOpen: (v: boolean) => void;
+  availabilityModalOpen: boolean;
+  setAvailabilityModalOpen: (v: boolean) => void;
+  getGreeting: () => string;
+}
+
+function DesktopDashboardV2(props: DesktopDashboardV2Props) {
+  const {
+    instructorId, instructorData, authInstructor, pupils, todaysLessonCount,
+    monthEarnings, hoursThisWeek, statsLoading, isDemoMode, updatingVisibility,
+    onVisibilityToggle, onSignOut, paymentModalOpen, setPaymentModalOpen,
+    availabilityModalOpen, setAvailabilityModalOpen, getGreeting,
+  } = props;
+
+  const navigate = useNavigate();
+  const [addLessonOpen, setAddLessonOpen] = useState(false);
+  const { total: notificationCount } = useCombinedNotificationCount(instructorId);
+  const { data: earnings } = useDailyEarnings(instructorId);
+
+  const firstName = instructorData?.name?.split(" ")[0] || "there";
+  const initials = (instructorData?.name || "")
+    .split(" ").map(p => p[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "ID";
+
+  const subtitle = todaysLessonCount > 0
+    ? `${todaysLessonCount} lesson${todaysLessonCount !== 1 ? "s" : ""} today`
+    : "No lessons today — perfect for catching up";
+
+  // Outstanding totals from pupil balances (negative = owes money)
+  const owing = pupils.filter(p => (p.account_balance ?? 0) < 0);
+  const outstandingTotal = owing.reduce((sum, p) => sum + Math.abs(p.account_balance ?? 0), 0);
+
+  // Sparklines from daily earnings (last 7 days)
+  const dailySeries = (earnings?.dailyEarnings ?? []).slice(-7).map(d => d.amount);
+  const todaySeries = dailySeries.length ? dailySeries.map(v => (v > 0 ? 1 : 0)) : [];
 
   return (
-    <InstructorPortalLayout>
-      <div className="space-y-3" style={{ backgroundColor: "hsl(var(--dsm-bg))" }}>
+    <RealtimeHubProvider instructorId={instructorId}>
+      <DashboardShell
+        userInitials={initials}
+        userName={instructorData?.name || "Instructor"}
+        notificationCount={notificationCount}
+        onSignOut={onSignOut}
+        onAskED={() => {
+          // AICommandCenter mounts globally below; trigger via custom event
+          window.dispatchEvent(new CustomEvent("dsm:open-ai"));
+        }}
+        onBell={() => navigate("/instructor/notifications")}
+        rightRail={
+          <RightRail
+            pupilCount={pupils.length}
+            onAddLesson={() => setAddLessonOpen(true)}
+            onTakePayment={() => setPaymentModalOpen(true)}
+          />
+        }
+      >
+        <div className="flex flex-col" style={{ gap: 24 }}>
+          <StatusStrip />
 
-        {/* Demo Mode Banner */}
-        <DemoModeBanner />
+          <GreetingBlock
+            greeting={getGreeting()}
+            name={firstName}
+            subtitle={subtitle}
+            isActive={!!authInstructor?.is_active}
+            onToggle={onVisibilityToggle}
+            disabled={updatingVisibility}
+          />
 
-        {/* PDI Banner */}
-        {(subscription as any)?.is_pdi_programme && (
-          <PDIBanner instructorName={instructorData?.name?.split(' ')[0]} />
-        )}
-
-        {/* Calm header card — greeting + online pill */}
-        <div className="flex items-center justify-between bg-card rounded-2xl px-5 py-4">
-          <div>
-            <h1
-              className="text-foreground"
-              style={{ fontSize: 22, fontWeight: 500, letterSpacing: "-0.4px", margin: 0 }}
-            >
-              {getGreeting()}, {instructorData?.name?.split(' ')[0] || 'there'}
-            </h1>
-            <p className="text-muted-foreground" style={{ fontSize: 13, margin: "2px 0 0" }}>
-              {lessonsTodayLabel}
-            </p>
+          {/* Stat cards */}
+          <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
+            <StatCardV2
+              label="Today"
+              value={isDemoMode ? demoStats.todayLessonCount : todaysLessonCount}
+              data={todaySeries}
+              onClick={() => navigate("/instructor/schedule")}
+            />
+            <StatCardV2
+              label="This Month"
+              value={statsLoading ? "—" : `£${(isDemoMode ? demoStats.monthEarnings : monthEarnings).toLocaleString()}`}
+              data={dailySeries}
+              color="#10B981"
+              onClick={() => navigate("/instructor/pay")}
+            />
+            <StatCardV2
+              label="Active Pupils"
+              value={isDemoMode ? demoStats.activePupils : pupils.length}
+              onClick={() => navigate("/instructor/pupils")}
+            />
+            <StatCardV2
+              label="This Week"
+              value={statsLoading ? "—" : `${isDemoMode ? demoStats.hoursThisWeek : hoursThisWeek}h`}
+              onClick={() => navigate("/instructor/schedule")}
+            />
           </div>
-          <div className="flex items-center gap-2">
-            <div
-              className={cn(
-                "flex items-center gap-2 rounded-full px-3 py-1.5",
-                authInstructor?.is_active
-                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                  : "bg-muted text-muted-foreground"
-              )}
-              style={{ fontSize: 11, fontWeight: 500 }}
-            >
-              <span
-                className={cn(
-                  "inline-block rounded-full",
-                  authInstructor?.is_active ? "bg-emerald-500" : "bg-muted-foreground/40"
-                )}
-                style={{ width: 6, height: 6 }}
-              />
-              {authInstructor?.is_active ? "Online" : "Offline"}
-              <Switch
-                checked={authInstructor?.is_active ?? false}
-                onCheckedChange={handleVisibilityToggle}
-                disabled={updatingVisibility}
-                className="data-[state=checked]:bg-emerald-500 scale-75 ml-1"
-              />
-            </div>
+
+          {/* Schedule + Money */}
+          <div className="grid gap-3" style={{ gridTemplateColumns: "1.6fr 1fr" }}>
+            <TodaySchedulePanel
+              instructorId={instructorId}
+              todayCount={todaysLessonCount}
+              onAddLesson={() => setAddLessonOpen(true)}
+            />
+            <MoneyStack
+              monthEarnings={isDemoMode ? demoStats.monthEarnings : monthEarnings}
+              paymentsCount={0}
+              outstanding={outstandingTotal}
+              outstandingCount={owing.length}
+            />
           </div>
+
+          <RetentionAlertsPanel instructorId={instructorId} />
         </div>
 
-        {/* KPI tiles — calm, no saturated icons */}
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            {
-              label: "Today",
-              value: isDemoMode ? demoStats.todayLessonCount : todaysLessonCount,
-              to: "/instructor/schedule",
-            },
-            {
-              label: "This month",
-              value: isDemoMode
-                ? `£${demoStats.monthEarnings.toLocaleString()}`
-                : statsLoading
-                  ? "—"
-                  : `£${monthEarnings.toLocaleString()}`,
-              to: "/instructor/pay",
-            },
-            {
-              label: "Active pupils",
-              value: isDemoMode ? demoStats.activePupils : pupils.length,
-              to: "/instructor/pupils",
-            },
-            {
-              label: "This week",
-              value: isDemoMode
-                ? `${demoStats.hoursThisWeek}h`
-                : statsLoading
-                  ? "—"
-                  : `${hoursThisWeek}h`,
-              to: "/instructor/schedule",
-            },
-          ].map((tile) => (
-            <button
-              key={tile.label}
-              onClick={() => navigate(tile.to)}
-              className="bg-card rounded-xl px-4 py-3 text-left hover:bg-card/80 transition-colors"
-            >
-              <p
-                style={{
-                  fontSize: 10,
-                  fontWeight: 500,
-                  color: "#6E6E73",
-                  letterSpacing: "0.3px",
-                  textTransform: "uppercase",
-                  margin: "0 0 4px",
-                }}
-              >
-                {tile.label}
-              </p>
-              <p
-                className="text-foreground tabular-nums"
-                style={{ fontSize: 20, fontWeight: 500, letterSpacing: "-0.3px", margin: 0 }}
-              >
-                {tile.value}
-              </p>
-            </button>
-          ))}
-        </div>
-
-        {/* Demo Mode Invite for empty accounts */}
-        {!isDemoMode && pupils.length === 0 && todaysLessonCount === 0 && (
-          <DemoModeInviteCard />
-        )}
-
-        {/* Main 2-Column Dashboard Grid */}
-        <div className="grid gap-3 lg:grid-cols-3">
-          
-          {/* Left Column - Schedule & Primary Content */}
-          <div className="lg:col-span-2 space-y-3">
-            <Card className="border-0 shadow-none rounded-2xl">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg" style={{ fontWeight: 500, letterSpacing: "-0.3px" }}>
-                    Today's schedule
-                  </CardTitle>
-                  <Link to="/instructor/schedule">
-                    <Button variant="ghost" size="sm" className="text-muted-foreground">
-                      View calendar <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
-                  </Link>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="today" className="w-full">
-                  <TabsList className="w-full grid grid-cols-3 mb-4 bg-[hsl(var(--instructor-mobile-blue)/0.45)]">
-                    <TabsTrigger value="today" className="data-[state=active]:bg-card data-[state=active]:text-foreground">Today</TabsTrigger>
-                    <TabsTrigger value="tomorrow" className="data-[state=active]:bg-card data-[state=active]:text-foreground">Tomorrow</TabsTrigger>
-                    <TabsTrigger value="gaps" className="data-[state=active]:bg-card data-[state=active]:text-foreground">Fill gaps</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="today">
-                    <TodayScheduleView instructorId={instructorId} />
-                  </TabsContent>
-                  <TabsContent value="tomorrow">
-                    <TomorrowScheduleView instructorId={instructorId} />
-                  </TabsContent>
-                  <TabsContent value="gaps">
-                    <GapsFiller instructorId={instructorId} />
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-            <UpcomingTestsView instructorId={instructorId} />
-
-            {/* Job Alerts in main column */}
-            <JobOfferAlert instructorId={instructorId} />
-          </div>
-
-          {/* Right Column — consolidated to 4 cards */}
-          <div className="space-y-3">
-            {/* This month */}
-            <Card className="border-0 shadow-none rounded-2xl">
-              <CardContent className="p-4">
-                <PaymentSummaryWidget instructorId={instructorId} instructorName={instructorData?.name} />
-              </CardContent>
-            </Card>
-
-            {/* Needs attention (was Retention Alerts) */}
-            <RetentionAlertsTile instructorId={instructorId} />
-
-            {/* Tax savings */}
-            <MileageTaxSavingsCard instructorId={instructorId} />
-
-            {/* Messages */}
-            <MessagesWidget instructorId={instructorId} />
-          </div>
-        </div>
-
-        {/* What's New */}
         <WhatsNewModal portalType="instructor" userId={instructorId} />
 
         <TakePaymentModal
@@ -432,21 +409,27 @@ export default function InstructorPortal() {
           pupils={pupils}
         />
 
-        {/* Availability Calendar Modal */}
         <Dialog open={availabilityModalOpen} onOpenChange={setAvailabilityModalOpen}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Update Availability</DialogTitle>
             </DialogHeader>
-            <AvailabilityCalendar 
-              instructorId={instructorId} 
+            <AvailabilityCalendar
+              instructorId={instructorId}
               onClose={() => setAvailabilityModalOpen(false)}
             />
           </DialogContent>
         </Dialog>
-      </div>
 
-      <AICommandCenter />
-    </InstructorPortalLayout>
+        <AddLessonSheet
+          open={addLessonOpen}
+          onOpenChange={setAddLessonOpen}
+          instructorId={instructorId}
+          onSuccess={() => setAddLessonOpen(false)}
+        />
+
+        <AICommandCenter />
+      </DashboardShell>
+    </RealtimeHubProvider>
   );
 }
