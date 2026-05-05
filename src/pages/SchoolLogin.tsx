@@ -37,12 +37,18 @@ export default function SchoolLogin() {
           <p className="text-sm text-white/60">Sign in to manage your school</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" name="school-login" method="post" action="#">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-white/80">Email</Label>
             <Input
               id="email"
+              name="email"
               type="email"
+              autoComplete="username"
+              inputMode="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -53,7 +59,9 @@ export default function SchoolLogin() {
             <Label htmlFor="password" className="text-white/80">Password</Label>
             <Input
               id="password"
+              name="password"
               type="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
