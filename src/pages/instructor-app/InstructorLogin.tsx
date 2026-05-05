@@ -53,6 +53,9 @@ export default function InstructorLogin() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetSentTo, setResetSentTo] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [biometricLoading, setBiometricLoading] = useState(false);
   const [biometryLabel, setBiometryLabel] = useState("Face ID / Touch ID");
