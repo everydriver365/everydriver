@@ -122,13 +122,12 @@ export default function InstructorPaymentsDesktop() {
 
   // chart geometry
   const chartW = 460, chartH = 140, padL = 30, padB = 20, padT = 8, padR = 8;
-  const max = 600;
-  const innerW = chartW - padL - padR;
-  const innerH = chartH - padT - padB;
-  const barW = 24, gap = (innerW - barW * cashFlow.length) / (cashFlow.length - 1);
+  const maxAmt = Math.max(100, ...cashFlow.map(c => c.amount));
+  const max = Math.ceil(maxAmt / 100) * 100;
+  const barW = 24, gap = cashFlow.length > 1 ? (innerW - barW * cashFlow.length) / (cashFlow.length - 1) : 0;
   const yFor = (v: number) => padT + innerH - (v / max) * innerH;
   const forecastStartIdx = cashFlow.findIndex(c => c.type === "forecast");
-  const sepX = padL + (barW + gap) * forecastStartIdx - gap / 2;
+  const sepX = forecastStartIdx >= 0 ? padL + (barW + gap) * forecastStartIdx - gap / 2 : padL;
 
   const cols = "90px minmax(0, 1.4fr) 80px 110px 80px 90px 30px";
 
