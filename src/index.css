@@ -195,6 +195,15 @@
     transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
   }
 
+  /* Mobile-only readability bump for the instructor portal (≈ +17%).
+     Uses CSS zoom so absolute px sizes scattered across components scale
+     uniformly without retouching every component. Desktop (md+) is unchanged. */
+  @media (max-width: 767px) {
+    .instructor-portal {
+      zoom: 1.17;
+    }
+  }
+
   /* WarmTile icon strokes per category — light mode (default) */
   .instructor-portal .dsm-tile-icon { color: #7A8FAA; }
   .instructor-portal .dsm-tile-icon-schedule,
