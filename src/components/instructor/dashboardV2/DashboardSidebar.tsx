@@ -56,6 +56,12 @@ interface Props {
 
 export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, onSignOut }: Props) {
   const { pathname } = useLocation();
+  const { isActive: isModuleActive } = useModules();
+
+  const visibleSections = SECTIONS.map(s => ({
+    ...s,
+    items: s.items.filter(i => !i.moduleId || isModuleActive(i.moduleId)),
+  })).filter(s => s.items.length > 0);
 
   return (
     <aside
