@@ -479,31 +479,61 @@ export default function InstructorLogin() {
               </div>
             )}
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full h-12 bg-emerald-500 text-white hover:bg-emerald-600 font-medium text-base shadow-lg shadow-emerald-500/20"
-              disabled={loading || biometricLoading}
+              disabled={loading || biometricLoading || (isForgotPassword && resendCooldown > 0)}
             >
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   {isForgotPassword ? "Sending..." : "Signing in..."}
                 </>
+              ) : isForgotPassword ? (
+                resetSent
+                  ? resendCooldown > 0
+                    ? `Resend in ${resendCooldown}s`
+                    : "Resend reset link"
+                  : "Send Reset Link"
               ) : (
-                isForgotPassword ? "Send Reset Link" : "Sign In"
+                "Sign In"
               )}
             </Button>
 
             <div className="text-center text-sm text-muted-foreground space-y-2">
               {isForgotPassword ? (
-                <button
-                  type="button"
-                  onClick={() => { setIsForgotPassword(false); setError(""); }}
-                  className="inline-flex items-center text-primary hover:underline"
-                >
-                  <ArrowLeft className="mr-1 h-3 w-3" />
-                  Back to sign in
-                </button>
+                <div className="space-y-2">
+                  {resetSent && (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setResetSent(false);
+                          setResetSentTo("");
+                          setResendCooldown(0);
+                          setError("");
+                        }}
+                        className="text-primary hover:underline"
+                      >
+                        Use a different email
+                      </button>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsForgotPassword(false);
+                      setError("");
+                      setResetSent(false);
+                      setResetSentTo("");
+                      setResendCooldown(0);
+                    }}
+                    className="inline-flex items-center text-primary hover:underline"
+                  >
+                    <ArrowLeft className="mr-1 h-3 w-3" />
+                    Back to sign in
+                  </button>
+                </div>
               ) : (
                 <>
                   <div>
