@@ -432,6 +432,13 @@ export default function InstructorPaymentsDesktop() {
           </>
         )}
       </AnimatePresence>
+
+      <PaymentsExportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        transactions={transactions}
+        instructorName={instructor?.name}
+      />
     </DashboardShell>
   );
 }
