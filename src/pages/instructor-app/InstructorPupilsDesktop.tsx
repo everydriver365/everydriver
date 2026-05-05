@@ -9,13 +9,14 @@ import {
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { supabase } from "@/integrations/supabase/client";
 
 // ----------------------------- Types & data -----------------------------
 type Status = "active" | "at-risk" | "test-ready" | "paused" | "archived";
 type AvatarColor = "coral" | "blue" | "green" | "pink" | "purple" | "gray" | "amber";
 
 interface Pupil {
-  id: number;
+  id: string;
   name: string;
   phone: string;
   initials: string;
@@ -24,7 +25,7 @@ interface Pupil {
   lastLesson: string;
   lastLessonDays: number;
   nextLesson: string | null;
-  nextLessonRank: number; // for sorting; bigger = sooner; null=0
+  nextLessonRank: number;
   balance: number;
   status: Status;
   since: string;
@@ -45,78 +46,46 @@ const palette: Record<AvatarColor, { bg: string; text: string }> = {
 
 const colorOrder: AvatarColor[] = ["coral", "blue", "green", "pink", "purple", "gray", "amber"];
 
-// Seed data — 50 pupils
-const seed: Omit<Pupil, "initials" | "avatarColor" | "nextLessonRank">[] = [
-  { id: 1, name: "Daniel Kovac", phone: "07412 559 084", lessonsLeft: 2, lastLesson: "88 days ago", lastLessonDays: 88, nextLesson: null, balance: 480, status: "at-risk", since: "Aug 2024", totalHours: 14 },
-  { id: 2, name: "Sarah Mendez", phone: "07729 411 326", lessonsLeft: 8, lastLesson: "3 days ago", lastLessonDays: 3, nextLesson: "Tomorrow, 10:00", balance: 0, status: "active", since: "Mar 2024", totalHours: 24, testDate: "12 Jun", pickupAddress: "14 Beech Avenue, SO22 6QH" },
-  { id: 3, name: "Nadia Bhatti", phone: "07803 992 117", lessonsLeft: 5, lastLesson: "36 days ago", lastLessonDays: 36, nextLesson: null, balance: 190, status: "at-risk", since: "Sep 2024", totalHours: 19 },
-  { id: 4, name: "James Taylor", phone: "07911 220 564", lessonsLeft: 12, lastLesson: "2 days ago", lastLessonDays: 2, nextLesson: "Fri, 14:00", balance: 0, status: "active", since: "Jan 2025", totalHours: 32 },
-  { id: 5, name: "Lucy Reilly", phone: "07442 884 901", lessonsLeft: 2, lastLesson: "5 days ago", lastLessonDays: 5, nextLesson: "Mon, 09:00", balance: 0, status: "test-ready", since: "Nov 2023", totalHours: 41, testDate: "3 Jun" },
-  { id: 6, name: "Priya Gupta", phone: "07590 332 408", lessonsLeft: 0, lastLesson: "21 days ago", lastLessonDays: 21, nextLesson: null, balance: 0, status: "paused", since: "Jun 2024", totalHours: 8 },
-  { id: 7, name: "Marcus Owen", phone: "07301 998 752", lessonsLeft: 15, lastLesson: "1 day ago", lastLessonDays: 1, nextLesson: "Wed, 16:30", balance: 0, status: "active", since: "Dec 2024", totalHours: 28 },
-  { id: 8, name: "Ella Brooks", phone: "07744 100 233", lessonsLeft: 4, lastLesson: "9 days ago", lastLessonDays: 9, nextLesson: "Tue, 11:00", balance: 60, status: "active", since: "Feb 2025", totalHours: 16 },
-  { id: 9, name: "Oliver Hughes", phone: "07811 540 220", lessonsLeft: 6, lastLesson: "4 days ago", lastLessonDays: 4, nextLesson: "Thu, 18:00", balance: 0, status: "active", since: "May 2024", totalHours: 22 },
-  { id: 10, name: "Aisha Khan", phone: "07320 776 511", lessonsLeft: 3, lastLesson: "12 days ago", lastLessonDays: 12, nextLesson: "Sat, 09:30", balance: 120, status: "active", since: "Jul 2024", totalHours: 18 },
-  { id: 11, name: "Tom Whitaker", phone: "07650 224 188", lessonsLeft: 1, lastLesson: "7 days ago", lastLessonDays: 7, nextLesson: "Wed, 12:00", balance: 0, status: "test-ready", since: "Oct 2023", totalHours: 38 },
-  { id: 12, name: "Holly Sanders", phone: "07411 003 552", lessonsLeft: 0, lastLesson: "62 days ago", lastLessonDays: 62, nextLesson: null, balance: 0, status: "paused", since: "Apr 2024", totalHours: 6 },
-  { id: 13, name: "Yusuf Patel", phone: "07880 441 100", lessonsLeft: 9, lastLesson: "2 days ago", lastLessonDays: 2, nextLesson: "Tomorrow, 15:00", balance: 0, status: "active", since: "Sep 2024", totalHours: 21 },
-  { id: 14, name: "Megan Walsh", phone: "07733 220 099", lessonsLeft: 11, lastLesson: "1 day ago", lastLessonDays: 1, nextLesson: "Fri, 10:00", balance: 0, status: "active", since: "Jan 2025", totalHours: 25 },
-  { id: 15, name: "Harvey Cole", phone: "07521 663 002", lessonsLeft: 4, lastLesson: "44 days ago", lastLessonDays: 44, nextLesson: null, balance: 240, status: "at-risk", since: "Aug 2024", totalHours: 12 },
-  { id: 16, name: "Zoe Carter", phone: "07900 122 304", lessonsLeft: 7, lastLesson: "3 days ago", lastLessonDays: 3, nextLesson: "Mon, 13:00", balance: 0, status: "active", since: "Jun 2024", totalHours: 27 },
-  { id: 17, name: "Ravi Singh", phone: "07412 887 661", lessonsLeft: 2, lastLesson: "5 days ago", lastLessonDays: 5, nextLesson: "Tue, 17:00", balance: 0, status: "test-ready", since: "Sep 2023", totalHours: 44 },
-  { id: 18, name: "Chloe Patterson", phone: "07644 558 332", lessonsLeft: 5, lastLesson: "8 days ago", lastLessonDays: 8, nextLesson: "Thu, 09:00", balance: 90, status: "active", since: "Mar 2024", totalHours: 20 },
-  { id: 19, name: "Ben Williams", phone: "07900 311 884", lessonsLeft: 14, lastLesson: "2 days ago", lastLessonDays: 2, nextLesson: "Fri, 16:00", balance: 0, status: "active", since: "Dec 2024", totalHours: 30 },
-  { id: 20, name: "Sophia Allen", phone: "07733 998 100", lessonsLeft: 0, lastLesson: "92 days ago", lastLessonDays: 92, nextLesson: null, balance: 0, status: "paused", since: "Jan 2024", totalHours: 4 },
-  { id: 21, name: "Liam Roberts", phone: "07881 776 220", lessonsLeft: 3, lastLesson: "4 days ago", lastLessonDays: 4, nextLesson: "Wed, 11:30", balance: 0, status: "active", since: "Aug 2024", totalHours: 17 },
-  { id: 22, name: "Amelia Hart", phone: "07440 332 119", lessonsLeft: 6, lastLesson: "10 days ago", lastLessonDays: 10, nextLesson: "Sat, 14:00", balance: 0, status: "active", since: "Apr 2024", totalHours: 23 },
-  { id: 23, name: "Ethan Knight", phone: "07522 110 887", lessonsLeft: 8, lastLesson: "1 day ago", lastLessonDays: 1, nextLesson: "Tomorrow, 09:00", balance: 0, status: "active", since: "Feb 2025", totalHours: 19 },
-  { id: 24, name: "Isla Murphy", phone: "07900 887 552", lessonsLeft: 1, lastLesson: "6 days ago", lastLessonDays: 6, nextLesson: "Mon, 18:30", balance: 0, status: "test-ready", since: "Nov 2023", totalHours: 39 },
-  { id: 25, name: "Noah Bennett", phone: "07611 224 003", lessonsLeft: 4, lastLesson: "55 days ago", lastLessonDays: 55, nextLesson: null, balance: 320, status: "at-risk", since: "Jul 2024", totalHours: 11 },
-  { id: 26, name: "Mia Edwards", phone: "07712 558 990", lessonsLeft: 9, lastLesson: "2 days ago", lastLessonDays: 2, nextLesson: "Tue, 10:30", balance: 0, status: "active", since: "Jan 2025", totalHours: 26 },
-  { id: 27, name: "Leo Fisher", phone: "07880 001 442", lessonsLeft: 5, lastLesson: "7 days ago", lastLessonDays: 7, nextLesson: "Thu, 16:00", balance: 0, status: "active", since: "Oct 2024", totalHours: 18 },
-  { id: 28, name: "Grace Holland", phone: "07344 991 022", lessonsLeft: 12, lastLesson: "3 days ago", lastLessonDays: 3, nextLesson: "Fri, 12:00", balance: 0, status: "active", since: "Mar 2024", totalHours: 31 },
-  { id: 29, name: "Jacob Reid", phone: "07522 880 113", lessonsLeft: 0, lastLesson: "120 days ago", lastLessonDays: 120, nextLesson: null, balance: 0, status: "paused", since: "Dec 2023", totalHours: 5 },
-  { id: 30, name: "Freya Lawson", phone: "07911 003 226", lessonsLeft: 7, lastLesson: "4 days ago", lastLessonDays: 4, nextLesson: "Mon, 15:00", balance: 0, status: "active", since: "Jul 2024", totalHours: 22 },
-  { id: 31, name: "Henry Marshall", phone: "07440 776 552", lessonsLeft: 3, lastLesson: "9 days ago", lastLessonDays: 9, nextLesson: "Wed, 14:30", balance: 75, status: "active", since: "Sep 2024", totalHours: 16 },
-  { id: 32, name: "Lily Thompson", phone: "07622 880 014", lessonsLeft: 2, lastLesson: "6 days ago", lastLessonDays: 6, nextLesson: "Tue, 09:00", balance: 0, status: "test-ready", since: "Aug 2023", totalHours: 42 },
-  { id: 33, name: "Charlie Foster", phone: "07900 332 887", lessonsLeft: 11, lastLesson: "1 day ago", lastLessonDays: 1, nextLesson: "Tomorrow, 17:00", balance: 0, status: "active", since: "Feb 2025", totalHours: 24 },
-  { id: 34, name: "Evie Richards", phone: "07811 220 553", lessonsLeft: 4, lastLesson: "32 days ago", lastLessonDays: 32, nextLesson: null, balance: 160, status: "at-risk", since: "Jun 2024", totalHours: 13 },
-  { id: 35, name: "Alex Hunt", phone: "07733 442 008", lessonsLeft: 6, lastLesson: "5 days ago", lastLessonDays: 5, nextLesson: "Thu, 11:00", balance: 0, status: "active", since: "Apr 2024", totalHours: 21 },
-  { id: 36, name: "Harper Lane", phone: "07522 990 116", lessonsLeft: 8, lastLesson: "2 days ago", lastLessonDays: 2, nextLesson: "Fri, 13:30", balance: 0, status: "active", since: "Nov 2024", totalHours: 23 },
-  { id: 37, name: "Theo Briggs", phone: "07644 003 992", lessonsLeft: 1, lastLesson: "8 days ago", lastLessonDays: 8, nextLesson: "Sat, 10:00", balance: 0, status: "test-ready", since: "Sep 2023", totalHours: 40 },
-  { id: 38, name: "Ruby Pearce", phone: "07900 558 117", lessonsLeft: 5, lastLesson: "11 days ago", lastLessonDays: 11, nextLesson: "Mon, 14:00", balance: 45, status: "active", since: "May 2024", totalHours: 19 },
-  { id: 39, name: "Max Sullivan", phone: "07344 220 998", lessonsLeft: 9, lastLesson: "3 days ago", lastLessonDays: 3, nextLesson: "Wed, 17:30", balance: 0, status: "active", since: "Jan 2025", totalHours: 25 },
-  { id: 40, name: "Daisy Parker", phone: "07811 880 442", lessonsLeft: 0, lastLesson: "78 days ago", lastLessonDays: 78, nextLesson: null, balance: 0, status: "paused", since: "Mar 2024", totalHours: 7 },
-  { id: 41, name: "Finn Bryant", phone: "07522 003 117", lessonsLeft: 13, lastLesson: "1 day ago", lastLessonDays: 1, nextLesson: "Tomorrow, 11:00", balance: 0, status: "active", since: "Dec 2024", totalHours: 29 },
-  { id: 42, name: "Phoebe Cross", phone: "07733 110 884", lessonsLeft: 4, lastLesson: "6 days ago", lastLessonDays: 6, nextLesson: "Tue, 16:00", balance: 0, status: "active", since: "Aug 2024", totalHours: 18 },
-  { id: 43, name: "Owen Gibson", phone: "07412 998 002", lessonsLeft: 7, lastLesson: "2 days ago", lastLessonDays: 2, nextLesson: "Fri, 09:30", balance: 0, status: "active", since: "Oct 2024", totalHours: 22 },
-  { id: 44, name: "Layla Walters", phone: "07900 220 776", lessonsLeft: 3, lastLesson: "48 days ago", lastLessonDays: 48, nextLesson: null, balance: 220, status: "at-risk", since: "Jul 2024", totalHours: 14 },
-  { id: 45, name: "Reuben Mason", phone: "07811 442 558", lessonsLeft: 10, lastLesson: "4 days ago", lastLessonDays: 4, nextLesson: "Mon, 12:00", balance: 0, status: "active", since: "Feb 2025", totalHours: 27 },
-  { id: 46, name: "Esme Howell", phone: "07522 776 003", lessonsLeft: 2, lastLesson: "9 days ago", lastLessonDays: 9, nextLesson: "Thu, 15:30", balance: 0, status: "test-ready", since: "Oct 2023", totalHours: 41 },
-  { id: 47, name: "Kai Lambert", phone: "07344 008 117", lessonsLeft: 6, lastLesson: "5 days ago", lastLessonDays: 5, nextLesson: "Wed, 10:00", balance: 0, status: "active", since: "May 2024", totalHours: 20 },
-  { id: 48, name: "Iris Forster", phone: "07733 880 220", lessonsLeft: 8, lastLesson: "3 days ago", lastLessonDays: 3, nextLesson: "Sat, 13:00", balance: 0, status: "active", since: "Jan 2025", totalHours: 24 },
-  { id: 49, name: "Jude Hodges", phone: "07900 558 880", lessonsLeft: 0, lastLesson: "104 days ago", lastLessonDays: 104, nextLesson: null, balance: 0, status: "paused", since: "Feb 2024", totalHours: 6 },
-  { id: 50, name: "Ada Nicholls", phone: "07811 003 776", lessonsLeft: 5, lastLesson: "7 days ago", lastLessonDays: 7, nextLesson: "Tue, 18:00", balance: 0, status: "active", since: "Sep 2024", totalHours: 19 },
-];
+// Real pupils are loaded from Supabase in the page component below.
 
-function buildPupils(): Pupil[] {
-  return seed.map((p, i) => {
-    const initials = p.name.split(" ").map(s => s[0]).join("").slice(0, 2).toUpperCase();
-    const avatarColor = colorOrder[i % colorOrder.length];
-    let nextLessonRank = 0;
-    if (p.nextLesson) {
-      if (p.nextLesson.startsWith("Tomorrow")) nextLessonRank = 1000;
-      else if (p.nextLesson.startsWith("Mon")) nextLessonRank = 900;
-      else if (p.nextLesson.startsWith("Tue")) nextLessonRank = 800;
-      else if (p.nextLesson.startsWith("Wed")) nextLessonRank = 700;
-      else if (p.nextLesson.startsWith("Thu")) nextLessonRank = 600;
-      else if (p.nextLesson.startsWith("Fri")) nextLessonRank = 500;
-      else if (p.nextLesson.startsWith("Sat")) nextLessonRank = 400;
-      else nextLessonRank = 300;
-    }
-    return { ...p, initials, avatarColor, nextLessonRank };
-  });
+function deriveAvatar(name: string, idx: number): { initials: string; avatarColor: AvatarColor } {
+  const initials = name.split(" ").map(s => s[0]).filter(Boolean).join("").slice(0, 2).toUpperCase() || "?";
+  const avatarColor = colorOrder[idx % colorOrder.length];
+  return { initials, avatarColor };
 }
+
+function daysSince(dateStr: string | null | undefined): number {
+  if (!dateStr) return 9999;
+  const d = new Date(dateStr).getTime();
+  if (Number.isNaN(d)) return 9999;
+  return Math.max(0, Math.floor((Date.now() - d) / 86400000));
+}
+
+function formatLastLesson(days: number): string {
+  if (days >= 9999) return "No lessons yet";
+  if (days === 0) return "Today";
+  if (days === 1) return "1 day ago";
+  return `${days} days ago`;
+}
+
+function formatNextLesson(date: string | null, time: string | null): { label: string | null; rank: number } {
+  if (!date) return { label: null, rank: 0 };
+  const d = new Date(`${date}T${(time || "00:00:00").slice(0, 8)}`);
+  if (Number.isNaN(d.getTime())) return { label: null, rank: 0 };
+  const now = new Date();
+  const diffDays = Math.floor((d.getTime() - new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()) / 86400000);
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  const time24 = `${hh}:${mm}`;
+  let prefix = "";
+  if (diffDays === 0) prefix = "Today";
+  else if (diffDays === 1) prefix = "Tomorrow";
+  else if (diffDays > 1 && diffDays < 7) prefix = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()];
+  else prefix = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  const rank = Math.max(0, 10000 - diffDays * 10);
+  return { label: `${prefix}, ${time24}`, rank };
+}
+
 
 // ----------------------------- UI bits -----------------------------
 function Avatar({ p, size = 26 }: { p: Pupil; size?: number }) {
@@ -193,7 +162,8 @@ export default function InstructorPupilsDesktop() {
   const { instructor, signOut } = useInstructorAuth();
   const { total: notificationCount } = useCombinedNotificationCount(instructor?.id);
 
-  const [pupils, setPupils] = useState<Pupil[]>(() => buildPupils());
+  const [pupils, setPupils] = useState<Pupil[]>([]);
+  const [loadingPupils, setLoadingPupils] = useState(true);
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -201,9 +171,104 @@ export default function InstructorPupilsDesktop() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 12;
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [openId, setOpenId] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [openId, setOpenId] = useState<string | null>(null);
   const [tab, setTab] = useState<"overview" | "lessons" | "progress" | "payments" | "notes">("overview");
+
+  // Load real pupils for this instructor
+  useEffect(() => {
+    const instructorId = instructor?.id;
+    if (!instructorId) return;
+    let cancelled = false;
+    (async () => {
+      setLoadingPupils(true);
+      try {
+        const { data: pupilRows, error } = await supabase
+          .from("pupils")
+          .select("id, name, phone, account_balance, course_status, created_at, address, postcode, lessons_completed")
+          .eq("instructor_id", instructorId)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false });
+        if (error) throw error;
+
+        const ids = (pupilRows || []).map((p: any) => p.id);
+        let nextByPupil = new Map<string, { date: string; time: string }>();
+        let lastByPupil = new Map<string, string>();
+        let hoursByPupil = new Map<string, number>();
+
+        if (ids.length) {
+          const todayIso = new Date().toISOString().slice(0, 10);
+          const { data: upcoming } = await supabase
+            .from("scheduled_lessons")
+            .select("pupil_id, lesson_date, start_time, duration_minutes")
+            .eq("instructor_id", instructorId)
+            .in("pupil_id", ids)
+            .gte("lesson_date", todayIso)
+            .neq("status", "cancelled")
+            .is("deleted_at", null)
+            .order("lesson_date", { ascending: true })
+            .order("start_time", { ascending: true });
+          (upcoming || []).forEach((l: any) => {
+            if (!nextByPupil.has(l.pupil_id)) nextByPupil.set(l.pupil_id, { date: l.lesson_date, time: l.start_time });
+          });
+
+          const { data: past } = await supabase
+            .from("scheduled_lessons")
+            .select("pupil_id, lesson_date, duration_minutes, status")
+            .eq("instructor_id", instructorId)
+            .in("pupil_id", ids)
+            .lt("lesson_date", todayIso)
+            .order("lesson_date", { ascending: false });
+          (past || []).forEach((l: any) => {
+            if (!lastByPupil.has(l.pupil_id)) lastByPupil.set(l.pupil_id, l.lesson_date);
+            const mins = Number(l.duration_minutes) || 0;
+            hoursByPupil.set(l.pupil_id, (hoursByPupil.get(l.pupil_id) || 0) + mins / 60);
+          });
+        }
+
+        const mapped: Pupil[] = (pupilRows || []).map((p: any, i: number) => {
+          const { initials, avatarColor } = deriveAvatar(p.name || "Pupil", i);
+          const nxt = nextByPupil.get(p.id);
+          const next = formatNextLesson(nxt?.date || null, nxt?.time || null);
+          const lastDate = lastByPupil.get(p.id) || null;
+          const lastDays = daysSince(lastDate);
+          const balanceNum = Number(p.account_balance ?? 0);
+          const status: Status =
+            (p.course_status === "paused" && "paused") ||
+            (p.course_status === "completed" && "test-ready") ||
+            (lastDays > 30 ? "at-risk" : "active");
+          const since = p.created_at
+            ? new Date(p.created_at).toLocaleDateString("en-GB", { month: "short", year: "numeric" })
+            : "";
+          return {
+            id: p.id,
+            name: p.name || "Pupil",
+            phone: p.phone || "",
+            initials,
+            avatarColor,
+            lessonsLeft: balanceNum < 0 ? 0 : Math.max(0, Math.floor(balanceNum / 35)),
+            lastLesson: formatLastLesson(lastDays),
+            lastLessonDays: lastDays,
+            nextLesson: next.label,
+            nextLessonRank: next.rank,
+            balance: balanceNum < 0 ? Math.abs(balanceNum) : 0,
+            status,
+            since,
+            totalHours: Math.round((hoursByPupil.get(p.id) || 0) * 10) / 10,
+            pickupAddress: p.address || p.postcode || undefined,
+          };
+        });
+
+        if (!cancelled) setPupils(mapped);
+      } catch (e) {
+        console.error("Failed to load pupils", e);
+      } finally {
+        if (!cancelled) setLoadingPupils(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [instructor?.id]);
+
 
   // Debounce search
   useEffect(() => {
@@ -277,7 +342,7 @@ export default function InstructorPupilsDesktop() {
     else { setSortKey(k); setSortDir("asc"); }
   };
 
-  const toggleRow = (id: number) => {
+  const toggleRow = (id: string) => {
     setSelectedIds(prev => {
       const n = new Set(prev);
       if (n.has(id)) n.delete(id); else n.add(id);
@@ -294,7 +359,7 @@ export default function InstructorPupilsDesktop() {
     });
   };
 
-  const setStatus = (id: number, next: Status) => {
+  const setStatus = (id: string, next: Status) => {
     const prevPupil = pupils.find(p => p.id === id);
     if (!prevPupil) return;
     const prevStatus = prevPupil.status;
@@ -441,10 +506,14 @@ export default function InstructorPupilsDesktop() {
             {/* Rows */}
             {visiblePage.length === 0 ? (
               <div className="flex flex-col items-center text-center" style={{ padding: "48px 16px", gap: 8 }}>
-                <div style={{ fontSize: 13, color: "var(--d2-text-2)" }}>No pupils match these filters</div>
-                <button onClick={() => { setSearch(""); setFilter("all"); }} style={{ fontSize: 12, color: "#4F46E5", fontWeight: 500 }}>
-                  Clear filters
-                </button>
+                <div style={{ fontSize: 13, color: "var(--d2-text-2)" }}>
+                  {loadingPupils ? "Loading pupils…" : pupils.length === 0 ? "No pupils yet — add your first pupil to get started." : "No pupils match these filters"}
+                </div>
+                {!loadingPupils && pupils.length > 0 && (
+                  <button onClick={() => { setSearch(""); setFilter("all"); }} style={{ fontSize: 12, color: "#4F46E5", fontWeight: 500 }}>
+                    Clear filters
+                  </button>
+                )}
               </div>
             ) : visiblePage.map((p, i) => {
               const selected = openId === p.id;
@@ -637,7 +706,7 @@ function PanelContent({
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
-  onStatus: (id: number, s: Status) => void;
+  onStatus: (id: string, s: Status) => void;
 }) {
   const c = palette[pupil.avatarColor];
   return (
@@ -744,7 +813,7 @@ function StatCard({ label, value, mono }: { label: string; value: string; mono?:
   );
 }
 
-function OverviewTab({ pupil, onStatus }: { pupil: Pupil; onStatus: (id: number, s: Status) => void }) {
+function OverviewTab({ pupil, onStatus }: { pupil: Pupil; onStatus: (id: string, s: Status) => void }) {
   return (
     <div className="flex flex-col" style={{ gap: 12 }}>
       <div className="grid grid-cols-2" style={{ gap: 6 }}>
