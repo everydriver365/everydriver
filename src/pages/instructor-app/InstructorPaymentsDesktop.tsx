@@ -22,67 +22,15 @@ const palette: Record<string, { bg: string; text: string }> = {
   amber:  { bg: "#FAC775", text: "#412402" },
 };
 
-const PUPILS: Record<number, { name: string; initials: string; color: string }> = {
-  1: { name: "Daniel Kovac",   initials: "DK", color: "coral" },
-  2: { name: "Sarah Mendez",   initials: "SM", color: "blue" },
-  3: { name: "Nadia Bhatti",   initials: "NB", color: "green" },
-  4: { name: "James Taylor",   initials: "JT", color: "pink" },
-  5: { name: "Lucy Reilly",    initials: "LR", color: "purple" },
-  6: { name: "Priya Gupta",    initials: "PG", color: "gray" },
-  7: { name: "Marcus Owen",    initials: "MO", color: "amber" },
-  8: { name: "Amir Hossain",   initials: "AH", color: "pink" },
-  9: { name: "Ravi Hassan",    initials: "RH", color: "amber" },
-};
-
-// ---------- mock data ----------
-const stats = {
-  receivedMonth: 1840, receivedCount: 12,
-  outstanding: 2875, outstandingPupils: 8,
-  nextPayout: 412, nextPayoutDate: "Tomorrow",
-  feesMonth: 32.40, effectiveFeeRate: 1.75,
-};
-
-const cashFlow = [
-  { week: "W10", amount: 240, type: "actual" },
-  { week: "W11", amount: 330, type: "actual" },
-  { week: "W12", amount: 420, type: "actual" },
-  { week: "W13", amount: 300, type: "actual" },
-  { week: "W14", amount: 480, type: "actual" },
-  { week: "W15", amount: 390, type: "actual" },
-  { week: "W16", amount: 540, type: "actual" },
-  { week: "W17", amount: 580, type: "current" },
-  { week: "W18", amount: 450, type: "forecast" },
-  { week: "W19", amount: 390, type: "forecast" },
-  { week: "W20", amount: 510, type: "forecast" },
-  { week: "W21", amount: 420, type: "forecast" },
-] as const;
-
-const outstanding = [
-  { id: 1, amount: 480, daysOverdue: 42 },
-  { id: 3, amount: 190, daysOverdue: 18 },
-  { id: 9, amount: 152, daysUntilDue: 4 },
-  { id: 8, amount: 114, daysUntilDue: 1 },
-  { id: 6, amount: 96, daysOverdue: 7 },
-];
-
-type Method = "card" | "cash" | "bank";
-type Status = "paid" | "pending" | "refunded" | "failed";
-interface Tx { id: string; dateTime: string; pupilId: number; method: Method; forText: string; amount: number; status: Status; }
-
-const transactions: Tx[] = [
-  { id: "t1",  dateTime: "2026-05-04T11:24", pupilId: 2, method: "card", forText: "Block of 10",     amount:  360, status: "paid" },
-  { id: "t2",  dateTime: "2026-05-04T09:48", pupilId: 4, method: "cash", forText: "Standard · 1h",   amount:   38, status: "paid" },
-  { id: "t3",  dateTime: "2026-05-03T17:02", pupilId: 7, method: "card", forText: "Mock test",       amount:   60, status: "pending" },
-  { id: "t4",  dateTime: "2026-05-03T10:15", pupilId: 5, method: "bank", forText: "Standard · 1h",   amount:   38, status: "paid" },
-  { id: "t5",  dateTime: "2026-05-02T15:31", pupilId: 6, method: "card", forText: "Refund · Cancel", amount:  -38, status: "refunded" },
-  { id: "t6",  dateTime: "2026-05-02T09:02", pupilId: 1, method: "card", forText: "Standard · 1h",   amount:   38, status: "failed" },
-  { id: "t7",  dateTime: "2026-05-01T16:40", pupilId: 3, method: "card", forText: "Block of 5",      amount:  180, status: "paid" },
-  { id: "t8",  dateTime: "2026-05-01T11:05", pupilId: 7, method: "cash", forText: "Standard · 2h",   amount:   76, status: "paid" },
-  { id: "t9",  dateTime: "2026-04-30T18:22", pupilId: 4, method: "card", forText: "Top-up",          amount:  120, status: "paid" },
-  { id: "t10", dateTime: "2026-04-30T09:14", pupilId: 9, method: "bank", forText: "Standard · 1h",   amount:   38, status: "pending" },
-  { id: "t11", dateTime: "2026-04-29T13:50", pupilId: 8, method: "card", forText: "Mock test",       amount:   60, status: "paid" },
-  { id: "t12", dateTime: "2026-04-29T08:30", pupilId: 5, method: "card", forText: "Standard · 1.5h", amount:   57, status: "paid" },
-];
+const COLOR_KEYS = ["coral","blue","green","pink","purple","gray","amber"] as const;
+function pupilColor(id: string) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return COLOR_KEYS[h % COLOR_KEYS.length];
+}
+function pupilInitials(name: string) {
+  return name.split(/\s+/).map(s => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "?";
+}
 
 // ---------- helpers ----------
 const gbp = (n: number) =>
