@@ -11,6 +11,7 @@ import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCou
 import { motion, AnimatePresence } from "framer-motion";
 import { useInstructorPaymentsData, type PaymentTx, type PaymentStatus, type PaymentMethod } from "@/hooks/useInstructorPaymentsData";
 import { PaymentsExportDialog } from "@/components/instructor/payments/PaymentsExportDialog";
+import { SendAllRemindersDialog } from "@/components/instructor/payments/SendAllRemindersDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 
@@ -92,6 +93,7 @@ export default function InstructorPaymentsDesktop() {
   const [takeOpen, setTakeOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [pupilSheet, setPupilSheet] = useState<{ id: string; name: string } | null>(null);
+  const [remindersOpen, setRemindersOpen] = useState(false);
   const [page, setPage] = useState(1);
   const PAGE = 25;
 
@@ -270,8 +272,11 @@ export default function InstructorPaymentsDesktop() {
           <Card>
             <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
               <div style={{ fontSize: 13, fontWeight: 500, color: "var(--d2-text-1)" }}>Outstanding</div>
-              <button onClick={() => toast("Reminder sent to 8 pupils")}
-                style={{ fontSize: 10, color: "#4F46E5", fontWeight: 500 }}>
+              <button
+                onClick={() => setRemindersOpen(true)}
+                disabled={outstanding.length === 0}
+                style={{ fontSize: 10, color: "#4F46E5", fontWeight: 500, opacity: outstanding.length === 0 ? 0.4 : 1 }}
+              >
                 Send all reminders →
               </button>
             </div>
@@ -458,6 +463,15 @@ export default function InstructorPaymentsDesktop() {
         open={exportOpen}
         onOpenChange={setExportOpen}
         transactions={transactions}
+        instructorName={instructor?.name}
+      />
+
+      <SendAllRemindersDialog
+        open={remindersOpen}
+        onOpenChange={setRemindersOpen}
+        outstanding={outstanding}
+        allPupils={allPupils}
+        instructorId={instructor?.id}
         instructorName={instructor?.name}
       />
 
