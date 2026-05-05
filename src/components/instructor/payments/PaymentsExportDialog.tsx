@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from "date-fns";
-import { CalendarIcon, FileText, FileSpreadsheet, Download } from "lucide-react";
+import { CalendarIcon, FileText, FileSpreadsheet, Download, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Label } from "@/components/ui/label";
 import type { PaymentTx } from "@/hooks/useInstructorPaymentsData";
 
-type FormatType = "csv" | "pdf";
+type FormatType = "csv" | "pdf" | "tax";
 type Preset = "7d" | "30d" | "thisMonth" | "lastMonth" | "ytd" | "custom";
 
 const PRESETS: { id: Preset; label: string }[] = [
@@ -105,6 +105,104 @@ function buildPdf(rows: PaymentTx[], from: Date, to: Date, instructorName: strin
   return doc;
 }
 
+// HMRC Self-Assessment SA103 Self-Employment summary
+function buildTaxPdf(rows: PaymentTx[], from: Date, to: Date, instructorName: string) {
+  // Only completed earnings count as turnover (exclude pending/failed). Refunds reduce turnover.
+  const earnings = rows.filter(r => r.status === "paid" || r.status === "refunded");
+  const turnover = earnings.reduce((s, r) => s + r.amount, 0);
+  // Card fee estimate (Square 1.75% on positive card payments)
+  const cardFees = earnings
+    .filter(r => r.method === "card" && r.amount > 0)
+    .reduce((s, r) => s + r.amount * 0.0175, 0);
+  const refunds = earnings.filter(r => r.amount < 0).reduce((s, r) => s + Math.abs(r.amount), 0);
+  const netTurnover = turnover; // refunds already negative in turnover
+
+  const byMethod = (m: PaymentTx["method"]) => earnings
+    .filter(r => r.method === m).reduce((s, r) => s + r.amount, 0);
+
+  // Monthly breakdown
+  const monthly = new Map<string, { gross: number; refunds: number; fees: number; count: number }>();
+  for (const r of earnings) {
+    const key = format(new Date(r.dateTime), "yyyy-MM");
+    if (!monthly.has(key)) monthly.set(key, { gross: 0, refunds: 0, fees: 0, count: 0 });
+    const m = monthly.get(key)!;
+    if (r.amount < 0) m.refunds += Math.abs(r.amount);
+    else m.gross += r.amount;
+    if (r.method === "card" && r.amount > 0) m.fees += r.amount * 0.0175;
+    m.count += 1;
+  }
+  const monthlyRows = Array.from(monthly.entries()).sort(([a], [b]) => a.localeCompare(b));
+
+  const doc = new jsPDF();
+  doc.setFontSize(16);
+  doc.text("HMRC Tax Summary", 14, 18);
+  doc.setFontSize(10);
+  doc.setTextColor(100);
+  doc.text(
+    `${instructorName || "Instructor"} · Self-Employment (SA103) · ${format(from, "d MMM yyyy")} – ${format(to, "d MMM yyyy")}`,
+    14, 25
+  );
+  doc.setFontSize(8);
+  doc.text("Generated for Self Assessment. Figures are indicative — confirm with your accountant.", 14, 31);
+
+  // Summary box (SA103-style mapping)
+  autoTable(doc, {
+    startY: 38,
+    head: [["SA103 box", "Description", "Amount"]],
+    body: [
+      ["Box 9",  "Turnover — takings, fees, sales (gross income)", gbp(turnover + refunds)],
+      ["Box 10", "Any other business income", gbp(0)],
+      ["Box 11", "Trade allowance (if claimed)", "—"],
+      ["Box 17", "Card / payment processing fees (Square est. 1.75%)", gbp(cardFees)],
+      ["—",      "Refunds issued (deducted from turnover)", gbp(-refunds)],
+      ["",       "Net turnover for the period", gbp(netTurnover)],
+    ],
+    styles: { fontSize: 9 },
+    headStyles: { fillColor: [15, 23, 42] },
+    columnStyles: { 2: { halign: "right", fontStyle: "bold" } },
+  });
+
+  let y = (doc as any).lastAutoTable.finalY + 8;
+
+  // Income by method
+  autoTable(doc, {
+    startY: y,
+    head: [["Income by payment method", "Gross"]],
+    body: [
+      ["Card (Square)",   gbp(byMethod("card"))],
+      ["Bank transfer",   gbp(byMethod("bank"))],
+      ["Cash",            gbp(byMethod("cash"))],
+    ],
+    styles: { fontSize: 9 },
+    headStyles: { fillColor: [15, 23, 42] },
+    columnStyles: { 1: { halign: "right" } },
+  });
+
+  y = (doc as any).lastAutoTable.finalY + 8;
+
+  // Monthly breakdown
+  autoTable(doc, {
+    startY: y,
+    head: [["Month", "Txns", "Gross", "Refunds", "Card fees (est.)", "Net"]],
+    body: monthlyRows.map(([key, m]) => [
+      format(new Date(key + "-01"), "MMM yyyy"),
+      String(m.count),
+      gbp(m.gross),
+      gbp(-m.refunds),
+      gbp(m.fees),
+      gbp(m.gross - m.refunds - m.fees),
+    ]),
+    styles: { fontSize: 9 },
+    headStyles: { fillColor: [15, 23, 42] },
+    columnStyles: {
+      1: { halign: "right" }, 2: { halign: "right" },
+      3: { halign: "right" }, 4: { halign: "right" }, 5: { halign: "right" },
+    },
+  });
+
+  return doc;
+}
+
 interface ActiveFilters {
   search: string;
   status: string;
@@ -183,13 +281,18 @@ export function PaymentsExportDialog({ open, onOpenChange, transactions, filtere
       const subtitleTo = useTableFilters && filtered.length > 0
         ? new Date(filtered[0].dateTime)
         : range.to;
-      const doc = buildPdf(filtered, subtitleFrom, subtitleTo, instructorName || "");
-      if (useTableFilters && filterSummary) {
-        doc.setFontSize(9);
-        doc.setTextColor(100);
-        doc.text(`Filters: ${filterSummary}`, 14, 38);
+      if (fmt === "tax") {
+        const doc = buildTaxPdf(filtered, subtitleFrom, subtitleTo, instructorName || "");
+        doc.save(`tax-summary-${labelDate}.pdf`);
+      } else {
+        const doc = buildPdf(filtered, subtitleFrom, subtitleTo, instructorName || "");
+        if (useTableFilters && filterSummary) {
+          doc.setFontSize(9);
+          doc.setTextColor(100);
+          doc.text(`Filters: ${filterSummary}`, 14, 38);
+        }
+        doc.save(`${fname}.pdf`);
       }
-      doc.save(`${fname}.pdf`);
     }
     toast.success(`Exported ${filtered.length} transactions`);
     onOpenChange(false);
@@ -283,10 +386,11 @@ export function PaymentsExportDialog({ open, onOpenChange, transactions, filtere
           {/* Format */}
           <div>
             <Label className="text-xs text-muted-foreground mb-2 block">Format</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {([
-                { id: "csv" as const, label: "CSV", desc: "Spreadsheet-friendly", Icon: FileSpreadsheet },
-                { id: "pdf" as const, label: "PDF", desc: "Printable report", Icon: FileText },
+                { id: "csv" as const, label: "CSV", desc: "Raw transactions", Icon: FileSpreadsheet },
+                { id: "pdf" as const, label: "PDF", desc: "Formatted report", Icon: FileText },
+                { id: "tax" as const, label: "Tax", desc: "HMRC SA103 summary", Icon: Receipt },
               ]).map(({ id, label, desc, Icon }) => (
                 <button
                   key={id}
