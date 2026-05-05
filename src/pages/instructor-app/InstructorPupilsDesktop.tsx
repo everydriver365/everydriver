@@ -434,7 +434,7 @@ export default function InstructorPupilsDesktop() {
                 <Download size={12} /> Export
               </button>
               <button
-                onClick={() => toast("Add pupil")}
+                onClick={() => setAddOpen(true)}
                 style={{
                   fontSize: 11, padding: "6px 10px", borderRadius: 8,
                   background: "#4F46E5", color: "#fff", fontWeight: 500,
