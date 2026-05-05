@@ -11945,6 +11945,42 @@ export type Database = {
         }
         Relationships: []
       }
+      phone_tracking_permissions: {
+        Row: {
+          created_at: string
+          denied_at: string | null
+          granted_at: string | null
+          id: string
+          instructor_id: string
+          pupil_id: string | null
+          status: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          denied_at?: string | null
+          granted_at?: string | null
+          id?: string
+          instructor_id: string
+          pupil_id?: string | null
+          status: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          denied_at?: string | null
+          granted_at?: string | null
+          id?: string
+          instructor_id?: string
+          pupil_id?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       pipeline_leads: {
         Row: {
           course_type: string | null

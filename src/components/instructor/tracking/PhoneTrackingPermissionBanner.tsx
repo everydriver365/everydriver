@@ -5,6 +5,9 @@ import { useState } from "react";
 interface Props {
   /** Whether phone tracking is the currently selected provider. */
   active: boolean;
+  /** Persist permission state per instructor (and optional pupil). */
+  instructorId?: string | null;
+  pupilId?: string | null;
   /** Optional callback when permission becomes granted. */
   onGranted?: () => void;
 }
@@ -17,8 +20,8 @@ const META: Record<LocationPermissionStatus, { label: string; tone: string; bg: 
   unavailable: { label: "GPS not available",    tone: "#374151", bg: "#F3F4F6", border: "#E5E7EB", Icon: MapPin,         help: "This device doesn't expose GPS to the browser." },
 };
 
-export function PhoneTrackingPermissionBanner({ active, onGranted }: Props) {
-  const { status, error, request } = useLocationPermission();
+export function PhoneTrackingPermissionBanner({ active, instructorId = null, pupilId = null, onGranted }: Props) {
+  const { status, error, request } = useLocationPermission({ instructorId, pupilId });
   const [busy, setBusy] = useState(false);
 
   if (!active) return null;

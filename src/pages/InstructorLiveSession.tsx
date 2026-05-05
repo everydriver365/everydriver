@@ -132,7 +132,10 @@ export default function InstructorLiveSession() {
   const isPhoneProvider = activeProvider === "phone";
 
   // Location permission gate for Phone tracking.
-  const { status: locationPermissionStatus } = useLocationPermission();
+  const { status: locationPermissionStatus } = useLocationPermission({
+    instructorId: instructor?.id ?? null,
+    pupilId: selectedPupilId || null,
+  });
   const phoneTrackingReady = isPhoneProvider && locationPermissionStatus === "granted";
 
   // Stream phone GPS into live_pupil_positions only after permission is granted.
@@ -1490,7 +1493,11 @@ export default function InstructorLiveSession() {
                       setActiveProvider(choice === "radius" ? "radius" : "phone");
                     }}
                   />
-                  <PhoneTrackingPermissionBanner active={isPhoneProvider} />
+                  <PhoneTrackingPermissionBanner
+                    active={isPhoneProvider}
+                    instructorId={instructor.id}
+                    pupilId={selectedPupilId || null}
+                  />
                   {device?.id && (
                     <DeviceSelectorDropdown
                       instructorId={instructor.id}
