@@ -348,6 +348,26 @@ export default function InstructorLogin() {
               )}
             </AnimatePresence>
 
+            {/* Forgot password — sent confirmation */}
+            {isForgotPassword && resetSent && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-xl border border-emerald-300/40 bg-emerald-500/10 p-4 flex gap-3"
+              >
+                <MailCheck className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+                <div className="text-sm text-foreground/90 space-y-1">
+                  <div className="font-medium flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                    Reset link sent
+                  </div>
+                  <p className="text-muted-foreground text-xs leading-relaxed">
+                    Open the email at <span className="text-foreground/90 font-medium">{resetSentTo}</span> and click the link to set a new password. The link expires in 1 hour. Don't forget to check your spam folder.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+
             {/* Biometric Login Button */}
             {biometricAvailable && !isForgotPassword && (
               <Button
