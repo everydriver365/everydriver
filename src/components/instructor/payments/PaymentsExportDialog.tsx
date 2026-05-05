@@ -62,12 +62,13 @@ function escapeCsv(v: string | number) {
 }
 
 function buildCsv(rows: PaymentTx[]): string {
-  const header = ["Date", "Pupil", "Method", "For", "Amount (GBP)", "Status"];
+  const header = ["Date", "Pupil", "Method", "For", "Note", "Amount (GBP)", "Status"];
   const body = rows.map(t => [
     format(new Date(t.dateTime), "yyyy-MM-dd HH:mm"),
     t.pupilName,
     t.method,
     t.forText,
+    t.note ?? "",
     t.amount.toFixed(2),
     t.status,
   ].map(escapeCsv).join(","));
