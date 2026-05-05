@@ -1518,102 +1518,25 @@ export default function InstructorLiveSession() {
                 </div>
               </div>
 
-              {/* Tracker source selector — always visible (phone vs Radius) */}
-              {instructor?.id && (
-                <div style={{
-                  background: "#FFFFFF", border: "0.5px solid #E5E5EA", borderRadius: 12,
-                  padding: "10px 12px", fontFamily: FONT_STACK, display: "flex",
-                  flexDirection: "column", gap: 8,
-                }}>
-                  <span style={{
-                    fontSize: 11, fontWeight: 500, color: "#6E6E73",
-                    letterSpacing: 0.4, textTransform: "uppercase",
-                  }}>
-                    Tracker source
-                  </span>
-                  <TrackingProviderDropdown
-                    instructorId={instructor.id}
-                    value={(activeProvider === "radius" ? "radius" : "phone")}
-                    onChange={(choice) => {
-                      setActiveProvider(choice === "radius" ? "radius" : "phone");
-                    }}
-                  />
-                  <PhoneTrackingPermissionBanner
-                    active={isPhoneProvider}
-                    instructorId={instructor.id}
-                    pupilId={selectedPupilId || null}
-                  />
-                  {isPhoneProvider && locationPermissionStatus === "granted" && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!selectedPupilId) {
-                          toast({
-                            title: "Select a pupil first",
-                            description: "Choose the pupil this lesson is for, then start phone tracking.",
-                          });
-                          return;
-                        }
-                        setPhoneStreamingConfirmed((v) => {
-                          const next = !v;
-                          void logPhoneTrackingEvent({
-                            instructorId: instructor.id,
-                            pupilId: selectedPupilId || null,
-                            event: next ? "tracking_started" : "tracking_stopped",
-                            status: locationPermissionStatus,
-                          });
-                          return next;
-                        });
-                      }}
-                      style={{
-                        marginTop: 4,
-                        background: phoneStreamingConfirmed ? "#FEE2E2" : "#3D55A1",
-                        color: phoneStreamingConfirmed ? "#B91C1C" : "#FFFFFF",
-                        border: "none",
-                        borderRadius: 12,
-                        padding: "10px 14px",
-                        fontSize: 13,
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 8,
-                      }}
-                    >
-                      {phoneStreamingConfirmed ? (
-                        <>
-                          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#B91C1C" }} />
-                          Stop phone tracking
-                        </>
-                      ) : (
-                        <>
-                          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#34C759" }} />
-                          Start phone tracking
-                        </>
-                      )}
-                    </button>
-                  )}
-                  {device?.id && (
-                    <DeviceSelectorDropdown
-                      instructorId={instructor.id}
-                      currentDeviceId={device.id}
-                      onDeviceChange={(deviceId, provider) => {
-                        setActiveProvider(provider);
-                        supabase.from("gps_devices").select("*").eq("id", deviceId).single().then(({ data }) => {
-                          if (data) {
-                            deviceIdRef.current = null;
-                            lastSeenRef.current = null;
-                            setDevice(data as GPSDevice);
-                          }
-                        });
-                        if (provider) {
-                          supabase.from("instructors").update({ preferred_tracking_provider: provider }).eq("id", instructor.id).then(() => {});
-                        }
-                      }}
-                    />
-                  )}
-                </div>
+              {/* Optional: Radius hardware device picker */}
+              {instructor?.id && device?.id && (
+                <DeviceSelectorDropdown
+                  instructorId={instructor.id}
+                  currentDeviceId={device.id}
+                  onDeviceChange={(deviceId, provider) => {
+                    setActiveProvider(provider);
+                    supabase.from("gps_devices").select("*").eq("id", deviceId).single().then(({ data }) => {
+                      if (data) {
+                        deviceIdRef.current = null;
+                        lastSeenRef.current = null;
+                        setDevice(data as GPSDevice);
+                      }
+                    });
+                    if (provider) {
+                      supabase.from("instructors").update({ preferred_tracking_provider: provider }).eq("id", instructor.id).then(() => {});
+                    }
+                  }}
+                />
               )}
 
               {/* Manual GPS Route Recorder — kept */}
