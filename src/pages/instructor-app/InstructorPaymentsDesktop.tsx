@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Download, Plus, CreditCard, PoundSterling, Landmark,
-  MoreVertical, ChevronLeft, ChevronRight, X,
+  MoreVertical, ChevronLeft, ChevronRight, X, Search,
 } from "lucide-react";
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -95,6 +95,10 @@ export default function InstructorPaymentsDesktop() {
   const [pupilSheet, setPupilSheet] = useState<{ id: string; name: string } | null>(null);
   const [remindersOpen, setRemindersOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [methodFilter, setMethodFilter] = useState<"all" | PaymentMethod>("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const PAGE = 25;
 
   const { loading, error, stats, cashFlow, outstanding, transactions, refresh } = useInstructorPaymentsData(instructor?.id);
@@ -111,9 +115,30 @@ export default function InstructorPaymentsDesktop() {
       .then(({ data }) => setAllPupils(data || []));
   }, [instructor?.id]);
 
-  const filtered = useMemo(() =>
-    transactions.filter(t => filter === "all" || t.status === filter),
-  [filter, transactions]);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const fromMs = dateFrom ? new Date(dateFrom + "T00:00:00").getTime() : null;
+    const toMs = dateTo ? new Date(dateTo + "T23:59:59.999").getTime() : null;
+    return transactions.filter(t => {
+      if (filter !== "all" && t.status !== filter) return false;
+      if (methodFilter !== "all" && t.method !== methodFilter) return false;
+      const ts = new Date(t.dateTime).getTime();
+      if (fromMs !== null && ts < fromMs) return false;
+      if (toMs !== null && ts > toMs) return false;
+      if (q) {
+        const hay = `${t.pupilName} ${t.forText} ${t.note ?? ""} ${t.method} ${t.status}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [filter, methodFilter, dateFrom, dateTo, search, transactions]);
+
+  const filtersActive = search.trim() !== "" || methodFilter !== "all" || dateFrom !== "" || dateTo !== "" || filter !== "all";
+  const clearAllFilters = () => {
+    setSearch(""); setMethodFilter("all"); setDateFrom(""); setDateTo(""); setFilter("all"); setPage(1);
+  };
+
+  useEffect(() => { setPage(1); }, [search, methodFilter, dateFrom, dateTo]);
 
   const counts = useMemo(() => ({
     all: transactions.length,
@@ -339,6 +364,57 @@ export default function InstructorPaymentsDesktop() {
           </div>
         </div>
 
+        {/* Search + date/method filters */}
+        <div className="flex items-center" style={{ gap: 8, flexWrap: "wrap" }}>
+          <div style={{ position: "relative", flex: "1 1 240px", minWidth: 200 }}>
+            <Search size={12} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", color: "var(--d2-text-3)" }} />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search pupil, note, method…"
+              style={{
+                width: "100%", padding: "6px 26px 6px 26px",
+                fontSize: 11, borderRadius: 6,
+                border: "0.5px solid var(--d2-border)", background: "#fff",
+                color: "var(--d2-text-1)", outline: "none",
+              }}
+            />
+            {search && (
+              <button onClick={() => setSearch("")} style={{
+                position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)",
+                color: "var(--d2-text-3)", padding: 2,
+              }}><X size={11} /></button>
+            )}
+          </div>
+          <select
+            value={methodFilter}
+            onChange={e => setMethodFilter(e.target.value as any)}
+            style={{
+              padding: "6px 8px", fontSize: 11, borderRadius: 6,
+              border: "0.5px solid var(--d2-border)", background: "#fff",
+              color: "var(--d2-text-1)", outline: "none", cursor: "pointer",
+            }}
+          >
+            <option value="all">All methods</option>
+            <option value="card">Card</option>
+            <option value="cash">Cash</option>
+            <option value="bank">Bank</option>
+          </select>
+          <div className="flex items-center" style={{ gap: 4, fontSize: 11, color: "var(--d2-text-3)" }}>
+            <span>From</span>
+            <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
+              style={{ padding: "5px 6px", fontSize: 11, borderRadius: 6, border: "0.5px solid var(--d2-border)", background: "#fff", color: "var(--d2-text-1)" }} />
+            <span>To</span>
+            <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
+              style={{ padding: "5px 6px", fontSize: 11, borderRadius: 6, border: "0.5px solid var(--d2-border)", background: "#fff", color: "var(--d2-text-1)" }} />
+          </div>
+          {filtersActive && (
+            <button onClick={clearAllFilters} style={{ fontSize: 11, color: "#4F46E5", fontWeight: 500, padding: "4px 6px" }}>
+              Clear filters
+            </button>
+          )}
+        </div>
+
         {/* Transactions table */}
         <div style={{
           background: "#fff", border: "0.5px solid var(--d2-border)", borderRadius: 8, overflow: "hidden",
@@ -357,7 +433,7 @@ export default function InstructorPaymentsDesktop() {
           {grouped.length === 0 ? (
             <div style={{ padding: 32, textAlign: "center", fontSize: 12, color: "var(--d2-text-3)" }}>
               No transactions match these filters.
-              <button onClick={() => setFilter("all")} style={{ marginLeft: 8, color: "#4F46E5", fontWeight: 500 }}>Clear filters</button>
+              <button onClick={clearAllFilters} style={{ marginLeft: 8, color: "#4F46E5", fontWeight: 500 }}>Clear filters</button>
             </div>
           ) : grouped.map(g => (
             <div key={g.key}>
