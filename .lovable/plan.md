@@ -1,50 +1,56 @@
-## Goal
+## The bug
 
-On the instructor home page Schedule tile (Today / Tomorrow), render an **EOL** pill and a **payment status** pill on every lesson row, matching the uploaded mock. EOL pill gets a strikethrough only once the EOL has actually been completed.
+In `CustomizeFrequentlyUsedSheet` the local pinned-state is reset every time the parent re-renders, not just when the sheet opens:
 
-## File to change
+```tsx
+// CustomizeFrequentlyUsedSheet.tsx
+useEffect(() => {
+  if (open) {
+    setPinnedIds(initialPinnedIds);   // ← runs every time initialPinnedIds reference changes
+    setSelectedCategory("All");
+  }
+}, [open, initialPinnedIds]);
+```
 
-`src/components/instructor/MobileHomeBottomSections.tsx` — `ScheduleSection` component (this is what renders on the home page via `MobileHomeRedesign`, route `/instructor`). The right‑hand side of each row currently shows only one of: `Now`, `Done`, `Cancelled`, or a "minutes until" countdown. We will keep that existing status indicator and add two more pills next to it.
+`initialPinnedIds` comes from `useInstructorPinnedTiles().pinnedIds`, which builds a brand-new array on every render of `QuickAccessSection`. The home re-renders constantly because of background-refreshing hooks (`useUnreadMessagesCount`, `usePendingJobsCount`, `useRealGapSlots`, `useInstructorPupilsPaymentSummary`, etc.).
 
-## Data already available
+Result: while the customize sheet is open, every background refetch resets the user's edits back to the saved list. When they tap Done, the order they're saving is the *original* list, so after closing the sheet "the icons don't change".
 
-`useDayLessons` already returns `paymentStatus` and `amountDue`, and `useDayLessonHistory` returns the set of completed EOL keys (`eolSet`). The row already computes a local `completed` boolean from `eolSet`. Both pills can be derived without any new query.
+(There is also a smaller, related issue: when there are no pinned rows in DB, `pinnedIds` falls back to `DEFAULT_PINNED_TILE_IDS`, but for a brand-new user the optimistic update writes their new list correctly — so this fallback isn't the source of the bug.)
 
-## Pill behaviour
+## Fix
 
-For each lesson row, on the right side (before any existing status pill):
+Make the sheet's local state initialise once per open, and ignore later changes to `initialPinnedIds`:
 
-1. **EOL pill**
-   - Always shown.
-   - Label: `EOL`.
-   - Style: blue tint background, blue text (matches the mock — same blue as the day toggle).
-   - When the lesson's EOL is complete (`completed === true`, sourced from `eolSet`): apply `text-decoration: line-through` and lower opacity to ~0.6. No other state changes the strikethrough.
+1. In `src/components/instructor/quickAccess/CustomizeFrequentlyUsedSheet.tsx`:
+   - Change the reset effect to depend only on `open` (not `initialPinnedIds`).
+   - Snapshot `initialPinnedIds` in a ref, reading the current value when `open` flips to true.
 
-2. **Payment pill**
-   - Always shown when `amountDue > 0` (skip on £0 lessons to avoid a meaningless "Paid" badge).
-   - `paymentStatus === "paid"` → green tint background, green text, label `Paid`, with a small check dot.
-   - Anything else → red tint background, red text, label `Not paid`, with a small alert dot.
+```tsx
+const initialRef = useRef(initialPinnedIds);
+initialRef.current = initialPinnedIds;
 
-3. **Existing right‑side indicator** (Now / Done / Cancelled / `12m` countdown) stays where it is, rendered after the two new pills, so the visual order left→right is: `EOL`, `Paid/Not paid`, `Now/Done/…`.
+useEffect(() => {
+  if (open) {
+    setPinnedIds(initialRef.current);
+    setSelectedCategory("All");
+  }
+}, [open]);
+```
 
-The row container becomes a flex group with `gap: 6` on the right cluster; pills use the same compact sizing already used by `StatusPill` (radius 20, `2px 7px`, font‑size 9, weight 700, uppercase) so they sit consistently with the existing Done/Now pill.
+That way: opening the sheet seeds local state with the latest pinned list; while it's open, parent re-renders no longer clobber the user's edits; closing + reopening picks up the freshly-saved list.
 
-## Layout / responsive notes
+2. Apply the same one-shot pattern to `CustomizeTilesSheet.tsx` (used by `QuickAccessSwipeablePaged` on the legacy path) — same bug structure with `currentOrder`.
 
-- Viewport is 440px; three small pills + time + name fit comfortably. Pupil name keeps `min-width: 0` and ellipsis so long names truncate before pushing the pills.
-- Row height stays the same; pills align centred vertically.
-- `done` rows still get the existing `opacity: 0.55` dim — that combined with the EOL strikethrough naturally communicates "all wrapped up".
+3. Sanity-check: the `QuickAccessSection` render path itself is correct — `tiles = pinnedIds.map(id => QUICK_ACCESS_TILES_BY_ID[id])` resolves icon/tone from the registry, so once the saved order is right, the icons update automatically. No changes needed there.
 
-## Out of scope
+## Files touched
 
-- No DB or hook changes.
-- No edits to the desktop / older `HomeTodaySchedule` / `TodayLessonsList` views.
-- Tapping the pills does nothing new (whole row already navigates to the pupil); a follow‑up could wire EOL pill → EOL wizard if you want.
+- `src/components/instructor/quickAccess/CustomizeFrequentlyUsedSheet.tsx`
+- `src/components/instructor/quickAccess/CustomizeTilesSheet.tsx`
 
-## QA
+## QA after the fix
 
-- Today tab: a paid completed lesson shows `EOL` strikethrough + green `Paid` + grey `Done`.
-- Today tab: an unpaid upcoming lesson shows plain `EOL` + red `Not paid` + blue `12m`.
-- Tomorrow tab: pills render the same way; nothing is auto‑marked done.
-- £0 / free lesson: payment pill is hidden, EOL pill still shown.
-- Long pupil names truncate without wrapping the pills.
+1. On `/instructor` mobile: open Quick access → Edit (Customize), drag to reorder, remove one, add another, tap Done. Confirm grid shows the new order/icons immediately and after refresh.
+2. Open the sheet, leave it open ~30s while background queries refetch, then make edits and Done — edits must persist (this is the regression we're fixing).
+3. Reset by removing all pins → defaults reappear.

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ChevronUp, ChevronDown, X, Plus, RotateCcw, Search } from "lucide-react";
@@ -37,12 +37,17 @@ export function CustomizeTilesSheet({
   const [visible, setVisible] = useState<string[]>(currentOrder);
   const [query, setQuery] = useState("");
 
+  // Snapshot the current saved order so background re-renders of the parent
+  // don't reset the user's in-progress edits while the sheet is open.
+  const currentRef = useRef(currentOrder);
+  currentRef.current = currentOrder;
+
   useEffect(() => {
     if (open) {
-      setVisible(currentOrder);
+      setVisible(currentRef.current);
       setQuery("");
     }
-  }, [open, currentOrder]);
+  }, [open]);
 
   const hidden = useMemo(() => {
     const set = new Set(visible);
