@@ -16,6 +16,7 @@ import {
   saveBiometricCredentials,
   isNativePlatform,
 } from "@/lib/biometricAuth";
+import { setRememberMe, getRememberMe } from "@/lib/sessionPersistence";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -196,6 +197,7 @@ export default function InstructorPortalLogin() {
           setError(signInError.message);
         }
       } else {
+        setRememberMe(rememberMe);
         if (rememberMe) {
           await saveCredentialsForBiometric(email.trim(), password);
         }
