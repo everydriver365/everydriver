@@ -217,6 +217,8 @@ export function useVoiceAssistant({ instructorId }: UseVoiceAssistantOptions) {
       setState("idle");
     }
   }, [processCommand]);
+
+  const stopMediaCapture = useCallback(() => {
     try { mediaRecorderRef.current?.state !== "inactive" && mediaRecorderRef.current?.stop(); } catch {}
     mediaStreamRef.current?.getTracks().forEach((t) => t.stop());
     mediaStreamRef.current = null;
