@@ -663,7 +663,7 @@ function RetentionCard({ steps, avgLessonsBeforeTest }: { steps: ReportsRetentio
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {reports.retention.map((step) => (
+        {steps.map((step) => (
           <div key={step.step}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
               <span style={{ fontSize: 11, color: "#0F172A" }}>{step.step}</span>
