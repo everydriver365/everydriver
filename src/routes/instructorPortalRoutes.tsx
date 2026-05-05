@@ -24,6 +24,7 @@ const InstructorModules = lazy(() => import("@/pages/instructor-app/InstructorMo
 const InstructorMySite = lazy(() => import("@/pages/instructor-app/InstructorMySite"));
 const InstructorPlanBilling = lazy(() => import("@/pages/instructor-app/InstructorPlanBilling"));
 const InstructorProfile = lazy(() => import("@/pages/instructor-app/InstructorProfileRouter"));
+const InstructorReports = lazy(() => import("@/pages/instructor-app/InstructorReportsRouter"));
 
 // Jobs & scheduling
 const InstructorJobs = lazy(() => import("@/pages/InstructorJobs"));
