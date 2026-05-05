@@ -722,6 +722,7 @@ export default function InstructorScheduleDesktop() {
           {view === "week" && (
             <WeekGrid
               lessons={lessons}
+              externalBusy={externalBusy}
               now={now}
               onSelectLesson={setSelectedLesson}
               weekStart={weekStart}
