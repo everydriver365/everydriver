@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Pencil, Trash2 } from "lucide-react";
+import { buildPupilUpdatePayload } from "./pupilEditPayload";
 
 // ----------------------------- Types & data -----------------------------
 type Status = "active" | "at-risk" | "test-ready" | "paused" | "archived";
