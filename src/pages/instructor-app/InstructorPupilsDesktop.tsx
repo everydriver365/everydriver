@@ -187,24 +187,43 @@ export default function InstructorPupilsDesktop() {
   const [reloadTick, setReloadTick] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState({ name: "", phone: "", email: "", postcode: "" });
+  const [addErrors, setAddErrors] = useState<{ name?: string; email?: string; postcode?: string; phone?: string }>({});
   const [addSaving, setAddSaving] = useState(false);
+
+  // UK postcode (loose, allows missing space)
+  const UK_POSTCODE_RE = /^(GIR 0AA|[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})$/i;
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const UK_PHONE_RE = /^(?:\+?44|0)\s?\d(?:[\s-]?\d){8,9}$/;
+
+  const validatePupilForm = (f: { name: string; phone: string; email: string; postcode: string }) => {
+    const errs: { name?: string; email?: string; postcode?: string; phone?: string } = {};
+    if (!f.name.trim()) errs.name = "Name is required";
+    else if (f.name.trim().length > 100) errs.name = "Name must be 100 characters or less";
+    if (f.email.trim() && !EMAIL_RE.test(f.email.trim())) errs.email = "Enter a valid email address";
+    if (f.postcode.trim() && !UK_POSTCODE_RE.test(f.postcode.trim())) errs.postcode = "Enter a valid UK postcode (e.g. SO22 4AB)";
+    if (f.phone.trim() && !UK_PHONE_RE.test(f.phone.trim())) errs.phone = "Enter a valid UK phone number";
+    return errs;
+  };
 
   const handleAddPupil = async () => {
     const instructorId = instructor?.id;
     if (!instructorId) { toast.error("Not signed in"); return; }
-    if (!addForm.name.trim()) { toast.error("Name is required"); return; }
+    const errs = validatePupilForm(addForm);
+    setAddErrors(errs);
+    if (Object.keys(errs).length) return;
     setAddSaving(true);
     const { error } = await supabase.from("pupils").insert({
       instructor_id: instructorId,
       name: addForm.name.trim(),
       phone: addForm.phone.trim() || null,
       email: addForm.email.trim() || null,
-      postcode: addForm.postcode.trim() || null,
+      postcode: addForm.postcode.trim().toUpperCase() || null,
     });
     setAddSaving(false);
     if (error) { toast.error(`Could not add pupil: ${error.message}`); return; }
     toast.success(`Added ${addForm.name.trim()}`);
     setAddForm({ name: "", phone: "", email: "", postcode: "" });
+    setAddErrors({});
     setAddOpen(false);
     setReloadTick(t => t + 1);
   };
@@ -213,11 +232,13 @@ export default function InstructorPupilsDesktop() {
   const [editOpen, setEditOpen] = useState(false);
   const [editTargetId, setEditTargetId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", postcode: "" });
+  const [editErrors, setEditErrors] = useState<{ name?: string; email?: string; postcode?: string; phone?: string }>({});
   const [editSaving, setEditSaving] = useState(false);
 
   const openEdit = async (id: string) => {
     setEditTargetId(id);
     setEditOpen(true);
+    setEditErrors({});
     setEditForm({ name: "", phone: "", email: "", postcode: "" });
     const { data } = await supabase
       .from("pupils")
@@ -234,17 +255,20 @@ export default function InstructorPupilsDesktop() {
 
   const handleSaveEdit = async () => {
     if (!editTargetId) return;
-    if (!editForm.name.trim()) { toast.error("Name is required"); return; }
+    const errs = validatePupilForm(editForm);
+    setEditErrors(errs);
+    if (Object.keys(errs).length) return;
     setEditSaving(true);
     const { error } = await supabase.from("pupils").update({
       name: editForm.name.trim(),
       phone: editForm.phone.trim() || null,
       email: editForm.email.trim() || null,
-      postcode: editForm.postcode.trim() || null,
+      postcode: editForm.postcode.trim().toUpperCase() || null,
     }).eq("id", editTargetId);
     setEditSaving(false);
     if (error) { toast.error(`Could not save: ${error.message}`); return; }
     toast.success("Pupil updated");
+    setEditErrors({});
     setEditOpen(false);
     setEditTargetId(null);
     setReloadTick(t => t + 1);
@@ -772,19 +796,23 @@ export default function InstructorPupilsDesktop() {
           <div className="space-y-3 py-2">
             <div className="space-y-1">
               <Label htmlFor="add-name">Name *</Label>
-              <Input id="add-name" value={addForm.name} onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))} placeholder="Full name" autoFocus />
+              <Input id="add-name" value={addForm.name} aria-invalid={!!addErrors.name} onChange={e => { setAddForm(f => ({ ...f, name: e.target.value })); if (addErrors.name) setAddErrors(er => ({ ...er, name: undefined })); }} placeholder="Full name" autoFocus className={addErrors.name ? "border-destructive focus-visible:ring-destructive" : ""} />
+              {addErrors.name && <p className="text-xs text-destructive">{addErrors.name}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="add-phone">Phone</Label>
-              <Input id="add-phone" value={addForm.phone} onChange={e => setAddForm(f => ({ ...f, phone: e.target.value }))} placeholder="07…" />
+              <Input id="add-phone" value={addForm.phone} aria-invalid={!!addErrors.phone} onChange={e => { setAddForm(f => ({ ...f, phone: e.target.value })); if (addErrors.phone) setAddErrors(er => ({ ...er, phone: undefined })); }} placeholder="07…" className={addErrors.phone ? "border-destructive focus-visible:ring-destructive" : ""} />
+              {addErrors.phone && <p className="text-xs text-destructive">{addErrors.phone}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="add-email">Email</Label>
-              <Input id="add-email" type="email" value={addForm.email} onChange={e => setAddForm(f => ({ ...f, email: e.target.value }))} placeholder="name@example.com" />
+              <Input id="add-email" type="email" value={addForm.email} aria-invalid={!!addErrors.email} onChange={e => { setAddForm(f => ({ ...f, email: e.target.value })); if (addErrors.email) setAddErrors(er => ({ ...er, email: undefined })); }} placeholder="name@example.com" className={addErrors.email ? "border-destructive focus-visible:ring-destructive" : ""} />
+              {addErrors.email && <p className="text-xs text-destructive">{addErrors.email}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="add-postcode">Postcode</Label>
-              <Input id="add-postcode" value={addForm.postcode} onChange={e => setAddForm(f => ({ ...f, postcode: e.target.value }))} placeholder="SO22 4AB" />
+              <Input id="add-postcode" value={addForm.postcode} aria-invalid={!!addErrors.postcode} onChange={e => { setAddForm(f => ({ ...f, postcode: e.target.value })); if (addErrors.postcode) setAddErrors(er => ({ ...er, postcode: undefined })); }} placeholder="SO22 4AB" className={addErrors.postcode ? "border-destructive focus-visible:ring-destructive" : ""} />
+              {addErrors.postcode && <p className="text-xs text-destructive">{addErrors.postcode}</p>}
             </div>
           </div>
           <DialogFooter>
@@ -804,19 +832,23 @@ export default function InstructorPupilsDesktop() {
           <div className="space-y-3 py-2">
             <div className="space-y-1">
               <Label htmlFor="edit-name">Name *</Label>
-              <Input id="edit-name" value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} autoFocus />
+              <Input id="edit-name" value={editForm.name} aria-invalid={!!editErrors.name} onChange={e => { setEditForm(f => ({ ...f, name: e.target.value })); if (editErrors.name) setEditErrors(er => ({ ...er, name: undefined })); }} autoFocus className={editErrors.name ? "border-destructive focus-visible:ring-destructive" : ""} />
+              {editErrors.name && <p className="text-xs text-destructive">{editErrors.name}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="edit-phone">Phone</Label>
-              <Input id="edit-phone" value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} />
+              <Input id="edit-phone" value={editForm.phone} aria-invalid={!!editErrors.phone} onChange={e => { setEditForm(f => ({ ...f, phone: e.target.value })); if (editErrors.phone) setEditErrors(er => ({ ...er, phone: undefined })); }} className={editErrors.phone ? "border-destructive focus-visible:ring-destructive" : ""} />
+              {editErrors.phone && <p className="text-xs text-destructive">{editErrors.phone}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="edit-email">Email</Label>
-              <Input id="edit-email" type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} />
+              <Input id="edit-email" type="email" value={editForm.email} aria-invalid={!!editErrors.email} onChange={e => { setEditForm(f => ({ ...f, email: e.target.value })); if (editErrors.email) setEditErrors(er => ({ ...er, email: undefined })); }} className={editErrors.email ? "border-destructive focus-visible:ring-destructive" : ""} />
+              {editErrors.email && <p className="text-xs text-destructive">{editErrors.email}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="edit-postcode">Postcode</Label>
-              <Input id="edit-postcode" value={editForm.postcode} onChange={e => setEditForm(f => ({ ...f, postcode: e.target.value }))} />
+              <Input id="edit-postcode" value={editForm.postcode} aria-invalid={!!editErrors.postcode} onChange={e => { setEditForm(f => ({ ...f, postcode: e.target.value })); if (editErrors.postcode) setEditErrors(er => ({ ...er, postcode: undefined })); }} className={editErrors.postcode ? "border-destructive focus-visible:ring-destructive" : ""} />
+              {editErrors.postcode && <p className="text-xs text-destructive">{editErrors.postcode}</p>}
             </div>
           </div>
           <DialogFooter>
