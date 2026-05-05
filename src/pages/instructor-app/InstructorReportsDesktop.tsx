@@ -718,7 +718,9 @@ function TopPupilsCard({ pupils }: { pupils: ReportsTopPupil[] }) {
         <span style={{ textAlign: "right" }}>Spend</span>
       </div>
 
-      {reports.topPupils.map((p) => {
+      {pupils.length === 0 ? (
+        <div style={{ fontSize: 11, color: "#94A3B8", padding: "20px 0", textAlign: "center" }}>No paying pupils in this range</div>
+      ) : pupils.map((p) => {
         const c = ramp[p.avatarColor] || ramp.blue;
         return (
           <div key={p.pupilId} style={{
