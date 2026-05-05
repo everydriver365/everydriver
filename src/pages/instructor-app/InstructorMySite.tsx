@@ -392,7 +392,7 @@ function EditorPane() {
   );
 }
 
-function PreviewPane({ device }: { device: Device }) {
+function PreviewPane({ device, domain }: { device: Device; domain: string }) {
   const { site } = useSiteEditor();
   const width = DEVICE_WIDTH[device];
 
