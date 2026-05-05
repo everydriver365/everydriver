@@ -261,7 +261,7 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
     })();
 
     return () => { cancelled = true; };
-  }, [instructorId]);
+  }, [instructorId, tick]);
 
-  return state;
+  return { ...state, refresh };
 }
