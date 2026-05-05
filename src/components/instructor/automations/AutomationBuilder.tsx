@@ -19,7 +19,7 @@ const TRIGGERS = [
 
 const ACTIONS = [
   { value: "send_sms", label: "Send SMS", desc: "Text the pupil automatically" },
-  { value: "send_email", label: "Send Email", desc: "Email the pupil automatically" },
+  
   { value: "add_note", label: "Add Note", desc: "Add a note to the pupil record" },
   { value: "move_pipeline", label: "Move Pipeline", desc: "Move lead to a pipeline stage" },
   { value: "create_todo", label: "Create Todo", desc: "Add an item to your to-do list" },

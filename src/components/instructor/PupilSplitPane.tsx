@@ -671,9 +671,9 @@ function PupilDetailPanel({ pupil, instructorId, onClose }: { pupil: Pupil; inst
             </a>
           )}
           {pupil.email && (
-            <a href={`mailto:${pupil.email}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors truncate">
+            <span className="flex items-center gap-2 text-sm text-muted-foreground truncate">
               <Mail className="h-4 w-4 text-primary" /> {pupil.email}
-            </a>
+            </span>
           )}
           {pupil.address && (
             <span className="flex items-center gap-2 text-sm text-muted-foreground col-span-2">

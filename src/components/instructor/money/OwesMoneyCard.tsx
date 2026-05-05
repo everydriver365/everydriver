@@ -163,20 +163,6 @@ export function OwesMoneyCard({ pupils, instructorId, instructorName, paymentLin
                     <MessageSquare className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
                   )}
                 </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8 border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-900/20"
-                  onClick={() => handleChase(pupil, "email")}
-                  disabled={!!chasing || !pupil.email}
-                  title={pupil.email ? "Send email reminder" : "No email address"}
-                >
-                  {chasing === `${pupil.id}-email` ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Mail className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
-                  )}
-                </Button>
               </div>
             </div>
           );

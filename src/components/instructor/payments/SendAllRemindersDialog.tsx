@@ -32,7 +32,7 @@ export function SendAllRemindersDialog({
   instructorId?: string;
   instructorName?: string;
 }) {
-  const [channel, setChannel] = useState<Channel>("sms");
+  const [channel] = useState<Channel>("sms");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sending, setSending] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number; failures: string[] } | null>(null);
@@ -156,28 +156,7 @@ export function SendAllRemindersDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Channel toggle */}
-        <div className="flex items-center gap-2 p-1 bg-muted rounded-lg">
-          {([
-            { v: "sms" as const, l: "SMS", icon: MessageSquare },
-            { v: "email" as const, l: "Email", icon: Mail },
-          ]).map(({ v, l, icon: Icon }) => {
-            const a = channel === v;
-            return (
-              <button
-                key={v}
-                disabled={sending}
-                onClick={() => setChannel(v)}
-                className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  a ? "bg-background shadow-sm" : "text-muted-foreground"
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {l}
-              </button>
-            );
-          })}
-        </div>
+        {/* SMS-only reminders */}
 
         {/* Select-all */}
         {eligible.length > 0 && (

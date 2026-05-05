@@ -1046,7 +1046,6 @@ export function PupilCardStack({
                     {[
                       { icon: Phone, label: "Call", action: () => hasPhone && window.open(`tel:${pupil.phone}`), disabled: !hasPhone },
                       { icon: MessageSquare, label: "Message", action: () => onStartChat?.(pupil), disabled: false },
-                      { icon: Mail, label: "Email", action: () => hasEmail ? window.open(`mailto:${pupil.email}`) : onEdit(pupil), disabled: !hasEmail },
                       { icon: Navigation, label: "Navigate", action: handleNavigate, disabled: false },
                     ].map(({ icon: Icon, label, action, disabled }) => (
                       <button
