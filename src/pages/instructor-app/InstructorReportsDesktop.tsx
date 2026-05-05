@@ -649,7 +649,7 @@ function DayRow({ day, row, d, colorFor, off, setHover }: {
 }
 
 // ---------- Retention Funnel ----------
-function RetentionCard({ steps, avgLessonsBeforeTest }: { steps: typeof reports.retention; avgLessonsBeforeTest: number }) {
+function RetentionCard({ steps, avgLessonsBeforeTest }: { steps: ReportsRetentionStep[]; avgLessonsBeforeTest: number }) {
   return (
     <div style={{ ...card, padding: 14 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
