@@ -1221,7 +1221,7 @@ export default function InstructorLiveSession() {
                     speedKmh={mapSpeedKmh}
                     lastSeenAt={mapLastSeenAt}
                     isActive={isConnected}
-                    sessionId={device.current_session_id}
+                    sessionId={device?.current_session_id ?? null}
                   />
                 </div>
               </div>
