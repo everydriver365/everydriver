@@ -681,6 +681,37 @@ export default function InstructorPupilsDesktop() {
           )}
         </AnimatePresence>
       </div>
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add pupil</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1">
+              <Label htmlFor="add-name">Name *</Label>
+              <Input id="add-name" value={addForm.name} onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))} placeholder="Full name" autoFocus />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="add-phone">Phone</Label>
+              <Input id="add-phone" value={addForm.phone} onChange={e => setAddForm(f => ({ ...f, phone: e.target.value }))} placeholder="07…" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="add-email">Email</Label>
+              <Input id="add-email" type="email" value={addForm.email} onChange={e => setAddForm(f => ({ ...f, email: e.target.value }))} placeholder="name@example.com" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="add-postcode">Postcode</Label>
+              <Input id="add-postcode" value={addForm.postcode} onChange={e => setAddForm(f => ({ ...f, postcode: e.target.value }))} placeholder="SO22 4AB" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddOpen(false)} disabled={addSaving}>Cancel</Button>
+            <Button onClick={handleAddPupil} disabled={addSaving || !addForm.name.trim()}>
+              {addSaving ? "Adding…" : "Add pupil"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardShell>
   );
 }
