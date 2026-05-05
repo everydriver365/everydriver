@@ -11945,6 +11945,39 @@ export type Database = {
         }
         Relationships: []
       }
+      phone_tracking_audit: {
+        Row: {
+          created_at: string
+          details: Json | null
+          event_type: string
+          id: string
+          instructor_id: string
+          pupil_id: string | null
+          status: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          event_type: string
+          id?: string
+          instructor_id: string
+          pupil_id?: string | null
+          status?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          event_type?: string
+          id?: string
+          instructor_id?: string
+          pupil_id?: string | null
+          status?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       phone_tracking_permissions: {
         Row: {
           created_at: string

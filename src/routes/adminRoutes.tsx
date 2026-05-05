@@ -11,6 +11,7 @@ const EdgeFunctionErrors = lazy(() => import("@/pages/admin/EdgeFunctionErrors")
 const QueryBudget = lazy(() => import("@/pages/admin/QueryBudget"));
 const RealtimeAudit = lazy(() => import("@/pages/admin/RealtimeAudit"));
 const EOLAuditLog = lazy(() => import("@/pages/admin/EOLAuditLog"));
+const PhoneTrackingAudit = lazy(() => import("@/pages/admin/PhoneTrackingAudit"));
 
 export const adminRoutes = (
   <>
@@ -62,6 +63,10 @@ export const adminRoutes = (
     <Route
       path="/admin/eol-audit"
       element={<ProtectedAdminRoute><EOLAuditLog /></ProtectedAdminRoute>}
+    />
+    <Route
+      path="/admin/phone-tracking-audit"
+      element={<ProtectedAdminRoute><PhoneTrackingAudit /></ProtectedAdminRoute>}
     />
   </>
 );

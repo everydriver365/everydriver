@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { logPhoneTrackingEvent } from "@/lib/phoneTrackingAudit";
 
 export type LocationPermissionStatus = "unknown" | "prompt" | "granted" | "denied" | "unavailable";
 
@@ -39,6 +40,12 @@ export function useLocationPermission(opts: Options = {}) {
       await supabase
         .from("phone_tracking_permissions")
         .upsert([row] as any, { onConflict: "instructor_id,pupil_id" });
+      void logPhoneTrackingEvent({
+        instructorId,
+        pupilId,
+        event: "permission_changed",
+        status: next,
+      });
     },
     [instructorId, pupilId],
   );

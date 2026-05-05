@@ -42,6 +42,7 @@ import { usePhoneTrackingStreamer } from "@/hooks/usePhoneTrackingStreamer";
 import { useLivePupilPosition } from "@/hooks/useLivePupilPosition";
 import { useLocationPermission } from "@/hooks/useLocationPermission";
 import { PhoneTrackingPermissionBanner } from "@/components/instructor/tracking/PhoneTrackingPermissionBanner";
+import { logPhoneTrackingEvent } from "@/lib/phoneTrackingAudit";
 
 import { SatNavLiveMap } from "@/components/instructor/tracking/SatNavLiveMap";
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
@@ -1521,7 +1522,16 @@ export default function InstructorLiveSession() {
                           });
                           return;
                         }
-                        setPhoneStreamingConfirmed((v) => !v);
+                        setPhoneStreamingConfirmed((v) => {
+                          const next = !v;
+                          void logPhoneTrackingEvent({
+                            instructorId: instructor.id,
+                            pupilId: selectedPupilId || null,
+                            event: next ? "tracking_started" : "tracking_stopped",
+                            status: locationPermissionStatus,
+                          });
+                          return next;
+                        });
                       }}
                       style={{
                         marginTop: 4,
