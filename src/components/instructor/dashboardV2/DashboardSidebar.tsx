@@ -33,7 +33,7 @@ const SECTIONS: NavSection[] = [
     { label: "Reports", to: "/instructor/income", icon: BarChart3, moduleId: "reports" },
   ]},
   { label: "Website", items: [
-    { label: "My Site", to: "/instructor/website", icon: Globe, moduleId: "website" },
+    { label: "My Site", to: "/website/my-site", icon: Globe, moduleId: "website" },
     { label: "Branding", to: "/instructor/appearance", icon: Palette, moduleId: "website" },
     { label: "Domain", to: "/instructor/domains", icon: Link2, moduleId: "website" },
     { label: "SEO", to: "/instructor/seo", icon: TrendingUp, moduleId: "website" },
