@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
-import { Loader2, AlertCircle, ArrowLeft, Fingerprint, Eye, EyeOff, Share, Plus, Download, X } from "lucide-react";
+import { Loader2, AlertCircle, ArrowLeft, Fingerprint, Eye, EyeOff, Share, Plus, Download, X, CheckCircle2, MailCheck } from "lucide-react";
 import { InstructorMarketingBottomNav } from "@/components/layout/InstructorMarketingBottomNav";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
@@ -53,6 +53,9 @@ export default function InstructorLogin() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetSentTo, setResetSentTo] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [biometricLoading, setBiometricLoading] = useState(false);
   const [biometryLabel, setBiometryLabel] = useState("Face ID / Touch ID");
@@ -70,6 +73,13 @@ export default function InstructorLogin() {
     if (prefill && !email) setEmail(prefill);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Tick down the resend cooldown
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
 
   // Check install state, platform, and biometric availability
   useEffect(() => {
@@ -182,23 +192,27 @@ export default function InstructorLogin() {
     setError("");
 
     if (isForgotPassword) {
-      const emailValidation = z.string().trim().email().safeParse(email);
+      const trimmed = email.trim();
+      const emailValidation = z.string().trim().email().safeParse(trimmed);
       if (!emailValidation.success) {
         setError("Please enter a valid email address");
         return;
       }
-      
+      if (resendCooldown > 0) return;
+
       setLoading(true);
       try {
-        const { error: resetError } = await resetPassword(email.trim());
+        const { error: resetError } = await resetPassword(trimmed);
         if (resetError) {
           setError(resetError.message);
         } else {
-          toast.success("Password reset email sent! Check your inbox.");
-          setIsForgotPassword(false);
+          setResetSent(true);
+          setResetSentTo(trimmed);
+          setResendCooldown(30);
+          toast.success("Password reset email sent. Check your inbox.");
         }
       } catch (err) {
-        setError("An unexpected error occurred");
+        setError("An unexpected error occurred. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -272,11 +286,13 @@ export default function InstructorLogin() {
             />
           </div>
           <h1 className="text-2xl font-bold text-white">
-            {isForgotPassword ? "Reset Password" : "Welcome Back"}
+            {isForgotPassword ? (resetSent ? "Check your email" : "Reset Password") : "Welcome Back"}
           </h1>
           <p className="text-white/80 text-sm mt-1">
-            {isForgotPassword 
-              ? "Enter your email to receive a reset link"
+            {isForgotPassword
+              ? resetSent
+                ? `We've sent a reset link to ${resetSentTo}`
+                : "Enter your email and we'll send you a reset link"
               : "Sign in to your Driving School Manager account"}
           </p>
           <p className="text-white/40 text-[10px] mt-2">Build: {BUILD_MARKER}</p>
@@ -331,6 +347,26 @@ export default function InstructorLogin() {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Forgot password — sent confirmation */}
+            {isForgotPassword && resetSent && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-xl border border-emerald-300/40 bg-emerald-500/10 p-4 flex gap-3"
+              >
+                <MailCheck className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+                <div className="text-sm text-foreground/90 space-y-1">
+                  <div className="font-medium flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                    Reset link sent
+                  </div>
+                  <p className="text-muted-foreground text-xs leading-relaxed">
+                    Open the email at <span className="text-foreground/90 font-medium">{resetSentTo}</span> and click the link to set a new password. The link expires in 1 hour. Don't forget to check your spam folder.
+                  </p>
+                </div>
+              </motion.div>
+            )}
 
             {/* Biometric Login Button */}
             {biometricAvailable && !isForgotPassword && (
@@ -443,31 +479,61 @@ export default function InstructorLogin() {
               </div>
             )}
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full h-12 bg-emerald-500 text-white hover:bg-emerald-600 font-medium text-base shadow-lg shadow-emerald-500/20"
-              disabled={loading || biometricLoading}
+              disabled={loading || biometricLoading || (isForgotPassword && resendCooldown > 0)}
             >
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   {isForgotPassword ? "Sending..." : "Signing in..."}
                 </>
+              ) : isForgotPassword ? (
+                resetSent
+                  ? resendCooldown > 0
+                    ? `Resend in ${resendCooldown}s`
+                    : "Resend reset link"
+                  : "Send Reset Link"
               ) : (
-                isForgotPassword ? "Send Reset Link" : "Sign In"
+                "Sign In"
               )}
             </Button>
 
             <div className="text-center text-sm text-muted-foreground space-y-2">
               {isForgotPassword ? (
-                <button
-                  type="button"
-                  onClick={() => { setIsForgotPassword(false); setError(""); }}
-                  className="inline-flex items-center text-primary hover:underline"
-                >
-                  <ArrowLeft className="mr-1 h-3 w-3" />
-                  Back to sign in
-                </button>
+                <div className="space-y-2">
+                  {resetSent && (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setResetSent(false);
+                          setResetSentTo("");
+                          setResendCooldown(0);
+                          setError("");
+                        }}
+                        className="text-primary hover:underline"
+                      >
+                        Use a different email
+                      </button>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsForgotPassword(false);
+                      setError("");
+                      setResetSent(false);
+                      setResetSentTo("");
+                      setResendCooldown(0);
+                    }}
+                    className="inline-flex items-center text-primary hover:underline"
+                  >
+                    <ArrowLeft className="mr-1 h-3 w-3" />
+                    Back to sign in
+                  </button>
+                </div>
               ) : (
                 <>
                   <div>
