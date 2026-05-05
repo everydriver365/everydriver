@@ -35,7 +35,7 @@ const InstructorWaitingList = lazy(() => import("@/pages/InstructorWaitingList")
 const InstructorTestSlotFinder = lazy(() => import("@/pages/InstructorTestSlotFinder"));
 
 // Finance & payments
-const InstructorPay = lazy(() => import("@/pages/InstructorPay"));
+const InstructorPay = lazy(() => import("@/pages/instructor-app/InstructorPaymentsRouter"));
 const InstructorTakePayment = lazy(() => import("@/pages/InstructorTakePayment"));
 const InstructorSendReminder = lazy(() => import("@/pages/InstructorSendReminder"));
 const InstructorIncome = lazy(() => import("@/pages/InstructorIncome"));
@@ -176,6 +176,8 @@ export const instructorPortalRoutes = (
 
     {/* Finance & payments — gated */}
     <Route path="/instructor/pay" element={<InstructorPay />} />
+    <Route path="/instructor/payments" element={<InstructorPay />} />
+    <Route path="/payments" element={<InstructorPay />} />
     <Route path="/instructor/take-payment" element={<InstructorTakePayment />} />
     <Route path="/instructor/send-reminder" element={<InstructorSendReminder />} />
     <Route path="/instructor/income" element={<InstructorIncome />} />
