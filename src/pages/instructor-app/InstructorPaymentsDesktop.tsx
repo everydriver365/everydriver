@@ -88,6 +88,7 @@ export default function InstructorPaymentsDesktop() {
   const [filter, setFilter] = useState<Filter>("all");
   const [period, setPeriod] = useState<"week" | "month" | "year">("month");
   const [takeOpen, setTakeOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [page, setPage] = useState(1);
   const PAGE = 25;
 
