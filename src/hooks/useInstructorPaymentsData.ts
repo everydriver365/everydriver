@@ -135,7 +135,9 @@ function buildCashFlow(rows: { recorded_at: string; amount: number }[]): CashFlo
 }
 
 export function useInstructorPaymentsData(instructorId: string | undefined): PaymentsData {
-  const [state, setState] = useState<PaymentsData>({
+  const [tick, setTick] = useState(0);
+  const refresh = () => setTick((t) => t + 1);
+  const [state, setState] = useState<Omit<PaymentsData, "refresh">>({
     loading: true,
     error: null,
     stats: {
