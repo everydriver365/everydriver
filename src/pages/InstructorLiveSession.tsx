@@ -39,6 +39,7 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
 import { DeviceSelectorDropdown } from "@/components/instructor/tracking/DeviceSelectorDropdown";
 import { TrackingProviderDropdown } from "@/components/instructor/tracking/TrackingProviderDropdown";
 import { usePhoneTrackingStreamer } from "@/hooks/usePhoneTrackingStreamer";
+import { useLivePupilPosition } from "@/hooks/useLivePupilPosition";
 
 import { SatNavLiveMap } from "@/components/instructor/tracking/SatNavLiveMap";
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
