@@ -754,8 +754,8 @@ function TopPupilsCard({ pupils }: { pupils: ReportsTopPupil[] }) {
 }
 
 // ---------- Tax Year ----------
-function TaxYearCard() {
-  const t = reports.taxYear;
+function TaxYearCard({ taxYear }: { taxYear: ReportsTaxYear }) {
+  const t = taxYear;
   return (
     <div style={{ ...card, padding: 14 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
