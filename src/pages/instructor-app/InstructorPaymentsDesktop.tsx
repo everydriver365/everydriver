@@ -164,7 +164,7 @@ export default function InstructorPaymentsDesktop() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => toast("Export started")} style={outlineBtn}>
+            <button onClick={() => setExportOpen(true)} style={outlineBtn}>
               <Download size={12} /> Export
             </button>
             <button onClick={() => setTakeOpen(true)} style={primaryBtn}>
