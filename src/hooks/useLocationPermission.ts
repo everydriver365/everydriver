@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { logPhoneTrackingEvent } from "@/lib/phoneTrackingAudit";
 
 export type LocationPermissionStatus = "unknown" | "prompt" | "granted" | "denied" | "unavailable";
 
