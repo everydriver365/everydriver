@@ -131,9 +131,17 @@ export default function InstructorLiveSession() {
 
   const isPhoneProvider = activeProvider === "phone";
 
-  // Stream phone GPS into live_pupil_positions when "phone" provider is active.
+  // Location permission gate for Phone tracking.
+  const { status: locationPermissionStatus } = useLocationPermission();
+  const phoneTrackingReady = isPhoneProvider && locationPermissionStatus === "granted";
+
+  // Stream phone GPS into live_pupil_positions only after permission is granted.
   usePhoneTrackingStreamer({
-    provider: activeProvider === "radius" ? "radius" : activeProvider === null ? null : "phone",
+    provider: activeProvider === "radius"
+      ? "radius"
+      : phoneTrackingReady
+        ? "phone"
+        : null,
     pupilId: selectedPupilId || null,
   });
 
