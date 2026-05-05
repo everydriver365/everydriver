@@ -460,6 +460,35 @@ export default function InstructorPaymentsDesktop() {
         transactions={transactions}
         instructorName={instructor?.name}
       />
+
+      <AnimatePresence>
+        {pupilSheet && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setPupilSheet(null)}
+              style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.25)", zIndex: 60 }}
+            />
+            <motion.div
+              initial={{ x: 440 }} animate={{ x: 0 }} exit={{ x: 440 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                position: "fixed", top: 0, right: 0, bottom: 0, width: 420,
+                background: "#fff", borderLeft: "0.5px solid var(--d2-border)",
+                padding: 16, zIndex: 61, overflowY: "auto",
+              }}
+            >
+              <PupilPaymentsSheet
+                pupilId={pupilSheet.id}
+                pupilName={pupilSheet.name}
+                instructorId={instructor?.id}
+                onClose={() => setPupilSheet(null)}
+                onTakePayment={() => { setPupilSheet(null); setTakeOpen(true); }}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </DashboardShell>
   );
 }
