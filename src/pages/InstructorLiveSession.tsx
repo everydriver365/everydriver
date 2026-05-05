@@ -1487,9 +1487,10 @@ export default function InstructorLiveSession() {
                     instructorId={instructor.id}
                     value={(activeProvider === "radius" ? "radius" : "phone")}
                     onChange={(choice) => {
-                      setActiveProvider(choice === "radius" ? "radius" : null);
+                      setActiveProvider(choice === "radius" ? "radius" : "phone");
                     }}
                   />
+                  <PhoneTrackingPermissionBanner active={isPhoneProvider} />
                   {device?.id && (
                     <DeviceSelectorDropdown
                       instructorId={instructor.id}
