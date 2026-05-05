@@ -60,16 +60,30 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
   const { isActive: isModuleActive } = useModules();
   let instructorLogo: string | null = null;
   let instructorName = "DSM";
+  let brandColour: string | null = null;
+  let brandFont: string | null = null;
   try {
     const { instructor } = useInstructorAuth();
     if (instructor?.logo_url) instructorLogo = instructor.logo_url;
     if (instructor?.name) instructorName = instructor.name;
+    if (instructor?.brand_colour) brandColour = instructor.brand_colour;
+    if ((instructor as any)?.website_font) brandFont = (instructor as any).website_font;
   } catch {}
 
   const visibleSections = SECTIONS.map(s => ({
     ...s,
     items: s.items.filter(i => !i.moduleId || isModuleActive(i.moduleId)),
   })).filter(s => s.items.length > 0);
+
+  // Convert brand colour to a soft tint for active background.
+  const brandTint = brandColour ? `${brandColour}1A` : null; // ~10% alpha
+
+  const brandStyle: React.CSSProperties = brandColour
+    ? ({
+        ["--d2-indigo" as any]: brandColour,
+        ["--d2-indigo-bg" as any]: brandTint,
+      } as React.CSSProperties)
+    : {};
 
   return (
     <aside
@@ -79,6 +93,8 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
         background: "var(--d2-surface)",
         borderRight: "0.5px solid var(--d2-border)",
         transition: "width 200ms ease-out",
+        fontFamily: brandFont ? `${brandFont}, Inter, system-ui, sans-serif` : undefined,
+        ...brandStyle,
       }}
     >
       {/* Brand */}
