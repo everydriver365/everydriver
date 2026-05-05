@@ -115,6 +115,13 @@ export default function InstructorScheduleDesktop() {
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiSuggestions, setAiSuggestions] = useState<{ label: string }[] | null>(null);
+  const [filterDays, setFilterDays] = useState<Day[]>([]);
+  const [filterFrom, setFilterFrom] = useState<string>(""); // "HH:MM"
+  const [filterTo, setFilterTo] = useState<string>("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const filterFromMin = filterFrom ? Number(filterFrom.slice(0, 2)) * 60 + Number(filterFrom.slice(3, 5)) : null;
+  const filterToMin = filterTo ? Number(filterTo.slice(0, 2)) * 60 + Number(filterTo.slice(3, 5)) : null;
+  const activeFilterCount = (filterDays.length > 0 ? 1 : 0) + (filterFrom ? 1 : 0) + (filterTo ? 1 : 0);
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 60000);
