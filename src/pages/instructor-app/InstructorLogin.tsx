@@ -20,6 +20,7 @@ import {
   isNativePlatform,
 } from "@/lib/biometricAuth";
 import { setRememberMe, getRememberMe } from "@/lib/sessionPersistence";
+import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailConfirmation";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
