@@ -4,8 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, FileSpreadsheet, Loader2, CheckCircle, AlertCircle, ExternalLink } from "lucide-react";
+import { Download, FileSpreadsheet, Loader2, CheckCircle, ExternalLink, Info, RotateCcw } from "lucide-react";
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface XeroExportProps {
   instructorId: string;
@@ -14,6 +25,25 @@ interface XeroExportProps {
 export function XeroExport({ instructorId }: XeroExportProps) {
   const [exporting, setExporting] = useState(false);
   const [markingSynced, setMarkingSynced] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  const resetSyncState = async () => {
+    setResetting(true);
+    try {
+      const { error } = await supabase
+        .from("instructor_expenses")
+        .update({ xero_synced: false })
+        .eq("instructor_id", instructorId)
+        .eq("xero_synced", true);
+      if (error) throw error;
+      toast.success("Sync state reset — all expenses can be re-exported");
+    } catch (err) {
+      console.error("Error resetting sync:", err);
+      toast.error("Failed to reset sync state");
+    } finally {
+      setResetting(false);
+    }
+  };
 
   const exportToCSV = async (period: "month" | "year") => {
     setExporting(true);
