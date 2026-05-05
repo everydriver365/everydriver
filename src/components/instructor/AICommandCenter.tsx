@@ -29,6 +29,13 @@ export function AICommandCenter() {
     }
   }, [messages]);
 
+  // Listen for global "Ask ED" trigger from top bar / other screens
+  useEffect(() => {
+    const openHandler = () => setOpen(true);
+    window.addEventListener("dsm:open-ai", openHandler);
+    return () => window.removeEventListener("dsm:open-ai", openHandler);
+  }, []);
+
   const startListening = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
