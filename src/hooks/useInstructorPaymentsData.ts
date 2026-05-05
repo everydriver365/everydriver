@@ -11,6 +11,7 @@ export interface PaymentTx {
   pupilName: string;
   method: PaymentMethod;
   forText: string;
+  note: string | null;
   amount: number;
   status: PaymentStatus;
 }
@@ -196,6 +197,7 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
             pupilName: p.pupils?.name || "Unknown",
             method,
             forText: shortFor(p.notes, method, amount),
+            note: p.notes ?? null,
             amount,
             status: normalizeStatus(amount, p.notes, p.payout_status),
           };
