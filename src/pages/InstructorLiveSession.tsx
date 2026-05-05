@@ -1209,6 +1209,13 @@ export default function InstructorLiveSession() {
                 />
               )}
 
+              {/* PHONE LAST LOCATION + ROUTE PREVIEW — visible while phone tracking is active */}
+              <PhoneLastLocationCard
+                active={phoneTrackingReady}
+                fix={lastPhoneFix}
+                trail={phoneTrail}
+              />
+
               {/* 1. HEADER */}
               <div style={{
                 background: "#FFF",
