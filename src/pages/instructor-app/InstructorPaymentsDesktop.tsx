@@ -171,10 +171,10 @@ export default function InstructorPaymentsDesktop() {
 
         {/* Stat cards */}
         <div className="grid grid-cols-4" style={{ gap: 8 }}>
-          <StatCard variant="emerald" label="RECEIVED · MAY" value={gbp(stats.receivedMonth)} sub={`${stats.receivedCount} payments`} />
+          <StatCard variant="emerald" label={`RECEIVED · ${new Date().toLocaleString("en-GB", { month: "short" }).toUpperCase()}`} value={gbp(stats.receivedMonth)} sub={`${stats.receivedCount} payments`} />
           <StatCard variant="rose"    label="OUTSTANDING"     value={gbp(stats.outstanding)}    sub={`${stats.outstandingPupils} pupils`} />
           <StatCard variant="neutral" label="NEXT PAYOUT"     value={gbp(stats.nextPayout)}     sub={`${stats.nextPayoutDate} · Square`} />
-          <StatCard variant="neutral" label="FEES · MAY"      value={gbp(stats.feesMonth)}      sub={`${stats.effectiveFeeRate}% effective`} />
+          <StatCard variant="neutral" label={`FEES · ${new Date().toLocaleString("en-GB", { month: "short" }).toUpperCase()}`}      value={gbp(stats.feesMonth)}      sub={`${stats.effectiveFeeRate}% effective`} />
         </div>
 
         {/* Cash flow + Outstanding */}
