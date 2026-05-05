@@ -1325,6 +1325,41 @@ export default function InstructorLiveSession() {
                 })}
               </div>
 
+              {/* TRACKER SOURCE — placed directly above the pupil selector */}
+              {instructor?.id && selectedMode !== "testRoute" && (
+                <div style={{ marginBottom: 12 }}>
+                  <SectionLabel label="Tracker source" />
+                  <TrackerSourceCard
+                    instructorId={instructor.id}
+                    pupilId={selectedPupilId || null}
+                    activeProvider={activeProvider}
+                    onProviderChange={(choice) => {
+                      setActiveProvider(choice);
+                    }}
+                    phoneStreamingConfirmed={phoneStreamingConfirmed}
+                    onTogglePhoneStreaming={() => {
+                      if (!selectedPupilId) {
+                        toast({
+                          title: "Select a pupil first",
+                          description: "Choose the pupil this lesson is for, then start phone tracking.",
+                        });
+                        return;
+                      }
+                      setPhoneStreamingConfirmed((v) => {
+                        const next = !v;
+                        void logPhoneTrackingEvent({
+                          instructorId: instructor.id,
+                          pupilId: selectedPupilId || null,
+                          event: next ? "tracking_started" : "tracking_stopped",
+                          status: locationPermissionStatus,
+                        });
+                        return next;
+                      });
+                    }}
+                  />
+                </div>
+              )}
+
               {/* 4. PUPIL selector — hidden when testRoute */}
               {selectedMode !== "testRoute" && (
                 <>
