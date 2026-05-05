@@ -40,7 +40,7 @@ export default function InstructorPortalLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberMe, setRememberMeState] = useState(getRememberMe());
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -447,7 +447,7 @@ export default function InstructorPortalLogin() {
                         type="checkbox"
                         id="rememberMe"
                         checked={rememberMe}
-                        onChange={(e) => setRememberMe(e.target.checked)}
+                        onChange={(e) => setRememberMeState(e.target.checked)}
                         className="h-4 w-4 rounded border-white/20 bg-white/10 text-emerald-500 focus:ring-emerald-500"
                       />
                       <Label htmlFor="rememberMe" className="text-sm text-slate-400 cursor-pointer">
