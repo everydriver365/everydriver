@@ -364,6 +364,57 @@ export default function InstructorPaymentsDesktop() {
           </div>
         </div>
 
+        {/* Search + date/method filters */}
+        <div className="flex items-center" style={{ gap: 8, flexWrap: "wrap" }}>
+          <div style={{ position: "relative", flex: "1 1 240px", minWidth: 200 }}>
+            <Search size={12} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", color: "var(--d2-text-3)" }} />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search pupil, note, method…"
+              style={{
+                width: "100%", padding: "6px 26px 6px 26px",
+                fontSize: 11, borderRadius: 6,
+                border: "0.5px solid var(--d2-border)", background: "#fff",
+                color: "var(--d2-text-1)", outline: "none",
+              }}
+            />
+            {search && (
+              <button onClick={() => setSearch("")} style={{
+                position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)",
+                color: "var(--d2-text-3)", padding: 2,
+              }}><X size={11} /></button>
+            )}
+          </div>
+          <select
+            value={methodFilter}
+            onChange={e => setMethodFilter(e.target.value as any)}
+            style={{
+              padding: "6px 8px", fontSize: 11, borderRadius: 6,
+              border: "0.5px solid var(--d2-border)", background: "#fff",
+              color: "var(--d2-text-1)", outline: "none", cursor: "pointer",
+            }}
+          >
+            <option value="all">All methods</option>
+            <option value="card">Card</option>
+            <option value="cash">Cash</option>
+            <option value="bank">Bank</option>
+          </select>
+          <div className="flex items-center" style={{ gap: 4, fontSize: 11, color: "var(--d2-text-3)" }}>
+            <span>From</span>
+            <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
+              style={{ padding: "5px 6px", fontSize: 11, borderRadius: 6, border: "0.5px solid var(--d2-border)", background: "#fff", color: "var(--d2-text-1)" }} />
+            <span>To</span>
+            <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
+              style={{ padding: "5px 6px", fontSize: 11, borderRadius: 6, border: "0.5px solid var(--d2-border)", background: "#fff", color: "var(--d2-text-1)" }} />
+          </div>
+          {filtersActive && (
+            <button onClick={clearAllFilters} style={{ fontSize: 11, color: "#4F46E5", fontWeight: 500, padding: "4px 6px" }}>
+              Clear filters
+            </button>
+          )}
+        </div>
+
         {/* Transactions table */}
         <div style={{
           background: "#fff", border: "0.5px solid var(--d2-border)", borderRadius: 8, overflow: "hidden",
@@ -382,7 +433,7 @@ export default function InstructorPaymentsDesktop() {
           {grouped.length === 0 ? (
             <div style={{ padding: 32, textAlign: "center", fontSize: 12, color: "var(--d2-text-3)" }}>
               No transactions match these filters.
-              <button onClick={() => setFilter("all")} style={{ marginLeft: 8, color: "#4F46E5", fontWeight: 500 }}>Clear filters</button>
+              <button onClick={clearAllFilters} style={{ marginLeft: 8, color: "#4F46E5", fontWeight: 500 }}>Clear filters</button>
             </div>
           ) : grouped.map(g => (
             <div key={g.key}>
