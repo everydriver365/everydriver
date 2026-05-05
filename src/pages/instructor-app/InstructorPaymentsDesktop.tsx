@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -9,6 +9,7 @@ import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShe
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { motion, AnimatePresence } from "framer-motion";
+import { useInstructorPaymentsData, type PaymentTx, type PaymentStatus, type PaymentMethod } from "@/hooks/useInstructorPaymentsData";
 
 // ---------- palette ----------
 const palette: Record<string, { bg: string; text: string }> = {
@@ -21,67 +22,15 @@ const palette: Record<string, { bg: string; text: string }> = {
   amber:  { bg: "#FAC775", text: "#412402" },
 };
 
-const PUPILS: Record<number, { name: string; initials: string; color: string }> = {
-  1: { name: "Daniel Kovac",   initials: "DK", color: "coral" },
-  2: { name: "Sarah Mendez",   initials: "SM", color: "blue" },
-  3: { name: "Nadia Bhatti",   initials: "NB", color: "green" },
-  4: { name: "James Taylor",   initials: "JT", color: "pink" },
-  5: { name: "Lucy Reilly",    initials: "LR", color: "purple" },
-  6: { name: "Priya Gupta",    initials: "PG", color: "gray" },
-  7: { name: "Marcus Owen",    initials: "MO", color: "amber" },
-  8: { name: "Amir Hossain",   initials: "AH", color: "pink" },
-  9: { name: "Ravi Hassan",    initials: "RH", color: "amber" },
-};
-
-// ---------- mock data ----------
-const stats = {
-  receivedMonth: 1840, receivedCount: 12,
-  outstanding: 2875, outstandingPupils: 8,
-  nextPayout: 412, nextPayoutDate: "Tomorrow",
-  feesMonth: 32.40, effectiveFeeRate: 1.75,
-};
-
-const cashFlow = [
-  { week: "W10", amount: 240, type: "actual" },
-  { week: "W11", amount: 330, type: "actual" },
-  { week: "W12", amount: 420, type: "actual" },
-  { week: "W13", amount: 300, type: "actual" },
-  { week: "W14", amount: 480, type: "actual" },
-  { week: "W15", amount: 390, type: "actual" },
-  { week: "W16", amount: 540, type: "actual" },
-  { week: "W17", amount: 580, type: "current" },
-  { week: "W18", amount: 450, type: "forecast" },
-  { week: "W19", amount: 390, type: "forecast" },
-  { week: "W20", amount: 510, type: "forecast" },
-  { week: "W21", amount: 420, type: "forecast" },
-] as const;
-
-const outstanding = [
-  { id: 1, amount: 480, daysOverdue: 42 },
-  { id: 3, amount: 190, daysOverdue: 18 },
-  { id: 9, amount: 152, daysUntilDue: 4 },
-  { id: 8, amount: 114, daysUntilDue: 1 },
-  { id: 6, amount: 96, daysOverdue: 7 },
-];
-
-type Method = "card" | "cash" | "bank";
-type Status = "paid" | "pending" | "refunded" | "failed";
-interface Tx { id: string; dateTime: string; pupilId: number; method: Method; forText: string; amount: number; status: Status; }
-
-const transactions: Tx[] = [
-  { id: "t1",  dateTime: "2026-05-04T11:24", pupilId: 2, method: "card", forText: "Block of 10",     amount:  360, status: "paid" },
-  { id: "t2",  dateTime: "2026-05-04T09:48", pupilId: 4, method: "cash", forText: "Standard · 1h",   amount:   38, status: "paid" },
-  { id: "t3",  dateTime: "2026-05-03T17:02", pupilId: 7, method: "card", forText: "Mock test",       amount:   60, status: "pending" },
-  { id: "t4",  dateTime: "2026-05-03T10:15", pupilId: 5, method: "bank", forText: "Standard · 1h",   amount:   38, status: "paid" },
-  { id: "t5",  dateTime: "2026-05-02T15:31", pupilId: 6, method: "card", forText: "Refund · Cancel", amount:  -38, status: "refunded" },
-  { id: "t6",  dateTime: "2026-05-02T09:02", pupilId: 1, method: "card", forText: "Standard · 1h",   amount:   38, status: "failed" },
-  { id: "t7",  dateTime: "2026-05-01T16:40", pupilId: 3, method: "card", forText: "Block of 5",      amount:  180, status: "paid" },
-  { id: "t8",  dateTime: "2026-05-01T11:05", pupilId: 7, method: "cash", forText: "Standard · 2h",   amount:   76, status: "paid" },
-  { id: "t9",  dateTime: "2026-04-30T18:22", pupilId: 4, method: "card", forText: "Top-up",          amount:  120, status: "paid" },
-  { id: "t10", dateTime: "2026-04-30T09:14", pupilId: 9, method: "bank", forText: "Standard · 1h",   amount:   38, status: "pending" },
-  { id: "t11", dateTime: "2026-04-29T13:50", pupilId: 8, method: "card", forText: "Mock test",       amount:   60, status: "paid" },
-  { id: "t12", dateTime: "2026-04-29T08:30", pupilId: 5, method: "card", forText: "Standard · 1.5h", amount:   57, status: "paid" },
-];
+const COLOR_KEYS = ["coral","blue","green","pink","purple","gray","amber"] as const;
+function pupilColor(id: string) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return COLOR_KEYS[h % COLOR_KEYS.length];
+}
+function pupilInitials(name: string) {
+  return name.split(/\s+/).map(s => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "?";
+}
 
 // ---------- helpers ----------
 const gbp = (n: number) =>
@@ -98,14 +47,14 @@ function dayLabel(d: Date) {
   return fmt;
 }
 
-const STATUS_STYLES: Record<Status, { bg: string; color: string }> = {
+const STATUS_STYLES: Record<PaymentStatus, { bg: string; color: string }> = {
   paid:     { bg: "#ECFDF5", color: "#047857" },
   pending:  { bg: "#FEF3C7", color: "#B45309" },
   refunded: { bg: "#F1F5F9", color: "#64748B" },
   failed:   { bg: "#FCEBEB", color: "#791F1F" },
 };
 
-function StatusPill({ s }: { s: Status }) {
+function StatusPill({ s }: { s: PaymentStatus }) {
   const sty = STATUS_STYLES[s];
   return (
     <span style={{
@@ -115,16 +64,15 @@ function StatusPill({ s }: { s: Status }) {
   );
 }
 
-function Avatar({ id, size = 22 }: { id: number; size?: number }) {
-  const p = PUPILS[id]; if (!p) return null;
-  const c = palette[p.color] || palette.gray;
+function Avatar({ id, name, size = 22 }: { id: string; name: string; size?: number }) {
+  const c = palette[pupilColor(id)] || palette.gray;
   return (
     <div style={{
       width: size, height: size, borderRadius: "50%",
       background: c.bg, color: c.text, display: "flex",
       alignItems: "center", justifyContent: "center",
       fontSize: Math.round(size * 0.42), fontWeight: 600, flexShrink: 0,
-    }}>{p.initials}</div>
+    }}>{pupilInitials(name)}</div>
   );
 }
 
@@ -142,9 +90,11 @@ export default function InstructorPaymentsDesktop() {
   const [page, setPage] = useState(1);
   const PAGE = 25;
 
+  const { loading, error, stats, cashFlow, outstanding, transactions } = useInstructorPaymentsData(instructor?.id);
+
   const filtered = useMemo(() =>
     transactions.filter(t => filter === "all" || t.status === filter),
-  [filter]);
+  [filter, transactions]);
 
   const counts = useMemo(() => ({
     all: transactions.length,
@@ -152,10 +102,10 @@ export default function InstructorPaymentsDesktop() {
     pending: transactions.filter(t => t.status === "pending").length,
     refunded: transactions.filter(t => t.status === "refunded").length,
     failed: transactions.filter(t => t.status === "failed").length,
-  }), []);
+  }), [transactions]);
 
   const grouped = useMemo(() => {
-    const map = new Map<string, Tx[]>();
+    const map = new Map<string, PaymentTx[]>();
     filtered.forEach(t => {
       const d = new Date(t.dateTime);
       const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -167,18 +117,29 @@ export default function InstructorPaymentsDesktop() {
     }));
   }, [filtered]);
 
+  const pupilOptions = useMemo(() => {
+    const seen = new Map<string, string>();
+    transactions.forEach(t => { if (!seen.has(t.pupilId)) seen.set(t.pupilId, t.pupilName); });
+    outstanding.forEach(o => { if (!seen.has(o.id)) seen.set(o.id, o.name); });
+    return Array.from(seen.entries()).map(([id, name]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [transactions, outstanding]);
+
+  useEffect(() => { if (error) toast.error(error); }, [error]);
+
   const initials = (instructor?.name || "").split(" ").map(s=>s[0]).filter(Boolean).slice(0,2).join("").toUpperCase() || "ID";
   const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
 
   // chart geometry
   const chartW = 460, chartH = 140, padL = 30, padB = 20, padT = 8, padR = 8;
-  const max = 600;
   const innerW = chartW - padL - padR;
   const innerH = chartH - padT - padB;
-  const barW = 24, gap = (innerW - barW * cashFlow.length) / (cashFlow.length - 1);
+  const maxAmt = Math.max(100, ...cashFlow.map(c => c.amount));
+  const max = Math.ceil(maxAmt / 100) * 100;
+  const barW = 24, gap = cashFlow.length > 1 ? (innerW - barW * cashFlow.length) / (cashFlow.length - 1) : 0;
   const yFor = (v: number) => padT + innerH - (v / max) * innerH;
   const forecastStartIdx = cashFlow.findIndex(c => c.type === "forecast");
-  const sepX = padL + (barW + gap) * forecastStartIdx - gap / 2;
+  const sepX = forecastStartIdx >= 0 ? padL + (barW + gap) * forecastStartIdx - gap / 2 : padL;
 
   const cols = "90px minmax(0, 1.4fr) 80px 110px 80px 90px 30px";
 
@@ -212,10 +173,10 @@ export default function InstructorPaymentsDesktop() {
 
         {/* Stat cards */}
         <div className="grid grid-cols-4" style={{ gap: 8 }}>
-          <StatCard variant="emerald" label="RECEIVED · MAY" value={gbp(stats.receivedMonth)} sub={`${stats.receivedCount} payments`} />
+          <StatCard variant="emerald" label={`RECEIVED · ${new Date().toLocaleString("en-GB", { month: "short" }).toUpperCase()}`} value={gbp(stats.receivedMonth)} sub={`${stats.receivedCount} payments`} />
           <StatCard variant="rose"    label="OUTSTANDING"     value={gbp(stats.outstanding)}    sub={`${stats.outstandingPupils} pupils`} />
           <StatCard variant="neutral" label="NEXT PAYOUT"     value={gbp(stats.nextPayout)}     sub={`${stats.nextPayoutDate} · Square`} />
-          <StatCard variant="neutral" label="FEES · MAY"      value={gbp(stats.feesMonth)}      sub={`${stats.effectiveFeeRate}% effective`} />
+          <StatCard variant="neutral" label={`FEES · ${new Date().toLocaleString("en-GB", { month: "short" }).toUpperCase()}`}      value={gbp(stats.feesMonth)}      sub={`${stats.effectiveFeeRate}% effective`} />
         </div>
 
         {/* Cash flow + Outstanding */}
@@ -296,10 +257,13 @@ export default function InstructorPaymentsDesktop() {
                 Send all reminders →
               </button>
             </div>
+            {outstanding.length === 0 && (
+              <div style={{ padding: "16px 0", fontSize: 11, color: "var(--d2-text-3)" }}>
+                {loading ? "Loading…" : "No outstanding balances."}
+              </div>
+            )}
             {outstanding.map((o, i) => {
-              const p = PUPILS[o.id];
-              if (!p) return null;
-              const overdue = "daysOverdue" in o;
+              const overdue = o.daysOverdue !== undefined;
               return (
                 <div key={o.id}
                   className="flex items-center"
@@ -310,11 +274,13 @@ export default function InstructorPaymentsDesktop() {
                   }}
                   onClick={() => navigate(`/instructor/pupils/${o.id}`)}
                 >
-                  <Avatar id={o.id} size={24} />
+                  <Avatar id={o.id} name={o.name} size={24} />
                   <div className="flex-1 min-w-0">
-                    <div style={{ fontSize: 11, fontWeight: 500, color: "var(--d2-text-1)" }}>{p.name}</div>
+                    <div style={{ fontSize: 11, fontWeight: 500, color: "var(--d2-text-1)" }}>{o.name}</div>
                     <div style={{ fontSize: 9, color: "var(--d2-text-3)" }}>
-                      {overdue ? `Overdue · ${(o as any).daysOverdue} days` : `Due in ${(o as any).daysUntilDue} days`}
+                      {overdue
+                        ? (o.daysOverdue! > 0 ? `Overdue · ${o.daysOverdue} days` : "Overdue")
+                        : `Due in ${o.daysUntilDue} days`}
                     </div>
                   </div>
                   <div style={{
@@ -379,13 +345,12 @@ export default function InstructorPaymentsDesktop() {
               }}>{dayLabel(g.date)}</div>
 
               {g.items.map((t, i) => {
-                const p = PUPILS[t.pupilId];
                 const time = new Date(t.dateTime).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
                 const isLast = i === g.items.length - 1;
                 const negative = t.amount < 0;
                 return (
                   <div key={t.id}
-                    onClick={() => toast(`Opening ${t.id}…`)}
+                    onClick={() => navigate(`/instructor/pupils/${t.pupilId}`)}
                     style={{
                       display: "grid", gridTemplateColumns: cols,
                       padding: "9px 12px", alignItems: "center", gap: 8,
@@ -397,9 +362,9 @@ export default function InstructorPaymentsDesktop() {
                   >
                     <div style={{ fontFamily: "var(--d2-mono)", fontSize: 11, color: "var(--d2-text-2)" }}>{time}</div>
                     <div className="flex items-center" style={{ gap: 8, minWidth: 0 }}>
-                      <Avatar id={t.pupilId} />
+                      <Avatar id={t.pupilId} name={t.pupilName} />
                       <div style={{ fontSize: 12, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {p?.name || "—"}
+                        {t.pupilName}
                       </div>
                     </div>
                     <div className="flex items-center" style={{ gap: 5, fontSize: 10, color: "var(--d2-text-2)" }}>
@@ -460,7 +425,7 @@ export default function InstructorPaymentsDesktop() {
                 padding: 16, zIndex: 61, overflowY: "auto",
               }}
             >
-              <TakePaymentSheet onClose={() => setTakeOpen(false)} />
+              <TakePaymentSheet onClose={() => setTakeOpen(false)} pupils={pupilOptions} />
             </motion.div>
           </>
         )}
@@ -511,11 +476,11 @@ function StatCard({
   );
 }
 
-function TakePaymentSheet({ onClose }: { onClose: () => void }) {
-  const [pupilId, setPupilId] = useState<number>(2);
+function TakePaymentSheet({ onClose, pupils }: { onClose: () => void; pupils: { id: string; name: string }[] }) {
+  const [pupilId, setPupilId] = useState<string>(pupils[0]?.id ?? "");
   const [forKind, setForKind] = useState("single");
   const [amount, setAmount] = useState("38.00");
-  const [method, setMethod] = useState<Method>("card");
+  const [method, setMethod] = useState<PaymentMethod>("card");
   const [note, setNote] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -538,9 +503,10 @@ function TakePaymentSheet({ onClose }: { onClose: () => void }) {
       </div>
 
       <Field label="Pupil">
-        <select value={pupilId} onChange={e => setPupilId(Number(e.target.value))} style={inputStyle}>
-          {Object.entries(PUPILS).map(([id, p]) => (
-            <option key={id} value={id}>{p.name}</option>
+        <select value={pupilId} onChange={e => setPupilId(e.target.value)} style={inputStyle}>
+          {pupils.length === 0 && <option value="">No pupils</option>}
+          {pupils.map(p => (
+            <option key={p.id} value={p.id}>{p.name}</option>
           ))}
         </select>
       </Field>
