@@ -11,6 +11,8 @@ import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCou
 import { motion, AnimatePresence } from "framer-motion";
 import { useInstructorPaymentsData, type PaymentTx, type PaymentStatus, type PaymentMethod } from "@/hooks/useInstructorPaymentsData";
 import { PaymentsExportDialog } from "@/components/instructor/payments/PaymentsExportDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 
 // ---------- palette ----------
 const palette: Record<string, { bg: string; text: string }> = {
@@ -92,7 +94,19 @@ export default function InstructorPaymentsDesktop() {
   const [page, setPage] = useState(1);
   const PAGE = 25;
 
-  const { loading, error, stats, cashFlow, outstanding, transactions } = useInstructorPaymentsData(instructor?.id);
+  const { loading, error, stats, cashFlow, outstanding, transactions, refresh } = useInstructorPaymentsData(instructor?.id);
+  const [allPupils, setAllPupils] = useState<{ id: string; name: string; phone: string | null; email: string | null; account_balance: number | null }[]>([]);
+
+  useEffect(() => {
+    if (!instructor?.id) return;
+    supabase
+      .from("pupils")
+      .select("id, name, phone, email, account_balance")
+      .eq("instructor_id", instructor.id)
+      .is("deleted_at", null)
+      .order("name", { ascending: true })
+      .then(({ data }) => setAllPupils(data || []));
+  }, [instructor?.id]);
 
   const filtered = useMemo(() =>
     transactions.filter(t => filter === "all" || t.status === filter),
@@ -120,12 +134,13 @@ export default function InstructorPaymentsDesktop() {
   }, [filtered]);
 
   const pupilOptions = useMemo(() => {
+    if (allPupils.length > 0) return allPupils.map(p => ({ id: p.id, name: p.name, phone: p.phone, email: p.email }));
     const seen = new Map<string, string>();
     transactions.forEach(t => { if (!seen.has(t.pupilId)) seen.set(t.pupilId, t.pupilName); });
     outstanding.forEach(o => { if (!seen.has(o.id)) seen.set(o.id, o.name); });
-    return Array.from(seen.entries()).map(([id, name]) => ({ id, name }))
+    return Array.from(seen.entries()).map(([id, name]) => ({ id, name, phone: null, email: null }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [transactions, outstanding]);
+  }, [transactions, outstanding, allPupils]);
 
   useEffect(() => { if (error) toast.error(error); }, [error]);
 
@@ -427,7 +442,12 @@ export default function InstructorPaymentsDesktop() {
                 padding: 16, zIndex: 61, overflowY: "auto",
               }}
             >
-              <TakePaymentSheet onClose={() => setTakeOpen(false)} pupils={pupilOptions} />
+              <TakePaymentSheet
+                onClose={() => setTakeOpen(false)}
+                pupils={pupilOptions}
+                instructorId={instructor?.id}
+                onSuccess={refresh}
+              />
             </motion.div>
           </>
         )}
@@ -485,22 +505,110 @@ function StatCard({
   );
 }
 
-function TakePaymentSheet({ onClose, pupils }: { onClose: () => void; pupils: { id: string; name: string }[] }) {
+type SheetPupil = { id: string; name: string; phone?: string | null; email?: string | null };
+
+function TakePaymentSheet({
+  onClose, pupils, instructorId, onSuccess,
+}: {
+  onClose: () => void;
+  pupils: SheetPupil[];
+  instructorId?: string;
+  onSuccess?: () => void;
+}) {
+  const { invalidatePaymentQueries } = usePaymentInvalidation();
   const [pupilId, setPupilId] = useState<string>(pupils[0]?.id ?? "");
   const [forKind, setForKind] = useState("single");
   const [amount, setAmount] = useState("38.00");
   const [method, setMethod] = useState<PaymentMethod>("card");
   const [note, setNote] = useState("");
   const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; message: string; checkoutUrl?: string } | null>(null);
 
-  const submit = () => {
-    if (method === "card") {
-      setSending(true);
-      setTimeout(() => { setSending(false); setSent(true); }, 1500);
-    } else {
-      toast(`Took ${gbp(parseFloat(amount) || 0)} (${method})`);
-      onClose();
+  // Keep pupil selection valid as list loads
+  useEffect(() => {
+    if (!pupilId && pupils[0]) setPupilId(pupils[0].id);
+  }, [pupils, pupilId]);
+
+  const numAmount = parseFloat(amount) || 0;
+  const isRefund = forKind === "refund";
+  const signedAmount = isRefund ? -Math.abs(numAmount) : Math.abs(numAmount);
+  const selectedPupil = pupils.find(p => p.id === pupilId);
+
+  const methodLabel = (m: PaymentMethod) =>
+    m === "card" ? "Square" : m === "cash" ? "Cash" : "Bank Transfer";
+
+  const submit = async () => {
+    if (!instructorId) { toast.error("Not signed in"); return; }
+    if (!pupilId) { toast.error("Select a pupil"); return; }
+    if (!numAmount || numAmount < 0.5) { toast.error("Amount must be at least £0.50"); return; }
+
+    setSending(true);
+    setResult(null);
+
+    try {
+      if (method === "card") {
+        // Create Square checkout link, then record as pending in payment_history
+        const orderRef = `manual-${Date.now()}-${pupilId.slice(0, 6)}`;
+        const origin = window.location.origin;
+        const { data, error } = await supabase.functions.invoke("square-checkout", {
+          body: {
+            amount: Math.abs(numAmount),
+            orderReference: orderRef,
+            customerEmail: selectedPupil?.email || undefined,
+            customerName: selectedPupil?.name,
+            customerPhone: selectedPupil?.phone || undefined,
+            description: note || `Payment from ${selectedPupil?.name}`,
+            returnUrl: `${origin}/instructor/payments?status=success`,
+            cancelUrl: `${origin}/instructor/payments?status=cancelled`,
+            instructorId,
+            pupilId,
+          },
+        });
+
+        if (error) throw error;
+        const checkoutUrl: string | undefined = data?.checkoutUrl || data?.url || data?.payment_link?.url;
+        if (!checkoutUrl) throw new Error(data?.error || "Failed to create payment link");
+
+        const noteText = `${note ? note + " · " : ""}Awaiting payment · ${orderRef}`;
+        await supabase.from("payment_history").insert({
+          pupil_id: pupilId,
+          instructor_id: instructorId,
+          amount: Math.abs(numAmount),
+          payment_method: "Square",
+          notes: `${noteText} pending`,
+          payout_status: "pending",
+        });
+
+        invalidatePaymentQueries({ pupilId, instructorId });
+        onSuccess?.();
+        setResult({ ok: true, message: "Payment link created. Share with pupil to complete.", checkoutUrl });
+      } else {
+        // Cash or Bank — record immediately + adjust balance
+        const { error: insErr } = await supabase.from("payment_history").insert({
+          pupil_id: pupilId,
+          instructor_id: instructorId,
+          amount: signedAmount,
+          payment_method: methodLabel(method),
+          notes: note || (isRefund ? "Refund" : `${methodLabel(method)} payment`),
+        });
+        if (insErr) throw insErr;
+
+        await supabase.rpc("increment_pupil_balance", {
+          p_pupil_id: pupilId,
+          p_amount: signedAmount,
+        });
+
+        invalidatePaymentQueries({ pupilId, instructorId });
+        onSuccess?.();
+        toast.success(`${isRefund ? "Refunded" : "Recorded"} ${gbp(Math.abs(numAmount))} (${methodLabel(method)})`);
+        onClose();
+      }
+    } catch (e: any) {
+      console.error("Take payment failed:", e);
+      setResult({ ok: false, message: e?.message || "Something went wrong. Please try again." });
+      toast.error(e?.message || "Failed to take payment");
+    } finally {
+      setSending(false);
     }
   };
 
@@ -512,7 +620,7 @@ function TakePaymentSheet({ onClose, pupils }: { onClose: () => void; pupils: { 
       </div>
 
       <Field label="Pupil">
-        <select value={pupilId} onChange={e => setPupilId(e.target.value)} style={inputStyle}>
+        <select value={pupilId} onChange={e => setPupilId(e.target.value)} style={inputStyle} disabled={sending}>
           {pupils.length === 0 && <option value="">No pupils</option>}
           {pupils.map(p => (
             <option key={p.id} value={p.id}>{p.name}</option>
@@ -534,6 +642,7 @@ function TakePaymentSheet({ onClose, pupils }: { onClose: () => void; pupils: { 
                 type="radio" name="kind" value={o.v} checked={forKind === o.v}
                 onChange={() => { setForKind(o.v); if (o.a) setAmount(o.a); }}
                 style={{ accentColor: "#4F46E5" }}
+                disabled={sending}
               />
               {o.l}
             </label>
@@ -544,11 +653,13 @@ function TakePaymentSheet({ onClose, pupils }: { onClose: () => void; pupils: { 
       <Field label="Amount">
         <input
           value={amount} onChange={e => setAmount(e.target.value)}
+          inputMode="decimal"
+          disabled={sending}
           style={{ ...inputStyle, fontSize: 24, fontFamily: "var(--d2-mono)", fontVariantNumeric: "tabular-nums" }}
         />
         <div className="flex items-center" style={{ gap: 5, marginTop: 6 }}>
           {["38.00", "60.00", "360.00"].map(v => (
-            <button key={v} onClick={() => setAmount(v)} style={{
+            <button key={v} onClick={() => setAmount(v)} disabled={sending} style={{
               fontSize: 11, padding: "4px 8px", borderRadius: 6,
               border: "0.5px solid var(--d2-border)", background: "#fff",
               color: "var(--d2-text-2)",
@@ -560,13 +671,13 @@ function TakePaymentSheet({ onClose, pupils }: { onClose: () => void; pupils: { 
       <Field label="Method">
         <div className="grid grid-cols-3" style={{ gap: 6 }}>
           {([
-            { v: "card", l: "Card", icon: <CreditCard size={14} />, sub: "Pupil pays via SMS link" },
+            { v: "card", l: "Square", icon: <CreditCard size={14} />, sub: "Pupil pays via link" },
             { v: "cash", l: "Cash", icon: <PoundSterling size={14} /> },
             { v: "bank", l: "Bank", icon: <Landmark size={14} /> },
           ] as const).map(m => {
             const a = method === m.v;
             return (
-              <button key={m.v} onClick={() => setMethod(m.v)} style={{
+              <button key={m.v} onClick={() => setMethod(m.v)} disabled={sending} style={{
                 padding: 8, borderRadius: 8,
                 border: a ? "1px solid #4F46E5" : "0.5px solid var(--d2-border)",
                 background: a ? "#EEF2FF" : "#fff",
@@ -582,24 +693,42 @@ function TakePaymentSheet({ onClose, pupils }: { onClose: () => void; pupils: { 
       </Field>
 
       <Field label="Note">
-        <input value={note} onChange={e => setNote(e.target.value)} placeholder="Optional" style={inputStyle} />
+        <input value={note} onChange={e => setNote(e.target.value)} placeholder="Optional" style={inputStyle} disabled={sending} />
       </Field>
 
-      {sent ? (
+      {result?.ok ? (
         <div style={{ background: "#ECFDF5", color: "#047857", padding: 10, borderRadius: 8, fontSize: 12 }}>
-          ✓ Payment link created.
+          ✓ {result.message}
+          {result.checkoutUrl && (
+            <div className="flex items-center" style={{ gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+              <button
+                onClick={() => { navigator.clipboard.writeText(result.checkoutUrl!); toast.success("Link copied"); }}
+                style={{ ...outlineBtn, padding: "5px 8px" }}
+              >Copy link</button>
+              <a
+                href={result.checkoutUrl} target="_blank" rel="noopener noreferrer"
+                style={{ ...primaryBtn, padding: "5px 8px", textDecoration: "none" }}
+              >Open</a>
+              <button onClick={onClose} style={{ ...outlineBtn, padding: "5px 8px" }}>Done</button>
+            </div>
+          )}
+        </div>
+      ) : result && !result.ok ? (
+        <div style={{ background: "#FCEBEB", color: "#791F1F", padding: 10, borderRadius: 8, fontSize: 12 }}>
+          ✗ {result.message}
           <div className="flex items-center" style={{ gap: 6, marginTop: 6 }}>
-            <button onClick={() => toast("Link copied")} style={{ ...outlineBtn, padding: "5px 8px" }}>Copy link</button>
-            <button onClick={() => { toast("SMS sent"); onClose(); }} style={{ ...primaryBtn, padding: "5px 8px" }}>Send SMS</button>
+            <button onClick={() => setResult(null)} style={{ ...primaryBtn, padding: "5px 8px" }}>Try again</button>
           </div>
         </div>
       ) : (
-        <button onClick={submit} disabled={sending} style={{
+        <button onClick={submit} disabled={sending || !pupilId || !numAmount} style={{
           marginTop: 4, width: "100%", padding: "10px 12px", borderRadius: 8,
           background: "#4F46E5", color: "#fff", fontWeight: 500, fontSize: 13,
-          opacity: sending ? 0.7 : 1,
+          opacity: sending || !pupilId || !numAmount ? 0.7 : 1,
         }}>
-          {sending ? "Sending payment link…" : `Take ${gbp(parseFloat(amount) || 0)}`}
+          {sending
+            ? (method === "card" ? "Creating payment link…" : "Recording payment…")
+            : (method === "card" ? `Send link for ${gbp(numAmount)}` : `${isRefund ? "Refund" : "Take"} ${gbp(numAmount)}`)}
         </button>
       )}
     </div>
