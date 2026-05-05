@@ -270,8 +270,11 @@ export default function InstructorPaymentsDesktop() {
           <Card>
             <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
               <div style={{ fontSize: 13, fontWeight: 500, color: "var(--d2-text-1)" }}>Outstanding</div>
-              <button onClick={() => toast("Reminder sent to 8 pupils")}
-                style={{ fontSize: 10, color: "#4F46E5", fontWeight: 500 }}>
+              <button
+                onClick={() => setRemindersOpen(true)}
+                disabled={outstanding.length === 0}
+                style={{ fontSize: 10, color: "#4F46E5", fontWeight: 500, opacity: outstanding.length === 0 ? 0.4 : 1 }}
+              >
                 Send all reminders →
               </button>
             </div>
