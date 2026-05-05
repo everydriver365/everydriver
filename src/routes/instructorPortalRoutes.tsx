@@ -261,7 +261,8 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/daily-manifest" element={<InstructorDailyManifest />} />
     <Route path="/instructor/eod-report" element={<InstructorEODReport />} />
     <Route path="/instructor/bulk-operations" element={<InstructorBulkOperations />} />
-    <Route path="/instructor/reports" element={<InstructorReportsHub />} />
+    <Route path="/instructor/reports" element={<InstructorReports />} />
+    <Route path="/reports" element={<InstructorReports />} />
     <Route path="/instructor/health" element={<InstructorHealth />} />
     <Route path="/instructor/accessibility" element={<InstructorAccessibility />} />
     <Route path="/instructor/import-data" element={<InstructorDataImport />} />
