@@ -1,0 +1,1 @@
+UPDATE public.instructors SET brand_colour='#E8742C', secondary_colour='#3E3E3E', website_font='Montserrat' WHERE id='1b49d152-1088-4587-8f80-b325ba41c1af';
