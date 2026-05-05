@@ -142,6 +142,13 @@ export default function InstructorScheduleDesktop() {
   const [availability, setAvailability] = useState<Record<Day, "off" | { start: string; end: string }>>({
     Mon: "off", Tue: "off", Wed: "off", Thu: "off", Fri: "off", Sat: "off", Sun: "off",
   });
+  // Instructor settings
+  const [bufferMinutes, setBufferMinutes] = useState<number>(15);
+  const [allowedDurations, setAllowedDurations] = useState<number[]>([60, 120]);
+  const [preferredDuration, setPreferredDuration] = useState<number>(60);
+  const [minNoticeHours, setMinNoticeHours] = useState<number>(0);
+  // Google Calendar busy events for current week (external)
+  const [externalBusy, setExternalBusy] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(() => new Date());
   const [activeDrag, setActiveDrag] = useState<
