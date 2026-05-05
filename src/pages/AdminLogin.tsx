@@ -416,6 +416,23 @@ export default function AdminLogin() {
                     )}
                   </Button>
 
+                  {(viewMode === 'login' || viewMode === 'signup') && (
+                    <>
+                      <div className="relative my-2">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-white/10" />
+                        </div>
+                        <div className="relative flex justify-center text-xs">
+                          <span className="px-2 bg-transparent text-slate-500">OR</span>
+                        </div>
+                      </div>
+                      <GoogleSignInButton
+                        redirectTo={`${window.location.origin}/admin`}
+                        className="w-full h-12 bg-white hover:bg-white/90 text-slate-900 border-slate-300"
+                      />
+                    </>
+                  )}
+
                   <div className="text-center text-sm space-y-2">
                     {viewMode === 'login' && (
                       <div>
