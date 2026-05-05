@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useModules } from "@/context/ModulesContext";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
 interface NavItem { label: string; to: string; icon: React.ElementType; badge?: string; moduleId?: string; }
 interface NavSection { label: string; items: NavItem[]; }
