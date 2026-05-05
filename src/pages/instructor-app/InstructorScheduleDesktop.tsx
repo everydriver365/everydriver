@@ -903,7 +903,7 @@ function LessonGhost({ lesson }: { lesson: Lesson }) {
 function RightRail({
   unbooked, aiPrompt, setAiPrompt, aiSuggestions, onAskAi,
 }: {
-  unbooked: typeof unbookedSeed;
+  unbooked: PupilLite[];
   aiPrompt: string; setAiPrompt: (s: string) => void;
   aiSuggestions: { label: string }[] | null;
   onAskAi: () => void;
