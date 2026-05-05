@@ -37,6 +37,7 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
  import { RecentSessionsList } from "@/components/instructor/tracking/RecentSessionsList";
  import { FloatingSessionTimer } from "@/components/instructor/tracking/FloatingSessionTimer";
 import { DeviceSelectorDropdown } from "@/components/instructor/tracking/DeviceSelectorDropdown";
+import { TrackingProviderDropdown } from "@/components/instructor/tracking/TrackingProviderDropdown";
 
 import { SatNavLiveMap } from "@/components/instructor/tracking/SatNavLiveMap";
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
@@ -1428,24 +1429,27 @@ export default function InstructorLiveSession() {
                 </div>
               </div>
 
-              {/* Device selector — collapsed/secondary */}
+              {/* Tracker source selector — always visible (phone vs Radius) */}
               {instructor?.id && (
-                <details style={{
+                <div style={{
                   background: "#FFFFFF", border: "0.5px solid #E5E5EA", borderRadius: 12,
-                  padding: "10px 12px", fontFamily: FONT_STACK,
+                  padding: "10px 12px", fontFamily: FONT_STACK, display: "flex",
+                  flexDirection: "column", gap: 8,
                 }}>
-                  <summary style={{
-                    listStyle: "none", cursor: "pointer", display: "flex",
-                    alignItems: "center", justifyContent: "space-between",
-                    fontSize: 13, fontWeight: 500, color: "#000",
+                  <span style={{
+                    fontSize: 11, fontWeight: 500, color: "#6E6E73",
+                    letterSpacing: 0.4, textTransform: "uppercase",
                   }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <Car size={14} strokeWidth={2} color="#6E6E73" />
-                      Device · {device.device_name || "GPS tracker"}
-                    </span>
-                    <ChevronDown size={14} strokeWidth={2} color="#6E6E73" />
-                  </summary>
-                  <div style={{ marginTop: 10 }}>
+                    Tracker source
+                  </span>
+                  <TrackingProviderDropdown
+                    instructorId={instructor.id}
+                    value={(activeProvider === "radius" ? "radius" : "phone")}
+                    onChange={(choice) => {
+                      setActiveProvider(choice === "radius" ? "radius" : null);
+                    }}
+                  />
+                  {device?.id && (
                     <DeviceSelectorDropdown
                       instructorId={instructor.id}
                       currentDeviceId={device.id}
@@ -1463,8 +1467,8 @@ export default function InstructorLiveSession() {
                         }
                       }}
                     />
-                  </div>
-                </details>
+                  )}
+                </div>
               )}
 
               {/* Manual GPS Route Recorder — kept */}
