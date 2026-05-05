@@ -197,23 +197,40 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
             method,
             forText: shortFor(p.notes, method, amount),
             amount,
-            status: normalizeStatus(amount, p.notes),
+            status: normalizeStatus(amount, p.notes, p.payout_status),
           };
         });
 
         // Stats: this month
         const monthStart = new Date();
         monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
-        const monthTx = transactions.filter(t => new Date(t.dateTime) >= monthStart && t.status === "paid" && t.amount > 0);
+        // Net received this month = paid + refunded (refunds are negative)
+        const monthTx = transactions.filter(t =>
+          new Date(t.dateTime) >= monthStart &&
+          (t.status === "paid" || t.status === "refunded")
+        );
         const receivedMonth = monthTx.reduce((s, t) => s + t.amount, 0);
         const cardMonth = monthTx.filter(t => t.method === "card").reduce((s, t) => s + t.amount, 0);
-        const feesMonth = +(cardMonth * FEE_RATE).toFixed(2);
+        const feesMonth = +(Math.max(0, cardMonth) * FEE_RATE).toFixed(2);
         const effectiveFeeRate = receivedMonth > 0 ? +((feesMonth / receivedMonth) * 100).toFixed(2) : 0;
 
-        // Pending payout = card payments not yet transferred
+        // Pending payout = card payments captured but NOT yet transferred (excl. refunded)
         const pendingPayout = rawPayments
-          .filter((p: any) => normalizeMethod(p.payment_method) === "card" && p.payout_status === "pending")
+          .filter((p: any) => {
+            const m = normalizeMethod(p.payment_method);
+            const ps = (p.payout_status || "").toLowerCase();
+            return m === "card" && ps === "pending" && Number(p.amount || 0) > 0;
+          })
           .reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
+
+        // Most recent transferred payment to estimate next payout date
+        const lastTransferred = rawPayments.find((p: any) => p.transferred_at);
+        const nextPayoutDate = pendingPayout > 0
+          ? (lastTransferred?.transferred_at
+              ? new Date(new Date(lastTransferred.transferred_at).getTime() + 24 * 60 * 60 * 1000)
+                  .toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })
+              : "Tomorrow")
+          : "—";
 
         const outstanding: OutstandingPupil[] = (pupilsRes.data || []).map((p: any) => {
           const amt = Math.abs(Number(p.account_balance || 0));
