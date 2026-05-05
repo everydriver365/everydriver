@@ -13634,6 +13634,7 @@ export type Database = {
           reminder_preferences: Json | null
           reward_points: number | null
           scheduling_status: string | null
+          sex: string | null
           special_needs: string | null
           speeding_events_total: number | null
           status: string
@@ -13726,6 +13727,7 @@ export type Database = {
           reminder_preferences?: Json | null
           reward_points?: number | null
           scheduling_status?: string | null
+          sex?: string | null
           special_needs?: string | null
           speeding_events_total?: number | null
           status?: string
@@ -13818,6 +13820,7 @@ export type Database = {
           reminder_preferences?: Json | null
           reward_points?: number | null
           scheduling_status?: string | null
+          sex?: string | null
           special_needs?: string | null
           speeding_events_total?: number | null
           status?: string

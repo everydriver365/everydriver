@@ -1,36 +1,43 @@
 ## Goal
-Surface live connection status for **Google Calendar**, **Square**, and **Xero** in the Integrations Hub — both as a badge on each tab trigger and as a status banner inside each tab's content.
+Replace the current minimal "Add pupil" dialog in the instructor desktop portal (`InstructorPupilsDesktop.tsx`) with a richer intake form matching the mobile `AddPupilSheet` pattern. All fields will be **optional** (no hard `required` validations except character/format sanity checks).
 
-## Status sources
-
-| Integration | Connected when | How to check |
+## Fields to capture
+| Field | DB column | Control |
 |---|---|---|
-| Google Calendar | `instructor_google_service_calendar.is_active = true` for instructor | Reuse `useGoogleServiceCalendar.checkConnection()` (already returns `{ connected, lastSync }`) |
-| Square | `instructor.square_merchant_id` is set | Already on `instructor` from `useInstructorAuth` |
-| Xero | CSV-based, no credentials stored | Always show **Available** (with a tooltip clarifying it's a manual export) |
+| Name | `name` | text input |
+| Address (postcode search) | `address` + `postcode` | `GoogleAddressAutocomplete` (auto-fills postcode) |
+| What3words | `what3words` | text input + auto-lookup via `convert-to-what3words` edge fn |
+| Date of birth | `date_of_birth` | date input |
+| Sex | **new column `sex`** (text) | select: Male / Female / Prefer not to say |
+| Previous experience (hours) | `previous_experience` (existing text col) | number input, stored as e.g. `"12 hours"` |
+| Manual / Automatic | `transmission_type` | select: Manual / Automatic |
+| Extra needs | `special_needs` | textarea |
+| Comments | `notes` | textarea |
+| Phone | `phone` | text input (kept) |
+| Email | `email` | text input (kept) |
+| Payment method | `payment_method` | select: TBC / Cash / Card / Bank transfer / Send link |
 
-## New shared component
-`src/components/instructor/integrations/IntegrationStatusBadge.tsx`
-- Variants: `connected` (emerald + check), `disconnected` (muted + minus), `available` (sky + dashed circle), `loading` (spinner).
-- Small pill with icon + label, sized `sm` for tab triggers and `md` for in-tab banners.
+All fields optional — only inline format hints (email, postcode) shown if user types something invalid. No required asterisks.
 
-## New status hook
-`src/hooks/useIntegrationStatuses.ts`
-- Returns `{ googleCalendar, square, xero }` each `IntegrationStatusKind`, plus `lastSync` strings where relevant.
-- Google: invokes `google-calendar-service { action: "checkConnection" }` once on mount and on `refresh()`.
-- Square: derived from `instructor.square_merchant_id` (no extra fetch).
-- Xero: hard-coded `"available"`.
+## Database change
+Add a nullable `sex` text column to `public.pupils` (no check constraint to keep flexible). Single migration.
 
-## Hub changes (`InstructorIntegrationsHub.tsx`)
-- Call `useIntegrationStatuses(instructorId, instructor)`.
-- For each tab in `TABS`, render the `IntegrationStatusBadge` next to the label inside `TabsTrigger` (visible on all viewports — desktop next to text, mobile next to icon).
-- Inside each `TabsContent`, render a top status row:
-  - `<IntegrationStatusBadge size="md" />` + small text:
-    - Google: "Last synced X" or "Connect to start syncing"
-    - Square: merchant id short tail or "Connect to take card payments"
-    - Xero: "Manual CSV export — no account linking required"
+```sql
+ALTER TABLE public.pupils ADD COLUMN IF NOT EXISTS sex text;
+```
+
+## UI changes (`src/pages/instructor-app/InstructorPupilsDesktop.tsx`)
+- Replace the small `Dialog` body with a scrollable form grouped into sections:
+  1. **Pupil details** — Name, Email, Phone, DOB, Sex
+  2. **Address** — `GoogleAddressAutocomplete`, Postcode (auto), What3words (auto via edge fn `convert-to-what3words`)
+  3. **Learning** — Previous experience (hrs), Transmission, Extra needs
+  4. **Payment** — Payment method select
+  5. **Comments** — notes textarea
+- Increase dialog width to `sm:max-w-2xl`, add `max-h-[85vh] overflow-y-auto`.
+- Inline soft-validation only: email format, UK postcode format. Never block submit; just show small red helper text under the field.
+- Save handler: insert all provided fields (omit empty strings → `null`). Keep existing `setReloadTick` refresh + success toast.
+- Remove "Name *" required indicator (now optional). Save button enabled unless any field has an active format error.
 
 ## Out of scope
-- No mobile layout changes elsewhere.
-- No new database fields or edge functions.
-- Existing components inside each tab keep their own detailed status sections; the new badge is a top-level summary.
+- Edit pupil dialog will keep its current fields (separate task if user wants parity).
+- No changes to mobile `AddPupilSheet`.
