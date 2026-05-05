@@ -104,14 +104,37 @@ function buildPdf(rows: PaymentTx[], from: Date, to: Date, instructorName: strin
   return doc;
 }
 
+interface ActiveFilters {
+  search: string;
+  status: string;
+  method: string;
+  dateFrom: string;
+  dateTo: string;
+}
+
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   transactions: PaymentTx[];
+  filteredTransactions?: PaymentTx[];
+  activeFilters?: ActiveFilters;
   instructorName?: string;
 }
 
-export function PaymentsExportDialog({ open, onOpenChange, transactions, instructorName }: Props) {
+function summarizeFilters(f?: ActiveFilters): string {
+  if (!f) return "";
+  const parts: string[] = [];
+  if (f.search) parts.push(`search "${f.search}"`);
+  if (f.status && f.status !== "all") parts.push(`status: ${f.status}`);
+  if (f.method && f.method !== "all") parts.push(`method: ${f.method}`);
+  if (f.dateFrom) parts.push(`from ${f.dateFrom}`);
+  if (f.dateTo) parts.push(`to ${f.dateTo}`);
+  return parts.join(" · ");
+}
+
+export function PaymentsExportDialog({ open, onOpenChange, transactions, filteredTransactions, activeFilters, instructorName }: Props) {
+  const hasActiveFilters = !!(activeFilters && summarizeFilters(activeFilters));
+  const [useTableFilters, setUseTableFilters] = useState<boolean>(hasActiveFilters);
   const [preset, setPreset] = useState<Preset>("30d");
   const [from, setFrom] = useState<Date | undefined>(subDays(new Date(), 29));
   const [to, setTo] = useState<Date | undefined>(new Date());
@@ -123,6 +146,9 @@ export function PaymentsExportDialog({ open, onOpenChange, transactions, instruc
   );
 
   const filtered = useMemo(() => {
+    if (useTableFilters && filteredTransactions) {
+      return [...filteredTransactions].sort((a, b) => +new Date(b.dateTime) - +new Date(a.dateTime));
+    }
     const fromTs = new Date(range.from); fromTs.setHours(0, 0, 0, 0);
     const toTs = new Date(range.to); toTs.setHours(23, 59, 59, 999);
     return transactions
@@ -131,21 +157,37 @@ export function PaymentsExportDialog({ open, onOpenChange, transactions, instruc
         return d >= fromTs.getTime() && d <= toTs.getTime();
       })
       .sort((a, b) => +new Date(b.dateTime) - +new Date(a.dateTime));
-  }, [transactions, range]);
+  }, [transactions, filteredTransactions, useTableFilters, range]);
 
   const total = filtered.reduce((s, r) => s + r.amount, 0);
+  const filterSummary = summarizeFilters(activeFilters);
 
   const handleExport = () => {
     if (filtered.length === 0) {
-      toast.error("No transactions in this range");
+      toast.error("No transactions to export");
       return;
     }
-    const fname = `payments-${format(range.from, "yyyyMMdd")}-${format(range.to, "yyyyMMdd")}`;
+    const labelDate = useTableFilters ? format(new Date(), "yyyyMMdd") : `${format(range.from, "yyyyMMdd")}-${format(range.to, "yyyyMMdd")}`;
+    const fname = `payments-${labelDate}`;
     if (fmt === "csv") {
       const csv = buildCsv(filtered);
-      downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8" }), `${fname}.csv`);
+      const prefix = useTableFilters && filterSummary
+        ? `# Filters: ${filterSummary}\n# Exported: ${format(new Date(), "yyyy-MM-dd HH:mm")}\n`
+        : "";
+      downloadBlob(new Blob([prefix + csv], { type: "text/csv;charset=utf-8" }), `${fname}.csv`);
     } else {
-      const doc = buildPdf(filtered, range.from, range.to, instructorName || "");
+      const subtitleFrom = useTableFilters && filtered.length > 0
+        ? new Date(filtered[filtered.length - 1].dateTime)
+        : range.from;
+      const subtitleTo = useTableFilters && filtered.length > 0
+        ? new Date(filtered[0].dateTime)
+        : range.to;
+      const doc = buildPdf(filtered, subtitleFrom, subtitleTo, instructorName || "");
+      if (useTableFilters && filterSummary) {
+        doc.setFontSize(9);
+        doc.setTextColor(100);
+        doc.text(`Filters: ${filterSummary}`, 14, 38);
+      }
       doc.save(`${fname}.pdf`);
     }
     toast.success(`Exported ${filtered.length} transactions`);
