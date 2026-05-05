@@ -667,12 +667,30 @@ export default function InstructorPupilsDesktop() {
                     £{p.balance.toFixed(2)}
                   </div>
                   <div><StatusPill status={p.status} /></div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); toast("Row menu"); }}
-                    style={{ color: "var(--d2-text-3)", padding: 4, borderRadius: 4 }}
-                  >
-                    <MoreVertical size={14} />
-                  </button>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ color: "var(--d2-text-3)", padding: 4, borderRadius: 4 }}
+                      >
+                        <MoreVertical size={14} />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-40 p-1" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); openEdit(p.id); }}
+                        className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded hover:bg-slate-100 text-left"
+                      >
+                        <Pencil size={12} /> Edit pupil
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: p.id, name: p.name }); }}
+                        className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded hover:bg-red-50 text-red-600 text-left"
+                      >
+                        <Trash2 size={12} /> Delete
+                      </button>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               );
             })}
