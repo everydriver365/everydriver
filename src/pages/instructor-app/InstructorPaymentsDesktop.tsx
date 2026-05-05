@@ -10,6 +10,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInstructorPaymentsData, type PaymentTx, type PaymentStatus, type PaymentMethod } from "@/hooks/useInstructorPaymentsData";
+import { PaymentsExportDialog } from "@/components/instructor/payments/PaymentsExportDialog";
 
 // ---------- palette ----------
 const palette: Record<string, { bg: string; text: string }> = {
@@ -87,6 +88,7 @@ export default function InstructorPaymentsDesktop() {
   const [filter, setFilter] = useState<Filter>("all");
   const [period, setPeriod] = useState<"week" | "month" | "year">("month");
   const [takeOpen, setTakeOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [page, setPage] = useState(1);
   const PAGE = 25;
 
@@ -162,7 +164,7 @@ export default function InstructorPaymentsDesktop() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => toast("Export started")} style={outlineBtn}>
+            <button onClick={() => setExportOpen(true)} style={outlineBtn}>
               <Download size={12} /> Export
             </button>
             <button onClick={() => setTakeOpen(true)} style={primaryBtn}>
@@ -430,6 +432,13 @@ export default function InstructorPaymentsDesktop() {
           </>
         )}
       </AnimatePresence>
+
+      <PaymentsExportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        transactions={transactions}
+        instructorName={instructor?.name}
+      />
     </DashboardShell>
   );
 }
