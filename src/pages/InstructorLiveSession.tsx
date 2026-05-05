@@ -37,6 +37,7 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
  import { RecentSessionsList } from "@/components/instructor/tracking/RecentSessionsList";
  import { FloatingSessionTimer } from "@/components/instructor/tracking/FloatingSessionTimer";
 import { DeviceSelectorDropdown } from "@/components/instructor/tracking/DeviceSelectorDropdown";
+import { TrackingProviderDropdown } from "@/components/instructor/tracking/TrackingProviderDropdown";
 
 import { SatNavLiveMap } from "@/components/instructor/tracking/SatNavLiveMap";
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
