@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PupilRegister from "@/components/pupil/PupilRegister";
 import { setRememberMe as persistRememberMe } from "@/lib/sessionPersistence";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
 type LoginView = "login" | "forgot" | "reset-code" | "new-password";
 
