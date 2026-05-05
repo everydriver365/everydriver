@@ -247,10 +247,13 @@ export default function InstructorPaymentsDesktop() {
                 Send all reminders →
               </button>
             </div>
+            {outstanding.length === 0 && (
+              <div style={{ padding: "16px 0", fontSize: 11, color: "var(--d2-text-3)" }}>
+                {loading ? "Loading…" : "No outstanding balances."}
+              </div>
+            )}
             {outstanding.map((o, i) => {
-              const p = PUPILS[o.id];
-              if (!p) return null;
-              const overdue = "daysOverdue" in o;
+              const overdue = o.daysOverdue !== undefined;
               return (
                 <div key={o.id}
                   className="flex items-center"
@@ -261,11 +264,13 @@ export default function InstructorPaymentsDesktop() {
                   }}
                   onClick={() => navigate(`/instructor/pupils/${o.id}`)}
                 >
-                  <Avatar id={o.id} size={24} />
+                  <Avatar id={o.id} name={o.name} size={24} />
                   <div className="flex-1 min-w-0">
-                    <div style={{ fontSize: 11, fontWeight: 500, color: "var(--d2-text-1)" }}>{p.name}</div>
+                    <div style={{ fontSize: 11, fontWeight: 500, color: "var(--d2-text-1)" }}>{o.name}</div>
                     <div style={{ fontSize: 9, color: "var(--d2-text-3)" }}>
-                      {overdue ? `Overdue · ${(o as any).daysOverdue} days` : `Due in ${(o as any).daysUntilDue} days`}
+                      {overdue
+                        ? (o.daysOverdue! > 0 ? `Overdue · ${o.daysOverdue} days` : "Overdue")
+                        : `Due in ${o.daysUntilDue} days`}
                     </div>
                   </div>
                   <div style={{
