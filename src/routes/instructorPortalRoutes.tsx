@@ -196,6 +196,8 @@ export const instructorPortalRoutes = (
 
     {/* Communication — always accessible */}
     <Route path="/instructor/messages" element={<InstructorMessages />} />
+    <Route path="/inbox" element={<InstructorMessages />} />
+    <Route path="/instructor/inbox" element={<InstructorMessages />} />
     <Route path="/instructor/visitor-chats" element={<Navigate to="/instructor/messages" replace />} />
     <Route path="/instructor/admin-chat" element={<InstructorAdminChat />} />
     <Route path="/instructor/contact" element={<InstructorContact />} />
