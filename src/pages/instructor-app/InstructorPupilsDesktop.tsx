@@ -270,26 +270,56 @@ export default function InstructorPupilsDesktop() {
   // ---- Edit pupil ----
   const [editOpen, setEditOpen] = useState(false);
   const [editTargetId, setEditTargetId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", postcode: "" });
+  const emptyEditForm = {
+    name: "", phone: "", email: "", postcode: "",
+    address: "", what3words: "", date_of_birth: "", sex: "",
+    previous_experience_hours: "", transmission_type: "",
+    special_needs: "", notes: "", payment_method: "tbc",
+  };
+  const [editForm, setEditForm] = useState(emptyEditForm);
   const [editErrors, setEditErrors] = useState<{ name?: string; email?: string; postcode?: string; phone?: string }>({});
   const [editSaving, setEditSaving] = useState(false);
+  const [editLookingW3W, setEditLookingW3W] = useState(false);
+
+  const handleEditPostcodeAutoFill = async (postcode: string) => {
+    setEditForm(f => ({ ...f, postcode }));
+    if (!postcode) return;
+    setEditLookingW3W(true);
+    try {
+      const { data } = await supabase.functions.invoke("convert-to-what3words", { body: { postcode } });
+      if ((data as any)?.what3words) setEditForm(f => ({ ...f, what3words: (data as any).what3words }));
+    } catch (e) { console.error("w3w lookup failed", e); }
+    finally { setEditLookingW3W(false); }
+  };
 
   const openEdit = async (id: string) => {
     setEditTargetId(id);
     setEditOpen(true);
     setEditErrors({});
-    setEditForm({ name: "", phone: "", email: "", postcode: "" });
+    setEditForm(emptyEditForm);
     const { data } = await supabase
       .from("pupils")
-      .select("name, phone, email, postcode")
+      .select("name, phone, email, postcode, address, what3words, date_of_birth, sex, previous_experience, transmission_type, special_needs, notes, payment_method")
       .eq("id", id)
       .maybeSingle();
-    if (data) setEditForm({
-      name: data.name || "",
-      phone: data.phone || "",
-      email: data.email || "",
-      postcode: data.postcode || "",
-    });
+    if (data) {
+      const d: any = data;
+      setEditForm({
+        name: d.name || "",
+        phone: d.phone || "",
+        email: d.email || "",
+        postcode: d.postcode || "",
+        address: d.address || "",
+        what3words: d.what3words || "",
+        date_of_birth: d.date_of_birth || "",
+        sex: d.sex || "",
+        previous_experience_hours: d.previous_experience != null ? String(d.previous_experience) : "",
+        transmission_type: d.transmission_type || "",
+        special_needs: d.special_needs || "",
+        notes: d.notes || "",
+        payment_method: d.payment_method || "tbc",
+      });
+    }
   };
 
   const handleSaveEdit = async () => {
@@ -302,12 +332,24 @@ export default function InstructorPupilsDesktop() {
     if (editForm.phone.trim() && !UK_PHONE_RE.test(editForm.phone.trim())) errs.phone = "Enter a valid UK phone number";
     setEditErrors(errs);
     if (Object.keys(errs).length) return;
+    const prevExp = editForm.previous_experience_hours.trim() === ""
+      ? null
+      : Math.max(0, Number(editForm.previous_experience_hours));
     setEditSaving(true);
     const { error } = await supabase.from("pupils").update({
       name: editForm.name.trim(),
       phone: editForm.phone.trim() || null,
       email: editForm.email.trim() || null,
       postcode: editForm.postcode.trim().toUpperCase() || null,
+      address: editForm.address.trim() || null,
+      what3words: editForm.what3words.trim() || null,
+      date_of_birth: editForm.date_of_birth || null,
+      sex: editForm.sex || null,
+      previous_experience: prevExp,
+      transmission_type: editForm.transmission_type || null,
+      special_needs: editForm.special_needs.trim() || null,
+      notes: editForm.notes.trim() || null,
+      payment_method: editForm.payment_method || "tbc",
     }).eq("id", editTargetId);
     setEditSaving(false);
     if (error) { toast.error(`Could not save: ${error.message}`); return; }
