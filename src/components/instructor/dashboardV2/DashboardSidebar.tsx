@@ -1,9 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard, Calendar, Inbox, Users, BookOpen, ClipboardCheck,
-  Award, Repeat2, Search, CalendarClock, CreditCard, Receipt, Clock,
+  LayoutDashboard, Calendar, Inbox, Users, ClipboardCheck,
+  Award, Repeat2, Search, CreditCard, Receipt, Clock,
   BarChart3, Globe, Palette, Link2, TrendingUp, User, Wallet, Boxes,
   Plug, LogOut, PanelLeftClose, PanelLeft,
+  NotebookPen, BookOpenCheck, GraduationCap, ListChecks, UserPlus2,
+  MapPin, Map, Gauge, Navigation, Video, Route, Fuel, Car,
+  Mic, Banknote, Coins, Star, Share2, Zap, MoreHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useModules } from "@/context/ModulesContext";
