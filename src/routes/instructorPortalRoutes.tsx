@@ -7,7 +7,7 @@ const InstructorPortalLogin = lazy(() => import("@/pages/InstructorPortalLogin")
 
 // Core portal
 const InstructorPortal = lazy(() => import("@/pages/InstructorPortal"));
-const InstructorPupils = lazy(() => import("@/pages/InstructorPupils"));
+const InstructorPupils = lazy(() => import("@/pages/instructor-app/InstructorPupilsRouter"));
 const PremiumPupilProfile = lazy(() => import("@/pages/PremiumPupilProfile"));
 const InstructorSchedule = lazy(() => import("@/pages/InstructorSchedule"));
 const InstructorEventDetails = lazy(() => import("@/pages/InstructorEventDetails"));
