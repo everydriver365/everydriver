@@ -887,9 +887,9 @@ function WeekGrid({
 }
 
 function DayColumn({
-  day, rows, lessons, isToday, nowTop, onSelectLesson, off,
+  day, rows, lessons, externalBusy = [], isToday, nowTop, onSelectLesson, off,
 }: {
-  day: Day; rows: number; lessons: Lesson[]; isToday: boolean; nowTop: number;
+  day: Day; rows: number; lessons: Lesson[]; externalBusy?: Lesson[]; isToday: boolean; nowTop: number;
   onSelectLesson: (l: Lesson) => void; off: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `col-${day}`, data: { day }, disabled: off });
@@ -924,6 +924,26 @@ function DayColumn({
           letterSpacing: "0.5px", textTransform: "uppercase",
         }}>Day off</div>
       )}
+
+      {!off && externalBusy.map(l => {
+        const top = ((l.startMin - HOUR_START * 60) / 60) * HOUR_PX;
+        const h = (l.durationMin / 60) * HOUR_PX - 2;
+        if (h <= 0) return null;
+        return (
+          <div key={l.id} title={`Google Calendar: ${l.pupil}`} style={{
+            position: "absolute", top, left: 2, right: 2, height: h,
+            borderRadius: 4, padding: "3px 5px", overflow: "hidden",
+            background: "repeating-linear-gradient(45deg, rgba(100,116,139,0.10), rgba(100,116,139,0.10) 4px, rgba(100,116,139,0.18) 4px, rgba(100,116,139,0.18) 8px)",
+            border: "0.5px dashed rgba(71,85,105,0.5)",
+            fontSize: 9, color: "#334155", lineHeight: 1.1,
+          }}>
+            <div style={{ fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {l.pupil}
+            </div>
+            {h > 22 && <div style={{ opacity: 0.7 }}>Google · {fmtTime(l.startMin)}</div>}
+          </div>
+        );
+      })}
 
       {!off && lessons.map(l => (
         <LessonCard
