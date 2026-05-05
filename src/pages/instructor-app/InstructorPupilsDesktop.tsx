@@ -1115,9 +1115,10 @@ export default function InstructorPupilsDesktop() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="edit-trans">Transmission</Label>
-                  <Select value={editForm.transmission_type} onValueChange={v => setEditForm(f => ({ ...f, transmission_type: v }))}>
+                  <Select value={editForm.transmission_type || "__none"} onValueChange={v => setEditForm(f => ({ ...f, transmission_type: v === "__none" ? "" : v }))}>
                     <SelectTrigger id="edit-trans"><SelectValue placeholder="Manual or automatic" /></SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="__none">— None —</SelectItem>
                       <SelectItem value="manual">Manual</SelectItem>
                       <SelectItem value="automatic">Automatic</SelectItem>
                     </SelectContent>
