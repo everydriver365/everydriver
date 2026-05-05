@@ -114,6 +114,7 @@ export default function InstructorScheduleDesktop() {
   const [activeDrag, setActiveDrag] = useState<{ kind: "pupil"; pupil: typeof unbookedSeed[number] } | { kind: "lesson"; lesson: Lesson } | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [aiPrompt, setAiPrompt] = useState("");
+  const [debouncedPrompt, setDebouncedPrompt] = useState("");
   const [aiSuggestions, setAiSuggestions] = useState<{ label: string }[] | null>(null);
   const [filterDays, setFilterDays] = useState<Day[]>([]);
   const [filterFrom, setFilterFrom] = useState<string>(""); // "HH:MM"
@@ -127,6 +128,12 @@ export default function InstructorScheduleDesktop() {
     const t = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(t);
   }, []);
+
+  // Debounce search input (200ms) so filtering doesn't run on every keystroke
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedPrompt(aiPrompt), 200);
+    return () => clearTimeout(t);
+  }, [aiPrompt]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -161,7 +168,7 @@ export default function InstructorScheduleDesktop() {
   }, [lessons]);
 
   const slotMatches = useMemo(() => {
-    const q = aiPrompt.trim().toLowerCase();
+    const q = debouncedPrompt.trim().toLowerCase();
     const hasQuery = q.length > 0;
     const hasFilters = filterDays.length > 0 || filterFromMin !== null || filterToMin !== null;
     if (!hasQuery && !hasFilters) return [];
@@ -198,7 +205,7 @@ export default function InstructorScheduleDesktop() {
       .filter(s => filterToMin === null || s.startMin + needMin <= filterToMin)
       .slice(0, 12)
       .map(s => ({ ...s, needMin }));
-  }, [aiPrompt, openSlots, filterDays, filterFromMin, filterToMin]);
+  }, [debouncedPrompt, openSlots, filterDays, filterFromMin, filterToMin]);
 
   const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
   const initials = (instructor?.name || "").split(" ").map(s => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "ID";
