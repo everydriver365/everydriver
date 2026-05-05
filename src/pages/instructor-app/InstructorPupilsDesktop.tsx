@@ -178,6 +178,30 @@ export default function InstructorPupilsDesktop() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [openId, setOpenId] = useState<string | null>(null);
   const [tab, setTab] = useState<"overview" | "lessons" | "progress" | "payments" | "notes">("overview");
+  const [reloadTick, setReloadTick] = useState(0);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm, setAddForm] = useState({ name: "", phone: "", email: "", postcode: "" });
+  const [addSaving, setAddSaving] = useState(false);
+
+  const handleAddPupil = async () => {
+    const instructorId = instructor?.id;
+    if (!instructorId) { toast.error("Not signed in"); return; }
+    if (!addForm.name.trim()) { toast.error("Name is required"); return; }
+    setAddSaving(true);
+    const { error } = await supabase.from("pupils").insert({
+      instructor_id: instructorId,
+      name: addForm.name.trim(),
+      phone: addForm.phone.trim() || null,
+      email: addForm.email.trim() || null,
+      postcode: addForm.postcode.trim() || null,
+    });
+    setAddSaving(false);
+    if (error) { toast.error(`Could not add pupil: ${error.message}`); return; }
+    toast.success(`Added ${addForm.name.trim()}`);
+    setAddForm({ name: "", phone: "", email: "", postcode: "" });
+    setAddOpen(false);
+    setReloadTick(t => t + 1);
+  };
 
   // Load real pupils for this instructor
   useEffect(() => {
