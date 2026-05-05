@@ -99,25 +99,6 @@ export function SendPaymentReminderButton({
           Send SMS
           {!pupilPhone && <span className="text-xs text-muted-foreground ml-auto">(no phone)</span>}
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => {
-            if (pupilEmail) {
-              // Open email client with pre-filled content
-              const subject = encodeURIComponent(`Payment Reminder - £${Math.abs(outstandingAmount).toFixed(2)} Outstanding`);
-              const body = encodeURIComponent(
-                `Hi ${pupilName},\n\nThis is a friendly reminder that you have an outstanding balance of £${Math.abs(outstandingAmount).toFixed(2)} for your driving lessons.\n\nPlease arrange payment at your earliest convenience.\n\nThank you!\n${instructorName}`
-              );
-              window.open(`mailto:${pupilEmail}?subject=${subject}&body=${body}`);
-              toast.success("Email client opened");
-            }
-          }}
-          disabled={!pupilEmail}
-          className="cursor-pointer"
-        >
-          <Mail className="h-4 w-4 mr-2" />
-          Send Email
-          {!pupilEmail && <span className="text-xs text-muted-foreground ml-auto">(no email)</span>}
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
