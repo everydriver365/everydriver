@@ -1,27 +1,36 @@
 ## Goal
-Let the instructor preview exactly which lessons will be **created**, **updated**, or **deleted** on Google Calendar before the next sync runs.
+Surface live connection status for **Google Calendar**, **Square**, and **Xero** in the Integrations Hub — both as a badge on each tab trigger and as a status banner inside each tab's content.
 
-## What "to be synced" means
-Every lesson change pushes a row into the existing `calendar_sync_queue` table (`action ∈ {syncLesson, deleteLesson}`, `processed_at IS NULL` while pending). The cron job then calls Google. So the preview is simply: read the pending queue rows for the current instructor and classify them.
+## Status sources
 
-## New component
-`src/components/instructor/CalendarSyncPreview.tsx`
-- Fetches in one round trip:
-  - `calendar_sync_queue` where `instructor_id = me` and `processed_at IS NULL`, joined with the related `scheduled_lessons` rows (id, lesson_date, start_time, duration_minutes, status, google_event_id, pickup_location, pupils(name)).
-- Classifies each pending row:
-  - `action='deleteLesson'` OR (`syncLesson` + `status='cancelled'` + `google_event_id`) → **Delete**
-  - `syncLesson` + `google_event_id` present → **Update**
-  - `syncLesson` + no `google_event_id` → **Create**
-- Renders three grouped sections (Create / Update / Delete) inside a `<Dialog>` with badge counts, each row showing pupil name, date/time, duration, and pickup location.
-- Empty state: "Nothing pending — your calendar is up to date."
-- Footer buttons:
-  - **Refresh** (re-runs the query)
-  - **Sync Now** — triggers existing `syncExternalEvents()` (incoming) + invokes `process-calendar-queue` for outgoing pending items, then re-queries.
-  - **Close**
+| Integration | Connected when | How to check |
+|---|---|---|
+| Google Calendar | `instructor_google_service_calendar.is_active = true` for instructor | Reuse `useGoogleServiceCalendar.checkConnection()` (already returns `{ connected, lastSync }`) |
+| Square | `instructor.square_merchant_id` is set | Already on `instructor` from `useInstructorAuth` |
+| Xero | CSV-based, no credentials stored | Always show **Available** (with a tooltip clarifying it's a manual export) |
 
-## Hook into existing UI
-In `GoogleServiceAccountSetup.tsx` (connected state, alongside Sync Now / Reconnect / Disconnect), add a **Preview Sync** button that opens the new dialog. No mobile changes.
+## New shared component
+`src/components/instructor/integrations/IntegrationStatusBadge.tsx`
+- Variants: `connected` (emerald + check), `disconnected` (muted + minus), `available` (sky + dashed circle), `loading` (spinner).
+- Small pill with icon + label, sized `sm` for tab triggers and `md` for in-tab banners.
+
+## New status hook
+`src/hooks/useIntegrationStatuses.ts`
+- Returns `{ googleCalendar, square, xero }` each `IntegrationStatusKind`, plus `lastSync` strings where relevant.
+- Google: invokes `google-calendar-service { action: "checkConnection" }` once on mount and on `refresh()`.
+- Square: derived from `instructor.square_merchant_id` (no extra fetch).
+- Xero: hard-coded `"available"`.
+
+## Hub changes (`InstructorIntegrationsHub.tsx`)
+- Call `useIntegrationStatuses(instructorId, instructor)`.
+- For each tab in `TABS`, render the `IntegrationStatusBadge` next to the label inside `TabsTrigger` (visible on all viewports — desktop next to text, mobile next to icon).
+- Inside each `TabsContent`, render a top status row:
+  - `<IntegrationStatusBadge size="md" />` + small text:
+    - Google: "Last synced X" or "Connect to start syncing"
+    - Square: merchant id short tail or "Connect to take card payments"
+    - Xero: "Manual CSV export — no account linking required"
 
 ## Out of scope
-- No schema or edge function changes (queue + process-calendar-queue already exist).
-- Inbound (Google → app) preview not included — those events come from `fetchExternalEvents` which already provides counts after the fact, and a true pre-fetch diff is what `resyncRange` already does (already exposed via `CalendarResyncRangePanel`).
+- No mobile layout changes elsewhere.
+- No new database fields or edge functions.
+- Existing components inside each tab keep their own detailed status sections; the new badge is a top-level summary.
