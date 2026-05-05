@@ -795,6 +795,59 @@ export default function InstructorPupilsDesktop() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={editOpen} onOpenChange={(o) => { setEditOpen(o); if (!o) setEditTargetId(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit pupil</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1">
+              <Label htmlFor="edit-name">Name *</Label>
+              <Input id="edit-name" value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} autoFocus />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="edit-phone">Phone</Label>
+              <Input id="edit-phone" value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="edit-email">Email</Label>
+              <Input id="edit-email" type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="edit-postcode">Postcode</Label>
+              <Input id="edit-postcode" value={editForm.postcode} onChange={e => setEditForm(f => ({ ...f, postcode: e.target.value }))} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(false)} disabled={editSaving}>Cancel</Button>
+            <Button onClick={handleSaveEdit} disabled={editSaving || !editForm.name.trim()}>
+              {editSaving ? "Saving…" : "Save changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete pupil?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove <strong>{deleteTarget?.name}</strong> from your active pupils. Lesson history is preserved and the pupil can be restored by support.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleConfirmDelete(); }}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deleting ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardShell>
   );
 }
