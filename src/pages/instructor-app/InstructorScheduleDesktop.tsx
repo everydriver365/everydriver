@@ -219,9 +219,23 @@ export default function InstructorScheduleDesktop() {
                 );
               })}
             </div>
-            <button style={{ ...outlinePill, display: "inline-flex", alignItems: "center", gap: 5 }}>
-              <Search size={11} /> Find slot
-            </button>
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              background: "#fff", border: "1px solid #E2E8F0", borderRadius: 8,
+              padding: "5px 9px", minWidth: 200,
+            }}>
+              <Search size={11} style={{ color: "var(--d2-text-2)" }} />
+              <input
+                type="search"
+                placeholder="Find a slot…"
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                style={{
+                  flex: 1, border: "none", outline: "none", background: "transparent",
+                  fontSize: 11, color: "var(--d2-text-1)",
+                }}
+              />
+            </div>
             <button style={{
               fontSize: 11, padding: "6px 10px", borderRadius: 8,
               background: "#4F46E5", color: "#fff", fontWeight: 500,
