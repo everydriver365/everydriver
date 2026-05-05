@@ -192,23 +192,27 @@ export default function InstructorLogin() {
     setError("");
 
     if (isForgotPassword) {
-      const emailValidation = z.string().trim().email().safeParse(email);
+      const trimmed = email.trim();
+      const emailValidation = z.string().trim().email().safeParse(trimmed);
       if (!emailValidation.success) {
         setError("Please enter a valid email address");
         return;
       }
-      
+      if (resendCooldown > 0) return;
+
       setLoading(true);
       try {
-        const { error: resetError } = await resetPassword(email.trim());
+        const { error: resetError } = await resetPassword(trimmed);
         if (resetError) {
           setError(resetError.message);
         } else {
-          toast.success("Password reset email sent! Check your inbox.");
-          setIsForgotPassword(false);
+          setResetSent(true);
+          setResetSentTo(trimmed);
+          setResendCooldown(30);
+          toast.success("Password reset email sent. Check your inbox.");
         }
       } catch (err) {
-        setError("An unexpected error occurred");
+        setError("An unexpected error occurred. Please try again.");
       } finally {
         setLoading(false);
       }
