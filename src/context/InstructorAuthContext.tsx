@@ -274,9 +274,8 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   };
 
   const resetPassword = async (email: string) => {
-    // Always redirect to Drive365 domain for instructor password resets
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "https://drive365.co.uk/instructor-app/login",
+      redirectTo: `${window.location.origin}/reset-password?portal=instructor-app`,
     });
     return { error: error as Error | null };
   };
