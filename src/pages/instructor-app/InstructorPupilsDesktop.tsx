@@ -9,6 +9,7 @@ import {
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { supabase } from "@/integrations/supabase/client";
 
 // ----------------------------- Types & data -----------------------------
 type Status = "active" | "at-risk" | "test-ready" | "paused" | "archived";
