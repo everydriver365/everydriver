@@ -35,7 +35,7 @@ const SECTIONS: NavSection[] = [
   ]},
   { label: "Website", items: [
     { label: "My Site", to: "/website/my-site", icon: Globe, moduleId: "website" },
-    { label: "Branding", to: "/instructor/appearance", icon: Palette, moduleId: "website" },
+    { label: "Branding", to: "/instructor/settings/appearance", icon: Palette, moduleId: "website" },
     { label: "Domain", to: "/instructor/domains", icon: Link2, moduleId: "website" },
     { label: "SEO", to: "/instructor/seo", icon: TrendingUp, moduleId: "website" },
   ]},
