@@ -590,61 +590,35 @@ function TakePaymentSheet({
     setResult(null);
 
     try {
-      if (method === "card") {
-        // Create Square checkout link, then record as pending in payment_history
-        const orderRef = `manual-${Date.now()}-${pupilId.slice(0, 6)}`;
-        const origin = window.location.origin;
-        const { data, error } = await supabase.functions.invoke("square-checkout", {
-          body: {
-            amount: Math.abs(numAmount),
-            orderReference: orderRef,
-            customerEmail: selectedPupil?.email || undefined,
-            customerName: selectedPupil?.name,
-            customerPhone: selectedPupil?.phone || undefined,
-            description: note || `Payment from ${selectedPupil?.name}`,
-            returnUrl: `${origin}/instructor/payments?status=success`,
-            cancelUrl: `${origin}/instructor/payments?status=cancelled`,
-            instructorId,
-            pupilId,
-          },
-        });
-
-        if (error) throw error;
-        const checkoutUrl: string | undefined = data?.checkoutUrl || data?.url || data?.payment_link?.url;
-        if (!checkoutUrl) throw new Error(data?.error || "Failed to create payment link");
-
-        const noteText = `${note ? note + " · " : ""}Awaiting payment · ${orderRef}`;
-        await supabase.from("payment_history").insert({
-          pupil_id: pupilId,
-          instructor_id: instructorId,
+      const origin = window.location.origin;
+      const { data, error } = await supabase.functions.invoke("record-payment", {
+        body: {
+          pupilId,
           amount: Math.abs(numAmount),
-          payment_method: "Square",
-          notes: `${noteText} pending`,
-          payout_status: "pending",
-        });
+          method,
+          isRefund,
+          note: note || undefined,
+          customerEmail: selectedPupil?.email || undefined,
+          customerName: selectedPupil?.name,
+          customerPhone: selectedPupil?.phone || undefined,
+          returnUrl: `${origin}/instructor/payments?status=success`,
+          cancelUrl: `${origin}/instructor/payments?status=cancelled`,
+        },
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || "Failed to record payment");
 
-        invalidatePaymentQueries({ pupilId, instructorId });
-        onSuccess?.();
-        setResult({ ok: true, message: "Payment link created. Share with pupil to complete.", checkoutUrl });
+      invalidatePaymentQueries({ pupilId, instructorId });
+      onSuccess?.();
+
+      if (method === "card") {
+        setResult({
+          ok: true,
+          message: data.message || "Payment link created. Share with pupil to complete.",
+          checkoutUrl: data.checkoutUrl,
+        });
       } else {
-        // Cash or Bank — record immediately + adjust balance
-        const { error: insErr } = await supabase.from("payment_history").insert({
-          pupil_id: pupilId,
-          instructor_id: instructorId,
-          amount: signedAmount,
-          payment_method: methodLabel(method),
-          notes: note || (isRefund ? "Refund" : `${methodLabel(method)} payment`),
-        });
-        if (insErr) throw insErr;
-
-        await supabase.rpc("increment_pupil_balance", {
-          p_pupil_id: pupilId,
-          p_amount: signedAmount,
-        });
-
-        invalidatePaymentQueries({ pupilId, instructorId });
-        onSuccess?.();
-        toast.success(`${isRefund ? "Refunded" : "Recorded"} ${gbp(Math.abs(numAmount))} (${methodLabel(method)})`);
+        toast.success(data.message || `${isRefund ? "Refunded" : "Recorded"} ${gbp(Math.abs(numAmount))} (${methodLabel(method)})`);
         onClose();
       }
     } catch (e: any) {
