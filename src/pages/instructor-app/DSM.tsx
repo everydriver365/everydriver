@@ -37,7 +37,7 @@ const featureTiles = [
   { icon: Fuel, label: "Fuel Log", route: "/instructor/fuel" },
   { icon: Wrench, label: "Maintenance", route: "/instructor/maintenance" },
   { icon: Phone, label: "Contacts", route: "/instructor/contacts" },
-  { icon: Mail, label: "Email", route: "/instructor/email" },
+  
   { icon: Camera, label: "Dashcam", route: "/instructor/dashcam" },
   { icon: Mic, label: "Voice Notes", route: "/instructor/voice-notes" },
   { icon: Globe, label: "Website", route: "/instructor/website" },
