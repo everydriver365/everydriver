@@ -117,6 +117,14 @@ export default function InstructorPaymentsDesktop() {
     }));
   }, [filtered]);
 
+  const pupilOptions = useMemo(() => {
+    const seen = new Map<string, string>();
+    transactions.forEach(t => { if (!seen.has(t.pupilId)) seen.set(t.pupilId, t.pupilName); });
+    outstanding.forEach(o => { if (!seen.has(o.id)) seen.set(o.id, o.name); });
+    return Array.from(seen.entries()).map(([id, name]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [transactions, outstanding]);
+
   const initials = (instructor?.name || "").split(" ").map(s=>s[0]).filter(Boolean).slice(0,2).join("").toUpperCase() || "ID";
   const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
 
