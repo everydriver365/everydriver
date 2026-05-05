@@ -571,19 +571,18 @@ export default function InstructorInboxDesktop() {
                       cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center",
                     }}><Sparkles size={13} color="#6E59E0" /></button>
                   </div>
-                  <TextareaAutosize
+                  <textarea
                     value={draft}
                     onChange={(e) => setDraft(e.target.value)}
                     onKeyDown={(e) => {
                       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); sendMessage(draft); }
                     }}
-                    minRows={1}
-                    maxRows={4}
+                    rows={1}
                     placeholder="Type a reply..."
                     style={{
                       flex: 1, background: "#F8FAFC", border: "0.5px solid #E2E8F0", borderRadius: 8,
                       padding: "7px 10px", fontSize: 11, color: "#0F172A", outline: "none", resize: "none",
-                      fontFamily: "inherit", lineHeight: 1.4,
+                      fontFamily: "inherit", lineHeight: 1.4, minHeight: 30, maxHeight: 100,
                     }}
                   />
                   <button onClick={() => sendMessage(draft)} disabled={!draft.trim()} style={{
