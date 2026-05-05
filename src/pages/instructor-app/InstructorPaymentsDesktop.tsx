@@ -442,7 +442,12 @@ export default function InstructorPaymentsDesktop() {
                 padding: 16, zIndex: 61, overflowY: "auto",
               }}
             >
-              <TakePaymentSheet onClose={() => setTakeOpen(false)} pupils={pupilOptions} />
+              <TakePaymentSheet
+                onClose={() => setTakeOpen(false)}
+                pupils={pupilOptions}
+                instructorId={instructor?.id}
+                onSuccess={refresh}
+              />
             </motion.div>
           </>
         )}
