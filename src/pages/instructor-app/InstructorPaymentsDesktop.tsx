@@ -539,6 +539,14 @@ export default function InstructorPaymentsDesktop() {
         open={exportOpen}
         onOpenChange={setExportOpen}
         transactions={transactions}
+        filteredTransactions={filtered}
+        activeFilters={{
+          search: search.trim(),
+          status: filter,
+          method: methodFilter,
+          dateFrom,
+          dateTo,
+        }}
         instructorName={instructor?.name}
       />
 
