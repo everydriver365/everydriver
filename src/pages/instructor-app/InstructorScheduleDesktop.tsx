@@ -306,11 +306,98 @@ export default function InstructorScheduleDesktop() {
                     fontSize: 11, color: "var(--d2-text-1)",
                   }}
                 />
+                <Popover open={filtersOpen} onOpenChange={setFiltersOpen}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      title="Filters"
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 4,
+                        fontSize: 10, color: activeFilterCount ? "#4F46E5" : "var(--d2-text-2)",
+                        background: activeFilterCount ? "#EEF2FF" : "transparent",
+                        borderRadius: 6, padding: "2px 6px", fontWeight: 500,
+                      }}
+                    >
+                      <Filter size={10} />
+                      {activeFilterCount > 0 && <span>{activeFilterCount}</span>}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-64 p-3 space-y-3">
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: "var(--d2-text-2)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+                        Days
+                      </div>
+                      <div className="flex flex-wrap" style={{ gap: 4 }}>
+                        {DAYS.map(d => {
+                          const active = filterDays.includes(d);
+                          return (
+                            <button
+                              key={d}
+                              onClick={() => setFilterDays(prev => active ? prev.filter(x => x !== d) : [...prev, d])}
+                              style={{
+                                fontSize: 10, padding: "4px 8px", borderRadius: 999,
+                                border: "1px solid " + (active ? "#4F46E5" : "#E2E8F0"),
+                                background: active ? "#EEF2FF" : "#fff",
+                                color: active ? "#4F46E5" : "var(--d2-text-2)",
+                                fontWeight: active ? 600 : 400,
+                              }}
+                            >
+                              {d}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: "var(--d2-text-2)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+                        Time range
+                      </div>
+                      <div className="flex items-center" style={{ gap: 6 }}>
+                        <input
+                          type="time"
+                          value={filterFrom}
+                          onChange={e => setFilterFrom(e.target.value)}
+                          style={{
+                            flex: 1, fontSize: 11, padding: "5px 7px",
+                            border: "1px solid #E2E8F0", borderRadius: 6, background: "#fff",
+                          }}
+                        />
+                        <span style={{ fontSize: 11, color: "var(--d2-text-3)" }}>to</span>
+                        <input
+                          type="time"
+                          value={filterTo}
+                          onChange={e => setFilterTo(e.target.value)}
+                          style={{
+                            flex: 1, fontSize: 11, padding: "5px 7px",
+                            border: "1px solid #E2E8F0", borderRadius: 6, background: "#fff",
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between" style={{ paddingTop: 4 }}>
+                      <button
+                        onClick={() => { setFilterDays([]); setFilterFrom(""); setFilterTo(""); }}
+                        style={{ fontSize: 11, color: "var(--d2-text-2)" }}
+                      >
+                        Clear
+                      </button>
+                      <button
+                        onClick={() => setFiltersOpen(false)}
+                        style={{
+                          fontSize: 11, padding: "5px 10px", borderRadius: 6,
+                          background: "#4F46E5", color: "#fff", fontWeight: 500,
+                        }}
+                      >
+                        Done
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
-              {aiPrompt.trim() && (
+              {(aiPrompt.trim() || activeFilterCount > 0) && (
                 <div style={{
                   position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 30,
-                  width: 280, background: "#fff", border: "1px solid #E2E8F0",
+                  width: 300, background: "#fff", border: "1px solid #E2E8F0",
                   borderRadius: 10, boxShadow: "0 8px 24px rgba(15,23,42,0.10)",
                   padding: 6, maxHeight: 320, overflowY: "auto",
                 }}>
