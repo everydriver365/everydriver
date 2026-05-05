@@ -210,7 +210,78 @@ export default function InstructorScheduleDesktop() {
     return () => { cancelled = true; };
   }, [instructorId]);
 
-  // ---- Fetch pupils ----
+  // ---- Fetch instructor settings (buffer, durations, booking rules) ----
+  useEffect(() => {
+    if (!instructorId) return;
+    let cancelled = false;
+    (async () => {
+      const [{ data: ins }, { data: bs }] = await Promise.all([
+        supabase.from("instructors")
+          .select("buffer_minutes, preferred_lesson_length, allowed_lesson_lengths")
+          .eq("id", instructorId).maybeSingle(),
+        supabase.from("instructor_booking_settings")
+          .select("allowed_durations, min_notice_hours")
+          .eq("instructor_id", instructorId).maybeSingle(),
+      ]);
+      if (cancelled) return;
+      if (ins) {
+        setBufferMinutes(ins.buffer_minutes ?? 15);
+        setPreferredDuration(ins.preferred_lesson_length ?? 60);
+        if (ins.allowed_lesson_lengths?.length) setAllowedDurations(ins.allowed_lesson_lengths);
+      }
+      if (bs) {
+        if (bs.allowed_durations?.length) setAllowedDurations(bs.allowed_durations);
+        setMinNoticeHours(bs.min_notice_hours ?? 0);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [instructorId]);
+
+  // ---- Fetch Google Calendar external busy events for the week ----
+  const reloadExternalBusy = useCallback(async () => {
+    if (!instructorId) return;
+    const startISO = new Date(weekStart).toISOString();
+    const endISO = new Date(addDays(weekStart, 7)).toISOString();
+    const { data, error } = await supabase
+      .from("instructor_calendar_events")
+      .select("id, title, start_time, end_time, is_busy")
+      .eq("instructor_id", instructorId)
+      .eq("is_busy", true)
+      .gte("start_time", startISO)
+      .lt("start_time", endISO);
+    if (error || !data) return;
+    const mapped: Lesson[] = data.map((row: any) => {
+      const s = new Date(row.start_time);
+      const e = new Date(row.end_time);
+      const startMin = s.getHours() * 60 + s.getMinutes();
+      const durationMin = Math.max(15, Math.round((e.getTime() - s.getTime()) / 60000));
+      return {
+        id: `gcal-${row.id}`,
+        pupilId: "",
+        pupil: row.title || "Busy (Google)",
+        day: JS_DAY[s.getDay()],
+        startMin,
+        durationMin,
+        type: "standard" as LessonType,
+      };
+    });
+    setExternalBusy(mapped);
+  }, [instructorId, weekStart]);
+
+  useEffect(() => { reloadExternalBusy(); }, [reloadExternalBusy]);
+
+  // Realtime for external calendar events
+  useEffect(() => {
+    if (!instructorId) return;
+    const ch = supabase
+      .channel(`schedule-gcal-${instructorId}`)
+      .on("postgres_changes", {
+        event: "*", schema: "public", table: "instructor_calendar_events",
+        filter: `instructor_id=eq.${instructorId}`,
+      }, () => { reloadExternalBusy(); })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [instructorId, reloadExternalBusy]);
   useEffect(() => {
     if (!instructorId) return;
     let cancelled = false;
