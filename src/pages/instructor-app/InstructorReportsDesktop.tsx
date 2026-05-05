@@ -692,7 +692,7 @@ function RetentionCard({ steps, avgLessonsBeforeTest }: { steps: ReportsRetentio
         display: "flex", justifyContent: "space-between", fontSize: 10,
       }}>
         <span style={{ color: "#64748B" }}>Avg lessons before test</span>
-        <span style={{ color: "#0F172A", fontWeight: 500 }}>{reports.avgLessonsBeforeTest}</span>
+        <span style={{ color: "#0F172A", fontWeight: 500 }}>{avgLessonsBeforeTest}</span>
       </div>
     </div>
   );
