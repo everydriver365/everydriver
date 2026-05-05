@@ -104,6 +104,7 @@ export default function InstructorIntegrationsHub() {
                 />
 
 
+                {t.id === "google-calendar" && <GoogleServiceAccountSetup instructorId={instructorId} />}
                 {t.id === "square" && (
                   <SquareConnectSettings
                     instructorId={instructorId}
