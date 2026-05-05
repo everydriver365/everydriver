@@ -1,38 +1,25 @@
 ## Goal
-Bundle the disjointed Profile / Vehicle / Images / Compliance / Billing settings into a single tabbed **Account** hub at `/instructor/profile` so instructors have one predictable place for "everything about me".
+Add an **Integrations** hub at `/instructor/integrations` where instructors can link Google Calendar, Square, and Xero from a single tabbed page — replacing the current dead sidebar link.
 
-## New page: `src/pages/instructor/AccountHub.tsx`
-A single tabbed page with 5 tabs:
+## New page: `src/pages/instructor/InstructorIntegrationsHub.tsx`
+Tabbed page with 3 tabs, each reusing existing components:
 
-| Tab | Contents | Source of truth |
-|---|---|---|
-| Profile | Avatar, name, email, phone, bio | `instructors` table — same fields as the current Profile tile |
-| Vehicle & ADI | Car details, qualifications, social links | Reuse existing `<InstructorDetailsEditor />` |
-| Media | Banner, car photo, welcome video URL, ADI certificate | Same uploads as the current Images tile |
-| Compliance | Insurance, MOT, CPD hours | Reuse existing `<ComplianceTracker />` |
-| Plan & Billing | Subscription summary + button to open `/instructor/billing` | Link out (page is heavy, keep separate) |
+| Tab | Component (already exists) |
+|---|---|
+| Google Calendar | `<GoogleServiceAccountSetup />` — sync lessons to Google Calendar |
+| Square | `<SquareConnectSettings />` — accept card payments + payouts |
+| Xero | `<XeroExport />` — export invoices/expenses to Xero |
 
-- Tab state is mirrored to `?tab=…` so deep links work (`/instructor/profile?tab=media`).
-- Uses the instructor portal design tokens (`rounded-2xl`, `bg-card`, `--d2-bg`).
-- Reuses `useInstructorAuth`, `CMSImageUpload`, and the existing avatar-upload logic from `InstructorMenu.tsx`.
+- `?tab=…` deep linking.
+- Same instructor-portal styling (`rounded-2xl`, `bg-card`, `--d2-bg`).
 
 ## Routing
-- Add a new route `/instructor/profile` → `AccountHub` in `src/routes/instructorPortalRoutes.tsx`.
-- Keep `/instructor/settings` (legacy redirect) and `/instructor/menu` working as-is — the menu page still lists every other setting tile, just no longer the "front door" for identity.
+Add to `src/routes/instructorPortalRoutes.tsx`:
+- `/instructor/integrations` → `InstructorIntegrationsHub`
 
-## Sidebar wiring
-Update `DashboardSidebar.tsx`:
-- **Profile** entry → `/instructor/profile` (currently `/instructor/settings`).
-
-## Menu cleanup (`src/pages/InstructorMenu.tsx`)
-Remove the now-duplicated tiles from `allTiles`:
-- `profile`, `details`, `images`, `compliance`
-Add a single replacement tile at the top of the `profile` category:
-- **Account** → links to `/instructor/profile`.
-
-The existing render handlers for those four tiles can stay (used by deep-link `?open=`) but they're no longer surfaced in the grid.
+The sidebar already links to `/instructor/integrations` (currently 404), so that will start working automatically.
 
 ## Out of scope
-- No mobile changes (`InstructorProfileRouter` / `InstructorProfileDesktop` untouched per mobile-update policy).
-- No schema changes.
-- No edits to the Plan & Billing page itself — just linked to.
+- No mobile changes.
+- No new API/backend work — Google service-account, Square OAuth, and Xero export already exist.
+- QuickBooks / FreeAgent / Sage already supported via `XeroExport`'s underlying platform configs but kept off this hub for now (Xero only, per request).
