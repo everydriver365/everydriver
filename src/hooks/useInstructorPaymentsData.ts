@@ -47,6 +47,7 @@ export interface PaymentsData {
   cashFlow: CashFlowBucket[];
   outstanding: OutstandingPupil[];
   transactions: PaymentTx[];
+  refresh: () => void;
 }
 
 const FEE_RATE = 0.0175;
