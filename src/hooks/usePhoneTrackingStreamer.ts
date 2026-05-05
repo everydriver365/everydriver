@@ -83,7 +83,7 @@ export function usePhoneTrackingStreamer({
             p_pupil_id: pupilId,
             p_latitude: latitude,
             p_longitude: longitude,
-            p_speed_kmh: speed != null && !Number.isNaN(speed) ? speed * 3.6 : 0,
+            p_speed_kmh: speedKmh,
             p_heading: heading != null && !Number.isNaN(heading) ? heading : null,
             p_accuracy: accuracy ?? null,
             p_trip_status: "driving",
