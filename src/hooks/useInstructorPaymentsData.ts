@@ -251,7 +251,10 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
 
         const cashFlow = buildCashFlow(
           rawPayments
-            .filter((p: any) => Number(p.amount) > 0 && normalizeStatus(Number(p.amount), p.notes) === "paid")
+            .filter((p: any) => {
+              const status = normalizeStatus(Number(p.amount), p.notes, p.payout_status);
+              return Number(p.amount) > 0 && status === "paid";
+            })
             .map((p: any) => ({ recorded_at: p.recorded_at, amount: Number(p.amount) }))
         );
 
@@ -265,7 +268,7 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
             outstanding: outstandingTotal,
             outstandingPupils: outstanding.length,
             nextPayout: +pendingPayout.toFixed(2),
-            nextPayoutDate: pendingPayout > 0 ? "Tomorrow" : "—",
+            nextPayoutDate,
             feesMonth,
             effectiveFeeRate,
           },
