@@ -1,6 +1,15 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+export interface PhoneFix {
+  latitude: number;
+  longitude: number;
+  speedKmh: number;
+  heading: number | null;
+  accuracy: number | null;
+  timestamp: number;
+}
+
 interface Options {
   /** Active provider — only streams when this is "phone". */
   provider: "phone" | "radius" | null;
@@ -10,6 +19,8 @@ interface Options {
   sessionId?: string | null;
   /** Throttle uploads to at most one per N ms (default 2000). */
   minIntervalMs?: number;
+  /** Optional callback fired on every accepted GPS fix (after throttling). */
+  onPosition?: (fix: PhoneFix) => void;
 }
 
 /**
@@ -26,6 +37,7 @@ export function usePhoneTrackingStreamer({
   pupilId,
   sessionId = null,
   minIntervalMs = 2000,
+  onPosition,
 }: Options) {
   const watchIdRef = useRef<number | null>(null);
   const lastSentRef = useRef<number>(0);
@@ -55,12 +67,23 @@ export function usePhoneTrackingStreamer({
         lastSentRef.current = now;
 
         const { latitude, longitude, speed, heading, accuracy } = pos.coords;
+        const speedKmh = speed != null && !Number.isNaN(speed) ? speed * 3.6 : 0;
+        try {
+          onPosition?.({
+            latitude,
+            longitude,
+            speedKmh,
+            heading: heading != null && !Number.isNaN(heading) ? heading : null,
+            accuracy: accuracy ?? null,
+            timestamp: pos.timestamp ?? now,
+          });
+        } catch { /* ignore consumer errors */ }
         try {
           await supabase.rpc("update_live_position", {
             p_pupil_id: pupilId,
             p_latitude: latitude,
             p_longitude: longitude,
-            p_speed_kmh: speed != null && !Number.isNaN(speed) ? speed * 3.6 : 0,
+            p_speed_kmh: speedKmh,
             p_heading: heading != null && !Number.isNaN(heading) ? heading : null,
             p_accuracy: accuracy ?? null,
             p_trip_status: "driving",

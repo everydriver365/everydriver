@@ -39,6 +39,7 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
 import { DeviceSelectorDropdown } from "@/components/instructor/tracking/DeviceSelectorDropdown";
 import { TrackingProviderDropdown } from "@/components/instructor/tracking/TrackingProviderDropdown";
 import { TrackerSourceCard } from "@/components/instructor/tracking/TrackerSourceCard";
+import { PhoneLastLocationCard } from "@/components/instructor/tracking/PhoneLastLocationCard";
 import { usePhoneTrackingStreamer } from "@/hooks/usePhoneTrackingStreamer";
 import { useLivePupilPosition } from "@/hooks/useLivePupilPosition";
 import { useLocationPermission } from "@/hooks/useLocationPermission";
@@ -152,6 +153,18 @@ export default function InstructorLiveSession() {
     phoneStreamingConfirmed &&
     !!selectedPupilId;
 
+  // Live last-fix + breadcrumb trail for the phone tracking UI.
+  const [lastPhoneFix, setLastPhoneFix] = useState<import("@/hooks/usePhoneTrackingStreamer").PhoneFix | null>(null);
+  const [phoneTrail, setPhoneTrail] = useState<import("@/hooks/usePhoneTrackingStreamer").PhoneFix[]>([]);
+
+  // Reset trail whenever the user stops/starts or switches pupil/provider.
+  useEffect(() => {
+    if (!phoneTrackingReady) {
+      setPhoneTrail([]);
+      setLastPhoneFix(null);
+    }
+  }, [phoneTrackingReady]);
+
   // Stream phone GPS into live_pupil_positions only after the user confirms Start.
   usePhoneTrackingStreamer({
     provider: activeProvider === "radius"
@@ -160,6 +173,14 @@ export default function InstructorLiveSession() {
         ? "phone"
         : null,
     pupilId: selectedPupilId || null,
+    onPosition: (fix) => {
+      setLastPhoneFix(fix);
+      setPhoneTrail((prev) => {
+        const next = [...prev, fix];
+        // Keep last ~120 points (~4 minutes at 2s throttle).
+        return next.length > 120 ? next.slice(next.length - 120) : next;
+      });
+    },
   });
 
   // When phone provider is active, subscribe to phone-streamed positions and
@@ -1188,6 +1209,13 @@ export default function InstructorLiveSession() {
                   }}
                 />
               )}
+
+              {/* PHONE LAST LOCATION + ROUTE PREVIEW — visible while phone tracking is active */}
+              <PhoneLastLocationCard
+                active={phoneTrackingReady}
+                fix={lastPhoneFix}
+                trail={phoneTrail}
+              />
 
               {/* 1. HEADER */}
               <div style={{
