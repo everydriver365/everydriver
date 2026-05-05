@@ -1023,31 +1023,139 @@ export default function InstructorPupilsDesktop() {
       </Dialog>
 
       <Dialog open={editOpen} onOpenChange={(o) => { setEditOpen(o); if (!o) setEditTargetId(null); }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit pupil</DialogTitle>
+            <p className="text-xs text-muted-foreground">Update any details — leave blank to clear.</p>
           </DialogHeader>
-          <div className="space-y-3 py-2">
-            <div className="space-y-1">
-              <Label htmlFor="edit-name">Name *</Label>
-              <Input id="edit-name" value={editForm.name} aria-invalid={!!editErrors.name} onChange={e => { setEditForm(f => ({ ...f, name: e.target.value })); if (editErrors.name) setEditErrors(er => ({ ...er, name: undefined })); }} autoFocus className={editErrors.name ? "border-destructive focus-visible:ring-destructive" : ""} />
-              {editErrors.name && <p className="text-xs text-destructive">{editErrors.name}</p>}
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="edit-phone">Phone</Label>
-              <Input id="edit-phone" value={editForm.phone} aria-invalid={!!editErrors.phone} onChange={e => { setEditForm(f => ({ ...f, phone: e.target.value })); if (editErrors.phone) setEditErrors(er => ({ ...er, phone: undefined })); }} className={editErrors.phone ? "border-destructive focus-visible:ring-destructive" : ""} />
-              {editErrors.phone && <p className="text-xs text-destructive">{editErrors.phone}</p>}
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="edit-email">Email</Label>
-              <Input id="edit-email" type="email" value={editForm.email} aria-invalid={!!editErrors.email} onChange={e => { setEditForm(f => ({ ...f, email: e.target.value })); if (editErrors.email) setEditErrors(er => ({ ...er, email: undefined })); }} className={editErrors.email ? "border-destructive focus-visible:ring-destructive" : ""} />
-              {editErrors.email && <p className="text-xs text-destructive">{editErrors.email}</p>}
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="edit-postcode">Postcode</Label>
-              <Input id="edit-postcode" value={editForm.postcode} aria-invalid={!!editErrors.postcode} onChange={e => { setEditForm(f => ({ ...f, postcode: e.target.value })); if (editErrors.postcode) setEditErrors(er => ({ ...er, postcode: undefined })); }} className={editErrors.postcode ? "border-destructive focus-visible:ring-destructive" : ""} />
-              {editErrors.postcode && <p className="text-xs text-destructive">{editErrors.postcode}</p>}
-            </div>
+          <div className="space-y-6 py-2">
+            {/* Pupil details */}
+            <section className="space-y-3">
+              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Pupil details</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1 col-span-2">
+                  <Label htmlFor="edit-name">Name *</Label>
+                  <Input id="edit-name" value={editForm.name} aria-invalid={!!editErrors.name} onChange={e => { setEditForm(f => ({ ...f, name: e.target.value })); if (editErrors.name) setEditErrors(er => ({ ...er, name: undefined })); }} autoFocus className={editErrors.name ? "border-destructive focus-visible:ring-destructive" : ""} />
+                  {editErrors.name && <p className="text-xs text-destructive">{editErrors.name}</p>}
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-phone">Phone</Label>
+                  <Input id="edit-phone" value={editForm.phone} aria-invalid={!!editErrors.phone} onChange={e => { setEditForm(f => ({ ...f, phone: e.target.value })); if (editErrors.phone) setEditErrors(er => ({ ...er, phone: undefined })); }} className={editErrors.phone ? "border-destructive focus-visible:ring-destructive" : ""} />
+                  {editErrors.phone && <p className="text-xs text-destructive">{editErrors.phone}</p>}
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-email">Email</Label>
+                  <Input id="edit-email" type="email" value={editForm.email} aria-invalid={!!editErrors.email} onChange={e => { setEditForm(f => ({ ...f, email: e.target.value })); if (editErrors.email) setEditErrors(er => ({ ...er, email: undefined })); }} className={editErrors.email ? "border-destructive focus-visible:ring-destructive" : ""} />
+                  {editErrors.email && <p className="text-xs text-destructive">{editErrors.email}</p>}
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-dob">Date of birth</Label>
+                  <Input id="edit-dob" type="date" value={editForm.date_of_birth}
+                    onChange={e => setEditForm(f => ({ ...f, date_of_birth: e.target.value }))} />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-sex">Sex</Label>
+                  <Select value={editForm.sex} onValueChange={v => setEditForm(f => ({ ...f, sex: v }))}>
+                    <SelectTrigger id="edit-sex"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </section>
+
+            {/* Address */}
+            <section className="space-y-3">
+              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Address</h4>
+              <div className="space-y-1">
+                <Label>Address (postcode search)</Label>
+                <GoogleAddressAutocomplete
+                  value={editForm.address}
+                  onChange={(address) => setEditForm(f => ({ ...f, address }))}
+                  onPostcodeChange={handleEditPostcodeAutoFill}
+                  placeholder="Start typing an address or postcode…"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="edit-postcode">Postcode</Label>
+                  <Input id="edit-postcode" value={editForm.postcode} aria-invalid={!!editErrors.postcode}
+                    onChange={e => { setEditForm(f => ({ ...f, postcode: e.target.value })); if (editErrors.postcode) setEditErrors(er => ({ ...er, postcode: undefined })); }}
+                    placeholder="SO22 4AB" className={editErrors.postcode ? "border-destructive focus-visible:ring-destructive" : ""} />
+                  {editErrors.postcode && <p className="text-xs text-destructive">{editErrors.postcode}</p>}
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-w3w" className="flex items-center gap-2">
+                    What3words
+                    {editLookingW3W && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">///</span>
+                    <Input id="edit-w3w" value={editForm.what3words}
+                      onChange={e => setEditForm(f => ({ ...f, what3words: e.target.value }))}
+                      placeholder="word.word.word" className="pl-9" />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Learning */}
+            <section className="space-y-3">
+              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Learning</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="edit-prev">Previous experience (hours)</Label>
+                  <Input id="edit-prev" type="number" min={0} step={1} value={editForm.previous_experience_hours}
+                    onChange={e => setEditForm(f => ({ ...f, previous_experience_hours: e.target.value }))}
+                    placeholder="e.g. 10" />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-trans">Transmission</Label>
+                  <Select value={editForm.transmission_type} onValueChange={v => setEditForm(f => ({ ...f, transmission_type: v }))}>
+                    <SelectTrigger id="edit-trans"><SelectValue placeholder="Manual or automatic" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="manual">Manual</SelectItem>
+                      <SelectItem value="automatic">Automatic</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="edit-needs">Extra needs</Label>
+                <Textarea id="edit-needs" rows={2} value={editForm.special_needs}
+                  onChange={e => setEditForm(f => ({ ...f, special_needs: e.target.value }))}
+                  placeholder="Any learning support, accessibility or medical notes…" />
+              </div>
+            </section>
+
+            {/* Payment */}
+            <section className="space-y-3">
+              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Payment</h4>
+              <div className="space-y-1">
+                <Label htmlFor="edit-pay">Payment method</Label>
+                <Select value={editForm.payment_method} onValueChange={v => setEditForm(f => ({ ...f, payment_method: v }))}>
+                  <SelectTrigger id="edit-pay"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tbc">TBC — decide later</SelectItem>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="card">Card</SelectItem>
+                    <SelectItem value="bank_transfer">Bank transfer</SelectItem>
+                    <SelectItem value="send_link">Send payment link</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </section>
+
+            {/* Comments */}
+            <section className="space-y-3">
+              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Comments</h4>
+              <Textarea rows={3} value={editForm.notes}
+                onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
+                placeholder="Anything else to remember about this pupil…" />
+            </section>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditOpen(false)} disabled={editSaving}>Cancel</Button>
