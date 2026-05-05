@@ -16,7 +16,7 @@ type Status = "active" | "at-risk" | "test-ready" | "paused" | "archived";
 type AvatarColor = "coral" | "blue" | "green" | "pink" | "purple" | "gray" | "amber";
 
 interface Pupil {
-  id: number;
+  id: string;
   name: string;
   phone: string;
   initials: string;
@@ -25,7 +25,7 @@ interface Pupil {
   lastLesson: string;
   lastLessonDays: number;
   nextLesson: string | null;
-  nextLessonRank: number; // for sorting; bigger = sooner; null=0
+  nextLessonRank: number;
   balance: number;
   status: Status;
   since: string;
