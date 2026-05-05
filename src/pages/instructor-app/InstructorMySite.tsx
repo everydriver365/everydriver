@@ -26,12 +26,12 @@ const DEVICE_WIDTH = { desktop: 540, tablet: 380, mobile: 320 } as const;
 type Device = keyof typeof DEVICE_WIDTH;
 
 function EditorToolbar({
-  device, onDevice, onPublish, hasChanges, publishing,
+  device, onDevice, onPublish, hasChanges, publishing, domain,
 }: {
   device: Device; onDevice: (d: Device) => void;
   onPublish: () => void; hasChanges: boolean; publishing: boolean;
+  domain: string;
 }) {
-  const domain = "ken-d.drive365.co.uk";
 
   return (
     <div
