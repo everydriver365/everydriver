@@ -9,6 +9,10 @@ import { InstructorThemeProvider } from "./context/InstructorThemeContext";
 import { AppErrorBoundary } from "@/components/common/AppErrorBoundary";
 import { detectNativeWrapper } from "@/hooks/useIsNativeWrapper";
 import { installQueryBudget } from "@/lib/queryBudget";
+import { enforceRememberMeOnBoot } from "@/lib/sessionPersistence";
+
+// Honour the "Remember me" choice before any auth-gated UI mounts.
+void enforceRememberMeOnBoot();
 
 if (import.meta.env.DEV) {
   installQueryBudget();
