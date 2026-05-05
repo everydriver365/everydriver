@@ -14,6 +14,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Pencil, Trash2 } from "lucide-react";
 
 // ----------------------------- Types & data -----------------------------
 type Status = "active" | "at-risk" | "test-ready" | "paused" | "archived";
@@ -203,7 +209,66 @@ export default function InstructorPupilsDesktop() {
     setReloadTick(t => t + 1);
   };
 
-  // Load real pupils for this instructor
+  // ---- Edit pupil ----
+  const [editOpen, setEditOpen] = useState(false);
+  const [editTargetId, setEditTargetId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", postcode: "" });
+  const [editSaving, setEditSaving] = useState(false);
+
+  const openEdit = async (id: string) => {
+    setEditTargetId(id);
+    setEditOpen(true);
+    setEditForm({ name: "", phone: "", email: "", postcode: "" });
+    const { data } = await supabase
+      .from("pupils")
+      .select("name, phone, email, postcode")
+      .eq("id", id)
+      .maybeSingle();
+    if (data) setEditForm({
+      name: data.name || "",
+      phone: data.phone || "",
+      email: data.email || "",
+      postcode: data.postcode || "",
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editTargetId) return;
+    if (!editForm.name.trim()) { toast.error("Name is required"); return; }
+    setEditSaving(true);
+    const { error } = await supabase.from("pupils").update({
+      name: editForm.name.trim(),
+      phone: editForm.phone.trim() || null,
+      email: editForm.email.trim() || null,
+      postcode: editForm.postcode.trim() || null,
+    }).eq("id", editTargetId);
+    setEditSaving(false);
+    if (error) { toast.error(`Could not save: ${error.message}`); return; }
+    toast.success("Pupil updated");
+    setEditOpen(false);
+    setEditTargetId(null);
+    setReloadTick(t => t + 1);
+  };
+
+  // ---- Delete pupil (soft delete) ----
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    const { error } = await supabase.from("pupils")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", deleteTarget.id);
+    setDeleting(false);
+    if (error) { toast.error(`Could not delete: ${error.message}`); return; }
+    toast.success(`Removed ${deleteTarget.name}`);
+    if (openId === deleteTarget.id) setOpenId(null);
+    setDeleteTarget(null);
+    setReloadTick(t => t + 1);
+  };
+
+
   useEffect(() => {
     const instructorId = instructor?.id;
     if (!instructorId) return;
@@ -602,12 +667,30 @@ export default function InstructorPupilsDesktop() {
                     £{p.balance.toFixed(2)}
                   </div>
                   <div><StatusPill status={p.status} /></div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); toast("Row menu"); }}
-                    style={{ color: "var(--d2-text-3)", padding: 4, borderRadius: 4 }}
-                  >
-                    <MoreVertical size={14} />
-                  </button>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ color: "var(--d2-text-3)", padding: 4, borderRadius: 4 }}
+                      >
+                        <MoreVertical size={14} />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-40 p-1" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); openEdit(p.id); }}
+                        className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded hover:bg-slate-100 text-left"
+                      >
+                        <Pencil size={12} /> Edit pupil
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: p.id, name: p.name }); }}
+                        className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded hover:bg-red-50 text-red-600 text-left"
+                      >
+                        <Trash2 size={12} /> Delete
+                      </button>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               );
             })}
@@ -712,6 +795,59 @@ export default function InstructorPupilsDesktop() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={editOpen} onOpenChange={(o) => { setEditOpen(o); if (!o) setEditTargetId(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit pupil</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1">
+              <Label htmlFor="edit-name">Name *</Label>
+              <Input id="edit-name" value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} autoFocus />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="edit-phone">Phone</Label>
+              <Input id="edit-phone" value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="edit-email">Email</Label>
+              <Input id="edit-email" type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="edit-postcode">Postcode</Label>
+              <Input id="edit-postcode" value={editForm.postcode} onChange={e => setEditForm(f => ({ ...f, postcode: e.target.value }))} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(false)} disabled={editSaving}>Cancel</Button>
+            <Button onClick={handleSaveEdit} disabled={editSaving || !editForm.name.trim()}>
+              {editSaving ? "Saving…" : "Save changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete pupil?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove <strong>{deleteTarget?.name}</strong> from your active pupils. Lesson history is preserved and the pupil can be restored by support.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleConfirmDelete(); }}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deleting ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardShell>
   );
 }
