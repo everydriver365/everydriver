@@ -137,21 +137,22 @@ export default function InstructorLiveSession() {
   // Explicit user confirmation before phone GPS starts streaming.
   const [phoneStreamingConfirmed, setPhoneStreamingConfirmed] = useState(false);
 
-  // Auto-stop streaming when provider/pupil changes or user leaves.
+  // Auto-stop streaming when provider changes or user leaves.
   useEffect(() => {
     if (!isPhoneProvider) setPhoneStreamingConfirmed(false);
-  }, [isPhoneProvider, selectedPupilId]);
+  }, [isPhoneProvider]);
 
   // Location permission gate for Phone tracking.
   const { status: locationPermissionStatus } = useLocationPermission({
     instructorId: instructor?.id ?? null,
     pupilId: selectedPupilId || null,
   });
+  // Phone tracking can preview the mini map without a pupil; pushing to
+  // live_pupil_positions is gated separately inside the streamer.
   const phoneTrackingReady =
     isPhoneProvider &&
     locationPermissionStatus === "granted" &&
-    phoneStreamingConfirmed &&
-    !!selectedPupilId;
+    phoneStreamingConfirmed;
 
   // Live last-fix + breadcrumb trail for the phone tracking UI.
   const [lastPhoneFix, setLastPhoneFix] = useState<import("@/hooks/usePhoneTrackingStreamer").PhoneFix | null>(null);
