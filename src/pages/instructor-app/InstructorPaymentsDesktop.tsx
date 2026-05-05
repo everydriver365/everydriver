@@ -90,9 +90,11 @@ export default function InstructorPaymentsDesktop() {
   const [page, setPage] = useState(1);
   const PAGE = 25;
 
+  const { loading, error, stats, cashFlow, outstanding, transactions } = useInstructorPaymentsData(instructor?.id);
+
   const filtered = useMemo(() =>
     transactions.filter(t => filter === "all" || t.status === filter),
-  [filter]);
+  [filter, transactions]);
 
   const counts = useMemo(() => ({
     all: transactions.length,
@@ -100,10 +102,10 @@ export default function InstructorPaymentsDesktop() {
     pending: transactions.filter(t => t.status === "pending").length,
     refunded: transactions.filter(t => t.status === "refunded").length,
     failed: transactions.filter(t => t.status === "failed").length,
-  }), []);
+  }), [transactions]);
 
   const grouped = useMemo(() => {
-    const map = new Map<string, Tx[]>();
+    const map = new Map<string, PaymentTx[]>();
     filtered.forEach(t => {
       const d = new Date(t.dateTime);
       const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
