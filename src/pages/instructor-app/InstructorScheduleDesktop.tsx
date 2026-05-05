@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
-  ChevronLeft, ChevronRight, Plus, Search, Sparkles, GripVertical,
+  ChevronLeft, ChevronRight, Plus, Search, Sparkles, GripVertical, Filter,
 } from "lucide-react";
 import {
   DndContext, DragOverlay, PointerSensor, useDraggable, useDroppable,
@@ -115,6 +115,13 @@ export default function InstructorScheduleDesktop() {
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiSuggestions, setAiSuggestions] = useState<{ label: string }[] | null>(null);
+  const [filterDays, setFilterDays] = useState<Day[]>([]);
+  const [filterFrom, setFilterFrom] = useState<string>(""); // "HH:MM"
+  const [filterTo, setFilterTo] = useState<string>("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const filterFromMin = filterFrom ? Number(filterFrom.slice(0, 2)) * 60 + Number(filterFrom.slice(3, 5)) : null;
+  const filterToMin = filterTo ? Number(filterTo.slice(0, 2)) * 60 + Number(filterTo.slice(3, 5)) : null;
+  const activeFilterCount = (filterDays.length > 0 ? 1 : 0) + (filterFrom ? 1 : 0) + (filterTo ? 1 : 0);
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 60000);
@@ -155,36 +162,43 @@ export default function InstructorScheduleDesktop() {
 
   const slotMatches = useMemo(() => {
     const q = aiPrompt.trim().toLowerCase();
-    if (!q) return [];
+    const hasQuery = q.length > 0;
+    const hasFilters = filterDays.length > 0 || filterFromMin !== null || filterToMin !== null;
+    if (!hasQuery && !hasFilters) return [];
     // duration: "2h", "90m", "1h30", "60 min"
     let needMin = 60;
-    const hM = q.match(/(\d+(?:\.\d+)?)\s*h(?:r|rs|our|ours)?(?:\s*(\d+)\s*m)?/);
-    const mM = q.match(/(\d+)\s*(?:m|min|mins|minutes)\b/);
-    if (hM) needMin = Math.round(parseFloat(hM[1]) * 60) + (hM[2] ? parseInt(hM[2]) : 0);
-    else if (mM) needMin = parseInt(mM[1]);
-    // day
+    if (hasQuery) {
+      const hM = q.match(/(\d+(?:\.\d+)?)\s*h(?:r|rs|our|ours)?(?:\s*(\d+)\s*m)?/);
+      const mM = q.match(/(\d+)\s*(?:m|min|mins|minutes)\b/);
+      if (hM) needMin = Math.round(parseFloat(hM[1]) * 60) + (hM[2] ? parseInt(hM[2]) : 0);
+      else if (mM) needMin = parseInt(mM[1]);
+    }
+    // day from query
     const dayMap: Record<string, Day> = {
       mon: "Mon", monday: "Mon", tue: "Tue", tues: "Tue", tuesday: "Tue",
       wed: "Wed", weds: "Wed", wednesday: "Wed", thu: "Thu", thur: "Thu", thurs: "Thu", thursday: "Thu",
       fri: "Fri", friday: "Fri", sat: "Sat", saturday: "Sat", sun: "Sun", sunday: "Sun",
     };
-    let needDay: Day | null = null;
-    for (const k of Object.keys(dayMap)) if (new RegExp(`\\b${k}\\b`).test(q)) { needDay = dayMap[k]; break; }
-    const morning = /\bmorning|am\b/.test(q);
-    const afternoon = /\bafternoon|pm\b/.test(q);
-    const evening = /\bevening\b/.test(q);
+    let queryDay: Day | null = null;
+    if (hasQuery) for (const k of Object.keys(dayMap)) if (new RegExp(`\\b${k}\\b`).test(q)) { queryDay = dayMap[k]; break; }
+    const morning = hasQuery && /\bmorning|am\b/.test(q);
+    const afternoon = hasQuery && /\bafternoon|pm\b/.test(q);
+    const evening = hasQuery && /\bevening\b/.test(q);
     return openSlots
       .filter(s => s.endMin - s.startMin >= needMin)
-      .filter(s => !needDay || s.day === needDay)
+      .filter(s => !queryDay || s.day === queryDay)
+      .filter(s => filterDays.length === 0 || filterDays.includes(s.day))
       .filter(s => {
         if (morning) return s.startMin < 12 * 60;
         if (afternoon) return s.startMin >= 12 * 60 && s.startMin < 17 * 60;
         if (evening) return s.startMin >= 17 * 60;
         return true;
       })
-      .slice(0, 8)
+      .filter(s => filterFromMin === null || s.startMin >= filterFromMin)
+      .filter(s => filterToMin === null || s.startMin + needMin <= filterToMin)
+      .slice(0, 12)
       .map(s => ({ ...s, needMin }));
-  }, [aiPrompt, openSlots]);
+  }, [aiPrompt, openSlots, filterDays, filterFromMin, filterToMin]);
 
   const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
   const initials = (instructor?.name || "").split(" ").map(s => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "ID";
@@ -292,11 +306,98 @@ export default function InstructorScheduleDesktop() {
                     fontSize: 11, color: "var(--d2-text-1)",
                   }}
                 />
+                <Popover open={filtersOpen} onOpenChange={setFiltersOpen}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      title="Filters"
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 4,
+                        fontSize: 10, color: activeFilterCount ? "#4F46E5" : "var(--d2-text-2)",
+                        background: activeFilterCount ? "#EEF2FF" : "transparent",
+                        borderRadius: 6, padding: "2px 6px", fontWeight: 500,
+                      }}
+                    >
+                      <Filter size={10} />
+                      {activeFilterCount > 0 && <span>{activeFilterCount}</span>}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-64 p-3 space-y-3">
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: "var(--d2-text-2)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+                        Days
+                      </div>
+                      <div className="flex flex-wrap" style={{ gap: 4 }}>
+                        {DAYS.map(d => {
+                          const active = filterDays.includes(d);
+                          return (
+                            <button
+                              key={d}
+                              onClick={() => setFilterDays(prev => active ? prev.filter(x => x !== d) : [...prev, d])}
+                              style={{
+                                fontSize: 10, padding: "4px 8px", borderRadius: 999,
+                                border: "1px solid " + (active ? "#4F46E5" : "#E2E8F0"),
+                                background: active ? "#EEF2FF" : "#fff",
+                                color: active ? "#4F46E5" : "var(--d2-text-2)",
+                                fontWeight: active ? 600 : 400,
+                              }}
+                            >
+                              {d}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: "var(--d2-text-2)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+                        Time range
+                      </div>
+                      <div className="flex items-center" style={{ gap: 6 }}>
+                        <input
+                          type="time"
+                          value={filterFrom}
+                          onChange={e => setFilterFrom(e.target.value)}
+                          style={{
+                            flex: 1, fontSize: 11, padding: "5px 7px",
+                            border: "1px solid #E2E8F0", borderRadius: 6, background: "#fff",
+                          }}
+                        />
+                        <span style={{ fontSize: 11, color: "var(--d2-text-3)" }}>to</span>
+                        <input
+                          type="time"
+                          value={filterTo}
+                          onChange={e => setFilterTo(e.target.value)}
+                          style={{
+                            flex: 1, fontSize: 11, padding: "5px 7px",
+                            border: "1px solid #E2E8F0", borderRadius: 6, background: "#fff",
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between" style={{ paddingTop: 4 }}>
+                      <button
+                        onClick={() => { setFilterDays([]); setFilterFrom(""); setFilterTo(""); }}
+                        style={{ fontSize: 11, color: "var(--d2-text-2)" }}
+                      >
+                        Clear
+                      </button>
+                      <button
+                        onClick={() => setFiltersOpen(false)}
+                        style={{
+                          fontSize: 11, padding: "5px 10px", borderRadius: 6,
+                          background: "#4F46E5", color: "#fff", fontWeight: 500,
+                        }}
+                      >
+                        Done
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
-              {aiPrompt.trim() && (
+              {(aiPrompt.trim() || activeFilterCount > 0) && (
                 <div style={{
                   position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 30,
-                  width: 280, background: "#fff", border: "1px solid #E2E8F0",
+                  width: 300, background: "#fff", border: "1px solid #E2E8F0",
                   borderRadius: 10, boxShadow: "0 8px 24px rgba(15,23,42,0.10)",
                   padding: 6, maxHeight: 320, overflowY: "auto",
                 }}>
