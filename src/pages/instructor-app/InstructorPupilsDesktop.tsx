@@ -187,24 +187,43 @@ export default function InstructorPupilsDesktop() {
   const [reloadTick, setReloadTick] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState({ name: "", phone: "", email: "", postcode: "" });
+  const [addErrors, setAddErrors] = useState<{ name?: string; email?: string; postcode?: string; phone?: string }>({});
   const [addSaving, setAddSaving] = useState(false);
+
+  // UK postcode (loose, allows missing space)
+  const UK_POSTCODE_RE = /^(GIR 0AA|[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})$/i;
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const UK_PHONE_RE = /^(?:\+?44|0)\s?\d(?:[\s-]?\d){8,9}$/;
+
+  const validatePupilForm = (f: { name: string; phone: string; email: string; postcode: string }) => {
+    const errs: { name?: string; email?: string; postcode?: string; phone?: string } = {};
+    if (!f.name.trim()) errs.name = "Name is required";
+    else if (f.name.trim().length > 100) errs.name = "Name must be 100 characters or less";
+    if (f.email.trim() && !EMAIL_RE.test(f.email.trim())) errs.email = "Enter a valid email address";
+    if (f.postcode.trim() && !UK_POSTCODE_RE.test(f.postcode.trim())) errs.postcode = "Enter a valid UK postcode (e.g. SO22 4AB)";
+    if (f.phone.trim() && !UK_PHONE_RE.test(f.phone.trim())) errs.phone = "Enter a valid UK phone number";
+    return errs;
+  };
 
   const handleAddPupil = async () => {
     const instructorId = instructor?.id;
     if (!instructorId) { toast.error("Not signed in"); return; }
-    if (!addForm.name.trim()) { toast.error("Name is required"); return; }
+    const errs = validatePupilForm(addForm);
+    setAddErrors(errs);
+    if (Object.keys(errs).length) return;
     setAddSaving(true);
     const { error } = await supabase.from("pupils").insert({
       instructor_id: instructorId,
       name: addForm.name.trim(),
       phone: addForm.phone.trim() || null,
       email: addForm.email.trim() || null,
-      postcode: addForm.postcode.trim() || null,
+      postcode: addForm.postcode.trim().toUpperCase() || null,
     });
     setAddSaving(false);
     if (error) { toast.error(`Could not add pupil: ${error.message}`); return; }
     toast.success(`Added ${addForm.name.trim()}`);
     setAddForm({ name: "", phone: "", email: "", postcode: "" });
+    setAddErrors({});
     setAddOpen(false);
     setReloadTick(t => t + 1);
   };
@@ -213,11 +232,13 @@ export default function InstructorPupilsDesktop() {
   const [editOpen, setEditOpen] = useState(false);
   const [editTargetId, setEditTargetId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", postcode: "" });
+  const [editErrors, setEditErrors] = useState<{ name?: string; email?: string; postcode?: string; phone?: string }>({});
   const [editSaving, setEditSaving] = useState(false);
 
   const openEdit = async (id: string) => {
     setEditTargetId(id);
     setEditOpen(true);
+    setEditErrors({});
     setEditForm({ name: "", phone: "", email: "", postcode: "" });
     const { data } = await supabase
       .from("pupils")
@@ -234,17 +255,20 @@ export default function InstructorPupilsDesktop() {
 
   const handleSaveEdit = async () => {
     if (!editTargetId) return;
-    if (!editForm.name.trim()) { toast.error("Name is required"); return; }
+    const errs = validatePupilForm(editForm);
+    setEditErrors(errs);
+    if (Object.keys(errs).length) return;
     setEditSaving(true);
     const { error } = await supabase.from("pupils").update({
       name: editForm.name.trim(),
       phone: editForm.phone.trim() || null,
       email: editForm.email.trim() || null,
-      postcode: editForm.postcode.trim() || null,
+      postcode: editForm.postcode.trim().toUpperCase() || null,
     }).eq("id", editTargetId);
     setEditSaving(false);
     if (error) { toast.error(`Could not save: ${error.message}`); return; }
     toast.success("Pupil updated");
+    setEditErrors({});
     setEditOpen(false);
     setEditTargetId(null);
     setReloadTick(t => t + 1);
