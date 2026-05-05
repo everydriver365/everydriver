@@ -120,11 +120,12 @@ export default function AdminLogin() {
     setLoading(true);
 
     if (viewMode === 'signup') {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const redirectUrl = `${window.location.origin}/admin/login`;
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/admin`,
+          emailRedirectTo: redirectUrl,
         },
       });
 
@@ -134,7 +135,11 @@ export default function AdminLogin() {
         return;
       }
 
-      setSuccess('Account created! Please contact an administrator to grant you admin access, then sign in.');
+      if (!signUpData.session) {
+        setSuccess('Account created! Check your inbox to verify your email, then sign in. An administrator will need to grant you admin access.');
+      } else {
+        setSuccess('Account created! Please contact an administrator to grant you admin access, then sign in.');
+      }
       setViewMode('login');
       setLoading(false);
       return;
@@ -143,7 +148,12 @@ export default function AdminLogin() {
     const { error: signInError } = await signIn(email, password);
     
     if (signInError) {
-      setError(signInError.message);
+      if (isEmailNotConfirmedError(signInError)) {
+        setError('Please verify your email before signing in. Check your inbox for the confirmation link.');
+        void resendSignupConfirmation(email, `${window.location.origin}/admin/login`);
+      } else {
+        setError(signInError.message);
+      }
       setLoading(false);
       return;
     }
