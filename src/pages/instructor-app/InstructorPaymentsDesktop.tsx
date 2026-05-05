@@ -94,7 +94,19 @@ export default function InstructorPaymentsDesktop() {
   const [page, setPage] = useState(1);
   const PAGE = 25;
 
-  const { loading, error, stats, cashFlow, outstanding, transactions } = useInstructorPaymentsData(instructor?.id);
+  const { loading, error, stats, cashFlow, outstanding, transactions, refresh } = useInstructorPaymentsData(instructor?.id);
+  const [allPupils, setAllPupils] = useState<{ id: string; name: string; phone: string | null; email: string | null; account_balance: number | null }[]>([]);
+
+  useEffect(() => {
+    if (!instructor?.id) return;
+    supabase
+      .from("pupils")
+      .select("id, name, phone, email, account_balance")
+      .eq("instructor_id", instructor.id)
+      .is("deleted_at", null)
+      .order("name", { ascending: true })
+      .then(({ data }) => setAllPupils(data || []));
+  }, [instructor?.id]);
 
   const filtered = useMemo(() =>
     transactions.filter(t => filter === "all" || t.status === filter),
