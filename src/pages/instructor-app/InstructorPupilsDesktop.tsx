@@ -702,7 +702,7 @@ function PanelContent({
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
-  onStatus: (id: number, s: Status) => void;
+  onStatus: (id: string, s: Status) => void;
 }) {
   const c = palette[pupil.avatarColor];
   return (
@@ -809,7 +809,7 @@ function StatCard({ label, value, mono }: { label: string; value: string; mono?:
   );
 }
 
-function OverviewTab({ pupil, onStatus }: { pupil: Pupil; onStatus: (id: number, s: Status) => void }) {
+function OverviewTab({ pupil, onStatus }: { pupil: Pupil; onStatus: (id: string, s: Status) => void }) {
   return (
     <div className="flex flex-col" style={{ gap: 12 }}>
       <div className="grid grid-cols-2" style={{ gap: 6 }}>
