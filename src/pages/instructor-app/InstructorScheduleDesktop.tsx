@@ -364,38 +364,46 @@ export default function InstructorScheduleDesktop() {
     return pupils.filter(p => !bookedIds.has(p.id)).slice(0, 8);
   }, [lessons, pupils]);
 
-  // ---- Open slot search ----
+  // ---- Open slot search (merges lessons + Google Calendar busy + buffer) ----
   const openSlots = useMemo(() => {
     const slots: { day: Day; startMin: number; endMin: number }[] = [];
+    const merged = [...lessons, ...externalBusy];
     for (const day of DAYS) {
       const a = availability[day];
       if (a === "off") continue;
       const dayStart = timeToMin(a.start);
       const dayEnd = timeToMin(a.end);
-      const dayLessons = lessons
+      const dayBusy = merged
         .filter(l => l.day === day)
         .sort((x, y) => x.startMin - y.startMin);
       let cursor = dayStart;
-      for (const l of dayLessons) {
-        if (l.startMin > cursor) slots.push({ day, startMin: cursor, endMin: Math.min(l.startMin, dayEnd) });
-        cursor = Math.max(cursor, l.startMin + l.durationMin);
+      for (const l of dayBusy) {
+        const blockStart = Math.max(dayStart, l.startMin - bufferMinutes);
+        const blockEnd = Math.min(dayEnd, l.startMin + l.durationMin + bufferMinutes);
+        if (blockStart > cursor) slots.push({ day, startMin: cursor, endMin: blockStart });
+        cursor = Math.max(cursor, blockEnd);
       }
       if (cursor < dayEnd) slots.push({ day, startMin: cursor, endMin: dayEnd });
     }
     return slots;
-  }, [lessons, availability]);
+  }, [lessons, externalBusy, availability, bufferMinutes]);
 
   const slotMatches = useMemo(() => {
     const q = debouncedPrompt.trim().toLowerCase();
     const hasQuery = q.length > 0;
     const hasFilters = filterDays.length > 0 || filterFromMin !== null || filterToMin !== null;
     if (!hasQuery && !hasFilters) return [];
-    let needMin = 60;
+    let needMin = preferredDuration || 60;
     if (hasQuery) {
       const hM = q.match(/(\d+(?:\.\d+)?)\s*h(?:r|rs|our|ours)?(?:\s*(\d+)\s*m)?/);
       const mM = q.match(/(\d+)\s*(?:m|min|mins|minutes)\b/);
       if (hM) needMin = Math.round(parseFloat(hM[1]) * 60) + (hM[2] ? parseInt(hM[2]) : 0);
       else if (mM) needMin = parseInt(mM[1]);
+    }
+    // Snap to nearest allowed duration if within 15min
+    if (allowedDurations.length && !allowedDurations.includes(needMin)) {
+      const closest = allowedDurations.reduce((a, b) => Math.abs(b - needMin) < Math.abs(a - needMin) ? b : a);
+      if (Math.abs(closest - needMin) <= 15) needMin = closest;
     }
     const dayMap: Record<string, Day> = {
       mon: "Mon", monday: "Mon", tue: "Tue", tues: "Tue", tuesday: "Tue",
@@ -407,8 +415,19 @@ export default function InstructorScheduleDesktop() {
     const morning = hasQuery && /\bmorning|am\b/.test(q);
     const afternoon = hasQuery && /\bafternoon|pm\b/.test(q);
     const evening = hasQuery && /\bevening\b/.test(q);
+
+    // min_notice: cutoff = now + minNoticeHours
+    const cutoff = new Date(now.getTime() + minNoticeHours * 3600_000);
+    const slotIsAfterCutoff = (s: { day: Day; startMin: number }) => {
+      const d = addDays(weekStart, DAYS.indexOf(s.day));
+      const slotDate = new Date(d);
+      slotDate.setHours(Math.floor(s.startMin / 60), s.startMin % 60, 0, 0);
+      return slotDate >= cutoff;
+    };
+
     return openSlots
       .filter(s => s.endMin - s.startMin >= needMin)
+      .filter(slotIsAfterCutoff)
       .filter(s => !queryDay || s.day === queryDay)
       .filter(s => filterDays.length === 0 || filterDays.includes(s.day))
       .filter(s => {
@@ -421,7 +440,7 @@ export default function InstructorScheduleDesktop() {
       .filter(s => filterToMin === null || s.startMin + needMin <= filterToMin)
       .slice(0, 12)
       .map(s => ({ ...s, needMin }));
-  }, [debouncedPrompt, openSlots, filterDays, filterFromMin, filterToMin]);
+  }, [debouncedPrompt, openSlots, filterDays, filterFromMin, filterToMin, preferredDuration, allowedDurations, minNoticeHours, now, weekStart]);
 
   const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
   const initials = (instructor?.name || "").split(" ").map(s => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "ID";
