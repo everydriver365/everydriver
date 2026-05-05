@@ -44,8 +44,11 @@ export function usePhoneTrackingStreamer({
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   useEffect(() => {
-    if (provider !== "phone" || !pupilId) return;
-    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    if (provider !== "phone") return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      console.warn("[PhoneTracking] geolocation API unavailable");
+      return;
+    }
 
     let cancelled = false;
 
@@ -78,6 +81,8 @@ export function usePhoneTrackingStreamer({
             timestamp: pos.timestamp ?? now,
           });
         } catch { /* ignore consumer errors */ }
+        // Only push to live_pupil_positions when a pupil is selected.
+        if (!pupilId) return;
         try {
           await supabase.rpc("update_live_position", {
             p_pupil_id: pupilId,
