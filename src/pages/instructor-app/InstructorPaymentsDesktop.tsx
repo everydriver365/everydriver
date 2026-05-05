@@ -290,7 +290,7 @@ export default function InstructorPaymentsDesktop() {
                     borderBottom: i === outstanding.length - 1 ? "none" : "0.5px solid var(--d2-border)",
                     cursor: "pointer",
                   }}
-                  onClick={() => navigate(`/instructor/pupils/${o.id}`)}
+                  onClick={() => setPupilSheet({ id: o.id, name: o.name })}
                 >
                   <Avatar id={o.id} name={o.name} size={24} />
                   <div className="flex-1 min-w-0">
