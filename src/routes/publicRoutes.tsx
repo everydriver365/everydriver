@@ -109,6 +109,7 @@ export const publicRoutes = (
     <Route path="/news" element={<News />} />
     <Route path="/news/:slug" element={<NewsArticle />} />
     <Route path="/pupil/install" element={<InstallPupil />} />
+    <Route path="/reset-password" element={<ResetPassword />} />
 
     {/* Conditional routes (domain-aware) */}
     <Route path="/contact" element={<ConditionalContact />} />
