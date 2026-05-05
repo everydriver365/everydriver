@@ -1325,8 +1325,8 @@ export default function InstructorLiveSession() {
                 })}
               </div>
 
-              {/* TRACKER SOURCE — placed directly above the pupil selector */}
-              {instructor?.id && selectedMode !== "testRoute" && (
+              {/* TRACKER SOURCE — placed directly above the pupil selector (always visible) */}
+              {instructor?.id && (
                 <div style={{ marginBottom: 12 }}>
                   <SectionLabel label="Tracker source" />
                   <TrackerSourceCard
