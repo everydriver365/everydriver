@@ -5,8 +5,7 @@ import {
   Search, Pencil, Phone, Calendar as CalIcon, MoreHorizontal, Paperclip,
   Sparkles, Send, ArrowLeft, ChevronRight, Bell, PoundSterling,
 } from "lucide-react";
-import TextareaAutosize from "react-textarea-autosize";
-import { formatDistanceToNowStrict, format, isToday, isYesterday } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
