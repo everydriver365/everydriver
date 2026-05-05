@@ -281,13 +281,18 @@ export function PaymentsExportDialog({ open, onOpenChange, transactions, filtere
       const subtitleTo = useTableFilters && filtered.length > 0
         ? new Date(filtered[0].dateTime)
         : range.to;
-      const doc = buildPdf(filtered, subtitleFrom, subtitleTo, instructorName || "");
-      if (useTableFilters && filterSummary) {
-        doc.setFontSize(9);
-        doc.setTextColor(100);
-        doc.text(`Filters: ${filterSummary}`, 14, 38);
+      if (fmt === "tax") {
+        const doc = buildTaxPdf(filtered, subtitleFrom, subtitleTo, instructorName || "");
+        doc.save(`tax-summary-${labelDate}.pdf`);
+      } else {
+        const doc = buildPdf(filtered, subtitleFrom, subtitleTo, instructorName || "");
+        if (useTableFilters && filterSummary) {
+          doc.setFontSize(9);
+          doc.setTextColor(100);
+          doc.text(`Filters: ${filterSummary}`, 14, 38);
+        }
+        doc.save(`${fname}.pdf`);
       }
-      doc.save(`${fname}.pdf`);
     }
     toast.success(`Exported ${filtered.length} transactions`);
     onOpenChange(false);
