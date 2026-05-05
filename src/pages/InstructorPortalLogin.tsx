@@ -361,7 +361,7 @@ export default function InstructorPortalLogin() {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4" name="instructor-portal-login" method="post" action="#">
                   <AnimatePresence mode="wait">
                     {error && (
                       <motion.div
@@ -383,14 +383,19 @@ export default function InstructorPortalLogin() {
                     </Label>
                     <Input
                       id="email"
+                      name="email"
                       type="email"
+                      inputMode="email"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       disabled={loading}
                       className="h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
-                      autoComplete="email"
+                      autoComplete="username"
                       maxLength={255}
                     />
                   </div>
@@ -418,6 +423,7 @@ export default function InstructorPortalLogin() {
                         <div className="relative">
                           <Input
                             id="password"
+                            name="password"
                             type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
                             value={password}
