@@ -38,6 +38,7 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
  import { FloatingSessionTimer } from "@/components/instructor/tracking/FloatingSessionTimer";
 import { DeviceSelectorDropdown } from "@/components/instructor/tracking/DeviceSelectorDropdown";
 import { TrackingProviderDropdown } from "@/components/instructor/tracking/TrackingProviderDropdown";
+import { usePhoneTrackingStreamer } from "@/hooks/usePhoneTrackingStreamer";
 
 import { SatNavLiveMap } from "@/components/instructor/tracking/SatNavLiveMap";
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
@@ -124,6 +125,12 @@ export default function InstructorLiveSession() {
   const [speedLimitKmh, setSpeedLimitKmh] = useState<number | null>(null);
   const [pendingRouteType, setPendingRouteType] = useState<"practice" | "test" | "driving_test">("practice");
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
+
+  // Stream phone GPS into live_pupil_positions when "phone" provider is active.
+  usePhoneTrackingStreamer({
+    provider: activeProvider === "radius" ? "radius" : activeProvider === null ? null : "phone",
+    pupilId: selectedPupilId || null,
+  });
   const [showDrivingTestDialog, setShowDrivingTestDialog] = useState(false);
   const [drivingTestDetails, setDrivingTestDetails] = useState<{
     testCentreId: string | null;
@@ -226,7 +233,7 @@ export default function InstructorLiveSession() {
     
     try {
       // Fetch active devices and instructor preference in parallel
-      const [devicesRes] = await Promise.all([
+      const [devicesRes, prefRes] = await Promise.all([
         supabase
           .from("gps_devices")
           .select("*")
@@ -242,8 +249,13 @@ export default function InstructorLiveSession() {
 
       if (devicesRes.error) throw devicesRes.error;
       const devices = devicesRes.data;
-      
-      if (devices && devices.length > 0) {
+      const preferred = (prefRes.data as any)?.preferred_tracking_provider as string | null;
+
+      // Honour the instructor's saved preference. "phone" leaves device null
+      // so the streamer hook takes over.
+      if (preferred === "phone") {
+        setActiveProvider("phone");
+      } else if (devices && devices.length > 0) {
         setActiveProvider("radius");
 
         const providerDevices = devices;
