@@ -359,7 +359,7 @@ export default function InstructorPupilsDesktop() {
     });
   };
 
-  const setStatus = (id: number, next: Status) => {
+  const setStatus = (id: string, next: Status) => {
     const prevPupil = pupils.find(p => p.id === id);
     if (!prevPupil) return;
     const prevStatus = prevPupil.status;
