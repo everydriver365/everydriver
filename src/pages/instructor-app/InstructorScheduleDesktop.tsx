@@ -114,6 +114,7 @@ export default function InstructorScheduleDesktop() {
   const [activeDrag, setActiveDrag] = useState<{ kind: "pupil"; pupil: typeof unbookedSeed[number] } | { kind: "lesson"; lesson: Lesson } | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [aiPrompt, setAiPrompt] = useState("");
+  const [debouncedPrompt, setDebouncedPrompt] = useState("");
   const [aiSuggestions, setAiSuggestions] = useState<{ label: string }[] | null>(null);
   const [filterDays, setFilterDays] = useState<Day[]>([]);
   const [filterFrom, setFilterFrom] = useState<string>(""); // "HH:MM"
