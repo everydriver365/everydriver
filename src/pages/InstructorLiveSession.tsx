@@ -1174,8 +1174,8 @@ export default function InstructorLiveSession() {
                     <span style={{ width: 6, height: 6, borderRadius: 3, background: isConnected ? "#34C759" : "#C7C7CC" }} />
                     <span style={{ fontSize: 10, color: "#8E8E93", fontWeight: 500 }}>
                       {isConnected
-                        ? `GPS connected${device.device_name ? ` · ${device.device_name}` : ""}`
-                        : "GPS not connected"}
+                        ? `GPS connected${device?.device_name ? ` · ${device.device_name}` : isPhoneProvider ? " · Phone" : ""}`
+                        : isPhoneProvider ? "Phone GPS ready" : "GPS not connected"}
                     </span>
                   </div>
                 </div>
