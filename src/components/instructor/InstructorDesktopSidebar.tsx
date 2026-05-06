@@ -4,7 +4,7 @@ import {
   Home, Calendar, CalendarClock, ClipboardList, Users, Award, Briefcase,
   CreditCard, Wallet, Receipt, MessageCircle, ShieldCheck, Headphones,
   MapPin, Navigation, FileText, Globe, Globe2, Radio, Settings,
-  LogOut, Car, Camera, Pin, ChevronDown, Lock, CalendarSearch, Upload,
+  LogOut, Car, Camera, Pin, ChevronDown, Lock, CalendarSearch, Upload, Search,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
@@ -36,7 +36,7 @@ const sidebarGroups = [
       { href: "/instructor/pupils", label: "Pupils", icon: Users },
       { href: "/instructor/test-results", label: "Test Results", icon: Award },
       { href: "/instructor/test-requests", label: "Test Swap", icon: Award },
-      { href: "/instructor/find-appointment", label: "Find appointment", icon: CalendarSearch },
+      { href: "/instructor/find-appointment", label: "Find slot", icon: Search },
       { href: "/instructor/jobs", label: "Jobs", icon: Briefcase },
     ],
   },
