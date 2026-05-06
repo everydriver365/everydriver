@@ -1298,6 +1298,11 @@ export default function InstructorLiveSession() {
             className="absolute inset-0"
           />
 
+          {/* Source badge */}
+          <div className="absolute top-4 right-4 z-30 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur text-white text-[11px] font-medium tracking-wide">
+            Source: {isPhoneProvider ? "Phone" : "Radius"}
+          </div>
+
           {/* Floating device selector during active session */}
           {instructor?.id && (
             <div className="absolute top-4 left-4 z-30 w-56">
