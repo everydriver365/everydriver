@@ -1,6 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, startOfDay } from "date-fns";
+import {
+  buildDayConflicts,
+  computeFreeSlots,
+  fromMinutes,
+  toMinutes,
+  type TimeOfDay,
+} from "@/lib/availabilityCore";
+
+export type { TimeOfDay };
 
 export interface AvailableSlot {
   id: string;
@@ -12,11 +21,8 @@ export interface AvailableSlot {
   startTime: string;   // HH:mm
   endTime: string;     // HH:mm
   durationMinutes: number;
-  // Sort key
   sortKey: number;
 }
-
-export type TimeOfDay = "any" | "morning" | "afternoon" | "evening";
 
 interface SearchParams {
   instructorIds: string[]; // pre-scoped (admin = all, school = school's)
@@ -25,33 +31,15 @@ interface SearchParams {
   days: number;            // search window
   durationMinutes: number;
   timeOfDay: TimeOfDay;
-  postcodePrefix?: string; // optional postcode area filter, e.g. "SO22"
+  postcodePrefix?: string;
   enabled?: boolean;
 }
 
-const STEP_MINUTES = 15;
-
-function toMinutes(t: string) {
-  const [h, m] = t.split(":").map(Number);
-  return h * 60 + (m || 0);
-}
-function fromMinutes(min: number) {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
-}
 function postcodeArea(pc?: string | null) {
   if (!pc) return null;
   const cleaned = pc.trim().toUpperCase().replace(/\s+/g, " ");
   const part = cleaned.split(" ")[0];
   return part || null;
-}
-function inTimeOfDay(startMin: number, tod: TimeOfDay) {
-  if (tod === "any") return true;
-  if (tod === "morning") return startMin >= 6 * 60 && startMin < 12 * 60;
-  if (tod === "afternoon") return startMin >= 12 * 60 && startMin < 17 * 60;
-  if (tod === "evening") return startMin >= 17 * 60 && startMin < 22 * 60;
-  return true;
 }
 
 export function useInstructorAvailabilitySearch(params: SearchParams) {
@@ -153,15 +141,13 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
 
       const results: AvailableSlot[] = [];
 
-      const TRAVEL_FALLBACK_MIN = 10;
-
       for (const inst of instructors) {
         const instId = inst.id;
         const instName = inst.name;
         const carType = inst.car_type || null;
         const area = postcodeArea(inst.home_postcode);
-        const bufferMin = (inst as { buffer_minutes?: number | null }).buffer_minutes ?? 0;
-        const padMin = bufferMin + TRAVEL_FALLBACK_MIN;
+        const bufferMin =
+          (inst as { buffer_minutes?: number | null }).buffer_minutes ?? 0;
 
         for (let d = 0; d < days; d++) {
           const day = addDays(fromDateObj, d);
@@ -180,71 +166,47 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
           const endStr = override?.end_time || wh?.end_time;
           if (!startStr || !endStr) continue;
 
-          const dayStartMin = toMinutes(startStr);
-          const dayEndMin = toMinutes(endStr);
+          const dayLessons = lessons.filter(
+            (l) => l.instructor_id === instId && l.lesson_date === dateStr,
+          );
+          const dayBlocks = blocks.filter((b) => b.instructor_id === instId);
+          const dayEvents = events.filter((ev) => ev.instructor_id === instId);
 
-          const dayLessons = lessons
-            .filter((l) => l.instructor_id === instId && l.lesson_date === dateStr)
-            .map((l) => {
-              const s = toMinutes(l.start_time);
-              return { start: s, end: s + (l.duration_minutes || 60) };
-            });
-
-          const dayBlocks = blocks
-            .filter((b) => b.instructor_id === instId)
-            .map((b) => {
-              const s = new Date(b.start_datetime);
-              const e = new Date(b.end_datetime);
-              return { s, e };
-            })
-            .filter((b) => format(b.s, "yyyy-MM-dd") === dateStr || format(b.e, "yyyy-MM-dd") === dateStr)
-            .map((b) => ({
-              start: format(b.s, "yyyy-MM-dd") === dateStr ? b.s.getHours() * 60 + b.s.getMinutes() : 0,
-              end: format(b.e, "yyyy-MM-dd") === dateStr ? b.e.getHours() * 60 + b.e.getMinutes() : 24 * 60,
-            }));
-
-          const dayEvents = events
-            .filter((ev) => ev.instructor_id === instId)
-            .map((ev) => {
-              const s = new Date(ev.start_time);
-              const e = new Date(ev.end_time);
-              return { s, e };
-            })
-            .filter((ev) => format(ev.s, "yyyy-MM-dd") === dateStr || format(ev.e, "yyyy-MM-dd") === dateStr)
-            .map((ev) => ({
-              start: format(ev.s, "yyyy-MM-dd") === dateStr ? ev.s.getHours() * 60 + ev.s.getMinutes() : 0,
-              end: format(ev.e, "yyyy-MM-dd") === dateStr ? ev.e.getHours() * 60 + ev.e.getMinutes() : 24 * 60,
-            }));
-
-          const conflicts = [...dayLessons, ...dayBlocks, ...dayEvents];
-
-          // For "today" skip past slots
+          const conflicts = buildDayConflicts(
+            dateStr,
+            dayLessons,
+            dayBlocks,
+            dayEvents,
+          );
           const isToday = format(new Date(), "yyyy-MM-dd") === dateStr;
-          const nowMin = isToday ? new Date().getHours() * 60 + new Date().getMinutes() : 0;
 
-          for (let s = dayStartMin; s + durationMinutes <= dayEndMin; s += STEP_MINUTES) {
-            const e = s + durationMinutes;
-            if (isToday && s < nowMin) continue;
-            if (!inTimeOfDay(s, timeOfDay)) continue;
+          const free = computeFreeSlots({
+            dateStr,
+            dayStartMin: toMinutes(startStr),
+            dayEndMin: toMinutes(endStr),
+            bufferMinutes: bufferMin,
+            durationMinutes,
+            timeOfDay,
+            conflicts,
+            isToday,
+            anchorSkipMinutes: 60,
+          });
 
-            const collides = conflicts.some((c) => s < c.end + padMin && e > c.start - padMin);
-            if (collides) continue;
-
+          for (const slot of free) {
             results.push({
-              id: `${instId}-${dateStr}-${fromMinutes(s)}`,
+              id: `${instId}-${dateStr}-${fromMinutes(slot.start)}`,
               instructorId: instId,
               instructorName: instName,
               carType,
               postcodeArea: area,
               date: dateStr,
-              startTime: fromMinutes(s),
-              endTime: fromMinutes(e),
+              startTime: fromMinutes(slot.start),
+              endTime: fromMinutes(slot.end),
               durationMinutes,
-              sortKey: new Date(`${dateStr}T${fromMinutes(s)}:00`).getTime(),
+              sortKey: new Date(
+                `${dateStr}T${fromMinutes(slot.start)}:00`,
+              ).getTime(),
             });
-
-            // Only emit one slot per "anchor" hour to keep list tight (skip ahead 60 min on success)
-            s += 60 - STEP_MINUTES;
           }
         }
       }
