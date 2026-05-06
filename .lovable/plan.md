@@ -1,34 +1,28 @@
-## Auto-track lessons & simplify tracking UI
+## Problem
 
-### 1. Auto-track setting
-- Add column `instructors.auto_track_lessons boolean DEFAULT true`.
-- Add a toggle in Instructor Settings → Tracking section: "Automatically track scheduled lessons" (on by default). Copy: "When a lesson is due, GPS tracking starts automatically. Turn off to start tracking manually each time."
+Kenneth Dufosse (`Ken D`) has an active Radius tracker (`Charlotte`, device `0cd17…a8d4`) linked to his instructor record, but on `/instructor/tracking` the **Radius tracker** entry in the tracker dropdown shows as "(no device linked)" and is disabled.
 
-### 2. Auto-start behaviour
-- On `/instructor/tracking` (and the dashboard "Today" card) check for a scheduled lesson where `now()` is within the window `start_time − 5 min` to `end_time`.
-- If `auto_track_lessons = true` and no active `lesson_telematics` row exists for that lesson:
-  - Request geolocation permission (browser) / background permission (native via Capacitor).
-  - Start the phone GPS streamer.
-  - Insert a `lesson_telematics` row tied to the lesson + pupil.
-  - Show a non-blocking banner: "Auto-tracking lesson with {pupil} · Stop".
-- If permission denied or `auto_track_lessons = false`, fall back to a single primary button: **"Start tracking now"** (no separate "Start phone tracking" + "Start live lesson" steps).
+Two issues are at play:
 
-### 3. Collapse the two-button flow
-- Remove the standalone "Start phone tracking" button. Streamer start is now implicit (auto, or via the single "Start tracking" button).
-- Mode picker reduces to:
-  - **Lesson** (default — picks the current/upcoming pupil automatically)
-  - **Track without a pupil** (replaces "Route recorder" / "Test route"; creates a `lesson_telematics` row with `pupil_id = null`)
-  - **Record driving test** (kept — has its own report flow)
-- Remove "Route recorder" and "Test route" UI entries and any code paths that branched on them; migrate them to the `pupil_id IS NULL` case.
+1. `TrackingProviderDropdown` only enables Radius when its own `gps_devices` lookup returns ≥1 row. The lookup only filters on `tracking_provider = 'radius'` and ignores `is_active`, but it relies on RLS that uses an inline `instructors` subquery instead of the project-standard `get_instructor_id_for_user(auth.uid())` helper. In some auth contexts (school portal, slow auth hydration) it returns nothing, so the option stays disabled even when the device exists.
+2. `InstructorLiveSession.fetchData` mirrors the same query and treats `preferred_tracking_provider = 'phone'` as "force phone, never load device". Because Kenneth's preference is `phone`, even if Radius were enabled the device wouldn't be hydrated until he switched.
 
-### 4. Files to touch
-- DB migration: add `auto_track_lessons` column.
-- `src/pages/InstructorLiveSession.tsx` (and/or `InstructorTracking` page) — auto-start hook, single button, mode list.
-- Settings page (instructor settings → tracking/preferences) — new toggle wired to `instructors.auto_track_lessons`.
-- Remove/retire `RouteRecorder` / "Test route" components and their routes.
-- Reuse existing `MiniLiveMap`; previously-agreed removal of `PhoneLastLocationCard` still applies.
+## Fix
 
-### 5. Edge cases
-- Multiple back-to-back lessons: when one ends (`ended_at` set), immediately evaluate the next lesson's window and continue tracking under the new `lesson_telematics` row without stopping the streamer.
-- Permission denied: show inline prompt with "Enable location" + manual "Start tracking" button; never silently fail.
-- Manual stop always available; manual stop during auto-track sets a 30-min suppression so it doesn't immediately re-arm for the same lesson.
+### 1. `src/components/instructor/tracking/TrackingProviderDropdown.tsx`
+- Replace the existence check with a query that:
+  - Drops the `tracking_provider = 'radius'` filter and instead pulls all of the instructor's devices, then checks client-side for any row with `tracking_provider = 'radius'` AND `is_active = true`.
+  - Uses `public.get_instructor_id_for_user(auth.uid())` style identity (call the existing helper via `.rpc('get_instructor_id_for_user', …)`) as a fallback if the direct query returns 0 rows, so the answer no longer depends on whichever RLS subquery happens to fire.
+- Keep the option enabled (not disabled) whenever a Radius device row exists, regardless of `preferred_tracking_provider`.
+
+### 2. `src/pages/InstructorLiveSession.tsx` (`fetchData`, ~lines 363–410)
+- Always load the Radius device row when one exists for the instructor, even if `preferred_tracking_provider === 'phone'`. Store it in `device` state so the dropdown's "switch to Radius" path has a hydrated device immediately.
+- Keep `activeProvider` honouring the saved preference (`'phone'` stays the default), but no longer skip device hydration on that branch.
+
+### 3. Auto-prefer Radius when available (small UX win)
+- In `fetchData`, if `preferred_tracking_provider` is `null` (never set) **and** an active Radius device is found, set `activeProvider` to `'radius'` and persist that as the new preference. Phone remains the default only when there is no hardware tracker.
+
+### Verification
+- For Kenneth (`c9843b58-…ea`) the dropdown should now show **Radius tracker** as selectable, with `Charlotte` hydrated as the device and live telemetry feeding the map.
+- For Richard (no Radius device) the dropdown should continue to show "(no device linked)" and stay on Phone.
+- No DB migrations or schema changes required.

@@ -34,13 +34,33 @@ export function TrackingProviderDropdown({
     if (!instructorId) return;
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
+      // Pull all of this instructor's devices and check client-side. Avoids
+      // edge cases where filtering by tracking_provider in the request hides
+      // rows under certain RLS auth contexts.
+      let { data } = await supabase
         .from("gps_devices")
-        .select("id")
-        .eq("instructor_id", instructorId)
-        .eq("tracking_provider", "radius")
-        .limit(1);
-      if (!cancelled) setHasRadiusDevice((data?.length ?? 0) > 0);
+        .select("id, tracking_provider, is_active")
+        .eq("instructor_id", instructorId);
+
+      // Fallback via the canonical instructor identity helper if the direct
+      // query returned nothing (e.g. school-portal auth contexts).
+      if (!data || data.length === 0) {
+        const { data: idRow } = await supabase
+          .rpc("get_instructor_id_for_user", { p_user_id: (await supabase.auth.getUser()).data.user?.id });
+        const fallbackId = (idRow as unknown as string) || null;
+        if (fallbackId) {
+          const res = await supabase
+            .from("gps_devices")
+            .select("id, tracking_provider, is_active")
+            .eq("instructor_id", fallbackId);
+          data = res.data ?? [];
+        }
+      }
+
+      const hasRadius = (data ?? []).some(
+        (d: any) => d.tracking_provider === "radius" && d.is_active !== false,
+      );
+      if (!cancelled) setHasRadiusDevice(hasRadius);
     })();
     return () => {
       cancelled = true;
