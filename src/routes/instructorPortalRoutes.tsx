@@ -41,6 +41,7 @@ const InstructorQuickAvailability = lazy(() => import("@/pages/instructor-app/In
 const InstructorAvailabilityWindows = lazy(() => import("@/pages/InstructorAvailabilityWindows"));
 const InstructorGaps = lazy(() => import("@/pages/InstructorGaps"));
 const InstructorWaitingList = lazy(() => import("@/pages/InstructorWaitingList"));
+const InstructorEnquiries = lazy(() => import("@/pages/InstructorEnquiries"));
 const InstructorFindAppointmentPage = lazy(() => import("@/pages/instructor/InstructorFindAppointmentPage"));
 
 // Finance & payments
