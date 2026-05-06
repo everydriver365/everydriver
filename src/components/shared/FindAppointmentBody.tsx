@@ -24,27 +24,27 @@ type Urgency = "include" | "exclude" | "only";
 const SectionLabel = ({ label }: { label: string }) => (
   <div
     className="text-[10px] font-bold uppercase pl-0.5 mb-2"
-    style={{ color: "#8E8E93", letterSpacing: "1.2px" }}
+    style={{ color: "var(--d2-text-2)", letterSpacing: "1.2px" }}
   >
     {label}
   </div>
 );
 
 const FieldLabel = ({ children }: { children: React.ReactNode }) => (
-  <div className="text-[11px] font-semibold mb-1" style={{ color: "#5B6B8A" }}>
+  <div className="text-[11px] font-semibold mb-1" style={{ color: "var(--d2-text-3)" }}>
     {children}
   </div>
 );
 
 const triggerCls =
-  "flex items-center justify-between w-full rounded-[10px] bg-white px-3 py-[9px] text-xs font-semibold text-[#1A1A1A] focus:outline-none focus:ring-1 focus:ring-[#1A52A0]/30 data-[placeholder]:text-[#C7C7CC]";
+  "flex items-center justify-between w-full rounded-[10px] bg-white px-3 py-[9px] text-xs font-semibold text-slate-900 focus:outline-none focus:ring-1 focus:ring-indigo-500/30 data-[placeholder]:text-slate-400";
 
 const triggerStyle: React.CSSProperties = {
-  border: "0.5px solid rgba(26,82,160,0.12)",
+  border: "0.5px solid var(--d2-border)",
 };
 
 const cardStyle: React.CSSProperties = {
-  border: "0.5px solid rgba(26,82,160,0.08)",
+  border: "0.5px solid var(--d2-border)",
 };
 
 export function FindAppointmentBody({
@@ -124,27 +124,27 @@ export function FindAppointmentBody({
       : instructorOptions.find((i) => i.id === selectedInstructorId)?.name || "All instructors";
 
   const Divider = () => (
-    <div style={{ height: "0.5px", backgroundColor: "#F0F3F8", margin: "0 14px" }} />
+    <div style={{ height: "0.5px", backgroundColor: "var(--d2-border)", margin: "0 14px" }} />
   );
 
   return (
     <div
       className="flex flex-col h-full min-h-0 overflow-hidden"
-      style={{ backgroundColor: "#F2F4F8", borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+      style={{ backgroundColor: "var(--d2-bg)", borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
     >
       {/* Header */}
       <div className="flex items-center gap-2.5 px-4 pt-4 pb-3.5">
         <div
           className="w-9 h-9 flex items-center justify-center shrink-0"
-          style={{ borderRadius: 10, backgroundColor: "#EEF3FF" }}
+          style={{ borderRadius: 10, backgroundColor: "var(--d2-indigo-bg)" }}
         >
-          <CalendarSearch size={16} color="#1A52A0" strokeWidth={1.6} />
+          <CalendarSearch size={16} color="var(--d2-indigo)" strokeWidth={1.6} />
         </div>
         <div>
-          <div className="text-[17px] font-bold leading-tight" style={{ color: "#1A1A1A", letterSpacing: "-0.3px" }}>
+          <div className="text-[17px] font-bold leading-tight" style={{ color: "var(--d2-text-1)", letterSpacing: "-0.3px" }}>
             Find appointments
           </div>
-          <div className="text-[10px] mt-px" style={{ color: "#8E8E93" }}>
+          <div className="text-[10px] mt-px" style={{ color: "var(--d2-text-2)" }}>
             Search your diary for the next available slot
           </div>
         </div>
@@ -164,12 +164,12 @@ export function FindAppointmentBody({
                 value={fromDate}
                 min={today}
                 onChange={(e) => setFromDate(e.target.value)}
-                className="h-[34px] rounded-[10px] text-xs font-semibold text-[#1A1A1A] pr-9"
+                className="h-[34px] rounded-[10px] text-xs font-semibold text-slate-900 pr-9"
                 style={triggerStyle}
               />
               <CalendarIcon
                 size={13}
-                color="#8E8E93"
+                color="var(--d2-text-2)"
                 strokeWidth={1.6}
                 className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
               />
@@ -287,15 +287,15 @@ export function FindAppointmentBody({
                         width: 16,
                         height: 16,
                         borderRadius: 8,
-                        border: `1.5px solid ${active ? "#1A52A0" : "#E0E5EE"}`,
-                        backgroundColor: active ? "#1A52A0" : "transparent",
+                        border: `1.5px solid ${active ? "var(--d2-indigo)" : "var(--d2-border)"}`,
+                        backgroundColor: active ? "var(--d2-indigo)" : "transparent",
                       }}
                     >
                       {active && (
                         <div style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#FFF" }} />
                       )}
                     </div>
-                    <span className="text-xs font-semibold" style={{ color: "#1A1A1A" }}>
+                    <span className="text-xs font-semibold" style={{ color: "var(--d2-text-1)" }}>
                       {labelText}
                     </span>
                   </button>
@@ -335,12 +335,12 @@ export function FindAppointmentBody({
               onClick={() => setShowAdvanced((v) => !v)}
               className="flex items-center justify-center gap-1.5 rounded-[12px] py-[9px] px-3"
               style={{
-                backgroundColor: "#EEF3FF",
-                border: "0.5px solid rgba(26,82,160,0.15)",
+                backgroundColor: "var(--d2-indigo-bg)",
+                border: "0.5px solid var(--d2-border)",
               }}
             >
-              <Filter size={11} color="#1A52A0" strokeWidth={1.8} />
-              <span className="text-[11px] font-semibold" style={{ color: "#1A52A0" }}>
+              <Filter size={11} color="var(--d2-indigo)" strokeWidth={1.8} />
+              <span className="text-[11px] font-semibold" style={{ color: "var(--d2-indigo)" }}>
                 {showAdvanced ? "Hide advanced" : "Advanced"}
               </span>
             </button>
@@ -355,7 +355,7 @@ export function FindAppointmentBody({
                 placeholder="e.g. SO22"
                 value={postcode}
                 onChange={(e) => setPostcode(e.target.value)}
-                className="h-[34px] rounded-[10px] text-xs font-semibold text-[#1A1A1A]"
+                className="h-[34px] rounded-[10px] text-xs font-semibold text-slate-900"
                 style={triggerStyle}
               />
             </div>
@@ -381,18 +381,18 @@ export function FindAppointmentBody({
         <SectionLabel label="Available appointments" />
         <div className="bg-white rounded-[14px] overflow-hidden mb-3" style={cardStyle}>
           {isFetching && (
-            <div className="px-3 py-8 text-center text-xs" style={{ color: "#8E8E93" }}>
+            <div className="px-3 py-8 text-center text-xs" style={{ color: "var(--d2-text-2)" }}>
               <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
               Searching availability…
             </div>
           )}
           {!isFetching && slots.length === 0 && (
-            <div className="px-3 py-8 text-center text-xs" style={{ color: "#8E8E93" }}>
+            <div className="px-3 py-8 text-center text-xs" style={{ color: "var(--d2-text-2)" }}>
               <Search className="h-4 w-4 inline mr-2 opacity-50" />
               No available slots match these criteria.
               {rejection && rejection.total > 0 && (
                 <div className="mt-3 mx-auto max-w-xs text-left rounded-lg bg-white/70 border border-black/5 p-3 space-y-1">
-                  <div className="text-[11px] uppercase tracking-wide font-semibold text-[#1A52A0]">
+                  <div className="text-[11px] uppercase tracking-wide font-semibold text-indigo-600">
                     Why slots were skipped
                   </div>
                   {(Object.entries(rejection.byReason) as [import("@/lib/availabilityCore").RejectReason, number][])
@@ -421,20 +421,20 @@ export function FindAppointmentBody({
                   idx > 0 && "border-t",
                 )}
                 style={{
-                  borderColor: "#F0F3F8",
-                  backgroundColor: isSelected ? "rgba(26,82,160,0.08)" : "transparent",
+                  borderColor: "var(--d2-border)",
+                  backgroundColor: isSelected ? "var(--d2-indigo-bg)" : "transparent",
                 }}
               >
-                <div className="text-xs font-semibold w-24 shrink-0" style={{ color: "#1A1A1A" }}>
+                <div className="text-xs font-semibold w-24 shrink-0" style={{ color: "var(--d2-text-1)" }}>
                   {format(parseISO(slot.date), "EEE d MMM")}
                 </div>
-                <div className="text-xs font-bold w-12 shrink-0" style={{ color: "#1A52A0" }}>
+                <div className="text-xs font-bold w-12 shrink-0" style={{ color: "var(--d2-indigo)" }}>
                   {slot.startTime}
                 </div>
-                <div className="text-[11px]" style={{ color: "#5B6B8A" }}>
+                <div className="text-[11px]" style={{ color: "var(--d2-text-3)" }}>
                   {slot.durationMinutes} mins
                 </div>
-                <div className="text-[11px] truncate flex-1 text-right" style={{ color: "#8E8E93" }}>
+                <div className="text-[11px] truncate flex-1 text-right" style={{ color: "var(--d2-text-2)" }}>
                   {slot.instructorName}
                 </div>
               </button>
@@ -459,8 +459,8 @@ export function FindAppointmentBody({
           onClick={handleClear}
           className="flex items-center gap-1.5 px-2"
         >
-          <X size={11} color="#8E8E93" strokeWidth={2} />
-          <span className="text-xs font-semibold" style={{ color: "#8E8E93" }}>Clear</span>
+          <X size={11} color="var(--d2-text-2)" strokeWidth={2} />
+          <span className="text-xs font-semibold" style={{ color: "var(--d2-text-2)" }}>Clear</span>
         </button>
 
         {onCancel && (
@@ -469,11 +469,11 @@ export function FindAppointmentBody({
             onClick={onCancel}
             className="flex-1 rounded-[12px] py-2.5 text-center"
             style={{
-              backgroundColor: "#F2F4F8",
-              border: "0.5px solid rgba(26,82,160,0.1)",
+              backgroundColor: "var(--d2-bg)",
+              border: "0.5px solid var(--d2-border)",
             }}
           >
-            <span className="text-xs font-bold" style={{ color: "#5B6B8A" }}>Close</span>
+            <span className="text-xs font-bold" style={{ color: "var(--d2-text-3)" }}>Close</span>
           </button>
         )}
 
@@ -482,7 +482,7 @@ export function FindAppointmentBody({
           onClick={handleBook}
           disabled={!selectedSlot}
           className="flex-[2] rounded-[12px] py-2.5 text-center disabled:opacity-50"
-          style={{ backgroundColor: "#1A52A0" }}
+          style={{ backgroundColor: "var(--d2-indigo)" }}
         >
           <span className="text-[13px] font-bold text-white">Book appointment</span>
         </button>
