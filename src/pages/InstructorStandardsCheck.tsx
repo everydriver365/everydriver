@@ -211,6 +211,7 @@ export default function InstructorStandardsCheck() {
         )}
       </div>
     </div>
+    </InstructorPortalLayout>
   );
 }
 
