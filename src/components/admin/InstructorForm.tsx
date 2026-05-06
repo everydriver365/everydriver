@@ -74,7 +74,7 @@ const instructorSchema = z.object({
   adi_code_of_practice: z.boolean().optional(),
   instructor_grade: z.string().optional(),
   // Booking mode
-  booking_mode: z.enum(["pupil_choice", "auto_assign", "instructor_assigns"]).optional(),
+  booking_mode: z.enum(["pupil_choice", "auto_assign", "instructor_assigns", "enquiry_only"]).optional(),
 });
 
 type InstructorFormData = z.infer<typeof instructorSchema>;
