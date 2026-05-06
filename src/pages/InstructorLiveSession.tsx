@@ -262,6 +262,18 @@ export default function InstructorLiveSession() {
   const mapLastSeenAt = isPhoneProvider
     ? (lastPhoneFix ? new Date(lastPhoneFix.timestamp).toISOString() : null)
     : (device?.last_seen_at ?? null);
+
+  // Road label resolved by the live map (geocoded fallback when upstream missing).
+  // Source-aware: for Phone Tracker we never want the Radius/device road name to
+  // leak into the speed panel — it's stale or from a different vehicle.
+  const [resolvedRoadName, setResolvedRoadName] = useState<string | null>(null);
+  useEffect(() => {
+    // Clear when switching source/session so a stale label can't linger.
+    setResolvedRoadName(null);
+  }, [isPhoneProvider, device?.current_session_id]);
+  const panelRoadName = isPhoneProvider
+    ? resolvedRoadName
+    : (resolvedRoadName ?? device?.last_road_name ?? null);
   const [showDrivingTestDialog, setShowDrivingTestDialog] = useState(false);
   const [drivingTestDetails, setDrivingTestDetails] = useState<{
     testCentreId: string | null;
