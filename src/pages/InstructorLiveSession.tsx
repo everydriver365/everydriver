@@ -447,6 +447,66 @@ export default function InstructorLiveSession() {
     void startSession("practice");
   }, [device, instructor?.id, selectedPupilId, navigate]);
 
+  // ── AUTO-TRACK SCHEDULED LESSONS ──────────────────────────────────────────
+  // When `instructors.auto_start_tracker = true`, look for a scheduled lesson
+  // that is currently in its window (start − 5 min … end) and fire startSession
+  // automatically. Manual stop suppresses re-arm for 30 minutes.
+  const autoLessonFiredRef = React.useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!instructor?.id) return;
+    if (isSessionActive) return;
+
+    let cancelled = false;
+    const tick = async () => {
+      try {
+        const { data: pref } = await supabase
+          .from("instructors")
+          .select("auto_start_tracker")
+          .eq("id", instructor.id)
+          .maybeSingle();
+        if (cancelled || !(pref as any)?.auto_start_tracker) return;
+
+        const today = new Date().toISOString().slice(0, 10);
+        const { data: lessons } = await supabase
+          .from("scheduled_lessons")
+          .select("id, pupil_id, lesson_date, start_time, duration_minutes, status")
+          .eq("instructor_id", instructor.id)
+          .eq("lesson_date", today)
+          .neq("status", "cancelled");
+
+        if (cancelled || !lessons?.length) return;
+        const now = new Date();
+        const candidate = lessons.find((l) => {
+          if (!l.start_time || !l.duration_minutes || !l.pupil_id) return false;
+          const [h, m] = String(l.start_time).split(":").map(Number);
+          const start = new Date(); start.setHours(h, m, 0, 0);
+          const end = new Date(start.getTime() + l.duration_minutes * 60_000);
+          const armFrom = new Date(start.getTime() - 5 * 60_000);
+          return now >= armFrom && now < end;
+        });
+        if (!candidate || autoLessonFiredRef.current.has(candidate.id)) return;
+
+        const suppressKey = `auto-track-suppress:${candidate.id}`;
+        const suppressed = Number(sessionStorage.getItem(suppressKey) || 0);
+        if (suppressed && Date.now() - suppressed < 30 * 60_000) return;
+
+        autoLessonFiredRef.current.add(candidate.id);
+        setSelectedPupilId(candidate.pupil_id!);
+        toast({ title: "Auto-tracking lesson", description: "Starting GPS for the upcoming lesson", duration: 2500 });
+        // Defer one tick so selectedPupilId state propagates.
+        setTimeout(() => { void startSession("practice"); }, 50);
+      } catch (e) {
+        console.warn("[AutoTrack] tick failed", e);
+      }
+    };
+
+    tick();
+    const id = setInterval(tick, 60_000);
+    return () => { cancelled = true; clearInterval(id); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [instructor?.id, isSessionActive]);
+
+
   // Store device ID in a ref to avoid re-creating subscriptions when device object updates
   const deviceIdRef = React.useRef<string | null>(null);
   // Track a snapshot of key fields to prevent duplicate updates causing flickering,
