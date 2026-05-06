@@ -174,6 +174,38 @@ export default function InstructorPaymentsDesktop() {
 
   useEffect(() => { if (error) toast.error(error); }, [error]);
 
+  // Realtime: incoming payments → instant on-screen confirmation
+  useEffect(() => {
+    if (!instructor?.id) return;
+    const channel = supabase
+      .channel(`pay-history-desk-${instructor.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "payment_history",
+          filter: `instructor_id=eq.${instructor.id}`,
+        },
+        (payload) => {
+          const row: any = payload.new;
+          const amount = Number(row?.amount || 0);
+          if (!amount || amount <= 0) return;
+          const pupil = allPupils.find((p) => p.id === row.pupil_id);
+          const who = pupil?.name?.split(" ")[0] || "a pupil";
+          const method = row.payment_method || "Payment";
+          toast.success(`£${amount.toFixed(2)} received from ${who}`, {
+            description: `${method} confirmed`,
+          });
+          refresh();
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [instructor?.id, allPupils, refresh]);
+
   const initials = (instructor?.name || "").split(" ").map(s=>s[0]).filter(Boolean).slice(0,2).join("").toUpperCase() || "ID";
   const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
 
