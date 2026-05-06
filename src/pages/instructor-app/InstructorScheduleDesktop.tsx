@@ -525,14 +525,14 @@ export default function InstructorScheduleDesktop() {
             <div style={{ fontSize: 14, fontWeight: 500, color: "var(--d2-text-1)" }}>May 4 – 10, 2026</div>
             <button style={{ ...outlinePill }}>Today</button>
             <div style={{ flex: 1 }} />
-            <div className="flex items-center" style={{ background: "#F1F5F9", borderRadius: 8, padding: 3, gap: 2 }}>
+            <div className="flex items-center" style={{ background: "var(--d2-hover)", borderRadius: 8, padding: 3, gap: 2 }}>
               {(["day", "week", "month", "agenda"] as View[]).map(v => {
                 const a = v === view;
                 return (
                   <button key={v} onClick={() => setView(v)}
                     style={{
                       padding: "4px 10px", borderRadius: 6, fontSize: 11,
-                      background: a ? "#fff" : "transparent",
+                      background: a ? "var(--d2-surface)" : "transparent",
                       color: a ? "var(--d2-text-1)" : "var(--d2-text-2)",
                       fontWeight: a ? 500 : 400, textTransform: "capitalize",
                       boxShadow: a ? "0 1px 2px rgba(15,23,42,0.06)" : "none",
@@ -543,7 +543,7 @@ export default function InstructorScheduleDesktop() {
             <div style={{ position: "relative" }}>
               <div style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
-                background: "#fff", border: "1px solid #E2E8F0", borderRadius: 8,
+                background: "var(--d2-surface)", border: "1px solid #E2E8F0", borderRadius: 8,
                 padding: "5px 9px", minWidth: 240,
               }}>
                 <Search size={11} style={{ color: "var(--d2-text-2)" }} />
@@ -564,8 +564,8 @@ export default function InstructorScheduleDesktop() {
                       title="Filters"
                       style={{
                         display: "inline-flex", alignItems: "center", gap: 4,
-                        fontSize: 10, color: activeFilterCount ? "#4F46E5" : "var(--d2-text-2)",
-                        background: activeFilterCount ? "#EEF2FF" : "transparent",
+                        fontSize: 10, color: activeFilterCount ? "var(--d2-indigo)" : "var(--d2-text-2)",
+                        background: activeFilterCount ? "var(--d2-indigo-bg)" : "transparent",
                         borderRadius: 6, padding: "2px 6px", fontWeight: 500,
                       }}
                     >
@@ -587,9 +587,9 @@ export default function InstructorScheduleDesktop() {
                               onClick={() => setFilterDays(prev => active ? prev.filter(x => x !== d) : [...prev, d])}
                               style={{
                                 fontSize: 10, padding: "4px 8px", borderRadius: 999,
-                                border: "1px solid " + (active ? "#4F46E5" : "#E2E8F0"),
-                                background: active ? "#EEF2FF" : "#fff",
-                                color: active ? "#4F46E5" : "var(--d2-text-2)",
+                                border: "1px solid " + (active ? "var(--d2-indigo)" : "var(--d2-border)"),
+                                background: active ? "var(--d2-indigo-bg)" : "var(--d2-surface)",
+                                color: active ? "var(--d2-indigo)" : "var(--d2-text-2)",
                                 fontWeight: active ? 600 : 400,
                               }}
                             >
@@ -610,7 +610,7 @@ export default function InstructorScheduleDesktop() {
                           onChange={e => setFilterFrom(e.target.value)}
                           style={{
                             flex: 1, fontSize: 11, padding: "5px 7px",
-                            border: "1px solid #E2E8F0", borderRadius: 6, background: "#fff",
+                            border: "1px solid #E2E8F0", borderRadius: 6, background: "var(--d2-surface)",
                           }}
                         />
                         <span style={{ fontSize: 11, color: "var(--d2-text-3)" }}>to</span>
@@ -620,7 +620,7 @@ export default function InstructorScheduleDesktop() {
                           onChange={e => setFilterTo(e.target.value)}
                           style={{
                             flex: 1, fontSize: 11, padding: "5px 7px",
-                            border: "1px solid #E2E8F0", borderRadius: 6, background: "#fff",
+                            border: "1px solid #E2E8F0", borderRadius: 6, background: "var(--d2-surface)",
                           }}
                         />
                       </div>
@@ -636,7 +636,7 @@ export default function InstructorScheduleDesktop() {
                         onClick={() => setFiltersOpen(false)}
                         style={{
                           fontSize: 11, padding: "5px 10px", borderRadius: 6,
-                          background: "#4F46E5", color: "#fff", fontWeight: 500,
+                          background: "var(--d2-indigo)", color: "var(--d2-surface)", fontWeight: 500,
                         }}
                       >
                         Done
@@ -648,7 +648,7 @@ export default function InstructorScheduleDesktop() {
               {(aiPrompt.trim() || activeFilterCount > 0) && (
                 <div style={{
                   position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 30,
-                  width: 300, background: "#fff", border: "1px solid #E2E8F0",
+                  width: 300, background: "var(--d2-surface)", border: "1px solid #E2E8F0",
                   borderRadius: 10, boxShadow: "0 8px 24px rgba(15,23,42,0.10)",
                   padding: 6, maxHeight: 320, overflowY: "auto",
                 }}>
@@ -668,7 +668,7 @@ export default function InstructorScheduleDesktop() {
                         width: "100%", textAlign: "left", padding: "7px 10px",
                         borderRadius: 6, fontSize: 11, color: "var(--d2-text-1)",
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "#F1F5F9")}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--d2-hover)")}
                       onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                     >
                       <span style={{ fontWeight: 500 }}>{s.day} · {fmtTime(s.startMin)}</span>
@@ -682,7 +682,7 @@ export default function InstructorScheduleDesktop() {
             </div>
             <button style={{
               fontSize: 11, padding: "6px 10px", borderRadius: 8,
-              background: "#4F46E5", color: "#fff", fontWeight: 500,
+              background: "var(--d2-indigo)", color: "var(--d2-surface)", fontWeight: 500,
               display: "inline-flex", alignItems: "center", gap: 5,
             }}>
               <Plus size={12} /> New lesson
@@ -717,21 +717,21 @@ export default function InstructorScheduleDesktop() {
 
           {/* Footer summary */}
           <div className="flex items-center" style={{
-            background: "#F8FAFC", borderRadius: 8, padding: "10px 12px",
+            background: "var(--d2-surface-soft)", borderRadius: 8, padding: "10px 12px",
             marginTop: 12, gap: 16, fontSize: 11, color: "var(--d2-text-2)",
           }}>
             <span><span style={{ color: "var(--d2-text-3)" }}>This week:</span> <strong style={{ color: "var(--d2-text-1)", fontWeight: 600 }}>{totals.count} lessons</strong></span>
             <span><span style={{ color: "var(--d2-text-3)" }}>Hours:</span> <strong style={{ color: "var(--d2-text-1)", fontWeight: 600, fontFamily: "var(--d2-mono)" }}>{totals.hours}</strong></span>
             <span><span style={{ color: "var(--d2-text-3)" }}>Earnings:</span> <strong style={{ color: "var(--d2-text-1)", fontWeight: 600, fontFamily: "var(--d2-mono)" }}>£{totals.earnings}</strong></span>
             <div style={{ flex: 1 }} />
-            <button style={{ color: "#4F46E5", fontWeight: 500 }}>Open slots: 8 →</button>
+            <button style={{ color: "var(--d2-indigo)", fontWeight: 500 }}>Open slots: 8 →</button>
           </div>
         </div>
 
         <DragOverlay>
           {activeDrag?.kind === "pupil" && (
             <div style={{
-              background: "#fff", border: "0.5px solid var(--d2-border)", borderRadius: 6,
+              background: "var(--d2-surface)", border: "0.5px solid var(--d2-border)", borderRadius: 6,
               padding: "7px 8px", display: "inline-flex", alignItems: "center", gap: 8,
               fontSize: 11, fontWeight: 500, boxShadow: "0 6px 16px rgba(15,23,42,0.12)",
             }}>
@@ -750,7 +750,7 @@ export default function InstructorScheduleDesktop() {
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           <div onClick={e => e.stopPropagation()} style={{
-            background: "#fff", borderRadius: 10, padding: 16, width: 320,
+            background: "var(--d2-surface)", borderRadius: 10, padding: 16, width: 320,
             boxShadow: "0 20px 40px rgba(15,23,42,0.2)",
           }}>
             <div className="flex items-center" style={{ gap: 10 }}>
@@ -771,7 +771,7 @@ export default function InstructorScheduleDesktop() {
             <div className="flex" style={{ gap: 6, marginTop: 12 }}>
               <button style={smallBtn}>Edit</button>
               <button style={smallBtn}>Cancel</button>
-              <button style={{ ...smallBtn, background: "#4F46E5", color: "#fff", border: "none" }}>Mark complete</button>
+              <button style={{ ...smallBtn, background: "var(--d2-indigo)", color: "var(--d2-surface)", border: "none" }}>Mark complete</button>
             </div>
           </div>
         </div>
@@ -782,19 +782,19 @@ export default function InstructorScheduleDesktop() {
 
 const iconBtn: React.CSSProperties = {
   width: 24, height: 24, borderRadius: 5, border: "0.5px solid var(--d2-border)",
-  background: "#fff", color: "var(--d2-text-2)",
+  background: "var(--d2-surface)", color: "var(--d2-text-2)",
   display: "inline-flex", alignItems: "center", justifyContent: "center",
 };
 
 const outlinePill: React.CSSProperties = {
   fontSize: 11, padding: "5px 10px", borderRadius: 8,
-  border: "0.5px solid var(--d2-border)", background: "#fff",
+  border: "0.5px solid var(--d2-border)", background: "var(--d2-surface)",
   color: "var(--d2-text-2)",
 };
 
 const smallBtn: React.CSSProperties = {
   fontSize: 11, padding: "5px 10px", borderRadius: 6,
-  border: "0.5px solid var(--d2-border)", background: "#fff",
+  border: "0.5px solid var(--d2-border)", background: "var(--d2-surface)",
   color: "var(--d2-text-1)", flex: 1,
 };
 
@@ -813,12 +813,12 @@ function WeekGrid({
 
   return (
     <div style={{
-      background: "#fff", border: "0.5px solid var(--d2-border)", borderRadius: 6,
+      background: "var(--d2-surface)", border: "0.5px solid var(--d2-border)", borderRadius: 6,
       overflow: "hidden",
     }}>
       <div style={{
         display: "grid", gridTemplateColumns: "38px repeat(7, 1fr)",
-        background: "#F8FAFC", borderBottom: "0.5px solid var(--d2-border)",
+        background: "var(--d2-surface-soft)", borderBottom: "0.5px solid var(--d2-border)",
       }}>
         <div />
         {DAYS.map((d, i) => {
@@ -826,11 +826,11 @@ function WeekGrid({
           return (
             <div key={d} style={{
               padding: 7, textAlign: "center",
-              background: isToday ? "#EEF2FF" : "transparent",
+              background: isToday ? "var(--d2-indigo-bg)" : "transparent",
               borderLeft: "0.5px solid var(--d2-border)",
             }}>
-              <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.5px", color: isToday ? "#4338CA" : "var(--d2-text-3)" }}>{d}</div>
-              <div style={{ fontSize: 13, fontWeight: 500, color: isToday ? "#4338CA" : "var(--d2-text-1)" }}>{dates[i]}</div>
+              <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.5px", color: isToday ? "var(--d2-indigo-hover)" : "var(--d2-text-3)" }}>{d}</div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: isToday ? "var(--d2-indigo-hover)" : "var(--d2-text-1)" }}>{dates[i]}</div>
             </div>
           );
         })}
@@ -884,7 +884,7 @@ function DayColumn({
         borderLeft: "0.5px solid var(--d2-border)",
         background: off
           ? "repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(15,23,42,0.025) 6px, rgba(15,23,42,0.025) 12px)"
-          : isToday ? "#FAFBFF" : "transparent",
+          : isToday ? "var(--d2-indigo-bg)" : "transparent",
         boxShadow: isOver && !off ? "inset 0 0 0 2px rgba(79,70,229,0.25)" : "none",
         transition: "box-shadow 120ms",
       }}
@@ -916,7 +916,7 @@ function DayColumn({
             borderRadius: 4, padding: "3px 5px", overflow: "hidden",
             background: "repeating-linear-gradient(45deg, rgba(100,116,139,0.10), rgba(100,116,139,0.10) 4px, rgba(100,116,139,0.18) 4px, rgba(100,116,139,0.18) 8px)",
             border: "0.5px dashed rgba(71,85,105,0.5)",
-            fontSize: 9, color: "#334155", lineHeight: 1.1,
+            fontSize: 9, color: "var(--d2-text-1)", lineHeight: 1.1,
           }}>
             <div style={{ fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {l.pupil}
@@ -936,11 +936,11 @@ function DayColumn({
       {isToday && nowTop >= 0 && nowTop <= height && (
         <div style={{
           position: "absolute", left: 0, right: 0, top: nowTop, height: 1,
-          background: "#4F46E5", zIndex: 5,
+          background: "var(--d2-indigo)", zIndex: 5,
         }}>
           <div style={{
             position: "absolute", left: -3, top: -3, width: 7, height: 7,
-            borderRadius: "50%", background: "#4F46E5",
+            borderRadius: "50%", background: "var(--d2-indigo)",
           }} />
         </div>
       )}
@@ -1015,7 +1015,7 @@ function Avatar({ color, initials }: { color: string; initials: string }) {
 function PlaceholderView({ text }: { text: string }) {
   return (
     <div style={{
-      background: "#fff", border: "0.5px solid var(--d2-border)", borderRadius: 6,
+      background: "var(--d2-surface)", border: "0.5px solid var(--d2-border)", borderRadius: 6,
       padding: 48, textAlign: "center", fontSize: 12, color: "var(--d2-text-3)",
     }}>
       {text}
@@ -1030,12 +1030,12 @@ function AgendaView({ lessons }: { lessons: Lesson[] }) {
     if (list.length) grouped[d] = list;
   });
   return (
-    <div style={{ background: "#fff", border: "0.5px solid var(--d2-border)", borderRadius: 6 }}>
+    <div style={{ background: "var(--d2-surface)", border: "0.5px solid var(--d2-border)", borderRadius: 6 }}>
       {Object.entries(grouped).map(([d, list]) => {
         const total = list.reduce((s, l) => s + l.durationMin, 0);
         return (
           <div key={d} style={{ borderBottom: "0.5px solid var(--d2-border)" }}>
-            <div className="flex items-center justify-between" style={{ padding: "8px 12px", background: "#F8FAFC" }}>
+            <div className="flex items-center justify-between" style={{ padding: "8px 12px", background: "var(--d2-surface-soft)" }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: "var(--d2-text-1)" }}>{d}</div>
               <div style={{ fontSize: 10, color: "var(--d2-text-3)", fontFamily: "var(--d2-mono)" }}>{(total / 60).toFixed(1)}h</div>
             </div>
