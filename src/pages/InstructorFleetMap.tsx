@@ -7,6 +7,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Maximize, Eye, EyeOff, ArrowLeft, Locate, LocateOff } from "lucide-react";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 
 interface FleetDevice {
   id: string;
