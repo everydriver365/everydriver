@@ -41,9 +41,21 @@ function isEveryDriverDomain(): boolean {
 
 export function useDomainBranding(): DomainBranding {
   return useMemo(() => {
+    const whitelabel = getWhitelabelConfig();
     const onAccessible = isAccessibleHost();
-    const onDrive365 = isDrive365Domain();
+    const onDrive365 = isDrive365Domain() || !!whitelabel;
     const onBooking = isBookingSubdomain();
+
+    if (whitelabel) {
+      return {
+        brandName: whitelabel.brandName,
+        logoPath: whitelabel.logoPath,
+        isInstructorDomain: false,
+        isLearnerDomain: true,
+        isAccessibleDomain: false,
+        homeLink: "/",
+      };
+    }
 
     if (onAccessible) {
       return {
