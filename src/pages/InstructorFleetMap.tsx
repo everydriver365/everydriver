@@ -410,5 +410,6 @@ export default function InstructorFleetMap() {
 
       <div ref={mapContainerRef} className="w-full h-full" />
     </div>
+    </InstructorPortalLayout>
   );
 }
