@@ -364,14 +364,16 @@ export default function InstructorLiveSession() {
     if (!instructor?.id) return;
     
     try {
-      // Fetch active devices and instructor preference in parallel
+      // Fetch ALL of the instructor's active devices and the saved preference.
+      // We deliberately don't filter by tracking_provider here so a connected
+      // Radius tracker is still discovered when the saved preference is "phone".
       const [devicesRes, prefRes] = await Promise.all([
         supabase
           .from("gps_devices")
           .select("*")
-           .eq("instructor_id", instructor.id)
-           .eq("tracking_provider", "radius")
-          .limit(10),
+          .eq("instructor_id", instructor.id)
+          .order("last_seen_at", { ascending: false, nullsFirst: false })
+          .limit(20),
         supabase
           .from("instructors")
           .select("preferred_tracking_provider")
@@ -380,7 +382,8 @@ export default function InstructorLiveSession() {
       ]);
 
       if (devicesRes.error) throw devicesRes.error;
-      const devices = (devicesRes.data ?? []).filter((d: any) => d.is_active !== false);
+      const allDevices = (devicesRes.data ?? []).filter((d: any) => d.is_active !== false);
+      const devices = allDevices.filter((d: any) => d.tracking_provider === "radius");
       const preferred = (prefRes.data as any)?.preferred_tracking_provider as string | null;
       const hasRadius = devices.length > 0;
 
