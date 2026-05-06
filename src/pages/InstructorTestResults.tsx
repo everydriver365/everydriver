@@ -48,6 +48,7 @@ import {
   DrivingTestReportForm,
   TestCentreAnalytics,
 } from "@/components/instructor/driving-test";
+import { useStandardsCheckMetrics } from "@/components/instructor/driving-test/useStandardsCheckMetrics";
 
 interface TestResult {
   id: string;
