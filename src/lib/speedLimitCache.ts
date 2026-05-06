@@ -12,8 +12,8 @@ interface CachedSpeedLimit {
   expiresAt: string;
 }
 
-// Grid resolution: ~100m at UK latitudes
-const GRID_PRECISION = 3; // ~0.001 degree ≈ 111m
+// Grid resolution: ~11m at UK latitudes (was 111m which collapsed neighbouring roads)
+const GRID_PRECISION = 4; // ~0.0001 degree ≈ 11m
 
 /**
  * Convert lat/lng to grid key for caching
