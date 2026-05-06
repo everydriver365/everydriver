@@ -20,7 +20,6 @@ const SECTIONS: NavSection[] = [
     { label: "Dashboard", to: "/instructor", icon: LayoutDashboard, moduleId: "dashboard" },
     { label: "Schedule", to: "/instructor/schedule", icon: Calendar, moduleId: "schedule" },
     { label: "Diary", to: "/instructor/diary", icon: NotebookPen },
-    { label: "Inbox", to: "/instructor/messages", icon: Inbox, badge: "9+", moduleId: "inbox" },
   ]},
   { label: "Teaching", items: [
     { label: "Pupils", to: "/instructor/pupils", icon: Users, moduleId: "pupils" },
