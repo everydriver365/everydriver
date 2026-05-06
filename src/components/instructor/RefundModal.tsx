@@ -36,7 +36,7 @@ const C = {
   red: "#C8434F",
 };
 
-type RefundMethod = "cash" | "card" | "bank_transfer";
+
 
 type RefundMethod = "square" | "cash" | "card" | "bank_transfer";
 
