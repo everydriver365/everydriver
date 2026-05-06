@@ -284,6 +284,8 @@ export function PupilRecordsManager() {
         emergency_contact_name: detailsForm.emergency_contact_name || null,
         emergency_contact_phone: detailsForm.emergency_contact_phone || null,
         custom_hourly_rate: detailsForm.custom_hourly_rate ? parseFloat(detailsForm.custom_hourly_rate) : null,
+        custom_rate_90min: detailsForm.custom_rate_90min ? parseFloat(detailsForm.custom_rate_90min) : null,
+        custom_rate_120min: detailsForm.custom_rate_120min ? parseFloat(detailsForm.custom_rate_120min) : null,
         instructor_id: newInstructorId,
         theory_test_date: detailsForm.theory_test_date || null,
         theory_test_passed: detailsForm.theory_test_passed === "yes" ? true : detailsForm.theory_test_passed === "no" ? false : null,
