@@ -29,6 +29,7 @@ export function Header() {
   const navigate = useNavigate();
   const { resolvedTheme, setTheme } = useTheme();
   const { logo, logoAlt, logoText, homeLink } = useRouteLogo();
+  const navLinks = [{ href: homeLink, label: "Home" }, ...baseNavLinks];
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
