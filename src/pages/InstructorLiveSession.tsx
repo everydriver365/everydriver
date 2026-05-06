@@ -39,7 +39,6 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
 import { DeviceSelectorDropdown } from "@/components/instructor/tracking/DeviceSelectorDropdown";
 import { TrackingProviderDropdown } from "@/components/instructor/tracking/TrackingProviderDropdown";
 import { TrackerSourceCard } from "@/components/instructor/tracking/TrackerSourceCard";
-import { PhoneLastLocationCard } from "@/components/instructor/tracking/PhoneLastLocationCard";
 import { usePhoneTrackingStreamer } from "@/hooks/usePhoneTrackingStreamer";
 import { useLivePupilPosition } from "@/hooks/useLivePupilPosition";
 import { useLocationPermission } from "@/hooks/useLocationPermission";
@@ -51,7 +50,7 @@ import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
 import { PupilSelectorRow } from "@/components/instructor/ui/PupilSelectorRow";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle } from "lucide-react";
-import { LessonRouteRecorder } from "@/components/instructor/LessonRouteRecorder";
+
 import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
 
 const InstructorFleetMap = lazy(() => import("@/pages/InstructorFleetMap"));
@@ -448,6 +447,66 @@ export default function InstructorLiveSession() {
     void startSession("practice");
   }, [device, instructor?.id, selectedPupilId, navigate]);
 
+  // ── AUTO-TRACK SCHEDULED LESSONS ──────────────────────────────────────────
+  // When `instructors.auto_start_tracker = true`, look for a scheduled lesson
+  // that is currently in its window (start − 5 min … end) and fire startSession
+  // automatically. Manual stop suppresses re-arm for 30 minutes.
+  const autoLessonFiredRef = React.useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!instructor?.id) return;
+    if (isSessionActive) return;
+
+    let cancelled = false;
+    const tick = async () => {
+      try {
+        const { data: pref } = await supabase
+          .from("instructors")
+          .select("auto_start_tracker")
+          .eq("id", instructor.id)
+          .maybeSingle();
+        if (cancelled || !(pref as any)?.auto_start_tracker) return;
+
+        const today = new Date().toISOString().slice(0, 10);
+        const { data: lessons } = await supabase
+          .from("scheduled_lessons")
+          .select("id, pupil_id, lesson_date, start_time, duration_minutes, status")
+          .eq("instructor_id", instructor.id)
+          .eq("lesson_date", today)
+          .neq("status", "cancelled");
+
+        if (cancelled || !lessons?.length) return;
+        const now = new Date();
+        const candidate = lessons.find((l) => {
+          if (!l.start_time || !l.duration_minutes || !l.pupil_id) return false;
+          const [h, m] = String(l.start_time).split(":").map(Number);
+          const start = new Date(); start.setHours(h, m, 0, 0);
+          const end = new Date(start.getTime() + l.duration_minutes * 60_000);
+          const armFrom = new Date(start.getTime() - 5 * 60_000);
+          return now >= armFrom && now < end;
+        });
+        if (!candidate || autoLessonFiredRef.current.has(candidate.id)) return;
+
+        const suppressKey = `auto-track-suppress:${candidate.id}`;
+        const suppressed = Number(sessionStorage.getItem(suppressKey) || 0);
+        if (suppressed && Date.now() - suppressed < 30 * 60_000) return;
+
+        autoLessonFiredRef.current.add(candidate.id);
+        setSelectedPupilId(candidate.pupil_id!);
+        toast({ title: "Auto-tracking lesson", description: "Starting GPS for the upcoming lesson", duration: 2500 });
+        // Defer one tick so selectedPupilId state propagates.
+        setTimeout(() => { void startSession("practice"); }, 50);
+      } catch (e) {
+        console.warn("[AutoTrack] tick failed", e);
+      }
+    };
+
+    tick();
+    const id = setInterval(tick, 60_000);
+    return () => { cancelled = true; clearInterval(id); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [instructor?.id, isSessionActive]);
+
+
   // Store device ID in a ref to avoid re-creating subscriptions when device object updates
   const deviceIdRef = React.useRef<string | null>(null);
   // Track a snapshot of key fields to prevent duplicate updates causing flickering,
@@ -696,6 +755,10 @@ export default function InstructorLiveSession() {
       examinerId: string | null;
     }
   ) => {
+    // Auto-arm phone streaming when using phone provider — no second button needed.
+    if (isPhoneProvider && !phoneStreamingConfirmed) {
+      setPhoneStreamingConfirmed(true);
+    }
     if (!device || !instructor?.id) {
       toast({
         title: "Error",
@@ -1242,12 +1305,7 @@ export default function InstructorLiveSession() {
             </>
           ) : (
             <>
-              {/* PHONE LAST LOCATION + ROUTE PREVIEW — visible whenever phone GPS is selected and allowed */}
-              <PhoneLastLocationCard
-                active={isPhoneProvider && locationPermissionStatus === "granted"}
-                fix={lastPhoneFix}
-                trail={phoneTrail}
-              />
+              {/* Phone last-location preview removed — MiniLiveMap covers it */}
 
               {/* 1. HEADER */}
               <div style={{
@@ -1328,7 +1386,7 @@ export default function InstructorLiveSession() {
                 {(
                   [
                     { key: "liveLesson", label: "Live lesson", subtitle: "Track with a pupil · records route", iconBg: "#3D55A1", iconColor: "#FFF", Icon: Play },
-                    { key: "testRoute", label: "Test route", subtitle: "Practice route without a pupil", iconBg: "#EEF3FF", iconColor: "#3D55A1", Icon: MapPin },
+                    { key: "testRoute", label: "Track without a pupil", subtitle: "Personal trip or scouting a route", iconBg: "#EEF3FF", iconColor: "#3D55A1", Icon: MapPin },
                     { key: "recordTest", label: "Record driving test", subtitle: "Log a pupil's DVSA test", iconBg: "#E8F8ED", iconColor: "#1A7A3C", Icon: ShieldCheck },
                   ] as const
                 ).map((mode, idx, arr) => {
@@ -1540,8 +1598,8 @@ export default function InstructorLiveSession() {
               {/* 5. PRIMARY CTA */}
               {(() => {
                 const ctaConfig = {
-                  liveLesson: { label: "Start live lesson", Icon: Play, onClick: () => startSession("practice") },
-                  testRoute: { label: "Start test route", Icon: MapPin, onClick: () => startSession("test") },
+                  liveLesson: { label: "Start lesson", Icon: Play, onClick: () => startSession("practice") },
+                  testRoute: { label: "Start tracking", Icon: MapPin, onClick: () => startSession("test") },
                   recordTest: { label: "Record driving test", Icon: ShieldCheck, onClick: () => setShowDrivingTestDialog(true) },
                 } as const;
                 const requiresPupil = selectedMode !== "testRoute";
@@ -1666,13 +1724,7 @@ export default function InstructorLiveSession() {
                 />
               )}
 
-              {/* Manual GPS Route Recorder — kept */}
-              {instructor?.id && (
-                <LessonRouteRecorder
-                  instructorId={instructor.id}
-                  pupilId={selectedPupilId || null}
-                />
-              )}
+              {/* Manual route recorder retired — replaced by "Track without a pupil" mode */}
 
               {/* Auto-track every lesson — quick toggle */}
               {instructor?.id && <AutoTrackToggleTile instructorId={instructor.id} />}
