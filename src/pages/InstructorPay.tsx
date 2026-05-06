@@ -33,6 +33,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useDailyEarnings } from "@/hooks/useDailyEarnings";
+import { useInstructorPaymentsData } from "@/hooks/useInstructorPaymentsData";
 import { PupilBalancesList } from "@/components/instructor/money/PupilBalancesList";
 import { Button } from "@/components/ui/button";
 import { EarningsForecaster } from "@/components/instructor/EarningsForecaster";
