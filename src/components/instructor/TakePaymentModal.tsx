@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QrCode, Send, ChevronLeft, MessageSquare, Mail, Loader2, Check, PoundSterling, RotateCcw } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import {
