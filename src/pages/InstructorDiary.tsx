@@ -173,7 +173,7 @@ export default function InstructorDiary() {
 
   return (
     <InstructorPortalLayout>
-      <div style={{ backgroundColor: "#F2F4F8" }} className="min-h-full -mx-4 -my-4 sm:-mx-6 sm:-my-6">
+      <div style={{ backgroundColor: "var(--d2-bg)" }} className="min-h-full -mx-4 -my-4 sm:-mx-6 sm:-my-6">
         <div className="max-w-5xl mx-auto" style={{ padding: "0 15px 24px" }}>
           {/* Header */}
           <div
@@ -186,19 +186,19 @@ export default function InstructorDiary() {
                 onClick={handleBack}
                 style={{
                   width: 32, height: 32, borderRadius: 16,
-                  backgroundColor: "#F2F4F8",
+                  backgroundColor: "var(--d2-bg)",
                   border: chipBorder,
                   display: "inline-flex", alignItems: "center", justifyContent: "center",
                 }}
                 aria-label="Back"
               >
-                <ChevronLeft size={14} color="#1A52A0" strokeWidth={2} />
+                <ChevronLeft size={14} color="var(--d2-indigo)" strokeWidth={2} />
               </button>
               <div>
-                <h1 style={{ fontSize: 20, fontWeight: 700, color: "#1A1A1A", letterSpacing: -0.4, margin: 0 }}>
+                <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--d2-text-1)", letterSpacing: -0.4, margin: 0 }}>
                   Lesson History
                 </h1>
-                <p style={{ fontSize: 10, color: "#8E8E93", marginTop: 1 }}>
+                <p style={{ fontSize: 10, color: "var(--d2-text-2)", marginTop: 1 }}>
                   All lessons across all pupils
                 </p>
               </div>
@@ -209,7 +209,7 @@ export default function InstructorDiary() {
               onClick={handleSearchFocus}
               style={{
                 width: 30, height: 30, borderRadius: 15,
-                backgroundColor: "#F2F4F8",
+                backgroundColor: "var(--d2-bg)",
                 border: chipBorder,
                 display: "inline-flex", alignItems: "center", justifyContent: "center",
               }}
@@ -223,7 +223,7 @@ export default function InstructorDiary() {
           <div
             onClick={handleSearchFocus}
             style={{
-              backgroundColor: "#FFF", borderRadius: 12,
+              backgroundColor: "var(--d2-surface)", borderRadius: 12,
               padding: "8px 12px",
               display: "flex", alignItems: "center", gap: 7,
               marginBottom: 10,
@@ -246,7 +246,7 @@ export default function InstructorDiary() {
                 boxShadow: "none",
                 padding: 0,
                 height: "auto",
-                color: "#1A1A1A",
+                color: "var(--d2-text-1)",
               }}
             />
             <button
@@ -325,18 +325,18 @@ export default function InstructorDiary() {
 
           {/* Stats row */}
           <div className="flex gap-1.5" style={{ marginBottom: 14 }}>
-            <StatCard value={String(stats.totalLessons)} label="Lessons" color="#1A52A0" />
+            <StatCard value={String(stats.totalLessons)} label="Lessons" color="var(--d2-indigo)" />
             <StatCard value={`${stats.totalHours}h`} label="Hours" color="#1A7A3C" />
             <StatCard value={String(stats.uniquePupils)} label="Pupils" color="#B45309" />
           </div>
 
           {/* Section header */}
           <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, color: "#8E8E93", letterSpacing: 1.2, textTransform: "uppercase" }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: "var(--d2-text-2)", letterSpacing: 1.2, textTransform: "uppercase" }}>
               Lessons
             </span>
-            <div style={{ backgroundColor: "#F2F4F8", borderRadius: 20, padding: "2px 8px" }}>
-              <span style={{ fontSize: 9, fontWeight: 700, color: "#8E8E93" }}>
+            <div style={{ backgroundColor: "var(--d2-bg)", borderRadius: 20, padding: "2px 8px" }}>
+              <span style={{ fontSize: 9, fontWeight: 700, color: "var(--d2-text-2)" }}>
                 {lessonCount} record{lessonCount !== 1 ? "s" : ""}
               </span>
             </div>
@@ -344,54 +344,54 @@ export default function InstructorDiary() {
 
           {/* Lessons list / empty state */}
           {loading ? (
-            <div style={{ backgroundColor: "#FFF", borderRadius: 16, padding: 24, textAlign: "center", border: cardBorder, color: "#8E8E93", fontSize: 12 }}>
+            <div style={{ backgroundColor: "var(--d2-surface)", borderRadius: 16, padding: 24, textAlign: "center", border: cardBorder, color: "var(--d2-text-2)", fontSize: 12 }}>
               Loading…
             </div>
           ) : lessonCount === 0 ? (
             <div style={{
-              backgroundColor: "#FFF", borderRadius: 16, padding: 32,
+              backgroundColor: "var(--d2-surface)", borderRadius: 16, padding: 32,
               display: "flex", flexDirection: "column", alignItems: "center",
               border: cardBorder,
             }}>
               <div style={{
                 width: 48, height: 48, borderRadius: 14,
-                backgroundColor: "#EEF3FF",
+                backgroundColor: "var(--d2-indigo-bg)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 marginBottom: 12,
               }}>
-                <Calendar size={22} color="#1A52A0" strokeWidth={1.5} />
+                <Calendar size={22} color="var(--d2-indigo)" strokeWidth={1.5} />
               </div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--d2-text-1)", marginBottom: 4 }}>
                 No lessons found
               </div>
-              <div style={{ fontSize: 11, color: "#8E8E93", textAlign: "center", lineHeight: "17px", marginBottom: 14, maxWidth: 320 }}>
+              <div style={{ fontSize: 11, color: "var(--d2-text-2)", textAlign: "center", lineHeight: "17px", marginBottom: 14, maxWidth: 320 }}>
                 No lessons match the selected filters. Try adjusting the date range or pupil filter.
               </div>
               <div className="flex gap-1.5">
                 <button
                   type="button"
                   onClick={handleClearFilters}
-                  style={{ backgroundColor: "#EEF3FF", borderRadius: 20, padding: "6px 14px", fontSize: 11, fontWeight: 600, color: "#1A52A0", border: "none", cursor: "pointer" }}
+                  style={{ backgroundColor: "var(--d2-indigo-bg)", borderRadius: 20, padding: "6px 14px", fontSize: 11, fontWeight: 600, color: "#1A52A0", border: "none", cursor: "pointer" }}
                 >
                   Clear filters
                 </button>
               </div>
             </div>
           ) : (
-            <div style={{ backgroundColor: "#FFF", borderRadius: 16, overflow: "hidden", border: cardBorder }}>
+            <div style={{ backgroundColor: "var(--d2-surface)", borderRadius: 16, overflow: "hidden", border: cardBorder }}>
               {filteredLessons.map((lesson, idx) => (
                 <div key={lesson.id}>
-                  {idx > 0 && <div style={{ height: 0.5, backgroundColor: "#F0F3F8", marginLeft: 14, marginRight: 14 }} />}
+                  {idx > 0 && <div style={{ height: 0.5, backgroundColor: "var(--d2-border)", marginLeft: 14, marginRight: 14 }} />}
                   <div style={{ padding: "12px 14px" }}>
                     <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
-                      <span style={{ fontWeight: 600, fontSize: 13, color: "#1A1A1A" }}>
+                      <span style={{ fontWeight: 600, fontSize: 13, color: "var(--d2-text-1)" }}>
                         {lesson.pupils?.name || "Unknown Pupil"}
                       </span>
                       <Badge variant="secondary" className="text-[10px]">
                         {lesson.duration_minutes >= 60 ? `${lesson.duration_minutes / 60}h` : `${lesson.duration_minutes}m`}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-3" style={{ fontSize: 11, color: "#8E8E93" }}>
+                    <div className="flex items-center gap-3" style={{ fontSize: 11, color: "var(--d2-text-2)" }}>
                       <span className="inline-flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {format(new Date(lesson.lesson_date), "MMM d, yyyy")}
@@ -425,7 +425,7 @@ export default function InstructorDiary() {
                       </div>
                     )}
                     {lesson.notes && (
-                      <p style={{ fontSize: 11, color: "#5B6B8A", marginTop: 6 }} className="line-clamp-2">
+                      <p style={{ fontSize: 11, color: "var(--d2-text-3)", marginTop: 6 }} className="line-clamp-2">
                         {lesson.notes}
                       </p>
                     )}
@@ -458,7 +458,7 @@ function StatCard({ value, label, color }: { value: string; label: string; color
   return (
     <div style={{
       flex: 1,
-      backgroundColor: "#FFF",
+      backgroundColor: "var(--d2-surface)",
       borderRadius: 13,
       padding: "12px 8px",
       display: "flex", flexDirection: "column", alignItems: "center",
@@ -467,7 +467,7 @@ function StatCard({ value, label, color }: { value: string; label: string; color
       <div style={{ fontSize: 22, fontWeight: 700, color, letterSpacing: -0.5, lineHeight: "25px" }}>
         {value}
       </div>
-      <div style={{ fontSize: 9, color: "#8E8E93", marginTop: 3, fontWeight: 500 }}>
+      <div style={{ fontSize: 9, color: "var(--d2-text-2)", marginTop: 3, fontWeight: 500 }}>
         {label}
       </div>
     </div>
