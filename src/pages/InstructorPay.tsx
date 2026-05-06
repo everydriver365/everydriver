@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 import { type LucideIcon } from "lucide-react";
 import { TakePaymentModal } from "@/components/instructor/TakePaymentModal";
+import { RefundModal } from "@/components/instructor/RefundModal";
+import { Undo2 } from "lucide-react";
 import { PaymentHistory } from "@/components/instructor/PaymentHistory";
 import { InstructorPayoutHistory } from "@/components/instructor/InstructorPayoutHistory";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
