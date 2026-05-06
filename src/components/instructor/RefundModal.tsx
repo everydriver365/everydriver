@@ -392,6 +392,34 @@ export function RefundModal({
             />
           </section>
 
+          {/* Square payment picker */}
+          {method === "square" && pupilId && (
+            <section>
+              <EyebrowLabel>Square payment to refund</EyebrowLabel>
+              {loadingPayments ? (
+                <p style={{ fontSize: 13, color: C.muted, marginTop: 6 }}>Loading payments…</p>
+              ) : squarePayments.length === 0 ? (
+                <p style={{ fontSize: 13, color: C.muted, marginTop: 6 }}>
+                  No refundable Square payments found for this pupil.
+                </p>
+              ) : (
+                <Select value={selectedSquarePaymentId} onValueChange={setSelectedSquarePaymentId}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Pick the original payment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {squarePayments.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {formatCurrency(p.amount)} · {new Date(p.recorded_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                        {p.payout_status === "partially_refunded" ? " · partial refund" : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </section>
+          )}
+
           {/* Notes */}
           <section>
             <EyebrowLabel>Reason (optional)</EyebrowLabel>
@@ -416,8 +444,9 @@ export function RefundModal({
           </section>
 
           <p style={{ fontSize: 11, color: C.muted, lineHeight: 1.4 }}>
-            This logs a refund and reduces the pupil's balance by the refunded amount. You'll need
-            to return the cash, card or transfer payment to the pupil yourself.
+            {method === "square"
+              ? "Funds will be returned to the pupil's original card via Square. Their balance is reduced automatically."
+              : "This logs a refund and reduces the pupil's balance by the refunded amount. You'll need to return the cash, card or transfer payment to the pupil yourself."}
           </p>
         </div>
       </DialogContent>
