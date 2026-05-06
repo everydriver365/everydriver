@@ -1,17 +1,1 @@
-Save the drafted complaint email to a downloadable `.txt` file at `/mnt/documents/lovable-credit-refund-request.txt` so you can copy it into your email client and send to support@lovable.dev.
-
-## What the file will contain
-
-The exact email drafted in the previous message, with placeholders left in square brackets for you to fill in:
-
-- `[INSERT NUMBER]` — wasted credit count (from Settings → Plans & Credits)
-- `[INSERT START DATE]` — when you started the tracking work
-- `[YOUR NAME]` / `[YOUR ACCOUNT EMAIL]` — your sign-off
-
-Subject, recipient, project ID, and the full body text are all pre-filled.
-
-## Deliverable
-
-A single plain-text file you can download and forward. No code changes, no app changes — just the artifact.
-
-Approve and I'll generate it.
+## Problems found\n\n**1. Speed limit is wrong on phone tracking**\n- `usePhoneTrackingStreamer` and `usePhoneLivePositionStreamer` push lat/lng/speed to Supabase but **never resolve a speed limit**. They call `update_live_position` / `upsert_phone_live_position` with no `p_speed_limit_kmh`.\n- On the live screen (`InstructorLiveSession.tsx`), `speedLimitKmh` is only updated from `gps_devices.last_speed_limit_kmh` or `live_pupil_positions.speed_limit_kmh` — both populated by the **radius-poller** edge function, which doesn't run when provider is `phone` (see line 684: `!isPhoneProvider` guard).\n- Result: in phone mode the roundel either stays empty or shows a stale value from the last radius/Geotab session.\n\n**2. Not enough GPS data for end-of-lesson route**\n- Phone streamers write to `live_pupil_positions` and `phone_live_positions` only — these are **single-row upserts** (\
