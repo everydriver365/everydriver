@@ -429,6 +429,12 @@ export function BookingModeOverview() {
                                 Instructor Assigns
                               </div>
                             </SelectItem>
+                            <SelectItem value="enquiry_only">
+                              <div className="flex items-center gap-2">
+                                <Mail className="h-4 w-4" style={{ color: '#2B7BC8' }} />
+                                Enquiry Only
+                              </div>
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       ) : (
