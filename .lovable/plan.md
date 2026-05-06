@@ -1,50 +1,47 @@
-I checked the current data and code path. Kenneth/Ken D does have an active Radius tracker linked:
+Root cause: the tracking page still keeps the Radius device as the active session anchor. When Phone Tracker is selected, the app can still attach the lesson session to the Radius device, and the Radius poller then writes the Radius coordinates into the shared live-position/session tables. The map then reads those shared rows, so it can display Radius even though the UI says Phone Tracker.
 
-- Device: Charlotte
-- Provider: radius
-- Active: true
-- Recent heartbeat/location present
-- Kenneth’s saved tracking preference is still phone
+Plan:
 
-So the tracker exists, but the tracking page is still treating Phone GPS as the selected source. The collapsed tracker row therefore shows Phone tracking, and the mini map does not use Charlotte unless Radius becomes the active provider.
+1. Make provider choice authoritative
+- If `preferred_tracking_provider = 'phone'`, do not auto-switch back to Radius just because a Radius device is fresh.
+- Only default to Radius when there is no explicit provider preference.
+- Keep the Radius device discoverable for the dropdown, but do not let it override Phone Tracker.
 
-Plan to fix:
+2. Add/use a dedicated Phone Tracker session anchor
+- Create or reuse one internal `gps_devices` row per instructor with `tracking_provider = 'phone'` and a clear name like `Phone Tracker`.
+- When Phone Tracker is selected, set the page `device` state to this phone tracker row, not the Radius row.
+- When Start Lesson is clicked in Phone mode, write `current_session_id/current_pupil_id` to the phone tracker row only.
+- This prevents the Radius poller from treating the lesson as a Radius session.
 
-1. Make fresh hardware win over stale phone preference
-   - In `InstructorLiveSession.tsx`, when an active/fresh Radius device exists and phone tracking is not actively streaming, automatically select Radius as the active provider.
-   - This will make Charlotte appear immediately for Kenneth instead of hiding behind the Phone GPS preference.
+3. Read phone coordinates from phone-only data
+- Stop using shared `live_pupil_positions` as the instructor map source while Phone Tracker is selected.
+- Read from the existing phone-only `phone_live_positions` table/RPC instead.
+- Fall back only to the browser’s current GPS fix (`lastPhoneFix`) while waiting for the first streamed phone row.
+- Never fall back to `gps_devices.last_latitude/last_longitude` in Phone mode.
 
-2. Share discovered device state with the dropdown
-   - Track `hasRadiusDevice` and the selected Radius device in the page state after the main device fetch.
-   - Pass that state into `TrackingProviderDropdown` so the dropdown does not rely on a second separate query that can lag or fail independently.
-   - The collapsed tracker selector should show something like `Radius tracker · Charlotte` when the hardware is available.
+4. Stream Phone Tracker fixes into the active lesson
+- Pass the active phone session ID into `usePhoneTrackingStreamer`.
+- Update the streamer so accepted phone GPS fixes:
+  - update the phone-only live-position row,
+  - insert phone points into `telematics_gps_points` for the active lesson route,
+  - continue updating pupil live position only when appropriate, without being used as the instructor map source.
 
-3. Keep manual choice behaviour clear
-   - If the instructor manually chooses Phone GPS, keep Phone selected for that session.
-   - Still show Radius as available in the dropdown, so switching back is one tap.
-   - If Radius is connected and selected, the mini map should use the Radius latitude/longitude feed.
+5. Stop Radius polling during Phone sessions
+- The page should only invoke `radius-poller` when the active provider/device is Radius.
+- Phone sessions should rely entirely on browser GPS updates.
 
-4. Improve the empty/offline message
-   - Distinguish between:
-     - no tracker linked
-     - tracker linked but offline/stale
-     - tracker linked and connected but not selected
-   - This prevents the misleading “no tracker available” state when a device record exists.
+6. Add a start safety gate for Phone Tracker
+- If Phone Tracker is selected, Start Lesson should request location permission and wait for the first high-accuracy phone GPS fix.
+- Until that fix arrives, the map should show “Waiting for phone GPS…” rather than showing Radius/stale coordinates.
 
-5. Verify against Kenneth’s case
-   - Confirm the backend still shows Charlotte as active.
-   - Verify the tracking page now presents `Radius tracker · Charlotte` and the mini map uses Charlotte’s latest location when Radius is active.
+7. Clean up UI labels
+- Show `Phone Tracker` / `Phone GPS live` in the header and fullscreen source label when Phone mode is active.
+- Hide or disable Radius device switching during an active Phone session, so the active source is unambiguous.
 
-Technical details:
+Technical changes expected:
+- Update `src/pages/InstructorLiveSession.tsx` provider selection, session start/stop, `isConnected`, map props, and Radius poller guard.
+- Update `src/hooks/usePhoneTrackingStreamer.ts` to accept/pass active `sessionId` and write phone-only/session GPS data.
+- Add a small phone-only live-position hook or adapt the page to read `phone_live_positions` directly.
+- Add a database migration/RPC to safely ensure one Phone Tracker `gps_devices` row per instructor without touching the existing Radius device or live data.
 
-- The existing bug is this branch:
-
-```ts
-if (preferred === "phone") {
-  setActiveProvider("phone");
-}
-```
-
-It honours the saved phone preference even when a live Radius device has been discovered. The device is hydrated, but the selected source remains Phone, so the UI/map do not visibly show Charlotte.
-
-- I will change provider resolution to consider live hardware freshness, not just the saved preference.
+No reassignment of Charlotte/Kenneth/Richard data will be made. Existing Radius devices stay exactly where they are.

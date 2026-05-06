@@ -239,30 +239,28 @@ export default function InstructorLiveSession() {
     },
   });
 
-  // When phone provider is active, subscribe to phone-streamed positions and
-  // use them as the live map source instead of the Radius hardware feed.
-  const phonePosition = useLivePupilPosition(
-    isPhoneProvider ? (device?.current_pupil_id ?? selectedPupilId ?? null) : null,
-    isPhoneProvider,
-  );
-
+  // PHONE MODE: read coordinates ONLY from this browser's own GPS fix.
+  // We deliberately do NOT subscribe to live_pupil_positions here — the
+  // Radius poller also writes that table, which would let hardware
+  // coordinates leak into the phone-tracker map. Browser GPS is the
+  // single source of truth while Phone Tracker is selected.
   const mapLatitude = isPhoneProvider
-    ? (phonePosition?.latitude ?? lastPhoneFix?.latitude ?? null)
+    ? (lastPhoneFix?.latitude ?? null)
     : (device?.last_latitude ?? null);
   const mapLongitude = isPhoneProvider
-    ? (phonePosition?.longitude ?? lastPhoneFix?.longitude ?? null)
+    ? (lastPhoneFix?.longitude ?? null)
     : (device?.last_longitude ?? null);
   const mapHeading = isPhoneProvider
-    ? (phonePosition?.heading ?? lastPhoneFix?.heading ?? null)
+    ? (lastPhoneFix?.heading ?? null)
     : (device?.last_heading ?? null);
   const mapSpeedKmh = isPhoneProvider
-    ? (phonePosition?.speed_kmh ?? lastPhoneFix?.speedKmh ?? null)
+    ? (lastPhoneFix?.speedKmh ?? null)
     : (device?.last_speed_kmh ?? null);
   const mapSpeedLimitKmh = isPhoneProvider
-    ? (phonePosition?.speed_limit_kmh ?? speedLimitKmh)
+    ? speedLimitKmh
     : (device?.last_speed_limit_kmh ?? speedLimitKmh);
   const mapLastSeenAt = isPhoneProvider
-    ? (phonePosition?.updated_at ?? (lastPhoneFix ? new Date(lastPhoneFix.timestamp).toISOString() : null))
+    ? (lastPhoneFix ? new Date(lastPhoneFix.timestamp).toISOString() : null)
     : (device?.last_seen_at ?? null);
   const [showDrivingTestDialog, setShowDrivingTestDialog] = useState(false);
   const [drivingTestDetails, setDrivingTestDetails] = useState<{
