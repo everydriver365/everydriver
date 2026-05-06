@@ -65,8 +65,26 @@ export function FindAppointmentBody({
   const [location, setLocation] = useState<string>("all");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [postcode, setPostcode] = useState("");
+  const [radiusMiles, setRadiusMiles] = useState<string>("5");
   const [days, setDays] = useState(14);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+
+  // Map radius → postcode prefix length.
+  // 1mi = full code (SO22 5), 3mi = sector (SO22 5), 5mi = outward (SO22),
+  // 10mi = district digit (SO2), 20mi = area (SO).
+  const computedPrefix = useMemo(() => {
+    const cleaned = postcode.trim().toUpperCase().replace(/\s+/g, " ");
+    if (!cleaned) return undefined;
+    const compact = cleaned.replace(/\s/g, "");
+    switch (radiusMiles) {
+      case "1": return cleaned;
+      case "3": return cleaned;
+      case "5": return compact.slice(0, Math.max(2, compact.length - 2));
+      case "10": return compact.slice(0, 3);
+      case "20": return compact.replace(/[0-9].*$/, "") || compact.slice(0, 2);
+      default: return cleaned;
+    }
+  }, [postcode, radiusMiles]);
 
   const { data: instructorOptions = [] } = useQuery({
     queryKey: ["find-appt-instructors", instructorIds.join(",")],
@@ -88,7 +106,7 @@ export function FindAppointmentBody({
     days,
     durationMinutes: parseInt(duration, 10),
     timeOfDay,
-    postcodePrefix: postcode.trim() || undefined,
+    postcodePrefix: computedPrefix,
     enabled: true,
   });
 
@@ -110,6 +128,7 @@ export function FindAppointmentBody({
     setLanguage("all");
     setLocation("all");
     setPostcode("");
+    setRadiusMiles("5");
     setDays(14);
     setSelectedSlotId(null);
   };
@@ -259,6 +278,42 @@ export function FindAppointmentBody({
               </SelectContent>
             </Select>
           </div>
+          <Divider />
+
+          {/* Postcode + radius */}
+          <div className="px-3 py-2.5">
+            <FieldLabel>Pupil postcode</FieldLabel>
+            <div className="flex gap-2">
+              <Input
+                placeholder="e.g. SO22 5DJ"
+                value={postcode}
+                onChange={(e) => setPostcode(e.target.value.toUpperCase().slice(0, 8))}
+                maxLength={8}
+                className="h-[34px] rounded-[10px] text-xs font-semibold text-slate-900 flex-1 uppercase"
+                style={triggerStyle}
+              />
+              <Select value={radiusMiles} onValueChange={setRadiusMiles}>
+                <SelectTrigger
+                  className="flex items-center justify-between rounded-[10px] bg-white px-3 py-[9px] text-xs font-semibold text-slate-900 w-[110px]"
+                  style={triggerStyle}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Within 1 mi</SelectItem>
+                  <SelectItem value="3">Within 3 mi</SelectItem>
+                  <SelectItem value="5">Within 5 mi</SelectItem>
+                  <SelectItem value="10">Within 10 mi</SelectItem>
+                  <SelectItem value="20">Within 20 mi</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {postcode && (
+              <div className="text-[10px] mt-1.5" style={{ color: "var(--d2-text-3)" }}>
+                Matching postcodes starting with <span className="font-semibold">{computedPrefix}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Two-column row */}
@@ -349,17 +404,6 @@ export function FindAppointmentBody({
 
         {showAdvanced && (
           <div className="bg-white rounded-[14px] overflow-hidden mb-3" style={cardStyle}>
-            <div className="px-3 py-2.5">
-              <FieldLabel>Postcode</FieldLabel>
-              <Input
-                placeholder="e.g. SO22"
-                value={postcode}
-                onChange={(e) => setPostcode(e.target.value)}
-                className="h-[34px] rounded-[10px] text-xs font-semibold text-slate-900"
-                style={triggerStyle}
-              />
-            </div>
-            <Divider />
             <div className="px-3 py-2.5">
               <FieldLabel>Search window</FieldLabel>
               <Select value={String(days)} onValueChange={(v) => setDays(parseInt(v, 10))}>
