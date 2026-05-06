@@ -42,8 +42,8 @@ const SECTIONS: NavSection[] = [
     { label: "Fuel", to: "/instructor/fuel", icon: Fuel },
     { label: "Saved Routes", to: "/instructor/routes", icon: Route, moduleId: "telematics" },
   ]},
-  { label: "AI Voice", items: [
-    { label: "AI Voice Hub", to: "/instructor/famulor", icon: Mic },
+  { label: "Telephone", items: [
+    { label: "Telephone Calls and Answering", to: "/instructor/famulor", icon: Mic },
   ]},
   { label: "Business", items: [
     { label: "Take Payment", to: "/instructor/take-payment", icon: Banknote, moduleId: "payments" },

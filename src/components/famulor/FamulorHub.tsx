@@ -39,7 +39,7 @@ export function FamulorHub({ scope, instructorId, instructorIds, schoolId }: Pro
           <Mic className="h-5 w-5" />
         </div>
         <div className="min-w-0">
-          <div className="text-[15px] font-semibold">AI Voice Hub (Famulor)</div>
+          <div className="text-[15px] font-semibold">Telephone Calls and Answering (Famulor)</div>
           <div className="text-[13px] text-muted-foreground truncate">
             {scope === "admin"
               ? "Platform-wide AI voice activity, costs and configuration."

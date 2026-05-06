@@ -34,7 +34,7 @@ const sidebarGroups: PortalNavGroup[] = [
       { key: "instructor-messages", label: "Instructor Support", icon: Shield, badgeKey: "instructorMessages" },
       { key: "live-chat", label: "Visitor Chats", icon: Headphones, badgeKey: "liveChats" },
       { key: "campaigns", label: "Campaigns", icon: Megaphone },
-      { key: "ai-voice", label: "AI Voice Hub", icon: Headphones },
+      { key: "ai-voice", label: "Telephone Calls and Answering", icon: Headphones },
     ],
   },
   {
