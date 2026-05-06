@@ -145,24 +145,25 @@ export function FloatingSessionTimer({
                 mph
               </span>
             </div>
-            {/* Road name — sits directly under speed, like CarPlay */}
-            <div
-              title={roadName || undefined}
-              style={{
-                marginTop: 4,
-                fontSize: 12,
-                fontWeight: roadName ? 600 : 500,
-                color: roadName ? "rgba(60,60,67,0.7)" : "rgba(60,60,67,0.4)",
-                fontStyle: roadName ? "normal" : "italic",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                lineHeight: 1.2,
-                letterSpacing: -0.05,
-              }}
-            >
-              {roadName || "Locating road…"}
-            </div>
+            {/* Road name — sits directly under speed, like CarPlay. Hidden until resolved. */}
+            {roadName && (
+              <div
+                title={roadName}
+                style={{
+                  marginTop: 4,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "rgba(60,60,67,0.7)",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  lineHeight: 1.2,
+                  letterSpacing: -0.05,
+                }}
+              >
+                {roadName}
+              </div>
+            )}
           </div>
 
           {/* b) Speed-limit roundel (no label) */}
