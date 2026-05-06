@@ -7,9 +7,29 @@ export const TRAVEL_FALLBACK_MIN = 10;
 
 export type TimeOfDay = "any" | "morning" | "afternoon" | "evening";
 
+export type ConflictKind = "lesson" | "block" | "event";
+
 export interface CoreSlot {
   start: number; // minutes from midnight
   end: number;
+}
+
+export interface TaggedConflict extends CoreSlot {
+  kind: ConflictKind;
+}
+
+export type RejectReason =
+  | "past"
+  | "time_of_day"
+  | "overlap_lesson"
+  | "overlap_block"
+  | "overlap_event"
+  | "buffer_lesson"
+  | "buffer_block"
+  | "buffer_event";
+
+export interface RejectedSlot extends CoreSlot {
+  reason: RejectReason;
 }
 
 export interface DayInputs {
@@ -20,7 +40,7 @@ export interface DayInputs {
   durationMinutes: number;
   timeOfDay?: TimeOfDay;
   // Conflicts: scheduled_lessons + manual blocks + Google Calendar events
-  conflicts: CoreSlot[];
+  conflicts: TaggedConflict[];
   // If true, slots in the past are filtered (use for "today")
   isToday?: boolean;
   // If set, after each emitted slot we skip forward by this many minutes.
