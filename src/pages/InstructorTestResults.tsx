@@ -418,7 +418,7 @@ export default function InstructorTestResults() {
                   No test results yet
                 </div>
                 <div style={{ fontSize: 12, color: "#6B7280", textAlign: "center", lineHeight: "20px", marginBottom: 18, whiteSpace: "pre-line" }}>
-                  {`Record your pupils' driving test outcomes here.\nSelect a pupil and tap Record Test to get started.`}
+                  {`Record test centre, examiner and every fault — DL25A style.\nSelect a pupil and tap Record Test to get started.`}
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
                   <button type="button" onClick={handleClearFilters} style={{ background: "#EEF2FF", borderRadius: 20, padding: "7px 16px", border: 0, cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#3730A3" }}>
