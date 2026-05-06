@@ -1,11 +1,13 @@
+import { useState } from 'react';
 import { format } from 'date-fns';
-import { X, MapPin, Clock, Phone, MessageSquare, Navigation, Trash2, Calendar, User, Repeat } from 'lucide-react';
+import { X, MapPin, Clock, Phone, MessageSquare, Navigation, Trash2, Calendar, User, Repeat, Pencil } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { CalendarEvent } from '@/hooks/useInstructorCalendar';
 import { toast } from 'sonner';
+import { EditScheduleEntryDialog } from '@/components/instructor/EditScheduleEntryDialog';
 import {
   AlertDialog,
   AlertDialogAction,
