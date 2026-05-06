@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { format } from "date-fns";
 import {
+  AlertTriangle,
   Award,
   Calendar,
   CheckCircle2,
@@ -12,6 +13,7 @@ import {
   MapPin,
   Plus,
   Search,
+  ShieldCheck,
   TrendingUp,
   Users,
   XCircle,
@@ -46,6 +48,7 @@ import {
   DrivingTestReportForm,
   TestCentreAnalytics,
 } from "@/components/instructor/driving-test";
+import { useStandardsCheckMetrics } from "@/components/instructor/driving-test/useStandardsCheckMetrics";
 
 interface TestResult {
   id: string;
@@ -327,19 +330,41 @@ export default function InstructorTestResults() {
 
         {/* Tabs (preserved) */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <Select value={activeTab} onValueChange={setActiveTab}>
-            <SelectTrigger className="w-full sm:w-[220px]" style={{ background: "#FFF" }}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="results"><span className="flex items-center gap-2"><FileText className="h-4 w-4" /> Results</span></SelectItem>
-              <SelectItem value="centres"><span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Test Centres</span></SelectItem>
-              <SelectItem value="triggers"><span className="flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Standards Check</span></SelectItem>
-              <SelectItem value="examiners"><span className="flex items-center gap-2"><Users className="h-4 w-4" /> Examiners</span></SelectItem>
-            </SelectContent>
-          </Select>
+          {(() => {
+            const tabItems = [
+              { value: "results", label: "Results", Icon: FileText },
+              { value: "triggers", label: "DVSA Triggers", Icon: ShieldCheck },
+              { value: "centres", label: "Test Centres", Icon: MapPin },
+              { value: "examiners", label: "Examiners", Icon: Users },
+            ] as const;
+            return (
+              <div style={{ display: "inline-flex", background: "#FFF", border: "1px solid #ECEEF2", borderRadius: 12, padding: 4, gap: 2 }}>
+                {tabItems.map((t) => {
+                  const isActive = activeTab === t.value;
+                  return (
+                    <button
+                      key={t.value}
+                      type="button"
+                      onClick={() => setActiveTab(t.value)}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        padding: "7px 14px", borderRadius: 9, border: 0, cursor: "pointer",
+                        fontSize: 12, fontWeight: 600,
+                        background: isActive ? "#EEF2FF" : "transparent",
+                        color: isActive ? "#1D4ED8" : "#6B7280",
+                      }}
+                    >
+                      <t.Icon size={13} strokeWidth={1.8} />
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
 
-          <TabsContent value="results" className="space-y-0">
+          <TabsContent value="results" className="space-y-3">
+            <DvsaTriggerBanner instructorId={instructor.id} onView={() => setActiveTab("triggers")} />
             {/* Section header */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", letterSpacing: 1.2, textTransform: "uppercase" }}>
@@ -393,7 +418,7 @@ export default function InstructorTestResults() {
                   No test results yet
                 </div>
                 <div style={{ fontSize: 12, color: "#6B7280", textAlign: "center", lineHeight: "20px", marginBottom: 18, whiteSpace: "pre-line" }}>
-                  {`Record your pupils' driving test outcomes here.\nSelect a pupil and tap Record Test to get started.`}
+                  {`Record test centre, examiner and every fault — DL25A style.\nSelect a pupil and tap Record Test to get started.`}
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
                   <button type="button" onClick={handleClearFilters} style={{ background: "#EEF2FF", borderRadius: 20, padding: "7px 16px", border: 0, cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#3730A3" }}>
@@ -501,5 +526,71 @@ export default function InstructorTestResults() {
         />
       )}
     </InstructorPortalLayout>
+  );
+}
+
+function DvsaTriggerBanner({ instructorId, onView }: { instructorId: string; onView: () => void }) {
+  const m = useStandardsCheckMetrics(instructorId);
+
+  if (m.loading) return null;
+  if (m.totalTests === 0) return null;
+
+  const tone =
+    m.triggersCount === 0
+      ? { dot: "#10B981", label: "All clear", bg: "#ECFDF5", border: "#A7F3D0", text: "#065F46" }
+      : m.triggersCount < 3
+        ? { dot: "#F59E0B", label: "Monitor closely", bg: "#FFFBEB", border: "#FDE68A", text: "#92400E" }
+        : { dot: "#DC2626", label: "Standards Check likely", bg: "#FEF2F2", border: "#FECACA", text: "#991B1B" };
+
+  const Icon = m.triggersCount === 0 ? ShieldCheck : AlertTriangle;
+
+  return (
+    <div
+      style={{
+        background: tone.bg,
+        border: `1px solid ${tone.border}`,
+        borderRadius: 12,
+        padding: "12px 16px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            width: 32, height: 32, borderRadius: 10, background: "#FFF",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            border: `1px solid ${tone.border}`, flexShrink: 0,
+          }}
+        >
+          <Icon size={15} color={tone.dot} strokeWidth={1.8} />
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#111827" }}>DVSA Trigger Status</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: tone.text }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: tone.dot }} />
+              {tone.label} · {m.triggersCount} of 4 active
+            </span>
+          </div>
+          <div style={{ fontSize: 11, color: "#4B5563" }}>
+            Pass rate {m.passRate.toFixed(0)}% · Avg minors {m.avgMinorFaults.toFixed(1)} · Avg serious {m.avgSeriousFaults.toFixed(2)} · Physical action {m.physicalActionRate.toFixed(0)}%
+          </div>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={onView}
+        style={{
+          background: "#FFF", border: `1px solid ${tone.border}`, borderRadius: 8,
+          padding: "6px 12px", fontSize: 11, fontWeight: 600, color: tone.text, cursor: "pointer",
+          flexShrink: 0,
+        }}
+      >
+        View details
+      </button>
+    </div>
   );
 }
