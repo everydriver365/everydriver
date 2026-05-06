@@ -104,7 +104,7 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
       ] = await Promise.all([
         supabase
           .from("instructors")
-          .select("id, name, car_type, home_postcode")
+          .select("id, name, car_type, home_postcode, buffer_minutes")
           .in("id", targetIds),
         supabase
           .from("instructor_working_hours")
@@ -153,11 +153,15 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
 
       const results: AvailableSlot[] = [];
 
+      const TRAVEL_FALLBACK_MIN = 10;
+
       for (const inst of instructors) {
         const instId = inst.id;
         const instName = inst.name;
         const carType = inst.car_type || null;
         const area = postcodeArea(inst.home_postcode);
+        const bufferMin = (inst as { buffer_minutes?: number | null }).buffer_minutes ?? 0;
+        const padMin = bufferMin + TRAVEL_FALLBACK_MIN;
 
         for (let d = 0; d < days; d++) {
           const day = addDays(fromDateObj, d);
@@ -223,7 +227,7 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
             if (isToday && s < nowMin) continue;
             if (!inTimeOfDay(s, timeOfDay)) continue;
 
-            const collides = conflicts.some((c) => s < c.end && e > c.start);
+            const collides = conflicts.some((c) => s < c.end + padMin && e > c.start - padMin);
             if (collides) continue;
 
             results.push({
