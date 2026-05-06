@@ -301,8 +301,12 @@ export function RefundModal({
               ariaLabel="Refund method"
               options={METHOD_OPTIONS.map(({ value, label, Icon }) => ({
                 value,
-                label,
-                icon: <Icon size={14} strokeWidth={1.75} />,
+                label: (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <Icon size={14} strokeWidth={1.75} />
+                    {label}
+                  </span>
+                ),
               }))}
             />
           </section>
