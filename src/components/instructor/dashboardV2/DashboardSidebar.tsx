@@ -27,7 +27,7 @@ const SECTIONS: NavSection[] = [
     { label: "Course Planner", to: "/instructor/course-planner", icon: BookOpenCheck },
     { label: "Waiting List", to: "/instructor/waiting-list", icon: UserPlus2 },
     { label: "Fill Gaps", to: "/instructor/gaps", icon: ListChecks },
-    { label: "Test Results", to: "/instructor/test-results", icon: Award, moduleId: "tests" },
+    { label: "Driving Tests", to: "/instructor/test-results", icon: Award, moduleId: "tests" },
     { label: "Test Swap", to: "/instructor/test-requests", icon: Repeat2, moduleId: "testswap" },
     { label: "Standards Check", to: "/instructor/standards-check", icon: GraduationCap },
     { label: "CPD", to: "/instructor/cpd", icon: Award },
