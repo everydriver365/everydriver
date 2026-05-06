@@ -657,7 +657,7 @@ export function AddPupilSheet({
             </div>
           </Row>
         </SectionCard>
-        <HelperText>Postcode and what3words auto-fill when you select an address.</HelperText>
+        <HelperText>{w3wHint ?? "Postcode and what3words auto-fill when you select an address."}</HelperText>
       </section>
 
       <section>
