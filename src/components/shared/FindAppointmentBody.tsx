@@ -37,7 +37,7 @@ const FieldLabel = ({ children }: { children: React.ReactNode }) => (
 );
 
 const triggerCls =
-  "flex items-center justify-between w-full rounded-[10px] bg-white px-3 py-[9px] text-xs font-semibold text-[#1A1A1A] focus:outline-none focus:ring-1 focus:ring-[#1A52A0]/30 data-[placeholder]:text-[#C7C7CC]";
+  "flex items-center justify-between w-full rounded-[10px] bg-white px-3 py-[9px] text-xs font-semibold text-slate-900 focus:outline-none focus:ring-1 focus:ring-indigo-500/30 data-[placeholder]:text-slate-400";
 
 const triggerStyle: React.CSSProperties = {
   border: "0.5px solid var(--d2-border)",
@@ -164,7 +164,7 @@ export function FindAppointmentBody({
                 value={fromDate}
                 min={today}
                 onChange={(e) => setFromDate(e.target.value)}
-                className="h-[34px] rounded-[10px] text-xs font-semibold text-[#1A1A1A] pr-9"
+                className="h-[34px] rounded-[10px] text-xs font-semibold text-slate-900 pr-9"
                 style={triggerStyle}
               />
               <CalendarIcon
@@ -355,7 +355,7 @@ export function FindAppointmentBody({
                 placeholder="e.g. SO22"
                 value={postcode}
                 onChange={(e) => setPostcode(e.target.value)}
-                className="h-[34px] rounded-[10px] text-xs font-semibold text-[#1A1A1A]"
+                className="h-[34px] rounded-[10px] text-xs font-semibold text-slate-900"
                 style={triggerStyle}
               />
             </div>
@@ -392,7 +392,7 @@ export function FindAppointmentBody({
               No available slots match these criteria.
               {rejection && rejection.total > 0 && (
                 <div className="mt-3 mx-auto max-w-xs text-left rounded-lg bg-white/70 border border-black/5 p-3 space-y-1">
-                  <div className="text-[11px] uppercase tracking-wide font-semibold text-[#1A52A0]">
+                  <div className="text-[11px] uppercase tracking-wide font-semibold text-indigo-600">
                     Why slots were skipped
                   </div>
                   {(Object.entries(rejection.byReason) as [import("@/lib/availabilityCore").RejectReason, number][])
