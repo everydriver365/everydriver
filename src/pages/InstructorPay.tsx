@@ -33,6 +33,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useDailyEarnings } from "@/hooks/useDailyEarnings";
+import { useInstructorPaymentsData } from "@/hooks/useInstructorPaymentsData";
 import { PupilBalancesList } from "@/components/instructor/money/PupilBalancesList";
 import { Button } from "@/components/ui/button";
 import { EarningsForecaster } from "@/components/instructor/EarningsForecaster";
@@ -67,6 +68,7 @@ export default function InstructorPay() {
   const reminderPupilId = searchParams.get("pupilId");
 
   const { data: earnings, isLoading } = useDailyEarnings(instructorId);
+  const { stats: paymentsStats } = useInstructorPaymentsData(instructorId);
   const [resolvedQrUrl, setResolvedQrUrl] = useState<string | null>(null);
   const [commissionPayer, setCommissionPayer] = useState<string | null>("pupil");
   const [instructorName, setInstructorName] = useState<string>("Your Instructor");
@@ -311,7 +313,33 @@ export default function InstructorPay() {
           <GradientLine />
         </motion.section>
 
+        {/* ── Service fees YTD (deductible) ── */}
+        <Link
+          to="/instructor/tax"
+          onClick={() => haptics.selection()}
+          className="flex items-center justify-between rounded-2xl bg-card border border-border px-3.5 py-2.5 active:bg-muted/40 transition-colors"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <Receipt className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <div className="min-w-0">
+              <p className="text-[12px] font-medium text-foreground leading-tight">
+                Service fees YTD <span className="text-muted-foreground font-normal">(deductible)</span>
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                UK tax year {paymentsStats.feesYearLabel || "—"} · view in Tax Hub
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <span className="text-[13px] font-semibold tabular-nums text-foreground">
+              £{paymentsStats.feesYearToDate.toFixed(2)}
+            </span>
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+          </div>
+        </Link>
+
         {/* ── Summary Tiles 2×2 ── */}
+
         <div className="grid grid-cols-2 gap-[10px]">
           {/* Owes Money */}
           <div className={cn(owesExpanded && "col-span-2")}>
