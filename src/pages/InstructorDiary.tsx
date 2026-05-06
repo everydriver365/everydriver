@@ -60,10 +60,31 @@ const dateRangeLabels: Record<string, string> = {
 };
 
 export default function InstructorDiary() {
-  const { instructor } = useInstructorAuth();
+  const { instructor, signOut } = useInstructorAuth();
   const instructorId = instructor?.id;
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const { total: notificationCount } = useCombinedNotificationCount(instructor?.id);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  const initials = (instructor?.name || "I")
+    .split(" ").map((s) => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+  const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
+  const Shell = ({ children }: { children: React.ReactNode }) =>
+    isMobile ? (
+      <InstructorPortalLayout>{children}</InstructorPortalLayout>
+    ) : (
+      <DashboardShell
+        userInitials={initials}
+        userName={instructor?.name || "Instructor"}
+        notificationCount={notificationCount}
+        onSignOut={handleSignOut}
+        onAskED={() => window.dispatchEvent(new CustomEvent("dsm:open-ai"))}
+        onBell={() => navigate("/instructor/notifications")}
+      >
+        {children}
+      </DashboardShell>
+    );
 
   const [stats, setStats] = useState<LessonStat>({ totalLessons: 0, totalHours: 0, uniquePupils: 0 });
   const [lessons, setLessons] = useState<LessonRecord[]>([]);
@@ -163,11 +184,11 @@ export default function InstructorDiary() {
 
   if (!instructorId) {
     return (
-      <InstructorPortalLayout>
+      <Shell>
         <div className="flex items-center justify-center min-h-[50vh]">
           <p className="text-muted-foreground">Loading...</p>
         </div>
-      </InstructorPortalLayout>
+      </Shell>
     );
   }
 
