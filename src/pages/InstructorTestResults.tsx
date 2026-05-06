@@ -330,19 +330,41 @@ export default function InstructorTestResults() {
 
         {/* Tabs (preserved) */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <Select value={activeTab} onValueChange={setActiveTab}>
-            <SelectTrigger className="w-full sm:w-[220px]" style={{ background: "#FFF" }}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="results"><span className="flex items-center gap-2"><FileText className="h-4 w-4" /> Results</span></SelectItem>
-              <SelectItem value="centres"><span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Test Centres</span></SelectItem>
-              <SelectItem value="triggers"><span className="flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Standards Check</span></SelectItem>
-              <SelectItem value="examiners"><span className="flex items-center gap-2"><Users className="h-4 w-4" /> Examiners</span></SelectItem>
-            </SelectContent>
-          </Select>
+          {(() => {
+            const tabItems = [
+              { value: "results", label: "Results", Icon: FileText },
+              { value: "triggers", label: "DVSA Triggers", Icon: ShieldCheck },
+              { value: "centres", label: "Test Centres", Icon: MapPin },
+              { value: "examiners", label: "Examiners", Icon: Users },
+            ] as const;
+            return (
+              <div style={{ display: "inline-flex", background: "#FFF", border: "1px solid #ECEEF2", borderRadius: 12, padding: 4, gap: 2 }}>
+                {tabItems.map((t) => {
+                  const isActive = activeTab === t.value;
+                  return (
+                    <button
+                      key={t.value}
+                      type="button"
+                      onClick={() => setActiveTab(t.value)}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        padding: "7px 14px", borderRadius: 9, border: 0, cursor: "pointer",
+                        fontSize: 12, fontWeight: 600,
+                        background: isActive ? "#EEF2FF" : "transparent",
+                        color: isActive ? "#1D4ED8" : "#6B7280",
+                      }}
+                    >
+                      <t.Icon size={13} strokeWidth={1.8} />
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
 
-          <TabsContent value="results" className="space-y-0">
+          <TabsContent value="results" className="space-y-3">
+            <DvsaTriggerBanner instructorId={instructor.id} onView={() => setActiveTab("triggers")} />
             {/* Section header */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", letterSpacing: 1.2, textTransform: "uppercase" }}>
