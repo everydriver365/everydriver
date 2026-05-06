@@ -95,6 +95,7 @@ export function DrivingTestReportForm({
   const [testDate, setTestDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [testTime, setTestTime] = useState("");
   const [testCentreId, setTestCentreId] = useState<string>("");
+  const [testCentreNameInput, setTestCentreNameInput] = useState<string>("");
   const [examinerId, setExaminerId] = useState<string>("");
   const [applicationRef, setApplicationRef] = useState("");
   const [catType, setCatType] = useState("Manual");
@@ -142,6 +143,7 @@ export function DrivingTestReportForm({
     setTestDate(format(new Date(), "yyyy-MM-dd"));
     setTestTime("");
     setTestCentreId("");
+    setTestCentreNameInput("");
     setExaminerId("");
     setApplicationRef("");
     setCatType("Manual");
@@ -221,6 +223,7 @@ export function DrivingTestReportForm({
         setTestDate(data.test_date);
         setTestTime(data.test_time || "");
         setTestCentreId(data.test_centre_id || "");
+        setTestCentreNameInput((data as any).test_centre_name || "");
         setExaminerId(data.examiner_id || "");
         setApplicationRef(data.application_ref || "");
         setCatType(data.cat_type || "Manual");
@@ -289,6 +292,7 @@ export function DrivingTestReportForm({
         test_date: testDate,
         test_time: testTime || null,
         test_centre_id: testCentreId || null,
+        test_centre_name: testCentreNameInput.trim() || null,
         is_mock: isMock,
         result: finalResult,
         application_ref: parsed.data.applicationRef || null,
@@ -359,8 +363,9 @@ export function DrivingTestReportForm({
     }
   };
 
+  const hasCentre = !!testCentreId || testCentreNameInput.trim().length > 0;
   const requiredMissing =
-    !testDate || !testCentreId || !catType || (!isMock && (!testTime || !examinerId));
+    !testDate || !hasCentre || !catType || (!isMock && (!testTime || !examinerId));
   const headerSaveDisabled = saving || loading || requiredMissing;
 
   const formattedDate = (() => {
