@@ -73,15 +73,18 @@ export default function WhitelabelCourses() {
     setSelectedDate,
     monthOptions,
     availableDatesInMonth,
+    nextAvailableDates,
     filteredCourses,
   } = useCourseDiscovery(
     "all",
     instructorId === undefined ? null : instructorId,
   );
 
-  // useCourseDiscovery already auto-selects the first month + date with
-  // real availability for this instructor after loading. No additional
-  // auto-advance is needed (and adding one races/over-skips months).
+  const handlePickDate = (d: Date) => {
+    const targetMonth = format(d, "yyyy-MM");
+    if (targetMonth !== selectedMonth) setSelectedMonth(targetMonth);
+    setSelectedDate(d);
+  };
 
 
   const coursesWithDistance = filteredCourses;
