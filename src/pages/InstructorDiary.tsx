@@ -168,8 +168,8 @@ export default function InstructorDiary() {
     );
   }
 
-  const cardBorder = "1px solid rgba(26,82,160,0.08)";
-  const chipBorder = "1px solid rgba(26,82,160,0.15)";
+  const cardBorder = "0.5px solid var(--d2-border)";
+  const chipBorder = "0.5px solid var(--d2-border)";
 
   return (
     <InstructorPortalLayout>
@@ -215,7 +215,7 @@ export default function InstructorDiary() {
               }}
               aria-label="Search"
             >
-              <Search size={13} color="#5B6B8A" strokeWidth={1.8} />
+              <Search size={13} color="var(--d2-text-3)" strokeWidth={1.8} />
             </button>
           </div>
 
@@ -227,11 +227,11 @@ export default function InstructorDiary() {
               padding: "8px 12px",
               display: "flex", alignItems: "center", gap: 7,
               marginBottom: 10,
-              border: "1px solid rgba(26,82,160,0.1)",
+              border: "0.5px solid var(--d2-border)",
               cursor: "text",
             }}
           >
-            <Search size={12} color="#8E8E93" />
+            <Search size={12} color="var(--d2-text-2)" />
             <Input
               ref={searchInputRef}
               value={searchQuery}
@@ -255,7 +255,7 @@ export default function InstructorDiary() {
               aria-label="Voice search"
               style={{ background: "transparent", border: "none", padding: 0, cursor: "pointer" }}
             >
-              <Mic size={12} color="#8E8E93" strokeWidth={1.6} />
+              <Mic size={12} color="var(--d2-text-2)" strokeWidth={1.6} />
             </button>
           </div>
 
@@ -326,8 +326,8 @@ export default function InstructorDiary() {
           {/* Stats row */}
           <div className="flex gap-1.5" style={{ marginBottom: 14 }}>
             <StatCard value={String(stats.totalLessons)} label="Lessons" color="var(--d2-indigo)" />
-            <StatCard value={`${stats.totalHours}h`} label="Hours" color="#1A7A3C" />
-            <StatCard value={String(stats.uniquePupils)} label="Pupils" color="#B45309" />
+            <StatCard value={`${stats.totalHours}h`} label="Hours" color="var(--d2-emerald-fg)" />
+            <StatCard value={String(stats.uniquePupils)} label="Pupils" color="var(--d2-amber-fg)" />
           </div>
 
           {/* Section header */}
@@ -444,9 +444,9 @@ function chipStyle(active: boolean): React.CSSProperties {
   return {
     borderRadius: 20,
     padding: "5px 12px",
-    backgroundColor: active ? "#1A52A0" : "#FFF",
-    border: active ? "none" : "1px solid rgba(26,82,160,0.15)",
-    color: active ? "#FFF" : "#5B6B8A",
+    backgroundColor: active ? "var(--d2-indigo)" : "var(--d2-surface)",
+    border: active ? "none" : "0.5px solid var(--d2-border)",
+    color: active ? "#FFF" : "var(--d2-text-2)",
     fontSize: 10,
     fontWeight: 600,
     whiteSpace: "nowrap",
@@ -462,7 +462,7 @@ function StatCard({ value, label, color }: { value: string; label: string; color
       borderRadius: 13,
       padding: "12px 8px",
       display: "flex", flexDirection: "column", alignItems: "center",
-      border: "1px solid rgba(26,82,160,0.08)",
+      border: "0.5px solid var(--d2-border)",
     }}>
       <div style={{ fontSize: 22, fontWeight: 700, color, letterSpacing: -0.5, lineHeight: "25px" }}>
         {value}
