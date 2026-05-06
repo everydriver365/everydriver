@@ -9,6 +9,7 @@ import { XeroExport } from "@/components/instructor/XeroExport";
 import { IntegrationStatusBadge, IntegrationStatusKind } from "@/components/instructor/integrations/IntegrationStatusBadge";
 import { IntegrationInstructions } from "@/components/instructor/integrations/IntegrationInstructions";
 import { useIntegrationStatuses } from "@/hooks/useIntegrationStatuses";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 
 const GOOGLE_STEPS = [
   {
@@ -146,6 +147,7 @@ export default function InstructorIntegrationsHub() {
   };
 
   return (
+    <InstructorPortalLayout>
     <div className="instructor-portal min-h-screen bg-[#F4F7F6]">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-6">
@@ -209,5 +211,6 @@ export default function InstructorIntegrationsHub() {
         </Tabs>
       </div>
     </div>
+    </InstructorPortalLayout>
   );
 }

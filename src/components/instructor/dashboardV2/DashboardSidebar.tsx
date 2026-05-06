@@ -27,9 +27,8 @@ const SECTIONS: NavSection[] = [
     { label: "Course Planner", to: "/instructor/course-planner", icon: BookOpenCheck },
     { label: "Waiting List", to: "/instructor/waiting-list", icon: UserPlus2 },
     { label: "Fill Gaps", to: "/instructor/gaps", icon: ListChecks },
-    { label: "Test Bookings", to: "/instructor/test-bookings", icon: ClipboardCheck, moduleId: "tests" },
     { label: "Test Results", to: "/instructor/test-results", icon: Award, moduleId: "tests" },
-    { label: "Test Swap", to: "/instructor/test-swap", icon: Repeat2, moduleId: "testswap" },
+    { label: "Test Swap", to: "/instructor/test-requests", icon: Repeat2, moduleId: "testswap" },
     { label: "Standards Check", to: "/instructor/standards-check", icon: GraduationCap },
     { label: "CPD", to: "/instructor/cpd", icon: Award },
   ]},
@@ -49,7 +48,6 @@ const SECTIONS: NavSection[] = [
   { label: "Business", items: [
     { label: "Take Payment", to: "/instructor/take-payment", icon: Banknote, moduleId: "payments" },
     { label: "Payments", to: "/instructor/pay", icon: CreditCard, moduleId: "payments" },
-    { label: "Invoices", to: "/instructor/invoices", icon: Receipt, moduleId: "invoices" },
     { label: "Pending", to: "/instructor/pending-scheduling", icon: Clock },
     { label: "Expenses", to: "/instructor/expenses", icon: Coins },
     { label: "Tax", to: "/instructor/tax", icon: Receipt },
@@ -62,7 +60,6 @@ const SECTIONS: NavSection[] = [
     { label: "My Site", to: "/website/my-site", icon: Globe, moduleId: "website" },
     { label: "Branding", to: "/instructor/branding", icon: Palette, moduleId: "website" },
     { label: "Domain", to: "/instructor/domains", icon: Link2, moduleId: "website" },
-    { label: "SEO", to: "/instructor/seo", icon: TrendingUp, moduleId: "website" },
   ]},
   { label: "Settings", items: [
     { label: "Profile", to: "/instructor/profile", icon: User },

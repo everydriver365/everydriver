@@ -4,6 +4,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { TakePaymentModal } from "@/components/instructor/TakePaymentModal";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { supabase } from "@/integrations/supabase/client";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 
 interface Pupil {
   id: string;
@@ -34,17 +35,19 @@ export default function InstructorTakePayment() {
   }, [instructor?.id]);
 
   return (
-    <TakePaymentModal
-      open={true}
-      onOpenChange={(open) => {
-        if (!open) navigate(-1);
-      }}
-      paymentQrUrl={getActivePaymentQrUrl(instructor)}
-      commissionPayer={instructor?.commission_payer}
-      commissionSplitPercent={instructor?.commission_split_percent}
-      instructorName={instructor?.name}
-      instructorId={instructor?.id}
-      pupils={pupils}
-    />
+    <InstructorPortalLayout>
+      <TakePaymentModal
+        open={true}
+        onOpenChange={(open) => {
+          if (!open) navigate(-1);
+        }}
+        paymentQrUrl={getActivePaymentQrUrl(instructor)}
+        commissionPayer={instructor?.commission_payer}
+        commissionSplitPercent={instructor?.commission_split_percent}
+        instructorName={instructor?.name}
+        instructorId={instructor?.id}
+        pupils={pupils}
+      />
+    </InstructorPortalLayout>
   );
 }

@@ -7,6 +7,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Maximize, Eye, EyeOff, ArrowLeft, Locate, LocateOff } from "lucide-react";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 
 interface FleetDevice {
   id: string;
@@ -359,6 +360,7 @@ export default function InstructorFleetMap() {
   const speedingCount = devices.filter((d) => !!d.last_is_speeding && !isSignalLost(d)).length;
 
   return (
+    <InstructorPortalLayout>
     <div className="relative w-full h-[calc(100vh-4rem)]">
       {/* Back button */}
       <Button
@@ -408,5 +410,6 @@ export default function InstructorFleetMap() {
 
       <div ref={mapContainerRef} className="w-full h-full" />
     </div>
+    </InstructorPortalLayout>
   );
 }

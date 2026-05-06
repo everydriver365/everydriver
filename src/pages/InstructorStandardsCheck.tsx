@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 
 const THRESHOLDS = {
   minorFaults: 5,
@@ -94,6 +95,7 @@ export default function InstructorStandardsCheck() {
   const hasWarning = triggersCount > 0 && triggersCount < 3;
 
   return (
+    <InstructorPortalLayout>
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-lg border-b">
         <div className="flex items-center gap-3 px-4 py-3">
@@ -209,6 +211,7 @@ export default function InstructorStandardsCheck() {
         )}
       </div>
     </div>
+    </InstructorPortalLayout>
   );
 }
 
