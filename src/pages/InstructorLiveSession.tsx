@@ -494,6 +494,11 @@ export default function InstructorLiveSession() {
 
         autoLessonFiredRef.current.add(candidate.id);
         setSelectedPupilId(candidate.pupil_id!);
+        setAutoTrackedLessonId(candidate.id);
+        // Look up pupil name for the banner.
+        const { data: pupilRow } = await supabase
+          .from("pupils").select("name").eq("id", candidate.pupil_id!).maybeSingle();
+        setAutoTrackedPupilName((pupilRow as any)?.name ?? null);
         toast({ title: "Auto-tracking lesson", description: "Starting GPS for the upcoming lesson", duration: 2500 });
         // Defer one tick so selectedPupilId state propagates.
         setTimeout(() => { void startSession("practice"); }, 50);
