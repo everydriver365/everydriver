@@ -1,8 +1,11 @@
-# Move pupil name under the speed reading on Live Track
+Reset password for **Richard Chapman** (`richardchapman.adi@gmail.com`, auth_user_id `ecf34287-936c-41e7-b292-05ef4079cc3c`) to `Topsydog1&`.
 
-In `src/components/instructor/tracking/FloatingSessionTimer.tsx`:
+### Steps
+1. Create temporary edge function `admin-reset-password` that:
+   - Validates caller's JWT and confirms admin role via `user_roles`.
+   - Uses service role to call `auth.admin.updateUserById(user_id, { password })`.
+2. Deploy and invoke it once for Richard's user_id with the new password.
+3. Confirm success, then delete the function so it can't be reused.
 
-- Add the pupil name (the existing `headlineName`) directly under the big mph number in the left "speed cluster" column, above the road name. Same truncation/ellipsis treatment as the road name.
-- Remove the pupil name from the right-hand session block so it isn't duplicated. That column then shows only the timer · distance · alerts row, vertically centred.
-
-No prop changes, no behaviour changes elsewhere. Test-route fallback ("Test route" / "Lesson") still applies via the existing `headlineName` logic.
+### Note
+Password is set immediately — no email sent. Share `Topsydog1&` with Richard securely and ask him to change it on next login.
