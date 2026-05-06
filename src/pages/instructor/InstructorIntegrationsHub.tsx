@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { Calendar, CreditCard, FileSpreadsheet } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Calendar, CreditCard, FileSpreadsheet, Satellite, Wifi, WifiOff } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { GoogleServiceAccountSetup } from "@/components/instructor/GoogleServiceAccountSetup";
 import { SquareConnectSettings } from "@/components/instructor/SquareConnectSettings";
 import { XeroExport } from "@/components/instructor/XeroExport";
@@ -10,6 +11,7 @@ import { IntegrationStatusBadge, IntegrationStatusKind } from "@/components/inst
 import { IntegrationInstructions } from "@/components/instructor/integrations/IntegrationInstructions";
 import { useIntegrationStatuses } from "@/hooks/useIntegrationStatuses";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { formatDistanceToNow } from "date-fns";
 
 const GOOGLE_STEPS = [
   {
