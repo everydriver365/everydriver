@@ -211,5 +211,6 @@ export default function InstructorIntegrationsHub() {
         </Tabs>
       </div>
     </div>
+    </InstructorPortalLayout>
   );
 }
