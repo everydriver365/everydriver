@@ -129,6 +129,13 @@ export default function InstructorLiveSession() {
   const [totalDistance, setTotalDistance] = useState<number>(0);
   const [drivingEvents, setDrivingEvents] = useState<DrivingEvent[]>([]);
   const [speedLimitKmh, setSpeedLimitKmh] = useState<number | null>(null);
+  // Guard against bogus cached values: UK limits sit between ~16 km/h (10 mph) and 113 km/h (70 mph).
+  const setSpeedLimitIfValid = (v: number | null | undefined) => {
+    if (v == null) return;
+    if (typeof v !== "number" || !Number.isFinite(v)) return;
+    if (v < 16 || v > 113) return;
+    setSpeedLimitKmh(v);
+  };
   const [pendingRouteType, setPendingRouteType] = useState<"practice" | "test" | "driving_test">("practice");
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
   const [radiusDeviceInfo, setRadiusDeviceInfo] = useState<{ id: string; name: string | null } | null>(null);
