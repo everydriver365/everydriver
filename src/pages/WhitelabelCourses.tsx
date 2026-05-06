@@ -30,17 +30,8 @@ export default function WhitelabelCourses() {
   const [instructorId, setInstructorId] = useState<string | null | undefined>(
     undefined,
   );
-  const [instructorPostcode, setInstructorPostcode] = useState<string | null>(
-    null,
-  );
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
-
-  // Distance display state
-  const [visitorPostcode, setVisitorPostcode] = useState("");
-  const [distanceMiles, setDistanceMiles] = useState<number | null>(null);
-  const [distanceLabel, setDistanceLabel] = useState<string | null>(null);
-  const [computingDistance, setComputingDistance] = useState(false);
 
   // Resolve slug → instructor id
   useEffect(() => {
@@ -53,7 +44,7 @@ export default function WhitelabelCourses() {
     (async () => {
       const { data, error } = await supabase
         .from("instructors")
-        .select("id, is_active, home_postcode")
+        .select("id, is_active")
         .eq("app_slug", slug)
         .maybeSingle();
       if (cancelled) return;
@@ -67,7 +58,6 @@ export default function WhitelabelCourses() {
         setInstructorId(null);
         return;
       }
-      setInstructorPostcode(data.home_postcode);
       setInstructorId(data.id);
     })();
     return () => {
@@ -89,68 +79,7 @@ export default function WhitelabelCourses() {
     instructorId === undefined ? null : instructorId,
   );
 
-  const handleShowDistance = async () => {
-    if (!visitorPostcode.trim() || !instructorPostcode) return;
-    setComputingDistance(true);
-    try {
-      const a = visitorPostcode.replace(/\s+/g, "").toUpperCase();
-      const b = instructorPostcode.replace(/\s+/g, "").toUpperCase();
-      const { data, error } = await supabase.functions.invoke(
-        "geocode-postcode",
-        { body: { postcodes: [a, b] } },
-      );
-      if (error) throw error;
-      const results = (data?.results || []) as Array<{
-        postcode: string;
-        latitude: number | null;
-        longitude: number | null;
-        area_name?: string | null;
-      }>;
-      const visitor = results.find((r) => r.postcode === a);
-      const instructor = results.find((r) => r.postcode === b);
-      if (
-        !visitor?.latitude ||
-        !visitor?.longitude ||
-        !instructor?.latitude ||
-        !instructor?.longitude
-      ) {
-        toast({
-          title: "Postcode not recognised",
-          description: "Please check and try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-      const miles = haversineMiles(
-        visitor.latitude,
-        visitor.longitude,
-        instructor.latitude,
-        instructor.longitude,
-      );
-      setDistanceMiles(miles);
-      setDistanceLabel(visitor.area_name || a);
-    } catch (e) {
-      toast({
-        title: "Could not compute distance",
-        description: "Please try again in a moment.",
-        variant: "destructive",
-      });
-    } finally {
-      setComputingDistance(false);
-    }
-  };
-
-  const clearDistance = () => {
-    setVisitorPostcode("");
-    setDistanceMiles(null);
-    setDistanceLabel(null);
-  };
-
-  // Apply the (display-only) distance to every course card
-  const coursesWithDistance = useMemo(() => {
-    if (distanceMiles == null) return filteredCourses;
-    return filteredCourses.map((c) => ({ ...c, distance: distanceMiles }));
-  }, [filteredCourses, distanceMiles]);
+  const coursesWithDistance = filteredCourses;
 
   const handleLoadMore = () =>
     setMobileVisibleCount((p) => Math.min(p + 6, coursesWithDistance.length));
