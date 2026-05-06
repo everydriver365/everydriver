@@ -9,6 +9,7 @@ import { XeroExport } from "@/components/instructor/XeroExport";
 import { IntegrationStatusBadge, IntegrationStatusKind } from "@/components/instructor/integrations/IntegrationStatusBadge";
 import { IntegrationInstructions } from "@/components/instructor/integrations/IntegrationInstructions";
 import { useIntegrationStatuses } from "@/hooks/useIntegrationStatuses";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 
 const GOOGLE_STEPS = [
   {
