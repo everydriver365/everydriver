@@ -1692,7 +1692,7 @@ export default function InstructorLiveSession() {
                       <div style={{ fontSize: 10, color: "#C7C7CC", textAlign: "center" }}>
                         {requiresPupil && !selectedPupilId
                           ? "Select a pupil to start tracking"
-                          : !isConnected
+                          : !connectionReady
                           ? "Waiting for GPS connection"
                           : ""}
                       </div>
