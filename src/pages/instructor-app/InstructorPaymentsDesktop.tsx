@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Download, Plus, CreditCard, PoundSterling, Landmark,
-  MoreVertical, ChevronLeft, ChevronRight, X, Search, Undo2,
+  MoreVertical, ChevronLeft, ChevronRight, X, Search, Undo2, Receipt, ArrowRight,
 } from "lucide-react";
 import { RefundModal } from "@/components/instructor/RefundModal";
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
