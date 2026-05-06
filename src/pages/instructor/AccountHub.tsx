@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { Loader2, Camera, Car as CarIcon, Video, Award, ImagePlus, User, Shield, Wallet, CreditCard } from "lucide-react";
+import { Loader2, Camera, Car as CarIcon, Video, Award, ImagePlus, User, Shield, Wallet, CreditCard, PoundSterling, MapPin, CalendarClock, Bell, Settings as SettingsIcon, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -13,6 +13,7 @@ import { toast as uiToast } from "@/hooks/use-toast";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { ComplianceTracker } from "@/components/instructor/ComplianceTracker";
 import { InstructorDetailsEditor } from "@/components/instructor/InstructorDetailsEditor";
+import { AccountSettings } from "@/components/instructor/AccountSettings";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 
 interface InstructorProfileRow {
@@ -29,8 +30,12 @@ interface InstructorProfileRow {
 
 const TABS = [
   { id: "profile", label: "Profile", icon: User },
+  { id: "rates", label: "Rates", icon: PoundSterling },
+  { id: "area", label: "Service Area", icon: MapPin },
+  { id: "availability", label: "Availability", icon: CalendarClock },
   { id: "vehicle", label: "Vehicle & ADI", icon: CarIcon },
   { id: "media", label: "Media", icon: ImagePlus },
+  { id: "notifications", label: "Notifications", icon: Bell },
   { id: "compliance", label: "Compliance", icon: Shield },
   { id: "billing", label: "Plan & Billing", icon: Wallet },
 ];
