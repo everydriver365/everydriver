@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import {
+  Calendar as CalendarIcon,
   Calendar,
   Clock,
   Star,
@@ -9,6 +10,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import {
   Select,
   SelectContent,
@@ -21,6 +23,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -29,6 +32,16 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, subMonths } from "date-fns";
 import { useNavigate } from "react-router-dom";
+
+type StatusFilter = "all" | "rated" | "unrated" | "has_notes" | "missing_notes";
+const statusLabels: Record<StatusFilter, string> = {
+  all: "All statuses",
+  rated: "Rated",
+  unrated: "Unrated",
+  has_notes: "Has notes",
+  missing_notes: "Missing notes",
+};
+
 
 interface LessonRecord {
   id: string;
@@ -93,7 +106,12 @@ export default function InstructorDiary() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPupil, setSelectedPupil] = useState<string>("all");
   const [dateRange, setDateRange] = useState<string>("30");
+  const [customFrom, setCustomFrom] = useState<Date | undefined>();
+  const [customTo, setCustomTo] = useState<Date | undefined>();
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [searchOpen, setSearchOpen] = useState(false);
+
+  const usingCustomRange = !!(customFrom && customTo);
 
   useEffect(() => {
     if (instructorId) fetchPupils();
@@ -101,7 +119,7 @@ export default function InstructorDiary() {
 
   useEffect(() => {
     if (instructorId) fetchData();
-  }, [instructorId, dateRange, selectedPupil]);
+  }, [instructorId, dateRange, selectedPupil, customFrom, customTo]);
 
   const fetchPupils = async () => {
     if (!instructorId) return;
@@ -121,10 +139,17 @@ export default function InstructorDiary() {
     if (!instructorId) return;
     try {
       setLoading(true);
-      const daysAgo = parseInt(dateRange);
-      const startDate = daysAgo === 0
-        ? format(subMonths(new Date(), 12), "yyyy-MM-dd")
-        : format(subDays(new Date(), daysAgo), "yyyy-MM-dd");
+      let startDate: string;
+      let endDate: string | null = null;
+      if (usingCustomRange) {
+        startDate = format(customFrom!, "yyyy-MM-dd");
+        endDate = format(customTo!, "yyyy-MM-dd");
+      } else {
+        const daysAgo = parseInt(dateRange);
+        startDate = daysAgo === 0
+          ? format(subMonths(new Date(), 12), "yyyy-MM-dd")
+          : format(subDays(new Date(), daysAgo), "yyyy-MM-dd");
+      }
 
       let query = supabase
         .from("lesson_history")
@@ -132,6 +157,8 @@ export default function InstructorDiary() {
         .eq("instructor_id", instructorId)
         .gte("lesson_date", startDate)
         .order("lesson_date", { ascending: false });
+
+      if (endDate) query = query.lte("lesson_date", endDate);
 
       if (selectedPupil !== "all") {
         query = query.eq("pupil_id", selectedPupil);
@@ -155,11 +182,17 @@ export default function InstructorDiary() {
   };
 
   const filteredLessons = useMemo(() => lessons.filter(lesson => {
+    // Status filter
+    if (statusFilter === "rated" && !lesson.rating) return false;
+    if (statusFilter === "unrated" && lesson.rating) return false;
+    if (statusFilter === "has_notes" && !lesson.notes?.trim()) return false;
+    if (statusFilter === "missing_notes" && lesson.notes?.trim()) return false;
+
     if (!searchQuery) return true;
     const pupilName = lesson.pupils?.name?.toLowerCase() || "";
     const notes = lesson.notes?.toLowerCase() || "";
     return pupilName.includes(searchQuery.toLowerCase()) || notes.includes(searchQuery.toLowerCase());
-  }), [lessons, searchQuery]);
+  }), [lessons, searchQuery, statusFilter]);
 
   const lessonCount = filteredLessons.length;
 
@@ -169,18 +202,22 @@ export default function InstructorDiary() {
     requestAnimationFrame(() => searchInputRef.current?.focus());
   };
   const handleVoiceSearch = () => {
-    // Hook-up: voice handler — falls back to focusing the input if unavailable.
     handleSearchFocus();
   };
   const handleClearFilters = () => {
     setSearchQuery("");
     setSelectedPupil("all");
     setDateRange("30");
+    setCustomFrom(undefined);
+    setCustomTo(undefined);
+    setStatusFilter("all");
   };
 
   const selectedPupilObj = allPupils.find(p => p.id === selectedPupil) || null;
-  const dateLabel = dateRangeLabels[dateRange] || "Last 30 days";
-  const typeLabel = "All types";
+  const dateLabel = usingCustomRange
+    ? `${format(customFrom!, "MMM d")} – ${format(customTo!, "MMM d")}`
+    : (dateRangeLabels[dateRange] || "Last 30 days");
+  const statusLabel = statusLabels[statusFilter];
 
   if (!instructorId) {
     return (
@@ -316,26 +353,64 @@ export default function InstructorDiary() {
 
               <Popover>
                 <PopoverTrigger asChild>
-                  <button type="button" style={chipStyle(dateRange !== "30")}>
+                  <button type="button" style={chipStyle(dateRange !== "30" || usingCustomRange)}>
                     {dateLabel}
                   </button>
                 </PopoverTrigger>
+                <PopoverContent className="p-2 w-auto" align="start">
+                  <div className="space-y-1 mb-2">
+                    {Object.entries(dateRangeLabels).map(([k, label]) => (
+                      <button
+                        key={k}
+                        className={cn(
+                          "w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted",
+                          !usingCustomRange && dateRange === k && "bg-muted font-semibold",
+                        )}
+                        onClick={() => { setDateRange(k); setCustomFrom(undefined); setCustomTo(undefined); }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="border-t pt-2">
+                    <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground px-2 mb-1">
+                      Custom range
+                    </div>
+                    <CalendarPicker
+                      mode="range"
+                      selected={{ from: customFrom, to: customTo }}
+                      onSelect={(range) => {
+                        setCustomFrom(range?.from);
+                        setCustomTo(range?.to);
+                      }}
+                      numberOfMonths={1}
+                      className={cn("p-2 pointer-events-auto")}
+                    />
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button type="button" style={chipStyle(statusFilter !== "all")}>
+                    {statusLabel}
+                  </button>
+                </PopoverTrigger>
                 <PopoverContent className="p-1 w-44">
-                  {Object.entries(dateRangeLabels).map(([k, label]) => (
+                  {(Object.entries(statusLabels) as [StatusFilter, string][]).map(([k, label]) => (
                     <button
                       key={k}
-                      className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted"
-                      onClick={() => setDateRange(k)}
+                      className={cn(
+                        "w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted",
+                        statusFilter === k && "bg-muted font-semibold",
+                      )}
+                      onClick={() => setStatusFilter(k)}
                     >
                       {label}
                     </button>
                   ))}
                 </PopoverContent>
               </Popover>
-
-              <button type="button" style={chipStyle(false)} disabled>
-                {typeLabel}
-              </button>
 
               <button
                 type="button"
