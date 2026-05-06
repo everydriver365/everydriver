@@ -700,16 +700,12 @@ export default function InstructorLiveSession() {
       setPhoneStreamingConfirmed(true);
     }
     if (!device || !instructor?.id) {
-      if (isPhoneProvider && instructor?.id) {
-        // Phone-only flow: no hardware device row required. Skip device updates.
-      } else {
-        toast({
-          title: "Error",
-          description: "Device not configured",
-          variant: "destructive",
-        });
-        return;
-      }
+      toast({
+        title: "Error",
+        description: "Device not configured",
+        variant: "destructive",
+      });
+      return;
     }
 
     // For driving tests, use the pupil from dialog or selected pupil
