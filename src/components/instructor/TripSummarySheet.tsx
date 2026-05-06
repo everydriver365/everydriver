@@ -97,22 +97,23 @@ const TripSummarySheet: React.FC<TripSummarySheetProps> = ({
     setInsufficientData(null);
     setReport(null);
 
-    // Short delay to allow final GPS points to be written
+    // Allow final GPS points to be flushed by the streamer / poller
+    // before we ask the edge function to summarise the trip.
     if (retryCount === 0) {
-      await new Promise(r => setTimeout(r, 3000));
+      await new Promise(r => setTimeout(r, 4000));
     }
-    
+
     try {
       const { data, error } = await supabase.functions.invoke('generate-route-report', {
         body: { telematicsId }
       });
 
       if (error) throw error;
-      
+
       if (data.error === 'insufficient_gps_data') {
-        // Retry once after 5 seconds to allow poller to finish writing points
-        if (retryCount < 1) {
-          console.log('[TripSummary] Insufficient data, retrying in 5s...');
+        // Retry up to twice (5s, then 5s) — phone tracking can lag.
+        if (retryCount < 2) {
+          console.log(`[TripSummary] Insufficient data, retrying in 5s (attempt ${retryCount + 1}/2)...`);
           await new Promise(r => setTimeout(r, 5000));
           return generateReport(retryCount + 1);
         }
@@ -122,12 +123,12 @@ const TripSummarySheet: React.FC<TripSummarySheetProps> = ({
         });
         return;
       }
-      
+
       if (data.error === 'database_error') {
         toast.error(data.message || 'Database temporarily unavailable. Please try again.');
         return;
       }
-      
+
       if (!data.success) throw new Error(data.error || 'Failed to generate report');
 
       setReport(data);
