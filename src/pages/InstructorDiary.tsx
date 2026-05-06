@@ -353,26 +353,64 @@ export default function InstructorDiary() {
 
               <Popover>
                 <PopoverTrigger asChild>
-                  <button type="button" style={chipStyle(dateRange !== "30")}>
+                  <button type="button" style={chipStyle(dateRange !== "30" || usingCustomRange)}>
                     {dateLabel}
                   </button>
                 </PopoverTrigger>
+                <PopoverContent className="p-2 w-auto" align="start">
+                  <div className="space-y-1 mb-2">
+                    {Object.entries(dateRangeLabels).map(([k, label]) => (
+                      <button
+                        key={k}
+                        className={cn(
+                          "w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted",
+                          !usingCustomRange && dateRange === k && "bg-muted font-semibold",
+                        )}
+                        onClick={() => { setDateRange(k); setCustomFrom(undefined); setCustomTo(undefined); }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="border-t pt-2">
+                    <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground px-2 mb-1">
+                      Custom range
+                    </div>
+                    <CalendarPicker
+                      mode="range"
+                      selected={{ from: customFrom, to: customTo }}
+                      onSelect={(range) => {
+                        setCustomFrom(range?.from);
+                        setCustomTo(range?.to);
+                      }}
+                      numberOfMonths={1}
+                      className={cn("p-2 pointer-events-auto")}
+                    />
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button type="button" style={chipStyle(statusFilter !== "all")}>
+                    {statusLabel}
+                  </button>
+                </PopoverTrigger>
                 <PopoverContent className="p-1 w-44">
-                  {Object.entries(dateRangeLabels).map(([k, label]) => (
+                  {(Object.entries(statusLabels) as [StatusFilter, string][]).map(([k, label]) => (
                     <button
                       key={k}
-                      className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted"
-                      onClick={() => setDateRange(k)}
+                      className={cn(
+                        "w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted",
+                        statusFilter === k && "bg-muted font-semibold",
+                      )}
+                      onClick={() => setStatusFilter(k)}
                     >
                       {label}
                     </button>
                   ))}
                 </PopoverContent>
               </Popover>
-
-              <button type="button" style={chipStyle(false)} disabled>
-                {typeLabel}
-              </button>
 
               <button
                 type="button"
