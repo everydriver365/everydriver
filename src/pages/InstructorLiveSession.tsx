@@ -739,6 +739,53 @@ export default function InstructorLiveSession() {
     };
   }, [device?.current_pupil_id, device?.current_session_id]);
 
+  // Phone-tracking realtime: when provider is "phone", speed limit comes from
+  // phone_live_positions (written by usePhoneTrackingStreamer / usePhoneLivePositionStreamer)
+  // because the radius-poller does not run for phone sessions.
+  useEffect(() => {
+    if (!isPhoneProvider || !device?.current_pupil_id) return;
+
+    let cancelled = false;
+    const pupilId = device.current_pupil_id;
+
+    // Initial fetch
+    (async () => {
+      const { data } = await supabase
+        .from("phone_live_positions")
+        .select("speed_limit_kmh")
+        .eq("pupil_id", pupilId)
+        .maybeSingle();
+      if (cancelled) return;
+      const limit = (data as any)?.speed_limit_kmh;
+      if (limit != null) setSpeedLimitKmh(limit);
+    })();
+
+    const channel = supabase
+      .channel(`phone-live-${pupilId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "phone_live_positions",
+          filter: `pupil_id=eq.${pupilId}`,
+        },
+        (payload) => {
+          const newPos = payload.new as { speed_limit_kmh?: number | null };
+          if (newPos?.speed_limit_kmh != null) {
+            setSpeedLimitKmh(newPos.speed_limit_kmh);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [isPhoneProvider, device?.current_pupil_id]);
+
+
   // Fetch alert counts and events when session is active
   useEffect(() => {
     if (!device?.current_session_id) {
