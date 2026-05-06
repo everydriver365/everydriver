@@ -545,6 +545,7 @@ export default function InstructorPaymentsDesktop() {
         onOpenChange={setRefundOpen}
         instructorId={instructor?.id || ""}
         pupils={allPupils.map(p => ({ id: p.id, name: p.name, account_balance: p.account_balance }))}
+        squareConnected={!!(instructor as any)?.square_merchant_id}
         onRefunded={refresh}
       />
 
