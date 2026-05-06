@@ -292,7 +292,7 @@ export function FindAppointmentBody({
                       }}
                     >
                       {active && (
-                        <div style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#FFF" }} />
+                        <div style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "var(--d2-surface)" }} />
                       )}
                     </div>
                     <span className="text-xs font-semibold" style={{ color: "var(--d2-text-1)" }}>
@@ -399,7 +399,7 @@ export function FindAppointmentBody({
                     .sort((a, b) => b[1] - a[1])
                     .slice(0, 5)
                     .map(([reason, count]) => (
-                      <div key={reason} className="flex items-start justify-between gap-2 text-[11px] text-[#3C3C43]">
+                      <div key={reason} className="flex items-start justify-between gap-2 text-[11px]" style={{ color: "var(--d2-text-2)" }}>
                         <span>{rejection.describe(reason)}</span>
                         <span className="font-semibold tabular-nums">{count}</span>
                       </div>
