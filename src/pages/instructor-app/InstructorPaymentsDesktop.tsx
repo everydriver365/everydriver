@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Download, Plus, CreditCard, PoundSterling, Landmark,
-  MoreVertical, ChevronLeft, ChevronRight, X, Search,
+  MoreVertical, ChevronLeft, ChevronRight, X, Search, Undo2,
 } from "lucide-react";
+import { RefundModal } from "@/components/instructor/RefundModal";
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
