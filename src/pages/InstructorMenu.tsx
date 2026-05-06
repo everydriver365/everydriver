@@ -852,6 +852,32 @@ export default function InstructorMenu() {
           ariaLabel="Search menu and settings"
         />
 
+        {/* Pinned profile row — quick access to profile & settings */}
+        {!lowerQuery && instructor && (
+          <div className={cardClass}>
+            <motion.button
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              onClick={() => navigate("/instructor/profile")}
+              className="w-full px-4 py-[14px] text-left flex items-center gap-3"
+            >
+              <Avatar className="h-12 w-12 shrink-0">
+                <AvatarImage src={profile?.profile_image_url ?? undefined} alt={profile?.name ?? instructor.name ?? "Profile"} />
+                <AvatarFallback>
+                  {(profile?.name ?? instructor.name ?? "?").slice(0, 1).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="truncate" style={{ fontSize: 15, fontWeight: 600, color: "#000000", letterSpacing: -0.2, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif' }}>
+                  {profile?.name ?? instructor.name ?? "Your profile"}
+                </p>
+                <p className="truncate text-xs text-[#6E6E73]">View profile &amp; settings</p>
+              </div>
+              <ChevronRight size={14} strokeWidth={1.6} color="#6E6E73" className="shrink-0" />
+            </motion.button>
+          </div>
+        )}
+
 
         {/* Menu Sections (navigation items) */}
         {menuSections.map((section) => renderMenuSection(section))}
