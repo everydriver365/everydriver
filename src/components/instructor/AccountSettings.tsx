@@ -35,11 +35,16 @@ interface AccountSettingsProps {
   instructorId: string;
 }
 
+type FuelType = "petrol" | "diesel" | "electric";
+
 interface AccountData {
   tax_code: string;
   hourly_rate: number;
   vehicle_mpg: number;
   fuel_cost_per_litre: number;
+  fuel_type: FuelType;
+  battery_kwh: number;
+  electricity_cost_per_kwh: number;
 }
 
 // HMRC Allowable Deductions for Driving Instructors
