@@ -380,22 +380,33 @@ export default function InstructorLiveSession() {
       ]);
 
       if (devicesRes.error) throw devicesRes.error;
-      const devices = devicesRes.data;
+      const devices = (devicesRes.data ?? []).filter((d: any) => d.is_active !== false);
       const preferred = (prefRes.data as any)?.preferred_tracking_provider as string | null;
+      const hasRadius = devices.length > 0;
 
-      // Honour the instructor's saved preference. "phone" leaves device null
-      // so the streamer hook takes over.
-      if (preferred === "phone") {
-        setActiveProvider("phone");
-      } else if (devices && devices.length > 0) {
-        setActiveProvider("radius");
-
-        const providerDevices = devices;
-        const chosen = (providerDevices[0] || devices[0]) as GPSDevice;
+      // Hydrate the Radius device whenever one exists, regardless of the
+      // saved preference, so switching tracker is instant.
+      if (hasRadius) {
+        const chosen = devices[0] as GPSDevice;
         const normalizedDevice = await normalizeDeviceSessionState(chosen);
-
         lastSeenRef.current = buildDeviceSnapshot(normalizedDevice);
         setDevice(normalizedDevice);
+      }
+
+      // Honour the instructor's saved preference. If none is saved and a
+      // Radius device exists, default to Radius and persist it.
+      if (preferred === "phone") {
+        setActiveProvider("phone");
+      } else if (preferred === "radius" && hasRadius) {
+        setActiveProvider("radius");
+      } else if (!preferred && hasRadius) {
+        setActiveProvider("radius");
+        void supabase
+          .from("instructors")
+          .update({ preferred_tracking_provider: "radius" } as any)
+          .eq("id", instructor.id);
+      } else {
+        setActiveProvider("phone");
       }
 
       // Fetch pupils (without is_active filter since column doesn't exist)
