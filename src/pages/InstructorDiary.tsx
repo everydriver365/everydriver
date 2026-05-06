@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import {
+  Calendar as CalendarIcon,
   Calendar,
   Clock,
   Star,
@@ -9,6 +10,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import {
   Select,
   SelectContent,
@@ -21,6 +23,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -29,6 +32,16 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, subMonths } from "date-fns";
 import { useNavigate } from "react-router-dom";
+
+type StatusFilter = "all" | "rated" | "unrated" | "has_notes" | "missing_notes";
+const statusLabels: Record<StatusFilter, string> = {
+  all: "All statuses",
+  rated: "Rated",
+  unrated: "Unrated",
+  has_notes: "Has notes",
+  missing_notes: "Missing notes",
+};
+
 
 interface LessonRecord {
   id: string;
