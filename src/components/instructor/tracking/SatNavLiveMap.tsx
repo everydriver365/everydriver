@@ -163,6 +163,31 @@ export function SatNavLiveMap({
           ];
           renderPolylines();
           setSnapStatus("snapped");
+
+          // Nudge the live marker onto the road. Take the LAST snapped point
+          // (closest to the current raw fix) and only apply it if it's within
+          // ~25 m of where the marker is heading — otherwise the snap result
+          // is on the wrong road and we'd yank the arrow away from reality.
+          const last = snapped[snapped.length - 1];
+          const target = targetPosRef.current;
+          if (last && target) {
+            const R = 6371000;
+            const dLat = ((last.lat - target.lat) * Math.PI) / 180;
+            const dLng = ((last.lng - target.lng) * Math.PI) / 180;
+            const a =
+              Math.sin(dLat / 2) ** 2 +
+              Math.cos((target.lat * Math.PI) / 180) *
+                Math.cos((last.lat * Math.PI) / 180) *
+                Math.sin(dLng / 2) ** 2;
+            const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            if (dist <= 25) {
+              targetPosRef.current = {
+                ...target,
+                lat: last.lat,
+                lng: last.lng,
+              };
+            }
+          }
         } else {
           setSnapStatus("raw");
         }
