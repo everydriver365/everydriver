@@ -376,7 +376,7 @@ export function TakePaymentModal({
                           body: {
                             amount: chargeAmount,
                             orderReference: orderRef,
-                            description: qrReason || (qrPupil ? `Payment from ${qrPupil.name}` : `QR payment to ${instructorName}`),
+                            description: `Payment Request from ${instructorName}${qrReason ? ` — ${qrReason}` : ""}`,
                             customerName: qrPupil?.name,
                             customerEmail: qrPupil?.email || undefined,
                             customerPhone: qrPupil?.phone || undefined,
