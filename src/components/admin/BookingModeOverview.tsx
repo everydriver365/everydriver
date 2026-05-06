@@ -180,12 +180,14 @@ export function BookingModeOverview() {
     pupil_choice: instructors.filter(i => !i.booking_mode || i.booking_mode === "pupil_choice").length,
     auto_assign: instructors.filter(i => i.booking_mode === "auto_assign").length,
     instructor_assigns: instructors.filter(i => i.booking_mode === "instructor_assigns").length,
+    enquiry_only: instructors.filter(i => i.booking_mode === "enquiry_only").length,
   };
 
   const getModeIcon = (mode: string | null) => {
     switch (mode) {
       case "auto_assign": return <Sparkles className="h-4 w-4 text-amber-500" />;
       case "instructor_assigns": return <UserCog className="h-4 w-4 text-emerald-500" />;
+      case "enquiry_only": return <Mail className="h-4 w-4" style={{ color: '#2B7BC8' }} />;
       default: return <Calendar className="h-4 w-4 text-primary" />;
     }
   };
@@ -194,6 +196,7 @@ export function BookingModeOverview() {
     switch (mode) {
       case "auto_assign": return "Auto-Assign";
       case "instructor_assigns": return "Instructor Assigns";
+      case "enquiry_only": return "Enquiry Only";
       default: return "Pupil Choice";
     }
   };
@@ -424,6 +427,12 @@ export function BookingModeOverview() {
                               <div className="flex items-center gap-2">
                                 <UserCog className="h-4 w-4 text-emerald-500" />
                                 Instructor Assigns
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="enquiry_only">
+                              <div className="flex items-center gap-2">
+                                <Mail className="h-4 w-4" style={{ color: '#2B7BC8' }} />
+                                Enquiry Only
                               </div>
                             </SelectItem>
                           </SelectContent>

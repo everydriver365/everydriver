@@ -74,7 +74,7 @@ const instructorSchema = z.object({
   adi_code_of_practice: z.boolean().optional(),
   instructor_grade: z.string().optional(),
   // Booking mode
-  booking_mode: z.enum(["pupil_choice", "auto_assign", "instructor_assigns"]).optional(),
+  booking_mode: z.enum(["pupil_choice", "auto_assign", "instructor_assigns", "enquiry_only"]).optional(),
 });
 
 type InstructorFormData = z.infer<typeof instructorSchema>;
@@ -112,7 +112,7 @@ interface InstructorFormProps {
     adi_code_of_practice?: boolean;
     instructor_grade?: string;
     app_slug?: string;
-    booking_mode?: "pupil_choice" | "auto_assign" | "instructor_assigns";
+    booking_mode?: "pupil_choice" | "auto_assign" | "instructor_assigns" | "enquiry_only";
   }>;
 }
 
@@ -1367,6 +1367,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
                       <SelectItem value="pupil_choice">Pupil Choice</SelectItem>
                       <SelectItem value="auto_assign">Auto-Assign</SelectItem>
                       <SelectItem value="instructor_assigns">Instructor Assigns</SelectItem>
+                      <SelectItem value="enquiry_only">Enquiry Only</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription className="text-xs">
