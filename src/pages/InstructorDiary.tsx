@@ -470,7 +470,7 @@ function chipStyle(active: boolean): React.CSSProperties {
     padding: "5px 12px",
     backgroundColor: active ? "var(--d2-indigo)" : "var(--d2-surface)",
     border: active ? "none" : "0.5px solid var(--d2-border)",
-    color: active ? "#FFF" : "var(--d2-text-2)",
+    color: active ? "var(--d2-surface)" : "var(--d2-text-2)",
     fontSize: 10,
     fontWeight: 600,
     whiteSpace: "nowrap",
