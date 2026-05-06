@@ -41,6 +41,7 @@ const InstructorQuickAvailability = lazy(() => import("@/pages/instructor-app/In
 const InstructorAvailabilityWindows = lazy(() => import("@/pages/InstructorAvailabilityWindows"));
 const InstructorGaps = lazy(() => import("@/pages/InstructorGaps"));
 const InstructorWaitingList = lazy(() => import("@/pages/InstructorWaitingList"));
+const InstructorEnquiries = lazy(() => import("@/pages/InstructorEnquiries"));
 const InstructorFindAppointmentPage = lazy(() => import("@/pages/instructor/InstructorFindAppointmentPage"));
 
 // Finance & payments
@@ -190,6 +191,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/availability-windows" element={<InstructorAvailabilityWindows />} />
     <Route path="/instructor/gaps" element={<Gated feature="sms_notifications" label="Fill Gaps"><InstructorGaps /></Gated>} />
     <Route path="/instructor/waiting-list" element={<InstructorWaitingList />} />
+    <Route path="/instructor/enquiries" element={<InstructorEnquiries />} />
     <Route path="/instructor/find-appointment" element={<InstructorFindAppointmentPage />} />
     <Route path="/instructor/test-slot-finder" element={<Navigate to="/instructor/find-appointment" replace />} />
 
