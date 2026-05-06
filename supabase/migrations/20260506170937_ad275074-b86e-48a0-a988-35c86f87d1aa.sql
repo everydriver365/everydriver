@@ -1,0 +1,1 @@
+DELETE FROM public.speed_limit_cache;
