@@ -1026,6 +1026,13 @@ export default function InstructorLiveSession() {
       setShowReport(true);
       setDrivingTestDetails(null); // Clear driving test details
 
+      // If this stop was for an auto-tracked lesson, suppress re-arm for 30 minutes.
+      if (autoTrackedLessonId) {
+        sessionStorage.setItem(`auto-track-suppress:${autoTrackedLessonId}`, String(Date.now()));
+        setAutoTrackedLessonId(null);
+        setAutoTrackedPupilName(null);
+      }
+
       // Exit fullscreen mode
       navigate("/instructor/tracking", { replace: true });
 
