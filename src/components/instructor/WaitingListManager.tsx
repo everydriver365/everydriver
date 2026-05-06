@@ -1,11 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Clock, CheckCircle } from "lucide-react";
+import { UserPlus, Filter, TrendingUp } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
-export function WaitingListManager() {
+interface Props {
+  onAddToList?: () => void;
+}
+
+export function WaitingListManager({ onAddToList }: Props = {}) {
   const { instructor } = useInstructorAuth();
 
   const { data: waitlist, isLoading } = useQuery<any[]>({
@@ -37,93 +40,353 @@ export function WaitingListManager() {
     enabled: !!instructor?.id,
   });
 
-  const totalWaiting = waitlist?.length || 0;
-  const pendingOffers = offers?.filter(o => o.pupil_response === null || o.pupil_response === "pending").length || 0;
-  const claimedOffers = offers?.filter(o => o.pupil_response === "accepted").length || 0;
+  const waitingCount = waitlist?.length || 0;
+  const offersPendingCount =
+    offers?.filter((o) => o.pupil_response === null || o.pupil_response === "pending").length || 0;
+  const claimedCount = offers?.filter((o) => o.pupil_response === "accepted").length || 0;
+
+  const stats = [
+    {
+      label: "Waiting",
+      value: waitingCount,
+      color: "#1D4ED8",
+      subtext: waitingCount === 0 ? "No pupils in queue" : `${waitingCount} in queue`,
+      accentColor: waitingCount > 0 ? "#1D4ED8" : "#E5E7EB",
+    },
+    {
+      label: "Offers pending",
+      value: offersPendingCount,
+      color: "#D97706",
+      subtext: offersPendingCount === 0 ? "Awaiting response" : `${offersPendingCount} awaiting response`,
+      accentColor: offersPendingCount > 0 ? "#F59E0B" : "#E5E7EB",
+    },
+    {
+      label: "Claimed",
+      value: claimedCount,
+      color: "#059669",
+      subtext: claimedCount === 0 ? "Slots accepted" : `${claimedCount} slots accepted`,
+      accentColor: claimedCount > 0 ? "#10B981" : "#E5E7EB",
+    },
+  ];
+
+  const handleFilter = () => {
+    window.dispatchEvent(new CustomEvent("waiting-list:filter"));
+  };
+  const handleExport = () => {
+    window.dispatchEvent(new CustomEvent("waiting-list:export"));
+  };
+
+  const activeOffers =
+    offers?.filter((o) => o.pupil_response === null || o.pupil_response === "pending") || [];
 
   return (
-    <div className="space-y-4">
+    <div>
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
-        <Card>
-          <CardContent className="p-3 text-center">
-            <Users className="h-5 w-5 mx-auto mb-1 text-primary" />
-            <p className="text-lg font-bold text-foreground">{totalWaiting}</p>
-            <p className="text-[10px] text-muted-foreground">Waiting</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-3 text-center">
-            <Clock className="h-5 w-5 mx-auto mb-1 text-amber-500" />
-            <p className="text-lg font-bold text-foreground">{pendingOffers}</p>
-            <p className="text-[10px] text-muted-foreground">Offers Pending</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-3 text-center">
-            <CheckCircle className="h-5 w-5 mx-auto mb-1 text-green-500" />
-            <p className="text-lg font-bold text-foreground">{claimedOffers}</p>
-            <p className="text-[10px] text-muted-foreground">Claimed</p>
-          </CardContent>
-        </Card>
+      <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
+        {stats.map((stat) => (
+          <div
+            key={stat.label}
+            style={{
+              flex: 1,
+              background: "#FFF",
+              borderRadius: 12,
+              padding: "18px 20px",
+              border: "1px solid #ECEEF2",
+              overflow: "hidden",
+              position: "relative",
+            }}
+          >
+            <p
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: "#9CA3AF",
+                letterSpacing: 1.2,
+                textTransform: "uppercase",
+                margin: "0 0 8px",
+              }}
+            >
+              {stat.label}
+            </p>
+            <p
+              style={{
+                fontSize: 28,
+                fontWeight: 700,
+                color: stat.color,
+                letterSpacing: -1,
+                lineHeight: "32px",
+                margin: 0,
+              }}
+            >
+              {stat.value}
+            </p>
+            <p style={{ fontSize: 11, color: "#9CA3AF", margin: "6px 0 0" }}>{stat.subtext}</p>
+            <div
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: 3,
+                background: stat.accentColor,
+              }}
+            />
+          </div>
+        ))}
       </div>
 
-      {/* Queue */}
-      <Card>
-        <CardHeader><CardTitle className="text-sm">Queue Order</CardTitle></CardHeader>
-        <CardContent className="space-y-2">
-          {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
-          ) : waitlist?.length ? (
-            waitlist.map((entry, i) => (
-              <div key={entry.id} className="flex items-center gap-3 py-2 border-b last:border-0 border-border">
-                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-xs font-bold text-primary">{i + 1}</span>
+      {/* Section header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 10,
+        }}
+      >
+        <h2
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            color: "#9CA3AF",
+            letterSpacing: 1.2,
+            textTransform: "uppercase",
+            margin: 0,
+          }}
+        >
+          Queue order
+        </h2>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            type="button"
+            onClick={handleFilter}
+            style={{
+              background: "#FFF",
+              border: "1px solid #E5E7EB",
+              borderRadius: 8,
+              padding: "5px 10px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              cursor: "pointer",
+              fontSize: 11,
+              fontWeight: 600,
+              color: "#374151",
+            }}
+          >
+            <Filter size={11} color="#6B7280" strokeWidth={1.8} />
+            Filter
+          </button>
+          <button
+            type="button"
+            onClick={handleExport}
+            style={{
+              background: "#FFF",
+              border: "1px solid #E5E7EB",
+              borderRadius: 8,
+              padding: "5px 10px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              cursor: "pointer",
+              fontSize: 11,
+              fontWeight: 600,
+              color: "#374151",
+            }}
+          >
+            <TrendingUp size={11} color="#6B7280" strokeWidth={1.8} />
+            Export
+          </button>
+        </div>
+      </div>
+
+      {/* Queue list */}
+      {isLoading ? (
+        <div
+          style={{
+            background: "#FFF",
+            borderRadius: 12,
+            padding: 24,
+            border: "1px solid #ECEEF2",
+            color: "#6B7280",
+            fontSize: 13,
+          }}
+        >
+          Loading…
+        </div>
+      ) : waitingCount > 0 ? (
+        <div
+          style={{
+            background: "#FFF",
+            borderRadius: 12,
+            overflow: "hidden",
+            border: "1px solid #ECEEF2",
+          }}
+        >
+          {waitlist!.map((entry, i) => (
+            <div key={entry.id}>
+              {i > 0 && <div style={{ height: 1, background: "#F3F4F6" }} />}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px" }}>
+                <div
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: "50%",
+                    background: "#EEF2FF",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#3730A3",
+                    flexShrink: 0,
+                  }}
+                >
+                  {i + 1}
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">{(entry as any).pupils?.name || "Unknown"}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {(entry.preferred_days as string[] | null)?.join(", ") || "Any day"} • {(entry.preferred_times as string[] | null)?.join(", ") || "Any time"}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "#111827", margin: 0 }}>
+                    {(entry as any).pupils?.name || "Unknown"}
+                  </p>
+                  <p style={{ fontSize: 11, color: "#6B7280", margin: "2px 0 0" }}>
+                    {(entry.preferred_days as string[] | null)?.join(", ") || "Any day"} ·{" "}
+                    {(entry.preferred_times as string[] | null)?.join(", ") || "Any time"}
                   </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p style={{ fontSize: 11, color: "#9CA3AF", margin: 0 }}>
                   {formatDistanceToNow(new Date(entry.created_at), { addSuffix: true })}
                 </p>
               </div>
-            ))
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-2">No one on the waiting list.</p>
-          )}
-        </CardContent>
-      </Card>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div
+          style={{
+            background: "#FFF",
+            borderRadius: 12,
+            padding: 48,
+            textAlign: "center",
+            border: "1px solid #ECEEF2",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 14,
+              background: "#EEF2FF",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 14,
+            }}
+          >
+            <UserPlus size={24} color="#4F46E5" strokeWidth={1.5} />
+          </div>
+          <p style={{ fontSize: 15, fontWeight: 700, color: "#111827", margin: "0 0 6px" }}>
+            No one on the waiting list
+          </p>
+          <p
+            style={{
+              fontSize: 12,
+              color: "#6B7280",
+              lineHeight: "20px",
+              margin: "0 0 18px",
+              whiteSpace: "pre-line",
+            }}
+          >
+            {"When pupils request to join your waiting list,\nthey'll appear here in queue order."}
+          </p>
+          <button
+            type="button"
+            onClick={onAddToList}
+            style={{
+              background: "#1D4ED8",
+              borderRadius: 20,
+              padding: "7px 16px",
+              border: 0,
+              cursor: "pointer",
+              color: "#FFF",
+              fontSize: 12,
+              fontWeight: 600,
+            }}
+          >
+            Add first pupil
+          </button>
+        </div>
+      )}
 
-      {/* Active Offers */}
-      {offers && offers.filter(o => o.pupil_response === null || o.pupil_response === "pending").length > 0 && (
-        <Card>
-          <CardHeader><CardTitle className="text-sm">Active Slot Offers</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
-            {offers.filter(o => o.pupil_response === null || o.pupil_response === "pending").map(offer => (
-              <div key={offer.id} className="flex items-center justify-between py-2 border-b last:border-0 border-border">
-                <div>
-                  <p className="text-sm font-medium text-foreground">{(offer as any).pupils?.name || "Unknown"}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {(offer as any).scheduled_lessons?.lesson_date} at {(offer as any).scheduled_lessons?.start_time}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
-                    #{offer.queue_position || 1} in queue
-                  </span>
-                  {offer.claim_expires_at && (
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      Expires {formatDistanceToNow(new Date(offer.claim_expires_at), { addSuffix: true })}
+      {/* Active Offers (existing logic preserved) */}
+      {activeOffers.length > 0 && (
+        <div style={{ marginTop: 24 }}>
+          <h2
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#9CA3AF",
+              letterSpacing: 1.2,
+              textTransform: "uppercase",
+              margin: "0 0 10px",
+            }}
+          >
+            Active slot offers
+          </h2>
+          <div
+            style={{
+              background: "#FFF",
+              borderRadius: 12,
+              overflow: "hidden",
+              border: "1px solid #ECEEF2",
+            }}
+          >
+            {activeOffers.map((offer, i) => (
+              <div key={offer.id}>
+                {i > 0 && <div style={{ height: 1, background: "#F3F4F6" }} />}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "14px 18px",
+                  }}
+                >
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "#111827", margin: 0 }}>
+                      {(offer as any).pupils?.name || "Unknown"}
                     </p>
-                  )}
+                    <p style={{ fontSize: 11, color: "#6B7280", margin: "2px 0 0" }}>
+                      {(offer as any).scheduled_lessons?.lesson_date} at{" "}
+                      {(offer as any).scheduled_lessons?.start_time}
+                    </p>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        padding: "2px 8px",
+                        borderRadius: 999,
+                        background: "#F3F4F6",
+                        color: "#374151",
+                        fontWeight: 600,
+                      }}
+                    >
+                      #{offer.queue_position || 1} in queue
+                    </span>
+                    {offer.claim_expires_at && (
+                      <p style={{ fontSize: 10, color: "#9CA3AF", margin: "4px 0 0" }}>
+                        Expires {formatDistanceToNow(new Date(offer.claim_expires_at), { addSuffix: true })}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );
