@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
-  ChevronLeft, ChevronRight, Plus, Search, Sparkles, GripVertical, Filter,
+  ChevronLeft, ChevronRight, Plus, Search, Filter,
 } from "lucide-react";
 import {
   DndContext, DragOverlay, PointerSensor, useDraggable, useDroppable,
@@ -159,7 +159,7 @@ export default function InstructorScheduleDesktop() {
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [aiPrompt, setAiPrompt] = useState("");
   const [debouncedPrompt, setDebouncedPrompt] = useState("");
-  const [aiSuggestions, setAiSuggestions] = useState<{ label: string }[] | null>(null);
+  
   const [filterDays, setFilterDays] = useState<Day[]>([]);
   const [filterFrom, setFilterFrom] = useState<string>("");
   const [filterTo, setFilterTo] = useState<string>("");
@@ -358,12 +358,6 @@ export default function InstructorScheduleDesktop() {
     return { count, hours: (minutes / 60).toFixed(1), earnings };
   }, [lessons]);
 
-  // Pupils with no lesson this week
-  const unbookedPupils = useMemo<PupilLite[]>(() => {
-    const bookedIds = new Set(lessons.map(l => l.pupilId));
-    return pupils.filter(p => !bookedIds.has(p.id)).slice(0, 8);
-  }, [lessons, pupils]);
-
   // ---- Open slot search (merges lessons + Google Calendar busy + buffer) ----
   const openSlots = useMemo(() => {
     const slots: { day: Day; startMin: number; endMin: number }[] = [];
@@ -521,19 +515,6 @@ export default function InstructorScheduleDesktop() {
       onSignOut={handleSignOut}
       onAskED={() => window.dispatchEvent(new CustomEvent("dsm:open-ai"))}
       onBell={() => navigate("/instructor/notifications")}
-      rightRail={
-        <RightRail
-          unbooked={[]}
-          aiPrompt={aiPrompt} setAiPrompt={setAiPrompt}
-          aiSuggestions={aiSuggestions}
-          onAskAi={() => {
-            if (!aiPrompt.trim()) return;
-            setAiSuggestions([
-              { label: "Tue 13:00" }, { label: "Wed 09:00" }, { label: "Fri 16:00" },
-            ]);
-          }}
-        />
-      }
     >
       <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
         <div className="flex flex-col" style={{ gap: 0, padding: 0, margin: -8 }}>
@@ -1014,96 +995,6 @@ function LessonGhost({ lesson }: { lesson: Lesson }) {
     }}>
       {lesson.pupil}
       <div style={{ fontSize: 9, opacity: 0.8 }}>{fmtTime(lesson.startMin)}</div>
-    </div>
-  );
-}
-
-// ---- Right rail ----
-function RightRail({
-  unbooked, aiPrompt, setAiPrompt, aiSuggestions, onAskAi,
-}: {
-  unbooked: PupilLite[];
-  aiPrompt: string; setAiPrompt: (s: string) => void;
-  aiSuggestions: { label: string }[] | null;
-  onAskAi: () => void;
-}) {
-  return (
-    <aside style={{
-      width: 280, flexShrink: 0,
-      background: "#F8FAFC", borderLeft: "0.5px solid var(--d2-border)",
-      padding: "16px 12px", display: "flex", flexDirection: "column", gap: 16,
-    }}>
-      <section>
-        <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--d2-text-3)", fontWeight: 500 }}>
-          Drag to schedule
-        </div>
-        <div style={{ fontSize: 10, color: "var(--d2-text-2)", marginTop: 2, marginBottom: 8 }}>
-          Pupils with no lesson booked this week.
-        </div>
-        <div className="flex flex-col" style={{ gap: 6 }}>
-          {unbooked.map(p => <PupilChip key={p.id} pupil={p} />)}
-        </div>
-      </section>
-
-      <section style={{ background: "#fff", borderRadius: 8, padding: 10, border: "0.5px solid var(--d2-border)" }}>
-        <div className="flex items-center" style={{ gap: 5 }}>
-          <Sparkles size={12} color="#4F46E5" />
-          <div style={{ fontSize: 11, fontWeight: 500, color: "var(--d2-text-1)" }}>Find me a slot</div>
-        </div>
-        <div style={{ fontSize: 10, color: "var(--d2-text-2)", marginTop: 4 }}>
-          Tell ED what you need. e.g. "Sarah needs 2h next week, mornings only".
-        </div>
-        <form onSubmit={(e) => { e.preventDefault(); onAskAi(); }}>
-          <input
-            value={aiPrompt}
-            onChange={e => setAiPrompt(e.target.value)}
-            placeholder="Type a request..."
-            style={{
-              marginTop: 8, width: "100%", fontSize: 11,
-              background: "#F8FAFC", border: "0.5px solid var(--d2-border)",
-              borderRadius: 6, padding: "6px 8px", outline: "none",
-            }}
-          />
-        </form>
-        {aiSuggestions && (
-          <div className="flex flex-col" style={{ gap: 4, marginTop: 8 }}>
-            {aiSuggestions.map(s => (
-              <button key={s.label}
-                onClick={() => toast(`Booked ${s.label}`)}
-                style={{
-                  textAlign: "left", fontSize: 11, padding: "5px 8px",
-                  borderRadius: 6, background: "#EEF2FF", color: "#4338CA",
-                }}>
-                {s.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </section>
-    </aside>
-  );
-}
-
-function PupilChip({ pupil }: { pupil: PupilLite }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: `pupil-${pupil.id}`, data: { kind: "pupil", pupil },
-  });
-  return (
-    <div
-      ref={setNodeRef} {...attributes} {...listeners}
-      style={{
-        background: "#fff", border: "0.5px solid var(--d2-border)", borderRadius: 6,
-        padding: "7px 8px", display: "flex", alignItems: "center", gap: 8,
-        cursor: isDragging ? "grabbing" : "grab",
-        opacity: isDragging ? 0.4 : 1,
-      }}
-    >
-      <Avatar color={pupil.avatarColor} initials={pupil.initials} />
-      <div className="flex-1 min-w-0">
-        <div style={{ fontSize: 11, fontWeight: 500, color: "var(--d2-text-1)" }}>{pupil.name}</div>
-        <div style={{ fontSize: 9, color: "var(--d2-text-3)" }}>Last: {pupil.lastLessonDays}d ago</div>
-      </div>
-      <GripVertical size={12} color="var(--d2-text-3)" />
     </div>
   );
 }
