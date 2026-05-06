@@ -1,11 +1,13 @@
+import { useState } from 'react';
 import { format } from 'date-fns';
-import { X, MapPin, Clock, Phone, MessageSquare, Navigation, Trash2, Calendar, User, Repeat } from 'lucide-react';
+import { X, MapPin, Clock, Phone, MessageSquare, Navigation, Trash2, Calendar, User, Repeat, Pencil } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { CalendarEvent } from '@/hooks/useInstructorCalendar';
 import { toast } from 'sonner';
+import { EditScheduleEntryDialog } from '@/components/instructor/EditScheduleEntryDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,7 +45,9 @@ function parseRecurrenceRule(rule: string | null): string {
 }
 
 export function CalendarEventSheet({ event, onClose, onDelete, onRefetch }: CalendarEventSheetProps) {
+  const [editOpen, setEditOpen] = useState(false);
   if (!event) return null;
+  const canEdit = event.type === 'lesson' || event.type === 'block';
 
   const handleNavigate = () => {
     if (event.type === 'lesson' && event.data?.pickup_address) {
@@ -256,6 +260,13 @@ export function CalendarEventSheet({ event, onClose, onDelete, onRefetch }: Cale
 
           <Separator />
 
+          {canEdit && (
+            <Button variant="outline" className="w-full" onClick={() => setEditOpen(true)}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit {event.type === 'lesson' ? 'Lesson' : 'Block'}
+            </Button>
+          )}
+
           {/* Delete option for blocks only */}
           {event.type === 'block' && (
             <AlertDialog>
@@ -280,6 +291,13 @@ export function CalendarEventSheet({ event, onClose, onDelete, onRefetch }: Cale
             </AlertDialog>
           )}
         </div>
+
+        <EditScheduleEntryDialog
+          event={event}
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          onSaved={() => { onRefetch(); }}
+        />
       </SheetContent>
     </Sheet>
   );
