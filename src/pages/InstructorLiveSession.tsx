@@ -725,7 +725,7 @@ export default function InstructorLiveSession() {
           
           // Use speed limit from live_pupil_positions if available
           if (newPos.speed_limit_kmh !== undefined && newPos.speed_limit_kmh !== null) {
-            setSpeedLimitKmh(newPos.speed_limit_kmh);
+            setSpeedLimitIfValid(newPos.speed_limit_kmh);
           }
         }
       )
