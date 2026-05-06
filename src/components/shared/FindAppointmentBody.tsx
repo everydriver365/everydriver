@@ -1,15 +1,14 @@
 import { useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
-import { Loader2, Search, X } from "lucide-react";
+import { Loader2, Search, X, Calendar as CalendarIcon, ChevronDown, Filter, CalendarSearch } from "lucide-react";
 import { useInstructorAvailabilitySearch, AvailableSlot, TimeOfDay } from "@/hooks/useInstructorAvailabilitySearch";
 import { cn } from "@/lib/utils";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 export interface FindAppointmentBodyProps {
   instructorIds: string[];
@@ -20,6 +19,33 @@ export interface FindAppointmentBodyProps {
 }
 
 type Urgency = "include" | "exclude" | "only";
+
+// ---- Visual primitives ----
+const SectionLabel = ({ label }: { label: string }) => (
+  <div
+    className="text-[10px] font-bold uppercase pl-0.5 mb-2"
+    style={{ color: "#8E8E93", letterSpacing: "1.2px" }}
+  >
+    {label}
+  </div>
+);
+
+const FieldLabel = ({ children }: { children: React.ReactNode }) => (
+  <div className="text-[11px] font-semibold mb-1" style={{ color: "#5B6B8A" }}>
+    {children}
+  </div>
+);
+
+const triggerCls =
+  "flex items-center justify-between w-full rounded-[10px] bg-white px-3 py-[9px] text-xs font-semibold text-[#1A1A1A] focus:outline-none focus:ring-1 focus:ring-[#1A52A0]/30 data-[placeholder]:text-[#C7C7CC]";
+
+const triggerStyle: React.CSSProperties = {
+  border: "0.5px solid rgba(26,82,160,0.12)",
+};
+
+const cardStyle: React.CSSProperties = {
+  border: "0.5px solid rgba(26,82,160,0.08)",
+};
 
 export function FindAppointmentBody({
   instructorIds,
@@ -89,233 +115,358 @@ export function FindAppointmentBody({
     if (selectedSlot) onSelectSlot(selectedSlot);
   };
 
-  return (
-    <div className="flex flex-col gap-3 h-full min-h-0">
-      {/* Appointment criteria */}
-      <section className="rounded-2xl border bg-card overflow-hidden">
-        <header className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground bg-muted/40 border-b text-center">
-          Appointment criteria
-        </header>
-        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-          {/* Left column */}
-          <div className="space-y-3">
-            <div className="grid grid-cols-[100px_1fr] items-center gap-3">
-              <Label className="text-xs text-muted-foreground">Search from</Label>
-              <Input type="date" value={fromDate} min={today} onChange={(e) => setFromDate(e.target.value)} className="h-8" />
-            </div>
-            <div className="grid grid-cols-[100px_1fr] items-center gap-3">
-              <Label className="text-xs text-muted-foreground">Time of day</Label>
-              <Select value={timeOfDay} onValueChange={(v) => setTimeOfDay(v as TimeOfDay)}>
-                <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  <SelectItem value="morning">Morning (6am–12pm)</SelectItem>
-                  <SelectItem value="afternoon">Afternoon (12pm–5pm)</SelectItem>
-                  <SelectItem value="evening">Evening (5pm–10pm)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-[100px_1fr] items-center gap-3">
-              <Label className="text-xs text-muted-foreground">Slot type</Label>
-              <Select value={slotType} onValueChange={setSlotType}>
-                <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All slot types</SelectItem>
-                  <SelectItem value="standard">Standard lesson</SelectItem>
-                  <SelectItem value="test">Driving test</SelectItem>
-                  <SelectItem value="mock">Mock test</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-[100px_1fr] items-center gap-3">
-              <Label className="text-xs text-muted-foreground">Languages</Label>
-              <Select value={language} onValueChange={setLanguage}>
-                <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Languages</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="pl">Polish</SelectItem>
-                  <SelectItem value="ur">Urdu</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-[100px_1fr] items-center gap-3">
-              <Label className="text-xs text-muted-foreground">Location</Label>
-              <Select value={location} onValueChange={setLocation}>
-                <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All locations</SelectItem>
-                  <SelectItem value="winchester">Winchester</SelectItem>
-                  <SelectItem value="southampton">Southampton</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-[100px_1fr] items-center gap-3">
-              <Label className="text-xs text-muted-foreground">Duration</Label>
-              <Select value={duration} onValueChange={setDuration}>
-                <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="45">45 min</SelectItem>
-                  <SelectItem value="60">1 hour</SelectItem>
-                  <SelectItem value="90">1.5 hours</SelectItem>
-                  <SelectItem value="120">2 hours</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+  const selectedInstructorLabel =
+    selectedInstructorId === "all"
+      ? "All instructors"
+      : instructorOptions.find((i) => i.id === selectedInstructorId)?.name || "All instructors";
 
-          {/* Right column */}
-          <div className="space-y-3">
-            <div className="grid grid-cols-[100px_1fr] items-start gap-3">
-              <Label className="text-xs text-muted-foreground pt-1.5">Urgents</Label>
-              <RadioGroup value={urgents} onValueChange={(v) => setUrgents(v as Urgency)} className="flex flex-col gap-1.5">
-                <label className="flex items-center gap-2 text-xs cursor-pointer">
-                  <RadioGroupItem value="include" /> Include
-                </label>
-                <label className="flex items-center gap-2 text-xs cursor-pointer">
-                  <RadioGroupItem value="exclude" /> Exclude
-                </label>
-                <label className="flex items-center gap-2 text-xs cursor-pointer">
-                  <RadioGroupItem value="only" /> Urgent only
-                </label>
-              </RadioGroup>
-            </div>
-            <div className="grid grid-cols-[100px_1fr] items-start gap-3">
-              <Label className="text-xs text-muted-foreground pt-1.5">For</Label>
-              <div className="space-y-2">
-                <Select value={selectedInstructorId} onValueChange={setSelectedInstructorId}>
-                  <SelectTrigger className="h-8">
-                    <SelectValue placeholder="All instructors" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All instructors</SelectItem>
-                    {instructorOptions.map((i) => (
-                      <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="flex justify-end pt-1">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => setShowAdvanced((v) => !v)}
-              >
-                {showAdvanced ? "Hide advanced" : "Advanced criteria"}
-              </Button>
-            </div>
-            {showAdvanced && (
-              <>
-                <div className="grid grid-cols-[100px_1fr] items-center gap-3">
-                  <Label className="text-xs text-muted-foreground">Postcode</Label>
-                  <Input
-                    placeholder="e.g. SO22"
-                    value={postcode}
-                    onChange={(e) => setPostcode(e.target.value)}
-                    className="h-8"
-                  />
-                </div>
-                <div className="grid grid-cols-[100px_1fr] items-center gap-3">
-                  <Label className="text-xs text-muted-foreground">Search window</Label>
-                  <Select value={String(days)} onValueChange={(v) => setDays(parseInt(v, 10))}>
-                    <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="7">Next 7 days</SelectItem>
-                      <SelectItem value="14">Next 14 days</SelectItem>
-                      <SelectItem value="28">Next 28 days</SelectItem>
-                      <SelectItem value="60">Next 60 days</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            )}
+  const Divider = () => (
+    <div style={{ height: "0.5px", backgroundColor: "#F0F3F8", margin: "0 14px" }} />
+  );
+
+  return (
+    <div
+      className="flex flex-col h-full min-h-0 overflow-hidden"
+      style={{ backgroundColor: "#F2F4F8", borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+    >
+      {/* Header */}
+      <div className="flex items-center gap-2.5 px-4 pt-4 pb-3.5">
+        <div
+          className="w-9 h-9 flex items-center justify-center shrink-0"
+          style={{ borderRadius: 10, backgroundColor: "#EEF3FF" }}
+        >
+          <CalendarSearch size={16} color="#1A52A0" strokeWidth={1.6} />
+        </div>
+        <div>
+          <div className="text-[17px] font-bold leading-tight" style={{ color: "#1A1A1A", letterSpacing: "-0.3px" }}>
+            Find appointments
+          </div>
+          <div className="text-[10px] mt-px" style={{ color: "#8E8E93" }}>
+            Search your diary for the next available slot
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Available appointments */}
-      <section className="flex-1 min-h-0 rounded-2xl border bg-card overflow-hidden flex flex-col">
-        <header className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground bg-muted/40 border-b text-center">
-          Available appointments
-        </header>
-        <div className="flex-1 overflow-auto">
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-muted/60 text-muted-foreground text-xs">
-              <tr className="text-left">
-                <th className="px-3 py-2 font-medium">Date</th>
-                <th className="px-3 py-2 font-medium">At</th>
-                <th className="px-3 py-2 font-medium">Duration</th>
-                <th className="px-3 py-2 font-medium">Instructor(s)</th>
-                <th className="px-3 py-2 font-medium">Slot type</th>
-                <th className="px-3 py-2 font-medium">Location</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isFetching && (
-                <tr>
-                  <td colSpan={6} className="px-3 py-10 text-center text-muted-foreground">
-                    <Loader2 className="h-5 w-5 animate-spin inline mr-2" />
-                    Searching availability…
-                  </td>
-                </tr>
-              )}
-              {!isFetching && slots.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-3 py-10 text-center text-muted-foreground">
-                    <Search className="h-5 w-5 inline mr-2 opacity-50" />
-                    No available slots match these criteria.
-                  </td>
-                </tr>
-              )}
-              {!isFetching && slots.map((slot, idx) => {
-                const isSelected = slot.id === selectedSlotId;
+      {/* Scroll content */}
+      <div className="flex-1 min-h-0 overflow-y-auto px-[15px] pb-3">
+        {/* Search criteria */}
+        <SectionLabel label="Search criteria" />
+        <div className="bg-white rounded-[14px] overflow-hidden mb-3" style={cardStyle}>
+          {/* Search from */}
+          <div className="px-3 py-2.5">
+            <FieldLabel>Search from</FieldLabel>
+            <div className="relative">
+              <Input
+                type="date"
+                value={fromDate}
+                min={today}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="h-[34px] rounded-[10px] text-xs font-semibold text-[#1A1A1A] pr-9"
+                style={triggerStyle}
+              />
+              <CalendarIcon
+                size={13}
+                color="#8E8E93"
+                strokeWidth={1.6}
+                className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              />
+            </div>
+          </div>
+          <Divider />
+
+          {/* Time of day */}
+          <div className="px-3 py-2.5">
+            <FieldLabel>Time of day</FieldLabel>
+            <Select value={timeOfDay} onValueChange={(v) => setTimeOfDay(v as TimeOfDay)}>
+              <SelectTrigger className={triggerCls} style={triggerStyle}>
+                <SelectValue placeholder="Any" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Any</SelectItem>
+                <SelectItem value="morning">Morning (6am–12pm)</SelectItem>
+                <SelectItem value="afternoon">Afternoon (12pm–5pm)</SelectItem>
+                <SelectItem value="evening">Evening (5pm–10pm)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Divider />
+
+          {/* Slot type */}
+          <div className="px-3 py-2.5">
+            <FieldLabel>Slot type</FieldLabel>
+            <Select value={slotType} onValueChange={setSlotType}>
+              <SelectTrigger className={triggerCls} style={triggerStyle}>
+                <SelectValue placeholder="All slot types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All slot types</SelectItem>
+                <SelectItem value="standard">Standard lesson</SelectItem>
+                <SelectItem value="test">Driving test</SelectItem>
+                <SelectItem value="mock">Mock test</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Divider />
+
+          {/* Duration */}
+          <div className="px-3 py-2.5">
+            <FieldLabel>Duration</FieldLabel>
+            <Select value={duration} onValueChange={setDuration}>
+              <SelectTrigger className={triggerCls} style={triggerStyle}>
+                <SelectValue placeholder="1 hour" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="45">45 min</SelectItem>
+                <SelectItem value="60">1 hour</SelectItem>
+                <SelectItem value="90">1.5 hours</SelectItem>
+                <SelectItem value="120">2 hours</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Divider />
+
+          {/* Languages */}
+          <div className="px-3 py-2.5">
+            <FieldLabel>Languages</FieldLabel>
+            <Select value={language} onValueChange={setLanguage}>
+              <SelectTrigger className={triggerCls} style={triggerStyle}>
+                <SelectValue placeholder="All languages" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All languages</SelectItem>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="pl">Polish</SelectItem>
+                <SelectItem value="ur">Urdu</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Divider />
+
+          {/* Location */}
+          <div className="px-3 py-2.5">
+            <FieldLabel>Location</FieldLabel>
+            <Select value={location} onValueChange={setLocation}>
+              <SelectTrigger className={triggerCls} style={triggerStyle}>
+                <SelectValue placeholder="All locations" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All locations</SelectItem>
+                <SelectItem value="winchester">Winchester</SelectItem>
+                <SelectItem value="southampton">Southampton</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Two-column row */}
+        <div className="flex gap-2 mb-3">
+          {/* Urgents */}
+          <div className="flex-1">
+            <SectionLabel label="Urgents" />
+            <div
+              className="bg-white rounded-[14px] overflow-hidden px-3 pt-1 pb-2"
+              style={cardStyle}
+            >
+              {(["include", "exclude", "only"] as Urgency[]).map((mode) => {
+                const active = urgents === mode;
+                const labelText =
+                  mode === "include" ? "Include" : mode === "exclude" ? "Exclude" : "Urgent only";
                 return (
-                  <tr
-                    key={slot.id}
-                    onClick={() => setSelectedSlotId(slot.id)}
-                    onDoubleClick={() => { setSelectedSlotId(slot.id); onSelectSlot(slot); }}
-                    className={cn(
-                      "cursor-pointer border-t transition-colors h-8",
-                      idx % 2 === 0 ? "bg-background" : "bg-muted/20",
-                      "hover:bg-primary/10",
-                      isSelected && "bg-primary/15 hover:bg-primary/20",
-                    )}
+                  <button
+                    type="button"
+                    key={mode}
+                    onClick={() => setUrgents(mode)}
+                    className="flex items-center gap-[7px] py-[7px] w-full text-left"
                   >
-                    <td className="px-3 py-1.5">{format(parseISO(slot.date), "EEE d-MMM-yyyy")}</td>
-                    <td className="px-3 py-1.5 font-medium">{slot.startTime}</td>
-                    <td className="px-3 py-1.5">{slot.durationMinutes} mins</td>
-                    <td className="px-3 py-1.5">{slot.instructorName}</td>
-                    <td className="px-3 py-1.5 capitalize">{slot.carType || "Default"}</td>
-                    <td className="px-3 py-1.5">{slot.postcodeArea || "—"}</td>
-                  </tr>
+                    <div
+                      className="flex items-center justify-center"
+                      style={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: 8,
+                        border: `1.5px solid ${active ? "#1A52A0" : "#E0E5EE"}`,
+                        backgroundColor: active ? "#1A52A0" : "transparent",
+                      }}
+                    >
+                      {active && (
+                        <div style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#FFF" }} />
+                      )}
+                    </div>
+                    <span className="text-xs font-semibold" style={{ color: "#1A1A1A" }}>
+                      {labelText}
+                    </span>
+                  </button>
                 );
               })}
-            </tbody>
-          </table>
+            </div>
+          </div>
+
+          {/* For */}
+          <div className="flex-1 flex flex-col">
+            <SectionLabel label="For" />
+            <div
+              className="bg-white rounded-[14px] overflow-hidden p-2.5 mb-2"
+              style={cardStyle}
+            >
+              <FieldLabel>Instructor</FieldLabel>
+              <Select
+                value={selectedInstructorId}
+                onValueChange={setSelectedInstructorId}
+              >
+                <SelectTrigger className={triggerCls} style={triggerStyle}>
+                  <SelectValue placeholder="All instructors">{selectedInstructorLabel}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All instructors</SelectItem>
+                  {instructorOptions.map((i) => (
+                    <SelectItem key={i.id} value={i.id}>
+                      {i.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowAdvanced((v) => !v)}
+              className="flex items-center justify-center gap-1.5 rounded-[12px] py-[9px] px-3"
+              style={{
+                backgroundColor: "#EEF3FF",
+                border: "0.5px solid rgba(26,82,160,0.15)",
+              }}
+            >
+              <Filter size={11} color="#1A52A0" strokeWidth={1.8} />
+              <span className="text-[11px] font-semibold" style={{ color: "#1A52A0" }}>
+                {showAdvanced ? "Hide advanced" : "Advanced"}
+              </span>
+            </button>
+          </div>
         </div>
-        <div className="flex items-center justify-center gap-6 border-t py-2 text-xs">
-          <button className="text-primary hover:underline">Earlier appointments</button>
-          <span className="text-muted-foreground">|</span>
-          <button className="text-primary hover:underline">Later appointments</button>
+
+        {showAdvanced && (
+          <div className="bg-white rounded-[14px] overflow-hidden mb-3" style={cardStyle}>
+            <div className="px-3 py-2.5">
+              <FieldLabel>Postcode</FieldLabel>
+              <Input
+                placeholder="e.g. SO22"
+                value={postcode}
+                onChange={(e) => setPostcode(e.target.value)}
+                className="h-[34px] rounded-[10px] text-xs font-semibold text-[#1A1A1A]"
+                style={triggerStyle}
+              />
+            </div>
+            <Divider />
+            <div className="px-3 py-2.5">
+              <FieldLabel>Search window</FieldLabel>
+              <Select value={String(days)} onValueChange={(v) => setDays(parseInt(v, 10))}>
+                <SelectTrigger className={triggerCls} style={triggerStyle}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">Next 7 days</SelectItem>
+                  <SelectItem value="14">Next 14 days</SelectItem>
+                  <SelectItem value="28">Next 28 days</SelectItem>
+                  <SelectItem value="60">Next 60 days</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
+
+        {/* Available appointments */}
+        <SectionLabel label="Available appointments" />
+        <div className="bg-white rounded-[14px] overflow-hidden mb-3" style={cardStyle}>
+          {isFetching && (
+            <div className="px-3 py-8 text-center text-xs" style={{ color: "#8E8E93" }}>
+              <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+              Searching availability…
+            </div>
+          )}
+          {!isFetching && slots.length === 0 && (
+            <div className="px-3 py-8 text-center text-xs" style={{ color: "#8E8E93" }}>
+              <Search className="h-4 w-4 inline mr-2 opacity-50" />
+              No available slots match these criteria.
+            </div>
+          )}
+          {!isFetching && slots.map((slot, idx) => {
+            const isSelected = slot.id === selectedSlotId;
+            return (
+              <button
+                key={slot.id}
+                type="button"
+                onClick={() => setSelectedSlotId(slot.id)}
+                onDoubleClick={() => { setSelectedSlotId(slot.id); onSelectSlot(slot); }}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-2 text-left transition-colors",
+                  idx > 0 && "border-t",
+                )}
+                style={{
+                  borderColor: "#F0F3F8",
+                  backgroundColor: isSelected ? "rgba(26,82,160,0.08)" : "transparent",
+                }}
+              >
+                <div className="text-xs font-semibold w-24 shrink-0" style={{ color: "#1A1A1A" }}>
+                  {format(parseISO(slot.date), "EEE d MMM")}
+                </div>
+                <div className="text-xs font-bold w-12 shrink-0" style={{ color: "#1A52A0" }}>
+                  {slot.startTime}
+                </div>
+                <div className="text-[11px]" style={{ color: "#5B6B8A" }}>
+                  {slot.durationMinutes} mins
+                </div>
+                <div className="text-[11px] truncate flex-1 text-right" style={{ color: "#8E8E93" }}>
+                  {slot.instructorName}
+                </div>
+              </button>
+            );
+          })}
         </div>
-      </section>
+      </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground">
-          {slots.length > 0 && `${slots.length} slot${slots.length === 1 ? "" : "s"} found`}
-        </p>
-        <div className="flex gap-2">
-          <Button variant="ghost" size="sm" onClick={handleClear}>Clear criteria</Button>
-          {onCancel && (
-            <Button variant="outline" size="sm" onClick={onCancel}>
-              {variant === "modal" ? "Cancel" : <><X className="h-4 w-4 mr-1" />Close</>}
-            </Button>
-          )}
-          <Button size="sm" onClick={handleBook} disabled={!selectedSlot}>Book appointment</Button>
-        </div>
+      <div
+        className="flex items-center gap-2 bg-white"
+        style={{
+          borderTop: "0.5px solid rgba(0,0,0,0.06)",
+          paddingLeft: 15,
+          paddingRight: 15,
+          paddingTop: 12,
+          paddingBottom: 12,
+        }}
+      >
+        <button
+          type="button"
+          onClick={handleClear}
+          className="flex items-center gap-1.5 px-2"
+        >
+          <X size={11} color="#8E8E93" strokeWidth={2} />
+          <span className="text-xs font-semibold" style={{ color: "#8E8E93" }}>Clear</span>
+        </button>
+
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 rounded-[12px] py-2.5 text-center"
+            style={{
+              backgroundColor: "#F2F4F8",
+              border: "0.5px solid rgba(26,82,160,0.1)",
+            }}
+          >
+            <span className="text-xs font-bold" style={{ color: "#5B6B8A" }}>Close</span>
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={handleBook}
+          disabled={!selectedSlot}
+          className="flex-[2] rounded-[12px] py-2.5 text-center disabled:opacity-50"
+          style={{ backgroundColor: "#1A52A0" }}
+        >
+          <span className="text-[13px] font-bold text-white">Book appointment</span>
+        </button>
       </div>
     </div>
   );
