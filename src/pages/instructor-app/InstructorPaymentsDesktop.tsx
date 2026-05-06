@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Download, Plus, CreditCard, PoundSterling, Landmark,
-  MoreVertical, ChevronLeft, ChevronRight, X, Search,
+  MoreVertical, ChevronLeft, ChevronRight, X, Search, Undo2,
 } from "lucide-react";
+import { RefundModal } from "@/components/instructor/RefundModal";
 import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
@@ -91,6 +92,7 @@ export default function InstructorPaymentsDesktop() {
   const [filter, setFilter] = useState<Filter>("all");
   const [period, setPeriod] = useState<"week" | "month" | "year">("month");
   const [takeOpen, setTakeOpen] = useState(false);
+  const [refundOpen, setRefundOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [pupilSheet, setPupilSheet] = useState<{ id: string; name: string } | null>(null);
   const [remindersOpen, setRemindersOpen] = useState(false);
@@ -212,6 +214,9 @@ export default function InstructorPaymentsDesktop() {
             </button>
             <button onClick={() => setTakeOpen(true)} style={primaryBtn}>
               <Plus size={12} /> Take payment
+            </button>
+            <button onClick={() => setRefundOpen(true)} style={outlineBtn}>
+              <Undo2 size={12} /> Refund
             </button>
           </div>
         </div>
@@ -534,6 +539,14 @@ export default function InstructorPaymentsDesktop() {
           </>
         )}
       </AnimatePresence>
+
+      <RefundModal
+        open={refundOpen}
+        onOpenChange={setRefundOpen}
+        instructorId={instructor?.id || ""}
+        pupils={allPupils.map(p => ({ id: p.id, name: p.name, account_balance: p.account_balance }))}
+        onRefunded={refresh}
+      />
 
       <PaymentsExportDialog
         open={exportOpen}
