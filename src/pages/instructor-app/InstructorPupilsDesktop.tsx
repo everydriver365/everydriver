@@ -240,7 +240,8 @@ export default function InstructorPupilsDesktop() {
     const errs = validateAddForm(addForm);
     setAddErrors(errs);
     if (Object.keys(errs).length) return;
-    if (!addForm.name.trim() && !addForm.phone.trim() && !addForm.email.trim() && !addForm.address.trim()) {
+    const anyName = addForm.name.trim() || (addForm.first_name || "").trim() || (addForm.last_name || "").trim();
+    if (!anyName && !addForm.phone.trim() && !addForm.email.trim() && !addForm.address.trim()) {
       toast.error("Add at least a name or contact detail");
       return;
     }
