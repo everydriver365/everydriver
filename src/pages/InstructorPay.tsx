@@ -90,6 +90,40 @@ export default function InstructorPay() {
     }
   }, [instructorId]);
 
+  // Realtime: incoming payments → instant on-screen confirmation
+  useEffect(() => {
+    if (!instructorId) return;
+    const channel = supabase
+      .channel(`pay-history-${instructorId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "payment_history",
+          filter: `instructor_id=eq.${instructorId}`,
+        },
+        (payload) => {
+          const row: any = payload.new;
+          const amount = Number(row?.amount || 0);
+          if (!amount || amount <= 0) return; // skip refunds / zero
+          const pupil = pupils.find((p) => p.id === row.pupil_id);
+          const who = pupil?.name?.split(" ")[0] || "a pupil";
+          const method = row.payment_method || "Payment";
+          toast.success(`£${amount.toFixed(2)} received from ${who}`, {
+            description: `${method} confirmed`,
+          });
+          try { haptics.success(); } catch {}
+          fetchPupils();
+          fetchRecentPaymentCount();
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [instructorId, pupils]);
+
   const fetchInstructor = async () => {
     if (!instructorId) return;
     const { data } = await supabase
