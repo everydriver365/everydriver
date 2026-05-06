@@ -98,9 +98,25 @@ const XERO_STEPS = [
 ];
 
 
+const TRACKER_STEPS = [
+  {
+    title: "Choose your tracking method",
+    body: <>Use your <b>phone</b> for live tracking on the go, or pair a dedicated <b>hardware GPS device</b> for always-on vehicle tracking.</>,
+  },
+  {
+    title: "Add a device",
+    body: <>Open <b>Manage trackers</b> below to register a new GPS device or check existing ones.</>,
+  },
+  {
+    title: "Verify it's reporting",
+    body: <>A connected device shows a green dot and a recent <b>last seen</b> timestamp. If it's stale, check power and signal.</>,
+  },
+];
+
 const TABS = [
   { id: "google-calendar", label: "Google Calendar", icon: Calendar, blurb: "Sync your lessons to your Google Calendar." },
   { id: "square", label: "Square", icon: CreditCard, blurb: "Accept card payments and receive automatic payouts." },
+  { id: "trackers", label: "Trackers", icon: Satellite, blurb: "Manage GPS trackers and phone-based tracking." },
   { id: "xero", label: "Xero", icon: FileSpreadsheet, blurb: "Export invoices and expenses to your Xero accounting." },
 ];
 
