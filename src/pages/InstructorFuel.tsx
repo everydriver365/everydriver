@@ -191,9 +191,33 @@ export default function InstructorFuel() {
           </Button>
         </div>
 
-        {location && (
-          <p className="text-xs text-muted-foreground">{location}</p>
-        )}
+        {/* Location source toggle */}
+        <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+            <div className="min-w-0">
+              <div className="text-sm font-medium truncate">
+                {useDeviceLocation ? "Using my current location" : "Using home postcode"}
+              </div>
+              {location && (
+                <div className="text-xs text-muted-foreground truncate">
+                  {locating ? "Getting location…" : location}
+                </div>
+              )}
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant={useDeviceLocation ? "default" : "outline"}
+            className="h-7 text-xs shrink-0"
+            onClick={() => {
+              localStorage.removeItem("fuel_prices_cache");
+              setUseDeviceLocation(!useDeviceLocation);
+            }}
+          >
+            {useDeviceLocation ? "Use home" : "Use my location"}
+          </Button>
+        </div>
 
         {/* Fuel Type Selector */}
         <div className="flex items-center gap-2">
