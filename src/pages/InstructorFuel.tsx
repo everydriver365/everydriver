@@ -149,7 +149,10 @@ export default function InstructorFuel() {
     refetch, 
     location,
     fuelType,
-    setFuelType 
+    setFuelType,
+    useDeviceLocation,
+    setUseDeviceLocation,
+    locating,
   } = useFuelPrices(instructor?.id);
   
   const [activeTab, setActiveTab] = useState("list");
