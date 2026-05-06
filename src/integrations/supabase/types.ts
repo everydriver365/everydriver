@@ -8532,6 +8532,7 @@ export type Database = {
           auto_start_tracker: boolean
           availability_paused: boolean
           available_from: string | null
+          battery_kwh: number | null
           bio: string | null
           bonus_earned: number | null
           booking_advance_days: number | null
@@ -8578,10 +8579,12 @@ export type Database = {
           direct_debit_enabled: boolean
           disability_experience: string[]
           drive_time_alerts_enabled: boolean | null
+          electricity_cost_per_kwh: number | null
           email: string | null
           extra_info: string | null
           facebook_url: string | null
           fuel_cost_per_litre: number | null
+          fuel_type: string
           gender: string | null
           google_access_token: string | null
           google_calendar_id: string | null
@@ -8705,6 +8708,7 @@ export type Database = {
           auto_start_tracker?: boolean
           availability_paused?: boolean
           available_from?: string | null
+          battery_kwh?: number | null
           bio?: string | null
           bonus_earned?: number | null
           booking_advance_days?: number | null
@@ -8751,10 +8755,12 @@ export type Database = {
           direct_debit_enabled?: boolean
           disability_experience?: string[]
           drive_time_alerts_enabled?: boolean | null
+          electricity_cost_per_kwh?: number | null
           email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
           fuel_cost_per_litre?: number | null
+          fuel_type?: string
           gender?: string | null
           google_access_token?: string | null
           google_calendar_id?: string | null
@@ -8878,6 +8884,7 @@ export type Database = {
           auto_start_tracker?: boolean
           availability_paused?: boolean
           available_from?: string | null
+          battery_kwh?: number | null
           bio?: string | null
           bonus_earned?: number | null
           booking_advance_days?: number | null
@@ -8924,10 +8931,12 @@ export type Database = {
           direct_debit_enabled?: boolean
           disability_experience?: string[]
           drive_time_alerts_enabled?: boolean | null
+          electricity_cost_per_kwh?: number | null
           email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
           fuel_cost_per_litre?: number | null
+          fuel_type?: string
           gender?: string | null
           google_access_token?: string | null
           google_calendar_id?: string | null
