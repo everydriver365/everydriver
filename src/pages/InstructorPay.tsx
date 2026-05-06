@@ -193,6 +193,18 @@ export default function InstructorPay() {
       },
       accent: true,
     },
+    {
+      id: "refund",
+      label: "Refund",
+      sublabel: "Return a payment",
+      icon: Undo2,
+      iconColor: "#B91C1C",
+      iconBg: "#FEE2E2",
+      onClick: () => {
+        haptics.selection();
+        setRefundModalOpen(true);
+      },
+    },
     { id: "accounts", label: "Accounts", sublabel: "Income & outgoings", icon: BarChart2, iconColor: "#5B21B6", iconBg: "#EDE9FE", href: "/instructor/accounts" },
     { id: "expenses", label: "Expenses", sublabel: "Track costs", icon: Receipt, iconColor: "#92400E", iconBg: "#FEF3C7", href: "/instructor/expenses" },
     { id: "bonus", label: "Bonus", sublabel: "Incentives & rewards", icon: Gift, iconColor: "#BE123C", iconBg: "#FFE4E6", href: "/instructor/bonus" },
