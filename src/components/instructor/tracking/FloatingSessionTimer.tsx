@@ -145,12 +145,29 @@ export function FloatingSessionTimer({
                 mph
               </span>
             </div>
-            {/* Road name — sits directly under speed, like CarPlay. Hidden until resolved. */}
+            {/* Pupil name — directly under the speed reading */}
+            <div
+              title={headlineName}
+              style={{
+                marginTop: 4,
+                fontSize: 14,
+                fontWeight: 700,
+                color: "#1C1C1E",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                lineHeight: 1.2,
+                letterSpacing: -0.1,
+              }}
+            >
+              {headlineName}
+            </div>
+            {/* Road name — secondary line, like CarPlay. Hidden until resolved. */}
             {roadName && (
               <div
                 title={roadName}
                 style={{
-                  marginTop: 4,
+                  marginTop: 2,
                   fontSize: 12,
                   fontWeight: 600,
                   color: "rgba(60,60,67,0.7)",
