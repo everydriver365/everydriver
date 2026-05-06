@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/dialog";
 import { useSiteImages } from "@/hooks/useSiteImages";
 import { useFeaturedCourses } from "@/hooks/useFeaturedCourses";
+import { getWhitelabelConfig } from "@/lib/whitelabel";
+import { supabase } from "@/integrations/supabase/client";
 import { useDVSANews } from "@/hooks/useDVSANews";
 import { useHomepageFeatures } from "@/hooks/useHomepageFeatures";
 import { useHomepageHero } from "@/hooks/useHomepageHero";
