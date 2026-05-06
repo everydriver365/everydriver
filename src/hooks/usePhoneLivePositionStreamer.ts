@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { resolvePhoneSpeedLimit, haversineMetres } from "@/lib/phoneSpeedLimit";
 
 interface Options {
   pupilId: string | null;
