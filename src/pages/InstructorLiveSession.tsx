@@ -754,7 +754,7 @@ export default function InstructorLiveSession() {
         .maybeSingle();
       if (cancelled) return;
       const limit = (data as any)?.speed_limit_kmh;
-      if (limit != null) setSpeedLimitKmh(limit);
+      if (limit != null) setSpeedLimitIfValid(limit);
     })();
 
     const channel = supabase
