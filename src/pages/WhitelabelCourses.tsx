@@ -1,36 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2, Calendar as CalendarIcon, MapPin, X, Search } from "lucide-react";
+import { Loader2, Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 
 import { MainLayout } from "@/components/layout/MainLayout";
 import { SidebarCalendar } from "@/components/courses/SidebarCalendar";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { MobileCourseCard } from "@/components/courses/MobileCourseCard";
-import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useCourseDiscovery } from "@/hooks/useCourseDiscovery";
 import { getWhitelabelConfig } from "@/lib/whitelabel";
-import { toast } from "@/hooks/use-toast";
-
-function haversineMiles(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number,
-): number {
-  const R = 3959;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLng = ((lng2 - lng1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 
 /**
  * White-label /courses page.
