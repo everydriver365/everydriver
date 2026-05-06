@@ -68,6 +68,7 @@ export default function InstructorPay() {
   const reminderPupilId = searchParams.get("pupilId");
 
   const { data: earnings, isLoading } = useDailyEarnings(instructorId);
+  const { stats: paymentsStats } = useInstructorPaymentsData(instructorId);
   const [resolvedQrUrl, setResolvedQrUrl] = useState<string | null>(null);
   const [commissionPayer, setCommissionPayer] = useState<string | null>("pupil");
   const [instructorName, setInstructorName] = useState<string>("Your Instructor");
