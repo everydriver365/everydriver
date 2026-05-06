@@ -262,6 +262,18 @@ export default function InstructorLiveSession() {
   const mapLastSeenAt = isPhoneProvider
     ? (lastPhoneFix ? new Date(lastPhoneFix.timestamp).toISOString() : null)
     : (device?.last_seen_at ?? null);
+
+  // Road label resolved by the live map (geocoded fallback when upstream missing).
+  // Source-aware: for Phone Tracker we never want the Radius/device road name to
+  // leak into the speed panel — it's stale or from a different vehicle.
+  const [resolvedRoadName, setResolvedRoadName] = useState<string | null>(null);
+  useEffect(() => {
+    // Clear when switching source/session so a stale label can't linger.
+    setResolvedRoadName(null);
+  }, [isPhoneProvider, device?.current_session_id]);
+  const panelRoadName = isPhoneProvider
+    ? resolvedRoadName
+    : (resolvedRoadName ?? device?.last_road_name ?? null);
   const [showDrivingTestDialog, setShowDrivingTestDialog] = useState(false);
   const [drivingTestDetails, setDrivingTestDetails] = useState<{
     testCentreId: string | null;
@@ -1163,9 +1175,9 @@ export default function InstructorLiveSession() {
   })();
 
   const currentPupil = pupils.find(p => p.id === device?.current_pupil_id);
-  const speedMph = device?.last_speed_kmh != null ? Math.round(device.last_speed_kmh * 0.621371) : null;
-  const speedLimitMph = (device?.last_speed_limit_kmh ?? speedLimitKmh) != null
-    ? Math.round(((device?.last_speed_limit_kmh ?? speedLimitKmh) as number) * 0.621371)
+  const speedMph = mapSpeedKmh != null ? Math.round(mapSpeedKmh * 0.621371) : null;
+  const speedLimitMph = mapSpeedLimitKmh != null
+    ? Math.round(mapSpeedLimitKmh * 0.621371)
     : null;
   const distanceMiles = totalDistance * 0.621371;
 
@@ -1285,6 +1297,7 @@ export default function InstructorLiveSession() {
             speedKmh={mapSpeedKmh}
             speedLimitKmh={mapSpeedLimitKmh}
             roadName={isPhoneProvider ? null : device.last_road_name}
+            onResolvedRoadName={setResolvedRoadName}
             lastSeenAt={mapLastSeenAt}
             isActive={isConnected}
             sessionId={device.current_session_id}
@@ -1334,7 +1347,7 @@ export default function InstructorLiveSession() {
              isStopping={isStopping}
              speedMph={speedMph}
              speedLimitMph={speedLimitMph}
-             roadName={device.last_road_name}
+             roadName={panelRoadName}
              paused={isPaused}
              onResume={handleResumeFromPaused}
              alertCount={alertCounts.total}
