@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSearchParams } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getWhitelabelInstructorSlug } from "@/lib/whitelabel";
 
 // Standard course hours to display
 const DISPLAY_HOURS = [10, 20, 30, 40, 28]; // 28 = Test in a Week
@@ -714,8 +715,12 @@ export default function Courses() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      const whitelabelSlug = getWhitelabelInstructorSlug();
+      const instructorsQuery = supabase.from("instructors").select("*").eq("is_active", true);
+      if (whitelabelSlug) instructorsQuery.eq("app_slug", whitelabelSlug);
+
       const [instructorsRes, coursesRes, templatesRes, workingHoursRes, overridesRes] = await Promise.all([
-        supabase.from("instructors").select("*").eq("is_active", true),
+        instructorsQuery,
         supabase.from("instructor_courses").select("*").eq("is_active", true),
         supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular, features, is_intensive").eq("is_active", true),
         supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active"),
