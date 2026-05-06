@@ -39,6 +39,8 @@ export interface PaymentsStats {
   nextPayoutDate: string;
   feesMonth: number;
   effectiveFeeRate: number;
+  feesYearToDate: number;
+  feesYearLabel: string;
 }
 
 export interface PaymentsData {
