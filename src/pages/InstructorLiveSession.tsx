@@ -131,6 +131,7 @@ export default function InstructorLiveSession() {
   const [speedLimitKmh, setSpeedLimitKmh] = useState<number | null>(null);
   const [pendingRouteType, setPendingRouteType] = useState<"practice" | "test" | "driving_test">("practice");
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
+  const [radiusDeviceInfo, setRadiusDeviceInfo] = useState<{ id: string; name: string | null } | null>(null);
 
   const isPhoneProvider = activeProvider === "phone";
 
@@ -389,19 +390,40 @@ export default function InstructorLiveSession() {
 
       // Hydrate the Radius device whenever one exists, regardless of the
       // saved preference, so switching tracker is instant.
-      if (hasRadius) {
-        const chosen = devices[0] as GPSDevice;
-        const normalizedDevice = await normalizeDeviceSessionState(chosen);
+      const radiusDevice = hasRadius ? (devices[0] as GPSDevice) : null;
+      if (radiusDevice) {
+        const normalizedDevice = await normalizeDeviceSessionState(radiusDevice);
         lastSeenRef.current = buildDeviceSnapshot(normalizedDevice);
         setDevice(normalizedDevice);
+        setRadiusDeviceInfo({
+          id: radiusDevice.id,
+          name: radiusDevice.device_name || radiusDevice.device_identifier || null,
+        });
+      } else {
+        setRadiusDeviceInfo(null);
       }
 
-      // Honour the instructor's saved preference. If none is saved and a
-      // Radius device exists, default to Radius and persist it.
-      if (preferred === "phone") {
-        setActiveProvider("phone");
-      } else if (preferred === "radius" && hasRadius) {
+      // A connected Radius tracker should win over a stale "phone" preference
+      // unless the instructor explicitly switched to phone in this browser.
+      const lastSeenAt = radiusDevice?.last_seen_at ? new Date(radiusDevice.last_seen_at).getTime() : 0;
+      const radiusFresh = hasRadius && lastSeenAt > 0 && Date.now() - lastSeenAt < 24 * 60 * 60 * 1000;
+      const manualPhoneOverride =
+        typeof sessionStorage !== "undefined" &&
+        sessionStorage.getItem(`tracking-manual-phone:${instructor.id}`) === "1";
+
+      if (preferred === "radius" && hasRadius) {
         setActiveProvider("radius");
+      } else if (radiusFresh && !manualPhoneOverride) {
+        setActiveProvider("radius");
+        // Persist so the rest of the app honours the live hardware.
+        if (preferred !== "radius") {
+          void supabase
+            .from("instructors")
+            .update({ preferred_tracking_provider: "radius" } as any)
+            .eq("id", instructor.id);
+        }
+      } else if (preferred === "phone") {
+        setActiveProvider("phone");
       } else if (!preferred && hasRadius) {
         setActiveProvider("radius");
         void supabase
@@ -1537,7 +1559,17 @@ export default function InstructorLiveSession() {
                     <TrackingProviderDropdown
                       instructorId={instructor.id}
                       value={activeProvider === "radius" ? "radius" : "phone"}
-                      onChange={(choice) => setActiveProvider(choice)}
+                      radiusDevice={radiusDeviceInfo}
+                      onChange={(choice) => {
+                        setActiveProvider(choice);
+                        if (typeof sessionStorage !== "undefined" && instructor?.id) {
+                          if (choice === "phone") {
+                            sessionStorage.setItem(`tracking-manual-phone:${instructor.id}`, "1");
+                          } else {
+                            sessionStorage.removeItem(`tracking-manual-phone:${instructor.id}`);
+                          }
+                        }
+                      }}
                     />
                   </div>
 

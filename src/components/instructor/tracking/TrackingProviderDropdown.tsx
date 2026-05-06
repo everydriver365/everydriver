@@ -15,6 +15,9 @@ interface TrackingProviderDropdownProps {
   instructorId: string;
   value: TrackingProviderChoice;
   onChange: (value: TrackingProviderChoice) => void;
+  /** Optional: hydrated Radius device info from the parent. When provided, the
+   *  dropdown skips its own query and shows the device immediately. */
+  radiusDevice?: { id: string; name: string | null } | null;
 }
 
 /**
@@ -27,11 +30,18 @@ export function TrackingProviderDropdown({
   instructorId,
   value,
   onChange,
+  radiusDevice,
 }: TrackingProviderDropdownProps) {
-  const [hasRadiusDevice, setHasRadiusDevice] = useState(false);
-  const [radiusDeviceName, setRadiusDeviceName] = useState<string | null>(null);
+  const [hasRadiusDevice, setHasRadiusDevice] = useState(!!radiusDevice);
+  const [radiusDeviceName, setRadiusDeviceName] = useState<string | null>(radiusDevice?.name ?? null);
 
   useEffect(() => {
+    // If parent already hydrated the device info, mirror it and skip the query.
+    if (radiusDevice) {
+      setHasRadiusDevice(true);
+      setRadiusDeviceName(radiusDevice.name);
+      return;
+    }
     if (!instructorId) return;
     let cancelled = false;
     (async () => {
@@ -72,7 +82,7 @@ export function TrackingProviderDropdown({
     return () => {
       cancelled = true;
     };
-  }, [instructorId]);
+  }, [instructorId, radiusDevice?.id, radiusDevice?.name]);
 
   const handleChange = async (next: string) => {
     const choice = (next === "radius" ? "radius" : "phone") as TrackingProviderChoice;
