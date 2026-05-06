@@ -405,17 +405,6 @@ export function FindAppointmentBody({
         {showAdvanced && (
           <div className="bg-white rounded-[14px] overflow-hidden mb-3" style={cardStyle}>
             <div className="px-3 py-2.5">
-              <FieldLabel>Postcode</FieldLabel>
-              <Input
-                placeholder="e.g. SO22"
-                value={postcode}
-                onChange={(e) => setPostcode(e.target.value)}
-                className="h-[34px] rounded-[10px] text-xs font-semibold text-slate-900"
-                style={triggerStyle}
-              />
-            </div>
-            <Divider />
-            <div className="px-3 py-2.5">
               <FieldLabel>Search window</FieldLabel>
               <Select value={String(days)} onValueChange={(v) => setDays(parseInt(v, 10))}>
                 <SelectTrigger className={triggerCls} style={triggerStyle}>
