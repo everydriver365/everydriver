@@ -160,7 +160,7 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
     try {
       const { data: instructor, error } = await supabase
         .from("instructors")
-        .select("tax_code, hourly_rate, vehicle_mpg, fuel_cost_per_litre")
+        .select("tax_code, hourly_rate, vehicle_mpg, fuel_cost_per_litre, fuel_type, battery_kwh, electricity_cost_per_kwh")
         .eq("id", instructorId)
         .single();
 
@@ -171,6 +171,9 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
         hourly_rate: instructor.hourly_rate || 40,
         vehicle_mpg: instructor.vehicle_mpg || 40,
         fuel_cost_per_litre: instructor.fuel_cost_per_litre || 1.45,
+        fuel_type: ((instructor as any).fuel_type as FuelType) || "petrol",
+        battery_kwh: Number((instructor as any).battery_kwh) || 0,
+        electricity_cost_per_kwh: Number((instructor as any).electricity_cost_per_kwh) || 0.30,
       });
     } catch (error) {
       console.error("Error fetching account data:", error);
@@ -189,7 +192,10 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
           hourly_rate: data.hourly_rate,
           vehicle_mpg: data.vehicle_mpg,
           fuel_cost_per_litre: data.fuel_cost_per_litre,
-        })
+          fuel_type: data.fuel_type,
+          battery_kwh: data.battery_kwh || null,
+          electricity_cost_per_kwh: data.electricity_cost_per_kwh,
+        } as any)
         .eq("id", instructorId);
 
       if (error) throw error;
