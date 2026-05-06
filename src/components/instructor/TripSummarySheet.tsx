@@ -97,22 +97,23 @@ const TripSummarySheet: React.FC<TripSummarySheetProps> = ({
     setInsufficientData(null);
     setReport(null);
 
-    // Short delay to allow final GPS points to be written
+    // Allow final GPS points to be flushed by the streamer / poller
+    // before we ask the edge function to summarise the trip.
     if (retryCount === 0) {
-      await new Promise(r => setTimeout(r, 3000));
+      await new Promise(r => setTimeout(r, 4000));
     }
-    
+
     try {
       const { data, error } = await supabase.functions.invoke('generate-route-report', {
         body: { telematicsId }
       });
 
       if (error) throw error;
-      
+
       if (data.error === 'insufficient_gps_data') {
-        // Retry once after 5 seconds to allow poller to finish writing points
-        if (retryCount < 1) {
-          console.log('[TripSummary] Insufficient data, retrying in 5s...');
+        // Retry up to twice (5s, then 5s) — phone tracking can lag.
+        if (retryCount < 2) {
+          console.log(`[TripSummary] Insufficient data, retrying in 5s (attempt ${retryCount + 1}/2)...`);
           await new Promise(r => setTimeout(r, 5000));
           return generateReport(retryCount + 1);
         }
@@ -122,12 +123,12 @@ const TripSummarySheet: React.FC<TripSummarySheetProps> = ({
         });
         return;
       }
-      
+
       if (data.error === 'database_error') {
         toast.error(data.message || 'Database temporarily unavailable. Please try again.');
         return;
       }
-      
+
       if (!data.success) throw new Error(data.error || 'Failed to generate report');
 
       setReport(data);
@@ -242,13 +243,22 @@ Roads Visited: ${report.stats.roadsVisited}
             {/* Loading State */}
             {loading && (
               <div className="space-y-4">
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <div className="relative h-12 w-12 mb-4">
+                    <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
+                    <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
+                  </div>
+                  <p className="font-semibold text-base">Finalising your lesson…</p>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+                    Crunching GPS data, road segments and speed graphs.
+                  </p>
+                </div>
                 <Skeleton className="h-48 w-full rounded-2xl" />
                 <div className="grid grid-cols-2 gap-3">
                   <Skeleton className="h-20" />
                   <Skeleton className="h-20" />
                 </div>
                 <Skeleton className="h-40 w-full" />
-                <Skeleton className="h-32 w-full" />
               </div>
             )}
 

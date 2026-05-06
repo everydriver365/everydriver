@@ -987,14 +987,41 @@ export default function InstructorLiveSession() {
   const stopSession = async () => {
     if (!device?.current_session_id) return;
 
+    // Capture session/route context up-front so the summary opens
+    // immediately, even if any of the cleanup steps below fail.
+    const sessionId = device.current_session_id;
+    const stoppedDevice = device;
+    const localPendingRouteType = pendingRouteType;
+    const localDrivingTestDetails = drivingTestDetails;
+
     setIsStopping(true);
+
+    // 1) Open the Trip Summary sheet RIGHT AWAY. The summary fetches its
+    //    own data via the generate-route-report edge function and has its
+    //    own loading + retry UX, so it doesn't need to wait for the
+    //    bookkeeping work below.
+    setCompletedSessionId(sessionId);
+    setShowReport(true);
+
+    // Helper: run a step but never let it block the rest of the flow.
+    const safe = async <T,>(label: string, fn: () => Promise<T>): Promise<T | null> => {
+      try {
+        return await fn();
+      } catch (err) {
+        console.warn(`[stopSession] ${label} failed:`, err);
+        return null;
+      }
+    };
+
     try {
       // Fetch route points for the path and speed calculation
-      const { data: gpsPoints } = await supabase
-        .from("telematics_gps_points")
-        .select("latitude, longitude, speed_kmh")
-        .eq("telematics_id", device.current_session_id)
-        .order("recorded_at", { ascending: true });
+      const { data: gpsPoints } = await safe("fetch gps points", async () => {
+        return await supabase
+          .from("telematics_gps_points")
+          .select("latitude, longitude, speed_kmh")
+          .eq("telematics_id", sessionId)
+          .order("recorded_at", { ascending: true });
+      }) ?? { data: null as null | Array<{ latitude: number; longitude: number; speed_kmh: number | null }> };
 
       // Calculate avg/max speed from GPS points
       let avgSpeedKmh: number | null = null;
@@ -1012,26 +1039,29 @@ export default function InstructorLiveSession() {
       }
 
       // Update telematics session with end time and calculated speeds
-      const { error: sessionError } = await supabase
-        .from("lesson_telematics")
-        .update({
-          ended_at: new Date().toISOString(),
-          avg_speed_kmh: avgSpeedKmh,
-          max_speed_kmh: maxSpeedKmh,
-        })
-        .eq("id", device.current_session_id);
-
-      if (sessionError) throw sessionError;
+      await safe("update lesson_telematics", async () => {
+        const { error } = await supabase
+          .from("lesson_telematics")
+          .update({
+            ended_at: new Date().toISOString(),
+            avg_speed_kmh: avgSpeedKmh,
+            max_speed_kmh: maxSpeedKmh,
+          })
+          .eq("id", sessionId);
+        if (error) throw error;
+      });
 
       // Fetch session data for saving route
-      const { data: sessionData } = await supabase
-        .from("lesson_telematics")
-        .select("total_distance_km, avg_speed_kmh, max_speed_kmh, started_at, ended_at")
-        .eq("id", device.current_session_id)
-        .single();
+      const { data: sessionData } = await safe("fetch session row", async () => {
+        return await supabase
+          .from("lesson_telematics")
+          .select("total_distance_km, avg_speed_kmh, max_speed_kmh, started_at, ended_at")
+          .eq("id", sessionId)
+          .single();
+      }) ?? { data: null as null | { total_distance_km: number | null; avg_speed_kmh: number | null; max_speed_kmh: number | null; started_at: string | null; ended_at: string | null } };
 
       // Calculate duration
-      let durationMinutes = null;
+      let durationMinutes: number | null = null;
       if (sessionData?.started_at && sessionData?.ended_at) {
         const start = new Date(sessionData.started_at).getTime();
         const end = new Date(sessionData.ended_at).getTime();
@@ -1039,7 +1069,7 @@ export default function InstructorLiveSession() {
       }
 
       // Sample route path (max 100 points for storage efficiency)
-      let routePath = null;
+      let routePath: Array<{ lat: number; lon: number }> | null = null;
       if (gpsPoints && gpsPoints.length >= 2) {
         const step = Math.max(1, Math.floor(gpsPoints.length / 100));
         routePath = gpsPoints
@@ -1048,30 +1078,28 @@ export default function InstructorLiveSession() {
       }
 
       // Get pupil name for route naming
-      const selectedPupil = device.current_pupil_id 
-        ? pupils.find(p => p.id === device.current_pupil_id)
+      const selectedPupil = stoppedDevice.current_pupil_id
+        ? pupils.find(p => p.id === stoppedDevice.current_pupil_id)
         : null;
       const routeDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
-      
+
       // Determine route name based on route type
       let routeName: string;
-      if (pendingRouteType === "driving_test") {
-        // Use custom pupil name if provided, otherwise use selected pupil
-        const pupilDisplayName = drivingTestDetails?.customPupilName || selectedPupil?.name;
-        routeName = pupilDisplayName 
+      if (localPendingRouteType === "driving_test") {
+        const pupilDisplayName = localDrivingTestDetails?.customPupilName || selectedPupil?.name;
+        routeName = pupilDisplayName
           ? `Driving Test - ${pupilDisplayName} - ${routeDate}`
           : `Driving Test - ${routeDate}`;
-      } else if (pendingRouteType === "test" || !selectedPupil) {
+      } else if (localPendingRouteType === "test" || !selectedPupil) {
         routeName = `Test Route - ${routeDate}`;
       } else {
         routeName = `${selectedPupil.name} - ${routeDate}`;
       }
 
       // Get start/end locations from first/last GPS points
-      let startLocation = null;
-      let endLocation = null;
+      let startLocation: string | null = null;
+      let endLocation: string | null = null;
       if (gpsPoints && gpsPoints.length >= 2) {
-        // Could use reverse geocoding here, but for now just use coordinates
         startLocation = `${gpsPoints[0].latitude.toFixed(4)}, ${gpsPoints[0].longitude.toFixed(4)}`;
         endLocation = `${gpsPoints[gpsPoints.length-1].latitude.toFixed(4)}, ${gpsPoints[gpsPoints.length-1].longitude.toFixed(4)}`;
       }
@@ -1080,9 +1108,9 @@ export default function InstructorLiveSession() {
       if (instructor?.id) {
         const routeData: Record<string, unknown> = {
           instructor_id: instructor.id,
-          telematics_id: device.current_session_id,
+          telematics_id: sessionId,
           name: routeName,
-          route_type: pendingRouteType,
+          route_type: localPendingRouteType,
           distance_km: sessionData?.total_distance_km,
           duration_minutes: durationMinutes,
           avg_speed_kmh: sessionData?.avg_speed_kmh,
@@ -1090,64 +1118,62 @@ export default function InstructorLiveSession() {
           route_path: routePath,
           start_location: startLocation,
           end_location: endLocation,
-          pupil_id: device.current_pupil_id || null,
+          pupil_id: stoppedDevice.current_pupil_id || null,
         };
 
-        // Add driving test specific data if available
-        if (pendingRouteType === "driving_test" && drivingTestDetails) {
-          routeData.test_centre_id = drivingTestDetails.testCentreId;
+        if (localPendingRouteType === "driving_test" && localDrivingTestDetails) {
+          routeData.test_centre_id = localDrivingTestDetails.testCentreId;
           routeData.metadata = {
-            test_time: drivingTestDetails.testTime,
-            examiner_id: drivingTestDetails.examinerId,
-            custom_pupil_name: drivingTestDetails.customPupilName || null,
+            test_time: localDrivingTestDetails.testTime,
+            examiner_id: localDrivingTestDetails.examinerId,
+            custom_pupil_name: localDrivingTestDetails.customPupilName || null,
           };
         }
 
-        await supabase
-          .from("saved_routes")
-          .insert(routeData as any);
+        await safe("insert saved_routes", async () => {
+          await supabase.from("saved_routes").insert(routeData as any);
+        });
 
-        // Auto-capture lesson route (GPS trace for pupil portal)
-        await autoCaptureLessonRoute({
-          telematicsId: device.current_session_id,
-          instructorId: instructor.id,
-          pupilId: device.current_pupil_id,
+        await safe("autoCaptureLessonRoute", async () => {
+          await autoCaptureLessonRoute({
+            telematicsId: sessionId,
+            instructorId: instructor.id,
+            pupilId: stoppedDevice.current_pupil_id,
+          });
         });
       }
 
       // Clear live position
-      if (device.current_pupil_id) {
-        await supabase
-          .from("live_pupil_positions")
-          .update({ is_active: false })
-          .eq("pupil_id", device.current_pupil_id);
+      if (stoppedDevice.current_pupil_id) {
+        await safe("clear live_pupil_positions", async () => {
+          await supabase
+            .from("live_pupil_positions")
+            .update({ is_active: false })
+            .eq("pupil_id", stoppedDevice.current_pupil_id);
+        });
       }
 
-      // Store session ID before clearing
-      const sessionId = device.current_session_id;
-
       // Clear device session (also reset test route mode)
-      const { error: deviceError } = await supabase
-        .from("gps_devices")
-        .update({
-          current_session_id: null,
-          current_pupil_id: null,
-          is_test_route_mode: false,
-        })
-        .eq("id", device.id);
-
-      if (deviceError) throw deviceError;
+      await safe("clear gps_devices session", async () => {
+        const { error } = await supabase
+          .from("gps_devices")
+          .update({
+            current_session_id: null,
+            current_pupil_id: null,
+            is_test_route_mode: false,
+          })
+          .eq("id", stoppedDevice.id);
+        if (error) throw error;
+      });
 
       setDevice({
-        ...device,
+        ...stoppedDevice,
         current_session_id: null,
         current_pupil_id: null,
         is_test_route_mode: false,
       });
       setSessionStartTime(null);
-      setCompletedSessionId(sessionId);
-      setShowReport(true);
-      setDrivingTestDetails(null); // Clear driving test details
+      setDrivingTestDetails(null);
 
       // If this stop was for an auto-tracked lesson, suppress re-arm for 30 minutes.
       if (autoTrackedLessonId) {
@@ -1156,12 +1182,13 @@ export default function InstructorLiveSession() {
         setAutoTrackedPupilName(null);
       }
 
-      // Exit fullscreen mode
+      // Exit fullscreen mode (the summary sheet stays mounted on the
+      // standard layout because completedSessionId/showReport persist).
       navigate("/instructor/tracking", { replace: true });
 
-      const toastDescription = pendingRouteType === "driving_test" 
-        ? "Driving test route saved" 
-        : (pendingRouteType === "test" ? "Test route saved" : "Route saved automatically");
+      const toastDescription = localPendingRouteType === "driving_test"
+        ? "Driving test route saved"
+        : (localPendingRouteType === "test" ? "Test route saved" : "Route saved automatically");
       toast({
         title: "Session ended",
         description: toastDescription,
@@ -1170,8 +1197,8 @@ export default function InstructorLiveSession() {
     } catch (err) {
       console.error("Error stopping session:", err);
       toast({
-        title: "Error",
-        description: "Failed to stop session",
+        title: "Couldn't fully clean up",
+        description: "Your lesson summary is still available below.",
         variant: "destructive",
       });
     } finally {
