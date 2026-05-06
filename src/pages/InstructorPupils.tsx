@@ -173,6 +173,23 @@ export default function InstructorPupils() {
     parent_name: "",
     date_of_birth: "",
     payment_method: "tbc",
+    first_name: "",
+    last_name: "",
+    sex: "",
+    pickup_address: "",
+    has_different_pickup: false,
+    previous_experience: "",
+    approx_hours: "",
+    transmission: "",
+    theory_passed: false,
+    theory_pass_date: "",
+    test_booked: false,
+    test_centre_id: "",
+    test_centre_label: "",
+    test_date: "",
+    test_time: "",
+    duration: "",
+    custom_hourly_rate: "",
   });
   const [newPupilId, setNewPupilId] = useState<string | null>(null);
   const [showPostAddPayment, setShowPostAddPayment] = useState(false);
@@ -371,16 +388,26 @@ export default function InstructorPupils() {
       toast.error("Not logged in. Please refresh and try again.");
       return;
     }
-    if (!addForm.name || !addForm.address || !addForm.postcode) {
+    const hasName = !!(addForm.name || addForm.first_name || addForm.last_name);
+    if (!hasName || !addForm.address || !addForm.postcode) {
       toast.error("Please fill in name, address and postcode");
       return;
     }
     setSaving(true);
     try {
       console.log("Adding pupil for instructor:", instructorId);
+      const fullName =
+        (addForm.first_name || addForm.last_name)
+          ? `${(addForm.first_name || "").trim()} ${(addForm.last_name || "").trim()}`.trim()
+          : addForm.name;
+      const hoursNum = addForm.approx_hours ? parseInt(addForm.approx_hours, 10) : null;
+      const rateNum = addForm.custom_hourly_rate
+        ? parseFloat(addForm.custom_hourly_rate)
+        : null;
+
       const { data, error } = await supabase.from("pupils").insert({
         instructor_id: instructorId,
-        name: addForm.name,
+        name: fullName,
         email: addForm.email || null,
         phone: addForm.phone || null,
         address: addForm.address,
@@ -392,8 +419,17 @@ export default function InstructorPupils() {
         parent_name: addForm.parent_name || null,
         date_of_birth: addForm.date_of_birth || null,
         payment_method: addForm.payment_method || 'tbc',
-        lessons_completed: 0,
+        lessons_completed: hoursNum && !isNaN(hoursNum) ? hoursNum : 0,
         progress: 0,
+        pickup_address: addForm.has_different_pickup ? (addForm.pickup_address || null) : null,
+        previous_experience: addForm.previous_experience || null,
+        transmission_type: addForm.transmission || null,
+        theory_test_passed: !!addForm.theory_passed,
+        theory_test_date: addForm.theory_passed ? (addForm.theory_pass_date || null) : null,
+        test_centre_id: addForm.test_booked ? (addForm.test_centre_id || null) : null,
+        test_date: addForm.test_booked ? (addForm.test_date || null) : null,
+        test_time: addForm.test_booked ? (addForm.test_time || null) : null,
+        custom_hourly_rate: rateNum && !isNaN(rateNum) ? rateNum : null,
       }).select();
 
       if (error) {
@@ -425,6 +461,23 @@ export default function InstructorPupils() {
         parent_name: "",
         date_of_birth: "",
         payment_method: "tbc",
+        first_name: "",
+        last_name: "",
+        sex: "",
+        pickup_address: "",
+        has_different_pickup: false,
+        previous_experience: "",
+        approx_hours: "",
+        transmission: "",
+        theory_passed: false,
+        theory_pass_date: "",
+        test_booked: false,
+        test_centre_id: "",
+        test_centre_label: "",
+        test_date: "",
+        test_time: "",
+        duration: "",
+        custom_hourly_rate: "",
       });
       fetchPupils();
     } catch (error: any) {
