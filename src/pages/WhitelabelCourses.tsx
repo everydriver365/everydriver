@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2, Calendar as CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, isSameMonth, parseISO } from "date-fns";
 
 import { MainLayout } from "@/components/layout/MainLayout";
 import { SidebarCalendar } from "@/components/courses/SidebarCalendar";
