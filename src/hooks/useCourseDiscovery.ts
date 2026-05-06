@@ -705,6 +705,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     setSelectedDate,
     monthOptions,
     availableDatesInMonth,
+    nextAvailableDates,
     filteredCourses,
     handleSearch,
     searchedPostcode,
