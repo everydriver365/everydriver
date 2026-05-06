@@ -78,6 +78,7 @@ import { cn } from "@/lib/utils";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { InstructorDesktopSidebar } from "@/components/instructor/InstructorDesktopSidebar";
 import { DesktopQuickActionBar } from "@/components/instructor/DesktopQuickActionBar";
+import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 
 function getContrastColor(hex: string): string {
   const c = hex.replace("#", "");
