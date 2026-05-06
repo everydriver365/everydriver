@@ -2,12 +2,14 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, GraduationCap } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { CoursePlannerForm } from "@/components/course-planner/CoursePlannerForm";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 
 export default function CoursePlannerPage() {
   const navigate = useNavigate();
   const { instructor } = useInstructorAuth();
 
   return (
+    <InstructorPortalLayout>
     <div
       style={{
         display: "flex",
