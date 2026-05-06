@@ -143,6 +143,9 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
     hourly_rate: 40,
     vehicle_mpg: 40,
     fuel_cost_per_litre: 1.45,
+    fuel_type: "petrol",
+    battery_kwh: 0,
+    electricity_cost_per_kwh: 0.30,
   });
   const [selectedDeductions, setSelectedDeductions] = useState<string[]>(
     ALLOWABLE_DEDUCTIONS.filter(d => d.defaultSelected).map(d => d.id)
