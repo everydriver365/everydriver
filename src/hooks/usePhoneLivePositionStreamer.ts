@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { resolvePhoneSpeedLimit, haversineMetres } from "@/lib/phoneSpeedLimit";
 
 interface Options {
   pupilId: string | null;
@@ -45,6 +46,9 @@ export function usePhoneLivePositionStreamer({
       } catch {}
     })();
 
+    const lastLimitFetch = { lat: 0, lng: 0, at: 0 };
+    let cachedLimit: number | null = null;
+
     const push = async () => {
       const pos = lastFixRef.current;
       if (!pos) return;
@@ -57,6 +61,21 @@ export function usePhoneLivePositionStreamer({
         if (b?.level != null) battery = Math.round(b.level * 100);
       } catch {}
 
+      // Resolve speed limit (throttled by distance / age)
+      const now = Date.now();
+      const movedFar = !lastLimitFetch.at || haversineMetres(
+        lastLimitFetch.lat, lastLimitFetch.lng, latitude, longitude,
+      ) > 30;
+      const stale = !lastLimitFetch.at || (now - lastLimitFetch.at) > 15000;
+      if (movedFar || stale) {
+        lastLimitFetch.lat = latitude;
+        lastLimitFetch.lng = longitude;
+        lastLimitFetch.at = now;
+        resolvePhoneSpeedLimit(latitude, longitude)
+          .then((limit) => { cachedLimit = limit; })
+          .catch(() => {});
+      }
+
       await supabase.rpc("upsert_phone_live_position", {
         p_pupil_id: pupilId,
         p_latitude: latitude,
@@ -67,7 +86,8 @@ export function usePhoneLivePositionStreamer({
         p_battery_level: battery,
         p_session_id: sessionId,
         p_provider: "phone",
-      });
+        p_speed_limit_kmh: cachedLimit ?? null,
+      } as any);
     };
 
     timerRef.current = setInterval(push, intervalMs);

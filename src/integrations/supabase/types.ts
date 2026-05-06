@@ -11912,6 +11912,7 @@ export type Database = {
           recorded_at: string
           session_id: string | null
           speed_kmh: number | null
+          speed_limit_kmh: number | null
           updated_at: string
         }
         Insert: {
@@ -11928,6 +11929,7 @@ export type Database = {
           recorded_at?: string
           session_id?: string | null
           speed_kmh?: number | null
+          speed_limit_kmh?: number | null
           updated_at?: string
         }
         Update: {
@@ -11944,6 +11946,7 @@ export type Database = {
           recorded_at?: string
           session_id?: string | null
           speed_kmh?: number | null
+          speed_limit_kmh?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -18030,6 +18033,20 @@ export type Database = {
         Returns: undefined
       }
       is_school_owner: { Args: { p_school_id: string }; Returns: boolean }
+      record_phone_gps_point: {
+        Args: {
+          p_accuracy?: number
+          p_distance_delta_km?: number
+          p_heading?: number
+          p_latitude: number
+          p_longitude: number
+          p_road_name?: string
+          p_session_id: string
+          p_speed_kmh?: number
+          p_speed_limit_kmh?: number
+        }
+        Returns: string
+      }
       update_live_position:
         | {
             Args: {
@@ -18062,20 +18079,36 @@ export type Database = {
         Args: { p_pupil_id: string; p_updates: Json }
         Returns: boolean
       }
-      upsert_phone_live_position: {
-        Args: {
-          p_accuracy?: number
-          p_battery_level?: number
-          p_heading?: number
-          p_latitude: number
-          p_longitude: number
-          p_provider?: string
-          p_pupil_id: string
-          p_session_id?: string
-          p_speed_kmh?: number
-        }
-        Returns: string
-      }
+      upsert_phone_live_position:
+        | {
+            Args: {
+              p_accuracy?: number
+              p_battery_level?: number
+              p_heading?: number
+              p_latitude: number
+              p_longitude: number
+              p_provider?: string
+              p_pupil_id: string
+              p_session_id?: string
+              p_speed_kmh?: number
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_accuracy?: number
+              p_battery_level?: number
+              p_heading?: number
+              p_latitude: number
+              p_longitude: number
+              p_provider?: string
+              p_pupil_id: string
+              p_session_id?: string
+              p_speed_kmh?: number
+              p_speed_limit_kmh?: number
+            }
+            Returns: string
+          }
     }
     Enums: {
       app_role: "instructor" | "admin" | "pupil" | "school_manager"
