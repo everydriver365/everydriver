@@ -213,7 +213,7 @@ serve(async (req) => {
   }
 
   try {
-    const { instructorId, fuelType = "E10", radiusKm = 15 } = await req.json();
+    const { instructorId, fuelType = "E10", radiusKm = 15, userLat, userLng } = await req.json();
 
     if (!instructorId) {
       return new Response(
@@ -226,71 +226,95 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get instructor's location (same pattern as driving-alerts)
-    const { data: instructor, error: instructorError } = await supabase
-      .from("instructors")
-      .select("home_postcode, lat, lng, location_name")
-      .eq("id", instructorId)
-      .single();
+    let lat: number | null = null;
+    let lng: number | null = null;
+    let locationName: string | null = null;
 
-    if (instructorError || !instructor?.home_postcode) {
-      return new Response(
-        JSON.stringify({ stations: [], error: "No postcode configured" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    let lat = instructor.lat;
-    let lng = instructor.lng;
-    let locationName = instructor.location_name;
-
-    // If no cached coordinates, geocode the postcode. If the full postcode is
-    // not recognised, fall back to the outward code (e.g. SO22) so the desktop
-    // fuel finder still works from the instructor's general area.
-    if (!lat || !lng) {
-      const cleanPostcode = normalisePostcode(instructor.home_postcode);
-      const geocodeResponse = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
-      
-      if (geocodeResponse.ok) {
-        const geocodeData = await geocodeResponse.json();
-        if (geocodeData.result) {
-          lat = geocodeData.result.latitude;
-          lng = geocodeData.result.longitude;
-          locationName = firstLocationName(geocodeData.result.admin_ward) || 
-                        firstLocationName(geocodeData.result.admin_district) || 
-                        firstLocationName(geocodeData.result.region);
+    // Prefer live device location when provided
+    if (typeof userLat === "number" && typeof userLng === "number" &&
+        Number.isFinite(userLat) && Number.isFinite(userLng)) {
+      lat = userLat;
+      lng = userLng;
+      // Reverse geocode for friendly name (best effort)
+      try {
+        const r = await fetch(`https://api.postcodes.io/postcodes?lon=${lng}&lat=${lat}`);
+        if (r.ok) {
+          const j = await r.json();
+          const first = Array.isArray(j.result) ? j.result[0] : null;
+          if (first) {
+            locationName = firstLocationName(first.admin_ward) ||
+                           firstLocationName(first.admin_district) ||
+                           firstLocationName(first.region) ||
+                           first.postcode || "Current location";
+          }
         }
+      } catch { /* ignore */ }
+      if (!locationName) locationName = "Current location";
+    } else {
+      // Fall back to instructor's home postcode
+      const { data: instructor, error: instructorError } = await supabase
+        .from("instructors")
+        .select("home_postcode, lat, lng, location_name")
+        .eq("id", instructorId)
+        .single();
+
+      if (instructorError || !instructor?.home_postcode) {
+        return new Response(
+          JSON.stringify({ stations: [], error: "No postcode configured" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
+      lat = instructor.lat;
+      lng = instructor.lng;
+      locationName = instructor.location_name;
+
+      // If no cached coordinates, geocode the postcode. Fall back to outward code.
       if (!lat || !lng) {
-        const outcode = getOutcode(instructor.home_postcode);
-        if (outcode) {
-          const outcodeResponse = await fetch(`https://api.postcodes.io/outcodes/${outcode}`);
-          if (outcodeResponse.ok) {
-            const outcodeData = await outcodeResponse.json();
-            if (outcodeData.result) {
-              lat = outcodeData.result.latitude;
-              lng = outcodeData.result.longitude;
-              locationName = firstLocationName(outcodeData.result.admin_district) ||
-                            firstLocationName(outcodeData.result.admin_county) ||
-                            outcode;
+        const cleanPostcode = normalisePostcode(instructor.home_postcode);
+        const geocodeResponse = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
+
+        if (geocodeResponse.ok) {
+          const geocodeData = await geocodeResponse.json();
+          if (geocodeData.result) {
+            lat = geocodeData.result.latitude;
+            lng = geocodeData.result.longitude;
+            locationName = firstLocationName(geocodeData.result.admin_ward) ||
+                          firstLocationName(geocodeData.result.admin_district) ||
+                          firstLocationName(geocodeData.result.region);
+          }
+        }
+
+        if (!lat || !lng) {
+          const outcode = getOutcode(instructor.home_postcode);
+          if (outcode) {
+            const outcodeResponse = await fetch(`https://api.postcodes.io/outcodes/${outcode}`);
+            if (outcodeResponse.ok) {
+              const outcodeData = await outcodeResponse.json();
+              if (outcodeData.result) {
+                lat = outcodeData.result.latitude;
+                lng = outcodeData.result.longitude;
+                locationName = firstLocationName(outcodeData.result.admin_district) ||
+                              firstLocationName(outcodeData.result.admin_county) ||
+                              outcode;
+              }
             }
           }
         }
-      }
 
-      if (lat && lng) {
-        await supabase
-          .from("instructors")
-          .update({ lat, lng, location_name: locationName })
-          .eq("id", instructorId);
-      }
+        if (lat && lng) {
+          await supabase
+            .from("instructors")
+            .update({ lat, lng, location_name: locationName })
+            .eq("id", instructorId);
+        }
 
-      if (!lat || !lng) {
-        return new Response(
-          JSON.stringify({ stations: [], error: "Could not geocode postcode" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        if (!lat || !lng) {
+          return new Response(
+            JSON.stringify({ stations: [], error: "Could not geocode postcode" }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
       }
     }
 
