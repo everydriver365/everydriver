@@ -209,12 +209,52 @@ serve(async (req: Request) => {
 
     if (!response.ok) {
       console.error("Square API error:", responseText);
+
+      // Parse Square error and build a friendly message
+      let squareErrors: any[] = [];
+      try {
+        const parsed = JSON.parse(responseText);
+        squareErrors = Array.isArray(parsed?.errors) ? parsed.errors : [];
+      } catch { /* not JSON */ }
+
+      const first = squareErrors[0] || {};
+      const code = String(first.code || "").toUpperCase();
+      const field = String(first.field || "");
+      const detail = String(first.detail || "");
+
+      let userMessage = "We couldn't create the payment link. Please try again.";
+      if (code === "UNAUTHORIZED" || code === "ACCESS_TOKEN_EXPIRED" || code === "ACCESS_TOKEN_REVOKED") {
+        userMessage = "Your Square account isn't connected. Reconnect Square in Settings → Payments.";
+      } else if (code === "FORBIDDEN" || code === "INSUFFICIENT_SCOPES") {
+        userMessage = "Square is missing the required permissions. Reconnect Square in Settings → Payments.";
+      } else if (code === "MERCHANT_SUBSCRIPTION_NOT_FOUND" || code === "LOCATION_MISMATCH" || code === "INVALID_LOCATION") {
+        userMessage = "Your Square location isn't set up for online payments. Check your Square dashboard.";
+      } else if (code === "INVALID_PHONE_NUMBER" || field.includes("phone")) {
+        userMessage = "The phone number isn't valid for Square. Use a UK mobile (e.g. 07…) or leave it blank.";
+      } else if (code === "INVALID_EMAIL_ADDRESS" || field.includes("email")) {
+        userMessage = "The email address isn't valid. Check it and try again.";
+      } else if (code === "BAD_REQUEST" || code === "INVALID_REQUEST_ERROR" || code === "VALUE_TOO_LONG" || code === "VALUE_TOO_SHORT" || code === "INVALID_VALUE") {
+        userMessage = detail ? `Square rejected the request: ${detail}` : "Square rejected the request. Check the amount and customer details.";
+      } else if (code === "RATE_LIMITED") {
+        userMessage = "Square is rate-limiting requests. Please wait a moment and try again.";
+      } else if (response.status >= 500) {
+        userMessage = "Square is temporarily unavailable. Please try again in a moment.";
+      } else if (detail) {
+        userMessage = `Square: ${detail}`;
+      }
+
+      // Return 200 so supabase-js delivers the body to the client (otherwise it
+      // surfaces a generic FunctionsHttpError and we lose the friendly message).
       return new Response(
-        JSON.stringify({ 
-          error: "Failed to create checkout session", 
-          details: responseText 
+        JSON.stringify({
+          error: userMessage,
+          userMessage,
+          code: code || undefined,
+          field: field || undefined,
+          status: response.status,
+          details: responseText,
         }),
-        { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
