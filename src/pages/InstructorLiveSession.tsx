@@ -770,7 +770,7 @@ export default function InstructorLiveSession() {
         (payload) => {
           const newPos = payload.new as { speed_limit_kmh?: number | null };
           if (newPos?.speed_limit_kmh != null) {
-            setSpeedLimitKmh(newPos.speed_limit_kmh);
+            setSpeedLimitIfValid(newPos.speed_limit_kmh);
           }
         }
       )
