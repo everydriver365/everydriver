@@ -483,11 +483,13 @@ export default function InstructorPay() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 + i * 0.04 }}
                   whileTap={{ scale: 0.97 }}
-                  style={action.accent ? undefined : tileStyle}
+                  style={action.accent || action.highlight ? undefined : tileStyle}
                   className={cn(
                     action.accent
                       ? "rounded-[14px] overflow-hidden bg-gradient-to-br from-[#1F2B3D] to-[#2A394F] shadow-[0_6px_20px_rgba(26,111,212,0.35)]"
-                      : ""
+                      : action.highlight
+                        ? "rounded-[14px] overflow-hidden bg-gradient-to-br from-[#DC2626] to-[#B91C1C] shadow-[0_6px_20px_rgba(220,38,38,0.32)]"
+                        : ""
                   )}
                 >
                   <div style={{ padding: "14px", display: "flex", flexDirection: "column", gap: 12 }}>
@@ -500,16 +502,16 @@ export default function InstructorPay() {
                         alignItems: "center",
                         justifyContent: "center",
                         flexShrink: 0,
-                        backgroundColor: action.accent ? "rgba(255,255,255,0.2)" : action.iconBg,
+                        backgroundColor: action.accent || action.highlight ? "rgba(255,255,255,0.22)" : action.iconBg,
                       }}
                     >
                       <action.icon size={22} strokeWidth={2} color={action.iconColor} />
                     </div>
                     <div>
-                      <p style={{ fontSize: 15, fontWeight: 500, color: action.accent ? "#FFFFFF" : "#18181B", lineHeight: 1.2, fontFamily: "Inter, sans-serif" }}>
+                      <p style={{ fontSize: 15, fontWeight: 500, color: action.accent || action.highlight ? "#FFFFFF" : "#18181B", lineHeight: 1.2, fontFamily: "Inter, sans-serif" }}>
                         {action.label}
                       </p>
-                      <p style={{ fontSize: 12, fontWeight: 400, color: action.accent ? "rgba(255,255,255,0.65)" : "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }}>
+                      <p style={{ fontSize: 12, fontWeight: 400, color: action.accent || action.highlight ? "rgba(255,255,255,0.75)" : "#71717A", marginTop: 2, fontFamily: "Inter, sans-serif" }}>
                         {action.sublabel}
                       </p>
                     </div>
