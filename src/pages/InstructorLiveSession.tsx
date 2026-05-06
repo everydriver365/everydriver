@@ -1241,12 +1241,7 @@ export default function InstructorLiveSession() {
             </>
           ) : (
             <>
-              {/* PHONE LAST LOCATION + ROUTE PREVIEW — visible whenever phone GPS is selected and allowed */}
-              <PhoneLastLocationCard
-                active={isPhoneProvider && locationPermissionStatus === "granted"}
-                fix={lastPhoneFix}
-                trail={phoneTrail}
-              />
+              {/* Phone last-location preview removed — MiniLiveMap covers it */}
 
               {/* 1. HEADER */}
               <div style={{
