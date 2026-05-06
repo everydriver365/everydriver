@@ -215,6 +215,9 @@ export default function InstructorPaymentsDesktop() {
             <button onClick={() => setTakeOpen(true)} style={primaryBtn}>
               <Plus size={12} /> Take payment
             </button>
+            <button onClick={() => setRefundOpen(true)} style={outlineBtn}>
+              <Undo2 size={12} /> Refund
+            </button>
           </div>
         </div>
 
