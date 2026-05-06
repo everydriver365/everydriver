@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { UserAvatar } from "@/components/instructor/UserAvatar";
 import { PupilPackageCard } from "@/components/instructor/PupilPackageCard";
+import { PupilRateEditor } from "@/components/instructor/PupilRateEditor";
 import { titleCaseName } from "@/lib/titleCase";
 import { formatPhoneNumber } from "@/lib/formatPhoneNumber";
 import {
