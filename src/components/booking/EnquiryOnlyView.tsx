@@ -68,18 +68,29 @@ export function EnquiryOnlyView({
 
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("booking_enquiries").insert({
-        instructor_id: instructor.id,
-        pupil_name: parsed.data.pupil_name,
-        pupil_email: parsed.data.pupil_email,
-        pupil_phone: parsed.data.pupil_phone,
-        pupil_postcode: parsed.data.pupil_postcode || null,
-        course_name: courseName,
-        course_hours: hours,
-        message: parsed.data.message || null,
-        source: "mini_website",
-      });
+      const { data: inserted, error } = await supabase
+        .from("booking_enquiries")
+        .insert({
+          instructor_id: instructor.id,
+          pupil_name: parsed.data.pupil_name,
+          pupil_email: parsed.data.pupil_email,
+          pupil_phone: parsed.data.pupil_phone,
+          pupil_postcode: parsed.data.pupil_postcode || null,
+          course_name: courseName,
+          course_hours: hours,
+          message: parsed.data.message || null,
+          source: "mini_website",
+        })
+        .select("id")
+        .single();
       if (error) throw error;
+
+      // Fire-and-forget instructor notification (SMS / WhatsApp / email / push)
+      if (inserted?.id) {
+        supabase.functions
+          .invoke("notify-booking-enquiry", { body: { enquiryId: inserted.id } })
+          .catch((err) => console.error("notify-booking-enquiry failed", err));
+      }
       setSubmitted(true);
     } catch (e) {
       console.error(e);
