@@ -566,6 +566,7 @@ export default function InstructorPay() {
         onOpenChange={setRefundModalOpen}
         instructorId={instructorId}
         pupils={pupils}
+        squareConnected={squareConnected}
         onRefunded={() => {
           fetchPupils();
           fetchRecentPaymentCount();
