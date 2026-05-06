@@ -29,6 +29,9 @@ interface UseFuelPricesResult {
   location: string | null;
   fuelType: string;
   setFuelType: (type: string) => void;
+  useDeviceLocation: boolean;
+  setUseDeviceLocation: (v: boolean) => void;
+  locating: boolean;
 }
 
 const CACHE_KEY = "fuel_prices_cache";
