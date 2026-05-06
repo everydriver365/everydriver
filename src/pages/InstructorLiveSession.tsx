@@ -1348,8 +1348,7 @@ export default function InstructorLiveSession() {
              speedMph={speedMph}
              speedLimitMph={speedLimitMph}
              roadName={panelRoadName}
-             paused={isPaused}
-             onResume={handleResumeFromPaused}
+             paused={false}
              alertCount={alertCounts.total}
            />
         </div>
