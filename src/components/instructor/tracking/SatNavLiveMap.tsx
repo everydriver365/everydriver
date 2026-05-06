@@ -64,6 +64,21 @@ export function SatNavLiveMap({
       ? roadName.trim()
       : null;
   const displayRoadName = upstreamRoadName || fallbackRoadName;
+
+  // Notify parent of the currently-displayed road name so it can mirror
+  // the same label in the bottom speed panel.
+  useEffect(() => {
+    onResolvedRoadName?.(displayRoadName ?? null);
+  }, [displayRoadName, onResolvedRoadName]);
+
+  // Reset the geocoded fallback when we move to a new session — prevents
+  // a stale phone-derived label from sticking after switching tracker.
+  useEffect(() => {
+    setFallbackRoadName(null);
+    lastGeocodeAtRef.current = 0;
+    lastGeocodePosRef.current = null;
+  }, [sessionId]);
+
   const isFirstFixRef = useRef<boolean>(true);
   // Wall-clock timestamp of the last accepted fix — used to derive an
   // adaptive tween duration that matches the true cadence of the device.
