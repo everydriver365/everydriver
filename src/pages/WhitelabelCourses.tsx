@@ -30,6 +30,7 @@ export default function WhitelabelCourses() {
   const [instructorId, setInstructorId] = useState<string | null | undefined>(
     undefined,
   );
+  const [availableFrom, setAvailableFrom] = useState<string | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
 
