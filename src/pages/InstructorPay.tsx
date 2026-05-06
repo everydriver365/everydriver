@@ -70,6 +70,7 @@ export default function InstructorPay() {
   const [resolvedQrUrl, setResolvedQrUrl] = useState<string | null>(null);
   const [commissionPayer, setCommissionPayer] = useState<string | null>("pupil");
   const [instructorName, setInstructorName] = useState<string>("Your Instructor");
+  const [squareConnected, setSquareConnected] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [refundModalOpen, setRefundModalOpen] = useState(false);
   const [pupils, setPupils] = useState<Pupil[]>([]);
