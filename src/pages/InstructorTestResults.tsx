@@ -155,134 +155,223 @@ export default function InstructorTestResults() {
     );
   }
 
+  const totalCount = stats.total;
+  const passedCount = stats.passed;
+  const failedCount = stats.failed;
+  const mockCount = stats.mockTests;
+  const passRateNum = stats.total > 0 ? (stats.passed / stats.total) * 100 : 0;
+
+  const statCards = [
+    { label: "Total", value: totalCount, color: "#1D4ED8", sub: "Tests recorded", accent: totalCount > 0 ? "#1D4ED8" : "#E5E7EB" },
+    { label: "Passed", value: passedCount, color: "#059669", sub: "First attempt", accent: passedCount > 0 ? "#10B981" : "#E5E7EB" },
+    { label: "Failed", value: failedCount, color: "#DC2626", sub: "Needs re-test", accent: failedCount > 0 ? "#DC2626" : "#E5E7EB" },
+    { label: "Pass rate", value: `${passRate}%`, color: "#1D4ED8", sub: "Overall", accent: passRateNum > 0 ? "#1D4ED8" : "#E5E7EB" },
+    { label: "Mock", value: mockCount, color: "#6B7280", sub: "Practice tests", accent: mockCount > 0 ? "#6B7280" : "#E5E7EB" },
+  ];
+
+  const activeMode: "record" | "mock" = isMock ? "mock" : "record";
+  const setActiveMode = (m: "record" | "mock") => setIsMock(m === "mock");
+
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setFilterType("all");
+    setFilterResult("all");
+  };
+
+  const handleExport = () => {
+    if (filteredResults.length === 0) {
+      toast({ title: "No results to export" });
+      return;
+    }
+    const headers = ["Date", "Pupil", "Type", "Result", "Minor", "Serious", "Dangerous", "Examiner"];
+    const rows = filteredResults.map((r) => [
+      format(new Date(r.test_date), "yyyy-MM-dd"),
+      r.pupil?.name || "Unknown",
+      r.is_mock ? "Mock" : "Official",
+      r.result,
+      r.total_minor_faults,
+      r.total_serious_faults,
+      r.total_dangerous_faults,
+      r.examiner?.name || "",
+    ]);
+    const csv = [headers, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `test-results-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4 pb-24">
-        {/* Header */}
-        <div className="space-y-3">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <div className="h-11 w-11 rounded-full bg-[#E6E8EC] dark:bg-[#2C2C2E] flex items-center justify-center">
-              <Award className="h-6 w-6 text-foreground/70" />
+      <div style={{ background: "#F8F9FB", minHeight: "100%", padding: 24 }}>
+        {/* Page header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Award size={17} color="#3730A3" strokeWidth={1.5} />
             </div>
-            Driving Test Results
-          </h1>
-          <Select
-            value={selectedPupilId}
-            onValueChange={(id) => {
-              const pupil = pupils.find((p) => p.id === id);
-              if (pupil) {
-                setSelectedPupilId(pupil.id);
-                setSelectedPupilName(pupil.name);
-              }
+            <div>
+              <h1 style={{ fontSize: 22, fontWeight: 700, color: "#111827", letterSpacing: "-0.4px", margin: 0, lineHeight: 1.15 }}>
+                Driving Test Results
+              </h1>
+              <p style={{ fontSize: 12, color: "#9CA3AF", margin: "2px 0 0" }}>
+                Track and record pupil test outcomes
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleExport}
+            style={{
+              background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 8,
+              padding: "6px 12px", display: "inline-flex", alignItems: "center",
+              gap: 5, cursor: "pointer", color: "#374151", fontSize: 11, fontWeight: 600,
             }}
           >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select pupil..." />
-            </SelectTrigger>
-            <SelectContent>
-              {pupils.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              onClick={() => handleRecordTest(selectedPupilId, selectedPupilName, false)}
-              disabled={!selectedPupilId}
+            <TrendingUp size={11} color="#6B7280" strokeWidth={1.8} />
+            Export
+          </button>
+        </div>
+
+        {/* Pupil selector + mode toggle */}
+        <div style={{ display: "flex", gap: 10, marginBottom: 20, alignItems: "center" }}>
+          <div style={{ flex: 1 }}>
+            <Select
+              value={selectedPupilId}
+              onValueChange={(id) => {
+                const pupil = pupils.find((p) => p.id === id);
+                if (pupil) {
+                  setSelectedPupilId(pupil.id);
+                  setSelectedPupilName(pupil.name);
+                }
+              }}
             >
-              <Award className="h-4 w-4 mr-2" />
-              Record Test
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleRecordTest(selectedPupilId, selectedPupilName, true)}
-              disabled={!selectedPupilId}
-            >
-              <ClipboardList className="h-4 w-4 mr-2" />
-              Mock Test
-            </Button>
+              <SelectTrigger
+                style={{
+                  background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 10,
+                  height: "auto", padding: "9px 14px", fontSize: 13,
+                  color: selectedPupilId ? "#111827" : "#9CA3AF",
+                }}
+              >
+                <SelectValue placeholder="Select pupil..." />
+              </SelectTrigger>
+              <SelectContent>
+                {pupils.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div style={{ display: "flex", gap: 6 }}>
+            {[
+              { key: "record" as const, label: "Record Test", Icon: Award },
+              { key: "mock" as const, label: "Mock Test", Icon: ClipboardList },
+            ].map((mode) => {
+              const isActive = activeMode === mode.key;
+              return (
+                <button
+                  key={mode.key}
+                  type="button"
+                  onClick={() => {
+                    setActiveMode(mode.key);
+                    if (selectedPupilId) {
+                      handleRecordTest(selectedPupilId, selectedPupilName, mode.key === "mock");
+                    }
+                  }}
+                  disabled={!selectedPupilId}
+                  style={{
+                    borderRadius: 8, padding: "9px 16px",
+                    display: "inline-flex", alignItems: "center", gap: 7,
+                    border: `1px solid ${isActive ? "#1D4ED8" : "#E5E7EB"}`,
+                    background: isActive ? "#1D4ED8" : "#FFF",
+                    color: isActive ? "#FFF" : "#6B7280",
+                    fontSize: 13, fontWeight: 600,
+                    cursor: selectedPupilId ? "pointer" : "not-allowed",
+                    opacity: selectedPupilId ? 1 : 0.6,
+                  }}
+                >
+                  <mode.Icon size={13} color={isActive ? "#FFF" : "#6B7280"} strokeWidth={1.6} />
+                  {mode.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-          <InstructorCard className="text-center">
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">Total</p>
-          </InstructorCard>
-          <InstructorCard className="text-center">
-            <div className="text-2xl font-bold text-emerald-600">{stats.passed}</div>
-            <p className="text-xs text-muted-foreground">Passed</p>
-          </InstructorCard>
-          <InstructorCard className="text-center">
-            <div className="text-2xl font-bold text-destructive">{stats.failed}</div>
-            <p className="text-xs text-muted-foreground">Failed</p>
-          </InstructorCard>
-          <InstructorCard className="text-center">
-            <div className="text-2xl font-bold text-primary">{passRate}%</div>
-            <p className="text-xs text-muted-foreground">Pass Rate</p>
-          </InstructorCard>
-          <InstructorCard className="text-center">
-            <div className="text-2xl font-bold text-primary">{stats.mockTests}</div>
-            <p className="text-xs text-muted-foreground">Mock</p>
-          </InstructorCard>
+        {/* Stats row */}
+        <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+          {statCards.map((stat) => (
+            <div
+              key={stat.label}
+              style={{
+                flex: 1, background: "#FFF", borderRadius: 12,
+                padding: "16px 18px", border: "1px solid #ECEEF2",
+                position: "relative", overflow: "hidden",
+              }}
+            >
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 6 }}>
+                {stat.label}
+              </div>
+              <div style={{ fontSize: 26, fontWeight: 700, color: stat.color, letterSpacing: -1, lineHeight: "30px" }}>
+                {stat.value}
+              </div>
+              <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 5 }}>{stat.sub}</div>
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: stat.accent }} />
+            </div>
+          ))}
         </div>
 
-        {/* Tabs */}
+        {/* Tabs (preserved) */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <Select value={activeTab} onValueChange={setActiveTab}>
-            <SelectTrigger className="w-full sm:w-[220px]">
+            <SelectTrigger className="w-full sm:w-[220px]" style={{ background: "#FFF" }}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="results">
-                <span className="flex items-center gap-2"><FileText className="h-4 w-4" /> Results</span>
-              </SelectItem>
-              <SelectItem value="centres">
-                <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Test Centres</span>
-              </SelectItem>
-              <SelectItem value="triggers">
-                <span className="flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Standards Check</span>
-              </SelectItem>
-              <SelectItem value="examiners">
-                <span className="flex items-center gap-2"><Users className="h-4 w-4" /> Examiners</span>
-              </SelectItem>
+              <SelectItem value="results"><span className="flex items-center gap-2"><FileText className="h-4 w-4" /> Results</span></SelectItem>
+              <SelectItem value="centres"><span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Test Centres</span></SelectItem>
+              <SelectItem value="triggers"><span className="flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Standards Check</span></SelectItem>
+              <SelectItem value="examiners"><span className="flex items-center gap-2"><Users className="h-4 w-4" /> Examiners</span></SelectItem>
             </SelectContent>
           </Select>
 
-          {/* Results Tab */}
-          <TabsContent value="results" className="space-y-4">
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search by pupil name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+          <TabsContent value="results" className="space-y-0">
+            {/* Section header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", letterSpacing: 1.2, textTransform: "uppercase" }}>
+                Results
               </div>
-              <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3">
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <div style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 8, padding: "6px 12px", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <Search size={12} color="#9CA3AF" />
+                  <input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search by pupil name..."
+                    style={{ fontSize: 12, color: "#111827", width: 150, border: 0, outline: "none", background: "transparent" }}
+                  />
+                </div>
                 <Select value={filterResult} onValueChange={(v) => setFilterResult(v as typeof filterResult)}>
-                  <SelectTrigger className="w-full sm:w-[130px]">
+                  <SelectTrigger style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 8, padding: "6px 12px", height: "auto", fontSize: 12, fontWeight: 600, color: "#374151", width: "auto", gap: 5 }}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Results</SelectItem>
+                    <SelectItem value="all">All results</SelectItem>
                     <SelectItem value="pass">Passed</SelectItem>
                     <SelectItem value="fail">Failed</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={filterType} onValueChange={(v) => setFilterType(v as typeof filterType)}>
-                  <SelectTrigger className="w-full sm:w-[130px]">
-                    <Filter className="h-4 w-4 mr-2" />
+                  <SelectTrigger style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 8, padding: "6px 12px", height: "auto", fontSize: 12, fontWeight: 600, color: "#374151", width: "auto", gap: 5 }}>
+                    <Filter size={11} color="#6B7280" strokeWidth={1.8} style={{ marginRight: 4 }} />
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="all">All types</SelectItem>
                     <SelectItem value="real">Official</SelectItem>
                     <SelectItem value="mock">Mock</SelectItem>
                   </SelectContent>
@@ -290,25 +379,38 @@ export default function InstructorTestResults() {
               </div>
             </div>
 
-            {/* Results Table */}
+            {/* Results list / empty / loading */}
             {loading ? (
-              <div className="flex items-center justify-center py-12">
+              <div style={{ background: "#FFF", borderRadius: 12, border: "1px solid #ECEEF2", padding: 48, display: "flex", justifyContent: "center" }}>
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : filteredResults.length === 0 ? (
-              <InstructorCard>
-                <div className="flex flex-col items-center justify-center py-12">
-                  <Award className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No test results found</h3>
-                  <p className="text-muted-foreground text-center max-w-md">
-                    {searchQuery || filterType !== "all" || filterResult !== "all"
-                      ? "No results match your filters."
-                      : "Start recording driving test results to track your pupils' progress."}
-                  </p>
+              <div style={{ background: "#FFF", borderRadius: 12, border: "1px solid #ECEEF2", padding: 48, display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <div style={{ width: 52, height: 52, borderRadius: 14, background: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
+                  <Award size={24} color="#4F46E5" strokeWidth={1.5} />
                 </div>
-              </InstructorCard>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#111827", marginBottom: 6 }}>
+                  No test results yet
+                </div>
+                <div style={{ fontSize: 12, color: "#6B7280", textAlign: "center", lineHeight: "20px", marginBottom: 18, whiteSpace: "pre-line" }}>
+                  {`Record your pupils' driving test outcomes here.\nSelect a pupil and tap Record Test to get started.`}
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button type="button" onClick={handleClearFilters} style={{ background: "#EEF2FF", borderRadius: 20, padding: "7px 16px", border: 0, cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#3730A3" }}>
+                    Clear filters
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => selectedPupilId && handleRecordTest(selectedPupilId, selectedPupilName, false)}
+                    disabled={!selectedPupilId}
+                    style={{ background: "#1D4ED8", borderRadius: 20, padding: "7px 16px", border: 0, cursor: selectedPupilId ? "pointer" : "not-allowed", fontSize: 12, fontWeight: 600, color: "#FFF", opacity: selectedPupilId ? 1 : 0.6 }}
+                  >
+                    Record first test
+                  </button>
+                </div>
+              </div>
             ) : (
-              <InstructorCard noPadding>
+              <div style={{ background: "#FFF", borderRadius: 12, border: "1px solid #ECEEF2", overflow: "hidden" }}>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -329,76 +431,53 @@ export default function InstructorTestResults() {
                             {format(new Date(result.test_date), "dd MMM yyyy")}
                           </div>
                         </TableCell>
-                        <TableCell className="font-medium">
-                          {result.pupil?.name || "Unknown"}
-                        </TableCell>
+                        <TableCell className="font-medium">{result.pupil?.name || "Unknown"}</TableCell>
                         <TableCell>
                           {result.is_mock ? (
-                            <Badge variant="secondary" className="text-xs">
-                              <ClipboardList className="h-3 w-3 mr-1" />
-                              Mock
-                            </Badge>
+                            <Badge variant="secondary" className="text-xs"><ClipboardList className="h-3 w-3 mr-1" />Mock</Badge>
                           ) : (
-                            <Badge variant="outline" className="text-xs">
-                              <FileText className="h-3 w-3 mr-1" />
-                              Official
-                            </Badge>
+                            <Badge variant="outline" className="text-xs"><FileText className="h-3 w-3 mr-1" />Official</Badge>
                           )}
                         </TableCell>
                         <TableCell>
                           {result.result === "pass" ? (
-                            <Badge className="bg-emerald-500 hover:bg-emerald-600">
-                              <CheckCircle2 className="h-3 w-3 mr-1" />
-                              Pass
-                            </Badge>
+                            <Badge className="bg-emerald-500 hover:bg-emerald-600"><CheckCircle2 className="h-3 w-3 mr-1" />Pass</Badge>
                           ) : (
-                            <Badge variant="destructive">
-                              <XCircle className="h-3 w-3 mr-1" />
-                              Fail
-                            </Badge>
+                            <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Fail</Badge>
                           )}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2 text-sm">
                             <span>{result.total_minor_faults} minor</span>
                             {result.total_serious_faults > 0 && (
-                              <Badge variant="outline" className="text-orange-600 border-orange-600 text-xs">
-                                {result.total_serious_faults}S
-                              </Badge>
+                              <Badge variant="outline" className="text-orange-600 border-orange-600 text-xs">{result.total_serious_faults}S</Badge>
                             )}
                             {result.total_dangerous_faults > 0 && (
-                              <Badge variant="outline" className="text-destructive border-destructive text-xs">
-                                {result.total_dangerous_faults}D
-                              </Badge>
+                              <Badge variant="outline" className="text-destructive border-destructive text-xs">{result.total_dangerous_faults}D</Badge>
                             )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          {result.examiner?.name || (
-                            <span className="text-muted-foreground">—</span>
-                          )}
+                          {result.examiner?.name || <span className="text-muted-foreground">—</span>}
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              </InstructorCard>
+              </div>
             )}
           </TabsContent>
 
-          {/* Test Centres Tab */}
           <TabsContent value="centres">
             <TestCentreAnalytics instructorId={instructor.id} />
           </TabsContent>
 
-          {/* Standards Check Tab */}
           <TabsContent value="triggers">
             <div className="max-w-2xl">
               <StandardsCheckTrigger instructorId={instructor.id} />
             </div>
           </TabsContent>
 
-          {/* Examiners Tab */}
           <TabsContent value="examiners">
             <InstructorCard>
               <h3 className="font-semibold text-base mb-1">Manage Examiners</h3>
@@ -411,7 +490,6 @@ export default function InstructorTestResults() {
         </Tabs>
       </div>
 
-      {/* Test Form Dialog (DL25A) */}
       {selectedPupilId && (
         <DrivingTestReportForm
           open={isTestFormOpen}
