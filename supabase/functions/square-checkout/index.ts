@@ -160,7 +160,7 @@ serve(async (req: Request) => {
       },
       pre_populated_data: {
         buyer_email: customerEmail || undefined,
-        buyer_phone_number: customerPhone || undefined
+        buyer_phone_number: normalizePhoneE164(customerPhone) || undefined
       }
     };
 

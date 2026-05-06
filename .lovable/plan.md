@@ -1,30 +1,42 @@
-## Fuel Finder — desktop "does not work" fix
+## QR payments fail — Square rejects raw UK phone numbers
 
 ### Root cause
 
-Tested the `get-fuel-prices` edge function directly with a real instructor — it returns 10 stations correctly. So the backend is fine.
+From `square-checkout` edge function logs at the moment the user tried to generate a QR:
 
-The "No fuel stations found within 15km" the desktop is showing is a misleading fallback that fires in two situations the UI doesn't currently distinguish:
+```
+Square API response: {"errors":[{"code":"INVALID_PHONE_NUMBER",
+"detail":"Invalid phone number.","field":"pre_populated_data.buyer_phone_number"}]}
+```
 
-1. **No `home_postcode` on the instructor** — edge function returns `200` with `{ stations: [], error: "No postcode configured" }`. `useFuelPrices` ignores the embedded `error` field, so the page just renders the generic empty state with no way to fix it.
-2. **Postcode set but couldn't be geocoded** — same shape, same silent failure (`error: "Could not geocode postcode"`).
+Square's Quick Pay API requires `buyer_phone_number` in **E.164** format (e.g. `+447834022410`). Pupils' phone numbers are stored in UK local format (`07834022410`) and the edge function forwards them verbatim, so every QR / payment-link generation request that has a pupil phone number gets a 400 back — and the UI shows "Failed to generate QR code".
 
-The session replay shows the user landing on the page with the generic empty-state message and the refresh button disabled — classic symptom of (1).
+This affects:
+- The **Take Payment → QR Code** generator
+- The **Take Payment → Send Request** flow (when a pupil with a phone is selected)
+- Any other caller of `square-checkout` that passes `customerPhone`
 
 ### Fix
 
-**`src/hooks/useFuelPrices.ts`**
-- When the edge function returns 200 with `data.error` and an empty `stations` array, surface that string via the hook's `error` state instead of falling through to "no results".
+Edit `supabase/functions/square-checkout/index.ts`:
 
-**`src/pages/InstructorFuel.tsx`**
-- Replace the bare "No fuel stations found within 15km" empty state with a friendlier card that:
-  - Detects `error === "No postcode configured"` and shows a "Set your home postcode" CTA linking to `/instructor/settings` (where `home_postcode` is edited).
-  - For the geocode-failure case, shows "We couldn't locate that postcode — please check it" with the same CTA.
-  - For genuine empty results (postcode OK, no stations within 15km), keeps the existing copy.
-- Keep the existing error block (used for network failures from `fnError`) unchanged.
+1. Add a small `normalizePhoneE164(raw)` helper that:
+   - Strips spaces, hyphens, brackets.
+   - If it starts with `+` and is otherwise digits → return as-is.
+   - If it starts with `00` → replace with `+`.
+   - If it starts with `07` and is 11 digits (UK mobile) → return `+447` + last 9 digits.
+   - If it starts with `7` and is 10 digits → return `+447…`.
+   - If it starts with `447` → prefix `+`.
+   - Otherwise return `null` (will be omitted from the Square payload — better than a 400).
+2. In the `pre_populated_data` block, send `normalizePhoneE164(customerPhone) || undefined` instead of the raw value.
 
-No edge-function, schema or mobile-layout changes. Mobile view is untouched per project rule.
+No client-side changes, no DB changes, no schema changes.
+
+### Verification
+After deploying:
+- Re-run a QR generation with a pupil who has a UK mobile saved → should succeed and return a `checkoutUrl`.
+- Logs should no longer show `INVALID_PHONE_NUMBER`.
 
 ### Out of scope
-- Increasing the 15 km radius (separate request).
-- Reworking the desktop layout of the Fuel Finder.
+- Reformatting stored phone numbers in the `pupils` table (server-side normalization is enough).
+- Other Square endpoints — only `square-checkout` is touched.
