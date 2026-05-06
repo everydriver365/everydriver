@@ -1,42 +1,43 @@
-## QR payments fail — Square rejects raw UK phone numbers
+## Goal
+When a Square (or any) payment lands in `payment_history`, the instructor sees an immediate on-screen confirmation on the Payments screen — without needing to refresh — in addition to the existing push notification.
 
-### Root cause
+## Approach
+Use Supabase Realtime on `public.payment_history` filtered by the logged-in instructor. On each new row, fire a sonner toast and refresh the on-screen totals.
 
-From `square-checkout` edge function logs at the moment the user tried to generate a QR:
+## Changes
 
+### 1. Enable realtime on the table (migration)
+```sql
+ALTER PUBLICATION supabase_realtime ADD TABLE public.payment_history;
+ALTER TABLE public.payment_history REPLICA IDENTITY FULL;
 ```
-Square API response: {"errors":[{"code":"INVALID_PHONE_NUMBER",
-"detail":"Invalid phone number.","field":"pre_populated_data.buyer_phone_number"}]}
-```
+(Safe no-op if already added — wrapped in a DO block to swallow `already member` errors.)
 
-Square's Quick Pay API requires `buyer_phone_number` in **E.164** format (e.g. `+447834022410`). Pupils' phone numbers are stored in UK local format (`07834022410`) and the edge function forwards them verbatim, so every QR / payment-link generation request that has a pupil phone number gets a 400 back — and the UI shows "Failed to generate QR code".
+### 2. `src/pages/InstructorPay.tsx` (mobile Payments)
+Add a second `useEffect` keyed on `instructorId` that subscribes to:
+- `postgres_changes` → `event: 'INSERT'`, `schema: 'public'`, `table: 'payment_history'`, `filter: instructor_id=eq.${instructorId}`
 
-This affects:
-- The **Take Payment → QR Code** generator
-- The **Take Payment → Send Request** flow (when a pupil with a phone is selected)
-- Any other caller of `square-checkout` that passes `customerPhone`
+On payload:
+- Skip negative amounts (refunds — those already toast from RefundModal)
+- Look up pupil name from current `pupils` state (fallback to "a pupil")
+- `toast.success(\`£${amount} received from ${name}\`, { description: method === 'Square' ? 'Square payment confirmed' : method })`
+- `haptics.success()`
+- Re-run `fetchPupils()` (balances) and `fetchRecentPaymentCount()`
+- Cleanup: `supabase.removeChannel(channel)` on unmount
 
-### Fix
+### 3. `src/pages/instructor-app/InstructorPaymentsDesktop.tsx` (desktop Payments)
+Same subscription + toast + refresh of the local payments/pupils queries (call the existing fetchers used after a manual Take Payment).
 
-Edit `supabase/functions/square-checkout/index.ts`:
+### 4. Bonus: status badge in Take Payment QR modal
+In `TakePaymentModal.tsx`, while a QR/link is open, subscribe to the same channel filtered by `instructor_id` and amount match. When matched, swap the QR view to a green "Payment received ✓" confirmation card and auto-close after 3s. (Small, isolated change — no layout impact.)
 
-1. Add a small `normalizePhoneE164(raw)` helper that:
-   - Strips spaces, hyphens, brackets.
-   - If it starts with `+` and is otherwise digits → return as-is.
-   - If it starts with `00` → replace with `+`.
-   - If it starts with `07` and is 11 digits (UK mobile) → return `+447` + last 9 digits.
-   - If it starts with `7` and is 10 digits → return `+447…`.
-   - If it starts with `447` → prefix `+`.
-   - Otherwise return `null` (will be omitted from the Square payload — better than a 400).
-2. In the `pre_populated_data` block, send `normalizePhoneE164(customerPhone) || undefined` instead of the raw value.
+## Out of scope
+- No mobile layout changes beyond adding the subscription + toast (per mobile update policy).
+- No new tables, no schema changes beyond enabling realtime.
+- Refund toasts already exist; not duplicated.
 
-No client-side changes, no DB changes, no schema changes.
-
-### Verification
-After deploying:
-- Re-run a QR generation with a pupil who has a UK mobile saved → should succeed and return a `checkoutUrl`.
-- Logs should no longer show `INVALID_PHONE_NUMBER`.
-
-### Out of scope
-- Reformatting stored phone numbers in the `pupils` table (server-side normalization is enough).
-- Other Square endpoints — only `square-checkout` is touched.
+## Files touched
+- `supabase/migrations/<new>.sql` — enable realtime
+- `src/pages/InstructorPay.tsx`
+- `src/pages/instructor-app/InstructorPaymentsDesktop.tsx`
+- `src/components/instructor/TakePaymentModal.tsx`
