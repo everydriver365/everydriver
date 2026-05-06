@@ -974,6 +974,17 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   };
 
   // Desktop Layout - Sidebar
+  // Desktop: unify all instructor pages under DashboardShell so the sidebar
+  // and top chrome match the rest of the portal. Mobile branch above is untouched.
+  const initials = (instructor?.name || "I")
+    .split(" ")
+    .map((p) => p[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+  const { total: notificationTotal } = useCombinedNotificationCount(instructor?.id);
+
   return (
     <RealtimeHubProvider instructorId={instructor?.id}>
       <GlobalSyncBridge instructorId={instructor?.id} />
@@ -995,125 +1006,16 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         />
       )}
       <CommandPalette variant="instructor" />
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-background instructor-portal a11y-scope">
-          <InstructorDesktopSidebar
-            instructor={instructor}
-            subscription={subscription}
-            onSignOut={handleSignOut}
-          />
-
-          <div className="flex-1 flex flex-col min-w-0">
-            {/* Slim Header */}
-            <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm">
-              <div className="flex items-center justify-between px-4 h-12">
-                {/* Left: Sidebar trigger + Search */}
-                <div className="flex items-center gap-2">
-                  <SidebarTrigger className="text-muted-foreground hover:text-foreground hover:bg-muted" />
-                  <HeaderSearchBox variant="instructor" instructorId={instructor?.id} />
-                </div>
-
-                {/* Center: Quick Actions */}
-                <DesktopQuickActionBar />
-
-                {/* Right: Voice + Notifications + Theme + Avatar */}
-                <div className="flex items-center gap-1">
-                  <VoiceAssistantHeaderButton state={voiceAssistant.state} onTap={handleVoiceTap} />
-                  <DesktopNotificationBell instructorId={instructor?.id} />
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8"
-                      >
-                        {resolvedTheme === 'oled' ? <Contrast className="h-4 w-4" /> : resolvedTheme === 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-44">
-                      <DropdownMenuItem onClick={() => setTheme('light')} className="cursor-pointer">
-                        <Sun className="h-4 w-4 mr-2" /> Light
-                        {theme === 'light' && <Check className="ml-auto h-4 w-4" />}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setTheme('dark')} className="cursor-pointer">
-                        <Moon className="h-4 w-4 mr-2" /> Dark
-                        {theme === 'dark' && <Check className="ml-auto h-4 w-4" />}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setTheme('oled')} className="cursor-pointer">
-                        <Contrast className="h-4 w-4 mr-2" /> OLED
-                        {theme === 'oled' && <Check className="ml-auto h-4 w-4" />}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setTheme('system')} className="cursor-pointer">
-                        <Monitor className="h-4 w-4 mr-2" /> System
-                        {theme === 'system' && <Check className="ml-auto h-4 w-4" />}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="ml-1 flex items-center gap-2 rounded-md px-2 py-1 hover:bg-white/10 transition-colors">
-                        <Avatar className="h-7 w-7 border border-white/20">
-                          <AvatarImage src={instructor?.profile_image_url || undefined} />
-                          <AvatarFallback className="bg-white/20 text-white text-xs font-semibold">
-                            {instructor?.name?.charAt(0) || "I"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-medium text-white/80 hidden xl:inline">{instructor?.name?.split(' ')[0]}</span>
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-52">
-                      <div className="px-3 py-2 border-b">
-                        <p className="text-sm font-medium">{instructor?.name || "Instructor"}</p>
-                        <p className="text-xs text-muted-foreground">{instructor?.email}</p>
-                      </div>
-                      <DropdownMenuItem onClick={() => navigate("/instructor/settings")} className="cursor-pointer">
-                        <Settings className="h-4 w-4 mr-2" /> Settings
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
-                        <LogOut className="h-4 w-4 mr-2" /> Sign Out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => navigate("/instructor/settings")}
-                    className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10"
-                    title="Settings"
-                  >
-                    <Settings className="h-4.5 w-4.5" />
-                  </Button>
-                </div>
-              </div>
-            </header>
-
-            {/* Square Connected Banner */}
-            {(instructor as any)?.square_merchant_id && (
-              <div className="bg-emerald-500 text-white text-center text-xs py-1 font-medium flex items-center justify-center gap-1.5">
-                <CheckCircle className="h-3 w-3" />
-                Square Connected — Auto-Payouts Active
-              </div>
-            )}
-
-            {/* Breadcrumb */}
-            <div className="border-b bg-muted/30 px-6 py-1.5">
-              <nav className="flex items-center text-xs text-muted-foreground">
-                <Link to="/instructor" className="hover:text-foreground transition-colors">
-                  Instructor
-                </Link>
-                <ChevronRight className="h-3 w-3 mx-1.5" />
-                <span className="text-foreground font-medium">{getPageTitle()}</span>
-              </nav>
-            </div>
-
-            {/* Main Content */}
-            <main className="flex-1 p-6">
-              {children}
-            </main>
-          </div>
-        </div>
-      </SidebarProvider>
+      <DashboardShell
+        userInitials={initials}
+        userName={instructor?.name || "Instructor"}
+        notificationCount={notificationTotal}
+        onSignOut={handleSignOut}
+        onAskED={() => window.dispatchEvent(new CustomEvent("dsm:open-ai"))}
+        onBell={() => navigate("/instructor/notifications")}
+      >
+        {children}
+      </DashboardShell>
       <VoiceAssistantOverlay state={voiceAssistant.state} transcript={voiceAssistant.transcript} responseText={voiceAssistant.responseText} onCancel={voiceAssistant.cancel} />
     </RealtimeHubProvider>
   );
