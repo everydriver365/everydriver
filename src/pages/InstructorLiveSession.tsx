@@ -987,14 +987,41 @@ export default function InstructorLiveSession() {
   const stopSession = async () => {
     if (!device?.current_session_id) return;
 
+    // Capture session/route context up-front so the summary opens
+    // immediately, even if any of the cleanup steps below fail.
+    const sessionId = device.current_session_id;
+    const stoppedDevice = device;
+    const localPendingRouteType = pendingRouteType;
+    const localDrivingTestDetails = drivingTestDetails;
+
     setIsStopping(true);
+
+    // 1) Open the Trip Summary sheet RIGHT AWAY. The summary fetches its
+    //    own data via the generate-route-report edge function and has its
+    //    own loading + retry UX, so it doesn't need to wait for the
+    //    bookkeeping work below.
+    setCompletedSessionId(sessionId);
+    setShowReport(true);
+
+    // Helper: run a step but never let it block the rest of the flow.
+    const safe = async <T,>(label: string, fn: () => Promise<T>): Promise<T | null> => {
+      try {
+        return await fn();
+      } catch (err) {
+        console.warn(`[stopSession] ${label} failed:`, err);
+        return null;
+      }
+    };
+
     try {
       // Fetch route points for the path and speed calculation
-      const { data: gpsPoints } = await supabase
-        .from("telematics_gps_points")
-        .select("latitude, longitude, speed_kmh")
-        .eq("telematics_id", device.current_session_id)
-        .order("recorded_at", { ascending: true });
+      const { data: gpsPoints } = await safe("fetch gps points", async () => {
+        return await supabase
+          .from("telematics_gps_points")
+          .select("latitude, longitude, speed_kmh")
+          .eq("telematics_id", sessionId)
+          .order("recorded_at", { ascending: true });
+      }) ?? { data: null as null | Array<{ latitude: number; longitude: number; speed_kmh: number | null }> };
 
       // Calculate avg/max speed from GPS points
       let avgSpeedKmh: number | null = null;
