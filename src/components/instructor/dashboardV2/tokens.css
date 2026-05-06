@@ -1,5 +1,6 @@
 /* Scoped tokens for the redesigned instructor dashboard */
-.dashboard-v2 {
+.dashboard-v2,
+.instructor-portal {
   --d2-bg: #F8FAFC;
   --d2-surface: #FFFFFF;
   --d2-surface-soft: #F8FAFC;
@@ -17,7 +18,9 @@
   --d2-text-2: #64748B;
   --d2-text-3: #94A3B8;
   --d2-hover: #F1F5F9;
+}
 
+.dashboard-v2 {
   background: var(--d2-bg);
   color: var(--d2-text-1);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
