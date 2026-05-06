@@ -22,7 +22,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, subMonths } from "date-fns";
 import { useNavigate } from "react-router-dom";
