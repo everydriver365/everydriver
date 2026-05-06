@@ -1,14 +1,15 @@
 /**
- * Unified biometric authentication helper.
+ * Unified biometric / quick-sign-in helper.
  *
- * - On native (Capacitor / TestFlight iOS, Android): uses capacitor-native-biometric
- *   to store credentials in the iOS Keychain / Android Keystore, gated behind Face ID /
- *   Touch ID / fingerprint.
- * - On web: falls back to the Credential Management API (PasswordCredential) so
- *   browsers/iOS Keychain can offer autofill.
- *
- * One helper, multiple "scopes" (instructor, pupil, admin, school) so each portal
- * stores its own credential under a stable server identifier.
+ * Three modes:
+ *  - Native (Capacitor / TestFlight iOS, Android): real Face ID / Touch ID /
+ *    fingerprint via capacitor-native-biometric (Keychain / Keystore).
+ *  - Wrapped app (Despia WebView, standalone PWA, iOS WKWebView): one-tap
+ *    "Quick Sign In" using credentials stored in localStorage. The OS device
+ *    passcode/biometric already gates access to the phone, so this is a
+ *    pragmatic equivalent. The browser PasswordCredential API is unavailable
+ *    in cross-origin iframes / WebViews, which is why we need this fallback.
+ *  - Regular browser: PasswordCredential API for autofill where supported.
  */
 
 import { Capacitor } from "@capacitor/core";
@@ -27,17 +28,90 @@ const SERVER_PREFIX = "app.lovable.everydriver";
 
 const serverFor = (scope: BiometricScope) => `${SERVER_PREFIX}.${scope}`;
 const enabledKey = (scope: BiometricScope) => `${scope}-biometric-enabled`;
+const wrappedStoreKey = (scope: BiometricScope) => `bio.${scope}.v1`;
 
 export const isNativePlatform = () => Capacitor.isNativePlatform();
 
-/** Returns true if the device can perform biometric auth (Face ID / Touch ID / fingerprint). */
+/**
+ * True when running inside any non-browser shell where PasswordCredential is
+ * unavailable: Capacitor, Despia, generic WebView, or a standalone PWA
+ * installed to the home screen.
+ */
+export function isWrappedApp(): boolean {
+  if (typeof window === "undefined") return false;
+  if (isNativePlatform()) return true;
+  const w = window as any;
+  if (w.Despia || w.ReactNativeWebView) return true;
+  const ua = navigator.userAgent || "";
+  if (/Despia/i.test(ua)) return true;
+  if (/; wv\)/i.test(ua)) return true;
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  if (isIOS && !/Safari/i.test(ua)) return true;
+  try {
+    if (window.matchMedia?.("(display-mode: standalone)").matches) return true;
+    if ((navigator as any).standalone === true) return true;
+  } catch {}
+  return false;
+}
+
+// ---- Wrapped credential store (lightly obfuscated, NOT real encryption) ----
+function encode(value: string): string {
+  try {
+    return btoa(unescape(encodeURIComponent(value)));
+  } catch {
+    return value;
+  }
+}
+function decode(value: string): string {
+  try {
+    return decodeURIComponent(escape(atob(value)));
+  } catch {
+    return value;
+  }
+}
+
+function readWrappedStore(scope: BiometricScope): { email: string; password: string } | null {
+  try {
+    const raw = localStorage.getItem(wrappedStoreKey(scope));
+    if (!raw) return null;
+    const parsed = JSON.parse(decode(raw));
+    if (!parsed?.email || !parsed?.password) return null;
+    return { email: parsed.email, password: parsed.password };
+  } catch {
+    return null;
+  }
+}
+
+function writeWrappedStore(scope: BiometricScope, email: string, password: string) {
+  try {
+    localStorage.setItem(wrappedStoreKey(scope), encode(JSON.stringify({ email, password })));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function clearWrappedStore(scope: BiometricScope) {
+  try {
+    localStorage.removeItem(wrappedStoreKey(scope));
+  } catch {
+    // ignore
+  }
+}
+
+// ---------------------------------------------------------------------------
+
+/** Returns true if the device can offer biometric / quick sign-in. */
 export async function isBiometricAvailable(scope: BiometricScope): Promise<boolean> {
   try {
     if (isNativePlatform()) {
       const result = await NativeBiometric.isAvailable();
-      return !!result.isAvailable;
+      if (result.isAvailable) return true;
+      // Even without OS biometrics, allow quick sign-in inside a native app.
+      return !!readWrappedStore(scope);
     }
-    // Web: only show the button if we previously stored credentials via PasswordCredential.
+    if (isWrappedApp()) {
+      return !!readWrappedStore(scope);
+    }
     if (typeof window !== "undefined" && "credentials" in navigator && "PasswordCredential" in window) {
       return localStorage.getItem(enabledKey(scope)) === "true";
     }
@@ -47,45 +121,64 @@ export async function isBiometricAvailable(scope: BiometricScope): Promise<boole
   }
 }
 
-/** Returns a friendly label for the available biometry. */
+/** Friendly label for the available method. */
 export async function getBiometryLabel(): Promise<string> {
   try {
-    if (!isNativePlatform()) return "Face ID / Touch ID";
-    const { biometryType } = await NativeBiometric.isAvailable();
-    switch (biometryType) {
-      case BiometryType.FACE_ID:
-        return "Face ID";
-      case BiometryType.TOUCH_ID:
-        return "Touch ID";
-      case BiometryType.FACE_AUTHENTICATION:
-        return "Face Unlock";
-      case BiometryType.FINGERPRINT:
-        return "Fingerprint";
-      default:
-        return "Biometrics";
+    if (isNativePlatform()) {
+      const { biometryType } = await NativeBiometric.isAvailable();
+      switch (biometryType) {
+        case BiometryType.FACE_ID:
+          return "Face ID";
+        case BiometryType.TOUCH_ID:
+          return "Touch ID";
+        case BiometryType.FACE_AUTHENTICATION:
+          return "Face Unlock";
+        case BiometryType.FINGERPRINT:
+          return "Fingerprint";
+        default:
+          return "Quick Sign In";
+      }
     }
+    if (isWrappedApp()) return "Quick Sign In";
+    return "Face ID / Touch ID";
   } catch {
-    return "Biometrics";
+    return "Quick Sign In";
   }
 }
 
-/** Persist credentials behind biometric protection (call this on a successful password login). */
+/** Persist credentials for future quick / biometric sign-in. */
 export async function saveBiometricCredentials(
   scope: BiometricScope,
   email: string,
   password: string,
 ): Promise<void> {
-  try {
-    if (isNativePlatform()) {
+  // Always seed the wrapped store — this is the only path that works in
+  // Despia / WKWebView / iframes, and acts as a safe fallback elsewhere.
+  writeWrappedStore(scope, email, password);
+  localStorage.setItem(enabledKey(scope), "true");
+
+  // Native: also store in the platform Keychain / Keystore behind biometrics.
+  if (isNativePlatform()) {
+    try {
       await NativeBiometric.setCredentials({
         username: email,
         password,
         server: serverFor(scope),
       });
-      localStorage.setItem(enabledKey(scope), "true");
-      return;
+    } catch (err) {
+      console.warn("[biometricAuth] NativeBiometric.setCredentials failed", err);
     }
-    if (typeof window !== "undefined" && "credentials" in navigator && "PasswordCredential" in window) {
+    return;
+  }
+
+  // Browser: best-effort PasswordCredential storage. Failures (e.g. cross-origin
+  // iframe in the Lovable preview) are non-fatal — the wrapped store covers us.
+  try {
+    if (
+      typeof window !== "undefined" &&
+      "credentials" in navigator &&
+      "PasswordCredential" in window
+    ) {
       const PasswordCredentialClass = (window as any).PasswordCredential;
       const credential = new PasswordCredentialClass({
         id: email,
@@ -93,30 +186,43 @@ export async function saveBiometricCredentials(
         name: `EveryDriver ${scope}`,
       });
       await navigator.credentials.store(credential);
-      localStorage.setItem(enabledKey(scope), "true");
     }
   } catch (err) {
-    console.warn("[biometricAuth] saveBiometricCredentials failed", err);
+    console.warn("[biometricAuth] PasswordCredential storage skipped", err);
   }
 }
 
-/** Prompt biometrics and return saved credentials. Returns null if cancelled / unavailable. */
+/** Prompt biometrics / fetch saved credentials. */
 export async function getBiometricCredentials(
   scope: BiometricScope,
   promptReason = "Sign in",
 ): Promise<{ email: string; password: string } | null> {
   try {
     if (isNativePlatform()) {
-      await NativeBiometric.verifyIdentity({
-        reason: promptReason,
-        title: "Unlock EveryDriver",
-        subtitle: promptReason,
-        description: "Use biometrics to sign in",
-      });
-      const creds = await NativeBiometric.getCredentials({ server: serverFor(scope) });
-      if (!creds?.username || !creds?.password) return null;
-      return { email: creds.username, password: creds.password };
+      try {
+        await NativeBiometric.verifyIdentity({
+          reason: promptReason,
+          title: "Unlock EveryDriver",
+          subtitle: promptReason,
+          description: "Use biometrics to sign in",
+        });
+        const creds = await NativeBiometric.getCredentials({ server: serverFor(scope) });
+        if (creds?.username && creds?.password) {
+          return { email: creds.username, password: creds.password };
+        }
+      } catch (err) {
+        // OS biometrics unavailable / cancelled — fall through to wrapped store.
+        console.warn("[biometricAuth] native verifyIdentity failed", err);
+      }
+      return readWrappedStore(scope);
     }
+
+    if (isWrappedApp()) {
+      // No OS biometric API in Despia/WebView — return the stored credential
+      // immediately. The phone's own lock screen is the security gate.
+      return readWrappedStore(scope);
+    }
+
     if (typeof window !== "undefined" && "credentials" in navigator) {
       const credential = await navigator.credentials.get({
         password: true,
@@ -134,13 +240,14 @@ export async function getBiometricCredentials(
   }
 }
 
-/** Forget stored biometric credentials (e.g. on logout / disable). */
+/** Forget stored credentials (sign out / disable). */
 export async function clearBiometricCredentials(scope: BiometricScope): Promise<void> {
   try {
     if (isNativePlatform()) {
       await NativeBiometric.deleteCredentials({ server: serverFor(scope) }).catch(() => undefined);
     }
   } finally {
+    clearWrappedStore(scope);
     localStorage.removeItem(enabledKey(scope));
   }
 }
