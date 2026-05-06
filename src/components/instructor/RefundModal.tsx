@@ -38,11 +38,22 @@ const C = {
 
 type RefundMethod = "cash" | "card" | "bank_transfer";
 
-const METHOD_OPTIONS = [
+type RefundMethod = "square" | "cash" | "card" | "bank_transfer";
+
+const METHOD_OPTIONS_BASE = [
   { value: "cash" as const, label: "Cash", Icon: Banknote },
   { value: "card" as const, label: "Card", Icon: CreditCard },
   { value: "bank_transfer" as const, label: "Transfer", Icon: ArrowLeftRight },
 ];
+const SQUARE_OPTION = { value: "square" as const, label: "Square", Icon: Zap };
+
+interface SquarePayment {
+  id: string;
+  amount: number;
+  recorded_at: string;
+  notes: string | null;
+  payout_status: string | null;
+}
 
 function formatCurrency(amount: number): string {
   const rounded = Math.round(amount * 100) / 100;
