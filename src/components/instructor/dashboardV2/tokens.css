@@ -27,7 +27,8 @@
   font-feature-settings: "cv11", "ss01";
 }
 
-.dark .dashboard-v2 {
+.dark .dashboard-v2,
+.dark .instructor-portal {
   --d2-bg: #0B1120;
   --d2-surface: #111827;
   --d2-surface-soft: #0F172A;
