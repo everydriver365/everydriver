@@ -146,37 +146,7 @@ export function TrackerSourceCard({
             />
           </div>
 
-          {/* Start / stop streaming */}
-          {allowed && (
-            <button
-              type="button"
-              onClick={onTogglePhoneStreaming}
-              style={{
-                background: phoneStreamingConfirmed ? "#FEE2E2" : "#3D55A1",
-                color: phoneStreamingConfirmed ? "#B91C1C" : "#FFFFFF",
-                border: "none",
-                borderRadius: 12,
-                padding: "11px 14px",
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}
-            >
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: phoneStreamingConfirmed ? "#B91C1C" : "#34C759",
-                }}
-              />
-              {phoneStreamingConfirmed ? "Stop phone tracking" : "Start phone tracking"}
-            </button>
-          )}
+          {/* Start/stop is now driven by the primary tracking CTA below — no duplicate button here. */}
 
           {(status === "prompt" || status === "denied") && (
             <button
