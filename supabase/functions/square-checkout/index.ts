@@ -21,6 +21,25 @@ interface SquareCheckoutRequest {
   lessonSlots?: Array<{ date: string; time: string }>;
 }
 
+// Normalize phone numbers to E.164 (Square requirement). Returns null if it can't be normalized.
+function normalizePhoneE164(raw?: string | null): string | null {
+  if (!raw) return null;
+  const cleaned = raw.replace(/[\s\-()._]/g, "");
+  if (!cleaned) return null;
+  if (/^\+\d{8,15}$/.test(cleaned)) return cleaned;
+  if (cleaned.startsWith("00")) {
+    const rest = cleaned.slice(2);
+    return /^\d{8,15}$/.test(rest) ? `+${rest}` : null;
+  }
+  // UK mobile: 07XXXXXXXXX (11 digits)
+  if (/^07\d{9}$/.test(cleaned)) return `+44${cleaned.slice(1)}`;
+  // UK mobile without leading 0: 7XXXXXXXXX (10 digits)
+  if (/^7\d{9}$/.test(cleaned)) return `+44${cleaned}`;
+  // 447XXXXXXXXX
+  if (/^44\d{9,10}$/.test(cleaned)) return `+${cleaned}`;
+  return null;
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
