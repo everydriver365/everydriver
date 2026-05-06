@@ -18,6 +18,7 @@ import {
   saveBiometricCredentials,
   getBiometryLabel,
   isNativePlatform,
+  isWrappedApp,
 } from "@/lib/biometricAuth";
 import { setRememberMe, getRememberMe } from "@/lib/sessionPersistence";
 import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailConfirmation";
