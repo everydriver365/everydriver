@@ -11,7 +11,7 @@ const PAGE_LABELS: Record<string, string> = {
   "/instructor/course-planner": "Course Planner",
   "/instructor/waiting-list": "Waiting List",
   "/instructor/gaps": "Fill Gaps",
-  "/instructor/test-results": "Test Results",
+  "/instructor/test-results": "Driving Test Results",
   "/instructor/test-requests": "Test Swap",
   "/instructor/standards-check": "Standards Check",
   "/instructor/cpd": "CPD",
