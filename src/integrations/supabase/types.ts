@@ -1112,6 +1112,82 @@ export type Database = {
           },
         ]
       }
+      booking_enquiries: {
+        Row: {
+          contacted_at: string | null
+          converted_pupil_id: string | null
+          course_hours: number | null
+          course_name: string | null
+          created_at: string
+          id: string
+          instructor_id: string
+          message: string | null
+          pupil_email: string
+          pupil_name: string
+          pupil_phone: string
+          pupil_postcode: string | null
+          source: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          contacted_at?: string | null
+          converted_pupil_id?: string | null
+          course_hours?: number | null
+          course_name?: string | null
+          created_at?: string
+          id?: string
+          instructor_id: string
+          message?: string | null
+          pupil_email: string
+          pupil_name: string
+          pupil_phone: string
+          pupil_postcode?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          contacted_at?: string | null
+          converted_pupil_id?: string | null
+          course_hours?: number | null
+          course_name?: string | null
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          message?: string | null
+          pupil_email?: string
+          pupil_name?: string
+          pupil_phone?: string
+          pupil_postcode?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_enquiries_converted_pupil_id_fkey"
+            columns: ["converted_pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_enquiries_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_enquiries_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_intake_answers: {
         Row: {
           answer_text: string
