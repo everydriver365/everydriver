@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { isWhitelabelDomain } from "@/lib/whitelabel";
 
 // Domain configurations - SWAPPED
 // drive365.co.uk = Learner site
