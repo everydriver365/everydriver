@@ -243,13 +243,22 @@ Roads Visited: ${report.stats.roadsVisited}
             {/* Loading State */}
             {loading && (
               <div className="space-y-4">
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <div className="relative h-12 w-12 mb-4">
+                    <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
+                    <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
+                  </div>
+                  <p className="font-semibold text-base">Finalising your lesson…</p>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+                    Crunching GPS data, road segments and speed graphs.
+                  </p>
+                </div>
                 <Skeleton className="h-48 w-full rounded-2xl" />
                 <div className="grid grid-cols-2 gap-3">
                   <Skeleton className="h-20" />
                   <Skeleton className="h-20" />
                 </div>
                 <Skeleton className="h-40 w-full" />
-                <Skeleton className="h-32 w-full" />
               </div>
             )}
 
