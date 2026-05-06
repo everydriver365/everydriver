@@ -360,6 +360,7 @@ export default function InstructorFleetMap() {
   const speedingCount = devices.filter((d) => !!d.last_is_speeding && !isSignalLost(d)).length;
 
   return (
+    <InstructorPortalLayout>
     <div className="relative w-full h-[calc(100vh-4rem)]">
       {/* Back button */}
       <Button
