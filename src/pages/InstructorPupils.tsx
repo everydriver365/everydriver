@@ -173,6 +173,23 @@ export default function InstructorPupils() {
     parent_name: "",
     date_of_birth: "",
     payment_method: "tbc",
+    first_name: "",
+    last_name: "",
+    sex: "",
+    pickup_address: "",
+    has_different_pickup: false,
+    previous_experience: "",
+    approx_hours: "",
+    transmission: "",
+    theory_passed: false,
+    theory_pass_date: "",
+    test_booked: false,
+    test_centre_id: "",
+    test_centre_label: "",
+    test_date: "",
+    test_time: "",
+    duration: "",
+    custom_hourly_rate: "",
   });
   const [newPupilId, setNewPupilId] = useState<string | null>(null);
   const [showPostAddPayment, setShowPostAddPayment] = useState(false);
