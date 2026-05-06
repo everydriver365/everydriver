@@ -105,12 +105,15 @@ export function getInstructorSubdomain(): string | null {
 }
 
 /**
- * Checks if the current hostname is a Drive365 domain (LEARNER site)
+ * Checks if the current hostname is a Drive365 domain (LEARNER site).
+ * Whitelabel domains are treated as Drive365 for routing purposes —
+ * they render the same learner pages, just rebranded and instructor-scoped.
  */
 export function isDrive365Domain(): boolean {
   const hostname = window.location.hostname.toLowerCase();
   // Exclude accessible domains (which contain "drive" as a substring)
   if (hostname.includes(ACCESSIBLE_BASE_DOMAIN) || hostname.includes(ACCESSIBLE_BASE_DOMAIN_ALT)) return false;
+  if (isWhitelabelDomain(hostname)) return true;
   return DRIVE365_DOMAINS.some(domain => hostname.includes(domain.replace("www.", "")));
 }
 
