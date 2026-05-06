@@ -85,6 +85,21 @@ export function BookingModeSelector({ instructorId, currentMode, onModeChange }:
             </p>
           </Label>
         </div>
+
+        <div className={`flex items-start space-x-3 p-3 rounded-2xl border transition-colors ${
+          mode === 'enquiry_only' ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
+        }`}>
+          <RadioGroupItem value="enquiry_only" id="enquiry_only" className="mt-1" />
+          <Label htmlFor="enquiry_only" className="flex-1 cursor-pointer">
+            <div className="flex items-center gap-2 font-medium">
+              <Mail className="h-4 w-4" style={{ color: '#2B7BC8' }} />
+              Enquiry Only
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Pupils submit an enquiry — no payment or slot booked. You contact them to arrange lessons.
+            </p>
+          </Label>
+        </div>
       </RadioGroup>
 
       {hasChanged && (
