@@ -112,7 +112,7 @@ interface InstructorFormProps {
     adi_code_of_practice?: boolean;
     instructor_grade?: string;
     app_slug?: string;
-    booking_mode?: "pupil_choice" | "auto_assign" | "instructor_assigns";
+    booking_mode?: "pupil_choice" | "auto_assign" | "instructor_assigns" | "enquiry_only";
   }>;
 }
 
