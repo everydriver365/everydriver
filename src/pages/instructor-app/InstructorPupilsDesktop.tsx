@@ -244,12 +244,15 @@ export default function InstructorPupilsDesktop() {
       toast.error("Add at least a name or contact detail");
       return;
     }
-    const hours = addForm.previous_experience_hours.trim();
-    const prevExp = hours ? `${hours} hours` : null;
+    const composedName = (`${(addForm.first_name || "").trim()} ${(addForm.last_name || "").trim()}`).trim() || addForm.name.trim();
+    const hours = (addForm.approx_hours || addForm.previous_experience_hours || "").trim();
+    const prevExp = (addForm.previous_experience || "").trim() || (hours ? `${hours} hours` : null);
+    const hoursNum = hours ? parseInt(hours, 10) : null;
+    const rateNum = addForm.custom_hourly_rate ? parseFloat(addForm.custom_hourly_rate) : null;
     setAddSaving(true);
     const { error } = await supabase.from("pupils").insert({
       instructor_id: instructorId,
-      name: addForm.name.trim() || "Unnamed pupil",
+      name: composedName || "Unnamed pupil",
       phone: addForm.phone.trim() || null,
       email: addForm.email.trim() || null,
       address: addForm.address.trim() || null,
@@ -258,18 +261,36 @@ export default function InstructorPupilsDesktop() {
       date_of_birth: addForm.date_of_birth || null,
       sex: addForm.sex || null,
       previous_experience: prevExp,
-      transmission_type: addForm.transmission_type || null,
+      transmission_type: addForm.transmission || addForm.transmission_type || null,
       special_needs: addForm.special_needs.trim() || null,
       notes: addForm.notes.trim() || null,
       payment_method: addForm.payment_method || "tbc",
+      course_type: addForm.course_type || null,
+      parent_phone: addForm.parent_phone || null,
+      parent_name: addForm.parent_name || null,
+      pickup_address: addForm.has_different_pickup ? (addForm.pickup_address || null) : null,
+      lessons_completed: hoursNum && !isNaN(hoursNum) ? hoursNum : 0,
+      theory_test_passed: !!addForm.theory_passed,
+      theory_test_date: addForm.theory_passed ? (addForm.theory_pass_date || null) : null,
+      test_centre_id: addForm.test_booked ? (addForm.test_centre_id || null) : null,
+      test_date: addForm.test_booked ? (addForm.test_date || null) : null,
+      test_time: addForm.test_booked ? (addForm.test_time || null) : null,
+      custom_hourly_rate: rateNum && !isNaN(rateNum) ? rateNum : null,
     });
     setAddSaving(false);
     if (error) { toast.error(`Could not add pupil: ${error.message}`); return; }
-    toast.success(`Added ${addForm.name.trim() || "pupil"}`);
+    toast.success(`Added ${composedName || "pupil"}`);
     setAddForm({
       name: "", phone: "", email: "", address: "", postcode: "", what3words: "",
       date_of_birth: "", sex: "", previous_experience_hours: "", transmission_type: "",
       special_needs: "", notes: "", payment_method: "tbc",
+      course_type: "", parent_phone: "", parent_name: "",
+      first_name: "", last_name: "",
+      pickup_address: "", has_different_pickup: false,
+      previous_experience: "", approx_hours: "", transmission: "",
+      theory_passed: false, theory_pass_date: "",
+      test_booked: false, test_centre_id: "", test_centre_label: "",
+      test_date: "", test_time: "", duration: "", custom_hourly_rate: "",
     });
     setAddErrors({});
     setAddOpen(false);
