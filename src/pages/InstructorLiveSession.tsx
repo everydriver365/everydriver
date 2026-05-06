@@ -39,7 +39,6 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
 import { DeviceSelectorDropdown } from "@/components/instructor/tracking/DeviceSelectorDropdown";
 import { TrackingProviderDropdown } from "@/components/instructor/tracking/TrackingProviderDropdown";
 import { TrackerSourceCard } from "@/components/instructor/tracking/TrackerSourceCard";
-import { PhoneLastLocationCard } from "@/components/instructor/tracking/PhoneLastLocationCard";
 import { usePhoneTrackingStreamer } from "@/hooks/usePhoneTrackingStreamer";
 import { useLivePupilPosition } from "@/hooks/useLivePupilPosition";
 import { useLocationPermission } from "@/hooks/useLocationPermission";
