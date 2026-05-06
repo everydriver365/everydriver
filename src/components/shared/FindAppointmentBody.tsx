@@ -328,8 +328,13 @@ export function FindAppointmentBody({
                 value={postcode}
                 onChange={(e) => setPostcode(e.target.value.toUpperCase().slice(0, 8))}
                 maxLength={8}
+                aria-invalid={!postcodeValidation.valid}
+                aria-describedby="postcode-help"
                 className="h-[34px] rounded-[10px] text-xs font-semibold text-slate-900 flex-1 uppercase"
-                style={triggerStyle}
+                style={{
+                  ...triggerStyle,
+                  borderColor: !postcodeValidation.valid ? "hsl(var(--destructive))" : (triggerStyle as any)?.borderColor,
+                }}
               />
               <Select value={radiusMiles} onValueChange={setRadiusMiles}>
                 <SelectTrigger
@@ -347,8 +352,18 @@ export function FindAppointmentBody({
                 </SelectContent>
               </Select>
             </div>
-            {postcode && (
-              <div className="text-[10px] mt-1.5" style={{ color: "var(--d2-text-3)" }}>
+            {postcode && !postcodeValidation.valid && (
+              <div
+                id="postcode-help"
+                role="alert"
+                className="text-[10px] mt-1.5 font-medium"
+                style={{ color: "hsl(var(--destructive))" }}
+              >
+                {postcodeValidation.error}
+              </div>
+            )}
+            {postcode && postcodeValidation.valid && (
+              <div id="postcode-help" className="text-[10px] mt-1.5" style={{ color: "var(--d2-text-3)" }}>
                 Matching postcodes starting with <span className="font-semibold">{computedPrefix}</span>
               </div>
             )}
