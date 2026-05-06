@@ -58,6 +58,8 @@ interface Pupil {
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
   custom_hourly_rate: number | null;
+  custom_rate_90min: number | null;
+  custom_rate_120min: number | null;
 }
 
 interface LessonHistory {
