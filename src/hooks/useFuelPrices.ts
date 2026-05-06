@@ -95,6 +95,25 @@ export function useFuelPrices(instructorId: string | undefined): UseFuelPricesRe
   const [error, setError] = useState<string | null>(null);
   const [location, setLocation] = useState<string | null>(null);
   const [fuelType, setFuelType] = useState<string>("E10");
+  const [useDeviceLocation, setUseDeviceLocation] = useState<boolean>(() => {
+    try { return localStorage.getItem("fuel_use_device_location") === "1"; } catch { return false; }
+  });
+  const [locating, setLocating] = useState(false);
+
+  useEffect(() => {
+    try { localStorage.setItem("fuel_use_device_location", useDeviceLocation ? "1" : "0"); } catch {}
+  }, [useDeviceLocation]);
+
+  const getDeviceCoords = (): Promise<{ lat: number; lng: number } | null> => {
+    return new Promise((resolve) => {
+      if (typeof navigator === "undefined" || !navigator.geolocation) return resolve(null);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => resolve(null),
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      );
+    });
+  };
 
   const fetchPrices = useCallback(async () => {
     if (!instructorId) {
@@ -105,30 +124,46 @@ export function useFuelPrices(instructorId: string | undefined): UseFuelPricesRe
       return;
     }
 
-    // Check cache first
-    const cached = getCachedPrices(instructorId, fuelType);
-    if (cached) {
-      setStations(cached.stations);
-      setCheapest(cached.cheapest);
-      setNearest(cached.nearest);
-      setLocation(cached.location);
-      setLoading(false);
-      return;
+    // Skip cache when using device location (location may change)
+    if (!useDeviceLocation) {
+      const cached = getCachedPrices(instructorId, fuelType);
+      if (cached) {
+        setStations(cached.stations);
+        setCheapest(cached.cheapest);
+        setNearest(cached.nearest);
+        setLocation(cached.location);
+        setLoading(false);
+        return;
+      }
     }
 
     setLoading(true);
     setError(null);
 
     try {
+      let userLat: number | undefined;
+      let userLng: number | undefined;
+      if (useDeviceLocation) {
+        setLocating(true);
+        const coords = await getDeviceCoords();
+        setLocating(false);
+        if (!coords) {
+          setError("Couldn't get your location. Check permissions and try again.");
+          setLoading(false);
+          return;
+        }
+        userLat = coords.lat;
+        userLng = coords.lng;
+      }
+
       const { data, error: fnError } = await supabase.functions.invoke("get-fuel-prices", {
-        body: { instructorId, fuelType },
+        body: { instructorId, fuelType, userLat, userLng },
       });
 
       if (fnError) throw fnError;
 
       const fetchedStations = data?.stations || [];
 
-      // Edge function may return 200 with an embedded error (e.g. no postcode set)
       if (data?.error && fetchedStations.length === 0) {
         setStations([]);
         setCheapest(null);
@@ -146,7 +181,9 @@ export function useFuelPrices(instructorId: string | undefined): UseFuelPricesRe
       setCheapest(fetchedCheapest);
       setNearest(fetchedNearest);
       setLocation(fetchedLocation);
-      setCachedPrices(instructorId, fetchedStations, fetchedCheapest, fetchedNearest, fetchedLocation, fuelType);
+      if (!useDeviceLocation) {
+        setCachedPrices(instructorId, fetchedStations, fetchedCheapest, fetchedNearest, fetchedLocation, fuelType);
+      }
     } catch (err) {
       console.error("Error fetching fuel prices:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch fuel prices");
@@ -156,22 +193,18 @@ export function useFuelPrices(instructorId: string | undefined): UseFuelPricesRe
     } finally {
       setLoading(false);
     }
-  }, [instructorId, fuelType]);
+  }, [instructorId, fuelType, useDeviceLocation]);
 
-  // Fetch on mount and when instructorId or fuelType changes
   useEffect(() => {
     fetchPrices();
   }, [fetchPrices]);
 
-  // Refresh every 30 minutes
   useEffect(() => {
     if (!instructorId) return;
-
     const interval = setInterval(() => {
       localStorage.removeItem(CACHE_KEY);
       fetchPrices();
     }, CACHE_DURATION_MS);
-
     return () => clearInterval(interval);
   }, [instructorId, fetchPrices]);
 
@@ -185,5 +218,8 @@ export function useFuelPrices(instructorId: string | undefined): UseFuelPricesRe
     location,
     fuelType,
     setFuelType,
+    useDeviceLocation,
+    setUseDeviceLocation,
+    locating,
   };
 }
