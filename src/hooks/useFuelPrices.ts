@@ -124,6 +124,17 @@ export function useFuelPrices(instructorId: string | undefined): UseFuelPricesRe
       if (fnError) throw fnError;
 
       const fetchedStations = data?.stations || [];
+
+      // Edge function may return 200 with an embedded error (e.g. no postcode set)
+      if (data?.error && fetchedStations.length === 0) {
+        setStations([]);
+        setCheapest(null);
+        setNearest(null);
+        setLocation(null);
+        setError(data.error);
+        return;
+      }
+
       const fetchedCheapest = data?.cheapest || null;
       const fetchedNearest = data?.nearest || null;
       const fetchedLocation = data?.location || null;

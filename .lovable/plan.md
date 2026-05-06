@@ -1,99 +1,30 @@
-## Add Pupil — Desktop Modal Redesign
+## Fuel Finder — desktop "does not work" fix
 
-Rebuild the visual layout of the Add Pupil modal in `src/components/instructor/pupils/AddPupilSheet.tsx`. Desktop only — mobile sheet stays on the current iOS-style design (per the project rule against unsolicited mobile changes). All existing submit, validation, address lookup, postcode → What3Words, and payment flows remain wired.
+### Root cause
 
-### Files
+Tested the `get-fuel-prices` edge function directly with a real instructor — it returns 10 stations correctly. So the backend is fine.
 
-- `src/components/instructor/pupils/AddPupilSheet.tsx` — new desktop body, new fields, extended `AddPupilFormState`.
-- `src/pages/InstructorPupils.tsx` — extend `addForm` initial state + reset block + extend the `pupils` insert to map new fields. No change to flow, validation, or post-add payment dialog.
+The "No fuel stations found within 15km" the desktop is showing is a misleading fallback that fires in two situations the UI doesn't currently distinguish:
 
-### New form state (added to `AddPupilFormState`)
+1. **No `home_postcode` on the instructor** — edge function returns `200` with `{ stations: [], error: "No postcode configured" }`. `useFuelPrices` ignores the embedded `error` field, so the page just renders the generic empty state with no way to fix it.
+2. **Postcode set but couldn't be geocoded** — same shape, same silent failure (`error: "Could not geocode postcode"`).
 
-```ts
-first_name: string
-last_name: string
-pickup_address: string
-has_different_pickup: boolean   // default false
-previous_experience: string
-approx_hours: string            // hours typed as text, parsed on save
-transmission: 'manual' | 'automatic' | ''
-theory_passed: boolean          // default false
-theory_pass_date: string        // yyyy-mm-dd
-test_booked: boolean            // default false
-test_centre_id: string          // selected id
-test_centre_label: string       // display name
-test_date: string               // yyyy-mm-dd
-test_time: string               // HH:MM
-custom_hourly_rate: string
-```
+The session replay shows the user landing on the page with the generic empty-state message and the refresh button disabled — classic symptom of (1).
 
-`testCentreOpen` lives as local UI state inside the sheet (not persisted, not on `addForm`).
+### Fix
 
-### DB mapping (existing columns on `public.pupils`, no migration needed)
+**`src/hooks/useFuelPrices.ts`**
+- When the edge function returns 200 with `data.error` and an empty `stations` array, surface that string via the hook's `error` state instead of falling through to "no results".
 
-| Form field | Pupils column |
-|---|---|
-| first_name + ' ' + last_name | `name` (single field per project rule) |
-| pickup_address | `pickup_address` |
-| previous_experience | `previous_experience` |
-| approx_hours (parsed Number) | `lessons_completed` (existing field) |
-| transmission | `transmission_type` |
-| theory_passed | `theory_test_passed` |
-| theory_pass_date | `theory_test_date` |
-| test_date | `test_date` |
-| test_time | `test_time` |
-| test_centre_id | `test_centre_id` |
-| custom_hourly_rate | `custom_hourly_rate` |
+**`src/pages/InstructorFuel.tsx`**
+- Replace the bare "No fuel stations found within 15km" empty state with a friendlier card that:
+  - Detects `error === "No postcode configured"` and shows a "Set your home postcode" CTA linking to `/instructor/settings` (where `home_postcode` is edited).
+  - For the geocode-failure case, shows "We couldn't locate that postcode — please check it" with the same CTA.
+  - For genuine empty results (postcode OK, no stations within 15km), keeps the existing copy.
+- Keep the existing error block (used for network failures from `fnError`) unchanged.
 
-`has_different_pickup` and `test_booked` are UI toggles only; on save, if a toggle is off the corresponding column(s) are sent as `null`.
-
-### Test centres source
-
-Load from `instructor_test_centres` joined to `test_centres` for the current instructor (already used elsewhere in the app). Cache in a local `useEffect` inside `AddPupilSheet`. Falls back to all `test_centres` rows ordered by name if the instructor has none linked yet. Search filters client-side over the loaded list.
-
-### Visual layout (desktop Dialog only)
-
-Replace the current desktop body with the spec'd layout while keeping the existing mobile `Sheet` branch untouched.
-
-```text
-┌─ Dialog 580px, radius 20, bg #F8F9FB ─────────────┐
-│ Header: blue tile + "Add pupil" + subtitle + ✕    │
-├───────────────────────────────────────────────────┤
-│ Scroll body, 5 sections separated by hairline:    │
-│  1. Pupil details   (First/Last, Phone/Email,     │
-│                      DOB/Sex)                     │
-│  2. Address         (Search, Postcode/W3W,        │
-│                      Pickup toggle → pickup addr) │
-│  3. Experience &    (Prev exp, Hours/Trans,       │
-│     testing         theory toggle → date,         │
-│                      test booked toggle → centre  │
-│                      dropdown + date/time)        │
-│  4. Lesson prefs    (Lesson type, Duration,       │
-│                      Hourly rate)                 │
-│  5. Notes                                          │
-├───────────────────────────────────────────────────┤
-│ Footer: hint + Cancel / Add pupil (blue)          │
-└───────────────────────────────────────────────────┘
-```
-
-Primitives implemented in-file: `FormSection`, `FieldLabel`, `TextInputField`, `SelectField`, `ToggleRow`. `isConditional` field state (green border + #F0FDF4 tint) only applied to fields revealed by a toggle (pickup address, theory date, test centre/date/time).
-
-Address search keeps using the existing `GoogleAddressAutocomplete` rendered inside a `TextInputField` shell so the visual matches but the integration is unchanged. Postcode → What3Words lookup remains via `handlePostcodeLookup`.
-
-The Sex, Lesson type, Duration, Transmission selects use the existing shadcn `Select` components wrapped in the new visual `SelectField` shell — no picker logic changes.
-
-### Wiring rules
-
-- Submit handler stays in `InstructorPupils.tsx`; only the insert payload is extended with the columns above.
-- Validation rule stays the same (`name` derived from first+last, address, postcode required). If only one of first/last is filled, that becomes `name`.
-- `handleClose` / `handleCancel` → existing `onOpenChange(false)`.
-- Reset block in `setAddForm({...})` after successful save extended with the new defaults.
-- Mobile branch (`useIsMobile() === true`) is left exactly as-is.
-- No new libraries.
+No edge-function, schema or mobile-layout changes. Mobile view is untouched per project rule.
 
 ### Out of scope
-
-- No changes to mobile sheet layout.
-- No changes to the post-add payment dialog.
-- No DB migration (all target columns already exist).
-- No changes to RLS or fetch logic.
+- Increasing the 15 km radius (separate request).
+- Reworking the desktop layout of the Fuel Finder.
