@@ -266,6 +266,7 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   };
 
   const signOut = async () => {
+    await clearAuthPersistence('instructor');
     await supabase.auth.signOut();
     setInstructor(null);
     setSubscription(null);
