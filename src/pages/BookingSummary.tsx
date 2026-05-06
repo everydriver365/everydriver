@@ -18,6 +18,7 @@ import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
 import { MobileBookingView } from "@/components/booking/MobileBookingView";
+import { EnquiryOnlyView } from "@/components/booking/EnquiryOnlyView";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
 import { KlarnaPaymentModal } from "@/components/payments/KlarnaPaymentModal";
