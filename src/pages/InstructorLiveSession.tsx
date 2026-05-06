@@ -174,7 +174,8 @@ export default function InstructorLiveSession() {
 
   // One-shot location preview: as soon as the instructor picks Phone GPS
   // and grants permission, fetch a single position so the mini map can
-  // centre and show their location without requiring "Start phone tracking".
+  // centre. Tries high-accuracy first, then falls back to a coarser fix
+  // (preview iframes / desktop browsers often time out on high-accuracy).
   useEffect(() => {
     if (!isPhoneProvider) return;
     if (locationPermissionStatus !== "granted") return;
@@ -183,22 +184,48 @@ export default function InstructorLiveSession() {
     if (typeof navigator === "undefined" || !navigator.geolocation) return;
 
     let cancelled = false;
+    const accept = (pos: GeolocationPosition) => {
+      if (cancelled) return;
+      const { latitude, longitude, speed, heading, accuracy } = pos.coords;
+      setLastPhoneFix({
+        latitude,
+        longitude,
+        speedKmh: speed != null && !Number.isNaN(speed) ? speed * 3.6 : 0,
+        heading: heading != null && !Number.isNaN(heading) ? heading : null,
+        accuracy: accuracy ?? null,
+        timestamp: pos.timestamp ?? Date.now(),
+      });
+    };
+
+    const tryCoarse = () => {
+      if (cancelled) return;
+      navigator.geolocation.getCurrentPosition(
+        accept,
+        (err) => {
+          if (cancelled) return;
+          console.warn("[PhoneTracking] coarse getCurrentPosition failed:", err.code, err.message);
+          toast({
+            title: "Couldn't get your location",
+            description:
+              err.code === err.PERMISSION_DENIED
+                ? "Location was blocked. Allow location for this site/app and try again."
+                : "GPS didn't respond. If you're inside a preview window, open the app in its own tab.",
+            variant: "destructive",
+          });
+        },
+        { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 },
+      );
+    };
+
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        if (cancelled) return;
-        const { latitude, longitude, speed, heading, accuracy } = pos.coords;
-        setLastPhoneFix({
-          latitude,
-          longitude,
-          speedKmh: speed != null && !Number.isNaN(speed) ? speed * 3.6 : 0,
-          heading: heading != null && !Number.isNaN(heading) ? heading : null,
-          accuracy: accuracy ?? null,
-          timestamp: pos.timestamp ?? Date.now(),
-        });
+      accept,
+      (err) => {
+        console.warn("[PhoneTracking] hi-accuracy getCurrentPosition failed:", err.code, err.message);
+        tryCoarse();
       },
-      (err) => console.warn("[PhoneTracking] preview getCurrentPosition failed:", err.message),
-      { enableHighAccuracy: true, maximumAge: 10000, timeout: 8000 },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 10000 },
     );
+
     return () => { cancelled = true; };
   }, [isPhoneProvider, locationPermissionStatus, phoneStreamingConfirmed, lastPhoneFix]);
 
