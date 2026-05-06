@@ -540,6 +540,14 @@ export default function InstructorPaymentsDesktop() {
         )}
       </AnimatePresence>
 
+      <RefundModal
+        open={refundOpen}
+        onOpenChange={setRefundOpen}
+        instructorId={instructor?.id || ""}
+        pupils={allPupils.map(p => ({ id: p.id, name: p.name, account_balance: p.account_balance }))}
+        onRefunded={refresh}
+      />
+
       <PaymentsExportDialog
         open={exportOpen}
         onOpenChange={setExportOpen}
