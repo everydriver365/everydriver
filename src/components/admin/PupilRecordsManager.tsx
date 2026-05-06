@@ -250,6 +250,8 @@ export function PupilRecordsManager() {
       emergency_contact_name: pupil.emergency_contact_name || "",
       emergency_contact_phone: pupil.emergency_contact_phone || "",
       custom_hourly_rate: pupil.custom_hourly_rate ? String(pupil.custom_hourly_rate) : "",
+      custom_rate_90min: pupil.custom_rate_90min ? String(pupil.custom_rate_90min) : "",
+      custom_rate_120min: pupil.custom_rate_120min ? String(pupil.custom_rate_120min) : "",
       instructor_id: pupil.instructor_id || "",
       theory_test_date: pupil.theory_test_date || "",
       theory_test_passed: pupil.theory_test_passed === true ? "yes" : pupil.theory_test_passed === false ? "no" : "",
