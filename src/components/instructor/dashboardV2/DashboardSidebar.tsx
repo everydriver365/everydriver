@@ -227,12 +227,13 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
                       aria-current={active ? "page" : undefined}
                       className={cn("relative flex items-center gap-2 rounded-md transition-colors group")}
                       style={{
-                        padding: collapsed ? "8px" : "6px 8px 6px 10px",
+                        height: 32,
+                        padding: collapsed ? "0" : "0 8px 0 10px",
                         justifyContent: collapsed ? "center" : "flex-start",
                         background: active ? "var(--d2-indigo)" : "transparent",
                         color: active ? "#FFFFFF" : "var(--d2-text-2)",
                         fontSize: 12,
-                        fontWeight: active ? 600 : 400,
+                        fontWeight: 500,
                         boxShadow: active ? "0 1px 2px rgba(15,23,42,0.08), 0 1px 3px rgba(15,23,42,0.06)" : "none",
                         transition: "background 150ms ease-out, color 150ms ease-out, box-shadow 150ms ease-out",
                       }}
@@ -249,20 +250,6 @@ export function DashboardSidebar({ collapsed, onToggle, userInitials, userName, 
                         }
                       }}
                     >
-                      {active && !collapsed && (
-                        <span
-                          aria-hidden
-                          style={{
-                            position: "absolute",
-                            left: -8,
-                            top: 6,
-                            bottom: 6,
-                            width: 3,
-                            borderRadius: 2,
-                            background: "var(--d2-indigo)",
-                          }}
-                        />
-                      )}
                       <Icon size={14} strokeWidth={active ? 2.25 : 1.75} style={{ color: active ? "#FFFFFF" : undefined }} />
                       {!collapsed && <span className="truncate flex-1">{item.label}</span>}
                       {!collapsed && item.badge && (
