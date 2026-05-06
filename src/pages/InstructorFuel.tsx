@@ -223,8 +223,21 @@ export default function InstructorFuel() {
         {error && !loading && (
           <div className="p-8 text-center">
             <Fuel className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground mb-4">{error}</p>
-            <Button onClick={refetch}>Try Again</Button>
+            <p className="text-muted-foreground mb-4">
+              {error === "No postcode configured"
+                ? "Set your home postcode to find the cheapest fuel near you."
+                : error === "Could not geocode postcode"
+                  ? "We couldn't locate that postcode — please check it in settings."
+                  : error}
+            </p>
+            <div className="flex items-center justify-center gap-2">
+              {(error === "No postcode configured" || error === "Could not geocode postcode") && (
+                <Button asChild>
+                  <a href="/instructor/settings">Open settings</a>
+                </Button>
+              )}
+              <Button variant="outline" onClick={refetch}>Try again</Button>
+            </div>
           </div>
         )}
 
