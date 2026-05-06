@@ -104,8 +104,9 @@ export default function InstructorLogin() {
         setBiometricAvailable(available);
         if (available) {
           setBiometryLabel(await getBiometryLabel());
-          // On native, auto-prompt Face ID immediately for a real "open app → unlock" feel
-          if (isNativePlatform()) {
+          // Auto-prompt on native AND in wrapped apps (Despia / PWA / WebView)
+          // so reopening the app feels like Face ID unlock.
+          if (isNativePlatform() || isWrappedApp()) {
             const creds = await getBiometricCredentials("instructor", "Sign in to EveryDriver");
             if (creds) {
               setBiometricLoading(true);
