@@ -491,19 +491,26 @@ export function AddPupilSheet({
     onSave();
   };
 
+  const [w3wHint, setW3wHint] = useState<string | null>(null);
+
   const handlePostcodeLookup = async (postcode: string) => {
     setForm((prev) => ({ ...prev, postcode }));
     setIsLookingUpW3W(true);
+    setW3wHint(null);
     try {
       const { data } = await supabase.functions.invoke("convert-to-what3words", {
         body: { postcode },
       });
       if (data?.what3words) {
         setForm((prev) => ({ ...prev, what3words: data.what3words }));
+        setW3wHint(null);
         toast.success(`What3Words: ///${data.what3words}`);
+      } else if (data?.message) {
+        setW3wHint("Auto-lookup unavailable — enter manually");
       }
     } catch (err) {
       console.error("What3Words lookup failed:", err);
+      setW3wHint("Auto-lookup unavailable — enter manually");
     } finally {
       setIsLookingUpW3W(false);
     }
@@ -518,15 +525,19 @@ export function AddPupilSheet({
     if ((form.what3words || "").trim()) return;
     const t = setTimeout(async () => {
       setIsLookingUpW3W(true);
+      setW3wHint(null);
       try {
         const { data } = await supabase.functions.invoke("convert-to-what3words", {
           body: { postcode: pc },
         });
         if (data?.what3words) {
           setForm((prev) => ({ ...prev, what3words: data.what3words }));
+        } else if (data?.message) {
+          setW3wHint("Auto-lookup unavailable — enter manually");
         }
       } catch (err) {
         console.error("What3Words auto-lookup failed:", err);
+        setW3wHint("Auto-lookup unavailable — enter manually");
       } finally {
         setIsLookingUpW3W(false);
       }
@@ -646,7 +657,7 @@ export function AddPupilSheet({
             </div>
           </Row>
         </SectionCard>
-        <HelperText>Postcode and what3words auto-fill when you select an address.</HelperText>
+        <HelperText>{w3wHint ?? "Postcode and what3words auto-fill when you select an address."}</HelperText>
       </section>
 
       <section>
