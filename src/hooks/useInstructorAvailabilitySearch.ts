@@ -141,15 +141,13 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
 
       const results: AvailableSlot[] = [];
 
-      const TRAVEL_FALLBACK_MIN = 10;
-
       for (const inst of instructors) {
         const instId = inst.id;
         const instName = inst.name;
         const carType = inst.car_type || null;
         const area = postcodeArea(inst.home_postcode);
-        const bufferMin = (inst as { buffer_minutes?: number | null }).buffer_minutes ?? 0;
-        const padMin = bufferMin + TRAVEL_FALLBACK_MIN;
+        const bufferMin =
+          (inst as { buffer_minutes?: number | null }).buffer_minutes ?? 0;
 
         for (let d = 0; d < days; d++) {
           const day = addDays(fromDateObj, d);
@@ -168,71 +166,47 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
           const endStr = override?.end_time || wh?.end_time;
           if (!startStr || !endStr) continue;
 
-          const dayStartMin = toMinutes(startStr);
-          const dayEndMin = toMinutes(endStr);
+          const dayLessons = lessons.filter(
+            (l) => l.instructor_id === instId && l.lesson_date === dateStr,
+          );
+          const dayBlocks = blocks.filter((b) => b.instructor_id === instId);
+          const dayEvents = events.filter((ev) => ev.instructor_id === instId);
 
-          const dayLessons = lessons
-            .filter((l) => l.instructor_id === instId && l.lesson_date === dateStr)
-            .map((l) => {
-              const s = toMinutes(l.start_time);
-              return { start: s, end: s + (l.duration_minutes || 60) };
-            });
-
-          const dayBlocks = blocks
-            .filter((b) => b.instructor_id === instId)
-            .map((b) => {
-              const s = new Date(b.start_datetime);
-              const e = new Date(b.end_datetime);
-              return { s, e };
-            })
-            .filter((b) => format(b.s, "yyyy-MM-dd") === dateStr || format(b.e, "yyyy-MM-dd") === dateStr)
-            .map((b) => ({
-              start: format(b.s, "yyyy-MM-dd") === dateStr ? b.s.getHours() * 60 + b.s.getMinutes() : 0,
-              end: format(b.e, "yyyy-MM-dd") === dateStr ? b.e.getHours() * 60 + b.e.getMinutes() : 24 * 60,
-            }));
-
-          const dayEvents = events
-            .filter((ev) => ev.instructor_id === instId)
-            .map((ev) => {
-              const s = new Date(ev.start_time);
-              const e = new Date(ev.end_time);
-              return { s, e };
-            })
-            .filter((ev) => format(ev.s, "yyyy-MM-dd") === dateStr || format(ev.e, "yyyy-MM-dd") === dateStr)
-            .map((ev) => ({
-              start: format(ev.s, "yyyy-MM-dd") === dateStr ? ev.s.getHours() * 60 + ev.s.getMinutes() : 0,
-              end: format(ev.e, "yyyy-MM-dd") === dateStr ? ev.e.getHours() * 60 + ev.e.getMinutes() : 24 * 60,
-            }));
-
-          const conflicts = [...dayLessons, ...dayBlocks, ...dayEvents];
-
-          // For "today" skip past slots
+          const conflicts = buildDayConflicts(
+            dateStr,
+            dayLessons,
+            dayBlocks,
+            dayEvents,
+          );
           const isToday = format(new Date(), "yyyy-MM-dd") === dateStr;
-          const nowMin = isToday ? new Date().getHours() * 60 + new Date().getMinutes() : 0;
 
-          for (let s = dayStartMin; s + durationMinutes <= dayEndMin; s += STEP_MINUTES) {
-            const e = s + durationMinutes;
-            if (isToday && s < nowMin) continue;
-            if (!inTimeOfDay(s, timeOfDay)) continue;
+          const free = computeFreeSlots({
+            dateStr,
+            dayStartMin: toMinutes(startStr),
+            dayEndMin: toMinutes(endStr),
+            bufferMinutes: bufferMin,
+            durationMinutes,
+            timeOfDay,
+            conflicts,
+            isToday,
+            anchorSkipMinutes: 60,
+          });
 
-            const collides = conflicts.some((c) => s < c.end + padMin && e > c.start - padMin);
-            if (collides) continue;
-
+          for (const slot of free) {
             results.push({
-              id: `${instId}-${dateStr}-${fromMinutes(s)}`,
+              id: `${instId}-${dateStr}-${fromMinutes(slot.start)}`,
               instructorId: instId,
               instructorName: instName,
               carType,
               postcodeArea: area,
               date: dateStr,
-              startTime: fromMinutes(s),
-              endTime: fromMinutes(e),
+              startTime: fromMinutes(slot.start),
+              endTime: fromMinutes(slot.end),
               durationMinutes,
-              sortKey: new Date(`${dateStr}T${fromMinutes(s)}:00`).getTime(),
+              sortKey: new Date(
+                `${dateStr}T${fromMinutes(slot.start)}:00`,
+              ).getTime(),
             });
-
-            // Only emit one slot per "anchor" hour to keep list tight (skip ahead 60 min on success)
-            s += 60 - STEP_MINUTES;
           }
         }
       }
