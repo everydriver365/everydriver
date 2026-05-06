@@ -212,5 +212,6 @@ export default function AccountHub() {
         </Tabs>
       </div>
     </div>
+    </InstructorPortalLayout>
   );
 }
