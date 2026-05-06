@@ -147,7 +147,7 @@ export function TakePaymentModal({
             customerEmail: manualEmail || undefined,
             customerPhone: manualPhone || undefined,
             customerName: recipientName,
-            description: `Payment request from ${instructorName}`,
+            description: `Payment Request from ${instructorName}`,
             returnUrl: `https://drive365.co.uk/pay/${instructorId}?success=true`,
             cancelUrl: `https://drive365.co.uk/pay/${instructorId}?cancelled=true`,
             instructorId,
