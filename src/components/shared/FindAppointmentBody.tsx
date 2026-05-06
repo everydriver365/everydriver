@@ -65,8 +65,26 @@ export function FindAppointmentBody({
   const [location, setLocation] = useState<string>("all");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [postcode, setPostcode] = useState("");
+  const [radiusMiles, setRadiusMiles] = useState<string>("5");
   const [days, setDays] = useState(14);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+
+  // Map radius → postcode prefix length.
+  // 1mi = full code (SO22 5), 3mi = sector (SO22 5), 5mi = outward (SO22),
+  // 10mi = district digit (SO2), 20mi = area (SO).
+  const computedPrefix = useMemo(() => {
+    const cleaned = postcode.trim().toUpperCase().replace(/\s+/g, " ");
+    if (!cleaned) return undefined;
+    const compact = cleaned.replace(/\s/g, "");
+    switch (radiusMiles) {
+      case "1": return cleaned;
+      case "3": return cleaned;
+      case "5": return compact.slice(0, Math.max(2, compact.length - 2));
+      case "10": return compact.slice(0, 3);
+      case "20": return compact.replace(/[0-9].*$/, "") || compact.slice(0, 2);
+      default: return cleaned;
+    }
+  }, [postcode, radiusMiles]);
 
   const { data: instructorOptions = [] } = useQuery({
     queryKey: ["find-appt-instructors", instructorIds.join(",")],
@@ -88,7 +106,7 @@ export function FindAppointmentBody({
     days,
     durationMinutes: parseInt(duration, 10),
     timeOfDay,
-    postcodePrefix: postcode.trim() || undefined,
+    postcodePrefix: computedPrefix,
     enabled: true,
   });
 
@@ -110,6 +128,7 @@ export function FindAppointmentBody({
     setLanguage("all");
     setLocation("all");
     setPostcode("");
+    setRadiusMiles("5");
     setDays(14);
     setSelectedSlotId(null);
   };
