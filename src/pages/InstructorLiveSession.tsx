@@ -669,7 +669,7 @@ export default function InstructorLiveSession() {
     let pollerInterval: ReturnType<typeof setInterval> | null = null;
     let fallbackInterval: ReturnType<typeof setInterval> | null = null;
 
-    if (device?.current_session_id && !isStopping) {
+    if (device?.current_session_id && !isStopping && !isPhoneProvider) {
       // Direct poller trigger every 2s for near-realtime updates
       const triggerPoller = () => {
         supabase.functions.invoke("radius-poller").catch(() => {});
