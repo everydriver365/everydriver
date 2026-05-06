@@ -20,6 +20,8 @@ interface SatNavLiveMapProps {
   /** When true, fills parent container instead of using fixed height */
   fullscreen?: boolean;
   className?: string;
+  /** Notifies parent of the resolved road label (upstream or geocoded fallback). */
+  onResolvedRoadName?: (label: string | null) => void;
 }
 
 const COMPASS_LABELS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
