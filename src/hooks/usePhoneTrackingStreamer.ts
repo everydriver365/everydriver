@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { resolvePhoneSpeedLimit, haversineMetres } from "@/lib/phoneSpeedLimit";
 
 export interface PhoneFix {
   latitude: number;
@@ -8,6 +9,7 @@ export interface PhoneFix {
   heading: number | null;
   accuracy: number | null;
   timestamp: number;
+  speedLimitKmh?: number | null;
 }
 
 interface Options {
@@ -28,9 +30,10 @@ interface Options {
  * `navigator.geolocation.watchPosition` and streams the latest fix into
  * `live_pupil_positions` via the `update_live_position` RPC.
  *
- * No-ops on the web when no pupil is selected — the RPC requires a pupil id.
- * Inside the Capacitor wrapper this still uses the browser API; background
- * delivery is handled by the native bridge.
+ * Also resolves a per-fix speed limit (cached) and persists each accepted
+ * fix into `telematics_gps_points` (via `record_phone_gps_point`) when a
+ * telematics session is running, so end-of-lesson route, distance and
+ * speed graphs are populated identically to OBD/Radius hardware sessions.
  */
 export function usePhoneTrackingStreamer({
   provider,
@@ -42,6 +45,9 @@ export function usePhoneTrackingStreamer({
   const watchIdRef = useRef<number | null>(null);
   const lastSentRef = useRef<number>(0);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const lastPointRef = useRef<{ lat: number; lng: number } | null>(null);
+  const lastLimitFetchRef = useRef<{ lat: number; lng: number; at: number } | null>(null);
+  const cachedLimitRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (provider !== "phone") return;
@@ -51,6 +57,9 @@ export function usePhoneTrackingStreamer({
     }
 
     let cancelled = false;
+    lastPointRef.current = null;
+    lastLimitFetchRef.current = null;
+    cachedLimitRef.current = null;
 
     (async () => {
       try {
@@ -71,6 +80,34 @@ export function usePhoneTrackingStreamer({
 
         const { latitude, longitude, speed, heading, accuracy } = pos.coords;
         const speedKmh = speed != null && !Number.isNaN(speed) ? speed * 3.6 : 0;
+
+        // Distance delta vs last accepted point
+        let distanceDeltaKm = 0;
+        if (lastPointRef.current) {
+          const m = haversineMetres(
+            lastPointRef.current.lat, lastPointRef.current.lng,
+            latitude, longitude,
+          );
+          // Ignore jitter < 3 m and unrealistic jumps (> 500 m between fixes)
+          if (m >= 3 && m < 500) distanceDeltaKm = m / 1000;
+        }
+        lastPointRef.current = { lat: latitude, lng: longitude };
+
+        // Resolve speed limit — only re-fetch if moved >30 m or >15 s old
+        const lastFetch = lastLimitFetchRef.current;
+        const movedFar = !lastFetch || haversineMetres(
+          lastFetch.lat, lastFetch.lng, latitude, longitude,
+        ) > 30;
+        const stale = !lastFetch || (now - lastFetch.at) > 15000;
+        if (movedFar || stale) {
+          lastLimitFetchRef.current = { lat: latitude, lng: longitude, at: now };
+          // Fire-and-forget; cache result for next emission
+          resolvePhoneSpeedLimit(latitude, longitude)
+            .then((limit) => { cachedLimitRef.current = limit; })
+            .catch(() => {});
+        }
+        const speedLimitKmh = cachedLimitRef.current;
+
         try {
           onPosition?.({
             latitude,
@@ -79,23 +116,46 @@ export function usePhoneTrackingStreamer({
             heading: heading != null && !Number.isNaN(heading) ? heading : null,
             accuracy: accuracy ?? null,
             timestamp: pos.timestamp ?? now,
+            speedLimitKmh,
           });
         } catch { /* ignore consumer errors */ }
-        // Only push to live_pupil_positions when a pupil is selected.
-        if (!pupilId) return;
-        try {
-          await supabase.rpc("update_live_position", {
-            p_pupil_id: pupilId,
-            p_latitude: latitude,
-            p_longitude: longitude,
-            p_speed_kmh: speedKmh,
-            p_heading: heading != null && !Number.isNaN(heading) ? heading : null,
-            p_accuracy: accuracy ?? null,
-            p_trip_status: "driving",
-            p_session_id: sessionId,
-          } as any);
-        } catch (err) {
-          console.warn("[PhoneTracking] update_live_position failed:", err);
+
+        // Push live position (requires pupil)
+        if (pupilId) {
+          try {
+            await supabase.rpc("update_live_position", {
+              p_pupil_id: pupilId,
+              p_latitude: latitude,
+              p_longitude: longitude,
+              p_speed_kmh: speedKmh,
+              p_heading: heading != null && !Number.isNaN(heading) ? heading : null,
+              p_accuracy: accuracy ?? null,
+              p_trip_status: "driving",
+              p_session_id: sessionId,
+              p_speed_limit_kmh: speedLimitKmh ?? null,
+            } as any);
+          } catch (err) {
+            console.warn("[PhoneTracking] update_live_position failed:", err);
+          }
+        }
+
+        // Persist GPS history for end-of-lesson route + distance
+        if (sessionId) {
+          try {
+            await supabase.rpc("record_phone_gps_point", {
+              p_session_id: sessionId,
+              p_latitude: latitude,
+              p_longitude: longitude,
+              p_speed_kmh: speedKmh,
+              p_heading: heading != null && !Number.isNaN(heading) ? heading : null,
+              p_accuracy: accuracy ?? null,
+              p_speed_limit_kmh: speedLimitKmh ?? null,
+              p_road_name: null,
+              p_distance_delta_km: distanceDeltaKm,
+            } as any);
+          } catch (err) {
+            console.warn("[PhoneTracking] record_phone_gps_point failed:", err);
+          }
         }
       },
       (err) => console.warn("[PhoneTracking] geolocation error:", err.message),
