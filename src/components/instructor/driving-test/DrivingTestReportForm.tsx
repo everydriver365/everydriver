@@ -560,7 +560,7 @@ export function DrivingTestReportForm({
                 <EyebrowLabel>Test centre</EyebrowLabel>
                 <TestCentrePicker
                   selectedId={testCentreId || null}
-                  selectedName={centreName}
+                  selectedName={testCentreId ? centreName : null}
                   onSelect={(c) => {
                     if (c.id !== testCentreId && examinerId) {
                       // Cascading reset — examiner may not belong to the new centre.
@@ -571,6 +571,7 @@ export function DrivingTestReportForm({
                       });
                     }
                     setTestCentreId(c.id);
+                    setTestCentreNameInput("");
                     setTestCentres((prev) =>
                       prev.some((p) => p.id === c.id)
                         ? prev
@@ -578,6 +579,20 @@ export function DrivingTestReportForm({
                     );
                   }}
                 />
+                <div style={{ marginTop: 8 }}>
+                  <Input
+                    value={testCentreNameInput}
+                    onChange={(e) => {
+                      setTestCentreNameInput(e.target.value);
+                      if (e.target.value.trim()) setTestCentreId("");
+                    }}
+                    placeholder="Or type a centre name (if not in the list)"
+                    aria-label="Custom test centre name"
+                  />
+                  <p style={{ fontSize: 11, color: "#6E6E73", margin: "4px 0 0", paddingLeft: 2 }}>
+                    Use the picker for official DVSA centres, or type a custom name here.
+                  </p>
+                </div>
               </div>
 
               {/* Examiner — cascades from Test centre */}
