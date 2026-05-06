@@ -179,33 +179,28 @@ export function MiniLiveMap({ latitude, longitude, heading, lastSeenAt, isActive
   return (
     <div className="rounded-2xl border bg-card text-card-foreground shadow-sm overflow-hidden">
       <div className="relative h-[200px]">
-        {hasPosition ? (
-          <>
-            <div ref={mapDivRef} className="absolute inset-0 z-0" />
-            <div className="absolute top-3 left-3 z-10">
-              {isLive ? (
-                <Badge className="bg-green-600 text-white border-0 gap-1.5">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
-                  </span>
-                  Live
-                </Badge>
-              ) : lastSeenLabel ? (
-                <Badge variant="secondary" className="gap-1">
-                  Last seen {lastSeenLabel}
-                </Badge>
-              ) : null}
-            </div>
-          </>
-        ) : (
-          <>
-            <div ref={mapDivRef} className="absolute inset-0 z-0" />
-            <div className="absolute inset-0 bg-muted/80 flex flex-col items-center justify-center z-[5]">
-              <p className="text-sm text-muted-foreground">No position data yet</p>
-            </div>
-          </>
-        )}
+        <div ref={mapDivRef} className="absolute inset-0 z-0" />
+        <div className="absolute top-3 left-3 z-10">
+          {hasPosition ? (
+            isLive ? (
+              <Badge className="bg-green-600 text-white border-0 gap-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+                </span>
+                Live
+              </Badge>
+            ) : lastSeenLabel ? (
+              <Badge variant="secondary" className="gap-1">
+                Last seen {lastSeenLabel}
+              </Badge>
+            ) : null
+          ) : (
+            <Badge variant="secondary" className="gap-1">
+              Waiting for GPS…
+            </Badge>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -162,9 +162,45 @@ export default function InstructorLiveSession() {
   useEffect(() => {
     if (!phoneTrackingReady) {
       setPhoneTrail([]);
-      setLastPhoneFix(null);
+      // Keep lastPhoneFix so the preview map stays centred on the
+      // most recent known position; cleared below when leaving phone provider.
     }
   }, [phoneTrackingReady]);
+
+  // Clear last fix entirely when leaving the phone provider.
+  useEffect(() => {
+    if (!isPhoneProvider) setLastPhoneFix(null);
+  }, [isPhoneProvider]);
+
+  // One-shot location preview: as soon as the instructor picks Phone GPS
+  // and grants permission, fetch a single position so the mini map can
+  // centre and show their location without requiring "Start phone tracking".
+  useEffect(() => {
+    if (!isPhoneProvider) return;
+    if (locationPermissionStatus !== "granted") return;
+    if (phoneStreamingConfirmed) return; // streamer will take over
+    if (lastPhoneFix) return; // already have a fix
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+
+    let cancelled = false;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        if (cancelled) return;
+        const { latitude, longitude, speed, heading, accuracy } = pos.coords;
+        setLastPhoneFix({
+          latitude,
+          longitude,
+          speedKmh: speed != null && !Number.isNaN(speed) ? speed * 3.6 : 0,
+          heading: heading != null && !Number.isNaN(heading) ? heading : null,
+          accuracy: accuracy ?? null,
+          timestamp: pos.timestamp ?? Date.now(),
+        });
+      },
+      (err) => console.warn("[PhoneTracking] preview getCurrentPosition failed:", err.message),
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 8000 },
+    );
+    return () => { cancelled = true; };
+  }, [isPhoneProvider, locationPermissionStatus, phoneStreamingConfirmed, lastPhoneFix]);
 
   // Stream phone GPS into live_pupil_positions only after the user confirms Start.
   usePhoneTrackingStreamer({
@@ -1189,9 +1225,9 @@ export default function InstructorLiveSession() {
             </>
           ) : (
             <>
-              {/* PHONE LAST LOCATION + ROUTE PREVIEW — visible while phone tracking is active */}
+              {/* PHONE LAST LOCATION + ROUTE PREVIEW — visible whenever phone GPS is selected and allowed */}
               <PhoneLastLocationCard
-                active={phoneTrackingReady}
+                active={isPhoneProvider && locationPermissionStatus === "granted"}
                 fix={lastPhoneFix}
                 trail={phoneTrail}
               />
