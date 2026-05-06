@@ -218,7 +218,7 @@ export function FloatingSessionTimer({
             </div>
           )}
 
-          {/* c) Student / session block — fills remaining space, right aligned */}
+          {/* c) Session block — fills remaining space, right aligned */}
           <div
             style={{
               flex: 1,
@@ -226,6 +226,7 @@ export function FloatingSessionTimer({
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-end",
+              justifyContent: "center",
               gap: 4,
             }}
           >
