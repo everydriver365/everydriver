@@ -71,6 +71,7 @@ export default function InstructorPay() {
   const [commissionPayer, setCommissionPayer] = useState<string | null>("pupil");
   const [instructorName, setInstructorName] = useState<string>("Your Instructor");
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [refundModalOpen, setRefundModalOpen] = useState(false);
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [bonusEarned, setBonusEarned] = useState(0);
   const [recentPaymentCount, setRecentPaymentCount] = useState(0);
