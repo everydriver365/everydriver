@@ -13,6 +13,7 @@ import { toast as uiToast } from "@/hooks/use-toast";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { ComplianceTracker } from "@/components/instructor/ComplianceTracker";
 import { InstructorDetailsEditor } from "@/components/instructor/InstructorDetailsEditor";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 
 interface InstructorProfileRow {
   name: string;
