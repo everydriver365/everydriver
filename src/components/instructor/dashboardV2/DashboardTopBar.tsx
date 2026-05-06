@@ -1,5 +1,47 @@
-import { Bell, Moon, Sun, Sparkles, Search } from "lucide-react";
+import { Bell, Moon, Sun, Sparkles, Search, ChevronRight } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import { useTheme } from "@/context/ThemeContext";
+
+const PAGE_LABELS: Record<string, string> = {
+  "/instructor": "Dashboard",
+  "/instructor/schedule": "Schedule",
+  "/instructor/diary": "Diary",
+  "/instructor/find-appointment": "Find slot",
+  "/instructor/pupils": "Pupils",
+  "/instructor/course-planner": "Course Planner",
+  "/instructor/waiting-list": "Waiting List",
+  "/instructor/gaps": "Fill Gaps",
+  "/instructor/test-results": "Test Results",
+  "/instructor/test-requests": "Test Swap",
+  "/instructor/standards-check": "Standards Check",
+  "/instructor/cpd": "CPD",
+  "/instructor/tracking": "Live Tracking",
+  "/instructor/fleet-map": "Fleet Map",
+  "/instructor/vehicle-health": "Vehicle Health",
+  "/instructor/satnav": "SatNav",
+  "/instructor/dashcam": "Dashcam",
+  "/instructor/mileage": "Mileage",
+  "/instructor/fuel": "Fuel",
+  "/instructor/routes": "Saved Routes",
+  "/instructor/famulor": "AI Voice Hub",
+  "/instructor/take-payment": "Take Payment",
+  "/instructor/pay": "Payments",
+  "/instructor/pending-scheduling": "Pending",
+  "/instructor/expenses": "Expenses",
+  "/instructor/tax": "Tax",
+  "/instructor/income": "Reports",
+  "/instructor/reviews": "Reviews",
+  "/instructor/referrals": "Referrals",
+  "/instructor/automations": "Automations",
+  "/website/my-site": "My Site",
+  "/instructor/branding": "Branding",
+  "/instructor/domains": "Domain",
+  "/instructor/profile": "Profile",
+  "/instructor/billing": "Plan & Billing",
+  "/instructor/modules": "Modules",
+  "/instructor/integrations": "Integrations",
+  "/instructor/menu": "More tools",
+};
 
 interface Props {
   userInitials: string;
@@ -11,6 +53,11 @@ interface Props {
 export function DashboardTopBar({ userInitials, notificationCount = 0, onAskED, onBell }: Props) {
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const { pathname } = useLocation();
+  const currentLabel =
+    PAGE_LABELS[pathname] ||
+    Object.entries(PAGE_LABELS).find(([key]) => key !== "/instructor" && pathname.startsWith(key + "/"))?.[1] ||
+    "Dashboard";
 
   return (
     <header
@@ -26,8 +73,8 @@ export function DashboardTopBar({ userInitials, notificationCount = 0, onAskED, 
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5" style={{ fontSize: 13 }}>
         <span style={{ color: "var(--d2-text-3)" }}>Instructor</span>
-        <span style={{ color: "var(--d2-text-3)" }}>/</span>
-        <span style={{ color: "var(--d2-text-1)", fontWeight: 500 }}>Dashboard</span>
+        <ChevronRight size={12} style={{ color: "var(--d2-text-3)" }} strokeWidth={2} />
+        <span style={{ color: "var(--d2-text-1)", fontWeight: 600 }}>{currentLabel}</span>
       </nav>
 
       <div className="flex-1" />
