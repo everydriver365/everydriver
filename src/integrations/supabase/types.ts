@@ -13790,6 +13790,8 @@ export type Database = {
           created_at: string
           current_streak: number | null
           custom_hourly_rate: number | null
+          custom_rate_120min: number | null
+          custom_rate_90min: number | null
           damoov_device_token: string | null
           date_of_birth: string | null
           deleted_at: string | null
@@ -13883,6 +13885,8 @@ export type Database = {
           created_at?: string
           current_streak?: number | null
           custom_hourly_rate?: number | null
+          custom_rate_120min?: number | null
+          custom_rate_90min?: number | null
           damoov_device_token?: string | null
           date_of_birth?: string | null
           deleted_at?: string | null
@@ -13976,6 +13980,8 @@ export type Database = {
           created_at?: string
           current_streak?: number | null
           custom_hourly_rate?: number | null
+          custom_rate_120min?: number | null
+          custom_rate_90min?: number | null
           damoov_device_token?: string | null
           date_of_birth?: string | null
           deleted_at?: string | null

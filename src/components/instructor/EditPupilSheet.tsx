@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { UserAvatar } from "@/components/instructor/UserAvatar";
 import { PupilPackageCard } from "@/components/instructor/PupilPackageCard";
+import { PupilRateEditor } from "@/components/instructor/PupilRateEditor";
 import { titleCaseName } from "@/lib/titleCase";
 import { formatPhoneNumber } from "@/lib/formatPhoneNumber";
 import {
@@ -727,6 +728,26 @@ export function EditPupilSheet({
                 </HelperText>
               </div>
             </div>
+
+            {/* Lesson rates (1hr / 1.5hr / 2hr) */}
+            {pupil && (
+              <div
+                style={{
+                  marginTop: 8,
+                  paddingTop: 16,
+                  borderTop: `0.5px solid ${C.hairline}`,
+                }}
+              >
+                <PupilRateEditor
+                  pupilId={pupil.id}
+                  pupilName={pupil.name || "this pupil"}
+                  currentCustomRate={pupil.custom_hourly_rate ?? null}
+                  currentCustomRate90={pupil.custom_rate_90min ?? null}
+                  currentCustomRate120={pupil.custom_rate_120min ?? null}
+                  onSaved={() => onSaved?.()}
+                />
+              </div>
+            )}
 
             {/* Lesson packages (preserved) */}
             {pupil && instructorId && (

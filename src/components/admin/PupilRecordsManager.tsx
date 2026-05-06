@@ -58,6 +58,8 @@ interface Pupil {
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
   custom_hourly_rate: number | null;
+  custom_rate_90min: number | null;
+  custom_rate_120min: number | null;
 }
 
 interface LessonHistory {
@@ -129,7 +131,7 @@ export function PupilRecordsManager() {
     date_of_birth: "", driver_number: "", transmission_type: "",
     status: "", pickup_address: "", pickup_postcode: "",
     emergency_contact_name: "", emergency_contact_phone: "",
-    custom_hourly_rate: "", instructor_id: "",
+    custom_hourly_rate: "", custom_rate_90min: "", custom_rate_120min: "", instructor_id: "",
     theory_test_date: "", theory_test_passed: "",
     prepaid_hours: "", account_balance: "", lessons_completed: "",
     notes: "",
@@ -151,7 +153,7 @@ export function PupilRecordsManager() {
 
       const { data: pupilData } = await supabase
         .from("pupils")
-        .select("id, name, created_at, instructor_id, phone, email, address, postcode, date_of_birth, driver_number, transmission_type, status, test_date, test_time, notes, lessons_completed, prepaid_hours, account_balance, theory_test_date, theory_test_passed, pickup_address, pickup_postcode, emergency_contact_name, emergency_contact_phone, custom_hourly_rate")
+        .select("id, name, created_at, instructor_id, phone, email, address, postcode, date_of_birth, driver_number, transmission_type, status, test_date, test_time, notes, lessons_completed, prepaid_hours, account_balance, theory_test_date, theory_test_passed, pickup_address, pickup_postcode, emergency_contact_name, emergency_contact_phone, custom_hourly_rate, custom_rate_90min, custom_rate_120min")
         .is("deleted_at", null)
         .order("name");
 
@@ -248,6 +250,8 @@ export function PupilRecordsManager() {
       emergency_contact_name: pupil.emergency_contact_name || "",
       emergency_contact_phone: pupil.emergency_contact_phone || "",
       custom_hourly_rate: pupil.custom_hourly_rate ? String(pupil.custom_hourly_rate) : "",
+      custom_rate_90min: pupil.custom_rate_90min ? String(pupil.custom_rate_90min) : "",
+      custom_rate_120min: pupil.custom_rate_120min ? String(pupil.custom_rate_120min) : "",
       instructor_id: pupil.instructor_id || "",
       theory_test_date: pupil.theory_test_date || "",
       theory_test_passed: pupil.theory_test_passed === true ? "yes" : pupil.theory_test_passed === false ? "no" : "",
@@ -280,6 +284,8 @@ export function PupilRecordsManager() {
         emergency_contact_name: detailsForm.emergency_contact_name || null,
         emergency_contact_phone: detailsForm.emergency_contact_phone || null,
         custom_hourly_rate: detailsForm.custom_hourly_rate ? parseFloat(detailsForm.custom_hourly_rate) : null,
+        custom_rate_90min: detailsForm.custom_rate_90min ? parseFloat(detailsForm.custom_rate_90min) : null,
+        custom_rate_120min: detailsForm.custom_rate_120min ? parseFloat(detailsForm.custom_rate_120min) : null,
         instructor_id: newInstructorId,
         theory_test_date: detailsForm.theory_test_date || null,
         theory_test_passed: detailsForm.theory_test_passed === "yes" ? true : detailsForm.theory_test_passed === "no" ? false : null,
@@ -939,8 +945,16 @@ export function PupilRecordsManager() {
                         </Select>
                       </div>
                       <div>
-                        <label className="text-xs text-muted-foreground">Custom Hourly Rate (£)</label>
+                        <label className="text-xs text-muted-foreground">1hr Lesson Rate (£)</label>
                         <Input type="number" step="0.01" value={detailsForm.custom_hourly_rate} onChange={(e) => setDetailsForm({ ...detailsForm, custom_hourly_rate: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">1.5hr Lesson Rate (£)</label>
+                        <Input type="number" step="0.01" value={detailsForm.custom_rate_90min} onChange={(e) => setDetailsForm({ ...detailsForm, custom_rate_90min: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">2hr Lesson Rate (£)</label>
+                        <Input type="number" step="0.01" value={detailsForm.custom_rate_120min} onChange={(e) => setDetailsForm({ ...detailsForm, custom_rate_120min: e.target.value })} />
                       </div>
                       <div>
                         <label className="text-xs text-muted-foreground">Pickup Postcode</label>
