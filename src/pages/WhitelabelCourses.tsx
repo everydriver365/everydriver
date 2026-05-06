@@ -45,7 +45,7 @@ export default function WhitelabelCourses() {
     (async () => {
       const { data, error } = await supabase
         .from("instructors")
-        .select("id, is_active")
+        .select("id, is_active, available_from")
         .eq("app_slug", slug)
         .maybeSingle();
       if (cancelled) return;
@@ -60,6 +60,7 @@ export default function WhitelabelCourses() {
         return;
       }
       setInstructorId(data.id);
+      setAvailableFrom(data.available_from ?? null);
     })();
     return () => {
       cancelled = true;
