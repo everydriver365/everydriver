@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2, Calendar as CalendarIcon, MapPin, X, Search } from "lucide-react";
 import { format } from "date-fns";
-import { Helmet } from "react-helmet-async";
+
 import { MainLayout } from "@/components/layout/MainLayout";
 import { SidebarCalendar } from "@/components/courses/SidebarCalendar";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
@@ -178,14 +178,6 @@ export default function WhitelabelCourses() {
 
   return (
     <MainLayout>
-      <Helmet>
-        <title>Courses — {brand}</title>
-        <meta
-          name="description"
-          content={`Browse driving courses with ${brand}. Pick a date and book online.`}
-        />
-      </Helmet>
-
       <section className="border-b bg-secondary/30 py-8">
         <div className="container">
           <motion.div
