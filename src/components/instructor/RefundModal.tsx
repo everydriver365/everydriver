@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Loader2, Banknote, CreditCard, ArrowLeftRight } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Loader2, Banknote, CreditCard, ArrowLeftRight, Zap } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
