@@ -204,9 +204,9 @@ export default function InstructorPortalLogin() {
         }
       } else {
         setRememberMe(rememberMe);
-        if (rememberMe) {
-          await saveCredentialsForBiometric(email.trim(), password);
-        }
+        // Always seed quick-sign-in credentials so the Face ID / Quick Sign In
+        // button appears on next launch.
+        await saveCredentialsForBiometric(email.trim(), password);
         toast.success("Welcome back!", { duration: 2000 });
         navigate("/instructor");
       }
