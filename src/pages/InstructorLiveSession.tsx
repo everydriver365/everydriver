@@ -452,6 +452,8 @@ export default function InstructorLiveSession() {
   // that is currently in its window (start − 5 min … end) and fire startSession
   // automatically. Manual stop suppresses re-arm for 30 minutes.
   const autoLessonFiredRef = React.useRef<Set<string>>(new Set());
+  const [autoTrackedLessonId, setAutoTrackedLessonId] = useState<string | null>(null);
+  const [autoTrackedPupilName, setAutoTrackedPupilName] = useState<string | null>(null);
   useEffect(() => {
     if (!instructor?.id) return;
     if (isSessionActive) return;
@@ -492,6 +494,11 @@ export default function InstructorLiveSession() {
 
         autoLessonFiredRef.current.add(candidate.id);
         setSelectedPupilId(candidate.pupil_id!);
+        setAutoTrackedLessonId(candidate.id);
+        // Look up pupil name for the banner.
+        const { data: pupilRow } = await supabase
+          .from("pupils").select("name").eq("id", candidate.pupil_id!).maybeSingle();
+        setAutoTrackedPupilName((pupilRow as any)?.name ?? null);
         toast({ title: "Auto-tracking lesson", description: "Starting GPS for the upcoming lesson", duration: 2500 });
         // Defer one tick so selectedPupilId state propagates.
         setTimeout(() => { void startSession("practice"); }, 50);
@@ -1019,6 +1026,13 @@ export default function InstructorLiveSession() {
       setShowReport(true);
       setDrivingTestDetails(null); // Clear driving test details
 
+      // If this stop was for an auto-tracked lesson, suppress re-arm for 30 minutes.
+      if (autoTrackedLessonId) {
+        sessionStorage.setItem(`auto-track-suppress:${autoTrackedLessonId}`, String(Date.now()));
+        setAutoTrackedLessonId(null);
+        setAutoTrackedPupilName(null);
+      }
+
       // Exit fullscreen mode
       navigate("/instructor/tracking", { replace: true });
 
@@ -1306,6 +1320,49 @@ export default function InstructorLiveSession() {
           ) : (
             <>
               {/* Phone last-location preview removed — MiniLiveMap covers it */}
+
+              {/* Auto-tracking banner — appears whenever a lesson was auto-started */}
+              {autoTrackedLessonId && isSessionActive && (
+                <div
+                  role="status"
+                  style={{
+                    background: "#EDF2FE",
+                    border: "0.5px solid #3D55A1",
+                    borderRadius: 12,
+                    padding: "10px 12px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    fontFamily: FONT_STACK,
+                  }}
+                >
+                  <span aria-hidden style={{
+                    width: 8, height: 8, borderRadius: 4, background: "#34C759", flexShrink: 0,
+                  }} />
+                  <div style={{ flex: 1, minWidth: 0, fontSize: 12, color: "#1F2C4A", fontWeight: 600 }}>
+                    Auto-tracking lesson{autoTrackedPupilName ? ` with ${autoTrackedPupilName}` : ""}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { void stopSession(); }}
+                    disabled={isStopping}
+                    style={{
+                      background: "#FFFFFF",
+                      border: "0.5px solid #3D55A1",
+                      borderRadius: 999,
+                      padding: "5px 12px",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: "#3D55A1",
+                      cursor: isStopping ? "default" : "pointer",
+                      opacity: isStopping ? 0.6 : 1,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {isStopping ? "Stopping…" : "Stop"}
+                  </button>
+                </div>
+              )}
 
               {/* 1. HEADER */}
               <div style={{
