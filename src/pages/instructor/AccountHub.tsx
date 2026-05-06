@@ -121,13 +121,13 @@ export default function AccountHub() {
         </div>
 
         <Tabs value={tab} onValueChange={onTabChange}>
-          <TabsList className="grid grid-cols-2 sm:grid-cols-5 w-full mb-6 h-auto">
+          <TabsList className="flex flex-wrap w-full mb-6 h-auto gap-1">
             {TABS.map(t => {
               const Icon = t.icon;
               return (
-                <TabsTrigger key={t.id} value={t.id} className="flex items-center gap-2 py-2">
+                <TabsTrigger key={t.id} value={t.id} className="flex items-center gap-2 py-2 flex-1 min-w-[44%] sm:min-w-[120px]">
                   <Icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t.label}</span>
+                  <span className="text-xs sm:text-sm">{t.label}</span>
                 </TabsTrigger>
               );
             })}
