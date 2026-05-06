@@ -44,7 +44,7 @@ import { usePhoneTrackingStreamer } from "@/hooks/usePhoneTrackingStreamer";
 import { useLivePupilPosition } from "@/hooks/useLivePupilPosition";
 import { useLocationPermission } from "@/hooks/useLocationPermission";
 import { PhoneTrackingPermissionBanner } from "@/components/instructor/tracking/PhoneTrackingPermissionBanner";
-import { logPhoneTrackingEvent } from "@/lib/phoneTrackingAudit";
+
 
 import { SatNavLiveMap } from "@/components/instructor/tracking/SatNavLiveMap";
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
