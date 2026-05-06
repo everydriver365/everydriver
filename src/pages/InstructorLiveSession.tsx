@@ -1322,7 +1322,7 @@ export default function InstructorLiveSession() {
                 {(
                   [
                     { key: "liveLesson", label: "Live lesson", subtitle: "Track with a pupil · records route", iconBg: "#3D55A1", iconColor: "#FFF", Icon: Play },
-                    { key: "testRoute", label: "Test route", subtitle: "Practice route without a pupil", iconBg: "#EEF3FF", iconColor: "#3D55A1", Icon: MapPin },
+                    { key: "testRoute", label: "Track without a pupil", subtitle: "Personal trip or scouting a route", iconBg: "#EEF3FF", iconColor: "#3D55A1", Icon: MapPin },
                     { key: "recordTest", label: "Record driving test", subtitle: "Log a pupil's DVSA test", iconBg: "#E8F8ED", iconColor: "#1A7A3C", Icon: ShieldCheck },
                   ] as const
                 ).map((mode, idx, arr) => {
