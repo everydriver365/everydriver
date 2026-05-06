@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QrCode, Send, ChevronLeft, MessageSquare, Mail, Loader2, Check, PoundSterling, RotateCcw } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import {
@@ -77,6 +77,34 @@ export function TakePaymentModal({
   // QR fee calc
   const qrParsedAmount = parseFloat(qrAmount) || 0;
   const qrFee = useAdminFee(qrParsedAmount, splitPct, tierConfig);
+
+  // Realtime: auto-flip to "received" when a matching payment lands while
+  // the modal is open on the QR or link view.
+  useEffect(() => {
+    if (!open || !instructorId) return;
+    if (view !== "qr" && view !== "link") return;
+    const channel = supabase
+      .channel(`take-pay-${instructorId}-${Date.now()}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "payment_history",
+          filter: `instructor_id=eq.${instructorId}`,
+        },
+        (payload) => {
+          const row: any = payload.new;
+          const amt = Number(row?.amount || 0);
+          if (!amt || amt <= 0) return;
+          setView("received");
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [open, instructorId, view]);
 
   const handleClose = (o: boolean) => {
     if (!o) {
