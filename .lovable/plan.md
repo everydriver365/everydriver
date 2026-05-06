@@ -1,13 +1,17 @@
-Remove the auto-pause/resume overlay from the live tracking session.
+Save the drafted complaint email to a downloadable `.txt` file at `/mnt/documents/lovable-credit-refund-request.txt` so you can copy it into your email client and send to support@lovable.dev.
 
-Currently, after ~5 seconds of zero speed, the bottom panel switches into a "Paused" state and shows a Resume button. You don't want that — tracking should just keep running continuously.
+## What the file will contain
 
-Changes:
+The exact email drafted in the previous message, with placeholders left in square brackets for you to fill in:
 
-1. `src/pages/InstructorLiveSession.tsx`
-   - Always pass `paused={false}` (and drop `onResume`) to `FloatingSessionTimer` so the panel never enters paused mode.
-   - Remove the now-unused `stoppedSinceMs`, `manuallyResumedAt`, `isPaused`, `handleResumeFromPaused`, and the per-second tick effect that drove them.
+- `[INSERT NUMBER]` — wasted credit count (from Settings → Plans & Credits)
+- `[INSERT START DATE]` — when you started the tracking work
+- `[YOUR NAME]` / `[YOUR ACCOUNT EMAIL]` — your sign-off
 
-2. No change needed to `FloatingSessionTimer` itself — it already hides the overlay and Resume button when `paused` is false. Leaving the prop in place keeps the option open for the future without changing current behaviour.
+Subject, recipient, project ID, and the full body text are all pre-filled.
 
-Result: the live map keeps tracking continuously, with no Paused overlay or Resume button, even when stopped at lights or in traffic.
+## Deliverable
+
+A single plain-text file you can download and forward. No code changes, no app changes — just the artifact.
+
+Approve and I'll generate it.
