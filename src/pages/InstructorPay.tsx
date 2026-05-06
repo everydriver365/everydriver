@@ -558,6 +558,17 @@ export default function InstructorPay() {
         instructorId={instructorId}
         pupils={pupils}
       />
+
+      <RefundModal
+        open={refundModalOpen}
+        onOpenChange={setRefundModalOpen}
+        instructorId={instructorId}
+        pupils={pupils}
+        onRefunded={() => {
+          fetchPupils();
+          fetchRecentPaymentCount();
+        }}
+      />
     </InstructorPortalLayout>
   );
 }
