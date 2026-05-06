@@ -65,11 +65,10 @@ const SHARED_ROUTES = [
   "/admin",
 ];
 
-// Custom domain to instructor slug mappings
-const CUSTOM_DOMAIN_SLUGS: Record<string, string> = {
-  "winchesterdrivingschool.co.uk": "ken-d",
-  "www.winchesterdrivingschool.co.uk": "ken-d",
-};
+// Custom domain to instructor slug mappings (legacy mini-website pinning).
+// NOTE: Whitelabel domains (e.g. winchesterdrivingschool.co.uk) are handled
+// separately via src/lib/whitelabel.ts and render the full Drive365 site.
+const CUSTOM_DOMAIN_SLUGS: Record<string, string> = {};
 
 /**
  * Extracts instructor slug from subdomain or custom domain if present
