@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type TrackingProvider = "radius" | null;
+export type TrackingProvider = "radius" | "phone" | null;
 
-const PROVIDER_PRIORITY: TrackingProvider[] = ["radius"];
+// Hardware providers (phone is always available — it's the device itself).
+const HARDWARE_PROVIDERS: Exclude<TrackingProvider, null>[] = ["radius"];
 
 export function useActiveTrackingProvider(instructorId: string | null | undefined) {
   const [activeProvider, setActiveProvider] = useState<TrackingProvider>(null);
@@ -16,11 +17,10 @@ export function useActiveTrackingProvider(instructorId: string | null | undefine
     }
 
     const fetchProvider = async () => {
-      // Fetch devices and instructor preference in parallel
       const [devicesRes, instRes] = await Promise.all([
         supabase
           .from("gps_devices")
-          .select("tracking_provider")
+          .select("tracking_provider, is_active")
           .eq("instructor_id", instructorId),
         supabase
           .from("instructors")
@@ -29,17 +29,26 @@ export function useActiveTrackingProvider(instructorId: string | null | undefine
           .single(),
       ]);
 
-      const devices = devicesRes.data ?? [];
-      const providers = [...new Set(devices.map((d) => d.tracking_provider).filter((p): p is string => !!p))] as TrackingProvider[];
+      const devices = (devicesRes.data ?? []).filter((d: any) => d.is_active !== false);
+      const hardwareProviders = [
+        ...new Set(
+          devices
+            .map((d) => d.tracking_provider as string | null)
+            .filter((p): p is string => !!p && HARDWARE_PROVIDERS.includes(p as any)),
+        ),
+      ];
+
+      // Phone is always an option (the instructor's device itself).
+      const allProviders: TrackingProvider[] = ["phone", ...(hardwareProviders as TrackingProvider[])];
       const preference = (instRes.data?.preferred_tracking_provider as TrackingProvider) ?? null;
 
-      if (preference && providers.includes(preference)) {
+      if (preference && allProviders.includes(preference)) {
         setActiveProvider(preference);
-      } else if (providers.length > 0) {
-        const best = PROVIDER_PRIORITY.find((p) => providers.includes(p)) || null;
-        setActiveProvider(best);
+      } else if (hardwareProviders.length > 0) {
+        const best = HARDWARE_PROVIDERS.find((p) => hardwareProviders.includes(p)) ?? null;
+        setActiveProvider((best as TrackingProvider) ?? "phone");
       } else {
-        setActiveProvider(null);
+        setActiveProvider("phone");
       }
 
       setIsLoading(false);
