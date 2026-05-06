@@ -12,8 +12,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { useTheme } from "@/context/ThemeContext";
 import { useRouteLogo } from "@/hooks/useRouteLogo";
 
-const navLinks = [
-  { href: "/drive365", label: "Home" },
+const baseNavLinks = [
   { href: "/courses", label: "Courses" },
   { href: "/about", label: "About" },
   { href: "/drive365/franchise", label: "Franchise" },
