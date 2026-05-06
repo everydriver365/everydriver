@@ -81,7 +81,7 @@ export function FindAppointmentBody({
     },
   });
 
-  const { data: slots = [], isFetching } = useInstructorAvailabilitySearch({
+  const { data: searchResult, isFetching } = useInstructorAvailabilitySearch({
     instructorIds,
     selectedInstructorId,
     fromDate,
@@ -91,6 +91,9 @@ export function FindAppointmentBody({
     postcodePrefix: postcode.trim() || undefined,
     enabled: true,
   });
+
+  const slots = searchResult?.slots ?? [];
+  const rejection = searchResult?.rejection;
 
   const selectedSlot = useMemo(
     () => slots.find((s) => s.id === selectedSlotId) || null,
@@ -387,6 +390,22 @@ export function FindAppointmentBody({
             <div className="px-3 py-8 text-center text-xs" style={{ color: "#8E8E93" }}>
               <Search className="h-4 w-4 inline mr-2 opacity-50" />
               No available slots match these criteria.
+              {rejection && rejection.total > 0 && (
+                <div className="mt-3 mx-auto max-w-xs text-left rounded-lg bg-white/70 border border-black/5 p-3 space-y-1">
+                  <div className="text-[11px] uppercase tracking-wide font-semibold text-[#1A52A0]">
+                    Why slots were skipped
+                  </div>
+                  {(Object.entries(rejection.byReason) as [import("@/lib/availabilityCore").RejectReason, number][])
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5)
+                    .map(([reason, count]) => (
+                      <div key={reason} className="flex items-start justify-between gap-2 text-[11px] text-[#3C3C43]">
+                        <span>{rejection.describe(reason)}</span>
+                        <span className="font-semibold tabular-nums">{count}</span>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
           )}
           {!isFetching && slots.map((slot, idx) => {

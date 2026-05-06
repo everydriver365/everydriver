@@ -7,9 +7,29 @@ export const TRAVEL_FALLBACK_MIN = 10;
 
 export type TimeOfDay = "any" | "morning" | "afternoon" | "evening";
 
+export type ConflictKind = "lesson" | "block" | "event";
+
 export interface CoreSlot {
   start: number; // minutes from midnight
   end: number;
+}
+
+export interface TaggedConflict extends CoreSlot {
+  kind: ConflictKind;
+}
+
+export type RejectReason =
+  | "past"
+  | "time_of_day"
+  | "overlap_lesson"
+  | "overlap_block"
+  | "overlap_event"
+  | "buffer_lesson"
+  | "buffer_block"
+  | "buffer_event";
+
+export interface RejectedSlot extends CoreSlot {
+  reason: RejectReason;
 }
 
 export interface DayInputs {
@@ -20,7 +40,7 @@ export interface DayInputs {
   durationMinutes: number;
   timeOfDay?: TimeOfDay;
   // Conflicts: scheduled_lessons + manual blocks + Google Calendar events
-  conflicts: CoreSlot[];
+  conflicts: TaggedConflict[];
   // If true, slots in the past are filtered (use for "today")
   isToday?: boolean;
   // If set, after each emitted slot we skip forward by this many minutes.
@@ -55,12 +75,12 @@ export function buildDayConflicts(
   lessons: { start_time: string; duration_minutes: number }[],
   blocks: { start_datetime: string; end_datetime: string }[],
   events: { start_time: string; end_time: string }[],
-): CoreSlot[] {
-  const out: CoreSlot[] = [];
+): TaggedConflict[] {
+  const out: TaggedConflict[] = [];
 
   for (const l of lessons) {
     const s = toMinutes(l.start_time);
-    out.push({ start: s, end: s + (l.duration_minutes || 60) });
+    out.push({ start: s, end: s + (l.duration_minutes || 60), kind: "lesson" });
   }
 
   const clip = (sIso: string, eIso: string) => {
@@ -77,21 +97,77 @@ export function buildDayConflicts(
 
   for (const b of blocks) {
     const c = clip(b.start_datetime, b.end_datetime);
-    if (c) out.push(c);
+    if (c) out.push({ ...c, kind: "block" });
   }
   for (const e of events) {
     const c = clip(e.start_time, e.end_time);
-    if (c) out.push(c);
+    if (c) out.push({ ...c, kind: "event" });
   }
 
   return out;
 }
 
 /**
+ * Classify why a candidate slot fails for a given conflict, or null if it doesn't.
+ * - direct overlap → "overlap_*"
+ * - touches the buffer/travel padding → "buffer_*"
+ */
+export function classifyConflict(
+  slotStart: number,
+  slotEnd: number,
+  c: TaggedConflict,
+  padMin: number,
+): RejectReason | null {
+  const direct = slotStart < c.end && slotEnd > c.start;
+  const padded = slotStart < c.end + padMin && slotEnd > c.start - padMin;
+  if (!padded) return null;
+  if (direct) {
+    if (c.kind === "lesson") return "overlap_lesson";
+    if (c.kind === "block") return "overlap_block";
+    return "overlap_event";
+  }
+  if (c.kind === "lesson") return "buffer_lesson";
+  if (c.kind === "block") return "buffer_block";
+  return "buffer_event";
+}
+
+export function describeReason(reason: RejectReason, padMin: number): string {
+  switch (reason) {
+    case "past":
+      return "Slot is in the past.";
+    case "time_of_day":
+      return "Outside the selected time of day.";
+    case "overlap_lesson":
+      return "Overlaps an existing lesson.";
+    case "overlap_block":
+      return "Overlaps a manual block.";
+    case "overlap_event":
+      return "Overlaps a Google Calendar event.";
+    case "buffer_lesson":
+      return `Too close to another lesson (needs ${padMin} min buffer + travel).`;
+    case "buffer_block":
+      return `Too close to a manual block (needs ${padMin} min buffer + travel).`;
+    case "buffer_event":
+      return `Too close to a Google Calendar event (needs ${padMin} min buffer + travel).`;
+  }
+}
+
+/**
  * Core slot finder. Inflates each conflict window by `bufferMinutes + 10` on each side
  * (Fill Gaps rule) so we never offer a slot that touches another commitment.
+ *
+ * Returns both passing slots and a `rejected` list (with reasons) so the UI can
+ * explain *why* a slot is missing.
  */
 export function computeFreeSlots(input: DayInputs): CoreSlot[] {
+  return computeSlotResult(input).slots;
+}
+
+export function computeSlotResult(input: DayInputs): {
+  slots: CoreSlot[];
+  rejected: RejectedSlot[];
+  padMin: number;
+} {
   const {
     dayStartMin,
     dayEndMin,
@@ -109,15 +185,34 @@ export function computeFreeSlots(input: DayInputs): CoreSlot[] {
     : 0;
 
   const slots: CoreSlot[] = [];
+  const rejected: RejectedSlot[] = [];
+
   for (let s = dayStartMin; s + durationMinutes <= dayEndMin; s += STEP_MINUTES) {
     const e = s + durationMinutes;
-    if (isToday && s < nowMin) continue;
-    if (!inTimeOfDay(s, timeOfDay)) continue;
+    if (isToday && s < nowMin) {
+      rejected.push({ start: s, end: e, reason: "past" });
+      continue;
+    }
+    if (!inTimeOfDay(s, timeOfDay)) {
+      rejected.push({ start: s, end: e, reason: "time_of_day" });
+      continue;
+    }
 
-    const collides = conflicts.some(
-      (c) => s < c.end + padMin && e > c.start - padMin,
-    );
-    if (collides) continue;
+    let reason: RejectReason | null = null;
+    for (const c of conflicts) {
+      const r = classifyConflict(s, e, c, padMin);
+      if (r) {
+        // Prefer a direct overlap reason over a buffer one if both exist.
+        if (!reason || (reason.startsWith("buffer_") && r.startsWith("overlap_"))) {
+          reason = r;
+        }
+        if (r.startsWith("overlap_")) break;
+      }
+    }
+    if (reason) {
+      rejected.push({ start: s, end: e, reason });
+      continue;
+    }
 
     slots.push({ start: s, end: e });
 
@@ -125,5 +220,5 @@ export function computeFreeSlots(input: DayInputs): CoreSlot[] {
       s += anchorSkipMinutes - STEP_MINUTES;
     }
   }
-  return slots;
+  return { slots, rejected, padMin };
 }

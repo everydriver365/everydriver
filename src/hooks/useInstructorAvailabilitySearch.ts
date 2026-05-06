@@ -3,9 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, startOfDay } from "date-fns";
 import {
   buildDayConflicts,
-  computeFreeSlots,
+  computeSlotResult,
+  describeReason,
   fromMinutes,
   toMinutes,
+  type RejectReason,
   type TimeOfDay,
 } from "@/lib/availabilityCore";
 
@@ -22,6 +24,18 @@ export interface AvailableSlot {
   endTime: string;     // HH:mm
   durationMinutes: number;
   sortKey: number;
+}
+
+export interface RejectionSummary {
+  total: number;
+  byReason: Partial<Record<RejectReason, number>>;
+  padMin: number;
+  describe: (reason: RejectReason) => string;
+}
+
+export interface AvailabilitySearchResult {
+  slots: AvailableSlot[];
+  rejection: RejectionSummary;
 }
 
 interface SearchParams {
@@ -67,13 +81,18 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
     ],
     enabled: enabled && instructorIds.length > 0,
     staleTime: 60 * 1000,
-    queryFn: async (): Promise<AvailableSlot[]> => {
+    queryFn: async (): Promise<AvailabilitySearchResult> => {
+      const empty: AvailabilitySearchResult = {
+        slots: [],
+        rejection: { total: 0, byReason: {}, padMin: 0, describe: (r) => describeReason(r, 0) },
+      };
+
       const targetIds =
         selectedInstructorId && selectedInstructorId !== "all"
           ? [selectedInstructorId]
           : instructorIds;
 
-      if (targetIds.length === 0) return [];
+      if (targetIds.length === 0) return empty;
 
       const fromDateObj = startOfDay(new Date(fromDate));
       const toDateObj = addDays(fromDateObj, days - 1);
@@ -140,6 +159,9 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
       const events = eventsRes.data || [];
 
       const results: AvailableSlot[] = [];
+      const byReason: Partial<Record<RejectReason, number>> = {};
+      let totalRejected = 0;
+      let lastPad = 0;
 
       for (const inst of instructors) {
         const instId = inst.id;
@@ -180,7 +202,7 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
           );
           const isToday = format(new Date(), "yyyy-MM-dd") === dateStr;
 
-          const free = computeFreeSlots({
+          const { slots: free, rejected, padMin } = computeSlotResult({
             dateStr,
             dayStartMin: toMinutes(startStr),
             dayEndMin: toMinutes(endStr),
@@ -191,6 +213,12 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
             isToday,
             anchorSkipMinutes: 60,
           });
+          lastPad = padMin;
+
+          for (const r of rejected) {
+            byReason[r.reason] = (byReason[r.reason] || 0) + 1;
+            totalRejected += 1;
+          }
 
           for (const slot of free) {
             results.push({
@@ -212,7 +240,15 @@ export function useInstructorAvailabilitySearch(params: SearchParams) {
       }
 
       results.sort((a, b) => a.sortKey - b.sortKey);
-      return results.slice(0, 200);
+      return {
+        slots: results.slice(0, 200),
+        rejection: {
+          total: totalRejected,
+          byReason,
+          padMin: lastPad,
+          describe: (r) => describeReason(r, lastPad),
+        },
+      };
     },
   });
 }
