@@ -45,7 +45,9 @@ function parseRecurrenceRule(rule: string | null): string {
 }
 
 export function CalendarEventSheet({ event, onClose, onDelete, onRefetch }: CalendarEventSheetProps) {
+  const [editOpen, setEditOpen] = useState(false);
   if (!event) return null;
+  const canEdit = event.type === 'lesson' || event.type === 'block';
 
   const handleNavigate = () => {
     if (event.type === 'lesson' && event.data?.pickup_address) {
