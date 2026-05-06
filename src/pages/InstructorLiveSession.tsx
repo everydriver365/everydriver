@@ -1321,6 +1321,49 @@ export default function InstructorLiveSession() {
             <>
               {/* Phone last-location preview removed — MiniLiveMap covers it */}
 
+              {/* Auto-tracking banner — appears whenever a lesson was auto-started */}
+              {autoTrackedLessonId && isSessionActive && (
+                <div
+                  role="status"
+                  style={{
+                    background: "#EDF2FE",
+                    border: "0.5px solid #3D55A1",
+                    borderRadius: 12,
+                    padding: "10px 12px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    fontFamily: FONT_STACK,
+                  }}
+                >
+                  <span aria-hidden style={{
+                    width: 8, height: 8, borderRadius: 4, background: "#34C759", flexShrink: 0,
+                  }} />
+                  <div style={{ flex: 1, minWidth: 0, fontSize: 12, color: "#1F2C4A", fontWeight: 600 }}>
+                    Auto-tracking lesson{autoTrackedPupilName ? ` with ${autoTrackedPupilName}` : ""}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { void stopSession(); }}
+                    disabled={isStopping}
+                    style={{
+                      background: "#FFFFFF",
+                      border: "0.5px solid #3D55A1",
+                      borderRadius: 999,
+                      padding: "5px 12px",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: "#3D55A1",
+                      cursor: isStopping ? "default" : "pointer",
+                      opacity: isStopping ? 0.6 : 1,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {isStopping ? "Stopping…" : "Stop"}
+                  </button>
+                </div>
+              )}
+
               {/* 1. HEADER */}
               <div style={{
                 background: "#FFF",
