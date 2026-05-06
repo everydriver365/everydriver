@@ -20,6 +20,7 @@ interface RefundModalProps {
   onOpenChange: (open: boolean) => void;
   instructorId: string;
   pupils: Pupil[];
+  squareConnected?: boolean;
   onRefunded?: () => void;
 }
 
