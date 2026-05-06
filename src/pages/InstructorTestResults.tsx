@@ -49,6 +49,7 @@ import {
   TestCentreAnalytics,
 } from "@/components/instructor/driving-test";
 import { useStandardsCheckMetrics } from "@/components/instructor/driving-test/useStandardsCheckMetrics";
+import { InstructorTestCentresManager } from "@/components/instructor/InstructorTestCentresManager";
 
 interface TestResult {
   id: string;
@@ -493,7 +494,14 @@ export default function InstructorTestResults() {
             )}
           </TabsContent>
 
-          <TabsContent value="centres">
+          <TabsContent value="centres" className="space-y-4">
+            <InstructorCard>
+              <h3 className="font-semibold text-base mb-1">My Test Centres</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Search the live UK test centre list and pin the ones you use. Pinned centres appear first when recording a test.
+              </p>
+              <InstructorTestCentresManager instructorId={instructor.id} />
+            </InstructorCard>
             <TestCentreAnalytics instructorId={instructor.id} />
           </TabsContent>
 
