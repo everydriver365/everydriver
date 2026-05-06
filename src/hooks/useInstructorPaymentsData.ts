@@ -263,6 +263,30 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
             .map((p: any) => ({ recorded_at: p.recorded_at, amount: Number(p.amount) }))
         );
 
+        // YTD service fees (UK tax year: 6 Apr → 5 Apr). Card payments × 1.75%.
+        const now = new Date();
+        const taxYearStartYear = (now.getMonth() < 3 || (now.getMonth() === 3 && now.getDate() < 6))
+          ? now.getFullYear() - 1 : now.getFullYear();
+        const taxYearStart = new Date(taxYearStartYear, 3, 6, 0, 0, 0, 0);
+        const feesYearLabel = `${taxYearStartYear}/${String((taxYearStartYear + 1) % 100).padStart(2, "0")}`;
+
+        const ytdRes = await supabase
+          .from("payment_history")
+          .select("amount, payment_method, notes, payout_status, recorded_at")
+          .eq("instructor_id", instructorId)
+          .is("deleted_at", null)
+          .gte("recorded_at", taxYearStart.toISOString())
+          .gt("amount", 0);
+
+        let feesYearToDate = 0;
+        if (!ytdRes.error && ytdRes.data) {
+          const cardYtd = ytdRes.data
+            .filter((p: any) => normalizeMethod(p.payment_method) === "card"
+              && normalizeStatus(Number(p.amount), p.notes, p.payout_status) === "paid")
+            .reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
+          feesYearToDate = +(cardYtd * FEE_RATE).toFixed(2);
+        }
+
         if (cancelled) return;
         setState({
           loading: false,
@@ -276,6 +300,8 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
             nextPayoutDate,
             feesMonth,
             effectiveFeeRate,
+            feesYearToDate,
+            feesYearLabel,
           },
           cashFlow,
           outstanding,
