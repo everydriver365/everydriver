@@ -37,9 +37,22 @@ export function useLocationPermission(opts: Options = {}) {
       };
       if (next === "granted") row.granted_at = new Date().toISOString();
       if (next === "denied") row.denied_at = new Date().toISOString();
-      await supabase
+      // Manual upsert: the DB unique index uses COALESCE(pupil_id, ...),
+      // which PostgREST's onConflict can't target. Look up first, then insert/update.
+      let existingQ = supabase
         .from("phone_tracking_permissions")
-        .upsert([row] as any, { onConflict: "instructor_id,pupil_id" });
+        .select("id")
+        .eq("instructor_id", instructorId);
+      existingQ = pupilId ? existingQ.eq("pupil_id", pupilId) : existingQ.is("pupil_id", null);
+      const { data: existing } = await existingQ.maybeSingle();
+      if (existing?.id) {
+        await supabase
+          .from("phone_tracking_permissions")
+          .update(row as any)
+          .eq("id", existing.id);
+      } else {
+        await supabase.from("phone_tracking_permissions").insert([row] as any);
+      }
       void logPhoneTrackingEvent({
         instructorId,
         pupilId,
