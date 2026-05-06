@@ -129,6 +129,13 @@ export default function InstructorLiveSession() {
   const [totalDistance, setTotalDistance] = useState<number>(0);
   const [drivingEvents, setDrivingEvents] = useState<DrivingEvent[]>([]);
   const [speedLimitKmh, setSpeedLimitKmh] = useState<number | null>(null);
+  // Guard against bogus cached values: UK limits sit between ~16 km/h (10 mph) and 113 km/h (70 mph).
+  const setSpeedLimitIfValid = (v: number | null | undefined) => {
+    if (v == null) return;
+    if (typeof v !== "number" || !Number.isFinite(v)) return;
+    if (v < 16 || v > 113) return;
+    setSpeedLimitKmh(v);
+  };
   const [pendingRouteType, setPendingRouteType] = useState<"practice" | "test" | "driving_test">("practice");
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
   const [radiusDeviceInfo, setRadiusDeviceInfo] = useState<{ id: string; name: string | null } | null>(null);
@@ -617,7 +624,7 @@ export default function InstructorLiveSession() {
           setDevice(typedDevice);
           // Only update speed limit if we got a real value (prevent flickering)
           if (typedDevice.last_speed_limit_kmh !== undefined && typedDevice.last_speed_limit_kmh !== null) {
-            setSpeedLimitKmh(typedDevice.last_speed_limit_kmh);
+            setSpeedLimitIfValid(typedDevice.last_speed_limit_kmh);
           }
         }
         
@@ -660,7 +667,7 @@ export default function InstructorLiveSession() {
             setDevice(newDevice);
             // Only update speed limit if we got a real value (prevent flickering)
             if (newDevice.last_speed_limit_kmh !== undefined && newDevice.last_speed_limit_kmh !== null) {
-              setSpeedLimitKmh(newDevice.last_speed_limit_kmh);
+              setSpeedLimitIfValid(newDevice.last_speed_limit_kmh);
             }
           }
         }
@@ -718,7 +725,7 @@ export default function InstructorLiveSession() {
           
           // Use speed limit from live_pupil_positions if available
           if (newPos.speed_limit_kmh !== undefined && newPos.speed_limit_kmh !== null) {
-            setSpeedLimitKmh(newPos.speed_limit_kmh);
+            setSpeedLimitIfValid(newPos.speed_limit_kmh);
           }
         }
       )
@@ -747,7 +754,7 @@ export default function InstructorLiveSession() {
         .maybeSingle();
       if (cancelled) return;
       const limit = (data as any)?.speed_limit_kmh;
-      if (limit != null) setSpeedLimitKmh(limit);
+      if (limit != null) setSpeedLimitIfValid(limit);
     })();
 
     const channel = supabase
@@ -763,7 +770,7 @@ export default function InstructorLiveSession() {
         (payload) => {
           const newPos = payload.new as { speed_limit_kmh?: number | null };
           if (newPos?.speed_limit_kmh != null) {
-            setSpeedLimitKmh(newPos.speed_limit_kmh);
+            setSpeedLimitIfValid(newPos.speed_limit_kmh);
           }
         }
       )

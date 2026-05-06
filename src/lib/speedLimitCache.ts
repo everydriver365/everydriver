@@ -12,8 +12,8 @@ interface CachedSpeedLimit {
   expiresAt: string;
 }
 
-// Grid resolution: ~100m at UK latitudes
-const GRID_PRECISION = 3; // ~0.001 degree ≈ 111m
+// Grid resolution: ~11m at UK latitudes (was 111m which collapsed neighbouring roads)
+const GRID_PRECISION = 4; // ~0.0001 degree ≈ 11m
 
 /**
  * Convert lat/lng to grid key for caching
@@ -60,7 +60,7 @@ export async function setCachedSpeedLimit(
   try {
     const gridKey = toGridKey(lat, lng);
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days
     
     const cached: CachedSpeedLimit = {
       gridKey,

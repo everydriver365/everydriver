@@ -1,46 +1,47 @@
 /**
  * Shared speed-limit lookup helper for edge functions.
  * Priority: provider value → Supabase speed_limit_cache → Overpass API → UK road-type defaults → null.
- * Results are cached in the speed_limit_cache table for 30 days (positive) or 24 hours (negative).
  */
 
-const GRID_PRECISION = 3; // ~111 m grid cells
+const GRID_PRECISION = 4; // ~11 m grid cells (was 3 / ~111 m which collided neighbouring roads)
 const GRID_FACTOR = Math.pow(10, GRID_PRECISION);
-const NEGATIVE_SENTINEL = -1; // Cached "no result" marker
+const NEGATIVE_SENTINEL = -1;
+
+const POSITIVE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days (was 30)
+const NEGATIVE_TTL_MS = 2 * 60 * 60 * 1000;      // 2 hours (was 24)
 
 function toGrid(v: number): number {
   return Math.round(v * GRID_FACTOR) / GRID_FACTOR;
 }
 
 /**
- * UK National Speed Limit defaults by highway type (km/h).
- * Used when Overpass finds a road but it has no maxspeed tag.
+ * UK speed-limit defaults by road class (km/h). These are RURAL national-speed
+ * baselines; urban contexts (lit / built-up / residential) drop to 30 mph.
  */
-const UK_DEFAULTS: Record<string, number> = {
+const UK_RURAL_DEFAULTS: Record<string, number> = {
   motorway: 113,        // 70 mph
   motorway_link: 113,
-  trunk: 113,            // 70 mph (single carriageway national limit = 60, but trunk is usually dual)
+  trunk: 97,             // 60 mph single carriageway (most UK trunks)
   trunk_link: 80,        // 50 mph
-  primary: 97,           // 60 mph (national speed limit for single carriageway)
+  primary: 97,
   primary_link: 80,
-  secondary: 97,         // 60 mph
+  secondary: 97,
   secondary_link: 80,
-  tertiary: 97,          // 60 mph
-  tertiary_link: 48,
-  unclassified: 97,      // 60 mph
+  tertiary: 97,
+  tertiary_link: 64,     // 40 mph
+  unclassified: 97,
   residential: 48,       // 30 mph
   living_street: 32,     // 20 mph
-  service: 32,           // 20 mph
+  service: 32,
 };
 
-/**
- * Look up the speed limit (km/h) for a coordinate.
- * @param supabase  Service-role Supabase client
- * @param lat       Latitude
- * @param lng       Longitude
- * @param providerValue  Value already supplied by the hardware provider (km/h), if any
- * @returns speed limit in km/h, or null if unknown
- */
+const URBAN_DEFAULT = 48; // 30 mph
+const NON_DRIVABLE = new Set([
+  "footway", "cycleway", "path", "pedestrian", "steps",
+  "bridleway", "track", "corridor", "platform", "construction",
+  "proposed", "raceway",
+]);
+
 export async function resolveSpeedLimit(
   supabase: any,
   lat: number,
@@ -56,7 +57,7 @@ export async function resolveSpeedLimit(
   const gLat = toGrid(lat);
   const gLng = toGrid(lng);
 
-  // 2. Check DB cache
+  // 2. DB cache
   try {
     const { data } = await supabase
       .from("speed_limit_cache")
@@ -66,70 +67,68 @@ export async function resolveSpeedLimit(
       .maybeSingle();
 
     if (data && new Date(data.expires_at) > new Date()) {
-      // Negative cache hit — we already looked and found nothing
-      if (data.speed_limit_kmh === NEGATIVE_SENTINEL) {
-        return null;
-      }
+      if (data.speed_limit_kmh === NEGATIVE_SENTINEL) return null;
       return data.speed_limit_kmh;
     }
-  } catch {
-    // cache miss — continue
-  }
+  } catch {/* miss — continue */}
 
-  // 3. Overpass API — first try with maxspeed filter
+  // 3. Overpass — single query with geometry + tags, pick nearest drivable way
   try {
-    const result = await fetchFromOverpass(lat, lng, true);
-    if (result?.speedLimit != null) {
-      console.log(`[SpeedLimit] Resolved ${result.speedLimit} km/h from maxspeed tag at ${lat},${lng}`);
-      cacheSpeedLimit(supabase, lat, lng, result.speedLimit, "overpass-maxspeed").catch(() => {});
-      return result.speedLimit;
-    }
-  } catch (e) {
-    console.warn("[SpeedLimitLookup] Overpass maxspeed error:", (e as Error).message);
-  }
+    const candidate = await fetchNearestRoad(lat, lng);
+    if (candidate) {
+      const { tags } = candidate;
+      const fromTag = tags.maxspeed ? parseMaxspeed(String(tags.maxspeed)) : null;
+      if (fromTag) {
+        console.log(`[SpeedLimit] maxspeed=${tags.maxspeed} → ${fromTag} km/h at ${lat},${lng}`);
+        cacheSpeedLimit(supabase, lat, lng, fromTag, "overpass-maxspeed").catch(() => {});
+        return fromTag;
+      }
 
-  // 4. Overpass API — fallback: get road type and infer UK default
-  try {
-    const result = await fetchFromOverpass(lat, lng, false);
-    if (result?.highwayType) {
-      const defaultLimit = UK_DEFAULTS[result.highwayType];
-      if (defaultLimit) {
-        console.log(`[SpeedLimit] Inferred ${defaultLimit} km/h from highway=${result.highwayType} at ${lat},${lng}`);
-        cacheSpeedLimit(supabase, lat, lng, defaultLimit, `uk-default-${result.highwayType}`).catch(() => {});
-        return defaultLimit;
+      const highway = tags.highway as string | undefined;
+      if (highway) {
+        const isUrban =
+          tags.lit === "yes" ||
+          (typeof tags["maxspeed:type"] === "string" && /urban/i.test(tags["maxspeed:type"])) ||
+          highway === "residential" ||
+          highway === "living_street";
+        const isDualOrMotorroad =
+          tags.dual_carriageway === "yes" || tags.motorroad === "yes" || highway === "motorway";
+
+        let inferred: number | null = null;
+        if (isUrban && highway !== "motorway" && highway !== "trunk") {
+          inferred = URBAN_DEFAULT;
+        } else if (highway === "trunk" && isDualOrMotorroad) {
+          inferred = 113;
+        } else {
+          inferred = UK_RURAL_DEFAULTS[highway] ?? null;
+        }
+
+        if (inferred) {
+          console.log(`[SpeedLimit] highway=${highway} urban=${isUrban} → ${inferred} km/h at ${lat},${lng}`);
+          cacheSpeedLimit(supabase, lat, lng, inferred, `uk-${isUrban ? "urban" : "default"}-${highway}`).catch(() => {});
+          return inferred;
+        }
       }
     }
   } catch (e) {
-    console.warn("[SpeedLimitLookup] Overpass highway error:", (e as Error).message);
+    console.warn("[SpeedLimitLookup] Overpass error:", (e as Error).message);
   }
 
-  // 5. Cache negative result for 24h to avoid repeated lookups
-  console.log(`[SpeedLimit] No speed limit found at ${lat},${lng} — caching negative for 24h`);
+  // 4. Negative cache
+  console.log(`[SpeedLimit] No limit found at ${lat},${lng}`);
   cacheNegative(supabase, lat, lng).catch(() => {});
-
   return null;
 }
 
-interface OverpassResult {
-  speedLimit: number | null;
-  highwayType: string | null;
+interface RoadCandidate {
+  tags: Record<string, any>;
+  distanceM: number;
 }
 
-/** Query Overpass API for the nearest road */
-async function fetchFromOverpass(
-  lat: number,
-  lng: number,
-  requireMaxspeed: boolean,
-): Promise<OverpassResult | null> {
-  const radius = 100; // 100m search radius
-  const filter = requireMaxspeed
-    ? '["highway"]["maxspeed"]'
-    : '["highway"]';
-  const query = `[out:json][timeout:10];way(around:${radius},${lat},${lng})${filter};out tags 1;`;
+async function fetchNearestRoad(lat: number, lng: number): Promise<RoadCandidate | null> {
+  const radius = 25; // tightened from 100m
+  const query = `[out:json][timeout:10];way(around:${radius},${lat},${lng})["highway"];out tags geom 8;`;
 
-  console.log(`[SpeedLimit] Overpass query (maxspeed=${requireMaxspeed}) for ${lat},${lng}`);
-
-  // Use POST to avoid URL-length issues and improve reliability
   const res = await fetch("https://overpass-api.de/api/interpreter", {
     method: "POST",
     headers: {
@@ -140,86 +139,79 @@ async function fetchFromOverpass(
     signal: AbortSignal.timeout(12000),
   });
   if (!res.ok) {
-    const body = await res.text();
-    console.warn(`[SpeedLimit] Overpass HTTP ${res.status}: ${body.slice(0, 200)}`);
+    console.warn(`[SpeedLimit] Overpass HTTP ${res.status}`);
     return null;
   }
 
   const data = await res.json();
   const elements: any[] = data?.elements || [];
-  console.log(`[SpeedLimit] Overpass returned ${elements.length} elements`);
-  if (elements.length === 0) return null;
+  if (!elements.length) return null;
 
-  const tags = elements[0]?.tags || {};
-  console.log(`[SpeedLimit] First element tags: ${JSON.stringify(tags)}`);
-  const raw = tags.maxspeed;
-  const highwayType = tags.highway || null;
+  let best: RoadCandidate | null = null;
+  for (const el of elements) {
+    const tags = el.tags || {};
+    const hw = tags.highway;
+    if (!hw || NON_DRIVABLE.has(hw)) continue;
 
-  return {
-    speedLimit: raw ? parseMaxspeed(String(raw)) : null,
-    highwayType,
-  };
+    const geom: Array<{ lat: number; lon: number }> = el.geometry || [];
+    let minDist = Number.POSITIVE_INFINITY;
+    for (const pt of geom) {
+      const d = haversineMetres(lat, lng, pt.lat, pt.lon);
+      if (d < minDist) minDist = d;
+    }
+    if (!Number.isFinite(minDist)) continue;
+
+    if (!best || minDist < best.distanceM) {
+      best = { tags, distanceM: minDist };
+    }
+  }
+  return best;
 }
 
-/** Parse an OSM maxspeed value into km/h */
+function haversineMetres(aLat: number, aLng: number, bLat: number, bLng: number): number {
+  const R = 6_371_000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(bLat - aLat);
+  const dLng = toRad(bLng - aLng);
+  const lat1 = toRad(aLat);
+  const lat2 = toRad(bLat);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
 function parseMaxspeed(raw: string): number | null {
   const mphMatch = raw.match(/^(\d+)\s*mph$/i);
   if (mphMatch) return Math.round(parseInt(mphMatch[1], 10) * 1.60934);
-
   const numMatch = raw.match(/^(\d+)/);
   if (numMatch) return parseInt(numMatch[1], 10);
-
-  if (raw.toLowerCase().includes("national")) return 97; // ~60 mph
-
+  if (raw.toLowerCase().includes("national")) return 97;
   return null;
 }
 
-/** Upsert positive result into speed_limit_cache (30-day TTL) */
 async function cacheSpeedLimit(
-  supabase: any,
-  lat: number,
-  lng: number,
-  speedLimitKmh: number,
-  source: string,
+  supabase: any, lat: number, lng: number, speedLimitKmh: number, source: string,
 ): Promise<void> {
-  const gLat = toGrid(lat);
-  const gLng = toGrid(lng);
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-  await supabase.from("speed_limit_cache").upsert(
-    {
-      grid_lat: gLat,
-      grid_lng: gLng,
-      speed_limit_kmh: speedLimitKmh,
-      source,
-      fetched_at: now.toISOString(),
-      expires_at: expiresAt.toISOString(),
-    },
-    { onConflict: "grid_lat,grid_lng", ignoreDuplicates: false },
-  );
+  await supabase.from("speed_limit_cache").upsert({
+    grid_lat: toGrid(lat),
+    grid_lng: toGrid(lng),
+    speed_limit_kmh: speedLimitKmh,
+    source,
+    fetched_at: now.toISOString(),
+    expires_at: new Date(now.getTime() + POSITIVE_TTL_MS).toISOString(),
+  }, { onConflict: "grid_lat,grid_lng", ignoreDuplicates: false });
 }
 
-/** Upsert negative result into speed_limit_cache (24-hour TTL) */
-async function cacheNegative(
-  supabase: any,
-  lat: number,
-  lng: number,
-): Promise<void> {
-  const gLat = toGrid(lat);
-  const gLng = toGrid(lng);
+async function cacheNegative(supabase: any, lat: number, lng: number): Promise<void> {
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours
-
-  await supabase.from("speed_limit_cache").upsert(
-    {
-      grid_lat: gLat,
-      grid_lng: gLng,
-      speed_limit_kmh: NEGATIVE_SENTINEL,
-      source: "negative",
-      fetched_at: now.toISOString(),
-      expires_at: expiresAt.toISOString(),
-    },
-    { onConflict: "grid_lat,grid_lng", ignoreDuplicates: false },
-  );
+  await supabase.from("speed_limit_cache").upsert({
+    grid_lat: toGrid(lat),
+    grid_lng: toGrid(lng),
+    speed_limit_kmh: NEGATIVE_SENTINEL,
+    source: "negative",
+    fetched_at: now.toISOString(),
+    expires_at: new Date(now.getTime() + NEGATIVE_TTL_MS).toISOString(),
+  }, { onConflict: "grid_lat,grid_lng", ignoreDuplicates: false });
 }

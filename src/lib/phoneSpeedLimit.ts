@@ -16,7 +16,7 @@ import { getCachedSpeedLimit, setCachedSpeedLimit } from "./speedLimitCache";
 const inFlight = new Map<string, Promise<number | null>>();
 
 function gridKey(lat: number, lng: number): string {
-  return `${lat.toFixed(3)},${lng.toFixed(3)}`;
+  return `${lat.toFixed(4)},${lng.toFixed(4)}`;
 }
 
 export async function resolvePhoneSpeedLimit(
