@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Calendar, CreditCard, FileSpreadsheet, Satellite, Wifi, WifiOff } from "lucide-react";
+import { Calendar, CreditCard, FileSpreadsheet, Satellite, Wifi, WifiOff, Plug, ChevronRight, ChevronDown, ChevronUp, BookOpen, CheckCircle2, MinusCircle, Sparkles } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
