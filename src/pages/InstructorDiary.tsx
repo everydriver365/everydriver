@@ -371,7 +371,7 @@ export default function InstructorDiary() {
                 <button
                   type="button"
                   onClick={handleClearFilters}
-                  style={{ backgroundColor: "var(--d2-indigo-bg)", borderRadius: 20, padding: "6px 14px", fontSize: 11, fontWeight: 600, color: "#1A52A0", border: "none", cursor: "pointer" }}
+                  style={{ backgroundColor: "var(--d2-indigo-bg)", borderRadius: 20, padding: "6px 14px", fontSize: 11, fontWeight: 600, color: "var(--d2-indigo)", border: "none", cursor: "pointer" }}
                 >
                   Clear filters
                 </button>
