@@ -29,6 +29,7 @@ export function TrackingProviderDropdown({
   onChange,
 }: TrackingProviderDropdownProps) {
   const [hasRadiusDevice, setHasRadiusDevice] = useState(false);
+  const [radiusDeviceName, setRadiusDeviceName] = useState<string | null>(null);
 
   useEffect(() => {
     if (!instructorId) return;
@@ -39,8 +40,9 @@ export function TrackingProviderDropdown({
       // rows under certain RLS auth contexts.
       let { data } = await supabase
         .from("gps_devices")
-        .select("id, tracking_provider, is_active")
-        .eq("instructor_id", instructorId);
+        .select("id, device_name, device_identifier, tracking_provider, is_active, last_seen_at")
+        .eq("instructor_id", instructorId)
+        .order("last_seen_at", { ascending: false, nullsFirst: false });
 
       // Fallback via the canonical instructor identity helper if the direct
       // query returned nothing (e.g. school-portal auth contexts).
@@ -51,16 +53,21 @@ export function TrackingProviderDropdown({
         if (fallbackId) {
           const res = await supabase
             .from("gps_devices")
-            .select("id, tracking_provider, is_active")
-            .eq("instructor_id", fallbackId);
+            .select("id, device_name, device_identifier, tracking_provider, is_active, last_seen_at")
+            .eq("instructor_id", fallbackId)
+            .order("last_seen_at", { ascending: false, nullsFirst: false });
           data = res.data ?? [];
         }
       }
 
-      const hasRadius = (data ?? []).some(
+      const radiusDevices = (data ?? []).filter(
         (d: any) => d.tracking_provider === "radius" && d.is_active !== false,
       );
-      if (!cancelled) setHasRadiusDevice(hasRadius);
+      if (!cancelled) {
+        setHasRadiusDevice(radiusDevices.length > 0);
+        const first = radiusDevices[0] as any;
+        setRadiusDeviceName(first ? (first.device_name || first.device_identifier || null) : null);
+      }
     })();
     return () => {
       cancelled = true;
@@ -91,7 +98,9 @@ export function TrackingProviderDropdown({
         <SelectItem value="radius" disabled={!hasRadiusDevice}>
           <span className="flex items-center gap-2">
             <Radio className="h-4 w-4" />
-            Radius tracker{!hasRadiusDevice ? " (no device linked)" : ""}
+            {hasRadiusDevice
+              ? `Radius tracker${radiusDeviceName ? ` · ${radiusDeviceName}` : ""}`
+              : "Radius tracker (no device linked)"}
           </span>
         </SelectItem>
       </SelectContent>
