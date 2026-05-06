@@ -1559,7 +1559,17 @@ export default function InstructorLiveSession() {
                     <TrackingProviderDropdown
                       instructorId={instructor.id}
                       value={activeProvider === "radius" ? "radius" : "phone"}
-                      onChange={(choice) => setActiveProvider(choice)}
+                      radiusDevice={radiusDeviceInfo}
+                      onChange={(choice) => {
+                        setActiveProvider(choice);
+                        if (typeof sessionStorage !== "undefined" && instructor?.id) {
+                          if (choice === "phone") {
+                            sessionStorage.setItem(`tracking-manual-phone:${instructor.id}`, "1");
+                          } else {
+                            sessionStorage.removeItem(`tracking-manual-phone:${instructor.id}`);
+                          }
+                        }
+                      }}
                     />
                   </div>
 
