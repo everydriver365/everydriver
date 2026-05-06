@@ -56,6 +56,20 @@ function kmToMiles(km: number): number {
   return km * 0.621371;
 }
 
+function normalisePostcode(raw: string): string {
+  return raw.replace(/\s+/g, "").toUpperCase();
+}
+
+function getOutcode(raw: string): string | null {
+  const match = raw.trim().toUpperCase().match(/^([A-Z]{1,2}\d[A-Z\d]?)/);
+  return match?.[1] || null;
+}
+
+function firstLocationName(value: unknown): string | null {
+  if (Array.isArray(value)) return value.find((item) => typeof item === "string" && item.trim()) || null;
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
 // Parse different API response formats into our unified station format
 function parseStations(data: any, brand: string, userLat: number, userLng: number, maxRadiusKm: number): FuelStation[] {
   const stations: FuelStation[] = [];
@@ -230,9 +244,11 @@ serve(async (req) => {
     let lng = instructor.lng;
     let locationName = instructor.location_name;
 
-    // If no cached coordinates, geocode the postcode
+    // If no cached coordinates, geocode the postcode. If the full postcode is
+    // not recognised, fall back to the outward code (e.g. SO22) so the desktop
+    // fuel finder still works from the instructor's general area.
     if (!lat || !lng) {
-      const cleanPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
+      const cleanPostcode = normalisePostcode(instructor.home_postcode);
       const geocodeResponse = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
       
       if (geocodeResponse.ok) {
@@ -240,16 +256,34 @@ serve(async (req) => {
         if (geocodeData.result) {
           lat = geocodeData.result.latitude;
           lng = geocodeData.result.longitude;
-          locationName = geocodeData.result.admin_ward || 
-                        geocodeData.result.admin_district || 
-                        geocodeData.result.region;
-          
-          // Cache the coordinates
-          await supabase
-            .from("instructors")
-            .update({ lat, lng, location_name: locationName })
-            .eq("id", instructorId);
+          locationName = firstLocationName(geocodeData.result.admin_ward) || 
+                        firstLocationName(geocodeData.result.admin_district) || 
+                        firstLocationName(geocodeData.result.region);
         }
+      }
+
+      if (!lat || !lng) {
+        const outcode = getOutcode(instructor.home_postcode);
+        if (outcode) {
+          const outcodeResponse = await fetch(`https://api.postcodes.io/outcodes/${outcode}`);
+          if (outcodeResponse.ok) {
+            const outcodeData = await outcodeResponse.json();
+            if (outcodeData.result) {
+              lat = outcodeData.result.latitude;
+              lng = outcodeData.result.longitude;
+              locationName = firstLocationName(outcodeData.result.admin_district) ||
+                            firstLocationName(outcodeData.result.admin_county) ||
+                            outcode;
+            }
+          }
+        }
+      }
+
+      if (lat && lng) {
+        await supabase
+          .from("instructors")
+          .update({ lat, lng, location_name: locationName })
+          .eq("id", instructorId);
       }
 
       if (!lat || !lng) {
