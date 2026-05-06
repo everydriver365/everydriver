@@ -150,6 +150,7 @@ export function useInstructorPaymentsData(instructorId: string | undefined): Pay
       outstanding: 0, outstandingPupils: 0,
       nextPayout: 0, nextPayoutDate: "—",
       feesMonth: 0, effectiveFeeRate: FEE_RATE * 100,
+      feesYearToDate: 0, feesYearLabel: "",
     },
     cashFlow: [],
     outstanding: [],
