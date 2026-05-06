@@ -810,7 +810,19 @@ export default function BookingSummary() {
   const { instructor, courseName, totalPrice, courseImageUrl, courseDescription, features, template } = courseDetails;
   const brandColour = instructor.brand_colour || "#1e3a5f";
 
-
+  // Enquiry-only mode: short-circuit the entire payment/scheduling flow
+  if (bookingMode === "enquiry_only") {
+    return (
+      <EnquiryOnlyView
+        instructor={instructor}
+        courseName={courseName}
+        hours={hours}
+        totalPrice={totalPrice}
+        courseImageUrl={courseImageUrl}
+        locationName={locationName}
+      />
+    );
+  }
 
   // Mobile View
   if (isMobile) {
