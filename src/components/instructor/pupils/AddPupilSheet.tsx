@@ -525,15 +525,19 @@ export function AddPupilSheet({
     if ((form.what3words || "").trim()) return;
     const t = setTimeout(async () => {
       setIsLookingUpW3W(true);
+      setW3wHint(null);
       try {
         const { data } = await supabase.functions.invoke("convert-to-what3words", {
           body: { postcode: pc },
         });
         if (data?.what3words) {
           setForm((prev) => ({ ...prev, what3words: data.what3words }));
+        } else if (data?.message) {
+          setW3wHint("Auto-lookup unavailable — enter manually");
         }
       } catch (err) {
         console.error("What3Words auto-lookup failed:", err);
+        setW3wHint("Auto-lookup unavailable — enter manually");
       } finally {
         setIsLookingUpW3W(false);
       }
