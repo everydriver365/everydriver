@@ -695,13 +695,21 @@ export default function InstructorLiveSession() {
       examinerId: string | null;
     }
   ) => {
+    // Auto-arm phone streaming when using phone provider — no second button needed.
+    if (isPhoneProvider && !phoneStreamingConfirmed) {
+      setPhoneStreamingConfirmed(true);
+    }
     if (!device || !instructor?.id) {
-      toast({
-        title: "Error",
-        description: "Device not configured",
-        variant: "destructive",
-      });
-      return;
+      if (isPhoneProvider && instructor?.id) {
+        // Phone-only flow: no hardware device row required. Skip device updates.
+      } else {
+        toast({
+          title: "Error",
+          description: "Device not configured",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     // For driving tests, use the pupil from dialog or selected pupil
