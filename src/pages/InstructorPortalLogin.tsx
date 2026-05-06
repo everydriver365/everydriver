@@ -75,7 +75,7 @@ export default function InstructorPortalLogin() {
       try {
         const available = await isBiometricAvailable("instructor");
         setBiometricAvailable(available);
-        if (available && isNativePlatform()) {
+        if (available && (isNativePlatform() || isWrappedApp())) {
           const creds = await getBiometricCredentials("instructor", "Sign in to EveryDriver");
           if (creds) {
             setBiometricLoading(true);
