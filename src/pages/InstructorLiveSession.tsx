@@ -1663,10 +1663,13 @@ export default function InstructorLiveSession() {
                   recordTest: { label: "Record driving test", Icon: ShieldCheck, onClick: () => setShowDrivingTestDialog(true) },
                 } as const;
                 const requiresPupil = selectedMode !== "testRoute";
+                // Phone provider doesn't need a hardware GPS heartbeat to
+                // start — the streamer comes online once the session begins.
+                const connectionReady = isPhoneProvider ? true : isConnected;
                 const canStart =
                   (!requiresPupil || !!selectedPupilId) &&
                   !isStarting &&
-                  (selectedMode === "recordTest" || isConnected);
+                  (selectedMode === "recordTest" || connectionReady);
                 const cta = ctaConfig[selectedMode];
                 return (
                   <>
@@ -1689,7 +1692,7 @@ export default function InstructorLiveSession() {
                       <div style={{ fontSize: 10, color: "#C7C7CC", textAlign: "center" }}>
                         {requiresPupil && !selectedPupilId
                           ? "Select a pupil to start tracking"
-                          : !isConnected
+                          : !connectionReady
                           ? "Waiting for GPS connection"
                           : ""}
                       </div>
