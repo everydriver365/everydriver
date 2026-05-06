@@ -35,17 +35,19 @@ export default function InstructorTakePayment() {
   }, [instructor?.id]);
 
   return (
-    <TakePaymentModal
-      open={true}
-      onOpenChange={(open) => {
-        if (!open) navigate(-1);
-      }}
-      paymentQrUrl={getActivePaymentQrUrl(instructor)}
-      commissionPayer={instructor?.commission_payer}
-      commissionSplitPercent={instructor?.commission_split_percent}
-      instructorName={instructor?.name}
-      instructorId={instructor?.id}
-      pupils={pupils}
-    />
+    <InstructorPortalLayout>
+      <TakePaymentModal
+        open={true}
+        onOpenChange={(open) => {
+          if (!open) navigate(-1);
+        }}
+        paymentQrUrl={getActivePaymentQrUrl(instructor)}
+        commissionPayer={instructor?.commission_payer}
+        commissionSplitPercent={instructor?.commission_split_percent}
+        instructorName={instructor?.name}
+        instructorId={instructor?.id}
+        pupils={pupils}
+      />
+    </InstructorPortalLayout>
   );
 }
