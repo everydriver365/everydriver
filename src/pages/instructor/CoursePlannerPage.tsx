@@ -114,5 +114,6 @@ export default function CoursePlannerPage() {
         </div>
       </div>
     </div>
+    </InstructorPortalLayout>
   );
 }
