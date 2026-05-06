@@ -460,7 +460,7 @@ export default function InstructorDiary() {
           )}
         </div>
       </div>
-    </InstructorPortalLayout>
+    </Shell>
   );
 }
 
