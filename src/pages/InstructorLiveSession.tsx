@@ -38,12 +38,13 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
  import { FloatingSessionTimer } from "@/components/instructor/tracking/FloatingSessionTimer";
 import { DeviceSelectorDropdown } from "@/components/instructor/tracking/DeviceSelectorDropdown";
 import { TrackingProviderDropdown } from "@/components/instructor/tracking/TrackingProviderDropdown";
-import { TrackerSourceCard } from "@/components/instructor/tracking/TrackerSourceCard";
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { usePhoneTrackingStreamer } from "@/hooks/usePhoneTrackingStreamer";
 import { useLivePupilPosition } from "@/hooks/useLivePupilPosition";
 import { useLocationPermission } from "@/hooks/useLocationPermission";
 import { PhoneTrackingPermissionBanner } from "@/components/instructor/tracking/PhoneTrackingPermissionBanner";
-import { logPhoneTrackingEvent } from "@/lib/phoneTrackingAudit";
+
 
 import { SatNavLiveMap } from "@/components/instructor/tracking/SatNavLiveMap";
 import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
@@ -142,10 +143,11 @@ export default function InstructorLiveSession() {
   }, [isPhoneProvider]);
 
   // Location permission gate for Phone tracking.
-  const { status: locationPermissionStatus } = useLocationPermission({
+  const { status: locationPermissionStatus, request: requestLocationPermission } = useLocationPermission({
     instructorId: instructor?.id ?? null,
     pupilId: selectedPupilId || null,
   });
+  const [showLocationDialog, setShowLocationDialog] = useState(false);
   // Phone tracking can preview the mini map without a pupil; pushing to
   // live_pupil_positions is gated separately inside the streamer.
   const phoneTrackingReady =
@@ -762,6 +764,11 @@ export default function InstructorLiveSession() {
       examinerId: string | null;
     }
   ) => {
+    // Phone provider needs location permission. Open in-app dialog if missing.
+    if (isPhoneProvider && locationPermissionStatus !== "granted") {
+      setShowLocationDialog(true);
+      return;
+    }
     // Auto-arm phone streaming when using phone provider — no second button needed.
     if (isPhoneProvider && !phoneStreamingConfirmed) {
       setPhoneStreamingConfirmed(true);
@@ -1494,163 +1501,148 @@ export default function InstructorLiveSession() {
                 })}
               </div>
 
-              {/* TRACKER SOURCE — placed directly above the pupil selector (always visible) */}
+              {/* TRACKER + PUPIL — merged tile */}
               {instructor?.id && (
-                <div style={{ marginBottom: 12 }}>
-                  <SectionLabel label="Tracker source" />
-                  <TrackerSourceCard
-                    instructorId={instructor.id}
-                    pupilId={selectedPupilId || null}
-                    activeProvider={activeProvider}
-                    onProviderChange={(choice) => {
-                      setActiveProvider(choice);
-                    }}
-                    phoneStreamingConfirmed={phoneStreamingConfirmed}
-                    onTogglePhoneStreaming={() => {
-                      setPhoneStreamingConfirmed((v) => {
-                        const next = !v;
-                        void logPhoneTrackingEvent({
-                          instructorId: instructor.id,
-                          pupilId: selectedPupilId || null,
-                          event: next ? "tracking_started" : "tracking_stopped",
-                          status: locationPermissionStatus,
-                        });
-                        if (next && !selectedPupilId) {
-                          toast({
-                            title: "Preview only",
-                            description: "Tracking the map locally. Select a pupil to start saving the live route.",
-                          });
-                        }
-                        return next;
-                      });
-                    }}
-                  />
+                <div
+                  style={{
+                    background: "#FFF",
+                    borderRadius: 14,
+                    border: "0.5px solid rgba(26,82,160,0.08)",
+                    overflow: "hidden",
+                    marginBottom: 20,
+                  }}
+                >
+                  {/* Provider row */}
+                  <div style={{ padding: "10px 12px 8px" }}>
+                    <div style={{
+                      fontSize: 10, fontWeight: 700, color: "#8E8E93",
+                      letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 6,
+                    }}>
+                      Tracker
+                    </div>
+                    <TrackingProviderDropdown
+                      instructorId={instructor.id}
+                      value={activeProvider === "radius" ? "radius" : "phone"}
+                      onChange={(choice) => setActiveProvider(choice)}
+                    />
+                  </div>
+
+                  {/* Divider — only if pupil selector is visible */}
+                  {selectedMode !== "testRoute" && (
+                    <div style={{ height: 0.5, background: "#F0F3F8", marginLeft: 12, marginRight: 12 }} />
+                  )}
+
+                  {/* Pupil selector — hidden when testRoute */}
+                  {selectedMode !== "testRoute" && (
+                    <div style={{ position: "relative" }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowPupilPicker((p) => !p)}
+                        style={{
+                          width: "100%", background: "transparent", border: "none",
+                          display: "flex", alignItems: "center", gap: 10,
+                          padding: "10px 12px", cursor: "pointer", textAlign: "left",
+                        }}
+                      >
+                        {selectedPupil ? (
+                          <>
+                            <div style={{
+                              width: 32, height: 32, borderRadius: 16, background: "#3D55A1",
+                              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                              color: "#FFF", fontSize: 12, fontWeight: 700,
+                            }}>
+                              {(selectedPupil.name || "?").charAt(0).toUpperCase()}
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{
+                                fontSize: 10, fontWeight: 700, color: "#8E8E93",
+                                letterSpacing: 1.2, textTransform: "uppercase",
+                              }}>Pupil</div>
+                              <div style={{
+                                fontSize: 13, fontWeight: 600, color: "#1A1A1A",
+                                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                              }}>
+                                {selectedPupil.name}
+                              </div>
+                            </div>
+                            <span
+                              role="button"
+                              onClick={(e) => { e.stopPropagation(); setSelectedPupilId(""); }}
+                              style={{
+                                width: 22, height: 22, borderRadius: 11, background: "#F2F4F8",
+                                display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                              }}
+                            >
+                              <X size={9} color="#5B6B8A" strokeWidth={2} />
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <div style={{
+                              width: 32, height: 32, borderRadius: 16, background: "#F2F4F8",
+                              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                            }}>
+                              <User size={14} color="#C7C7CC" strokeWidth={1.5} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{
+                                fontSize: 10, fontWeight: 700, color: "#8E8E93",
+                                letterSpacing: 1.2, textTransform: "uppercase",
+                              }}>Pupil</div>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: "#C7C7CC" }}>Select pupil</div>
+                            </div>
+                            <ChevronRight size={14} color="#C7C7CC" strokeWidth={1.8} />
+                          </>
+                        )}
+                      </button>
+                      <AnimatePresence>
+                        {showPupilPicker && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                            transition={{ duration: 0.18 }}
+                            style={{
+                              position: "absolute", top: "calc(100% + 4px)", left: 8, right: 8, zIndex: 50,
+                              background: "#FFFFFF", border: "0.5px solid #E5E5EA", borderRadius: 12,
+                              overflow: "hidden", maxHeight: 256, overflowY: "auto",
+                              boxShadow: "0 8px 24px rgba(15,23,42,0.08)",
+                            }}
+                          >
+                            {pupils.filter((p) => p.id && p.id.trim() !== "").map((pupil) => {
+                              const active = selectedPupilId === pupil.id;
+                              return (
+                                <button
+                                  key={pupil.id}
+                                  type="button"
+                                  onClick={() => { setSelectedPupilId(pupil.id); setShowPupilPicker(false); }}
+                                  style={{
+                                    width: "100%", display: "flex", alignItems: "center", gap: 12,
+                                    padding: "10px 12px", background: active ? "#F2F2F4" : "transparent",
+                                    border: "none", cursor: "pointer", textAlign: "left", fontFamily: FONT_STACK,
+                                  }}
+                                >
+                                  <span style={{
+                                    width: 28, height: 28, borderRadius: "50%", background: "#E6F1FB",
+                                    color: "#2B7BC8", fontSize: 12, fontWeight: 500,
+                                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                                  }}>{(pupil.name || "?").charAt(0).toUpperCase()}</span>
+                                  <span style={{
+                                    flex: 1, fontSize: 13, fontWeight: 500, color: "#000",
+                                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                                  }}>{pupil.name}</span>
+                                  {active && <CheckCircle size={16} strokeWidth={2} color="#2B7BC8" />}
+                                </button>
+                              );
+                            })}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* 4. PUPIL selector — hidden when testRoute */}
-              {selectedMode !== "testRoute" && (
-                <>
-                  <SectionLabel label="Pupil" />
-                  <div style={{ position: "relative", marginBottom: 20 }}>
-                    <button
-                      type="button"
-                      onClick={() => setShowPupilPicker((p) => !p)}
-                      style={{
-                        width: "100%", background: "#FFF", borderRadius: 14,
-                        border: "0.5px solid rgba(26,82,160,0.08)",
-                        display: "flex", alignItems: "center", gap: 10,
-                        padding: "12px 14px", cursor: "pointer", textAlign: "left",
-                      }}
-                    >
-                      {selectedPupil ? (
-                        <>
-                          <div style={{
-                            width: 34, height: 34, borderRadius: 17,
-                            background: "#3D55A1",
-                            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                            color: "#FFF", fontSize: 13, fontWeight: 700,
-                          }}>
-                            {(selectedPupil.name || "?").charAt(0).toUpperCase()}
-                          </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: "#1A1A1A", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                              {selectedPupil.name}
-                            </div>
-                            <div style={{ fontSize: 10, color: "#8E8E93", marginTop: 1 }}>Tap to change</div>
-                          </div>
-                          <span
-                            role="button"
-                            onClick={(e) => { e.stopPropagation(); setSelectedPupilId(""); }}
-                            style={{
-                              width: 22, height: 22, borderRadius: 11, background: "#F2F4F8",
-                              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-                            }}
-                          >
-                            <X size={9} color="#5B6B8A" strokeWidth={2} />
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <div style={{
-                            width: 34, height: 34, borderRadius: 17, background: "#F2F4F8",
-                            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                          }}>
-                            <User size={15} color="#C7C7CC" strokeWidth={1.5} />
-                          </div>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: "#C7C7CC" }}>Select pupil</div>
-                            <div style={{ fontSize: 10, color: "#C7C7CC", marginTop: 1 }}>Choose from your pupil list</div>
-                          </div>
-                          <ChevronRight size={14} color="#C7C7CC" strokeWidth={1.8} />
-                        </>
-                      )}
-                    </button>
-                    <AnimatePresence>
-                      {showPupilPicker && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                          transition={{ duration: 0.18 }}
-                          style={{
-                            position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 50,
-                            background: "#FFFFFF", border: "0.5px solid #E5E5EA", borderRadius: 12,
-                            overflow: "hidden", maxHeight: 256, overflowY: "auto",
-                          }}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => { setSelectedPupilId(""); setShowPupilPicker(false); }}
-                            style={{
-                              width: "100%", display: "flex", alignItems: "center", gap: 12,
-                              padding: "10px 12px", background: !selectedPupilId ? "#F2F2F4" : "transparent",
-                              border: "none", cursor: "pointer", textAlign: "left", fontFamily: FONT_STACK,
-                            }}
-                          >
-                            <span style={{
-                              width: 28, height: 28, borderRadius: 8, background: "#F2F2F4",
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                              fontSize: 11, color: "#6E6E73", flexShrink: 0,
-                            }}>—</span>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: 13, fontWeight: 500, color: "#000" }}>No pupil</div>
-                              <div style={{ fontSize: 11, color: "#6E6E73" }}>Test route only</div>
-                            </div>
-                            {!selectedPupilId && <CheckCircle size={16} strokeWidth={2} color="#2B7BC8" />}
-                          </button>
-                          {pupils.filter((p) => p.id && p.id.trim() !== "").map((pupil) => {
-                            const active = selectedPupilId === pupil.id;
-                            return (
-                              <button
-                                key={pupil.id}
-                                type="button"
-                                onClick={() => { setSelectedPupilId(pupil.id); setShowPupilPicker(false); }}
-                                style={{
-                                  width: "100%", display: "flex", alignItems: "center", gap: 12,
-                                  padding: "10px 12px", background: active ? "#F2F2F4" : "transparent",
-                                  border: "none", cursor: "pointer", textAlign: "left", fontFamily: FONT_STACK,
-                                }}
-                              >
-                                <span style={{
-                                  width: 28, height: 28, borderRadius: "50%", background: "#E6F1FB",
-                                  color: "#2B7BC8", fontSize: 12, fontWeight: 500,
-                                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                                }}>{(pupil.name || "?").charAt(0).toUpperCase()}</span>
-                                <span style={{
-                                  flex: 1, fontSize: 13, fontWeight: 500, color: "#000",
-                                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                                }}>{pupil.name}</span>
-                                {active && <CheckCircle size={16} strokeWidth={2} color="#2B7BC8" />}
-                              </button>
-                            );
-                          })}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </>
-              )}
 
               {/* 5. PRIMARY CTA */}
               {(() => {
@@ -1814,6 +1806,42 @@ export default function InstructorLiveSession() {
           onStart={handleDrivingTestStart}
           isStarting={isStarting}
         />
+
+        {/* Location permission prompt — shown when starting phone tracking without permission */}
+        <Dialog open={showLocationDialog} onOpenChange={setShowLocationDialog}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Allow location access</DialogTitle>
+              <DialogDescription>
+                Phone GPS needs permission to track lessons. We only record your
+                location while a session is active.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setShowLocationDialog(false)}>
+                Not now
+              </Button>
+              <Button
+                onClick={async () => {
+                  const next = await requestLocationPermission();
+                  if (next === "granted") {
+                    setShowLocationDialog(false);
+                    // Re-fire start once permission lands.
+                    setTimeout(() => { void startSession("practice"); }, 50);
+                  } else if (next === "denied") {
+                    toast({
+                      title: "Location blocked",
+                      description: "Enable location for this site/app in your browser or device settings.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
+                Allow location
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </InstructorPortalLayout>
   );
