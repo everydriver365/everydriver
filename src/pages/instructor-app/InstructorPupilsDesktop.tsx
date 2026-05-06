@@ -889,154 +889,16 @@ export default function InstructorPupilsDesktop() {
           )}
         </AnimatePresence>
       </div>
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Add pupil</DialogTitle>
-            <p className="text-xs text-muted-foreground">All fields are optional. Fill in what you know now — you can edit later.</p>
-          </DialogHeader>
-
-          <div className="space-y-6 py-2">
-            {/* Pupil details */}
-            <section className="space-y-3">
-              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Pupil details</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1 col-span-2">
-                  <Label htmlFor="add-name">Name</Label>
-                  <Input id="add-name" value={addForm.name} onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))} placeholder="Full name" autoFocus />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="add-phone">Phone</Label>
-                  <Input id="add-phone" value={addForm.phone} aria-invalid={!!addErrors.phone}
-                    onChange={e => { setAddForm(f => ({ ...f, phone: e.target.value })); if (addErrors.phone) setAddErrors(er => ({ ...er, phone: undefined })); }}
-                    placeholder="07…" className={addErrors.phone ? "border-destructive focus-visible:ring-destructive" : ""} />
-                  {addErrors.phone && <p className="text-xs text-destructive">{addErrors.phone}</p>}
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="add-email">Email</Label>
-                  <Input id="add-email" type="email" value={addForm.email} aria-invalid={!!addErrors.email}
-                    onChange={e => { setAddForm(f => ({ ...f, email: e.target.value })); if (addErrors.email) setAddErrors(er => ({ ...er, email: undefined })); }}
-                    placeholder="name@example.com" className={addErrors.email ? "border-destructive focus-visible:ring-destructive" : ""} />
-                  {addErrors.email && <p className="text-xs text-destructive">{addErrors.email}</p>}
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="add-dob">Date of birth</Label>
-                  <Input id="add-dob" type="date" value={addForm.date_of_birth}
-                    onChange={e => setAddForm(f => ({ ...f, date_of_birth: e.target.value }))} />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="add-sex">Sex</Label>
-                  <Select value={addForm.sex} onValueChange={v => setAddForm(f => ({ ...f, sex: v }))}>
-                    <SelectTrigger id="add-sex"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </section>
-
-            {/* Address */}
-            <section className="space-y-3">
-              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Address</h4>
-              <div className="space-y-1">
-                <Label>Address (postcode search)</Label>
-                <GoogleAddressAutocomplete
-                  value={addForm.address}
-                  onChange={(address) => setAddForm(f => ({ ...f, address }))}
-                  onPostcodeChange={handlePostcodeAutoFill}
-                  placeholder="Start typing an address or postcode…"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label htmlFor="add-postcode">Postcode</Label>
-                  <Input id="add-postcode" value={addForm.postcode} aria-invalid={!!addErrors.postcode}
-                    onChange={e => { setAddForm(f => ({ ...f, postcode: e.target.value })); if (addErrors.postcode) setAddErrors(er => ({ ...er, postcode: undefined })); }}
-                    placeholder="SO22 4AB" className={addErrors.postcode ? "border-destructive focus-visible:ring-destructive" : ""} />
-                  {addErrors.postcode && <p className="text-xs text-destructive">{addErrors.postcode}</p>}
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="add-w3w" className="flex items-center gap-2">
-                    What3words
-                    {addLookingW3W && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
-                  </Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">///</span>
-                    <Input id="add-w3w" value={addForm.what3words}
-                      onChange={e => setAddForm(f => ({ ...f, what3words: e.target.value }))}
-                      placeholder="word.word.word" className="pl-9" />
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Learning */}
-            <section className="space-y-3">
-              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Learning</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label htmlFor="add-prev">Previous experience (hours)</Label>
-                  <Input id="add-prev" type="number" min={0} step={1} value={addForm.previous_experience_hours}
-                    onChange={e => setAddForm(f => ({ ...f, previous_experience_hours: e.target.value }))}
-                    placeholder="e.g. 10" />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="add-trans">Transmission</Label>
-                  <Select value={addForm.transmission_type} onValueChange={v => setAddForm(f => ({ ...f, transmission_type: v }))}>
-                    <SelectTrigger id="add-trans"><SelectValue placeholder="Manual or automatic" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="manual">Manual</SelectItem>
-                      <SelectItem value="automatic">Automatic</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="add-needs">Extra needs</Label>
-                <Textarea id="add-needs" rows={2} value={addForm.special_needs}
-                  onChange={e => setAddForm(f => ({ ...f, special_needs: e.target.value }))}
-                  placeholder="Any learning support, accessibility or medical notes…" />
-              </div>
-            </section>
-
-            {/* Payment */}
-            <section className="space-y-3">
-              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Payment</h4>
-              <div className="space-y-1">
-                <Label htmlFor="add-pay">Payment method</Label>
-                <Select value={addForm.payment_method} onValueChange={v => setAddForm(f => ({ ...f, payment_method: v }))}>
-                  <SelectTrigger id="add-pay"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="tbc">TBC — decide later</SelectItem>
-                    <SelectItem value="cash">Cash</SelectItem>
-                    <SelectItem value="card">Card</SelectItem>
-                    <SelectItem value="bank_transfer">Bank transfer</SelectItem>
-                    <SelectItem value="send_link">Send payment link</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </section>
-
-            {/* Comments */}
-            <section className="space-y-3">
-              <h4 className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">Comments</h4>
-              <Textarea rows={3} value={addForm.notes}
-                onChange={e => setAddForm(f => ({ ...f, notes: e.target.value }))}
-                placeholder="Anything else to remember about this pupil…" />
-            </section>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAddOpen(false)} disabled={addSaving}>Cancel</Button>
-            <Button onClick={handleAddPupil} disabled={addSaving}>
-              {addSaving ? "Adding…" : "Add pupil"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AddPupilSheet
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        form={addForm}
+        setForm={setAddForm}
+        saving={addSaving}
+        onSave={handleAddPupil}
+        isLookingUpW3W={addLookingW3W}
+        setIsLookingUpW3W={setAddLookingW3W}
+      />
 
       <Dialog open={editOpen} onOpenChange={(o) => { setEditOpen(o); if (!o) setEditTargetId(null); }}>
         <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
