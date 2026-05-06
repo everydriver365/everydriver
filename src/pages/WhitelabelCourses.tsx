@@ -79,41 +79,10 @@ export default function WhitelabelCourses() {
     instructorId === undefined ? null : instructorId,
   );
 
-  // If the currently selected month has no availability (e.g. instructor's
-  // available_from is in a future month), step forward to the next month
-  // that does — so visitors land on real availability instead of an empty
-  // calendar. Guarded by lastAdvancedFromRef to prevent loops.
-  const lastAdvancedFromRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (loading) return;
-    if (!instructorId) return;
-    if (availableDatesInMonth.length > 0) return;
-    if (lastAdvancedFromRef.current === selectedMonth) return;
+  // useCourseDiscovery already auto-selects the first month + date with
+  // real availability for this instructor after loading. No additional
+  // auto-advance is needed (and adding one races/over-skips months).
 
-    const idx = monthOptions.findIndex((m) => m.value === selectedMonth);
-    if (idx === -1 || idx >= monthOptions.length - 1) return;
-
-    lastAdvancedFromRef.current = selectedMonth;
-    setSelectedMonth(monthOptions[idx + 1].value);
-    setSelectedDate(null);
-  }, [
-    loading,
-    instructorId,
-    availableDatesInMonth,
-    selectedMonth,
-    monthOptions,
-    setSelectedMonth,
-    setSelectedDate,
-  ]);
-
-  // When availability appears for the current month but no date is picked
-  // yet (because we just auto-advanced), select the first available date.
-  useEffect(() => {
-    if (loading) return;
-    if (selectedDate) return;
-    if (availableDatesInMonth.length === 0) return;
-    setSelectedDate(availableDatesInMonth[0]);
-  }, [loading, selectedDate, availableDatesInMonth, setSelectedDate]);
 
   const coursesWithDistance = filteredCourses;
 
