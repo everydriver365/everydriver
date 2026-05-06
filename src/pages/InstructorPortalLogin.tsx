@@ -15,6 +15,7 @@ import {
   getBiometricCredentials,
   saveBiometricCredentials,
   isNativePlatform,
+  isWrappedApp,
 } from "@/lib/biometricAuth";
 import { setRememberMe, getRememberMe } from "@/lib/sessionPersistence";
 import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailConfirmation";
@@ -74,7 +75,7 @@ export default function InstructorPortalLogin() {
       try {
         const available = await isBiometricAvailable("instructor");
         setBiometricAvailable(available);
-        if (available && isNativePlatform()) {
+        if (available && (isNativePlatform() || isWrappedApp())) {
           const creds = await getBiometricCredentials("instructor", "Sign in to EveryDriver");
           if (creds) {
             setBiometricLoading(true);
@@ -203,9 +204,9 @@ export default function InstructorPortalLogin() {
         }
       } else {
         setRememberMe(rememberMe);
-        if (rememberMe) {
-          await saveCredentialsForBiometric(email.trim(), password);
-        }
+        // Always seed quick-sign-in credentials so the Face ID / Quick Sign In
+        // button appears on next launch.
+        await saveCredentialsForBiometric(email.trim(), password);
         toast.success("Welcome back!", { duration: 2000 });
         navigate("/instructor");
       }

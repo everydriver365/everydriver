@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { clearAuthPersistence } from '@/lib/sessionPersistence';
 
 interface InstructorProfile {
   id: string;
@@ -265,6 +266,7 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   };
 
   const signOut = async () => {
+    await clearAuthPersistence('instructor');
     await supabase.auth.signOut();
     setInstructor(null);
     setSubscription(null);

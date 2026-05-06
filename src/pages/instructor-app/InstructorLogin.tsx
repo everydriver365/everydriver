@@ -18,6 +18,7 @@ import {
   saveBiometricCredentials,
   getBiometryLabel,
   isNativePlatform,
+  isWrappedApp,
 } from "@/lib/biometricAuth";
 import { setRememberMe, getRememberMe } from "@/lib/sessionPersistence";
 import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailConfirmation";
@@ -103,8 +104,9 @@ export default function InstructorLogin() {
         setBiometricAvailable(available);
         if (available) {
           setBiometryLabel(await getBiometryLabel());
-          // On native, auto-prompt Face ID immediately for a real "open app → unlock" feel
-          if (isNativePlatform()) {
+          // Auto-prompt on native AND in wrapped apps (Despia / PWA / WebView)
+          // so reopening the app feels like Face ID unlock.
+          if (isNativePlatform() || isWrappedApp()) {
             const creds = await getBiometricCredentials("instructor", "Sign in to EveryDriver");
             if (creds) {
               setBiometricLoading(true);
@@ -242,10 +244,9 @@ export default function InstructorLogin() {
         }
       } else {
         setRememberMe(rememberMe);
-        // Save credentials if remember me is checked
-        if (rememberMe) {
-          await saveCredentialsForBiometric(email.trim(), password);
-        }
+        // Always seed quick-sign-in credentials so the Face ID / Quick Sign In
+        // button appears next time, even if the user unticked "Remember me".
+        await saveCredentialsForBiometric(email.trim(), password);
         toast.success("Welcome back!");
         navigate("/instructor");
       }

@@ -1,23 +1,19 @@
 /**
  * Remember-me / session persistence helper.
  *
- * Supabase always persists sessions to localStorage (see client.ts), so by default
- * users stay signed in across browser restarts. To honour an unchecked
- * "Remember me" checkbox we layer a sentinel on top:
+ * Supabase always persists sessions to localStorage. To honour an unchecked
+ * "Remember me" we layer a sentinel on top:
  *
- *  - On login we record the user's choice in localStorage (`auth_remember_me`).
- *  - When "Remember me" is OFF we also drop a sentinel in sessionStorage. That
- *    sentinel lives only for the current tab/window session. On the next app
- *    boot, if the choice is OFF and the sentinel is gone (i.e. the browser was
- *    closed), we clear the Supabase session locally so the user has to sign in
- *    again. When ON we leave everything alone — the existing localStorage
- *    session keeps them signed in indefinitely.
- *
- * This works for every portal (instructor, pupil, admin, school) because they
- * all share the same Supabase auth storage.
+ *  - Wrapped apps (Despia / Capacitor / standalone PWA / WebView) ALWAYS keep
+ *    the session. Installing the app to the home screen is itself an opt-in,
+ *    and WebView sessionStorage gets wiped on every cold launch — silently
+ *    signing the user out is wrong.
+ *  - In a regular browser, an unchecked "Remember me" + a fresh browser
+ *    session (no in-tab sentinel) clears the Supabase session locally.
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { isWrappedApp, clearBiometricCredentials, type BiometricScope } from "@/lib/biometricAuth";
 
 const REMEMBER_KEY = "auth_remember_me";
 const SESSION_SENTINEL = "auth_session_alive";
@@ -26,11 +22,10 @@ const SESSION_SENTINEL = "auth_session_alive";
 export function setRememberMe(remember: boolean) {
   try {
     localStorage.setItem(REMEMBER_KEY, remember ? "true" : "false");
-    if (remember) {
-      sessionStorage.removeItem(SESSION_SENTINEL);
-    } else {
-      sessionStorage.setItem(SESSION_SENTINEL, "1");
-    }
+    // Always drop the sentinel so the current tab/window keeps the session
+    // alive regardless of the choice. The choice only matters on the NEXT
+    // browser session.
+    sessionStorage.setItem(SESSION_SENTINEL, "1");
   } catch {
     // Ignore storage errors (private mode, etc.)
   }
@@ -47,17 +42,26 @@ export function getRememberMe(): boolean {
 }
 
 /**
- * Call once at app start (before any auth-gated UI renders). If the user opted
- * out of "Remember me" and the browser session sentinel is missing, sign them
- * out locally so the saved Supabase session does not auto-restore.
+ * Call once at app start (before any auth-gated UI renders). Wrapped apps are
+ * exempt. In a regular browser, an unchecked "Remember me" with no in-tab
+ * sentinel triggers a local sign-out so the saved Supabase session does not
+ * auto-restore.
  */
 export async function enforceRememberMeOnBoot(): Promise<void> {
   try {
+    // Wrapped apps (Despia, Capacitor, PWA) always remember.
+    if (isWrappedApp()) {
+      try { sessionStorage.setItem(SESSION_SENTINEL, "1"); } catch {}
+      return;
+    }
     const remember = getRememberMe();
-    if (remember) return;
+    if (remember) {
+      // Keep the sentinel fresh so a later toggle doesn't blow away the live session.
+      try { sessionStorage.setItem(SESSION_SENTINEL, "1"); } catch {}
+      return;
+    }
     const alive = sessionStorage.getItem(SESSION_SENTINEL);
     if (alive) return; // same tab/window session — keep them signed in
-    // New browser session and they did not tick remember-me → clear the session.
     await supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
   } catch {
     // No-op
@@ -72,4 +76,14 @@ export function clearRememberMe() {
   } catch {
     // ignore
   }
+}
+
+/**
+ * Convenience: forget both the remember-me preference AND any stored
+ * quick-sign-in credentials for the given scope. Call from explicit
+ * "Sign out" buttons.
+ */
+export async function clearAuthPersistence(scope: BiometricScope): Promise<void> {
+  await clearBiometricCredentials(scope).catch(() => undefined);
+  clearRememberMe();
 }
