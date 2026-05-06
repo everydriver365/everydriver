@@ -616,6 +616,14 @@ const primaryBtn: React.CSSProperties = {
   background: "#4F46E5", color: "#fff", fontWeight: 500,
   display: "inline-flex", alignItems: "center", gap: 6,
 };
+const refundBtn: React.CSSProperties = {
+  fontSize: 11, padding: "6px 10px", borderRadius: 8,
+  background: "#FEE2E2", color: "#B91C1C", fontWeight: 600,
+  border: "0.5px solid #FCA5A5",
+  display: "inline-flex", alignItems: "center", gap: 6,
+  boxShadow: "0 1px 2px rgba(185,28,28,0.08)",
+  cursor: "pointer",
+};
 const pageBtn = (disabled: boolean): React.CSSProperties => ({
   width: 24, height: 24, borderRadius: 5, fontSize: 11,
   border: "0.5px solid var(--d2-border)", background: "#fff",
