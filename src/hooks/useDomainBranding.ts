@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { isBookingSubdomain } from "@/components/DomainRouter";
+import { getWhitelabelConfig } from "@/lib/whitelabel";
 
 export interface DomainBranding {
   brandName: string;
