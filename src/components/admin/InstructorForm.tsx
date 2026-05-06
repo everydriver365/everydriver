@@ -1367,6 +1367,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
                       <SelectItem value="pupil_choice">Pupil Choice</SelectItem>
                       <SelectItem value="auto_assign">Auto-Assign</SelectItem>
                       <SelectItem value="instructor_assigns">Instructor Assigns</SelectItem>
+                      <SelectItem value="enquiry_only">Enquiry Only</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription className="text-xs">
