@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 
 const THRESHOLDS = {
   minorFaults: 5,
