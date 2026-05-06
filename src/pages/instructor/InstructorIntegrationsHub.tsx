@@ -120,6 +120,46 @@ const TABS = [
   { id: "xero", label: "Xero", icon: FileSpreadsheet, blurb: "Export invoices and expenses to your Xero accounting." },
 ];
 
+const INTEGRATION_CONFIG: Record<string, { name: string; description: string; iconBg: string; iconColor: string; icon: any }> = {
+  "google-calendar": {
+    name: "Google Calendar",
+    description: "Sync your lessons to your Google Calendar automatically",
+    iconBg: "#EEF2FF", iconColor: "#4338CA", icon: Calendar,
+  },
+  square: {
+    name: "Square",
+    description: "Accept payments and sync transactions automatically",
+    iconBg: "#F0FDF4", iconColor: "#16A34A", icon: CreditCard,
+  },
+  trackers: {
+    name: "Trackers",
+    description: "Connect GPS or OBD trackers to track lessons live",
+    iconBg: "#FFF7ED", iconColor: "#EA580C", icon: Satellite,
+  },
+  xero: {
+    name: "Xero",
+    description: "Sync earnings and expenses to your Xero account",
+    iconBg: "#EEF2FF", iconColor: "#4338CA", icon: FileSpreadsheet,
+  },
+};
+
+function StatusPill({ status }: { status: IntegrationStatusKind }) {
+  const map = {
+    connected:    { bg: "#DCFCE7", color: "#16A34A", label: "Connected",     Icon: CheckCircle2 },
+    disconnected: { bg: "#F3F4F6", color: "#6B7280", label: "Not connected", Icon: MinusCircle },
+    available:    { bg: "#EEF2FF", color: "#4338CA", label: "Available",     Icon: Sparkles },
+    loading:      { bg: "#F3F4F6", color: "#6B7280", label: "Checking…",     Icon: MinusCircle },
+  } as const;
+  const c = map[status];
+  const Icon = c.Icon;
+  return (
+    <span style={{ backgroundColor: c.bg, color: c.color, borderRadius: 20, padding: "3px 10px", display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600 }}>
+      <Icon size={10} strokeWidth={2} />
+      {c.label}
+    </span>
+  );
+}
+
 function formatLastSync(iso: string | null) {
   if (!iso) return null;
   try {
@@ -135,6 +175,7 @@ export default function InstructorIntegrationsHub() {
   const instructorId = instructor?.id;
   const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState(searchParams.get("tab") || "google-calendar");
+  const [stepsExpanded, setStepsExpanded] = useState(true);
 
   const statuses = useIntegrationStatuses(instructorId, instructor);
 
@@ -174,111 +215,175 @@ export default function InstructorIntegrationsHub() {
     xero: "Manual CSV export — no account linking required.",
   };
 
+  const activeStatus = statusByTab[tab];
+  const activeConfig = INTEGRATION_CONFIG[tab];
+  const ActiveIcon = activeConfig.icon;
+  const activeSteps =
+    tab === "google-calendar" ? GOOGLE_STEPS
+    : tab === "square" ? SQUARE_STEPS
+    : tab === "trackers" ? TRACKER_STEPS
+    : XERO_STEPS;
+
   return (
     <InstructorPortalLayout>
-    <div className="instructor-portal min-h-screen bg-[#F4F7F6]">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold tracking-tight">Connections</h1>
-          <p className="text-sm text-muted-foreground">Manage Square, Google Calendar, GPS trackers and more in one place.</p>
+    <div className="instructor-portal min-h-screen" style={{ backgroundColor: "#F8F9FB" }}>
+      <div className="max-w-5xl mx-auto" style={{ padding: 24 }}>
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-1.5 mb-3">
+          <span style={{ fontSize: 13, color: "#9CA3AF" }}>Settings</span>
+          <ChevronRight size={12} color="#D1D5DB" strokeWidth={2} />
+          <span style={{ fontSize: 13, fontWeight: 600, color: "#1F2937" }}>Connections</span>
         </div>
 
-        <Tabs value={tab} onValueChange={onTabChange}>
-          <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full mb-6 h-auto gap-1">
-            {TABS.map((t) => {
-              const Icon = t.icon;
-              return (
-                <TabsTrigger key={t.id} value={t.id} className="flex items-center gap-2 py-2">
-                  <Icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t.label}</span>
-                  <IntegrationStatusBadge status={statusByTab[t.id]} className="ml-1" />
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
+        {/* Page header */}
+        <div className="flex items-center gap-3" style={{ marginBottom: 20 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Plug size={17} color="#3730A3" strokeWidth={1.5} />
+          </div>
+          <div>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: "#111827", letterSpacing: -0.4, lineHeight: 1.1 }}>Connections</h1>
+            <p style={{ fontSize: 12, color: "#9CA3AF", marginTop: 2 }}>Manage Square, Google Calendar, GPS trackers and more</p>
+          </div>
+        </div>
 
-          {TABS.map((t) => (
-            <TabsContent key={t.id} value={t.id}>
-              <div className="bg-card rounded-2xl border p-6 space-y-4">
-                <div className="flex items-start justify-between gap-3 pb-3 border-b">
-                  <div className="min-w-0">
-                    <p className="text-sm text-muted-foreground">{t.blurb}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{detailByTab[t.id]}</p>
-                  </div>
-                  <IntegrationStatusBadge status={statusByTab[t.id]} size="md" />
-                </div>
+        {/* Tab bar */}
+        <div style={{ display: "flex", gap: 2, backgroundColor: "#F3F4F6", borderRadius: 10, padding: 3, marginBottom: 20, overflowX: "auto" }}>
+          {TABS.map((t) => {
+            const Icon = t.icon;
+            const isActive = tab === t.id;
+            const status = statusByTab[t.id];
+            const dotColor = status === "connected" ? "#16A34A" : status === "available" ? "#4338CA" : status === "loading" ? "#9CA3AF" : "#DC2626";
+            return (
+              <button
+                key={t.id}
+                onClick={() => onTabChange(t.id)}
+                style={{
+                  padding: "7px 16px", borderRadius: 8, display: "inline-flex", alignItems: "center", gap: 6,
+                  backgroundColor: isActive ? "#FFF" : "transparent",
+                  boxShadow: isActive ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                  border: "none", cursor: "pointer", whiteSpace: "nowrap",
+                }}
+              >
+                <Icon size={13} color={isActive ? "#111827" : "#6B7280"} strokeWidth={1.6} />
+                <span style={{ fontSize: 12, fontWeight: 600, color: isActive ? "#111827" : "#6B7280" }}>{t.label}</span>
+                <span style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: dotColor, display: "inline-block" }} />
+              </button>
+            );
+          })}
+        </div>
 
-                <IntegrationInstructions
-                  steps={
-                    t.id === "google-calendar"
-                      ? GOOGLE_STEPS
-                      : t.id === "square"
-                      ? SQUARE_STEPS
-                      : t.id === "trackers"
-                      ? TRACKER_STEPS
-                      : XERO_STEPS
-                  }
-                  defaultOpen={statusByTab[t.id] !== "connected"}
-                />
+        {/* Status card */}
+        <div style={{ backgroundColor: "#FFF", borderRadius: 12, border: "1px solid #ECEEF2", marginBottom: 12, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: activeConfig.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <ActiveIcon size={20} color={activeConfig.iconColor} strokeWidth={1.5} />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{activeConfig.name}</div>
+              <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>{activeConfig.description}</div>
+              <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 2 }}>{detailByTab[tab]}</div>
+            </div>
+          </div>
+          <div style={{ flexShrink: 0 }}>
+            <StatusPill status={activeStatus} />
+          </div>
+        </div>
 
+        {/* Setup steps card (collapsible) */}
+        <div style={{ backgroundColor: "#FFF", borderRadius: 12, border: "1px solid #ECEEF2", overflow: "hidden", marginBottom: 16 }}>
+          <button
+            type="button"
+            onClick={() => setStepsExpanded(!stepsExpanded)}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "14px 20px", borderBottom: stepsExpanded ? "1px solid #ECEEF2" : "none",
+              background: "transparent", border: "none", cursor: "pointer",
+            }}
+          >
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <BookOpen size={14} color="#4338CA" strokeWidth={1.6} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>How to set this up</span>
+            </span>
+            {stepsExpanded
+              ? <ChevronUp size={12} color="#9CA3AF" strokeWidth={2} />
+              : <ChevronDown size={12} color="#9CA3AF" strokeWidth={2} />}
+          </button>
 
-                {t.id === "google-calendar" && <GoogleServiceAccountSetup instructorId={instructorId} />}
-                {t.id === "square" && (
-                  <SquareConnectSettings
-                    instructorId={instructorId}
-                    squareMerchantId={(instructor as any)?.square_merchant_id}
-                    squareConnectedAt={(instructor as any)?.square_connected_at}
-                    onUpdate={() => {
-                      refreshInstructor();
-                      statuses.refresh();
-                    }}
-                  />
-                )}
-                {t.id === "trackers" && (
-                  <div className="space-y-3">
-                    {statuses.trackerDevices.length === 0 ? (
-                      <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
-                        No GPS hardware devices registered yet. Phone-based tracking is always available during live lessons.
-                      </div>
-                    ) : (
-                      <ul className="divide-y rounded-xl border bg-background">
-                        {statuses.trackerDevices.map((d) => {
-                          const active = d.is_active !== false;
-                          const lastSeen = d.last_seen_at
-                            ? formatDistanceToNow(new Date(d.last_seen_at), { addSuffix: true })
-                            : "never";
-                          return (
-                            <li key={d.id} className="flex items-center justify-between gap-3 px-4 py-3">
-                              <div className="flex items-center gap-3 min-w-0">
-                                {active ? (
-                                  <Wifi className="h-4 w-4 text-emerald-600 shrink-0" />
-                                ) : (
-                                  <WifiOff className="h-4 w-4 text-muted-foreground shrink-0" />
-                                )}
-                                <div className="min-w-0">
-                                  <p className="text-sm font-medium truncate">{d.device_name || "GPS Tracker"}</p>
-                                  <p className="text-xs text-muted-foreground truncate">
-                                    {(d.tracking_provider || "phone")} · last seen {lastSeen}
-                                  </p>
-                                </div>
-                              </div>
-                              <IntegrationStatusBadge status={active ? "connected" : "disconnected"} />
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-                    <div className="flex flex-wrap gap-2">
-                      <Button onClick={() => navigate("/instructor/gps-setup")}>Manage trackers</Button>
-                      <Button variant="outline" onClick={() => statuses.refresh()}>Refresh</Button>
+          {stepsExpanded && (
+            <>
+              <div style={{ padding: "16px 20px" }}>
+                {activeSteps.map((step, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: i < activeSteps.length - 1 ? 16 : 0 }}>
+                    <div style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: "#E0E7FF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#3730A3" }}>{i + 1}</span>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", marginBottom: 3 }}>{step.title}</div>
+                      <div style={{ fontSize: 12, color: "#6B7280", lineHeight: "18px" }}>{step.body}</div>
                     </div>
                   </div>
-                )}
-                {t.id === "xero" && <XeroExport instructorId={instructorId} />}
+                ))}
               </div>
-            </TabsContent>
-          ))}
-        </Tabs>
+            </>
+          )}
+        </div>
+
+        {/* Existing functional setup component for the active tab (logic untouched) */}
+        <div className="bg-card rounded-2xl border p-6 space-y-4">
+          {tab === "google-calendar" && <GoogleServiceAccountSetup instructorId={instructorId} />}
+          {tab === "square" && (
+            <SquareConnectSettings
+              instructorId={instructorId}
+              squareMerchantId={(instructor as any)?.square_merchant_id}
+              squareConnectedAt={(instructor as any)?.square_connected_at}
+              onUpdate={() => {
+                refreshInstructor();
+                statuses.refresh();
+              }}
+            />
+          )}
+          {tab === "trackers" && (
+            <div className="space-y-3">
+              {statuses.trackerDevices.length === 0 ? (
+                <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+                  No GPS hardware devices registered yet. Phone-based tracking is always available during live lessons.
+                </div>
+              ) : (
+                <ul className="divide-y rounded-xl border bg-background">
+                  {statuses.trackerDevices.map((d) => {
+                    const active = d.is_active !== false;
+                    const lastSeen = d.last_seen_at
+                      ? formatDistanceToNow(new Date(d.last_seen_at), { addSuffix: true })
+                      : "never";
+                    return (
+                      <li key={d.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {active ? (
+                            <Wifi className="h-4 w-4 text-emerald-600 shrink-0" />
+                          ) : (
+                            <WifiOff className="h-4 w-4 text-muted-foreground shrink-0" />
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{d.device_name || "GPS Tracker"}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {(d.tracking_provider || "phone")} · last seen {lastSeen}
+                            </p>
+                          </div>
+                        </div>
+                        <IntegrationStatusBadge status={active ? "connected" : "disconnected"} />
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => navigate("/instructor/gps-setup")}>Manage trackers</Button>
+                <Button variant="outline" onClick={() => statuses.refresh()}>Refresh</Button>
+              </div>
+            </div>
+          )}
+          {tab === "xero" && <XeroExport instructorId={instructorId} />}
+        </div>
       </div>
     </div>
     </InstructorPortalLayout>
