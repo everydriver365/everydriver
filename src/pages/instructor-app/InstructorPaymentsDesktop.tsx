@@ -261,6 +261,27 @@ export default function InstructorPaymentsDesktop() {
           <StatCard variant="neutral" label={`FEES · ${new Date().toLocaleString("en-GB", { month: "short" }).toUpperCase()}`}      value={gbp(stats.feesMonth)}      sub={`${stats.effectiveFeeRate}% effective`} />
         </div>
 
+        {/* Service fees YTD (deductible) */}
+        <Link
+          to="/instructor/tax"
+          className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2 hover:bg-muted/40 transition-colors"
+          style={{ marginTop: -2 }}
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <Receipt className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <span className="text-[12px] text-foreground">
+              <span className="font-medium">Service fees YTD</span>{" "}
+              <span className="text-muted-foreground">(deductible) · UK tax year {stats.feesYearLabel || "—"}</span>
+            </span>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-[13px] font-semibold tabular-nums text-foreground">{gbp(stats.feesYearToDate)}</span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-primary">
+              Tax Hub <ArrowRight className="h-3 w-3" />
+            </span>
+          </div>
+        </Link>
+
         {/* Cash flow + Outstanding */}
         <div className="grid" style={{ gridTemplateColumns: "1.4fr 1fr", gap: 10 }}>
           <Card>
