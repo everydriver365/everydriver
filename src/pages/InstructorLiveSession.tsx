@@ -1806,6 +1806,42 @@ export default function InstructorLiveSession() {
           onStart={handleDrivingTestStart}
           isStarting={isStarting}
         />
+
+        {/* Location permission prompt — shown when starting phone tracking without permission */}
+        <Dialog open={showLocationDialog} onOpenChange={setShowLocationDialog}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Allow location access</DialogTitle>
+              <DialogDescription>
+                Phone GPS needs permission to track lessons. We only record your
+                location while a session is active.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setShowLocationDialog(false)}>
+                Not now
+              </Button>
+              <Button
+                onClick={async () => {
+                  const next = await requestLocationPermission();
+                  if (next === "granted") {
+                    setShowLocationDialog(false);
+                    // Re-fire start once permission lands.
+                    setTimeout(() => { void startSession("practice"); }, 50);
+                  } else if (next === "denied") {
+                    toast({
+                      title: "Location blocked",
+                      description: "Enable location for this site/app in your browser or device settings.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
+                Allow location
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </InstructorPortalLayout>
   );
