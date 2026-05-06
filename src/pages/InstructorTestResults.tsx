@@ -528,3 +528,69 @@ export default function InstructorTestResults() {
     </InstructorPortalLayout>
   );
 }
+
+function DvsaTriggerBanner({ instructorId, onView }: { instructorId: string; onView: () => void }) {
+  const m = useStandardsCheckMetrics(instructorId);
+
+  if (m.loading) return null;
+  if (m.totalTests === 0) return null;
+
+  const tone =
+    m.triggersCount === 0
+      ? { dot: "#10B981", label: "All clear", bg: "#ECFDF5", border: "#A7F3D0", text: "#065F46" }
+      : m.triggersCount < 3
+        ? { dot: "#F59E0B", label: "Monitor closely", bg: "#FFFBEB", border: "#FDE68A", text: "#92400E" }
+        : { dot: "#DC2626", label: "Standards Check likely", bg: "#FEF2F2", border: "#FECACA", text: "#991B1B" };
+
+  const Icon = m.triggersCount === 0 ? ShieldCheck : AlertTriangle;
+
+  return (
+    <div
+      style={{
+        background: tone.bg,
+        border: `1px solid ${tone.border}`,
+        borderRadius: 12,
+        padding: "12px 16px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            width: 32, height: 32, borderRadius: 10, background: "#FFF",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            border: `1px solid ${tone.border}`, flexShrink: 0,
+          }}
+        >
+          <Icon size={15} color={tone.dot} strokeWidth={1.8} />
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#111827" }}>DVSA Trigger Status</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: tone.text }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: tone.dot }} />
+              {tone.label} · {m.triggersCount} of 4 active
+            </span>
+          </div>
+          <div style={{ fontSize: 11, color: "#4B5563" }}>
+            Pass rate {m.passRate.toFixed(0)}% · Avg minors {m.avgMinorFaults.toFixed(1)} · Avg serious {m.avgSeriousFaults.toFixed(2)} · Physical action {m.physicalActionRate.toFixed(0)}%
+          </div>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={onView}
+        style={{
+          background: "#FFF", border: `1px solid ${tone.border}`, borderRadius: 8,
+          padding: "6px 12px", fontSize: 11, fontWeight: 600, color: tone.text, cursor: "pointer",
+          flexShrink: 0,
+        }}
+      >
+        View details
+      </button>
+    </div>
+  );
+}
