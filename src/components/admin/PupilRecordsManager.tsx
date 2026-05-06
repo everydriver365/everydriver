@@ -945,8 +945,16 @@ export function PupilRecordsManager() {
                         </Select>
                       </div>
                       <div>
-                        <label className="text-xs text-muted-foreground">Custom Hourly Rate (£)</label>
+                        <label className="text-xs text-muted-foreground">1hr Lesson Rate (£)</label>
                         <Input type="number" step="0.01" value={detailsForm.custom_hourly_rate} onChange={(e) => setDetailsForm({ ...detailsForm, custom_hourly_rate: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">1.5hr Lesson Rate (£)</label>
+                        <Input type="number" step="0.01" value={detailsForm.custom_rate_90min} onChange={(e) => setDetailsForm({ ...detailsForm, custom_rate_90min: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">2hr Lesson Rate (£)</label>
+                        <Input type="number" step="0.01" value={detailsForm.custom_rate_120min} onChange={(e) => setDetailsForm({ ...detailsForm, custom_rate_120min: e.target.value })} />
                       </div>
                       <div>
                         <label className="text-xs text-muted-foreground">Pickup Postcode</label>
