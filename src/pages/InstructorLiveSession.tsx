@@ -667,7 +667,7 @@ export default function InstructorLiveSession() {
             setDevice(newDevice);
             // Only update speed limit if we got a real value (prevent flickering)
             if (newDevice.last_speed_limit_kmh !== undefined && newDevice.last_speed_limit_kmh !== null) {
-              setSpeedLimitKmh(newDevice.last_speed_limit_kmh);
+              setSpeedLimitIfValid(newDevice.last_speed_limit_kmh);
             }
           }
         }
