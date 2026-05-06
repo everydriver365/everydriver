@@ -196,8 +196,8 @@ export default function InstructorDiary() {
   const chipBorder = "0.5px solid var(--d2-border)";
 
   return (
-    <InstructorPortalLayout>
-      <div style={{ backgroundColor: "var(--d2-bg)" }} className="min-h-full -mx-4 -my-4 sm:-mx-6 sm:-my-6">
+    <Shell>
+      <div style={{ backgroundColor: "var(--d2-bg)" }} className={isMobile ? "min-h-full -mx-4 -my-4 sm:-mx-6 sm:-my-6" : "min-h-full -m-6"}>
         <div className="max-w-5xl mx-auto" style={{ padding: "0 15px 24px" }}>
           {/* Header */}
           <div
