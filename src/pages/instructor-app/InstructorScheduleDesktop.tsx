@@ -159,7 +159,7 @@ export default function InstructorScheduleDesktop() {
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [aiPrompt, setAiPrompt] = useState("");
   const [debouncedPrompt, setDebouncedPrompt] = useState("");
-  const [aiSuggestions, setAiSuggestions] = useState<{ label: string }[] | null>(null);
+  
   const [filterDays, setFilterDays] = useState<Day[]>([]);
   const [filterFrom, setFilterFrom] = useState<string>("");
   const [filterTo, setFilterTo] = useState<string>("");
