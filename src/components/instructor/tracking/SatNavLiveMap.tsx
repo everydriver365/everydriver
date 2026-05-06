@@ -34,7 +34,7 @@ function headingToCardinal(heading: number): string {
 export function SatNavLiveMap({
   latitude, longitude, heading, speedKmh, speedLimitKmh, roadName,
   lastSeenAt, isActive, sessionId, ignitionOn, dailyDistanceKm,
-  fullscreen = false, className = "",
+  fullscreen = false, className = "", onResolvedRoadName,
 }: SatNavLiveMapProps) {
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
