@@ -92,6 +92,7 @@ export default function InstructorPaymentsDesktop() {
   const [filter, setFilter] = useState<Filter>("all");
   const [period, setPeriod] = useState<"week" | "month" | "year">("month");
   const [takeOpen, setTakeOpen] = useState(false);
+  const [refundOpen, setRefundOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [pupilSheet, setPupilSheet] = useState<{ id: string; name: string } | null>(null);
   const [remindersOpen, setRemindersOpen] = useState(false);
