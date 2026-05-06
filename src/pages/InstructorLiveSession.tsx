@@ -1297,6 +1297,7 @@ export default function InstructorLiveSession() {
             speedKmh={mapSpeedKmh}
             speedLimitKmh={mapSpeedLimitKmh}
             roadName={isPhoneProvider ? null : device.last_road_name}
+            onResolvedRoadName={setResolvedRoadName}
             lastSeenAt={mapLastSeenAt}
             isActive={isConnected}
             sessionId={device.current_session_id}
