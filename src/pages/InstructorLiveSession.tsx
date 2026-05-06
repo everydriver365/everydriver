@@ -687,7 +687,7 @@ export default function InstructorLiveSession() {
       if (pollerInterval) clearInterval(pollerInterval);
       if (fallbackInterval) clearInterval(fallbackInterval);
     };
-  }, [device?.id, device?.current_session_id, isStopping]);
+  }, [device?.id, device?.current_session_id, isStopping, isPhoneProvider]);
 
   // Additional realtime subscription for pupil sessions (live_pupil_positions)
   // This is supplementary - the main updates come from gps_devices subscription above
