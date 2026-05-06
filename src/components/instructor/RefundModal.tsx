@@ -66,13 +66,17 @@ export function RefundModal({
   onOpenChange,
   instructorId,
   pupils,
+  squareConnected = false,
   onRefunded,
 }: RefundModalProps) {
   const [pupilId, setPupilId] = useState<string>("");
   const [amount, setAmount] = useState("");
-  const [method, setMethod] = useState<RefundMethod>("cash");
+  const [method, setMethod] = useState<RefundMethod>(squareConnected ? "square" : "cash");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [squarePayments, setSquarePayments] = useState<SquarePayment[]>([]);
+  const [selectedSquarePaymentId, setSelectedSquarePaymentId] = useState<string>("");
+  const [loadingPayments, setLoadingPayments] = useState(false);
   const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   const sortedPupils = useMemo(
@@ -83,14 +87,58 @@ export function RefundModal({
   const credit = pupil && (pupil.account_balance || 0) > 0 ? pupil.account_balance! : 0;
 
   const parsedAmount = parseFloat(amount) || 0;
-  const canSave = !!pupilId && parsedAmount > 0 && !saving;
+  const selectedSquarePayment = squarePayments.find((p) => p.id === selectedSquarePaymentId);
+  const canSave =
+    !!pupilId &&
+    parsedAmount > 0 &&
+    !saving &&
+    (method !== "square" || !!selectedSquarePaymentId);
+
+  const METHOD_OPTIONS = squareConnected ? [SQUARE_OPTION, ...METHOD_OPTIONS_BASE] : METHOD_OPTIONS_BASE;
+
+  // Fetch this pupil's refundable Square payments when in Square mode
+  useEffect(() => {
+    if (!open || method !== "square" || !pupilId || !instructorId) {
+      setSquarePayments([]);
+      setSelectedSquarePaymentId("");
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      setLoadingPayments(true);
+      const { data } = await supabase
+        .from("payment_history")
+        .select("id, amount, recorded_at, notes, payout_status, payment_method")
+        .eq("pupil_id", pupilId)
+        .eq("instructor_id", instructorId)
+        .gt("amount", 0)
+        .ilike("payment_method", "square%")
+        .not("payout_status", "in", "(refunded)")
+        .order("recorded_at", { ascending: false })
+        .limit(20);
+      if (cancelled) return;
+      const rows = (data || []).filter((r: any) => /ID:\s*[A-Za-z0-9_-]+/.test(r.notes || ""));
+      setSquarePayments(rows as SquarePayment[]);
+      setLoadingPayments(false);
+    })();
+    return () => { cancelled = true; };
+  }, [open, method, pupilId, instructorId]);
+
+  // Auto-fill amount when a Square payment is picked
+  useEffect(() => {
+    if (selectedSquarePayment) {
+      setAmount(String(selectedSquarePayment.amount));
+    }
+  }, [selectedSquarePaymentId]);
 
   const handleClose = (next: boolean) => {
     if (!next) {
       setPupilId("");
       setAmount("");
-      setMethod("cash");
+      setMethod(squareConnected ? "square" : "cash");
       setNotes("");
+      setSelectedSquarePaymentId("");
+      setSquarePayments([]);
     }
     onOpenChange(next);
   };
@@ -106,32 +154,53 @@ export function RefundModal({
     }
     setSaving(true);
     try {
-      const { error: histErr } = await (supabase as any)
-        .from("payment_history")
-        .insert({
-          pupil_id: pupilId,
-          instructor_id: instructorId,
-          amount: -Math.abs(parsedAmount),
-          payment_method: method,
-          notes: `Refund${notes.trim() ? ` — ${notes.trim()}` : ""}`,
+      if (method === "square") {
+        if (!selectedSquarePaymentId) {
+          toast.error("Pick the Square payment to refund");
+          setSaving(false);
+          return;
+        }
+        const { data, error } = await supabase.functions.invoke("square-refund", {
+          body: {
+            paymentHistoryId: selectedSquarePaymentId,
+            amount: Math.abs(parsedAmount),
+            reason: notes.trim() || undefined,
+          },
         });
-      if (histErr) throw histErr;
+        if (error || (data as any)?.error) {
+          throw new Error((data as any)?.error || error?.message || "Square refund failed");
+        }
+        toast.success(
+          `${formatCurrency(parsedAmount)} refunded via Square to ${titleCaseName(pupil?.name || "pupil")}`
+        );
+      } else {
+        const { error: histErr } = await (supabase as any)
+          .from("payment_history")
+          .insert({
+            pupil_id: pupilId,
+            instructor_id: instructorId,
+            amount: -Math.abs(parsedAmount),
+            payment_method: method,
+            notes: `Refund${notes.trim() ? ` — ${notes.trim()}` : ""}`,
+          });
+        if (histErr) throw histErr;
 
-      const { error: balErr } = await supabase.rpc("increment_pupil_balance", {
-        p_pupil_id: pupilId,
-        p_amount: -Math.abs(parsedAmount),
-      });
-      if (balErr) throw balErr;
+        const { error: balErr } = await supabase.rpc("increment_pupil_balance", {
+          p_pupil_id: pupilId,
+          p_amount: -Math.abs(parsedAmount),
+        });
+        if (balErr) throw balErr;
 
-      toast.success(
-        `${formatCurrency(parsedAmount)} refunded to ${titleCaseName(pupil?.name || "pupil")}`
-      );
+        toast.success(
+          `${formatCurrency(parsedAmount)} refunded to ${titleCaseName(pupil?.name || "pupil")}`
+        );
+      }
       invalidatePaymentQueries({ pupilId, instructorId });
       handleClose(false);
       onRefunded?.();
-    } catch (e) {
+    } catch (e: any) {
       console.error("Refund error:", e);
-      toast.error("Failed to record refund");
+      toast.error(e?.message || "Failed to process refund");
     } finally {
       setSaving(false);
     }
