@@ -504,24 +504,6 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     return results;
   }, [instructors, instructorsInArea, userLocation, workingHours, dateOverrides, monthOptions]);
 
-  // Auto-jump the calendar to the first month that has availability for the
-  // currently scoped instructors (whitelabel partner or location search).
-  // Only triggers when the selected month is empty but a later month has dates.
-  useEffect(() => {
-    if (loading) return;
-    const relevantInstructors = userLocation ? instructorsInArea : instructors;
-    if (relevantInstructors.length === 0) return;
-    if (availableDatesInMonth.length > 0) return;
-    if (nextAvailableDates.length === 0) return;
-
-    const target = nextAvailableDates[0];
-    const targetMonth = format(target, "yyyy-MM");
-    if (targetMonth === selectedMonth) return;
-
-    setSelectedMonth(targetMonth);
-    setSelectedDate(target);
-  }, [loading, availableDatesInMonth, nextAvailableDates, selectedMonth, instructors, instructorsInArea, userLocation]);
-
   const availableDatesInMonth = useMemo(() => {
     const [year, month] = selectedMonth.split("-").map(Number);
     const monthStart = startOfMonth(new Date(year, month - 1));
