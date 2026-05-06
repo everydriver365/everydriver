@@ -1534,8 +1534,8 @@ export default function InstructorLiveSession() {
               {/* 5. PRIMARY CTA */}
               {(() => {
                 const ctaConfig = {
-                  liveLesson: { label: "Start live lesson", Icon: Play, onClick: () => startSession("practice") },
-                  testRoute: { label: "Start test route", Icon: MapPin, onClick: () => startSession("test") },
+                  liveLesson: { label: "Start lesson", Icon: Play, onClick: () => startSession("practice") },
+                  testRoute: { label: "Start tracking", Icon: MapPin, onClick: () => startSession("test") },
                   recordTest: { label: "Record driving test", Icon: ShieldCheck, onClick: () => setShowDrivingTestDialog(true) },
                 } as const;
                 const requiresPupil = selectedMode !== "testRoute";
