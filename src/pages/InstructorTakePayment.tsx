@@ -4,6 +4,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { TakePaymentModal } from "@/components/instructor/TakePaymentModal";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { supabase } from "@/integrations/supabase/client";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 
 interface Pupil {
   id: string;
