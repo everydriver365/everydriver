@@ -23,7 +23,7 @@ const PAGE_LABELS: Record<string, string> = {
   "/instructor/mileage": "Mileage",
   "/instructor/fuel": "Fuel",
   "/instructor/routes": "Saved Routes",
-  "/instructor/famulor": "AI Voice Hub",
+  "/instructor/famulor": "Telephone Calls and Answering",
   "/instructor/take-payment": "Take Payment",
   "/instructor/pay": "Payments",
   "/instructor/pending-scheduling": "Pending",

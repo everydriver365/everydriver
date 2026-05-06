@@ -90,7 +90,7 @@ const sidebarGroups: PortalNavGroup[] = [
     items: [
       { key: "discount-codes", label: "Discount Codes", icon: Tag },
       { key: "campaigns", label: "Campaigns", icon: Megaphone },
-      { key: "ai-voice", label: "AI Voice Hub", icon: PhoneCall },
+      { key: "ai-voice", label: "Telephone Calls and Answering", icon: PhoneCall },
     ],
   },
   {
@@ -134,7 +134,7 @@ const sectionMeta: Record<string, { title: string; group: string }> = {
   "pass-rates": { title: "Pass Rates & DVSA", group: "Operations" },
   "discount-codes": { title: "Discount Codes", group: "Engagement" },
   campaigns: { title: "Campaigns", group: "Engagement" },
-  "ai-voice": { title: "AI Voice Hub", group: "Engagement" },
+  "ai-voice": { title: "Telephone Calls and Answering", group: "Engagement" },
   profile: { title: "School Profile", group: "Settings" },
   branding: { title: "Branding", group: "Settings" },
   "booking-page": { title: "School Page", group: "Settings" },
