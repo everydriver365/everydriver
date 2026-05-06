@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
-  ChevronLeft, ChevronRight, Plus, Search, Sparkles, GripVertical, Filter,
+  ChevronLeft, ChevronRight, Plus, Search, Filter,
 } from "lucide-react";
 import {
   DndContext, DragOverlay, PointerSensor, useDraggable, useDroppable,
@@ -358,12 +358,6 @@ export default function InstructorScheduleDesktop() {
     return { count, hours: (minutes / 60).toFixed(1), earnings };
   }, [lessons]);
 
-  // Pupils with no lesson this week
-  const unbookedPupils = useMemo<PupilLite[]>(() => {
-    const bookedIds = new Set(lessons.map(l => l.pupilId));
-    return pupils.filter(p => !bookedIds.has(p.id)).slice(0, 8);
-  }, [lessons, pupils]);
-
   // ---- Open slot search (merges lessons + Google Calendar busy + buffer) ----
   const openSlots = useMemo(() => {
     const slots: { day: Day; startMin: number; endMin: number }[] = [];
@@ -521,19 +515,6 @@ export default function InstructorScheduleDesktop() {
       onSignOut={handleSignOut}
       onAskED={() => window.dispatchEvent(new CustomEvent("dsm:open-ai"))}
       onBell={() => navigate("/instructor/notifications")}
-      rightRail={
-        <RightRail
-          unbooked={[]}
-          aiPrompt={aiPrompt} setAiPrompt={setAiPrompt}
-          aiSuggestions={aiSuggestions}
-          onAskAi={() => {
-            if (!aiPrompt.trim()) return;
-            setAiSuggestions([
-              { label: "Tue 13:00" }, { label: "Wed 09:00" }, { label: "Fri 16:00" },
-            ]);
-          }}
-        />
-      }
     >
       <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
         <div className="flex flex-col" style={{ gap: 0, padding: 0, margin: -8 }}>
