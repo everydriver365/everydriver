@@ -13,7 +13,7 @@ import {
   Clock, Bell, FileText, Palette, Layout, Sparkles, PoundSterling,
   BookOpen, Trash2, Database, FileSignature, Banknote, Shield, CalendarClock,
   ImageIcon, Video, ImagePlus, Paintbrush, Tag, ClipboardList, AlertTriangle,
-  Gift, LayoutGrid, Satellite, Phone,
+  Gift, LayoutGrid, Satellite, Phone, Plug,
 } from "lucide-react";
 
 // Custom PNG icons (only Square logo still used for branded tile)
@@ -134,6 +134,7 @@ const settingsCategories = [
 
 const allTiles: TileDef[] = [
   { id: "account", title: "Account", description: "Profile, vehicle, media, compliance & billing", icon: User, tintBg: "#DBEAFE", tintColor: "#1E40AF", category: "profile", externalUrl: "/instructor/profile" },
+  { id: "connections", title: "Connections", description: "Square, Google Calendar & GPS trackers", icon: Plug, tintBg: "#EDF2FE", tintColor: "#1A52A0", category: "profile", externalUrl: "/instructor/integrations" },
   { id: "test-centres", title: "Test Centres & Examiners", description: "Manage test centres and examiners", icon: MapPin, tintBg: "#FEF2F2", tintColor: "#DC2626", category: "teaching" },
   { id: "terms", title: "Terms & Conditions", description: "Create terms for pupils to sign", icon: FileSignature, tintBg: "#F4F4F5", tintColor: "#52525B", category: "teaching" },
   { id: "courses-mgr", title: "My Courses", description: "Manage your course offerings & pricing", icon: BookOpen, tintBg: "#ECFDF5", tintColor: "#059669", category: "courses" },

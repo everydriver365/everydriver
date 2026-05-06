@@ -1,11 +1,12 @@
-Reset password for **Richard Chapman** (`richardchapman.adi@gmail.com`, auth_user_id `ecf34287-936c-41e7-b292-05ef4079cc3c`) to `Topsydog1&`.
+Add a "Connections" hub for instructors (mobile + desktop) covering Square, Google Calendar, and GPS Trackers. Reuse the existing `/instructor/integrations` page.
 
-### Steps
-1. Create temporary edge function `admin-reset-password` that:
-   - Validates caller's JWT and confirms admin role via `user_roles`.
-   - Uses service role to call `auth.admin.updateUserById(user_id, { password })`.
-2. Deploy and invoke it once for Richard's user_id with the new password.
-3. Confirm success, then delete the function so it can't be reused.
+### Changes
+1. **`src/hooks/useIntegrationStatuses.ts`** — add `trackers` status + `trackerDevices[]` by querying `gps_devices` for the instructor.
+2. **`src/pages/instructor/InstructorIntegrationsHub.tsx`**
+   - Rename heading "Integrations" → "Connections".
+   - Add a 4th tab **Trackers** (Satellite icon).
+   - Trackers panel: list active GPS devices (name, provider, last seen). If none, show CTA. Always show a "Manage trackers" button → `/instructor/gps-setup`.
+   - Make tab grid responsive (4 cols on `sm:`, scrollable on mobile).
+3. **`src/pages/InstructorMenu.tsx`** — add a top-level "Connections" tile (Plug icon) under preferences pointing to `/instructor/integrations`.
 
-### Note
-Password is set immediately — no email sent. Share `Topsydog1&` with Richard securely and ask him to change it on next login.
+No DB or route changes. Works on mobile + desktop via existing `InstructorPortalLayout`.
