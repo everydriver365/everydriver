@@ -49,6 +49,7 @@ import {
   TestCentreAnalytics,
 } from "@/components/instructor/driving-test";
 import { useStandardsCheckMetrics } from "@/components/instructor/driving-test/useStandardsCheckMetrics";
+import { InstructorTestCentresManager } from "@/components/instructor/InstructorTestCentresManager";
 
 interface TestResult {
   id: string;
