@@ -95,6 +95,7 @@ export function DrivingTestReportForm({
   const [testDate, setTestDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [testTime, setTestTime] = useState("");
   const [testCentreId, setTestCentreId] = useState<string>("");
+  const [testCentreNameInput, setTestCentreNameInput] = useState<string>("");
   const [examinerId, setExaminerId] = useState<string>("");
   const [applicationRef, setApplicationRef] = useState("");
   const [catType, setCatType] = useState("Manual");
@@ -142,6 +143,7 @@ export function DrivingTestReportForm({
     setTestDate(format(new Date(), "yyyy-MM-dd"));
     setTestTime("");
     setTestCentreId("");
+    setTestCentreNameInput("");
     setExaminerId("");
     setApplicationRef("");
     setCatType("Manual");
@@ -221,6 +223,7 @@ export function DrivingTestReportForm({
         setTestDate(data.test_date);
         setTestTime(data.test_time || "");
         setTestCentreId(data.test_centre_id || "");
+        setTestCentreNameInput((data as any).test_centre_name || "");
         setExaminerId(data.examiner_id || "");
         setApplicationRef(data.application_ref || "");
         setCatType(data.cat_type || "Manual");
@@ -289,6 +292,7 @@ export function DrivingTestReportForm({
         test_date: testDate,
         test_time: testTime || null,
         test_centre_id: testCentreId || null,
+        test_centre_name: testCentreNameInput.trim() || null,
         is_mock: isMock,
         result: finalResult,
         application_ref: parsed.data.applicationRef || null,
@@ -359,8 +363,9 @@ export function DrivingTestReportForm({
     }
   };
 
+  const hasCentre = !!testCentreId || testCentreNameInput.trim().length > 0;
   const requiredMissing =
-    !testDate || !testCentreId || !catType || (!isMock && (!testTime || !examinerId));
+    !testDate || !hasCentre || !catType || (!isMock && (!testTime || !examinerId));
   const headerSaveDisabled = saving || loading || requiredMissing;
 
   const formattedDate = (() => {
@@ -555,7 +560,7 @@ export function DrivingTestReportForm({
                 <EyebrowLabel>Test centre</EyebrowLabel>
                 <TestCentrePicker
                   selectedId={testCentreId || null}
-                  selectedName={centreName}
+                  selectedName={testCentreId ? centreName : null}
                   onSelect={(c) => {
                     if (c.id !== testCentreId && examinerId) {
                       // Cascading reset — examiner may not belong to the new centre.
@@ -566,6 +571,7 @@ export function DrivingTestReportForm({
                       });
                     }
                     setTestCentreId(c.id);
+                    setTestCentreNameInput("");
                     setTestCentres((prev) =>
                       prev.some((p) => p.id === c.id)
                         ? prev
@@ -573,6 +579,20 @@ export function DrivingTestReportForm({
                     );
                   }}
                 />
+                <div style={{ marginTop: 8 }}>
+                  <Input
+                    value={testCentreNameInput}
+                    onChange={(e) => {
+                      setTestCentreNameInput(e.target.value);
+                      if (e.target.value.trim()) setTestCentreId("");
+                    }}
+                    placeholder="Or type a centre name (if not in the list)"
+                    aria-label="Custom test centre name"
+                  />
+                  <p style={{ fontSize: 11, color: "#6E6E73", margin: "4px 0 0", paddingLeft: 2 }}>
+                    Use the picker for official DVSA centres, or type a custom name here.
+                  </p>
+                </div>
               </div>
 
               {/* Examiner — cascades from Test centre */}

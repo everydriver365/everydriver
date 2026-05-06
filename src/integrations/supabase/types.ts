@@ -3333,6 +3333,7 @@ export type Database = {
           result: string
           survey_answers: Json | null
           test_centre_id: string | null
+          test_centre_name: string | null
           test_date: string
           test_time: string | null
           total_dangerous_faults: number
@@ -3358,6 +3359,7 @@ export type Database = {
           result: string
           survey_answers?: Json | null
           test_centre_id?: string | null
+          test_centre_name?: string | null
           test_date: string
           test_time?: string | null
           total_dangerous_faults?: number
@@ -3383,6 +3385,7 @@ export type Database = {
           result?: string
           survey_answers?: Json | null
           test_centre_id?: string | null
+          test_centre_name?: string | null
           test_date?: string
           test_time?: string | null
           total_dangerous_faults?: number
