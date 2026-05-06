@@ -166,9 +166,60 @@ export default function AccountHub() {
             </div>
           </TabsContent>
 
+          <TabsContent value="rates">
+            <div className="bg-card rounded-2xl border p-6">
+              <AccountSettings instructorId={instructorId} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="area">
+            <div className="bg-card rounded-2xl border p-6">
+              <p className="text-sm text-muted-foreground mb-4">
+                Set your coverage postcode and how far you'll travel for lessons.
+              </p>
+              <InstructorDetailsEditor instructorId={instructorId} defaultTab="vehicle" />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="availability">
+            <div className="bg-card rounded-2xl border p-6 space-y-4">
+              <div>
+                <p className="font-medium">Working hours & availability</p>
+                <p className="text-sm text-muted-foreground">Set your weekly working hours, day-off overrides and one-off blocks.</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link to="/instructor/availability">Quick availability</Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full sm:w-auto">
+                  <Link to="/instructor/availability-windows">Weekly windows & overrides</Link>
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
+
           <TabsContent value="vehicle">
             <div className="bg-card rounded-2xl border p-6">
               <InstructorDetailsEditor instructorId={instructorId} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="notifications">
+            <div className="bg-card rounded-2xl border p-6 space-y-4">
+              <div>
+                <p className="font-medium">Notifications</p>
+                <p className="text-sm text-muted-foreground">Choose what alerts you receive and how (push, email, SMS).</p>
+              </div>
+              <Button asChild className="w-full sm:w-auto">
+                <Link to="/instructor/settings/notifications">Open notification settings</Link>
+              </Button>
+              <div className="pt-2 border-t">
+                <p className="font-medium flex items-center gap-2"><SettingsIcon className="h-4 w-4 text-muted-foreground" />All settings</p>
+                <p className="text-sm text-muted-foreground mb-2">Branding, terms, integrations, AI call answering and more.</p>
+                <Button asChild variant="outline" className="w-full sm:w-auto">
+                  <Link to="/instructor/settings">Open all settings <ChevronRight className="h-4 w-4 ml-1" /></Link>
+                </Button>
+              </div>
             </div>
           </TabsContent>
 
