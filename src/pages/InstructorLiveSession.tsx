@@ -142,10 +142,11 @@ export default function InstructorLiveSession() {
   }, [isPhoneProvider]);
 
   // Location permission gate for Phone tracking.
-  const { status: locationPermissionStatus } = useLocationPermission({
+  const { status: locationPermissionStatus, request: requestLocationPermission } = useLocationPermission({
     instructorId: instructor?.id ?? null,
     pupilId: selectedPupilId || null,
   });
+  const [showLocationDialog, setShowLocationDialog] = useState(false);
   // Phone tracking can preview the mini map without a pupil; pushing to
   // live_pupil_positions is gated separately inside the streamer.
   const phoneTrackingReady =
