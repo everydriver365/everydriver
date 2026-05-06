@@ -763,6 +763,11 @@ export default function InstructorLiveSession() {
       examinerId: string | null;
     }
   ) => {
+    // Phone provider needs location permission. Open in-app dialog if missing.
+    if (isPhoneProvider && locationPermissionStatus !== "granted") {
+      setShowLocationDialog(true);
+      return;
+    }
     // Auto-arm phone streaming when using phone provider — no second button needed.
     if (isPhoneProvider && !phoneStreamingConfirmed) {
       setPhoneStreamingConfirmed(true);
