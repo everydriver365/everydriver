@@ -115,11 +115,28 @@ export function useFeaturedCourses(limit: number = 3, instructorId?: string | nu
   }, []);
 
   useEffect(() => {
+    // Caller passed null = waiting for instructor id to resolve; skip until ready
+    if (instructorId === null) {
+      setLoading(true);
+      return;
+    }
+
     async function fetchFeaturedCourses() {
       try {
         setLoading(true);
 
-        // Fetch all required data in parallel
+        let instructorsQuery = supabase.from("instructors").select("*").eq("is_active", true);
+        let coursesQuery = supabase.from("instructor_courses").select("*").eq("is_active", true);
+        let workingHoursQuery = supabase.from("instructor_working_hours").select("*").eq("is_active", true);
+        let overridesQuery = supabase.from("instructor_date_overrides").select("*");
+
+        if (instructorId) {
+          instructorsQuery = instructorsQuery.eq("id", instructorId);
+          coursesQuery = coursesQuery.eq("instructor_id", instructorId);
+          workingHoursQuery = workingHoursQuery.eq("instructor_id", instructorId);
+          overridesQuery = overridesQuery.eq("instructor_id", instructorId);
+        }
+
         const [
           { data: instructorsData },
           { data: coursesData },
@@ -127,11 +144,11 @@ export function useFeaturedCourses(limit: number = 3, instructorId?: string | nu
           { data: workingHoursData },
           { data: dateOverridesData }
         ] = await Promise.all([
-          supabase.from("instructors").select("*").eq("is_active", true),
-          supabase.from("instructor_courses").select("*").eq("is_active", true),
+          instructorsQuery,
+          coursesQuery,
           supabase.from("course_templates").select("*").eq("is_active", true),
-          supabase.from("instructor_working_hours").select("*").eq("is_active", true),
-          supabase.from("instructor_date_overrides").select("*")
+          workingHoursQuery,
+          overridesQuery,
         ]);
 
         const instructors = (instructorsData || []) as Instructor[];
@@ -190,7 +207,7 @@ export function useFeaturedCourses(limit: number = 3, instructorId?: string | nu
     }
 
     fetchFeaturedCourses();
-  }, [limit, findFirstAvailableDate]);
+  }, [limit, instructorId, findFirstAvailableDate]);
 
   return { courses, loading };
 }
