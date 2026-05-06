@@ -131,6 +131,7 @@ export default function InstructorLiveSession() {
   const [speedLimitKmh, setSpeedLimitKmh] = useState<number | null>(null);
   const [pendingRouteType, setPendingRouteType] = useState<"practice" | "test" | "driving_test">("practice");
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
+  const [radiusDeviceInfo, setRadiusDeviceInfo] = useState<{ id: string; name: string | null } | null>(null);
 
   const isPhoneProvider = activeProvider === "phone";
 
