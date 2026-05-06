@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight, ShieldCheck, Video, GraduationCap, Search, Wallet, Play, HelpCircle, CheckCircle2, DollarSign, Car, BookOpen, Headphones, ChevronDown, Loader2, Timer, CalendarCheck, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/dialog";
 import { useSiteImages } from "@/hooks/useSiteImages";
 import { useFeaturedCourses } from "@/hooks/useFeaturedCourses";
+import { getWhitelabelConfig } from "@/lib/whitelabel";
+import { supabase } from "@/integrations/supabase/client";
 import { useDVSANews } from "@/hooks/useDVSANews";
 import { useHomepageFeatures } from "@/hooks/useHomepageFeatures";
 import { useHomepageHero } from "@/hooks/useHomepageHero";
@@ -77,7 +79,31 @@ export default function Index() {
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const { getImage, getAlt } = useSiteImages();
-  const { courses: featuredCourses, loading: featuredLoading } = useFeaturedCourses(3);
+  const whitelabelSlug = getWhitelabelConfig()?.instructorSlug ?? null;
+  // null = waiting to resolve, undefined = not whitelabel (show all), string = scope
+  const [whitelabelInstructorId, setWhitelabelInstructorId] = useState<string | null | undefined>(
+    whitelabelSlug ? null : undefined,
+  );
+
+  useEffect(() => {
+    if (!whitelabelSlug) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("instructors")
+        .select("id")
+        .eq("app_slug", whitelabelSlug)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (!cancelled) setWhitelabelInstructorId(data?.id ?? undefined);
+    })();
+    return () => { cancelled = true; };
+  }, [whitelabelSlug]);
+
+  const { courses: featuredCourses, loading: featuredLoading } = useFeaturedCourses(
+    3,
+    whitelabelInstructorId,
+  );
   const { news: dvsaNews, loading: newsLoading } = useDVSANews();
   const { features } = useHomepageFeatures();
   const { hero } = useHomepageHero();

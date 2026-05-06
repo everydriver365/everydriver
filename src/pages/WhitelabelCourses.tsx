@@ -30,6 +30,7 @@ export default function WhitelabelCourses() {
   const [instructorId, setInstructorId] = useState<string | null | undefined>(
     undefined,
   );
+  const [availableFrom, setAvailableFrom] = useState<string | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
 
@@ -44,7 +45,7 @@ export default function WhitelabelCourses() {
     (async () => {
       const { data, error } = await supabase
         .from("instructors")
-        .select("id, is_active")
+        .select("id, is_active, available_from")
         .eq("app_slug", slug)
         .maybeSingle();
       if (cancelled) return;
@@ -59,6 +60,7 @@ export default function WhitelabelCourses() {
         return;
       }
       setInstructorId(data.id);
+      setAvailableFrom(data.available_from ?? null);
     })();
     return () => {
       cancelled = true;
@@ -150,27 +152,39 @@ export default function WhitelabelCourses() {
                           : "No upcoming availability"}
                       </h2>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        {nextAvailableDates.length > 0
-                          ? "Tap a date to see courses you can book."
-                          : "Please check back soon."}
+                        {availableFrom
+                          ? `${brand} is taking bookings from ${format(new Date(availableFrom), "d MMMM yyyy")}.`
+                          : nextAvailableDates.length > 0
+                            ? "Tap a date to see courses you can book."
+                            : "Please check back soon."}
                       </p>
                     </div>
                   </div>
                   {nextAvailableDates.length > 0 && (
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                      {nextAvailableDates.slice(0, 9).map((d) => (
-                        <button
-                          key={d.toISOString()}
-                          onClick={() => handlePickDate(d)}
-                          className="rounded-lg border bg-background px-3 py-2 text-left text-sm font-medium transition-colors hover:bg-emerald-500/10 hover:border-emerald-500/40"
+                    <>
+                      {format(nextAvailableDates[0], "yyyy-MM") !== selectedMonth && (
+                        <Button
+                          onClick={() => handlePickDate(nextAvailableDates[0])}
+                          className="mb-3 w-full"
                         >
-                          <div className="text-xs text-muted-foreground">
-                            {format(d, "EEE")}
-                          </div>
-                          <div>{format(d, "d MMM")}</div>
-                        </button>
-                      ))}
-                    </div>
+                          Jump to {format(nextAvailableDates[0], "MMMM yyyy")}
+                        </Button>
+                      )}
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        {nextAvailableDates.slice(0, 9).map((d) => (
+                          <button
+                            key={d.toISOString()}
+                            onClick={() => handlePickDate(d)}
+                            className="rounded-lg border bg-background px-3 py-2 text-left text-sm font-medium transition-colors hover:bg-emerald-500/10 hover:border-emerald-500/40"
+                          >
+                            <div className="text-xs text-muted-foreground">
+                              {format(d, "EEE")}
+                            </div>
+                            <div>{format(d, "d MMM")}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </>
                   )}
                 </div>
               ) : (
