@@ -50,7 +50,7 @@ import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
 import { PupilSelectorRow } from "@/components/instructor/ui/PupilSelectorRow";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle } from "lucide-react";
-import { LessonRouteRecorder } from "@/components/instructor/LessonRouteRecorder";
+
 import { SegmentedControl } from "@/components/instructor/ui/SegmentedControl";
 
 const InstructorFleetMap = lazy(() => import("@/pages/InstructorFleetMap"));
