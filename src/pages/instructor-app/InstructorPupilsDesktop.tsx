@@ -190,10 +190,18 @@ export default function InstructorPupilsDesktop() {
   const [tab, setTab] = useState<"overview" | "lessons" | "progress" | "payments" | "notes">("overview");
   const [reloadTick, setReloadTick] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
-  const [addForm, setAddForm] = useState({
+  const [addForm, setAddForm] = useState<any>({
     name: "", phone: "", email: "", address: "", postcode: "", what3words: "",
     date_of_birth: "", sex: "", previous_experience_hours: "", transmission_type: "",
     special_needs: "", notes: "", payment_method: "tbc",
+    // AddPupilSheet extended fields
+    course_type: "", parent_phone: "", parent_name: "",
+    first_name: "", last_name: "",
+    pickup_address: "", has_different_pickup: false,
+    previous_experience: "", approx_hours: "", transmission: "",
+    theory_passed: false, theory_pass_date: "",
+    test_booked: false, test_centre_id: "", test_centre_label: "",
+    test_date: "", test_time: "", duration: "", custom_hourly_rate: "",
   });
   const [addErrors, setAddErrors] = useState<{ email?: string; postcode?: string; phone?: string }>({});
   const [addSaving, setAddSaving] = useState(false);
