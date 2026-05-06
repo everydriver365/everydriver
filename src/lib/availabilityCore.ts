@@ -75,12 +75,12 @@ export function buildDayConflicts(
   lessons: { start_time: string; duration_minutes: number }[],
   blocks: { start_datetime: string; end_datetime: string }[],
   events: { start_time: string; end_time: string }[],
-): CoreSlot[] {
-  const out: CoreSlot[] = [];
+): TaggedConflict[] {
+  const out: TaggedConflict[] = [];
 
   for (const l of lessons) {
     const s = toMinutes(l.start_time);
-    out.push({ start: s, end: s + (l.duration_minutes || 60) });
+    out.push({ start: s, end: s + (l.duration_minutes || 60), kind: "lesson" });
   }
 
   const clip = (sIso: string, eIso: string) => {
@@ -97,11 +97,11 @@ export function buildDayConflicts(
 
   for (const b of blocks) {
     const c = clip(b.start_datetime, b.end_datetime);
-    if (c) out.push(c);
+    if (c) out.push({ ...c, kind: "block" });
   }
   for (const e of events) {
     const c = clip(e.start_time, e.end_time);
-    if (c) out.push(c);
+    if (c) out.push({ ...c, kind: "event" });
   }
 
   return out;
