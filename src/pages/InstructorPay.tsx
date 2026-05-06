@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 import { type LucideIcon } from "lucide-react";
 import { TakePaymentModal } from "@/components/instructor/TakePaymentModal";
+import { RefundModal } from "@/components/instructor/RefundModal";
+import { Undo2 } from "lucide-react";
 import { PaymentHistory } from "@/components/instructor/PaymentHistory";
 import { InstructorPayoutHistory } from "@/components/instructor/InstructorPayoutHistory";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -69,6 +71,7 @@ export default function InstructorPay() {
   const [commissionPayer, setCommissionPayer] = useState<string | null>("pupil");
   const [instructorName, setInstructorName] = useState<string>("Your Instructor");
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [refundModalOpen, setRefundModalOpen] = useState(false);
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [bonusEarned, setBonusEarned] = useState(0);
   const [recentPaymentCount, setRecentPaymentCount] = useState(0);
@@ -189,6 +192,18 @@ export default function InstructorPay() {
         setPaymentModalOpen(true);
       },
       accent: true,
+    },
+    {
+      id: "refund",
+      label: "Refund",
+      sublabel: "Return a payment",
+      icon: Undo2,
+      iconColor: "#B91C1C",
+      iconBg: "#FEE2E2",
+      onClick: () => {
+        haptics.selection();
+        setRefundModalOpen(true);
+      },
     },
     { id: "accounts", label: "Accounts", sublabel: "Income & outgoings", icon: BarChart2, iconColor: "#5B21B6", iconBg: "#EDE9FE", href: "/instructor/accounts" },
     { id: "expenses", label: "Expenses", sublabel: "Track costs", icon: Receipt, iconColor: "#92400E", iconBg: "#FEF3C7", href: "/instructor/expenses" },
@@ -542,6 +557,17 @@ export default function InstructorPay() {
         instructorName={instructorName}
         instructorId={instructorId}
         pupils={pupils}
+      />
+
+      <RefundModal
+        open={refundModalOpen}
+        onOpenChange={setRefundModalOpen}
+        instructorId={instructorId}
+        pupils={pupils}
+        onRefunded={() => {
+          fetchPupils();
+          fetchRecentPaymentCount();
+        }}
       />
     </InstructorPortalLayout>
   );
