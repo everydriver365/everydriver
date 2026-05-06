@@ -1175,9 +1175,9 @@ export default function InstructorLiveSession() {
   })();
 
   const currentPupil = pupils.find(p => p.id === device?.current_pupil_id);
-  const speedMph = device?.last_speed_kmh != null ? Math.round(device.last_speed_kmh * 0.621371) : null;
-  const speedLimitMph = (device?.last_speed_limit_kmh ?? speedLimitKmh) != null
-    ? Math.round(((device?.last_speed_limit_kmh ?? speedLimitKmh) as number) * 0.621371)
+  const speedMph = mapSpeedKmh != null ? Math.round(mapSpeedKmh * 0.621371) : null;
+  const speedLimitMph = mapSpeedLimitKmh != null
+    ? Math.round(mapSpeedLimitKmh * 0.621371)
     : null;
   const distanceMiles = totalDistance * 0.621371;
 
