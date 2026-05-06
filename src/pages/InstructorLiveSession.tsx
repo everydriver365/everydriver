@@ -1225,9 +1225,9 @@ export default function InstructorLiveSession() {
             </>
           ) : (
             <>
-              {/* PHONE LAST LOCATION + ROUTE PREVIEW — visible while phone tracking is active */}
+              {/* PHONE LAST LOCATION + ROUTE PREVIEW — visible whenever phone GPS is selected and allowed */}
               <PhoneLastLocationCard
-                active={phoneTrackingReady}
+                active={isPhoneProvider && locationPermissionStatus === "granted"}
                 fix={lastPhoneFix}
                 trail={phoneTrail}
               />
