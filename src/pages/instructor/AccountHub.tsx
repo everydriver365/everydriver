@@ -107,6 +107,7 @@ export default function AccountHub() {
   if (!instructorId) return null;
 
   return (
+    <InstructorPortalLayout>
     <div className="instructor-portal min-h-screen" style={{ background: "var(--d2-bg, #F4F7F6)" }}>
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-6">
