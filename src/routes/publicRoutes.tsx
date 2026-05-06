@@ -1,9 +1,11 @@
 import { Route } from "react-router-dom";
 import { lazyWithRetry as lazy } from "@/utils/lazyWithRetry";
+import { isWhitelabelDomain } from "@/lib/whitelabel";
 
 // Learner-facing pages
 const Index = lazy(() => import("@/pages/Index"));
 const Courses = lazy(() => import("@/pages/Courses"));
+const WhitelabelCourses = lazy(() => import("@/pages/WhitelabelCourses"));
 const BookingSummary = lazy(() => import("@/pages/BookingSummary"));
 const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
 const PupilPortal = lazy(() => import("@/pages/PupilPortal"));
@@ -93,7 +95,7 @@ export const publicRoutes = (
     <Route path="/accessible/trackers" element={<AccessibleTrackers />} />
 
     {/* Learner-facing routes */}
-    <Route path="/courses" element={<Courses />} />
+    <Route path="/courses" element={isWhitelabelDomain() ? <WhitelabelCourses /> : <Courses />} />
     <Route path="/book/:instructorId" element={<BookingSummary />} />
     <Route path="/booking-confirmation" element={<BookingConfirmation />} />
     <Route path="/pupil" element={<PupilPortal />} />
