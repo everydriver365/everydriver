@@ -69,10 +69,49 @@ export function FindAppointmentBody({
   const [days, setDays] = useState(14);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
 
+  // UK postcode validation.
+  // Full: AA9A 9AA / A9A 9AA / A9 9AA / A99 9AA / AA9 9AA / AA99 9AA
+  // Partial (outward only): SO, SO2, SO22, SW1A — accepted for wider radii (>=5mi).
+  const UK_POSTCODE_FULL = /^(GIR 0AA|[A-PR-UWYZ]([0-9]{1,2}|([A-HK-Y][0-9]([0-9]|[ABEHMNPRV-Y]))|[0-9][A-HJKPS-UW]) ?[0-9][ABD-HJLNP-UW-Z]{2})$/;
+  const UK_POSTCODE_OUTWARD = /^[A-PR-UWYZ]([0-9]{1,2}|([A-HK-Y][0-9]([0-9]|[ABEHMNPRV-Y]))|[0-9][A-HJKPS-UW])$/;
+
+  const postcodeValidation = useMemo(() => {
+    const raw = postcode.trim().toUpperCase();
+    if (!raw) return { valid: true, error: null as string | null, kind: "empty" as const };
+    const normalised = raw.replace(/\s+/g, " ");
+    const compact = normalised.replace(/\s/g, "");
+    const needsFull = radiusMiles === "1" || radiusMiles === "3";
+    if (needsFull) {
+      // Try with and without the space before the inward code
+      const withSpace = compact.length > 3
+        ? `${compact.slice(0, compact.length - 3)} ${compact.slice(-3)}`
+        : compact;
+      if (UK_POSTCODE_FULL.test(withSpace)) return { valid: true, error: null, kind: "full" as const };
+      return {
+        valid: false,
+        error: "Enter a full UK postcode (e.g. SO22 5DJ) for searches within 1–3 miles.",
+        kind: "invalid" as const,
+      };
+    }
+    // Wider radii: accept full or outward-only
+    const withSpace = compact.length > 3
+      ? `${compact.slice(0, compact.length - 3)} ${compact.slice(-3)}`
+      : compact;
+    if (UK_POSTCODE_FULL.test(withSpace) || UK_POSTCODE_OUTWARD.test(compact)) {
+      return { valid: true, error: null, kind: "ok" as const };
+    }
+    return {
+      valid: false,
+      error: "Enter a valid UK postcode or outward code (e.g. SO22 or SO22 5DJ).",
+      kind: "invalid" as const,
+    };
+  }, [postcode, radiusMiles]);
+
   // Map radius → postcode prefix length.
   // 1mi = full code (SO22 5), 3mi = sector (SO22 5), 5mi = outward (SO22),
   // 10mi = district digit (SO2), 20mi = area (SO).
   const computedPrefix = useMemo(() => {
+    if (!postcodeValidation.valid) return undefined;
     const cleaned = postcode.trim().toUpperCase().replace(/\s+/g, " ");
     if (!cleaned) return undefined;
     const compact = cleaned.replace(/\s/g, "");
@@ -84,7 +123,7 @@ export function FindAppointmentBody({
       case "20": return compact.replace(/[0-9].*$/, "") || compact.slice(0, 2);
       default: return cleaned;
     }
-  }, [postcode, radiusMiles]);
+  }, [postcode, radiusMiles, postcodeValidation.valid]);
 
   const { data: instructorOptions = [] } = useQuery({
     queryKey: ["find-appt-instructors", instructorIds.join(",")],
@@ -289,8 +328,13 @@ export function FindAppointmentBody({
                 value={postcode}
                 onChange={(e) => setPostcode(e.target.value.toUpperCase().slice(0, 8))}
                 maxLength={8}
+                aria-invalid={!postcodeValidation.valid}
+                aria-describedby="postcode-help"
                 className="h-[34px] rounded-[10px] text-xs font-semibold text-slate-900 flex-1 uppercase"
-                style={triggerStyle}
+                style={{
+                  ...triggerStyle,
+                  borderColor: !postcodeValidation.valid ? "hsl(var(--destructive))" : (triggerStyle as any)?.borderColor,
+                }}
               />
               <Select value={radiusMiles} onValueChange={setRadiusMiles}>
                 <SelectTrigger
@@ -308,8 +352,18 @@ export function FindAppointmentBody({
                 </SelectContent>
               </Select>
             </div>
-            {postcode && (
-              <div className="text-[10px] mt-1.5" style={{ color: "var(--d2-text-3)" }}>
+            {postcode && !postcodeValidation.valid && (
+              <div
+                id="postcode-help"
+                role="alert"
+                className="text-[10px] mt-1.5 font-medium"
+                style={{ color: "hsl(var(--destructive))" }}
+              >
+                {postcodeValidation.error}
+              </div>
+            )}
+            {postcode && postcodeValidation.valid && (
+              <div id="postcode-help" className="text-[10px] mt-1.5" style={{ color: "var(--d2-text-3)" }}>
                 Matching postcodes starting with <span className="font-semibold">{computedPrefix}</span>
               </div>
             )}
