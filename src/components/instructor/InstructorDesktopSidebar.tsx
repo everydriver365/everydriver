@@ -36,7 +36,7 @@ const sidebarGroups = [
       { href: "/instructor/pupils", label: "Pupils", icon: Users },
       { href: "/instructor/test-results", label: "Test Results", icon: Award },
       { href: "/instructor/test-requests", label: "Test Swap", icon: Award },
-      { href: "/instructor/test-slot-finder", label: "Slot Finder", icon: CalendarSearch },
+      { href: "/instructor/find-appointment", label: "Find appointment", icon: CalendarSearch },
       { href: "/instructor/jobs", label: "Jobs", icon: Briefcase },
     ],
   },

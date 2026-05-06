@@ -6,7 +6,7 @@ import {
   Plug, LogOut, PanelLeftClose, PanelLeft,
   NotebookPen, BookOpenCheck, GraduationCap, ListChecks, UserPlus2,
   MapPin, Map, Gauge, Navigation, Video, Route, Fuel, Car,
-  Mic, Banknote, Coins, Star, Share2, Zap, MoreHorizontal,
+  Mic, Banknote, Coins, Star, Share2, Zap, MoreHorizontal, CalendarSearch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useModules } from "@/context/ModulesContext";
@@ -20,6 +20,7 @@ const SECTIONS: NavSection[] = [
     { label: "Dashboard", to: "/instructor", icon: LayoutDashboard, moduleId: "dashboard" },
     { label: "Schedule", to: "/instructor/schedule", icon: Calendar, moduleId: "schedule" },
     { label: "Diary", to: "/instructor/diary", icon: NotebookPen },
+    { label: "Find appointment", to: "/instructor/find-appointment", icon: CalendarSearch },
   ]},
   { label: "Teaching", items: [
     { label: "Pupils", to: "/instructor/pupils", icon: Users, moduleId: "pupils" },
@@ -29,7 +30,6 @@ const SECTIONS: NavSection[] = [
     { label: "Test Bookings", to: "/instructor/test-bookings", icon: ClipboardCheck, moduleId: "tests" },
     { label: "Test Results", to: "/instructor/test-results", icon: Award, moduleId: "tests" },
     { label: "Test Swap", to: "/instructor/test-swap", icon: Repeat2, moduleId: "testswap" },
-    { label: "Slot Finder", to: "/instructor/test-slot-finder", icon: Search, moduleId: "slotfinder" },
     { label: "Standards Check", to: "/instructor/standards-check", icon: GraduationCap },
     { label: "CPD", to: "/instructor/cpd", icon: Award },
   ]},
