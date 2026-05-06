@@ -106,7 +106,12 @@ export default function InstructorDiary() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPupil, setSelectedPupil] = useState<string>("all");
   const [dateRange, setDateRange] = useState<string>("30");
+  const [customFrom, setCustomFrom] = useState<Date | undefined>();
+  const [customTo, setCustomTo] = useState<Date | undefined>();
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [searchOpen, setSearchOpen] = useState(false);
+
+  const usingCustomRange = !!(customFrom && customTo);
 
   useEffect(() => {
     if (instructorId) fetchPupils();
@@ -114,7 +119,7 @@ export default function InstructorDiary() {
 
   useEffect(() => {
     if (instructorId) fetchData();
-  }, [instructorId, dateRange, selectedPupil]);
+  }, [instructorId, dateRange, selectedPupil, customFrom, customTo]);
 
   const fetchPupils = async () => {
     if (!instructorId) return;
@@ -134,10 +139,17 @@ export default function InstructorDiary() {
     if (!instructorId) return;
     try {
       setLoading(true);
-      const daysAgo = parseInt(dateRange);
-      const startDate = daysAgo === 0
-        ? format(subMonths(new Date(), 12), "yyyy-MM-dd")
-        : format(subDays(new Date(), daysAgo), "yyyy-MM-dd");
+      let startDate: string;
+      let endDate: string | null = null;
+      if (usingCustomRange) {
+        startDate = format(customFrom!, "yyyy-MM-dd");
+        endDate = format(customTo!, "yyyy-MM-dd");
+      } else {
+        const daysAgo = parseInt(dateRange);
+        startDate = daysAgo === 0
+          ? format(subMonths(new Date(), 12), "yyyy-MM-dd")
+          : format(subDays(new Date(), daysAgo), "yyyy-MM-dd");
+      }
 
       let query = supabase
         .from("lesson_history")
@@ -145,6 +157,8 @@ export default function InstructorDiary() {
         .eq("instructor_id", instructorId)
         .gte("lesson_date", startDate)
         .order("lesson_date", { ascending: false });
+
+      if (endDate) query = query.lte("lesson_date", endDate);
 
       if (selectedPupil !== "all") {
         query = query.eq("pupil_id", selectedPupil);
@@ -168,11 +182,17 @@ export default function InstructorDiary() {
   };
 
   const filteredLessons = useMemo(() => lessons.filter(lesson => {
+    // Status filter
+    if (statusFilter === "rated" && !lesson.rating) return false;
+    if (statusFilter === "unrated" && lesson.rating) return false;
+    if (statusFilter === "has_notes" && !lesson.notes?.trim()) return false;
+    if (statusFilter === "missing_notes" && lesson.notes?.trim()) return false;
+
     if (!searchQuery) return true;
     const pupilName = lesson.pupils?.name?.toLowerCase() || "";
     const notes = lesson.notes?.toLowerCase() || "";
     return pupilName.includes(searchQuery.toLowerCase()) || notes.includes(searchQuery.toLowerCase());
-  }), [lessons, searchQuery]);
+  }), [lessons, searchQuery, statusFilter]);
 
   const lessonCount = filteredLessons.length;
 
@@ -182,18 +202,22 @@ export default function InstructorDiary() {
     requestAnimationFrame(() => searchInputRef.current?.focus());
   };
   const handleVoiceSearch = () => {
-    // Hook-up: voice handler — falls back to focusing the input if unavailable.
     handleSearchFocus();
   };
   const handleClearFilters = () => {
     setSearchQuery("");
     setSelectedPupil("all");
     setDateRange("30");
+    setCustomFrom(undefined);
+    setCustomTo(undefined);
+    setStatusFilter("all");
   };
 
   const selectedPupilObj = allPupils.find(p => p.id === selectedPupil) || null;
-  const dateLabel = dateRangeLabels[dateRange] || "Last 30 days";
-  const typeLabel = "All types";
+  const dateLabel = usingCustomRange
+    ? `${format(customFrom!, "MMM d")} – ${format(customTo!, "MMM d")}`
+    : (dateRangeLabels[dateRange] || "Last 30 days");
+  const statusLabel = statusLabels[statusFilter];
 
   if (!instructorId) {
     return (
