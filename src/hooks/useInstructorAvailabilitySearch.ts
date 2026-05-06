@@ -1,6 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, startOfDay } from "date-fns";
+import {
+  buildDayConflicts,
+  computeFreeSlots,
+  fromMinutes,
+  toMinutes,
+  type TimeOfDay,
+} from "@/lib/availabilityCore";
+
+export type { TimeOfDay };
 
 export interface AvailableSlot {
   id: string;
@@ -12,11 +21,8 @@ export interface AvailableSlot {
   startTime: string;   // HH:mm
   endTime: string;     // HH:mm
   durationMinutes: number;
-  // Sort key
   sortKey: number;
 }
-
-export type TimeOfDay = "any" | "morning" | "afternoon" | "evening";
 
 interface SearchParams {
   instructorIds: string[]; // pre-scoped (admin = all, school = school's)
@@ -25,33 +31,15 @@ interface SearchParams {
   days: number;            // search window
   durationMinutes: number;
   timeOfDay: TimeOfDay;
-  postcodePrefix?: string; // optional postcode area filter, e.g. "SO22"
+  postcodePrefix?: string;
   enabled?: boolean;
 }
 
-const STEP_MINUTES = 15;
-
-function toMinutes(t: string) {
-  const [h, m] = t.split(":").map(Number);
-  return h * 60 + (m || 0);
-}
-function fromMinutes(min: number) {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
-}
 function postcodeArea(pc?: string | null) {
   if (!pc) return null;
   const cleaned = pc.trim().toUpperCase().replace(/\s+/g, " ");
   const part = cleaned.split(" ")[0];
   return part || null;
-}
-function inTimeOfDay(startMin: number, tod: TimeOfDay) {
-  if (tod === "any") return true;
-  if (tod === "morning") return startMin >= 6 * 60 && startMin < 12 * 60;
-  if (tod === "afternoon") return startMin >= 12 * 60 && startMin < 17 * 60;
-  if (tod === "evening") return startMin >= 17 * 60 && startMin < 22 * 60;
-  return true;
 }
 
 export function useInstructorAvailabilitySearch(params: SearchParams) {
