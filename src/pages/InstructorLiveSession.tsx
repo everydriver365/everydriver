@@ -1660,13 +1660,7 @@ export default function InstructorLiveSession() {
                 />
               )}
 
-              {/* Manual GPS Route Recorder — kept */}
-              {instructor?.id && (
-                <LessonRouteRecorder
-                  instructorId={instructor.id}
-                  pupilId={selectedPupilId || null}
-                />
-              )}
+              {/* Manual route recorder retired — replaced by "Track without a pupil" mode */}
 
               {/* Auto-track every lesson — quick toggle */}
               {instructor?.id && <AutoTrackToggleTile instructorId={instructor.id} />}
