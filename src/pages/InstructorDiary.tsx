@@ -22,7 +22,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { DashboardShell } from "@/components/instructor/dashboardV2/DashboardShell";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, subMonths } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -57,10 +60,31 @@ const dateRangeLabels: Record<string, string> = {
 };
 
 export default function InstructorDiary() {
-  const { instructor } = useInstructorAuth();
+  const { instructor, signOut } = useInstructorAuth();
   const instructorId = instructor?.id;
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const { total: notificationCount } = useCombinedNotificationCount(instructor?.id);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  const initials = (instructor?.name || "I")
+    .split(" ").map((s) => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+  const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
+  const Shell = ({ children }: { children: React.ReactNode }) =>
+    isMobile ? (
+      <InstructorPortalLayout>{children}</InstructorPortalLayout>
+    ) : (
+      <DashboardShell
+        userInitials={initials}
+        userName={instructor?.name || "Instructor"}
+        notificationCount={notificationCount}
+        onSignOut={handleSignOut}
+        onAskED={() => window.dispatchEvent(new CustomEvent("dsm:open-ai"))}
+        onBell={() => navigate("/instructor/notifications")}
+      >
+        {children}
+      </DashboardShell>
+    );
 
   const [stats, setStats] = useState<LessonStat>({ totalLessons: 0, totalHours: 0, uniquePupils: 0 });
   const [lessons, setLessons] = useState<LessonRecord[]>([]);
@@ -160,11 +184,11 @@ export default function InstructorDiary() {
 
   if (!instructorId) {
     return (
-      <InstructorPortalLayout>
+      <Shell>
         <div className="flex items-center justify-center min-h-[50vh]">
           <p className="text-muted-foreground">Loading...</p>
         </div>
-      </InstructorPortalLayout>
+      </Shell>
     );
   }
 
@@ -172,8 +196,8 @@ export default function InstructorDiary() {
   const chipBorder = "0.5px solid var(--d2-border)";
 
   return (
-    <InstructorPortalLayout>
-      <div style={{ backgroundColor: "var(--d2-bg)" }} className="min-h-full -mx-4 -my-4 sm:-mx-6 sm:-my-6">
+    <Shell>
+      <div style={{ backgroundColor: "var(--d2-bg)" }} className={isMobile ? "min-h-full -mx-4 -my-4 sm:-mx-6 sm:-my-6" : "min-h-full -m-6"}>
         <div className="max-w-5xl mx-auto" style={{ padding: "0 15px 24px" }}>
           {/* Header */}
           <div
@@ -436,7 +460,7 @@ export default function InstructorDiary() {
           )}
         </div>
       </div>
-    </InstructorPortalLayout>
+    </Shell>
   );
 }
 
