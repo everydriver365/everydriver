@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { Loader2, Camera, Car as CarIcon, Video, Award, ImagePlus, User, Shield, Wallet, CreditCard } from "lucide-react";
+import { Loader2, Camera, Car as CarIcon, Video, Award, ImagePlus, User, Shield, Wallet, CreditCard, PoundSterling, MapPin, CalendarClock, Bell, Settings as SettingsIcon, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -13,6 +13,7 @@ import { toast as uiToast } from "@/hooks/use-toast";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { ComplianceTracker } from "@/components/instructor/ComplianceTracker";
 import { InstructorDetailsEditor } from "@/components/instructor/InstructorDetailsEditor";
+import { AccountSettings } from "@/components/instructor/AccountSettings";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 
 interface InstructorProfileRow {
@@ -29,8 +30,12 @@ interface InstructorProfileRow {
 
 const TABS = [
   { id: "profile", label: "Profile", icon: User },
+  { id: "rates", label: "Rates", icon: PoundSterling },
+  { id: "area", label: "Service Area", icon: MapPin },
+  { id: "availability", label: "Availability", icon: CalendarClock },
   { id: "vehicle", label: "Vehicle & ADI", icon: CarIcon },
   { id: "media", label: "Media", icon: ImagePlus },
+  { id: "notifications", label: "Notifications", icon: Bell },
   { id: "compliance", label: "Compliance", icon: Shield },
   { id: "billing", label: "Plan & Billing", icon: Wallet },
 ];
@@ -116,13 +121,13 @@ export default function AccountHub() {
         </div>
 
         <Tabs value={tab} onValueChange={onTabChange}>
-          <TabsList className="grid grid-cols-2 sm:grid-cols-5 w-full mb-6 h-auto">
+          <TabsList className="flex flex-wrap w-full mb-6 h-auto gap-1">
             {TABS.map(t => {
               const Icon = t.icon;
               return (
-                <TabsTrigger key={t.id} value={t.id} className="flex items-center gap-2 py-2">
+                <TabsTrigger key={t.id} value={t.id} className="flex items-center gap-2 py-2 flex-1 min-w-[44%] sm:min-w-[120px]">
                   <Icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t.label}</span>
+                  <span className="text-xs sm:text-sm">{t.label}</span>
                 </TabsTrigger>
               );
             })}
@@ -161,9 +166,60 @@ export default function AccountHub() {
             </div>
           </TabsContent>
 
+          <TabsContent value="rates">
+            <div className="bg-card rounded-2xl border p-6">
+              <AccountSettings instructorId={instructorId} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="area">
+            <div className="bg-card rounded-2xl border p-6">
+              <p className="text-sm text-muted-foreground mb-4">
+                Set your coverage postcode and how far you'll travel for lessons.
+              </p>
+              <InstructorDetailsEditor instructorId={instructorId} defaultTab="vehicle" />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="availability">
+            <div className="bg-card rounded-2xl border p-6 space-y-4">
+              <div>
+                <p className="font-medium">Working hours & availability</p>
+                <p className="text-sm text-muted-foreground">Set your weekly working hours, day-off overrides and one-off blocks.</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link to="/instructor/availability">Quick availability</Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full sm:w-auto">
+                  <Link to="/instructor/availability-windows">Weekly windows & overrides</Link>
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
+
           <TabsContent value="vehicle">
             <div className="bg-card rounded-2xl border p-6">
               <InstructorDetailsEditor instructorId={instructorId} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="notifications">
+            <div className="bg-card rounded-2xl border p-6 space-y-4">
+              <div>
+                <p className="font-medium">Notifications</p>
+                <p className="text-sm text-muted-foreground">Choose what alerts you receive and how (push, email, SMS).</p>
+              </div>
+              <Button asChild className="w-full sm:w-auto">
+                <Link to="/instructor/settings/notifications">Open notification settings</Link>
+              </Button>
+              <div className="pt-2 border-t">
+                <p className="font-medium flex items-center gap-2"><SettingsIcon className="h-4 w-4 text-muted-foreground" />All settings</p>
+                <p className="text-sm text-muted-foreground mb-2">Branding, terms, integrations, AI call answering and more.</p>
+                <Button asChild variant="outline" className="w-full sm:w-auto">
+                  <Link to="/instructor/settings">Open all settings <ChevronRight className="h-4 w-4 ml-1" /></Link>
+                </Button>
+              </div>
             </div>
           </TabsContent>
 
