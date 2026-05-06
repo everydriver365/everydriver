@@ -452,6 +452,8 @@ export default function InstructorLiveSession() {
   // that is currently in its window (start − 5 min … end) and fire startSession
   // automatically. Manual stop suppresses re-arm for 30 minutes.
   const autoLessonFiredRef = React.useRef<Set<string>>(new Set());
+  const [autoTrackedLessonId, setAutoTrackedLessonId] = useState<string | null>(null);
+  const [autoTrackedPupilName, setAutoTrackedPupilName] = useState<string | null>(null);
   useEffect(() => {
     if (!instructor?.id) return;
     if (isSessionActive) return;
