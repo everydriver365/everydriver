@@ -388,7 +388,8 @@ export default function InstructorPupils() {
       toast.error("Not logged in. Please refresh and try again.");
       return;
     }
-    if (!addForm.name || !addForm.address || !addForm.postcode) {
+    const hasName = !!(addForm.name || addForm.first_name || addForm.last_name);
+    if (!hasName || !addForm.address || !addForm.postcode) {
       toast.error("Please fill in name, address and postcode");
       return;
     }
