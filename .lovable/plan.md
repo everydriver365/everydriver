@@ -1,36 +1,50 @@
-I found the likely cause.
+I checked the current data and code path. Kenneth/Ken D does have an active Radius tracker linked:
 
-Kenneth’s instructor profile is active as `Ken D`, and there is an active Radius tracker connected to that instructor:
+- Device: Charlotte
+- Provider: radius
+- Active: true
+- Recent heartbeat/location present
+- Kenneth’s saved tracking preference is still phone
 
-- Tracker name: `Charlotte`
-- Provider: `radius`
-- Active: yes
-- Last seen: 2026-05-06 08:18:43 UTC
-- Last heartbeat: 2026-05-06 08:19:41 UTC
-
-But his saved tracking preference is currently `phone`. The tracking page should still hydrate the Radius device in the background and let him switch to it, but the current code has a few brittle paths that can make the UI look like no hardware tracker exists.
+So the tracker exists, but the tracking page is still treating Phone GPS as the selected source. The collapsed tracker row therefore shows Phone tracking, and the mini map does not use Charlotte unless Radius becomes the active provider.
 
 Plan to fix:
 
-1. Make tracker/provider loading more robust on `/instructor/tracking`
-   - Fetch all of the instructor’s active `gps_devices` first, not only rows already filtered to `tracking_provider = 'radius'`.
-   - Pick the best active Radius device from that result when available.
-   - Keep Kenneth’s saved provider preference respected, but never hide the available Radius tracker just because the preferred provider is `phone`.
+1. Make fresh hardware win over stale phone preference
+   - In `InstructorLiveSession.tsx`, when an active/fresh Radius device exists and phone tracking is not actively streaming, automatically select Radius as the active provider.
+   - This will make Charlotte appear immediately for Kenneth instead of hiding behind the Phone GPS preference.
 
-2. Improve the Radius option in the tracker dropdown
-   - Ensure the dropdown detects active Radius devices reliably.
-   - If a Radius device exists, show/select `Radius tracker` rather than `Radius tracker (no device linked)`.
-   - When switching from Phone to Radius, immediately load the selected Radius device into page state.
+2. Share discovered device state with the dropdown
+   - Track `hasRadiusDevice` and the selected Radius device in the page state after the main device fetch.
+   - Pass that state into `TrackingProviderDropdown` so the dropdown does not rely on a second separate query that can lag or fail independently.
+   - The collapsed tracker selector should show something like `Radius tracker · Charlotte` when the hardware is available.
 
-3. Fix helper hooks that only know about Radius
-   - Update `useActiveTrackingProvider` so it recognises both `phone` and `radius` as valid providers.
-   - Keep Radius as the hardware provider, but do not let the hook return `null` just because the saved preference is `phone`.
+3. Keep manual choice behaviour clear
+   - If the instructor manually chooses Phone GPS, keep Phone selected for that session.
+   - Still show Radius as available in the dropdown, so switching back is one tap.
+   - If Radius is connected and selected, the mini map should use the Radius latitude/longitude feed.
 
-4. Add a clearer tracker status in the UI
-   - If a Radius tracker is linked but the active choice is Phone, the tracker tile should make that clear.
-   - If Radius is selected but stale/offline, show that as a connection freshness issue, not “no tracker available”.
+4. Improve the empty/offline message
+   - Distinguish between:
+     - no tracker linked
+     - tracker linked but offline/stale
+     - tracker linked and connected but not selected
+   - This prevents the misleading “no tracker available” state when a device record exists.
 
-5. Verify with Kenneth’s live data
-   - Confirm the page can see the active tracker row for instructor `Ken D`.
-   - Confirm the provider dropdown can switch between Phone tracking and Radius tracker.
-   - Confirm the Start button remains usable for Phone mode, and Radius mode continues to require a real tracker connection.
+5. Verify against Kenneth’s case
+   - Confirm the backend still shows Charlotte as active.
+   - Verify the tracking page now presents `Radius tracker · Charlotte` and the mini map uses Charlotte’s latest location when Radius is active.
+
+Technical details:
+
+- The existing bug is this branch:
+
+```ts
+if (preferred === "phone") {
+  setActiveProvider("phone");
+}
+```
+
+It honours the saved phone preference even when a live Radius device has been discovered. The device is hydrated, but the selected source remains Phone, so the UI/map do not visibly show Charlotte.
+
+- I will change provider resolution to consider live hardware freshness, not just the saved preference.
