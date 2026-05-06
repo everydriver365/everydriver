@@ -23,7 +23,9 @@ import {
   Shield,
   Wrench,
   Receipt,
-  Info
+  Info,
+  Zap,
+  BatteryCharging
 } from "lucide-react";
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { Skeleton } from "@/components/ui/skeleton";
