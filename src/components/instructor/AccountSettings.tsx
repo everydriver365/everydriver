@@ -23,7 +23,9 @@ import {
   Shield,
   Wrench,
   Receipt,
-  Info
+  Info,
+  Zap,
+  BatteryCharging
 } from "lucide-react";
 import { ExpandChevron } from "@/components/ui/ExpandChevron";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,11 +37,16 @@ interface AccountSettingsProps {
   instructorId: string;
 }
 
+type FuelType = "petrol" | "diesel" | "electric";
+
 interface AccountData {
   tax_code: string;
   hourly_rate: number;
   vehicle_mpg: number;
   fuel_cost_per_litre: number;
+  fuel_type: FuelType;
+  battery_kwh: number;
+  electricity_cost_per_kwh: number;
 }
 
 // HMRC Allowable Deductions for Driving Instructors
@@ -138,6 +145,9 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
     hourly_rate: 40,
     vehicle_mpg: 40,
     fuel_cost_per_litre: 1.45,
+    fuel_type: "petrol",
+    battery_kwh: 0,
+    electricity_cost_per_kwh: 0.30,
   });
   const [selectedDeductions, setSelectedDeductions] = useState<string[]>(
     ALLOWABLE_DEDUCTIONS.filter(d => d.defaultSelected).map(d => d.id)
@@ -152,7 +162,7 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
     try {
       const { data: instructor, error } = await supabase
         .from("instructors")
-        .select("tax_code, hourly_rate, vehicle_mpg, fuel_cost_per_litre")
+        .select("tax_code, hourly_rate, vehicle_mpg, fuel_cost_per_litre, fuel_type, battery_kwh, electricity_cost_per_kwh")
         .eq("id", instructorId)
         .single();
 
@@ -163,6 +173,9 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
         hourly_rate: instructor.hourly_rate || 40,
         vehicle_mpg: instructor.vehicle_mpg || 40,
         fuel_cost_per_litre: instructor.fuel_cost_per_litre || 1.45,
+        fuel_type: ((instructor as any).fuel_type as FuelType) || "petrol",
+        battery_kwh: Number((instructor as any).battery_kwh) || 0,
+        electricity_cost_per_kwh: Number((instructor as any).electricity_cost_per_kwh) || 0.30,
       });
     } catch (error) {
       console.error("Error fetching account data:", error);
@@ -181,7 +194,10 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
           hourly_rate: data.hourly_rate,
           vehicle_mpg: data.vehicle_mpg,
           fuel_cost_per_litre: data.fuel_cost_per_litre,
-        })
+          fuel_type: data.fuel_type,
+          battery_kwh: data.battery_kwh || null,
+          electricity_cost_per_kwh: data.electricity_cost_per_kwh,
+        } as any)
         .eq("id", instructorId);
 
       if (error) throw error;
@@ -278,63 +294,165 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
           </CardContent>
         </Card>
 
-        {/* Vehicle MPG */}
+        {/* Fuel Type */}
         <Card>
           <CardHeader className="pb-3 px-4">
             <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-              <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              Vehicle Efficiency
+              {data.fuel_type === "electric" ? (
+                <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
+              ) : (
+                <Fuel className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
+              )}
+              Fuel Type
             </CardTitle>
-            <CardDescription className="text-xs sm:text-sm">Miles per gallon</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">How your vehicle is powered</CardDescription>
           </CardHeader>
           <CardContent className="px-4 space-y-3">
-            <div className="space-y-2">
-              <Label htmlFor="vehicle_mpg" className="text-sm">Miles Per Gallon</Label>
-              <Input
-                id="vehicle_mpg"
-                type="number"
-                inputMode="decimal"
-                min="0"
-                step="0.1"
-                value={data.vehicle_mpg}
-                onChange={(e) => setData({ ...data, vehicle_mpg: parseFloat(e.target.value) || 0 })}
-                className="h-10"
-              />
-              <p className="text-xs text-muted-foreground">
-                Average MPG for your vehicle
-              </p>
+            <div className="grid grid-cols-3 gap-2">
+              {(["petrol", "diesel", "electric"] as FuelType[]).map((t) => {
+                const active = data.fuel_type === t;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setData({ ...data, fuel_type: t })}
+                    className={`h-10 rounded-lg border text-sm font-medium capitalize transition-colors ${
+                      active
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-card border-border hover:bg-muted/40"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
 
-        {/* Fuel Cost */}
-        <Card>
-          <CardHeader className="pb-3 px-4">
-            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-              <Fuel className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
-              Fuel Cost
-            </CardTitle>
-            <CardDescription className="text-xs sm:text-sm">Current fuel price</CardDescription>
-          </CardHeader>
-          <CardContent className="px-4 space-y-3">
-            <div className="space-y-2">
-              <Label htmlFor="fuel_cost" className="text-sm">Cost Per Litre (£)</Label>
-              <Input
-                id="fuel_cost"
-                type="number"
-                inputMode="decimal"
-                min="0"
-                step="0.01"
-                value={data.fuel_cost_per_litre}
-                onChange={(e) => setData({ ...data, fuel_cost_per_litre: parseFloat(e.target.value) || 0 })}
-                className="h-10"
-              />
-              <p className="text-xs text-muted-foreground">
-                Current price per litre
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        {data.fuel_type !== "electric" ? (
+          <>
+            {/* Vehicle MPG */}
+            <Card>
+              <CardHeader className="pb-3 px-4">
+                <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                  Vehicle Efficiency
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Miles per gallon</CardDescription>
+              </CardHeader>
+              <CardContent className="px-4 space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="vehicle_mpg" className="text-sm">Miles Per Gallon</Label>
+                  <Input
+                    id="vehicle_mpg"
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    step="0.1"
+                    value={data.vehicle_mpg}
+                    onChange={(e) => setData({ ...data, vehicle_mpg: parseFloat(e.target.value) || 0 })}
+                    className="h-10"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Average MPG for your vehicle
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Fuel Cost */}
+            <Card>
+              <CardHeader className="pb-3 px-4">
+                <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <Fuel className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
+                  Fuel Cost
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Current fuel price</CardDescription>
+              </CardHeader>
+              <CardContent className="px-4 space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="fuel_cost" className="text-sm">Cost Per Litre (£)</Label>
+                  <Input
+                    id="fuel_cost"
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    step="0.01"
+                    value={data.fuel_cost_per_litre}
+                    onChange={(e) => setData({ ...data, fuel_cost_per_litre: parseFloat(e.target.value) || 0 })}
+                    className="h-10"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Current price per litre
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          <>
+            {/* Battery Size */}
+            <Card>
+              <CardHeader className="pb-3 px-4">
+                <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <BatteryCharging className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
+                  Battery Size
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Usable battery capacity</CardDescription>
+              </CardHeader>
+              <CardContent className="px-4 space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="battery_kwh" className="text-sm">Battery (kWh)</Label>
+                  <Input
+                    id="battery_kwh"
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    step="0.1"
+                    placeholder="e.g. 4.5"
+                    value={data.battery_kwh || ""}
+                    onChange={(e) => setData({ ...data, battery_kwh: parseFloat(e.target.value) || 0 })}
+                    className="h-10"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Usable capacity in kilowatt-hours (e.g. 4.5 kWh)
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Electricity Cost */}
+            <Card>
+              <CardHeader className="pb-3 px-4">
+                <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
+                  Electricity Cost
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Home charging rate</CardDescription>
+              </CardHeader>
+              <CardContent className="px-4 space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="electricity_cost" className="text-sm">Cost Per kWh (£)</Label>
+                  <Input
+                    id="electricity_cost"
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    step="0.01"
+                    placeholder="e.g. 0.30"
+                    value={data.electricity_cost_per_kwh}
+                    onChange={(e) => setData({ ...data, electricity_cost_per_kwh: parseFloat(e.target.value) || 0 })}
+                    className="h-10"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Your average price per kWh
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
       {/* Payment Options (Klarna/Clearpay) */}
