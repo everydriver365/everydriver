@@ -100,66 +100,6 @@ export default function WhitelabelCourses() {
               Choose an available date below to see courses you can book.
             </p>
 
-            {/* Display-only postcode field */}
-            <div className="mt-5 flex flex-col gap-3 rounded-xl bg-card p-4 shadow-sm sm:flex-row sm:items-center">
-              <PostcodeAutocomplete
-                value={visitorPostcode}
-                onChange={setVisitorPostcode}
-                onSelect={(pc) => {
-                  setVisitorPostcode(pc);
-                  // Defer so state updates before invoke
-                  setTimeout(handleShowDistance, 50);
-                }}
-                placeholder="Your postcode (optional)"
-                className="flex-1"
-                inputClassName="h-11 border-0 bg-secondary"
-              />
-              <Button
-                variant="accent"
-                size="lg"
-                className="h-11"
-                onClick={handleShowDistance}
-                disabled={
-                  computingDistance ||
-                  !visitorPostcode.trim() ||
-                  !instructorPostcode
-                }
-              >
-                {computingDistance ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Search className="mr-2 h-4 w-4" />
-                )}
-                Show distance
-              </Button>
-              {distanceMiles != null && (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="h-11"
-                  onClick={clearDistance}
-                >
-                  <X className="mr-2 h-4 w-4" />
-                  Clear
-                </Button>
-              )}
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              We don't filter by location — we travel to you. Enter a postcode
-              to see how far we are.
-            </p>
-
-            {distanceMiles != null && (
-              <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-sm text-emerald-700 dark:text-emerald-400">
-                <MapPin className="h-4 w-4" />
-                <span className="font-medium">
-                  {distanceMiles.toFixed(1)} miles
-                </span>
-                <span className="text-muted-foreground">
-                  from {distanceLabel}
-                </span>
-              </div>
-            )}
           </motion.div>
         </div>
       </section>
