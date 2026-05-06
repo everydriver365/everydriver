@@ -62,7 +62,7 @@ export interface FeaturedCourse {
 
 const DISPLAY_HOURS = [10, 20, 30, 40, 28];
 
-export function useFeaturedCourses(limit: number = 3) {
+export function useFeaturedCourses(limit: number = 3, instructorId?: string | null) {
   const [courses, setCourses] = useState<FeaturedCourse[]>([]);
   const [loading, setLoading] = useState(true);
 
