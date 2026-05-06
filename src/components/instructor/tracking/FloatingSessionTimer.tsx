@@ -232,23 +232,6 @@ export function FloatingSessionTimer({
           >
             <div
               style={{
-                width: "100%",
-                fontSize: 17,
-                fontWeight: 700,
-                color: "#1C1C1E",
-                textAlign: "right",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                letterSpacing: -0.2,
-                lineHeight: 1.15,
-              }}
-              title={headlineName}
-            >
-              {headlineName}
-            </div>
-            <div
-              style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
