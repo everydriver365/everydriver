@@ -131,7 +131,7 @@ export function PupilRecordsManager() {
     date_of_birth: "", driver_number: "", transmission_type: "",
     status: "", pickup_address: "", pickup_postcode: "",
     emergency_contact_name: "", emergency_contact_phone: "",
-    custom_hourly_rate: "", instructor_id: "",
+    custom_hourly_rate: "", custom_rate_90min: "", custom_rate_120min: "", instructor_id: "",
     theory_test_date: "", theory_test_passed: "",
     prepaid_hours: "", account_balance: "", lessons_completed: "",
     notes: "",
