@@ -260,6 +260,13 @@ export function CalendarEventSheet({ event, onClose, onDelete, onRefetch }: Cale
 
           <Separator />
 
+          {canEdit && (
+            <Button variant="outline" className="w-full" onClick={() => setEditOpen(true)}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit {event.type === 'lesson' ? 'Lesson' : 'Block'}
+            </Button>
+          )}
+
           {/* Delete option for blocks only */}
           {event.type === 'block' && (
             <AlertDialog>
@@ -284,6 +291,13 @@ export function CalendarEventSheet({ event, onClose, onDelete, onRefetch }: Cale
             </AlertDialog>
           )}
         </div>
+
+        <EditScheduleEntryDialog
+          event={event}
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          onSaved={() => { onRefetch(); }}
+        />
       </SheetContent>
     </Sheet>
   );
