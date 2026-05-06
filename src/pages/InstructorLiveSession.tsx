@@ -383,10 +383,36 @@ export default function InstructorLiveSession() {
       ]);
 
       if (devicesRes.error) throw devicesRes.error;
-      const allDevices = (devicesRes.data ?? []).filter((d: any) => d.is_active !== false);
+      let allDevices = (devicesRes.data ?? []).filter((d: any) => d.is_active !== false);
+      console.log("[Tracking] instructor.id=", instructor.id, "devices direct=", devicesRes.data);
+
+      // Fallback: if direct query yielded nothing, try via canonical
+      // instructor identity helper. This catches school-portal / mixed
+      // auth contexts where instructor.id from context may not match
+      // auth.uid()'s RLS-visible instructor row.
+      if (allDevices.length === 0) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.id) {
+          const { data: idRow } = await supabase.rpc("get_instructor_id_for_user", { p_user_id: user.id });
+          const fallbackId = (idRow as unknown as string) || null;
+          console.log("[Tracking] fallback instructorId=", fallbackId);
+          if (fallbackId && fallbackId !== instructor.id) {
+            const res = await supabase
+              .from("gps_devices")
+              .select("*")
+              .eq("instructor_id", fallbackId)
+              .order("last_seen_at", { ascending: false, nullsFirst: false })
+              .limit(20);
+            allDevices = (res.data ?? []).filter((d: any) => d.is_active !== false);
+            console.log("[Tracking] fallback devices=", res.data);
+          }
+        }
+      }
+
       const devices = allDevices.filter((d: any) => d.tracking_provider === "radius");
       const preferred = (prefRes.data as any)?.preferred_tracking_provider as string | null;
       const hasRadius = devices.length > 0;
+      console.log("[Tracking] hasRadius=", hasRadius, "preferred=", preferred);
 
       // Hydrate the Radius device whenever one exists, regardless of the
       // saved preference, so switching tracker is instant.
