@@ -139,15 +139,39 @@ export default function WhitelabelCourses() {
                 <div className="flex h-64 items-center justify-center">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
-              ) : !selectedDate ? (
-                <div className="flex h-64 flex-col items-center justify-center text-center">
-                  <CalendarIcon className="mb-3 h-10 w-10 text-muted-foreground" />
-                  <h2 className="text-lg font-semibold">
-                    No upcoming availability
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Please check back soon — new dates are added regularly.
-                  </p>
+              ) : !selectedDate || availableDatesInMonth.length === 0 ? (
+                <div className="rounded-xl border bg-card p-6">
+                  <div className="mb-4 flex items-start gap-3">
+                    <CalendarIcon className="mt-0.5 h-6 w-6 text-muted-foreground" />
+                    <div>
+                      <h2 className="text-lg font-semibold">
+                        {nextAvailableDates.length > 0
+                          ? "Next available dates"
+                          : "No upcoming availability"}
+                      </h2>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {nextAvailableDates.length > 0
+                          ? "Tap a date to see courses you can book."
+                          : "Please check back soon."}
+                      </p>
+                    </div>
+                  </div>
+                  {nextAvailableDates.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      {nextAvailableDates.slice(0, 9).map((d) => (
+                        <button
+                          key={d.toISOString()}
+                          onClick={() => handlePickDate(d)}
+                          className="rounded-lg border bg-background px-3 py-2 text-left text-sm font-medium transition-colors hover:bg-emerald-500/10 hover:border-emerald-500/40"
+                        >
+                          <div className="text-xs text-muted-foreground">
+                            {format(d, "EEE")}
+                          </div>
+                          <div>{format(d, "d MMM")}</div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <>
