@@ -509,6 +509,32 @@ export function AddPupilSheet({
     }
   };
 
+  // Auto-lookup what3words when a valid UK postcode is typed/pasted (debounced)
+  const UK_POSTCODE_RE = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
+  useEffect(() => {
+    if (!open) return;
+    const pc = (form.postcode || "").trim();
+    if (!pc || !UK_POSTCODE_RE.test(pc)) return;
+    if ((form.what3words || "").trim()) return;
+    const t = setTimeout(async () => {
+      setIsLookingUpW3W(true);
+      try {
+        const { data } = await supabase.functions.invoke("convert-to-what3words", {
+          body: { postcode: pc },
+        });
+        if (data?.what3words) {
+          setForm((prev) => ({ ...prev, what3words: data.what3words }));
+        }
+      } catch (err) {
+        console.error("What3Words auto-lookup failed:", err);
+      } finally {
+        setIsLookingUpW3W(false);
+      }
+    }, 600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.postcode, open]);
+
   // ============ Mobile body (unchanged) ============
   const mobileBody = (
     <div
