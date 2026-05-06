@@ -455,6 +455,55 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     });
   }, [instructors, userLocation, radius, geoCache]);
 
+  // Upcoming available dates across the next ~6 months (cap 12 dates)
+  const nextAvailableDates = useMemo(() => {
+    const today = startOfDay(new Date());
+    const relevantInstructors = userLocation ? instructorsInArea : instructors;
+    if (relevantInstructors.length === 0) return [] as Date[];
+
+    const results: Date[] = [];
+    const monthsToScan = monthOptions.slice(0, 6);
+
+    for (const monthOption of monthsToScan) {
+      const [year, month] = monthOption.value.split("-").map(Number);
+      const monthStart = startOfMonth(new Date(year, month - 1));
+      const monthEnd = endOfMonth(monthStart);
+      if (isBefore(monthEnd, today)) continue;
+      const searchStart = isAfter(monthStart, today) ? monthStart : today;
+      const days = eachDayOfInterval({ start: searchStart, end: monthEnd });
+
+      for (const day of days) {
+        const dayOfWeek = getDay(day);
+        const dateStr = format(day, "yyyy-MM-dd");
+        const isAvailable = relevantInstructors.some((instructor) => {
+          if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
+            return false;
+          }
+          const override = dateOverrides.find(
+            (o) =>
+              o.instructor_id === instructor.id &&
+              (o.override_date === dateStr ||
+                (o.override_end_date &&
+                  dateStr >= o.override_date &&
+                  dateStr <= o.override_end_date))
+          );
+          if (override) return override.is_available;
+          return workingHours.some(
+            (wh) =>
+              wh.instructor_id === instructor.id &&
+              wh.day_of_week === dayOfWeek &&
+              wh.is_active
+          );
+        });
+        if (isAvailable) {
+          results.push(day);
+          if (results.length >= 12) return results;
+        }
+      }
+    }
+    return results;
+  }, [instructors, instructorsInArea, userLocation, workingHours, dateOverrides, monthOptions]);
+
   const availableDatesInMonth = useMemo(() => {
     const [year, month] = selectedMonth.split("-").map(Number);
     const monthStart = startOfMonth(new Date(year, month - 1));
