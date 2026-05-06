@@ -98,7 +98,9 @@ export function TrackingProviderDropdown({
         <SelectItem value="radius" disabled={!hasRadiusDevice}>
           <span className="flex items-center gap-2">
             <Radio className="h-4 w-4" />
-            Radius tracker{!hasRadiusDevice ? " (no device linked)" : ""}
+            {hasRadiusDevice
+              ? `Radius tracker${radiusDeviceName ? ` · ${radiusDeviceName}` : ""}`
+              : "Radius tracker (no device linked)"}
           </span>
         </SelectItem>
       </SelectContent>
