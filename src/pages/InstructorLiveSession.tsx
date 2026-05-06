@@ -439,25 +439,12 @@ export default function InstructorLiveSession() {
         setRadiusDeviceInfo(null);
       }
 
-      // A connected Radius tracker should win over a stale "phone" preference
-      // unless the instructor explicitly switched to phone in this browser.
-      const lastSeenAt = radiusDevice?.last_seen_at ? new Date(radiusDevice.last_seen_at).getTime() : 0;
-      const radiusFresh = hasRadius && lastSeenAt > 0 && Date.now() - lastSeenAt < 24 * 60 * 60 * 1000;
-      const manualPhoneOverride =
-        typeof sessionStorage !== "undefined" &&
-        sessionStorage.getItem(`tracking-manual-phone:${instructor.id}`) === "1";
-
+      // Single source of truth: the saved preference. Only auto-pick when
+      // no preference has ever been set (first run). This prevents the
+      // dropdown from showing the wrong tracker after the instructor has
+      // explicitly chosen one.
       if (preferred === "radius" && hasRadius) {
         setActiveProvider("radius");
-      } else if (radiusFresh && !manualPhoneOverride) {
-        setActiveProvider("radius");
-        // Persist so the rest of the app honours the live hardware.
-        if (preferred !== "radius") {
-          void supabase
-            .from("instructors")
-            .update({ preferred_tracking_provider: "radius" } as any)
-            .eq("id", instructor.id);
-        }
       } else if (preferred === "phone") {
         setActiveProvider("phone");
       } else if (!preferred && hasRadius) {
@@ -466,7 +453,10 @@ export default function InstructorLiveSession() {
           .from("instructors")
           .update({ preferred_tracking_provider: "radius" } as any)
           .eq("id", instructor.id);
+      } else if (!preferred) {
+        setActiveProvider("phone");
       } else {
+        // preferred === "radius" but no radius device linked → fall back to phone
         setActiveProvider("phone");
       }
 
