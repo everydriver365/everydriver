@@ -1,6 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, startOfDay, parseISO } from "date-fns";
+import {
+  buildDayConflicts,
+  computeFreeSlots,
+  fromMinutes,
+  toMinutes,
+} from "@/lib/availabilityCore";
 
 interface GapSlot {
   id: string;
@@ -91,11 +97,7 @@ export function useRealGapSlots(instructorId: string | undefined) {
 
       const bufferMinutes =
         (instructor as { buffer_minutes?: number | null } | null)?.buffer_minutes ?? 0;
-      const TRAVEL_FALLBACK_MIN = 10;
-      // Hours of allowance to inflate conflict windows by on each side
-      const sideAllowanceHours = (bufferMinutes + TRAVEL_FALLBACK_MIN) / 60;
 
-      // Map pupils to suggested format
       const suggestedPupils: SuggestedPupil[] = (pupils || []).map((p) => ({
         id: p.id,
         name: p.name,
@@ -106,127 +108,51 @@ export function useRealGapSlots(instructorId: string | undefined) {
 
       const gapsByDate: Map<string, GapSlot[]> = new Map();
 
-      // Calculate gaps for each day
       for (let i = 1; i <= 14; i++) {
         const currentDate = addDays(startOfDay(new Date()), i);
         const dateStr = format(currentDate, "yyyy-MM-dd");
         const dayOfWeek = currentDate.getDay();
 
-        // Check if there's an override for this date
         const override = overrides?.find((o) => o.override_date === dateStr);
+        if (override && !override.is_available) continue;
 
-        if (override && !override.is_available) {
-          continue; // Instructor marked as unavailable
-        }
-
-        // Get working hours for this day
         const dayHours = workingHours?.find((wh) => wh.day_of_week === dayOfWeek);
-
-        if (!dayHours && !override?.is_available) {
-          continue; // No working hours set for this day
-        }
+        if (!dayHours && !override?.is_available) continue;
 
         const startHour = override?.start_time || dayHours?.start_time || "09:00";
         const endHour = override?.end_time || dayHours?.end_time || "17:00";
 
-        // Get lessons for this day
-        const dayLessons = scheduledLessons?.filter((l) => l.lesson_date === dateStr) || [];
+        const dayLessons = (scheduledLessons || []).filter(
+          (l) => l.lesson_date === dateStr,
+        );
+        const dayBlocks = manualBlocks || [];
+        const dayEvents = calendarEvents || [];
 
-        // Get manual blocks for this day
-        const dayBlocks =
-          manualBlocks?.filter((b) => {
-            const blockStart = new Date(b.start_datetime);
-            const blockEnd = new Date(b.end_datetime);
-            return (
-              format(blockStart, "yyyy-MM-dd") === dateStr ||
-              format(blockEnd, "yyyy-MM-dd") === dateStr
-            );
-          }) || [];
+        const conflicts = buildDayConflicts(
+          dateStr,
+          dayLessons,
+          dayBlocks,
+          dayEvents,
+        );
 
-        // Get external calendar events for this day
-        const dayCalendarEvents =
-          calendarEvents?.filter((e) => {
-            const eventStart = new Date(e.start_time);
-            const eventEnd = new Date(e.end_time);
-            return (
-              format(eventStart, "yyyy-MM-dd") === dateStr ||
-              format(eventEnd, "yyyy-MM-dd") === dateStr
-            );
-          }) || [];
+        const free = computeFreeSlots({
+          dateStr,
+          dayStartMin: toMinutes(startHour),
+          dayEndMin: toMinutes(endHour),
+          bufferMinutes,
+          durationMinutes: 60,
+          conflicts,
+          anchorSkipMinutes: 60,
+        });
 
-        // Parse working hours
-        const workStart = parseInt(startHour.split(":")[0]);
-        const workEnd = parseInt(endHour.split(":")[0]);
+        const daySlots: GapSlot[] = free.map((slot) => ({
+          id: `${dateStr}-${fromMinutes(slot.start)}`,
+          date: dateStr,
+          startTime: fromMinutes(slot.start),
+          endTime: fromMinutes(slot.end),
+        }));
 
-        const daySlots: GapSlot[] = [];
-
-        // Find 1-hour slots that are free
-        for (let hour = workStart; hour < workEnd; hour++) {
-          const slotStart = `${hour.toString().padStart(2, "0")}:00`;
-          const slotEnd = `${(hour + 1).toString().padStart(2, "0")}:00`;
-          const slotStartHour = hour;
-          const slotEndHour = hour + 1;
-
-          // Inflate every conflict window by buffer + travel on each side
-          // so we don't offer a slot that touches another commitment.
-          const pad = sideAllowanceHours;
-
-          // Check if this slot overlaps with any scheduled lesson
-          const hasLessonConflict = dayLessons.some((lesson) => {
-            const [lh, lm] = lesson.start_time.split(":").map(Number);
-            const lessonStartHour = lh + (lm || 0) / 60;
-            const lessonEndHour = lessonStartHour + lesson.duration_minutes / 60;
-            return (
-              slotStartHour < lessonEndHour + pad &&
-              slotEndHour > lessonStartHour - pad
-            );
-          });
-
-          // Check if this slot overlaps with any manual block
-          const hasBlockConflict = dayBlocks.some((block) => {
-            const blockStart = new Date(block.start_datetime);
-            const blockEnd = new Date(block.end_datetime);
-
-            if (format(blockStart, "yyyy-MM-dd") === dateStr) {
-              const blockStartHour = blockStart.getHours() + blockStart.getMinutes() / 60;
-              const blockEndHour = blockEnd.getHours() + blockEnd.getMinutes() / 60;
-              return (
-                slotStartHour < blockEndHour + pad &&
-                slotEndHour > blockStartHour - pad
-              );
-            }
-            return false;
-          });
-
-          // Check if this slot overlaps with any external calendar event
-          const hasCalendarConflict = dayCalendarEvents.some((event) => {
-            const eventStart = new Date(event.start_time);
-            const eventEnd = new Date(event.end_time);
-
-            if (format(eventStart, "yyyy-MM-dd") === dateStr) {
-              const eventStartHour = eventStart.getHours() + eventStart.getMinutes() / 60;
-              const eventEndHour = eventEnd.getHours() + eventEnd.getMinutes() / 60;
-              return (
-                slotStartHour < eventEndHour + pad &&
-                slotEndHour > eventStartHour - pad
-              );
-            }
-            return false;
-          });
-
-          if (!hasLessonConflict && !hasBlockConflict && !hasCalendarConflict) {
-            daySlots.push({
-              id: `${dateStr}-${slotStart}`,
-              date: dateStr,
-              startTime: slotStart,
-              endTime: slotEnd,
-            });
-          }
-        }
-
-        if (daySlots.length > 0) {
-          gapsByDate.set(dateStr, daySlots);
-        }
+        if (daySlots.length > 0) gapsByDate.set(dateStr, daySlots);
       }
 
       // Convert to array format and limit to first 7 days with gaps
