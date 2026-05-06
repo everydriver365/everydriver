@@ -1508,7 +1508,7 @@ export default function InstructorLiveSession() {
                     background: "#FFF",
                     borderRadius: 14,
                     border: "0.5px solid rgba(26,82,160,0.08)",
-                    overflow: "hidden",
+                    overflow: "visible",
                     marginBottom: 20,
                   }}
                 >
