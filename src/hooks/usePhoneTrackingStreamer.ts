@@ -76,35 +76,52 @@ export function usePhoneTrackingStreamer({
         if (cancelled) return;
         const now = Date.now();
         if (now - lastSentRef.current < minIntervalMs) return;
-        lastSentRef.current = now;
 
         const { latitude, longitude, speed, heading, accuracy } = pos.coords;
+
+        // Drop low-accuracy fixes — these cause the zig-zag "random lines" on the
+        // trip map. Anything worse than ~35 m is unusable for a route polyline.
+        if (accuracy != null && accuracy > 35) {
+          return;
+        }
+
+        lastSentRef.current = now;
         const speedKmh = speed != null && !Number.isNaN(speed) ? speed * 3.6 : 0;
 
-        // Distance delta vs last accepted point
+        // Distance delta vs last accepted point — also acts as a jitter filter
+        // so we don't draw a polyline edge for sub-5 m noise while stationary.
         let distanceDeltaKm = 0;
+        let movedSinceLast = 0;
         if (lastPointRef.current) {
-          const m = haversineMetres(
+          movedSinceLast = haversineMetres(
             lastPointRef.current.lat, lastPointRef.current.lng,
             latitude, longitude,
           );
-          // Ignore jitter < 3 m and unrealistic jumps (> 500 m between fixes)
-          if (m >= 3 && m < 500) distanceDeltaKm = m / 1000;
+          if (movedSinceLast < 5 && speedKmh < 3) {
+            // Stationary jitter — skip entirely so the polyline stays clean
+            return;
+          }
+          if (movedSinceLast < 500) distanceDeltaKm = movedSinceLast / 1000;
         }
         lastPointRef.current = { lat: latitude, lng: longitude };
 
-        // Resolve speed limit — only re-fetch if moved >30 m or >15 s old
+        // Resolve speed limit. We AWAIT on the first fix and whenever we've
+        // moved far enough that the cached value is no longer trustworthy, so
+        // each persisted GPS row gets a fresh limit instead of repeating the
+        // first lookup forever.
         const lastFetch = lastLimitFetchRef.current;
         const movedFar = !lastFetch || haversineMetres(
           lastFetch.lat, lastFetch.lng, latitude, longitude,
-        ) > 30;
-        const stale = !lastFetch || (now - lastFetch.at) > 15000;
-        if (movedFar || stale) {
+        ) > 60;
+        const stale = !lastFetch || (now - lastFetch.at) > 20000;
+        if (cachedLimitRef.current == null || movedFar || stale) {
           lastLimitFetchRef.current = { lat: latitude, lng: longitude, at: now };
-          // Fire-and-forget; cache result for next emission
-          resolvePhoneSpeedLimit(latitude, longitude)
-            .then((limit) => { cachedLimitRef.current = limit; })
-            .catch(() => {});
+          try {
+            const limit = await resolvePhoneSpeedLimit(latitude, longitude);
+            cachedLimitRef.current = limit;
+          } catch {
+            /* keep previous cached value */
+          }
         }
         const speedLimitKmh = cachedLimitRef.current;
 
