@@ -960,7 +960,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                       </div>
                       <span
                         style={{
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: 600,
                           textAlign: "left",
                           color: TEXT,
