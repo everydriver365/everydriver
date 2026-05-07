@@ -637,8 +637,9 @@ export function AddLessonSheet({
         });
       }
       // For recurring lessons, re-check every week (not just the first) so we
-      // never silently insert a clash on weeks 2..N.
-      if (weeks > 1) {
+      // never silently insert a clash on weeks 2..N — unless the user has
+      // explicitly chosen to override the clash.
+      if (weeks > 1 && !(overrideBuffer && isHardOverlap)) {
         for (const dateStr of dateStrs) {
           const c = await checkLessonClash({
             instructorId, date: dateStr, startTime: lessonStartTime, durationMinutes,
