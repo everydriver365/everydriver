@@ -457,8 +457,8 @@ function LessonRow({
   const accent = lessonAccentColor(lesson, now);
   const t = (lesson.lessonType || "").toLowerCase();
   const isPast = lesson.endDate <= now && lesson.status !== "cancelled";
-  const isPaid = lesson.paymentStatus === "paid";
-  const showPayPill = lesson.amountDue > 0 && lesson.status !== "cancelled";
+  const isPaid = lesson.paymentStatus === "paid" || lesson.paymentStatus === "cash";
+  const showPayPill = lesson.status !== "cancelled";
   const showEOLPill = isPast || lesson.status === "completed" || eolDone;
 
   const pills: { label: string; bg: string; color: string; aria: string }[] = [];
