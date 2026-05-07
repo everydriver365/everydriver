@@ -523,6 +523,8 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [addLessonOpen, setAddLessonOpen] = useState(false);
+  const [addEventOpen, setAddEventOpen] = useState(false);
+  const [addEventDate, setAddEventDate] = useState<Date | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<ScheduledLesson | null>(null);
   const [sendingMessage, setSendingMessage] = useState<string | null>(null);
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
