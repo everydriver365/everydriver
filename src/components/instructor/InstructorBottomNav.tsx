@@ -1,58 +1,49 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Home, CalendarDays, Crosshair, User, MoreHorizontal, Mic, Loader2, Volume2 } from "lucide-react";
+import { Home, CalendarDays, Crosshair, Users, Mic, Loader2, Volume2 } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { haptics } from "@/lib/haptics";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
-import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { supabase } from "@/integrations/supabase/client";
 import type { LucideIcon } from "lucide-react";
-
 
 interface NavItem {
   label: string;
   icon: LucideIcon;
   path: string;
   showBadge?: boolean;
-  isMessages?: boolean;
   isTrack?: boolean;
-  isSchedule?: boolean;
-  isMore?: boolean;
 }
 
-const navItems: NavItem[] = [
+const ITEMS: NavItem[] = [
   { label: "Home", icon: Home, path: "/instructor" },
-  { label: "Schedule", icon: CalendarDays, path: "/instructor/schedule", isSchedule: true },
+  { label: "Diary", icon: CalendarDays, path: "/instructor/schedule" },
   { label: "Track", icon: Crosshair, path: "/instructor/tracking", isTrack: true },
-  { label: "Pupils", icon: User, path: "/instructor/pupils", showBadge: true },
+  { label: "Pupils", icon: Users, path: "/instructor/pupils", showBadge: true },
 ];
 
-interface InstructorBottomNavProps {
-  wallpaperColor?: string;
-}
+const RED = "#C8242C";
+const BLUE = "#1E6FB8";
+const INACTIVE = "#6B6B6B";
+const PAGE_BG = "#F5F4F1";
 
-interface InstructorBottomNavProps {
+interface Props {
   wallpaperColor?: string;
   voiceState?: "idle" | "listening" | "processing" | "speaking";
   onVoiceTap?: () => void;
 }
 
-export function InstructorBottomNav({ wallpaperColor, voiceState = "idle", onVoiceTap }: InstructorBottomNavProps) {
+export function InstructorBottomNav({ voiceState = "idle", onVoiceTap }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
   const pendingJobsCount = usePendingJobsCount();
   const { instructor } = useInstructorAuth();
   const [isTrackingActive, setIsTrackingActive] = useState(false);
 
-  const { data: unreadCount = 0 } = useUnreadMessagesCount(instructor?.id);
-  const { data: todayOverview } = useTodayOverview(instructor?.id);
-  const todayLessonCount = todayOverview?.lessonCount || 0;
-
   useEffect(() => {
     if (!instructor?.id) return;
-    const checkActiveSession = async () => {
+    const check = async () => {
       const { data } = await supabase
         .from("lesson_telematics")
         .select("id")
@@ -62,90 +53,69 @@ export function InstructorBottomNav({ wallpaperColor, voiceState = "idle", onVoi
         .limit(1);
       setIsTrackingActive((data?.length ?? 0) > 0);
     };
-    checkActiveSession();
-    const interval = setInterval(checkActiveSession, 15000);
-    return () => clearInterval(interval);
+    check();
+    const i = setInterval(check, 15000);
+    return () => clearInterval(i);
   }, [instructor?.id]);
 
-  const handleNavClick = (path: string) => {
+  const handleNav = (path: string) => {
     haptics.selection();
     navigate(path);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleVoiceTap = () => {
-    haptics.selection();
-    onVoiceTap?.();
-  };
-
-  // Split items so mic sits in the middle
-  const leftItems = navItems.slice(0, 2);
-  const rightItems = navItems.slice(2);
-
   const renderTab = (item: NavItem) => {
     const isActive = location.pathname === item.path;
-    const isTrack = item.isTrack;
-    const isSchedule = item.isSchedule;
-    const isMore = item.isMore;
-
-    let tabBadge = 0;
-    if (item.showBadge) tabBadge = pendingJobsCount;
-    if (isSchedule && todayLessonCount > 0) tabBadge = todayLessonCount;
-    if (isMore) tabBadge = pendingJobsCount + unreadCount;
-
     const Icon = item.icon;
-    const activeColor = 'hsl(var(--dsm-accent-blue))';
-    const inactiveColor = 'hsl(var(--dsm-text-secondary))';
-    const trackActiveColor = isTrack && isTrackingActive && !isActive ? "#10b981" : undefined;
-
-    const showBadge = tabBadge > 0 && !(isSchedule && isActive);
-    const badgeLabel = tabBadge > 99 ? "99+" : `${tabBadge}`;
-
+    const badge = item.showBadge ? pendingJobsCount : 0;
+    const color = isActive ? RED : INACTIVE;
     return (
       <button
         key={item.path}
-        onClick={() => handleNavClick(item.path)}
-        className="relative flex flex-col items-center cursor-pointer flex-1"
-        style={{ gap: 4, minWidth: 0 }}
+        onClick={() => handleNav(item.path)}
+        className="relative flex flex-col items-center justify-center flex-1"
+        style={{ gap: 3, minHeight: 44, minWidth: 0 }}
+        aria-label={item.label}
       >
-        <div
-          className="relative flex items-center justify-center"
-          style={{
-            width: 44,
-            height: 28,
-            borderRadius: 14,
-            background: isActive ? 'hsl(var(--dsm-accent-blue) / 0.12)' : 'transparent',
-          }}
-        >
+        <div className="relative" style={{ width: 24, height: 24 }}>
           <Icon
-            size={24}
-            strokeWidth={isActive ? 2.2 : 1.8}
-            color={isActive ? activeColor : trackActiveColor || inactiveColor}
-            style={{ strokeLinecap: 'round', strokeLinejoin: 'round' }}
+            size={22}
+            strokeWidth={isActive ? 2 : 1.7}
+            color={color}
           />
-          {showBadge && (
+          {badge > 0 && (
             <span
               className="absolute flex items-center justify-center"
               style={{
-                top: -4, right: -2, minWidth: 18, height: 18, borderRadius: 9,
-                padding: '0 5px', background: '#E15D5A', color: 'white',
-                fontSize: 11, fontWeight: 700, lineHeight: 1, letterSpacing: '-0.2px',
-                border: '2px solid hsl(var(--dsm-card))',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.15)',
+                top: -4,
+                right: -6,
+                minWidth: 16,
+                height: 16,
+                padding: "0 4px",
+                borderRadius: 8,
+                background: RED,
+                color: "#FFFFFF",
+                fontSize: 10,
+                fontWeight: 600,
+                lineHeight: 1,
               }}
             >
-              {badgeLabel}
+              {badge > 9 ? "9+" : badge}
             </span>
           )}
-          {isTrack && isTrackingActive && (
-            <span className="absolute top-1 right-3 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          {item.isTrack && isTrackingActive && (
+            <span
+              className="absolute"
+              style={{ top: 0, right: -2, width: 7, height: 7, borderRadius: 4, background: "#1D9E75" }}
+            />
           )}
         </div>
         <span
           style={{
             fontSize: 11,
-            fontWeight: isActive ? 700 : 500,
-            color: isActive ? activeColor : inactiveColor,
+            fontWeight: 500,
+            color,
+            letterSpacing: -0.1,
           }}
         >
           {item.label}
@@ -154,57 +124,64 @@ export function InstructorBottomNav({ wallpaperColor, voiceState = "idle", onVoi
     );
   };
 
-  const micGradient =
-    voiceState === "listening" ? "linear-gradient(135deg, #ef4444, #dc2626)" :
-    voiceState === "processing" ? "linear-gradient(135deg, #f59e0b, #d97706)" :
-    voiceState === "speaking" ? "linear-gradient(135deg, #10b981, #059669)" :
-    "linear-gradient(135deg, hsl(var(--dsm-accent-blue)), #4F6BD9)";
+  const left = ITEMS.slice(0, 2);
+  const right = ITEMS.slice(2);
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t-[0.5px]"
+      className="fixed left-0 right-0 z-50 md:hidden flex justify-center pointer-events-none"
       style={{
-        background: 'hsl(var(--dsm-card))',
-        borderColor: 'hsl(var(--dsm-border))',
-        borderRadius: '20px 20px 0 0',
-        boxShadow: '0 -4px 16px rgba(0,0,0,0.08), 0 -1px 4px rgba(0,0,0,0.05)',
+        bottom: "max(12px, env(safe-area-inset-bottom))",
       }}
     >
-      <div className="relative flex items-start justify-between" style={{ padding: '10px 12px 16px', gap: 4 }}>
-        <div className="flex flex-1 items-start justify-around">{navItems.slice(0, 2).map(renderTab)}</div>
+      <div
+        className="pointer-events-auto relative flex items-center"
+        style={{
+          background: "#FFFFFF",
+          borderRadius: 28,
+          padding: "8px 12px",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)",
+          width: "calc(100% - 24px)",
+          maxWidth: 420,
+          gap: 4,
+        }}
+      >
+        <div className="flex flex-1" style={{ gap: 4 }}>{left.map(renderTab)}</div>
 
-        <div className="flex items-start justify-center" style={{ width: 72 }}>
+        <div className="flex items-start justify-center" style={{ width: 64, alignSelf: "stretch" }}>
           <motion.button
             type="button"
-            onClick={() => { haptics.selection(); onVoiceTap?.(); }}
+            onClick={() => {
+              haptics.selection();
+              onVoiceTap?.();
+            }}
             whileTap={{ scale: 0.92 }}
-            aria-label="Hey ED"
-            className="relative flex items-center justify-center"
+            aria-label="Voice command"
+            className="flex items-center justify-center"
             style={{
-              width: 60,
-              height: 60,
-              borderRadius: 30,
-              marginTop: -22,
-              background: micGradient,
-              color: 'white',
-              boxShadow: '0 8px 20px rgba(61,85,161,0.35), 0 2px 6px rgba(0,0,0,0.12)',
-              border: '4px solid hsl(var(--dsm-card))',
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              marginTop: -20,
+              background: BLUE,
+              color: "#FFFFFF",
+              border: `4px solid ${PAGE_BG}`,
+              boxShadow: "0 6px 14px rgba(30,111,184,0.35)",
             }}
           >
-            {voiceState === "idle" && <Mic size={24} strokeWidth={2.2} />}
+            {voiceState === "idle" && <Mic size={20} strokeWidth={2} />}
             {voiceState === "listening" && (
               <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ repeat: Infinity, duration: 1 }}>
-                <Mic size={24} strokeWidth={2.2} />
+                <Mic size={20} strokeWidth={2} />
               </motion.div>
             )}
-            {voiceState === "processing" && <Loader2 size={24} className="animate-spin" />}
-            {voiceState === "speaking" && <Volume2 size={24} strokeWidth={2.2} />}
+            {voiceState === "processing" && <Loader2 size={20} className="animate-spin" />}
+            {voiceState === "speaking" && <Volume2 size={20} strokeWidth={2} />}
           </motion.button>
         </div>
 
-        <div className="flex flex-1 items-start justify-around">{navItems.slice(2).map(renderTab)}</div>
+        <div className="flex flex-1" style={{ gap: 4 }}>{right.map(renderTab)}</div>
       </div>
-      <div className="h-safe-area-inset-bottom" style={{ background: 'hsl(var(--dsm-card))' }} />
     </nav>
   );
 }
