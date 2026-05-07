@@ -327,7 +327,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
           </p>
         </div>
         <Button
-          onClick={() => setAddLessonOpen(true)}
+          onClick={() => setAddEventOpen(true)}
           className="rounded-2xl bg-[#1a3a4a] hover:bg-[#1a3a4a]/90 text-white gap-1.5 h-10 px-5"
         >
           <Plus className="h-4 w-4" />
