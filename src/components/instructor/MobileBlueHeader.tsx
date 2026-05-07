@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, Plus, Menu, ChevronLeft, Phone } from "lucide-react";
 import dsmLogo from "@/assets/dsm-logo.png";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
 import { useAICallDivert } from "@/hooks/useAICallDivert";
+import { AICallDivertSheet } from "@/components/instructor/AICallDivertSheet";
 
 interface Props {
   instructorId: string | undefined;
@@ -35,6 +37,7 @@ export function MobileBlueHeader({
   onMenu,
 }: Props) {
   const navigate = useNavigate();
+  const [divertSheetOpen, setDivertSheetOpen] = useState(false);
   const { total: notifCount } = useCombinedNotificationCount(instructorId);
   const aiDivert = useAICallDivert(instructorId, null);
   const divertOn = aiDivert.settings.mode !== "off";
@@ -45,14 +48,15 @@ export function MobileBlueHeader({
   const bg = "hsl(var(--dsm-page-bg,var(--dsm-bg)))";
 
   return (
-    <header
-      className="sticky top-0 z-40"
-      style={{
-        paddingTop: 0,
-        backgroundColor: bg,
-      }}
-    >
-      <div className="flex h-14 items-center justify-between px-5" style={{ marginTop: 2 }}>
+    <>
+      <header
+        className="sticky top-0 z-40"
+        style={{
+          paddingTop: 0,
+          backgroundColor: bg,
+        }}
+      >
+        <div className="flex h-14 items-center justify-between px-5" style={{ marginTop: 2 }}>
         {/* Left: logo+wordmark on home; back+title on other tab roots; back+title on subpages */}
         <div className="flex items-center gap-2.5 min-w-0" style={{ opacity: 0.95 }}>
           {showBackButton && (
@@ -98,7 +102,7 @@ export function MobileBlueHeader({
         {/* Right: phone divert, bell, +, menu */}
         <div className="flex items-center" style={{ gap: 12 }}>
           <button
-            onClick={() => navigate("/instructor/famulor")}
+            onClick={() => setDivertSheetOpen(true)}
             className="relative flex items-center justify-center"
             style={{ width: 32, height: 32 }}
             aria-label={divertOn ? "AI call divert on — open settings" : "AI call divert off — open settings"}
@@ -151,7 +155,9 @@ export function MobileBlueHeader({
             <Menu size={20} strokeWidth={1.7} color={ICON_COLOR} />
           </button>
         </div>
-      </div>
-    </header>
+        </div>
+      </header>
+      <AICallDivertSheet open={divertSheetOpen} onOpenChange={setDivertSheetOpen} state={aiDivert} />
+    </>
   );
 }
