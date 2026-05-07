@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
-import { MobileCourseCard } from "@/components/courses/MobileCourseCard";
+
 import { CourseWithInstructor, SortOption } from "@/hooks/useCourseDiscovery";
 import { useIsMobile } from "@/hooks/use-mobile";
 interface CourseGridProps {
@@ -133,14 +133,31 @@ export function CourseGrid({
 
       {filteredCourses.length > 0 ? (
         isMobile ? (
-          // Mobile: Single column accordion cards with load more
-          <div className="flex flex-col gap-3">
+          // Mobile: same flip cards as desktop, single column with load more
+          <div className="flex flex-col gap-4">
             {filteredCourses.slice(0, mobileVisibleCount).map((course, index) => (
-              <MobileCourseCard
+              <motion.div
                 key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
-                course={course}
-                index={index}
-              />
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <DynamicCourseCard
+                  instructor={course.instructor}
+                  hours={course.hours}
+                  nextAvailable={course.bookableDate}
+                  courseImageUrl={course.courseImageUrl}
+                  isPopular={course.isPopular}
+                  availableFrom={course.availableFrom}
+                  distance={course.distance}
+                  features={course.features}
+                  isIntensive={course.isIntensive}
+                  discountedPrice={course.discountedPrice}
+                  customFeatures={course.customFeatures}
+                  isPremium={course.isPremium}
+                  placementType={course.placementType}
+                />
+              </motion.div>
             ))}
             {mobileVisibleCount < filteredCourses.length && (
               <motion.div
