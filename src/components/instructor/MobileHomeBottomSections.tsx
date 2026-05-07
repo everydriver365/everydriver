@@ -410,10 +410,10 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                   <div style={{ minWidth: 36 }}>
                     <div
                       style={{
-                        fontSize: 13,
+                        fontSize: 16,
                         fontWeight: 700,
                         letterSpacing: -0.3,
-                        lineHeight: "17px",
+                        lineHeight: "20px",
                         color: timeColor,
                       }}
                     >
