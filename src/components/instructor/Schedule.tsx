@@ -870,6 +870,9 @@ export default function Schedule({
   const [selectedDate, setSelectedDate] = useState<Date>(() => startOfDay(new Date()));
   const [weekStart, setWeekStart] = useState<Date>(() => startOfDay(new Date()));
   const [addOpen, setAddOpen] = useState(false);
+  const [wizardLesson, setWizardLesson] = useState<ScheduleLesson | null>(null);
+  const [wizardBalance, setWizardBalance] = useState(0);
+  const queryClient = useQueryClient();
 
   // If user selects a date outside current 7-day window, slide the window.
   useEffect(() => {
@@ -882,6 +885,7 @@ export default function Schedule({
   }, [selectedDate, weekStart]);
 
   const { data: days, isLoading, settings } = useScheduleWeek(instructorId, weekStart, 7);
+  const { data: eolSet } = useDayLessonHistory(instructorId, selectedDate);
 
   const selectedDay: ScheduleDay | undefined = useMemo(() => {
     if (!days) return undefined;
@@ -890,6 +894,21 @@ export default function Schedule({
 
   const openAddLesson = () => setAddOpen(true);
   const handleLessonClick = (id: string) => navigate(`/instructor/lessons/${id}`);
+  const handleLessonEOL = async (lesson: ScheduleLesson) => {
+    let balance = 0;
+    try {
+      const { data } = await supabase
+        .from("pupils")
+        .select("account_balance")
+        .eq("id", lesson.pupilId)
+        .single();
+      balance = Number(data?.account_balance ?? 0);
+    } catch {
+      balance = 0;
+    }
+    setWizardBalance(balance);
+    setWizardLesson(lesson);
+  };
   const openGapFiller = (start?: string, end?: string) => {
     const params = new URLSearchParams();
     params.set("date", format(selectedDate, "yyyy-MM-dd"));
