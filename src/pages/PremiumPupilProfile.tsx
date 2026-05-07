@@ -1027,6 +1027,7 @@ export default function PremiumPupilProfile() {
         </div>
       ) : null}
     </Card>
+    </div>
   );
   const nextLessonDate = stats?.nextLesson?.lesson_date
     ? parseISO(stats.nextLesson.lesson_date as unknown as string)
