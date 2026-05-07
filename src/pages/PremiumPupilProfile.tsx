@@ -1325,7 +1325,7 @@ export default function PremiumPupilProfile() {
         <div
           key={m.label}
           style={{
-            background: C.card, borderRadius: 16, padding: 12,
+            background: C.card, borderRadius: 12, padding: 12,
             border: `1px solid ${C.hairline}`, boxShadow: SHADOW_CARD,
             display: "flex", flexDirection: "column", gap: 4,
           }}
