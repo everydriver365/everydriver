@@ -1012,7 +1012,7 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: "#1A1A1A", letterSpacing: -0.1 }}>{r.label}</span>
+                <span style={{ fontSize: 16, fontWeight: 600, color: "#1A1A1A", letterSpacing: -0.1 }}>{r.label}</span>
                 <span
                   style={{
                     background: r.tierBg,
