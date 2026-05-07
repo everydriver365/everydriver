@@ -666,10 +666,7 @@ export default function InstructorPupils() {
           }}
         >
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1A1A1A", letterSpacing: "-0.4px", lineHeight: 1.15 }}>
-              Pupils
-            </h1>
-            <p style={{ fontSize: 10, color: "#8E8E93", marginTop: 2 }}>
+            <p style={{ fontSize: 12, color: "#8E8E93" }}>
               {stats.active} active · {stats.passed} passed · {lessonsToday} lessons today
             </p>
           </div>
