@@ -191,6 +191,21 @@ export function AddCalendarEventDialog({
       const [endHour, endMin] = blockEndTime.split(':').map(Number);
       endDateTime.setHours(endHour, endMin, 0, 0);
 
+      const durationMinutes = Math.round((endDateTime.getTime() - startDateTime.getTime()) / 60000);
+      if (!overrideClash && durationMinutes > 0) {
+        const clash = await checkLessonClash({
+          instructorId,
+          date: format(blockDate!, 'yyyy-MM-dd'),
+          startTime: blockStartTime,
+          durationMinutes,
+        });
+        if (clash.hardOverlap) {
+          setClashWarning(clash.message ?? 'Overlaps with an existing booking.');
+          setLoading(false);
+          return;
+        }
+      }
+
       const { error } = await supabase
         .from('instructor_manual_blocks')
         .insert({
