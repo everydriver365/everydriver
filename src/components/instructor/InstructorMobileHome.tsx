@@ -63,6 +63,7 @@ import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgen
 import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
 import { NextUpTile } from "@/components/instructor/NextUpTile";
 import { SimpleNextLessonCard } from "@/components/instructor/SimpleNextLessonCard";
+import { NextLessonPreviewCard } from "@/components/instructor/NextLessonPreviewCard";
 
 import planAheadIcon from "@/assets/plan-ahead-icon.png";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
