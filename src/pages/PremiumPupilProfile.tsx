@@ -351,7 +351,17 @@ export default function PremiumPupilProfile() {
   const { pupilId } = useParams<{ pupilId: string }>();
   const navigate = useNavigate();
   const { instructor } = useInstructorAuth();
-  const isMobile = useIsMobile();
+  // Use a wider breakpoint locally so tablet sizes also get the mobile (single-column) layout
+  // and content stays comfortably wide without the desktop two-column grid kicking in early.
+  const [isMobile, setIsMobile] = useState<boolean>(() =>
+    typeof window !== "undefined" ? window.innerWidth < 1024 : false
+  );
+  useEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener("resize", update);
+    update();
+    return () => window.removeEventListener("resize", update);
+  }, []);
   const instructorId = instructor?.id;
   const queryClient = useQueryClient();
   const [savingEyesight, setSavingEyesight] = useState(false);
