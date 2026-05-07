@@ -195,6 +195,7 @@ export async function saveBookingRules(instructorId: string, r: BookingRules) {
       slot_increment_minutes: r.slotIncrementMin,
       allow_same_day_booking: r.allowSameDay,
       auto_block_bank_holidays: r.autoBlockBankHolidays,
+      available_from: r.availableFrom,
     } as any)
     .eq("id", instructorId);
   if (error) throw error;
