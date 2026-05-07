@@ -893,7 +893,10 @@ export default function Schedule({
   }, [days, selectedDate]);
 
   const openAddLesson = () => setAddOpen(true);
-  const handleLessonClick = (id: string) => navigate(`/instructor/lessons/${id}`);
+  const handleLessonClick = (id: string) => {
+    const lesson = selectedDay?.lessons.find((l) => l.id === id);
+    if (lesson?.pupilId) navigate(`/instructor/pupils/${lesson.pupilId}`);
+  };
   const handleLessonEOL = async (lesson: ScheduleLesson) => {
     let balance = 0;
     try {
