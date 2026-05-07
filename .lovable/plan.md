@@ -1,21 +1,64 @@
-# Fix: "No courses" on drive365.co.uk postcode search
+# Pupil Profile Redesign + Per-Pupil Rates Clarification
 
-## Problem
-On live `drive365.co.uk/courses?postcode=SO30+2TJ`, the page shows the empty "Select a date" state even though Ken D has 5 active courses. The data is fine — the bug is in `Courses.tsx` auto-search logic.
+The current page (`src/pages/PremiumPupilProfile.tsx`) stacks ~10 disparate cards (Next lesson, Last lesson, History, Progress, Notes, Documents, Payments, Rates, Eyesight, Details) in a single vertical stream with identical visual weight. It reads as a "random selection of tiles" because nothing is grouped by purpose, everything is the same size, and the same content appears in different orders on mobile vs desktop.
 
-When `?postcode=` triggers `handleSearch`, it calls `findFirstAvailableDate(instructorsNearby, ...)`. `instructorsNearby` is filtered by a 10-mile radius. If the geocoded lat/lng for `SO30 2TJ` falls just outside any instructor, the array is empty, `selectedDate` becomes `null`, and the grid blanks — even though plenty of courses exist on nearby dates.
+## 1. Per-pupil rates (clarify scope)
 
-The Whitelabel page works because it skips the radius filter.
+The `PupilRateEditor` is already pupil-scoped (writes to `pupils.custom_hourly_rate / custom_rate_90min / custom_rate_120min` for the single `pupilId`). The user's concern is that it *looks* global. Fix:
 
-## Fix (Courses.tsx only)
+- Rename section header from "Lesson rates" to **"{First name}'s lesson rates"**.
+- Add a one-line caption above the inputs: *"These prices apply only to {name}. Leave blank to use your standard rate."*
+- Show the resolved per-duration price (custom or default) as a read-only summary line first; the editable inputs collapse behind a "Set custom price" toggle. Default state is **read-only** so it can't be confused with a global setting.
 
-1. **Fallback in `handleSearch`**: if `findFirstAvailableDate(instructorsNearby, ...)` returns `null`, retry with the unfiltered `instructors` list before clearing `selectedDate`. This keeps the calendar populated.
-2. **Auto-expand radius once**: if nearby is empty and `radius < 25`, bump radius to 25 mi automatically (matches existing UX elsewhere).
-3. **Soft inline notice**: when fallback kicks in, show a small banner above the grid: "No instructors within X mi of {postcode} — showing nearby results" with an "Expand radius" button.
-4. **Diagnostic**: add a `console.warn` when postcode auto-search yields zero nearby instructors, to make this easier to spot in future.
-5. **Republish** so live `drive365.co.uk` picks up both this fix and the prior `available_from` fix.
+## 2. Page structure — from flat stack to 4 named sections
 
-## Files
-- `src/pages/Courses.tsx` (only)
+Replace the current loose list with four clearly labelled sections, each with a section title bar and subordinate cards. Same sections, same order, on mobile and desktop.
 
-No DB migrations, no changes to `WhitelabelCourses.tsx`, `useCourseDiscovery.ts`, or routing.
+```text
+┌─ HEADER ──────────────────────────────────────┐
+│ Back        Pupil name + status        Edit   │
+│ Avatar | phone | address                      │
+│ [Call] [Message] [Navigate] [Book]            │
+└───────────────────────────────────────────────┘
+
+┌─ AT A GLANCE (4 stat pills, sticky on desktop)┐
+│ Lessons | Hours | Progress | Test date        │
+└───────────────────────────────────────────────┘
+
+1. LESSONS & PROGRESS
+   - Next lesson  (primary, larger)
+   - Last lesson  (secondary)
+   - Test readiness bar
+   - Lesson history → opens sheet
+
+2. MONEY
+   - Balance + prepaid hours (combined card)
+   - {Name}'s lesson rates (read-only summary, expand to edit)
+   - Payments history → opens sheet
+
+3. SAFETY & ADMIN
+   - Eyesight check
+   - Documents
+   - Notes
+
+4. DETAILS
+   - Contact, address, course type, learner permit, etc.
+```
+
+Visual hierarchy rules:
+- One **hero card per section** (Next lesson / Balance / Eyesight / Contact). Larger padding, slightly stronger shadow.
+- Supporting cards in the section use the existing card style at 16px padding.
+- Section header bar: small uppercase label + thin divider, consistent spacing (24px above, 12px below) — replaces the current loose `SectionHeader` placement.
+- Desktop: same 4 sections, but section 1 + 2 share the right column (single column, no two-column grid for cards). Sticky left rail keeps Header card + At a glance stats only.
+
+## 3. Files
+
+- `src/pages/PremiumPupilProfile.tsx` — restructure `MobileLayout` and `DesktopLayout`. Combine `PaymentsCard` + `RatesCard` into a single Money card group. Wrap each group in a `<Section title="…">` helper (new local component). Remove duplicated `SectionHeader` calls.
+- Add a `RatesSummary` mode to `RatesCard`: shows three resolved prices as a read-only row, with a "Set custom price" link that reveals the existing `PupilRateEditor` inline.
+- No DB or schema changes.
+
+## 4. Out of scope
+
+- No changes to `PupilRateEditor` save logic.
+- No changes to lesson/payment data fetching.
+- No changes to other pages.
