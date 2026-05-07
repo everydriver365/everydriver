@@ -54,7 +54,7 @@ const SHADOW_CARD =
   "0 1px 2px rgba(16,24,40,0.03), 0 8px 24px -14px rgba(16,24,40,0.10)";
 const SHADOW_HOVER =
   "0 1px 2px rgba(16,24,40,0.04), 0 14px 32px -16px rgba(16,24,40,0.14)";
-const RADIUS = 24;
+const RADIUS = 14;
 const TRANSITION = "all 180ms ease";
 
 /* ──────────────────────────── small atoms ──────────────────────────── */
