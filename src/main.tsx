@@ -30,6 +30,17 @@ if (typeof window !== "undefined" && detectNativeWrapper()) {
   }
 }
 
+// Configure native status bar to match the page background instead of black.
+if (typeof window !== "undefined" && detectNativeWrapper()) {
+  import("@capacitor/status-bar")
+    .then(({ StatusBar, Style }) => {
+      StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
+      StatusBar.setBackgroundColor({ color: "#EEF1F5" }).catch(() => {});
+      StatusBar.setStyle({ style: Style.Light }).catch(() => {});
+    })
+    .catch(() => {});
+}
+
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider>
     <InstructorThemeProvider>
