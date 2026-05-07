@@ -928,8 +928,14 @@ export default function PremiumPupilProfile() {
     </Card>
   );
 
+  const eyesightCardTint =
+    eyesightChecked === true ? `${C.green}10` : eyesightChecked === false ? `${C.red}10` : undefined;
+  const eyesightCardBorder =
+    eyesightChecked === true ? `${C.green}55` : eyesightChecked === false ? `${C.red}55` : undefined;
   const EyesightCard = (
+    <div style={eyesightCardTint ? { borderRadius: RADIUS, background: eyesightCardTint, border: `1px solid ${eyesightCardBorder}`, padding: 0 } : undefined}>
     <Card>
+
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 32, height: 32, borderRadius: 16, background: C.surface, display: "flex", alignItems: "center", justifyContent: "center", color: C.muted }}>
@@ -1021,6 +1027,7 @@ export default function PremiumPupilProfile() {
         </div>
       ) : null}
     </Card>
+    </div>
   );
   const nextLessonDate = stats?.nextLesson?.lesson_date
     ? parseISO(stats.nextLesson.lesson_date as unknown as string)
