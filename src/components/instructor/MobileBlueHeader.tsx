@@ -81,7 +81,7 @@ export function MobileBlueHeader({
           )}
           {isHomePage ? (
             <>
-              <img src={dsmLogo} alt="DSM" className="w-auto object-contain shrink-0" style={{ height: 32 }} />
+              <img src={dsmLogo} alt="DSM" className="w-auto object-contain shrink-0" style={{ height: 26 }} />
               <div className="flex flex-col min-w-0" style={{ lineHeight: 1.2 }}>
                 <span style={{ fontSize: 14, fontWeight: 500, color: "#3A3A3A" }}>
                   Driving School
