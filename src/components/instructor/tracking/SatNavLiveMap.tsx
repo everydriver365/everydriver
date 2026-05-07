@@ -946,13 +946,10 @@ export function SatNavLiveMap({
           });
         }
 
-        // Camera follow — only auto-pan in fullscreen sat-nav mode AND when
-        // the user hasn't taken over with a drag/zoom. Card-mode map stays
-        // free for the user to explore.
-        if (fullscreenRef.current && followModeRef.current) {
-          // Keep the vehicle pointer locked dead-centre on screen.
-          // setCenter (not panTo) — instant, no chase animation, so the
-          // marker stays exactly under the camera origin every frame.
+        // Camera follow — keep the vehicle pointer locked dead-centre on
+        // screen in both card and fullscreen modes, unless the user has
+        // taken over with a drag/zoom (followMode toggles off then).
+        if (followModeRef.current) {
           suppressFollowOffRef.current = true;
           map.setCenter({ lat, lng });
           requestAnimationFrame(() => { suppressFollowOffRef.current = false; });
