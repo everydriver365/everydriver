@@ -1022,7 +1022,6 @@ export function MobileHomeBottomSections({
 }) {
   return (
     <>
-      <ScheduleSection instructorId={instructorId} />
       <QuickAccessSection instructorId={instructorId} />
     </>
   );
