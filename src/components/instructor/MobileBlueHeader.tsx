@@ -37,8 +37,9 @@ export function MobileBlueHeader({
   const navigate = useNavigate();
   const { total: notifCount } = useCombinedNotificationCount(instructorId);
   const aiDivert = useAICallDivert(instructorId, null);
+  const divertOn = aiDivert.settings.mode !== "off";
   const divertActive = aiDivert.active;
-  const divertColor = divertActive ? "#1A7A3C" : "#CC2229";
+  const divertColor = divertOn ? "#1A7A3C" : "#CC2229";
 
   void surface;
   const bg = "hsl(var(--dsm-page-bg,var(--dsm-bg)))";
