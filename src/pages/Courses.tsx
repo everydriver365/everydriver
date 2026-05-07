@@ -296,6 +296,7 @@ export default function Courses() {
   const initialPostcode = searchParams.get("postcode") || "";
   const [postcode, setPostcode] = useState(initialPostcode);
   const [radius, setRadius] = useState("10");
+  const [showRadiusFallbackNotice, setShowRadiusFallbackNotice] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [transmission, setTransmission] = useState("all");
   const [loading, setLoading] = useState(true);
