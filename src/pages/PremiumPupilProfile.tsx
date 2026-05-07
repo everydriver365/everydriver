@@ -345,6 +345,14 @@ export default function PremiumPupilProfile() {
   const [savingEyesight, setSavingEyesight] = useState(false);
 
   const { data: pupil, isLoading } = usePupil(pupilId, instructorId);
+  const { data: instructorRate } = useQuery({
+    queryKey: ["instructor-default-rate", instructorId],
+    enabled: !!instructorId,
+    queryFn: async () => {
+      const { data } = await supabase.from("instructors").select("n").eq("id", instructorId!).maybeSingle();
+      return (data as any)?.n ?? 40;
+    },
+  });
   const { data: stats } = usePupilLessonStats(pupilId);
   const { data: notes = [] } = usePupilNotes(pupilId);
   const { data: documents = [] } = usePupilDocuments(pupilId);
