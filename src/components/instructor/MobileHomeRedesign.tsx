@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { UpNextExpanded } from "@/components/instructor/UpNextExpanded";
-import { NextLessonPreviewCard } from "@/components/instructor/NextLessonPreviewCard";
 import { useNavigate } from "react-router-dom";
 import { format, parse, parseISO, isToday, isTomorrow, differenceInMinutes } from "date-fns";
 import {
@@ -1316,21 +1315,46 @@ export function MobileHomeRedesign({
 
 
       {nextLesson && (
-        <NextLessonPreviewCard
-          lessonId={nextLesson.lessonId}
-          pupilId={nextLesson.pupilId}
-          pupilName={nextLesson.pupilName}
-          pupilPhone={nextLesson.pupilPhone}
-          pupilProfileImage={nextLesson.pupilProfileImage}
-          lessonDate={nextLesson.lessonDate}
-          startTime={nextLesson.startTime}
-          durationMinutes={nextLesson.durationMinutes}
-          pickupPostcode={nextLesson.pickupPostcode}
-          pickupLocation={nextLesson.pickupLocation}
-          minutesUntil={liveMinutes}
-          instructorId={instructorId}
-          aiDivertTime={aiDivert.upNextLine}
-        />
+        <>
+          <SectionLabel>Up next</SectionLabel>
+          <UpNextTile
+            pupilId={nextLesson.pupilId}
+            instructorId={instructorId}
+            lessonId={nextLesson.lessonId}
+            pupilName={nextLesson.pupilName}
+            pupilPhone={nextLesson.pupilPhone}
+            pupilProfileImage={nextLesson.pupilProfileImage}
+            lessonDate={nextLesson.lessonDate}
+            startTime={nextLesson.startTime}
+            durationMinutes={nextLesson.durationMinutes}
+            pickupLocation={nextLesson.pickupLocation}
+            pickupPostcode={nextLesson.pickupPostcode}
+            minutesUntil={liveMinutes}
+            expanded={expanded}
+            onToggleExpanded={() => setExpanded((v) => !v)}
+            aiStatusLine={aiDivert.upNextLine}
+          />
+          {expanded && (
+            <UpNextExpanded
+              lessonId={nextLesson.lessonId}
+              pupilId={nextLesson.pupilId}
+              pupilName={nextLesson.pupilName}
+              pupilPhone={nextLesson.pupilPhone}
+              pickupLocation={nextLesson.pickupLocation}
+              pickupPostcode={nextLesson.pickupPostcode}
+              pickupWhat3words={nextLesson.pickupWhat3words}
+              pickupNotes={nextLesson.pickupNotes}
+              startTime={nextLesson.startTime}
+              durationMinutes={nextLesson.durationMinutes}
+              accountBalance={(nextLesson as any).accountBalance ?? 0}
+              prepaidHours={(nextLesson as any).prepaidHours ?? 0}
+              checkInStatus={(nextLesson as any).checkInStatus}
+              lessonStatus={(nextLesson as any).lessonStatus}
+              lastLessonPlan={(nextLesson as any).lastLessonPlan}
+              instructorId={instructorId}
+            />
+          )}
+        </>
       )}
 
       {/* Schedule + Quick Access */}
