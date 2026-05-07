@@ -21,6 +21,7 @@ import { PupilNoteSheet } from "@/components/instructor/PupilNoteSheet";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { LessonHistory } from "@/components/instructor/LessonHistory";
 import { PupilPaymentHistory } from "@/components/instructor/PupilPaymentHistory";
+import { PupilRateEditor } from "@/components/instructor/PupilRateEditor";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -344,6 +345,14 @@ export default function PremiumPupilProfile() {
   const [savingEyesight, setSavingEyesight] = useState(false);
 
   const { data: pupil, isLoading } = usePupil(pupilId, instructorId);
+  const { data: instructorRate } = useQuery({
+    queryKey: ["instructor-default-rate", instructorId],
+    enabled: !!instructorId,
+    queryFn: async () => {
+      const { data } = await supabase.from("instructors").select("n").eq("id", instructorId!).maybeSingle();
+      return (data as any)?.n ?? 40;
+    },
+  });
   const { data: stats } = usePupilLessonStats(pupilId);
   const { data: notes = [] } = usePupilNotes(pupilId);
   const { data: documents = [] } = usePupilDocuments(pupilId);
@@ -814,6 +823,24 @@ export default function PremiumPupilProfile() {
       setSavingEyesight(false);
     }
   };
+
+  const customRate60 = (pupil as any).custom_hourly_rate as number | null | undefined;
+  const customRate90 = (pupil as any).custom_rate_90min as number | null | undefined;
+  const customRate120 = (pupil as any).custom_rate_120min as number | null | undefined;
+  const defaultRate = instructorRate ?? 40;
+  const RatesCard = (
+    <Card>
+      <PupilRateEditor
+        pupilId={pupil.id}
+        pupilName={pupil.name}
+        defaultRate={defaultRate}
+        currentCustomRate={customRate60 ?? null}
+        currentCustomRate90={customRate90 ?? null}
+        currentCustomRate120={customRate120 ?? null}
+        onSaved={() => queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] })}
+      />
+    </Card>
+  );
 
   const EyesightCard = (
     <Card>
@@ -1286,6 +1313,8 @@ export default function PremiumPupilProfile() {
           {DocumentsCard}
           <SectionHeader title="Payments" />
           {PaymentsCard}
+          <SectionHeader title="Lesson rates" />
+          {RatesCard}
           <SectionHeader title="Eyesight" />
           {EyesightCard}
           <SectionHeader title="Details" />
@@ -1335,6 +1364,8 @@ export default function PremiumPupilProfile() {
             </div>
             <SectionHeader title="Money" />
             {PaymentsCard}
+            <SectionHeader title="Lesson rates" />
+            {RatesCard}
             <SectionHeader title="Eyesight" />
             {EyesightCard}
             <SectionHeader title="Details" />
