@@ -629,61 +629,167 @@ function LessonRow({
   );
 }
 
-function GapMarker({
+/* ---------- Open slot card ---------- */
+const PRIME_TINT = "#F0997B";
+const PRIME_FG = "#712B13";
+const OPEN_TINT = "#B5D4F4";
+
+function isPrimeTimeRange(start: Date, end: Date): boolean {
+  // Default windows: weekday eves Mon-Fri 17-20, weekend day Sat-Sun 09-17
+  const checkOverlap = (d: Date) => {
+    const dow = d.getDay(); // 0=Sun..6=Sat
+    const minutes = d.getHours() * 60 + d.getMinutes();
+    if (dow >= 1 && dow <= 5) {
+      return minutes >= 17 * 60 && minutes < 20 * 60;
+    }
+    // weekend
+    return minutes >= 9 * 60 && minutes < 17 * 60;
+  };
+  // Sample at start and end-1min; cheap approximation
+  if (checkOverlap(start)) return true;
+  const probe = new Date(end.getTime() - 60_000);
+  if (checkOverlap(probe)) return true;
+  return false;
+}
+
+const OpenSlotCard = memo(function OpenSlotCard({
+  startDate,
+  endDate,
   startTime,
   endTime,
-  onClick,
+  durationMinutes,
+  isAllDay,
+  isPast,
+  standardRate,
+  standardLessonMinutes,
+  showRevenuePotential,
+  onBook,
 }: {
+  startDate: Date;
+  endDate: Date;
   startTime: string;
   endTime: string;
-  onClick: () => void;
+  durationMinutes: number;
+  isAllDay: boolean;
+  isPast: boolean;
+  standardRate: number;
+  standardLessonMinutes: number;
+  showRevenuePotential: boolean;
+  onBook: () => void;
 }) {
-  const mins = timeToMinutes(endTime) - timeToMinutes(startTime);
-  const label = `${fmtDuration(mins)} open · ${startTime} — ${endTime}`;
+  const isPrime = !isPast && isPrimeTimeRange(startDate, endDate);
+  const earnings = Math.round((durationMinutes / 60) * standardRate);
+  const lessonsThatFit = Math.max(1, Math.floor(durationMinutes / standardLessonMinutes));
+
+  const accentBar = isPrime
+    ? `repeating-linear-gradient(to bottom, ${PRIME_TINT} 0, ${PRIME_TINT} 4px, transparent 4px, transparent 8px)`
+    : `repeating-linear-gradient(to bottom, ${OPEN_TINT} 0, ${OPEN_TINT} 4px, transparent 4px, transparent 8px)`;
+
+  const timeColor = isPrime ? PRIME_FG : BLUE;
+  const titleColor = isPrime ? PRIME_FG : BLUE;
+  const iconColor = isPrime ? PRIME_FG : BLUE;
+
+  let title: string;
+  let subtitle: string;
+  if (isAllDay) {
+    title = "Day fully open";
+    subtitle = showRevenuePotential
+      ? `${startTime} — ${endTime} · could earn £${earnings}`
+      : `${startTime} — ${endTime} · ~${lessonsThatFit} lesson${lessonsThatFit === 1 ? "" : "s"} fit`;
+  } else {
+    title = isPrime ? "Prime time open" : "Open time";
+    subtitle = showRevenuePotential
+      ? `until ${endTime} · could earn £${earnings}`
+      : `until ${endTime} · ~${lessonsThatFit} lesson${lessonsThatFit === 1 ? "" : "s"} fit`;
+  }
+
+  const aria = isPast
+    ? `Open slot, ${fmtDuration(durationMinutes)} from ${startTime} to ${endTime} (past)`
+    : isPrime
+    ? `Prime time open slot, ${fmtDuration(durationMinutes)} from ${startTime} to ${endTime}, high-value booking window, tap to book`
+    : `Open slot, ${fmtDuration(durationMinutes)} from ${startTime} to ${endTime}, potential earnings £${earnings}, tap to book a lesson`;
+
   return (
     <button
       type="button"
-      onClick={onClick}
-      aria-label={`${fmtDuration(mins)} of open time between ${startTime} and ${endTime}, tap to fill`}
+      onClick={isPast ? undefined : onBook}
+      disabled={isPast}
+      aria-label={aria}
       style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "6px 4px 8px",
-        opacity: 0.6,
-        background: "transparent",
-        border: "none",
+        position: "relative",
+        overflow: "hidden",
+        background: CARD_BG,
+        borderRadius: 12,
+        padding: 14,
+        marginBottom: 8,
         width: "100%",
-        cursor: "pointer",
+        textAlign: "left",
+        border: `0.5px solid ${DIVIDER}`,
+        boxShadow: SHADOW,
+        display: "flex",
+        gap: 12,
+        alignItems: "center",
+        cursor: isPast ? "not-allowed" : "pointer",
+        opacity: isPast ? 0.4 : 1,
+        WebkitTapHighlightColor: "transparent",
+        transition: "transform 120ms ease",
       }}
+      onPointerDown={(e) => {
+        if (!isPast) e.currentTarget.style.transform = "scale(0.98)";
+      }}
+      onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+      onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
     >
       <span
+        aria-hidden
         style={{
-          flex: 1,
-          height: 1,
-          background: `linear-gradient(to right, transparent, ${DIVIDER}, transparent)`,
+          position: "absolute",
+          left: 0,
+          top: 12,
+          bottom: 12,
+          width: 3,
+          borderRadius: "0 2px 2px 0",
+          background: accentBar,
         }}
       />
-      <span
-        style={{
-          fontSize: 10,
-          color: TEXT_TERTIARY,
-          letterSpacing: 0.5,
-          whiteSpace: "nowrap",
-        }}
-      >
-        {label}
-      </span>
-      <span
-        style={{
-          flex: 1,
-          height: 1,
-          background: `linear-gradient(to right, transparent, ${DIVIDER}, transparent)`,
-        }}
-      />
+      <div style={{ paddingLeft: 6, flexShrink: 0 }}>
+        <div
+          style={{
+            fontSize: 16,
+            fontWeight: 500,
+            color: timeColor,
+            lineHeight: 1,
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          {startTime}
+        </div>
+        <div style={{ fontSize: 11, color: TEXT_SECONDARY, marginTop: 3 }}>
+          {fmtDuration(durationMinutes)}
+        </div>
+      </div>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 500, color: titleColor, marginBottom: 2 }}>
+          {title}
+        </div>
+        <div
+          style={{
+            fontSize: 11,
+            color: TEXT_SECONDARY,
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {subtitle}
+        </div>
+      </div>
+
+      <Plus size={18} color={iconColor} strokeWidth={2.2} style={{ flexShrink: 0 }} />
     </button>
   );
-}
+});
 
 function EmptyDayState({
   isWorkingDay,
