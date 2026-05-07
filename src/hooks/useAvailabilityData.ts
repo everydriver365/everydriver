@@ -106,6 +106,7 @@ export function useAvailabilityData(instructorId: string | undefined) {
         slotIncrementMin: inst.slot_increment_minutes ?? DEFAULT_RULES.slotIncrementMin,
         allowSameDay: inst.allow_same_day_booking ?? DEFAULT_RULES.allowSameDay,
         autoBlockBankHolidays: inst.auto_block_bank_holidays ?? DEFAULT_RULES.autoBlockBankHolidays,
+        availableFrom: inst.available_from ?? null,
       };
 
       return { weekly, timeOff, rules };
