@@ -92,6 +92,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [addLessonOpen, setAddLessonOpen] = useState(false);
+  const [addEventOpen, setAddEventOpen] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<ScheduledLesson | null>(null);
   const [sendingMessage, setSendingMessage] = useState<string | null>(null);
   const [lessonColors, setLessonColors] = useState<Record<string, string>>({});
