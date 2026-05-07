@@ -929,40 +929,43 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                         position: "relative",
                         background: "#FFF",
                         borderRadius: 13,
-                        padding: "10px 4px",
+                        padding: "14px 10px",
                         display: "flex",
-                        flexDirection: "column",
+                        flexDirection: "row",
                         alignItems: "center",
-                        gap: 4,
+                        gap: 10,
                         border: `0.5px solid ${BORDER}`,
                         cursor: "pointer",
+                        minHeight: 60,
                       }}
                     >
                       {badge > 0 && <BadgeDot count={badge} />}
                       <div
                         style={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: 9,
+                          width: 38,
+                          height: 38,
+                          borderRadius: 10,
                           background: tonePair.bg,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
+                          flexShrink: 0,
                         }}
                       >
                         <Icon
-                          size={15}
+                          size={19}
                           color={tonePair.fg}
-                          strokeWidth={1.6}
+                          strokeWidth={1.7}
                         />
                       </div>
                       <span
                         style={{
-                          fontSize: 9,
+                          fontSize: 13,
                           fontWeight: 600,
-                          textAlign: "center",
+                          textAlign: "left",
                           color: TEXT,
                           lineHeight: 1.2,
+                          flex: 1,
                         }}
                       >
                         {tile.title}
