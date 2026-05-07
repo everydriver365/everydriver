@@ -1402,7 +1402,16 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
         />
       )}
 
-      {/* Add Lesson Sheet */}
+      {/* Add Lesson / Event / Block dialog */}
+      <AddCalendarEventDialog
+        open={addEventOpen}
+        onOpenChange={setAddEventOpen}
+        instructorId={instructorId}
+        defaultDate={addEventDate}
+        onSuccess={() => { setAddEventOpen(false); fetchData(); }}
+      />
+
+      {/* Legacy Add Lesson Sheet (kept for any deep-link usage) */}
       <AddLessonSheet
         open={addLessonOpen}
         onOpenChange={setAddLessonOpen}
