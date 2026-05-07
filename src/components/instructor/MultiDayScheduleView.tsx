@@ -22,6 +22,7 @@ import { GapFillCard } from "./GapFillCard";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { AddLessonSheet } from "./AddLessonSheet";
+import { AddCalendarEventDialog } from "./AddCalendarEventDialog";
 import { triggerAutomations } from "@/utils/triggerAutomations";
 import { toast } from "@/hooks/use-toast";
 import { LessonCheckInBadge } from "./LessonCheckInBadge";
