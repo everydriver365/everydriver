@@ -27,13 +27,13 @@ interface Instructor {
   car_make: string | null;
   car_model: string | null;
   home_postcode: string;
-  home_address: string | null;
+  home_address?: string | null;
   hourly_rate: number | null;
   bio: string | null;
   brand_colour: string | null;
   is_active: boolean;
   available_from: string | null;
-  school_skim_amount: number | null;
+  school_skim_amount?: number | null;
 }
 
 interface InstructorCourse {
