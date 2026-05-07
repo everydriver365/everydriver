@@ -23,6 +23,7 @@ export type BookingRules = {
   slotIncrementMin: number;
   allowSameDay: boolean;
   autoBlockBankHolidays: boolean;
+  availableFrom: string | null; // ISO date (yyyy-MM-dd) or null
 };
 
 const DAY_KEYS: DayKey[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
