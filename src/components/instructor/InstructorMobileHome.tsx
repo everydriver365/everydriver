@@ -686,8 +686,18 @@ export function InstructorMobileHome({
         </div>
 
         <div className="px-4">
-        </div>
 
+          {/* Vehicle Health & Idle Time */}
+          <VehicleHealthCard instructorId={instructorId} className="mt-3" />
+          <IdleTimeCostCard instructorId={instructorId} className="mt-3" />
+
+
+
+
+          <div className="mt-5">
+            <UpcomingEventsCard className="mb-6" />
+          </div>
+        </div>
 
 
         {/* 10. Floating Session Bar */}
