@@ -806,10 +806,14 @@ export default function Schedule({
 
   const openAddLesson = () => setAddOpen(true);
   const handleLessonClick = (id: string) => navigate(`/instructor/lessons/${id}`);
-  const handleGapClick = (_start: string, _end: string) => {
-    // For now, opening Add Lesson scoped to the day; future: prefill time range.
-    setAddOpen(true);
+  const openGapFiller = (start?: string, end?: string) => {
+    const params = new URLSearchParams();
+    params.set("date", format(selectedDate, "yyyy-MM-dd"));
+    if (start) params.set("start", start);
+    if (end) params.set("end", end);
+    navigate(`/instructor/gaps?${params.toString()}`);
   };
+  const handleGapClick = (start: string, end: string) => openGapFiller(start, end);
   const handleBlockDay = () => navigate("/instructor/availability");
 
   if (!days || isLoading) {
@@ -847,7 +851,7 @@ export default function Schedule({
             day={selectedDay}
             standardRate={settings.standardRate}
             showRevenuePotential={showRevenuePotential}
-            onFillGaps={openAddLesson}
+            onFillGaps={() => openGapFiller()}
           />
           <LessonList
             day={selectedDay}
