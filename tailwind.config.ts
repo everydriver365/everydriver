@@ -119,7 +119,8 @@ export default {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
   			},
-  			hero: 'hsl(var(--hero-background))'
+  			hero: 'hsl(var(--hero-background))',
+  			'slate-canvas': '#EEF1F5'
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
@@ -200,7 +201,11 @@ export default {
   			'2xl': 'var(--shadow-2xl)',
   			'lift': '0 12px 28px rgba(20, 30, 60, 0.14), 0 4px 8px rgba(20, 30, 60, 0.06)',
   			'lift-hover': '0 16px 36px rgba(20, 30, 60, 0.18), 0 6px 12px rgba(20, 30, 60, 0.08)',
-  			'lift-pressed': '0 4px 10px rgba(20, 30, 60, 0.1), 0 1px 2px rgba(20, 30, 60, 0.05)'
+  			'lift-pressed': '0 4px 10px rgba(20, 30, 60, 0.1), 0 1px 2px rgba(20, 30, 60, 0.05)',
+  			'card': '0 1px 3px rgba(20, 30, 50, 0.06), 0 1px 2px rgba(20, 30, 50, 0.04)',
+  			'card-pressed': '0 1px 2px rgba(20, 30, 50, 0.05)',
+  			'card-floating': '0 2px 8px rgba(20, 30, 50, 0.08)',
+  			'fab': '0 2px 8px rgba(30, 111, 184, 0.25)'
   		}
   	}
   },

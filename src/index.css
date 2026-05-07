@@ -134,9 +134,9 @@
   /* Light mode (default when present without .dsm-dark) */
   .instructor-portal,
   .dsm-instructor {
-    --dsm-bg: 220 30% 96%;          /* #F2F4F8 */
-    --dsm-page-bg: 220 30% 96%;     /* #F2F4F8 */
-    --background: 220 30% 96%;      /* match for bg-background pages */
+    --dsm-bg: 214 22% 95%;          /* #EEF1F5 — slate canvas */
+    --dsm-page-bg: 214 22% 95%;     /* #EEF1F5 */
+    --background: 214 22% 95%;      /* match for bg-background pages */
     --dsm-card: 0 0% 100%;          /* #FFFFFF */
     --dsm-text: 217 51% 12%;        /* #0F1B2D */
     --dsm-text-secondary: 213 22% 57%; /* #7A8FAA */
@@ -298,7 +298,7 @@
     --portal-warning-soft: #FFF1DA;
 
     /* Soft shadow — single elevation token */
-    --portal-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.05);
+    --portal-shadow: 0 1px 3px rgba(20, 30, 50, 0.06), 0 1px 2px rgba(20, 30, 50, 0.04);
     --portal-shadow-pressed: 0 0 0 rgba(0, 0, 0, 0);
 
     /* Motion */
@@ -314,7 +314,7 @@
     --portal-text-secondary: #9AA1AE;
     --portal-text-tertiary: #6B7280;
     --portal-accent-soft: rgba(43, 123, 200, 0.18);
-    --portal-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.30);
+    --portal-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
   }
 
   /* Card — soft, single elevation, no nested borders */
