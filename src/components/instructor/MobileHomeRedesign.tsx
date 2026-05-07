@@ -30,6 +30,7 @@ import { MapHeroLive } from "@/components/instructor/upNext/MapHeroLive";
 
 /* Restored sections from legacy home */
 import { MobileHomeBottomSections } from "@/components/instructor/MobileHomeBottomSections";
+import Schedule from "@/components/instructor/Schedule";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { UpcomingEventsTile } from "@/components/instructor/UpcomingEventsTile";
 import { useDormantPupilsCount } from "@/hooks/useDormantPupilsCount";
@@ -1356,6 +1357,11 @@ export function MobileHomeRedesign({
           )}
         </>
       )}
+
+      {/* New DSM Schedule section (day strip + capacity ring + lesson list) */}
+      <div style={{ marginTop: 18 }}>
+        <Schedule instructorId={instructorId} />
+      </div>
 
       {/* Schedule + Quick Access */}
       <div style={{ marginTop: 14 }}>
