@@ -958,7 +958,9 @@ export default function Schedule({
           />
           <LessonList
             day={selectedDay}
+            eolSet={eolSet}
             onLessonClick={handleLessonClick}
+            onLessonEOL={handleLessonEOL}
             onGapClick={handleGapClick}
             onAddLesson={openAddLesson}
             onBlockDay={handleBlockDay}
