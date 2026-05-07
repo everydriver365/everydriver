@@ -14,6 +14,7 @@ import { LessonTextSheet } from "./LessonTextSheet";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { AddLessonSheet } from "./AddLessonSheet";
+import { AddCalendarEventDialog } from "./AddCalendarEventDialog";
 import { TravelTimeIndicator } from "./TravelTimeIndicator";
 import { PupilAvatar } from "./PupilAvatar";
 import { useLessonTravelTimes } from "@/hooks/useLessonTravelTimes";
