@@ -123,6 +123,16 @@ export function AddCalendarEventDialog({
   // Inline error state
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Clash override (shared across tabs — reset on input changes)
+  const [clashWarning, setClashWarning] = useState<string | null>(null);
+  const [overrideClash, setOverrideClash] = useState(false);
+
+  // Reset clash state whenever the user changes the time inputs
+  useEffect(() => {
+    setClashWarning(null);
+    setOverrideClash(false);
+  }, [tab, blockDate, blockStartTime, blockEndTime, lessonDate, lessonStartTime, lessonDuration, eventDate, eventStartTime, eventEndTime]);
+
   useEffect(() => {
     if (open) {
       fetchPupils();
