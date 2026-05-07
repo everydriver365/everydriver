@@ -94,6 +94,7 @@ const seedTimeOff: TimeOff[] = [
 const seedRules: BookingRules = {
   travelBufferMin: 15, minLeadHours: 24, horizonWeeks: 8,
   slotIncrementMin: 30, allowSameDay: false, autoBlockBankHolidays: true,
+  availableFrom: null,
 };
 
 // ---------- small UI atoms ----------
