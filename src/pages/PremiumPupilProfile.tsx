@@ -482,10 +482,10 @@ export default function PremiumPupilProfile() {
         borderTop: `1px solid ${C.hairline}`,
         display: "flex", justifyContent: "space-between", gap: 8,
       }}>
-        <QuickAction icon={Phone} label="Call" onClick={handleCall} disabled={!pupil.phone} />
-        <QuickAction icon={MessageSquare} label="Message" onClick={handleMessage} color={C.green} />
-        <QuickAction icon={Navigation} label="Navigate" onClick={handleNavigate} color={C.amber} disabled={!pupil.address && !pupil.postcode && !pupil.what3words} />
-        <QuickAction icon={CalendarPlus} label="Book" onClick={() => setAddLessonOpen(true)} color={C.red} />
+        <QuickAction icon={Phone} label="Call" onClick={handleCall} disabled={!pupil.phone} primary />
+        <QuickAction icon={MessageSquare} label="Message" onClick={handleMessage} />
+        <QuickAction icon={Navigation} label="Navigate" onClick={handleNavigate} disabled={!pupil.address && !pupil.postcode && !pupil.what3words} />
+        <QuickAction icon={CalendarPlus} label="Book" onClick={() => setAddLessonOpen(true)} />
       </div>
     </Card>
   );
