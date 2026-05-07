@@ -178,7 +178,10 @@ export default function InstructorLiveSession() {
 
   // Clear last fix entirely when leaving the phone provider.
   useEffect(() => {
-    if (!isPhoneProvider) setLastPhoneFix(null);
+    if (!isPhoneProvider) {
+      setLastPhoneFix(null);
+      setSpeedLimitKmh(null);
+    }
   }, [isPhoneProvider]);
 
   // One-shot location preview: as soon as the instructor picks Phone GPS
