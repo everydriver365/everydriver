@@ -1,52 +1,41 @@
-## What is broken
+## Root cause
 
-The Winchester courses page is trying to load Ken D through `public.instructors` as a logged-out visitor. That request fails with:
+There are only 4 active instructors in the database, and only one of them (Ken D) actually serves Hampshire / the SO postcode area:
 
-```text
-401 permission denied for table instructors
-```
+| Instructor | Postcode | Active courses | `available_from` |
+|---|---|---|---|
+| Martin B | E2 7NJ (London) | 7 | 2026‑01‑11 |
+| Sarah Mitchell | E2 7NJ (London) | 4 | — |
+| Richard Chapman | SO22 5DB | **0** (no active courses) | — |
+| **Ken D** | **SO30 2TD** | 5 | **2026‑06‑01** |
 
-The database already has a safe public view called `public_instructors`, but the learner/course pages still query the locked-down base `instructors` table in several places. Because the instructor record never loads, the app has no working hours, no available dates, and no course cards to show.
+Today is 7 May 2026. `Courses.tsx → isDateAvailable()` (lines 335‑364) explicitly skips any instructor where `available_from` is in the future. So:
 
-## Fix plan
+- **drive365.co.uk/courses?postcode=SO30+2TJ** — radius 10 miles only reaches Ken D (SO30 2TD). He is gated until 1 June, so the calendar shows zero available dates and zero courses. The London instructors are 70+ miles away and excluded by the radius filter.
+- **winchesterdrivingschool.co.uk** — the whitelabel page is hard‑pinned to `ken-d` and shows the "Next available dates" empty‑state with the message "Winchester Driving School is taking bookings from 1 June 2026" (this is correct behaviour, not a bug).
 
-### 1. Use the safe public instructor view for learner/course pages
+The geocoding edge function is working correctly (verified: `SO30 2TJ → Eastleigh, 50.93/-1.29`). The whitelabel "Instructor not found" string never fires because `ken-d` exists and is active — that label is simply the worst‑case fallback in `WhitelabelCourses.tsx`.
 
-Update public course-loading code to query `public_instructors` instead of `instructors`:
+So the real, single, fixable cause is: **Ken D's `available_from` is set to 1 June 2026**, which hides all his Hampshire courses across both Drive365 and Winchester Driving School until that date.
 
-- `src/hooks/useCourseDiscovery.ts`
-  - This powers the Winchester whitelabel course calendar.
-  - Switch the public instructor query to `public_instructors`.
-  - Keep filtering by Ken D’s resolved instructor id when on the Winchester domain.
+## What I'll change
 
-- `src/pages/WhitelabelCourses.tsx`
-  - Resolve `ken-d` from `public_instructors` instead of `instructors`.
-  - Keep using `available_from` for the booking-from message.
+1. **Clear `instructors.available_from` for Ken D** (set to `NULL`) via a migration so his courses become bookable immediately on Drive365 and WDS. (If you'd rather keep the 1 June date but show the courses now and just defer the bookable start date, tell me and I'll do that instead — but the current code path uses `available_from` as a hard "do not show" gate, not a soft start date.)
 
-- `src/pages/Courses.tsx`
-  - Switch learner course search from `instructors` to `public_instructors`.
-  - Preserve postcode/radius filtering and whitelabel scoping.
+2. **Improve the empty‑state on `/courses` (Drive365)** so a learner who searches a Hampshire postcode and finds nothing within 10 miles sees an honest message like *"No instructors within 10 miles of Eastleigh — try widening your search to 25 or 50 miles."* and an auto‑expand button, instead of the silent calendar with no dates. Today they just see a blank calendar with no explanation.
 
-- `src/hooks/useFeaturedCourses.ts`
-  - Switch public featured course cards to `public_instructors` so Winchester homepage featured courses can load too.
+3. **Add a "Coming soon — available from {date}" banner** on the whitelabel WDS page when the pinned instructor's `available_from` is in the future, so learners aren't confused by an empty calendar there either.
 
-- `src/pages/Index.tsx`
-  - Switch the Winchester homepage slug lookup to `public_instructors`.
+## Files I'll touch
 
-### 2. Handle fields that are not in the public view
+- `supabase` migration: `UPDATE instructors SET available_from = NULL WHERE id = 'c9843b58-…';` (Ken D)
+- `src/pages/Courses.tsx` — empty‑state UX when `instructorsInArea` is empty after a postcode search
+- `src/pages/WhitelabelCourses.tsx` — clearer banner when `availableFrom` is set and in the future
 
-Some card price calculations optionally use `school_skim_amount`, which is not exposed in `public_instructors`. I will make those calculations tolerate the missing field safely by treating it as `0` on public views, without exposing the private base instructor record.
+No edge function or schema changes; no auth or RLS changes.
 
-### 3. Keep private instructor/admin screens unchanged
+## What I will NOT do without confirmation
 
-Authenticated instructor/admin pages will continue querying `instructors`, because they need full profile/settings data and are protected by existing authenticated RLS policies.
-
-### 4. Verify behaviour
-
-After implementation, verify:
-
-- `https://www.winchesterdrivingschool.co.uk/courses` no longer logs the `401 permission denied for table instructors` error.
-- Ken D’s available days show in the calendar from his `available_from` date onward.
-- Selecting an available date lists his active course packages.
-- Postcode/radius filtering still narrows results correctly when a learner searches by postcode.
-- Main learner course search still loads public instructors without exposing private instructor fields.
+- Add more demo instructors / courses to the database (live‑data policy).
+- Change the default search radius from 10 miles.
+- Touch the geocoding edge function (it is healthy).
