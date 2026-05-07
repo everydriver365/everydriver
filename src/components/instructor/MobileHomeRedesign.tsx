@@ -806,8 +806,8 @@ function AttentionGroupCard({
                   width: "100%",
                   display: "flex",
                   alignItems: "center",
-                  gap: 10,
-                  padding: "10px 12px",
+                  gap: 12,
+                  padding: "12px 14px",
                   background: "transparent",
                   border: "none",
                   cursor: "pointer",
@@ -817,9 +817,9 @@ function AttentionGroupCard({
               >
                 <span
                   style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 8,
+                    width: 40,
+                    height: 40,
+                    borderRadius: 10,
                     background: r.isClear ? "#F2F4F8" : r.iconBg,
                     color: r.isClear ? "#5B6B8A" : r.iconColor,
                     display: "inline-flex",
@@ -828,15 +828,16 @@ function AttentionGroupCard({
                     flexShrink: 0,
                   }}
                 >
-                  <r.Icon size={13} strokeWidth={1.6} />
+                  <r.Icon size={18} strokeWidth={2} />
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: r.isClear ? 600 : 700, color: "#1A1A1A" }}>{r.title}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: "#1A1A1A", letterSpacing: -0.1 }}>{r.title}</div>
                   <div
                     style={{
-                      fontSize: 10,
+                      fontSize: 11,
+                      fontWeight: 500,
                       color: MUTED,
-                      marginTop: 1,
+                      marginTop: 2,
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
@@ -850,10 +851,10 @@ function AttentionGroupCard({
                     style={{
                       background: "#E8F8ED",
                       color: "#1A7A3C",
-                      borderRadius: 20,
-                      padding: "2px 7px",
-                      fontSize: 9,
-                      fontWeight: 600,
+                      borderRadius: 999,
+                      padding: "3px 9px",
+                      fontSize: 11,
+                      fontWeight: 700,
                       flexShrink: 0,
                     }}
                   >
@@ -865,9 +866,9 @@ function AttentionGroupCard({
                       style={{
                         background: r.badge.bg,
                         color: r.badge.fg ?? "#FFFFFF",
-                        borderRadius: 20,
-                        padding: "2px 8px",
-                        fontSize: 9,
+                        borderRadius: 999,
+                        padding: "3px 9px",
+                        fontSize: 11,
                         fontWeight: 700,
                         flexShrink: 0,
                         fontVariantNumeric: "tabular-nums",
@@ -878,13 +879,13 @@ function AttentionGroupCard({
                   ) : (
                     <span
                       style={{
-                        minWidth: 18,
-                        height: 18,
-                        padding: "0 5px",
-                        borderRadius: 20,
+                        minWidth: 22,
+                        height: 22,
+                        padding: "0 7px",
+                        borderRadius: 999,
                         background: r.badge.bg,
                         color: r.badge.fg ?? "#FFFFFF",
-                        fontSize: 9,
+                        fontSize: 11,
                         fontWeight: 700,
                         display: "inline-flex",
                         alignItems: "center",
@@ -897,7 +898,7 @@ function AttentionGroupCard({
                     </span>
                   )
                 ) : null}
-                <ChevronRight size={14} color="#C7C7CC" strokeWidth={1.8} />
+                <ChevronRight size={16} color="#C7C7CC" strokeWidth={2} />
               </button>
             </div>
           ))}
@@ -975,8 +976,8 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
               width: "100%",
               display: "flex",
               alignItems: "center",
-              gap: 10,
-              padding: "10px 12px",
+              gap: 12,
+              padding: "12px 14px",
               background: "transparent",
               border: "none",
               cursor: "pointer",
@@ -985,9 +986,9 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
           >
             <span
               style={{
-                width: 30,
-                height: 30,
-                borderRadius: 8,
+                width: 40,
+                height: 40,
+                borderRadius: 10,
                 background: r.iconBg,
                 color: r.iconColor,
                 display: "inline-flex",
@@ -996,25 +997,25 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
                 flexShrink: 0,
               }}
             >
-              <r.Icon size={13} strokeWidth={1.6} />
+              <r.Icon size={18} strokeWidth={2} />
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 1 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#1A1A1A" }}>{r.label}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: "#1A1A1A", letterSpacing: -0.1 }}>{r.label}</span>
                 <span
                   style={{
                     background: r.tierBg,
                     color: r.tierColor,
-                    borderRadius: 20,
-                    padding: "1px 6px",
-                    fontSize: 8,
+                    borderRadius: 999,
+                    padding: "1px 7px",
+                    fontSize: 9,
                     fontWeight: 700,
                   }}
                 >
                   {r.tierLabel}
                 </span>
               </div>
-              <div style={{ fontSize: 10, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div style={{ fontSize: 11, fontWeight: 500, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {r.subtitle}
               </div>
             </div>
@@ -1022,16 +1023,16 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
               style={{
                 background: r.upgradeBg,
                 color: "#FFFFFF",
-                borderRadius: 20,
-                padding: "4px 10px",
-                fontSize: 10,
+                borderRadius: 999,
+                padding: "4px 11px",
+                fontSize: 11,
                 fontWeight: 700,
                 flexShrink: 0,
               }}
             >
               Upgrade
             </span>
-            <ChevronRight size={14} color="#C7C7CC" strokeWidth={1.8} />
+            <ChevronRight size={16} color="#C7C7CC" strokeWidth={2} />
           </button>
         </div>
       ))}
