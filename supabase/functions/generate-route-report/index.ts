@@ -93,6 +93,66 @@ function samplePoints(points: GPSPoint[], maxSamples: number): GPSPoint[] {
   return sampled;
 }
 
+// Haversine distance in metres
+function distMetres(aLat: number, aLon: number, bLat: number, bLon: number): number {
+  const R = 6_371_000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(bLat - aLat);
+  const dLon = toRad(bLon - aLon);
+  const lat1 = toRad(aLat);
+  const lat2 = toRad(bLat);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+/**
+ * Drop GPS outliers that produce the classic "squiggle / spike" trip map:
+ *  - implausible teleports (>55 m/s ≈ 198 km/h between successive fixes)
+ *  - sub-3 m jitter while effectively stationary
+ *  - leading/trailing isolated points that sit far from the route's median
+ */
+function cleanGpsPoints(points: GPSPoint[]): GPSPoint[] {
+  if (points.length < 3) return points;
+
+  // 1) Teleport / jitter pass — sequential
+  const cleaned: GPSPoint[] = [];
+  let prev: GPSPoint | null = null;
+  let prevT = 0;
+  for (const p of points) {
+    const t = new Date(p.recorded_at).getTime();
+    if (!prev) {
+      cleaned.push(p); prev = p; prevT = t; continue;
+    }
+    const dt = Math.max(0.5, (t - prevT) / 1000); // seconds
+    const d = distMetres(prev.latitude, prev.longitude, p.latitude, p.longitude);
+    const speedMs = d / dt;
+    // Implausible teleport — drop the point entirely.
+    if (speedMs > 55) continue;
+    // Sub-3 m jitter while effectively stationary — drop.
+    if (d < 3 && (p.speed_kmh ?? 0) < 3) continue;
+    cleaned.push(p);
+    prev = p;
+    prevT = t;
+  }
+
+  // 2) Median-based outlier trim on the head/tail (the start dot in the
+  //    screenshot was south of the actual route — kill those).
+  if (cleaned.length > 20) {
+    const lats = cleaned.map(p => p.latitude).slice().sort((a, b) => a - b);
+    const lons = cleaned.map(p => p.longitude).slice().sort((a, b) => a - b);
+    const medLat = lats[Math.floor(lats.length / 2)];
+    const medLon = lons[Math.floor(lons.length / 2)];
+    const isFar = (p: GPSPoint) =>
+      distMetres(medLat, medLon, p.latitude, p.longitude) > 8000; // >8km from median
+    while (cleaned.length && isFar(cleaned[0])) cleaned.shift();
+    while (cleaned.length && isFar(cleaned[cleaned.length - 1])) cleaned.pop();
+  }
+
+  return cleaned;
+}
+
 // Group points into road segments using stored road data
 function groupIntoSegments(points: GPSPoint[]): RoadSegment[] {
   const segments: RoadSegment[] = [];
