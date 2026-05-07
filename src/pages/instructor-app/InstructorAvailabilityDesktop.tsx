@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
 
 // ---------- types ----------
 type Window = { start: string; end: string };
@@ -32,6 +33,7 @@ type TimeOff = {
 type BookingRules = {
   travelBufferMin: number; minLeadHours: number; horizonWeeks: number;
   slotIncrementMin: number; allowSameDay: boolean; autoBlockBankHolidays: boolean;
+  availableFrom: string | null;
 };
 
 const DAYS: DayKey[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -93,6 +95,7 @@ const seedTimeOff: TimeOff[] = [
 const seedRules: BookingRules = {
   travelBufferMin: 15, minLeadHours: 24, horizonWeeks: 8,
   slotIncrementMin: 30, allowSameDay: false, autoBlockBankHolidays: true,
+  availableFrom: null,
 };
 
 // ---------- small UI atoms ----------
@@ -808,6 +811,49 @@ function BookingRulesCard({
         <div style={{ fontSize: 14, fontWeight: 500, color: "#0F172A" }}>Booking rules</div>
         <div style={{ fontSize: 11, color: "#64748B", marginTop: 2 }}>Apply to all online bookings.</div>
       </div>
+      <Row
+        title="Available from"
+        sub="Hide all bookings before this date (e.g. starting fresh, returning from leave)"
+        control={
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button>
+                  <Chip mono={false}>
+                    <CalendarDays size={11} />
+                    {rules.availableFrom
+                      ? format(parseISO(rules.availableFrom), "d MMM yyyy")
+                      : "Available now"}
+                  </Chip>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="p-0 w-auto" style={{ borderRadius: 8 }}>
+                <Calendar
+                  mode="single"
+                  selected={rules.availableFrom ? parseISO(rules.availableFrom) : undefined}
+                  onSelect={(d) =>
+                    setRules({ ...rules, availableFrom: d ? format(d, "yyyy-MM-dd") : null })
+                  }
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            {rules.availableFrom && (
+              <button
+                onClick={() => setRules({ ...rules, availableFrom: null })}
+                title="Clear"
+                style={{
+                  border: "none", background: "transparent", cursor: "pointer",
+                  color: "#94A3B8", padding: 2, display: "inline-flex",
+                }}
+              >
+                <X size={11} />
+              </button>
+            )}
+          </div>
+        }
+      />
       <Row
         title="Travel buffer"
         sub="Time between back-to-back lessons"

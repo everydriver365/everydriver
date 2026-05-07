@@ -5,6 +5,7 @@ import { format, addWeeks, subWeeks, startOfWeek, addDays, subDays, isSameDay, s
 import { ChevronLeft, ChevronRight, Calendar, Plus, Trash2, Pencil, X } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { AvailabilityRulesManager } from "@/components/instructor/AvailabilityRulesManager";
+import { AvailableFromCard } from "@/components/instructor/AvailableFromCard";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -390,6 +391,9 @@ export default function InstructorQuickAvailability() {
         </div>
 
         <div style={{ padding: "14px 15px 24px" }}>
+          {/* Available from date */}
+          {instructorId && <AvailableFromCard instructorId={instructorId} />}
+
           {/* Month nav */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <button

@@ -23,6 +23,7 @@ export type BookingRules = {
   slotIncrementMin: number;
   allowSameDay: boolean;
   autoBlockBankHolidays: boolean;
+  availableFrom: string | null; // ISO date (yyyy-MM-dd) or null
 };
 
 const DAY_KEYS: DayKey[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -40,6 +41,7 @@ export const DEFAULT_RULES: BookingRules = {
   slotIncrementMin: 30,
   allowSameDay: false,
   autoBlockBankHolidays: true,
+  availableFrom: null,
 };
 
 export function useAvailabilityData(instructorId: string | undefined) {
@@ -62,7 +64,7 @@ export function useAvailabilityData(instructorId: string | undefined) {
         supabase
           .from("instructors")
           .select(
-            "buffer_minutes, booking_advance_days, min_lead_hours, slot_increment_minutes, allow_same_day_booking, auto_block_bank_holidays"
+            "buffer_minutes, booking_advance_days, min_lead_hours, slot_increment_minutes, allow_same_day_booking, auto_block_bank_holidays, available_from"
           )
           .eq("id", instructorId!)
           .maybeSingle(),
@@ -104,6 +106,7 @@ export function useAvailabilityData(instructorId: string | undefined) {
         slotIncrementMin: inst.slot_increment_minutes ?? DEFAULT_RULES.slotIncrementMin,
         allowSameDay: inst.allow_same_day_booking ?? DEFAULT_RULES.allowSameDay,
         autoBlockBankHolidays: inst.auto_block_bank_holidays ?? DEFAULT_RULES.autoBlockBankHolidays,
+        availableFrom: inst.available_from ?? null,
       };
 
       return { weekly, timeOff, rules };
@@ -192,6 +195,7 @@ export async function saveBookingRules(instructorId: string, r: BookingRules) {
       slot_increment_minutes: r.slotIncrementMin,
       allow_same_day_booking: r.allowSameDay,
       auto_block_bank_holidays: r.autoBlockBankHolidays,
+      available_from: r.availableFrom,
     } as any)
     .eq("id", instructorId);
   if (error) throw error;
