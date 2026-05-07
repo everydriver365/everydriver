@@ -247,16 +247,19 @@ export function AddCalendarEventDialog({
       const durationMinutes = durationHours * 60;
       const dateStr = format(lessonDate!, 'yyyy-MM-dd');
 
-      // Pre-check for a clash so the user gets a friendly message.
-      const clash = await checkLessonClash({
-        instructorId,
-        date: dateStr,
-        startTime: lessonStartTime,
-        durationMinutes,
-      });
-      if (clash.hardOverlap) {
-        toast.error(clash.message ?? 'That slot is already booked.');
-        return;
+      // Pre-check for a clash so the user gets a friendly inline warning.
+      if (!overrideClash) {
+        const clash = await checkLessonClash({
+          instructorId,
+          date: dateStr,
+          startTime: lessonStartTime,
+          durationMinutes,
+        });
+        if (clash.hardOverlap) {
+          setClashWarning(clash.message ?? 'That slot is already booked.');
+          setLoading(false);
+          return;
+        }
       }
 
       const { error } = await supabase
@@ -270,6 +273,7 @@ export function AddCalendarEventDialog({
           pickup_location: pickupAddress || null,
           status: 'scheduled',
           payment_status: 'unpaid',
+          clash_overridden: overrideClash,
         });
 
       if (error) {
