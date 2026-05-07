@@ -960,12 +960,20 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
                       </div>
                       <span
                         style={{
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: 600,
                           textAlign: "left",
                           color: TEXT,
                           lineHeight: 1.2,
+                          letterSpacing: "-0.1px",
                           flex: 1,
+                          minWidth: 0,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                          wordBreak: "break-word",
+                          hyphens: "auto",
                         }}
                       >
                         {tile.title}
