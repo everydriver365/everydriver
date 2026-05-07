@@ -285,7 +285,7 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
                   width: "100%",
                   scrollSnapAlign: "start",
                   display: "grid",
-                  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
                   gridAutoRows: "min-content",
                   rowGap: 14,
                   columnGap: 8,
