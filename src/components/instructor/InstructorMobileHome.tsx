@@ -607,15 +607,19 @@ export function InstructorMobileHome({
                   />
                 </div>
                 {nextLesson.minutesUntil > 240 ? (
-                  <SimpleNextLessonCard
+                  <NextLessonPreviewCard
                     lessonId={nextLesson.lessonId}
                     pupilId={nextLesson.pupilId}
                     pupilName={nextLesson.pupilName}
+                    pupilPhone={nextLesson.pupilPhone}
+                    pupilProfileImage={nextLesson.pupilProfileImage}
                     lessonDate={nextLesson.lessonDate}
                     startTime={nextLesson.startTime}
                     durationMinutes={nextLesson.durationMinutes}
+                    pickupPostcode={nextLesson.pickupPostcode}
                     pickupLocation={nextLesson.pickupLocation}
                     minutesUntil={nextLesson.minutesUntil}
+                    instructorId={instructorId}
                   />
                 ) : (
                   <NextUpTile
