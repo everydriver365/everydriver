@@ -16,6 +16,11 @@ const config: CapacitorConfig = {
     backgroundColor: '#EEF1F5',
   },
   plugins: {
+    StatusBar: {
+      style: 'LIGHT',
+      backgroundColor: '#EEF1F5',
+      overlaysWebView: false,
+    },
     NativeBiometric: {
       // iOS Info.plist additions handled by plugin; ensure NSFaceIDUsageDescription is set in Xcode
     },
