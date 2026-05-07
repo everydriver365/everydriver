@@ -854,17 +854,81 @@ export default function PremiumPupilProfile() {
   const customRate90 = (pupil as any).custom_rate_90min as number | null | undefined;
   const customRate120 = (pupil as any).custom_rate_120min as number | null | undefined;
   const defaultRate = instructorRate ?? 40;
+  const firstName = pupil.name?.split(" ")[0] || "this pupil";
+  const hasAnyCustomRate = customRate60 != null || customRate90 != null || customRate120 != null;
+
+  const resolvedRate = (custom: number | null | undefined, hours: number) =>
+    custom != null ? custom : defaultRate * hours;
+  const isCustom = (custom: number | null | undefined) => custom != null;
+
   const RatesCard = (
     <Card>
-      <PupilRateEditor
-        pupilId={pupil.id}
-        pupilName={pupil.name}
-        defaultRate={defaultRate}
-        currentCustomRate={customRate60 ?? null}
-        currentCustomRate90={customRate90 ?? null}
-        currentCustomRate120={customRate120 ?? null}
-        onSaved={() => queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] })}
-      />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 16, background: `${C.green}14`, display: "flex", alignItems: "center", justifyContent: "center", color: C.green }}>
+            <PoundSterling size={16} />
+          </div>
+          <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em" }}>
+            {firstName}'s lesson prices
+          </div>
+        </div>
+        {hasAnyCustomRate && (
+          <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 9px", borderRadius: 999, background: `${C.accent}14`, color: C.accent, fontFamily: FONT, fontSize: 11, fontWeight: 600 }}>
+            Custom
+          </span>
+        )}
+      </div>
+      <div style={{ fontFamily: FONT, fontSize: 12, color: C.muted, marginBottom: 12 }}>
+        Applies only to {pupil.name}. Other pupils use your standard rate (£{defaultRate.toFixed(2)}/hr).
+      </div>
+      <div style={{ border: `1px solid ${C.hairline}`, borderRadius: 14, overflow: "hidden", marginBottom: 12 }}>
+        {[
+          { label: "1 hour", custom: customRate60 ?? null, hours: 1 },
+          { label: "1.5 hours", custom: customRate90 ?? null, hours: 1.5 },
+          { label: "2 hours", custom: customRate120 ?? null, hours: 2 },
+        ].map((row, i, arr) => (
+          <div
+            key={row.label}
+            style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              padding: "10px 14px",
+              borderBottom: i < arr.length - 1 ? `1px solid ${C.hairline}` : "none",
+            }}
+          >
+            <span style={{ fontFamily: FONT, fontSize: 14, color: C.text }}>{row.label}</span>
+            <span style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+              <span style={{ fontFamily: FONT, fontSize: 16, fontWeight: 600, color: C.text, fontVariantNumeric: "tabular-nums" }}>
+                £{resolvedRate(row.custom, row.hours).toFixed(2)}
+              </span>
+              <span style={{ fontFamily: FONT, fontSize: 11, color: isCustom(row.custom) ? C.accent : C.subtle, fontWeight: 500 }}>
+                {isCustom(row.custom) ? "Custom" : "Default"}
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+      <details>
+        <summary
+          style={{
+            cursor: "pointer", listStyle: "none",
+            fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.accent,
+            display: "inline-flex", alignItems: "center", gap: 4,
+          }}
+        >
+          {hasAnyCustomRate ? "Edit custom prices" : "Set custom price for this pupil"}
+        </summary>
+        <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.hairline}` }}>
+          <PupilRateEditor
+            pupilId={pupil.id}
+            pupilName={pupil.name}
+            defaultRate={defaultRate}
+            currentCustomRate={customRate60 ?? null}
+            currentCustomRate90={customRate90 ?? null}
+            currentCustomRate120={customRate120 ?? null}
+            onSaved={() => queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] })}
+          />
+        </div>
+      </details>
     </Card>
   );
 
