@@ -32,6 +32,7 @@ type TimeOff = {
 type BookingRules = {
   travelBufferMin: number; minLeadHours: number; horizonWeeks: number;
   slotIncrementMin: number; allowSameDay: boolean; autoBlockBankHolidays: boolean;
+  availableFrom: string | null;
 };
 
 const DAYS: DayKey[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
