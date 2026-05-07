@@ -391,6 +391,9 @@ export default function InstructorQuickAvailability() {
         </div>
 
         <div style={{ padding: "14px 15px 24px" }}>
+          {/* Available from date */}
+          {instructorId && <AvailableFromCard instructorId={instructorId} />}
+
           {/* Month nav */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <button
