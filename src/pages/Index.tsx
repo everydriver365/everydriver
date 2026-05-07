@@ -90,7 +90,7 @@ export default function Index() {
     let cancelled = false;
     (async () => {
       const { data } = await supabase
-        .from("instructors")
+        .from("public_instructors")
         .select("id")
         .eq("app_slug", whitelabelSlug)
         .eq("is_active", true)

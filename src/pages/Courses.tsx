@@ -27,13 +27,13 @@ interface Instructor {
   car_make: string | null;
   car_model: string | null;
   home_postcode: string;
-  home_address: string | null;
+  home_address?: string | null;
   hourly_rate: number | null;
   bio: string | null;
   brand_colour: string | null;
   is_active: boolean;
   available_from: string | null;
-  school_skim_amount: number | null;
+  school_skim_amount?: number | null;
 }
 
 interface InstructorCourse {
@@ -716,7 +716,7 @@ export default function Courses() {
     setLoading(true);
     try {
       const whitelabelSlug = getWhitelabelInstructorSlug();
-      const instructorsQuery = supabase.from("instructors").select("*").eq("is_active", true);
+      const instructorsQuery = supabase.from("public_instructors").select("*").eq("is_active", true);
       if (whitelabelSlug) instructorsQuery.eq("app_slug", whitelabelSlug);
 
       const [instructorsRes, coursesRes, templatesRes, workingHoursRes, overridesRes] = await Promise.all([
@@ -751,7 +751,7 @@ export default function Courses() {
       }
 
       // Geocode all instructor postcodes
-      const allPostcodes = (instructorsRes.data || []).map((i) => i.home_postcode.replace(/\s+/g, "").toUpperCase());
+      const allPostcodes = (instructorsRes.data || []).map((i: any) => (i.home_postcode || "").replace(/\s+/g, "").toUpperCase()).filter(Boolean);
       await geocodePostcodes(allPostcodes);
     } catch (error) {
       console.error("Error fetching data:", error);
