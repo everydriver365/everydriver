@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
-import { MobileCourseCard } from "@/components/courses/MobileCourseCard";
+
 import { CourseWithInstructor, SortOption } from "@/hooks/useCourseDiscovery";
 import { useIsMobile } from "@/hooks/use-mobile";
 interface CourseGridProps {
