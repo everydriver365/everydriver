@@ -57,7 +57,7 @@ export function MobileBlueHeader({
           backgroundColor: pageBg,
           paddingLeft: 8,
           paddingRight: 8,
-          paddingBottom: 8,
+          paddingBottom: 2,
         }}
       >
         <div
@@ -65,7 +65,7 @@ export function MobileBlueHeader({
           style={{
             background: pageBg,
             borderRadius: 16,
-            padding: 14,
+            padding: "8px 14px",
           }}
         >
         {/* Left: logo+wordmark on home; back+title on other tab roots; back+title on subpages */}
