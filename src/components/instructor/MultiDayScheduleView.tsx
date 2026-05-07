@@ -984,7 +984,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                 </div>
                 <button
                   type="button"
-                  onClick={() => setAddLessonOpen(true)}
+                  onClick={() => { setAddEventDate(day); setAddEventOpen(true); }}
                   style={{
                     backgroundColor: today ? "#3D55A1" : "#FFFFFF",
                     border: today ? "none" : "0.5px solid rgba(26,82,160,0.12)",
