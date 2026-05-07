@@ -36,6 +36,28 @@ function normaliseHost(hostname: string): string {
 export function getWhitelabelConfig(
   hostname: string = typeof window !== "undefined" ? window.location.hostname : "",
 ): WhitelabelConfig | null {
+  // Dev/preview override: ?whitelabel=winchesterdrivingschool.co.uk
+  // Persisted in sessionStorage so it survives client-side navigation.
+  if (typeof window !== "undefined") {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const override = params.get("whitelabel");
+      if (override) {
+        if (override === "off") {
+          window.sessionStorage.removeItem("lovable_whitelabel_override");
+        } else {
+          window.sessionStorage.setItem("lovable_whitelabel_override", override);
+        }
+      }
+      const stored = window.sessionStorage.getItem("lovable_whitelabel_override");
+      if (stored) {
+        const match = WHITELABEL_CONFIGS.find((c) => c.host === normaliseHost(stored));
+        if (match) return match;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
   const host = normaliseHost(hostname);
   return WHITELABEL_CONFIGS.find((c) => c.host === host) ?? null;
 }
