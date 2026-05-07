@@ -54,7 +54,7 @@ export function MobileBlueHeader({
         className="sticky top-0 z-40"
         style={{
           paddingTop: "env(safe-area-inset-top)",
-          backgroundColor: "#FFFFFF",
+          backgroundColor: pageBg,
           paddingLeft: 8,
           paddingRight: 8,
           paddingBottom: 8,
@@ -63,10 +63,9 @@ export function MobileBlueHeader({
         <div
           className="flex items-center justify-between"
           style={{
-            background: "#FFFFFF",
+            background: pageBg,
             borderRadius: 16,
             padding: 14,
-            boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
           }}
         >
         {/* Left: logo+wordmark on home; back+title on other tab roots; back+title on subpages */}
