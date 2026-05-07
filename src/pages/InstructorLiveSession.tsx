@@ -236,6 +236,7 @@ export default function InstructorLiveSession() {
         ? "phone"
         : null,
     pupilId: selectedPupilId || null,
+    sessionId: device?.current_session_id ?? null,
     onPosition: (fix) => {
       setLastPhoneFix(fix);
       setPhoneTrail((prev) => {
