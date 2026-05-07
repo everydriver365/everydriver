@@ -242,7 +242,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      let instructorsQuery = supabase.from("instructors").select("*").eq("is_active", true);
+      let instructorsQuery = supabase.from("public_instructors").select("*").eq("is_active", true);
       if (instructorId) {
         instructorsQuery = instructorsQuery.eq("id", instructorId);
       }
