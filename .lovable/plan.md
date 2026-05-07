@@ -1,64 +1,43 @@
-# Pupil Profile Redesign + Per-Pupil Rates Clarification
+## Problem
 
-The current page (`src/pages/PremiumPupilProfile.tsx`) stacks ~10 disparate cards (Next lesson, Last lesson, History, Progress, Notes, Documents, Payments, Rates, Eyesight, Details) in a single vertical stream with identical visual weight. It reads as a "random selection of tiles" because nothing is grouped by purpose, everything is the same size, and the same content appears in different orders on mobile vs desktop.
+When tracking a lesson with the phone (Phone Tracker provider), the Trip Summary shows 0.0 mi distance, no speed limits, and no actual speed graph. With Radius hardware it works fine.
 
-## 1. Per-pupil rates (clarify scope)
+## Root Cause
 
-The `PupilRateEditor` is already pupil-scoped (writes to `pupils.custom_hourly_rate / custom_rate_90min / custom_rate_120min` for the single `pupilId`). The user's concern is that it *looks* global. Fix:
+In `src/pages/InstructorLiveSession.tsx` (lines 232–247), `usePhoneTrackingStreamer` is called **without** the `sessionId` prop:
 
-- Rename section header from "Lesson rates" to **"{First name}'s lesson rates"**.
-- Add a one-line caption above the inputs: *"These prices apply only to {name}. Leave blank to use your standard rate."*
-- Show the resolved per-duration price (custom or default) as a read-only summary line first; the editable inputs collapse behind a "Set custom price" toggle. Default state is **read-only** so it can't be confused with a global setting.
-
-## 2. Page structure — from flat stack to 4 named sections
-
-Replace the current loose list with four clearly labelled sections, each with a section title bar and subordinate cards. Same sections, same order, on mobile and desktop.
-
-```text
-┌─ HEADER ──────────────────────────────────────┐
-│ Back        Pupil name + status        Edit   │
-│ Avatar | phone | address                      │
-│ [Call] [Message] [Navigate] [Book]            │
-└───────────────────────────────────────────────┘
-
-┌─ AT A GLANCE (4 stat pills, sticky on desktop)┐
-│ Lessons | Hours | Progress | Test date        │
-└───────────────────────────────────────────────┘
-
-1. LESSONS & PROGRESS
-   - Next lesson  (primary, larger)
-   - Last lesson  (secondary)
-   - Test readiness bar
-   - Lesson history → opens sheet
-
-2. MONEY
-   - Balance + prepaid hours (combined card)
-   - {Name}'s lesson rates (read-only summary, expand to edit)
-   - Payments history → opens sheet
-
-3. SAFETY & ADMIN
-   - Eyesight check
-   - Documents
-   - Notes
-
-4. DETAILS
-   - Contact, address, course type, learner permit, etc.
+```ts
+usePhoneTrackingStreamer({
+  provider: ...,
+  pupilId: selectedPupilId || null,
+  onPosition: (fix) => { ... },
+});
 ```
 
-Visual hierarchy rules:
-- One **hero card per section** (Next lesson / Balance / Eyesight / Contact). Larger padding, slightly stronger shadow.
-- Supporting cards in the section use the existing card style at 16px padding.
-- Section header bar: small uppercase label + thin divider, consistent spacing (24px above, 12px below) — replaces the current loose `SectionHeader` placement.
-- Desktop: same 4 sections, but section 1 + 2 share the right column (single column, no two-column grid for cards). Sticky left rail keeps Header card + At a glance stats only.
+Inside the hook (`src/hooks/usePhoneTrackingStreamer.ts`), `sessionId` defaults to `null`. The block that persists each GPS fix into `telematics_gps_points` (via the `record_phone_gps_point` RPC) is gated by `if (sessionId)` — so it never runs. As a result:
 
-## 3. Files
+- `telematics_gps_points` rows are never written for phone sessions
+- The `generate-route-report` edge function reads from that table, so distance, average/max speed, speed limits and the Speed-Over-Time graph all come back empty
+- Live position is still updated (different RPC), which is why the live map works during the lesson but the summary is empty afterwards
 
-- `src/pages/PremiumPupilProfile.tsx` — restructure `MobileLayout` and `DesktopLayout`. Combine `PaymentsCard` + `RatesCard` into a single Money card group. Wrap each group in a `<Section title="…">` helper (new local component). Remove duplicated `SectionHeader` calls.
-- Add a `RatesSummary` mode to `RatesCard`: shows three resolved prices as a read-only row, with a "Set custom price" link that reveals the existing `PupilRateEditor` inline.
-- No DB or schema changes.
+## Fix
 
-## 4. Out of scope
+Pass the active telematics session id (`device?.current_session_id`) to the streamer so phone fixes get persisted just like hardware fixes.
 
-- No changes to `PupilRateEditor` save logic.
-- No changes to lesson/payment data fetching.
-- No changes to other pages.
+### File: `src/pages/InstructorLiveSession.tsx`
+
+Update the `usePhoneTrackingStreamer` call (around line 232) to include:
+
+```ts
+sessionId: device?.current_session_id ?? null,
+```
+
+That single change makes `record_phone_gps_point` fire on every accepted fix, populating `telematics_gps_points` with latitude/longitude, speed_kmh, speed_limit_kmh and incremental distance — exactly what the Trip Summary needs.
+
+## Verification
+
+After the fix, on TestFlight:
+1. Start a lesson with Phone Tracker selected
+2. Drive (or walk) for a few minutes
+3. Stop the session
+4. Trip Summary should show non-zero distance, a real Speed Over Time graph with limit line, avg/max speed values, and roads travelled with speed limits
