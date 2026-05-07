@@ -928,8 +928,13 @@ export default function PremiumPupilProfile() {
     </Card>
   );
 
+  const eyesightCardTint =
+    eyesightChecked === true ? `${C.green}10` : eyesightChecked === false ? `${C.red}10` : undefined;
+  const eyesightCardBorder =
+    eyesightChecked === true ? `${C.green}55` : eyesightChecked === false ? `${C.red}55` : undefined;
   const EyesightCard = (
-    <Card>
+    <Card style={eyesightCardTint ? { background: eyesightCardTint, borderColor: eyesightCardBorder } : undefined}>
+
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 32, height: 32, borderRadius: 16, background: C.surface, display: "flex", alignItems: "center", justifyContent: "center", color: C.muted }}>
