@@ -716,7 +716,7 @@ export default function Courses() {
     setLoading(true);
     try {
       const whitelabelSlug = getWhitelabelInstructorSlug();
-      const instructorsQuery = supabase.from("instructors").select("*").eq("is_active", true);
+      const instructorsQuery = supabase.from("public_instructors").select("*").eq("is_active", true);
       if (whitelabelSlug) instructorsQuery.eq("app_slug", whitelabelSlug);
 
       const [instructorsRes, coursesRes, templatesRes, workingHoursRes, overridesRes] = await Promise.all([
