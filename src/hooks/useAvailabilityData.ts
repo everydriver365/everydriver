@@ -64,7 +64,7 @@ export function useAvailabilityData(instructorId: string | undefined) {
         supabase
           .from("instructors")
           .select(
-            "buffer_minutes, booking_advance_days, min_lead_hours, slot_increment_minutes, allow_same_day_booking, auto_block_bank_holidays"
+            "buffer_minutes, booking_advance_days, min_lead_hours, slot_increment_minutes, allow_same_day_booking, auto_block_bank_holidays, available_from"
           )
           .eq("id", instructorId!)
           .maybeSingle(),
