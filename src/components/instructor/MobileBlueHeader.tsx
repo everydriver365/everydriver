@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { Bell, Plus, Menu, ChevronLeft } from "lucide-react";
+import { Bell, Plus, Menu, ChevronLeft, Phone } from "lucide-react";
 import dsmLogo from "@/assets/dsm-logo.png";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { useAICallDivert } from "@/hooks/useAICallDivert";
 
 interface Props {
   instructorId: string | undefined;
