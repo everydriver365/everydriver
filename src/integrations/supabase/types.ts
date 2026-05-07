@@ -14885,6 +14885,7 @@ export type Database = {
           check_in_responded_at: string | null
           check_in_sent_at: string | null
           check_in_status: string | null
+          clash_overridden: boolean
           created_at: string
           deleted_at: string | null
           dropoff_postcode: string | null
@@ -14931,6 +14932,7 @@ export type Database = {
           check_in_responded_at?: string | null
           check_in_sent_at?: string | null
           check_in_status?: string | null
+          clash_overridden?: boolean
           created_at?: string
           deleted_at?: string | null
           dropoff_postcode?: string | null
@@ -14977,6 +14979,7 @@ export type Database = {
           check_in_responded_at?: string | null
           check_in_sent_at?: string | null
           check_in_status?: string | null
+          clash_overridden?: boolean
           created_at?: string
           deleted_at?: string | null
           dropoff_postcode?: string | null
