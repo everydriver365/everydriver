@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
 
 // ---------- types ----------
 type Window = { start: string; end: string };
