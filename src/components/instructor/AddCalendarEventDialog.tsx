@@ -788,6 +788,21 @@ export function AddCalendarEventDialog({
           )}
         </div>
 
+        {/* Clash warning + override */}
+        {clashWarning && (
+          <div className="mx-5 mb-2 px-4 py-3 rounded-[12px] bg-[#FEF3C7] border border-[#FDE68A] text-[13px] text-[#92400E]">
+            <div className="font-medium">{clashWarning}</div>
+            <label className="mt-2 inline-flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={overrideClash}
+                onChange={(e) => setOverrideClash(e.target.checked)}
+              />
+              Book anyway (override clash)
+            </label>
+          </div>
+        )}
+
         {/* Sticky footer */}
         <div
           className="px-5 pt-3 bg-white/95 backdrop-blur border-t border-[#E5E5EA]"
