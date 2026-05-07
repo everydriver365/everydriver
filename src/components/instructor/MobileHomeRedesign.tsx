@@ -659,9 +659,7 @@ function UpNextTile({
                 marginTop: -2,
               }}
             >
-              <span style={{ color: BLUE, fontWeight: 600 }}>Tracking ready</span>
-              {" · "}
-              <span>{aiStatusLine}</span>
+              {aiStatusLine}
             </div>
           )}
 
