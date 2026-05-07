@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { Bell, Plus, Menu, ChevronLeft } from "lucide-react";
+import { Bell, Plus, Menu, ChevronLeft, Phone } from "lucide-react";
 import dsmLogo from "@/assets/dsm-logo.png";
 import { useCombinedNotificationCount } from "@/hooks/useCombinedNotificationCount";
+import { useAICallDivert } from "@/hooks/useAICallDivert";
 
 interface Props {
   instructorId: string | undefined;
@@ -35,6 +36,9 @@ export function MobileBlueHeader({
 }: Props) {
   const navigate = useNavigate();
   const { total: notifCount } = useCombinedNotificationCount(instructorId);
+  const aiDivert = useAICallDivert(instructorId, null);
+  const divertActive = aiDivert.active;
+  const divertColor = divertActive ? "#1A7A3C" : "#CC2229";
 
   void surface;
   const bg = "hsl(var(--dsm-page-bg,var(--dsm-bg)))";
@@ -90,8 +94,17 @@ export function MobileBlueHeader({
           )}
         </div>
 
-        {/* Right: bell, +, avatar, menu */}
+        {/* Right: phone divert, bell, +, menu */}
         <div className="flex items-center" style={{ gap: 12 }}>
+          <button
+            onClick={() => navigate("/instructor/ai-receptionist")}
+            className="relative flex items-center justify-center"
+            style={{ width: 32, height: 32 }}
+            aria-label={divertActive ? "AI call divert active" : "AI call divert off"}
+            title={divertActive ? "AI call divert active" : "AI call divert off"}
+          >
+            <Phone size={20} strokeWidth={1.9} color={divertColor} />
+          </button>
           <button
             onClick={() => navigate("/instructor/notifications")}
             className="relative flex items-center justify-center"

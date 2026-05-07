@@ -1313,8 +1313,6 @@ export function MobileHomeRedesign({
         lessonsToday={lessonsToday}
         earningsToday={earningsToday}
         pendingJobs={pendingJobs}
-        divertActive={aiDivert.active}
-        onDivertClick={() => setDivertSheetOpen(true)}
       />
 
 
