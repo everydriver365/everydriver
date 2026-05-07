@@ -134,9 +134,9 @@
   /* Light mode (default when present without .dsm-dark) */
   .instructor-portal,
   .dsm-instructor {
-    --dsm-bg: 220 30% 96%;          /* #F2F4F8 */
-    --dsm-page-bg: 220 30% 96%;     /* #F2F4F8 */
-    --background: 220 30% 96%;      /* match for bg-background pages */
+    --dsm-bg: 214 22% 95%;          /* #EEF1F5 — slate canvas */
+    --dsm-page-bg: 214 22% 95%;     /* #EEF1F5 */
+    --background: 214 22% 95%;      /* match for bg-background pages */
     --dsm-card: 0 0% 100%;          /* #FFFFFF */
     --dsm-text: 217 51% 12%;        /* #0F1B2D */
     --dsm-text-secondary: 213 22% 57%; /* #7A8FAA */
