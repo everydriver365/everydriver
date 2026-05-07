@@ -547,6 +547,63 @@ function LessonRow({
               {p.label}
             </span>
           ))}
+          {showEOLPill && (
+            <button
+              type="button"
+              onClick={onEOLClick}
+              aria-label={eolDone ? "End of lesson complete — review" : "Complete end of lesson"}
+              style={{
+                background: TINT_BLUE,
+                border: "none",
+                borderRadius: 8,
+                padding: "1px 6px",
+                cursor: "pointer",
+                lineHeight: 1.2,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: BLUE,
+                  letterSpacing: 0.3,
+                  textTransform: "uppercase",
+                  textDecoration: eolDone ? "line-through" : "none",
+                  opacity: eolDone ? 0.6 : 1,
+                }}
+              >
+                EOL
+              </span>
+            </button>
+          )}
+          {showPayPill && (
+            <span
+              aria-label={isPaid ? "Paid" : "Not paid"}
+              style={{
+                background: isPaid ? "#E8F8ED" : "#FFECEC",
+                color: isPaid ? "#1A7A3C" : "#D33B3B",
+                fontSize: 10,
+                fontWeight: 600,
+                padding: "1px 6px",
+                borderRadius: 8,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                whiteSpace: "nowrap",
+              }}
+            >
+              <span
+                style={{
+                  width: 5,
+                  height: 5,
+                  borderRadius: 3,
+                  background: isPaid ? "#1A7A3C" : "#D33B3B",
+                  display: "inline-block",
+                }}
+              />
+              {isPaid ? "Paid" : "Not paid"}
+            </span>
+          )}
         </div>
         <div
           style={{
