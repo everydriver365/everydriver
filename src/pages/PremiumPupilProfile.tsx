@@ -1316,37 +1316,25 @@ export default function PremiumPupilProfile() {
 
   // ── Lighter metrics row (no boxes) ──
   const MobileMetrics = (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-        gap: 4,
-        padding: "4px 2px",
-      }}
-    >
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
       {[
         { label: "Lessons", value: String(totalLessons) },
         { label: "Hours", value: (stats?.totalHours ?? 0).toFixed(1) },
         { label: "Progress", value: progressPct != null ? `${progressPct}%` : "—" },
-        { label: "Test", value: testDate ? format(testDate, "d MMM") : "—" },
       ].map((m) => (
-        <div key={m.label} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <div
-            style={{
-              fontFamily: FONT, fontSize: 18, fontWeight: 700,
-              color: C.text, letterSpacing: "-0.02em",
-              fontVariantNumeric: "tabular-nums", lineHeight: 1.1,
-            }}
-          >
-            {m.value}
-          </div>
-          <div
-            style={{
-              fontFamily: FONT, fontSize: 11, fontWeight: 500,
-              color: C.muted, letterSpacing: "0.3px", textTransform: "uppercase",
-            }}
-          >
+        <div
+          key={m.label}
+          style={{
+            background: C.card, borderRadius: 16, padding: 12,
+            border: `1px solid ${C.hairline}`, boxShadow: SHADOW_CARD,
+            display: "flex", flexDirection: "column", gap: 4,
+          }}
+        >
+          <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 600, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" }}>
             {m.label}
+          </div>
+          <div style={{ fontFamily: FONT, fontSize: 22, fontWeight: 600, color: C.text, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums", lineHeight: 1.1 }}>
+            {m.value}
           </div>
         </div>
       ))}
