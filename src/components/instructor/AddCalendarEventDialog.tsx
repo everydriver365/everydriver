@@ -123,6 +123,16 @@ export function AddCalendarEventDialog({
   // Inline error state
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Clash override (shared across tabs — reset on input changes)
+  const [clashWarning, setClashWarning] = useState<string | null>(null);
+  const [overrideClash, setOverrideClash] = useState(false);
+
+  // Reset clash state whenever the user changes the time inputs
+  useEffect(() => {
+    setClashWarning(null);
+    setOverrideClash(false);
+  }, [tab, blockDate, blockStartTime, blockEndTime, lessonDate, lessonStartTime, lessonDuration, eventDate, eventStartTime, eventEndTime]);
+
   useEffect(() => {
     if (open) {
       fetchPupils();
@@ -181,6 +191,21 @@ export function AddCalendarEventDialog({
       const [endHour, endMin] = blockEndTime.split(':').map(Number);
       endDateTime.setHours(endHour, endMin, 0, 0);
 
+      const durationMinutes = Math.round((endDateTime.getTime() - startDateTime.getTime()) / 60000);
+      if (!overrideClash && durationMinutes > 0) {
+        const clash = await checkLessonClash({
+          instructorId,
+          date: format(blockDate!, 'yyyy-MM-dd'),
+          startTime: blockStartTime,
+          durationMinutes,
+        });
+        if (clash.hardOverlap) {
+          setClashWarning(clash.message ?? 'Overlaps with an existing booking.');
+          setLoading(false);
+          return;
+        }
+      }
+
       const { error } = await supabase
         .from('instructor_manual_blocks')
         .insert({
@@ -222,16 +247,19 @@ export function AddCalendarEventDialog({
       const durationMinutes = durationHours * 60;
       const dateStr = format(lessonDate!, 'yyyy-MM-dd');
 
-      // Pre-check for a clash so the user gets a friendly message.
-      const clash = await checkLessonClash({
-        instructorId,
-        date: dateStr,
-        startTime: lessonStartTime,
-        durationMinutes,
-      });
-      if (clash.hardOverlap) {
-        toast.error(clash.message ?? 'That slot is already booked.');
-        return;
+      // Pre-check for a clash so the user gets a friendly inline warning.
+      if (!overrideClash) {
+        const clash = await checkLessonClash({
+          instructorId,
+          date: dateStr,
+          startTime: lessonStartTime,
+          durationMinutes,
+        });
+        if (clash.hardOverlap) {
+          setClashWarning(clash.message ?? 'That slot is already booked.');
+          setLoading(false);
+          return;
+        }
       }
 
       const { error } = await supabase
@@ -245,6 +273,7 @@ export function AddCalendarEventDialog({
           pickup_location: pickupAddress || null,
           status: 'scheduled',
           payment_status: 'unpaid',
+          clash_overridden: overrideClash,
         });
 
       if (error) {
@@ -286,6 +315,21 @@ export function AddCalendarEventDialog({
       const endDateTime = new Date(eventDate!);
       const [eh, em] = eventEndTime.split(':').map(Number);
       endDateTime.setHours(eh, em, 0, 0);
+
+      const durationMinutes = Math.round((endDateTime.getTime() - startDateTime.getTime()) / 60000);
+      if (!overrideClash && durationMinutes > 0) {
+        const clash = await checkLessonClash({
+          instructorId,
+          date: format(eventDate!, 'yyyy-MM-dd'),
+          startTime: eventStartTime,
+          durationMinutes,
+        });
+        if (clash.hardOverlap) {
+          setClashWarning(clash.message ?? 'Overlaps with an existing booking.');
+          setLoading(false);
+          return;
+        }
+      }
 
       const notesParts = [eventLocation && `Location: ${eventLocation}`, eventNotes].filter(Boolean);
 
@@ -743,6 +787,21 @@ export function AddCalendarEventDialog({
             </div>
           )}
         </div>
+
+        {/* Clash warning + override */}
+        {clashWarning && (
+          <div className="mx-5 mb-2 px-4 py-3 rounded-[12px] bg-[#FEF3C7] border border-[#FDE68A] text-[13px] text-[#92400E]">
+            <div className="font-medium">{clashWarning}</div>
+            <label className="mt-2 inline-flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={overrideClash}
+                onChange={(e) => setOverrideClash(e.target.checked)}
+              />
+              Book anyway (override clash)
+            </label>
+          </div>
+        )}
 
         {/* Sticky footer */}
         <div

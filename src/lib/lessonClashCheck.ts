@@ -5,7 +5,7 @@ export interface ClashSlot {
   name: string;
   startTime: string; // HH:mm
   endTime: string;   // HH:mm
-  kind: 'lesson' | 'event';
+  kind: 'lesson' | 'event' | 'block';
 }
 
 export interface ClashResult {
@@ -71,7 +71,7 @@ export async function checkLessonClash(args: CheckArgs): Promise<ClashResult> {
     lessonsQuery = lessonsQuery.neq('id', excludeLessonId);
   }
 
-  const [lessonsRes, eventsRes] = await Promise.all([
+  const [lessonsRes, eventsRes, blocksRes] = await Promise.all([
     lessonsQuery,
     supabase
       .from('instructor_calendar_events')
@@ -80,12 +80,19 @@ export async function checkLessonClash(args: CheckArgs): Promise<ClashResult> {
       .eq('is_busy', true)
       .gte('end_time', dayStart.toISOString())
       .lte('start_time', dayEnd.toISOString()),
+    supabase
+      .from('instructor_manual_blocks')
+      .select('title, start_datetime, end_datetime')
+      .eq('instructor_id', instructorId)
+      .gte('end_datetime', dayStart.toISOString())
+      .lte('start_datetime', dayEnd.toISOString()),
   ]);
 
   const lessons = lessonsRes.data || [];
   const events = eventsRes.data || [];
+  const blocks = blocksRes.data || [];
 
-  type Slot = { start: number; end: number; name: string; kind: 'lesson' | 'event' };
+  type Slot = { start: number; end: number; name: string; kind: 'lesson' | 'event' | 'block' };
 
   const lessonSlots: Slot[] = lessons.map((l: any) => {
     const s = toMinutes(l.start_time || '00:00');
@@ -118,7 +125,16 @@ export async function checkLessonClash(args: CheckArgs): Promise<ClashResult> {
     }))
     .filter((s) => s.end > s.start);
 
-  const all = [...lessonSlots, ...eventSlots];
+  const blockSlots: Slot[] = blocks
+    .map((b: any) => ({
+      start: tsToMin(b.start_datetime),
+      end: tsToMin(b.end_datetime),
+      name: b.title || 'Time block',
+      kind: 'block' as const,
+    }))
+    .filter((s) => s.end > s.start);
+
+  const all = [...lessonSlots, ...eventSlots, ...blockSlots];
 
   const hardClashes = all.filter((s) => newStart < s.end && newEnd > s.start);
   const buffer = Math.max(bufferMinutes, 0);

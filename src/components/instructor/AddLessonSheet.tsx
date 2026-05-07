@@ -608,7 +608,7 @@ export function AddLessonSheet({
   const handleAddLessonExisting = async () => {
     if (!selectedPupil || !lessonDate) { toast.error('Please select a pupil and date'); return; }
     if (pendingCheckRef.current) { try { await pendingCheckRef.current; } catch { /* ignore */ } }
-    if (conflictWarning) { if (isHardOverlap) { toast.error(conflictWarning); return; } if (!overrideBuffer) { toast.error(conflictWarning); return; } }
+    if (conflictWarning && !overrideBuffer) { toast.error(conflictWarning); return; }
     if (!(await validateExaminerCentreMatch())) return;
     setLoading(true);
     try {
@@ -631,13 +631,15 @@ export function AddLessonSheet({
           recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
           planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
           notes: testNotes,
+          clash_overridden: overrideBuffer && isHardOverlap,
           ...(isDrivingTest && selectedTestCentre ? { test_centre_id: selectedTestCentre } : {}),
           ...(isDrivingTest && selectedExaminer ? { examiner_id: selectedExaminer } : {}),
         });
       }
       // For recurring lessons, re-check every week (not just the first) so we
-      // never silently insert a clash on weeks 2..N.
-      if (weeks > 1) {
+      // never silently insert a clash on weeks 2..N — unless the user has
+      // explicitly chosen to override the clash.
+      if (weeks > 1 && !(overrideBuffer && isHardOverlap)) {
         for (const dateStr of dateStrs) {
           const c = await checkLessonClash({
             instructorId, date: dateStr, startTime: lessonStartTime, durationMinutes,
@@ -666,7 +668,7 @@ export function AddLessonSheet({
   const handleAddLessonNew = async () => {
     if (!newPupilName.trim() || !lessonDate) { toast.error('Please enter a name and date'); return; }
     if (pendingCheckRef.current) { try { await pendingCheckRef.current; } catch { /* ignore */ } }
-    if (conflictWarning) { if (isHardOverlap) { toast.error(conflictWarning); return; } if (!overrideBuffer) { toast.error(conflictWarning); return; } }
+    if (conflictWarning && !overrideBuffer) { toast.error(conflictWarning); return; }
     if (!(await validateExaminerCentreMatch())) return;
     setLoading(true);
     try {
@@ -692,6 +694,7 @@ export function AddLessonSheet({
           recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
           planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
           notes: testNotes,
+          clash_overridden: overrideBuffer && isHardOverlap,
           ...(isDrivingTest && selectedTestCentre ? { test_centre_id: selectedTestCentre } : {}),
           ...(isDrivingTest && selectedExaminer ? { examiner_id: selectedExaminer } : {}),
         });
@@ -1081,7 +1084,7 @@ export function AddLessonSheet({
                         checked={overrideBuffer}
                         onChange={(e) => setOverrideBuffer(e.target.checked)}
                       />
-                      Book anyway (override buffer)
+                      {isHardOverlap ? 'Book anyway (override clash)' : 'Book anyway (override buffer)'}
                     </label>
                   </div>
                 </div>
