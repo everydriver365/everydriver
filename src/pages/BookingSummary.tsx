@@ -311,7 +311,7 @@ export default function BookingSummary() {
       setCourseDetails({
         instructor: {
           ...instructor,
-          home_address: instructor.home_address || null,
+          home_address: null,
           preferred_lesson_length: instructor.preferred_lesson_length || 60,
           booking_advance_days: instructor.booking_advance_days || 28,
           available_from: instructor.available_from || null,
