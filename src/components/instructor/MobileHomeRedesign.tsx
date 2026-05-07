@@ -842,7 +842,7 @@ function AttentionGroupCard({
                   <r.Icon size={18} strokeWidth={2} />
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "#1A1A1A", letterSpacing: -0.1 }}>{r.title}</div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: "#1A1A1A", letterSpacing: -0.1 }}>{r.title}</div>
                   <div
                     style={{
                       fontSize: 11,
