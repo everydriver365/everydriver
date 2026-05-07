@@ -1,43 +1,42 @@
-## Problem
+## What's broken
 
-When tracking a lesson with the phone (Phone Tracker provider), the Trip Summary shows 0.0 mi distance, no speed limits, and no actual speed graph. With Radius hardware it works fine.
+Postcode search on Drive365, Winchester Driving School, and any /courses page returns no instructors. The `public_instructors` view is denying `anon` access, so the courses page loads zero instructors and the postcode lookup has nothing to match against.
 
-## Root Cause
+## Why it broke (not the white-label work)
 
-In `src/pages/InstructorLiveSession.tsx` (lines 232–247), `usePhoneTrackingStreamer` is called **without** the `sessionId` prop:
+The white-label site is a symptom, not the cause. The real change is on the database side:
 
-```ts
-usePhoneTrackingStreamer({
-  provider: ...,
-  pupilId: selectedPupilId || null,
-  onPosition: (fix) => { ... },
-});
+- The `public_instructors` view exists to safely expose non-PII instructor columns to public visitors.
+- It is currently configured with `security_invoker = true`, meaning Postgres runs the underlying `SELECT public.instructors …` **as the calling role** (anon for unauthenticated visitors).
+- The base `public.instructors` table no longer has a `SELECT` grant for `anon` (verified — the ACL shows `anon=awdDxtm`, missing the `r` SELECT bit). It only grants INSERT/UPDATE/DELETE etc., which is unusual but that's the current state.
+- Result: `select * from public_instructors` as anon → "permission denied for table instructors". Confirmed live by hitting the REST endpoint with the anon key.
+
+This was almost certainly tightened during a recent security-hardening pass (the table has RLS policies that look right — "Active instructors publicly viewable" for anon — but RLS only applies once the role also holds the table grant, and the grant was dropped). Everything that reads `public_instructors` (Courses, WhitelabelCourses, MiniWebsiteCourses, Intensives, SemiIntensive, useCourseDiscovery, etc.) silently returns 0 rows or, on the white-label page, falls back to the "Instructor not found" lookupError shown in the screenshot.
+
+The geocoding edge function itself is healthy (verified — postcodes.io call works and the function returns lat/lng correctly).
+
+## The fix
+
+Switch the `public_instructors` view to **security definer** semantics so it can read the locked-down base table on behalf of public visitors, while the base table stays sealed off to anon (so PII columns like phone/email/lesson_rate that aren't in the view stay private).
+
+Migration:
+
+```sql
+ALTER VIEW public.public_instructors SET (security_invoker = false);
+-- ensure anon/authenticated can read the safe view
+GRANT SELECT ON public.public_instructors TO anon, authenticated;
 ```
 
-Inside the hook (`src/hooks/usePhoneTrackingStreamer.ts`), `sessionId` defaults to `null`. The block that persists each GPS fix into `telematics_gps_points` (via the `record_phone_gps_point` RPC) is gated by `if (sessionId)` — so it never runs. As a result:
+This is the same pattern documented in the project's security guidance: hide sensitive columns behind a view, deny direct base-table access, expose the view publicly.
 
-- `telematics_gps_points` rows are never written for phone sessions
-- The `generate-route-report` edge function reads from that table, so distance, average/max speed, speed limits and the Speed-Over-Time graph all come back empty
-- Live position is still updated (different RPC), which is why the live map works during the lesson but the summary is empty afterwards
+## Verification after deploy
 
-## Fix
+1. `curl …/rest/v1/public_instructors?select=id&limit=1` with the anon key → returns rows (today: permission denied).
+2. Drive365 `/courses` → instructor cards appear without entering a postcode.
+3. Drive365 `/courses` → enter `SO30 2TD` (Ken D's postcode) → "Location found!" toast and Ken D's courses listed.
+4. winchesterdrivingschool.co.uk → loads Ken D's courses (no "Instructor not found" message).
+5. No new PII exposed: hitting `/rest/v1/instructors` with the anon key still returns permission denied.
 
-Pass the active telematics session id (`device?.current_session_id`) to the streamer so phone fixes get persisted just like hardware fixes.
+## Files touched
 
-### File: `src/pages/InstructorLiveSession.tsx`
-
-Update the `usePhoneTrackingStreamer` call (around line 232) to include:
-
-```ts
-sessionId: device?.current_session_id ?? null,
-```
-
-That single change makes `record_phone_gps_point` fire on every accepted fix, populating `telematics_gps_points` with latitude/longitude, speed_kmh, speed_limit_kmh and incremental distance — exactly what the Trip Summary needs.
-
-## Verification
-
-After the fix, on TestFlight:
-1. Start a lesson with Phone Tracker selected
-2. Drive (or walk) for a few minutes
-3. Stop the session
-4. Trip Summary should show non-zero distance, a real Speed Over Time graph with limit line, avg/max speed values, and roads travelled with speed limits
+- New migration only. No app code changes — every caller already queries `public_instructors`.
