@@ -1314,19 +1314,6 @@ export function MobileHomeRedesign({
       />
 
 
-      {/* Top summary row: AI Receptionist | Today | This Week */}
-      <TopStatsRow
-        ai={aiDivert}
-        onOpenAISheet={() => setDivertSheetOpen(true)}
-        earningsToday={earningsToday}
-        todayLessons={todaySessions}
-        earningsDelta={null}
-        hoursThisWeek={weekly?.hoursThisWeek ?? hoursThisWeek ?? 0}
-        hoursGoal={weekly?.hoursGoal ?? 30}
-        lessonsThisWeek={weekly?.lessonsThisWeek ?? lessonsThisWeek ?? 0}
-        lessonsGoal={Math.max(weekly?.lessonsThisWeek ?? 0, 8)}
-      />
-
       {nextLesson && (
         <>
           <SectionLabel>Up next</SectionLabel>
