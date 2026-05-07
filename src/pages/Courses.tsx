@@ -296,6 +296,7 @@ export default function Courses() {
   const initialPostcode = searchParams.get("postcode") || "";
   const [postcode, setPostcode] = useState(initialPostcode);
   const [radius, setRadius] = useState("10");
+  const [showRadiusFallbackNotice, setShowRadiusFallbackNotice] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [transmission, setTransmission] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -680,16 +681,40 @@ export default function Courses() {
         return distance <= radiusMiles;
       });
 
-      const firstAvailable = findFirstAvailableDate(instructorsNearby, workingHours, dateOverrides);
+      let firstAvailable = findFirstAvailableDate(instructorsNearby, workingHours, dateOverrides);
+      let usedFallback = false;
+
+      // Auto-expand radius once if nothing nearby
+      if (!firstAvailable && instructorsNearby.length === 0 && radiusMiles < 25) {
+        console.warn(`[Courses] No instructors within ${radiusMiles}mi of ${cleanPostcode} – expanding to 25mi`);
+        setRadius("25");
+      }
+
+      // Final fallback: search all instructors with active courses so the grid still renders
+      if (!firstAvailable) {
+        const allWithCourses = instructors.filter((i) => instructorIds.has(i.id));
+        firstAvailable = findFirstAvailableDate(allWithCourses, workingHours, dateOverrides);
+        if (firstAvailable) {
+          usedFallback = true;
+          console.warn(`[Courses] Postcode ${cleanPostcode}: no nearby instructors, showing all available courses`);
+        }
+      }
+
       if (firstAvailable) {
         setSelectedMonth(firstAvailable.month);
         setSelectedDate(firstAvailable.date);
       } else {
-        // No availability in this area  clear selection so we don't show "No courses available" for a global date
         setSelectedDate(null);
       }
 
-      toast({ title: "Location found!", description: `Showing courses near ${areaName || cleanPostcode}` });
+      setShowRadiusFallbackNotice(usedFallback);
+
+      toast({
+        title: "Location found!",
+        description: usedFallback
+          ? `No instructors within ${radiusMiles} mi of ${areaName || cleanPostcode} – showing wider results`
+          : `Showing courses near ${areaName || cleanPostcode}`,
+      });
     } finally {
       setIsSearching(false);
     }
@@ -1115,6 +1140,24 @@ export default function Courses() {
               </div>
             ) : (
               <>
+                {showRadiusFallbackNotice && (
+                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300/50 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                    <span>
+                      No instructors found within {radius} mi of {searchedAreaName || searchedPostcode}. Showing wider results.
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8"
+                      onClick={() => {
+                        setRadius("50");
+                        setShowRadiusFallbackNotice(false);
+                      }}
+                    >
+                      Expand to 50 mi
+                    </Button>
+                  </div>
+                )}
                 {/* Selected date header */}
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                   <div>
