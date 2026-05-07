@@ -911,7 +911,7 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
+                  gridTemplateColumns: "repeat(2, 1fr)",
                   gridAutoRows: "1fr",
                   gap: 7,
                 }}
