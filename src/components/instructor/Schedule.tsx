@@ -758,13 +758,17 @@ function EmptyDayState({
 /* ============================================================ */
 function LessonList({
   day,
+  eolSet,
   onLessonClick,
+  onLessonEOL,
   onGapClick,
   onAddLesson,
   onBlockDay,
 }: {
   day: ScheduleDay;
+  eolSet: Set<string> | undefined;
   onLessonClick: (id: string) => void;
+  onLessonEOL: (lesson: ScheduleLesson) => void;
   onGapClick: (start: string, end: string) => void;
   onAddLesson: () => void;
   onBlockDay: () => void;
@@ -803,8 +807,19 @@ function LessonList({
 
   for (let i = 0; i < day.lessons.length; i++) {
     const l = day.lessons[i];
+    const eolDone = eolSet?.has(eolKey(l.pupilId, l.startTimeFull)) ?? false;
     items.push(
-      <LessonRow key={l.id} lesson={l} now={now} onClick={() => onLessonClick(l.id)} />,
+      <LessonRow
+        key={l.id}
+        lesson={l}
+        now={now}
+        eolDone={eolDone}
+        onClick={() => onLessonClick(l.id)}
+        onEOLClick={(e) => {
+          e.stopPropagation();
+          onLessonEOL(l);
+        }}
+      />,
     );
     const next = day.lessons[i + 1];
     if (next) {
