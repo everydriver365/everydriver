@@ -41,6 +41,7 @@ export const DEFAULT_RULES: BookingRules = {
   slotIncrementMin: 30,
   allowSameDay: false,
   autoBlockBankHolidays: true,
+  availableFrom: null,
 };
 
 export function useAvailabilityData(instructorId: string | undefined) {
