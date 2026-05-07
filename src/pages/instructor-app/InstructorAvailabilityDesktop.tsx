@@ -812,6 +812,49 @@ function BookingRulesCard({
         <div style={{ fontSize: 11, color: "#64748B", marginTop: 2 }}>Apply to all online bookings.</div>
       </div>
       <Row
+        title="Available from"
+        sub="Hide all bookings before this date (e.g. starting fresh, returning from leave)"
+        control={
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button>
+                  <Chip mono={false}>
+                    <CalendarDays size={11} />
+                    {rules.availableFrom
+                      ? format(parseISO(rules.availableFrom), "d MMM yyyy")
+                      : "Available now"}
+                  </Chip>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="p-0 w-auto" style={{ borderRadius: 8 }}>
+                <Calendar
+                  mode="single"
+                  selected={rules.availableFrom ? parseISO(rules.availableFrom) : undefined}
+                  onSelect={(d) =>
+                    setRules({ ...rules, availableFrom: d ? format(d, "yyyy-MM-dd") : null })
+                  }
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            {rules.availableFrom && (
+              <button
+                onClick={() => setRules({ ...rules, availableFrom: null })}
+                title="Clear"
+                style={{
+                  border: "none", background: "transparent", cursor: "pointer",
+                  color: "#94A3B8", padding: 2, display: "inline-flex",
+                }}
+              >
+                <X size={11} />
+              </button>
+            )}
+          </div>
+        }
+      />
+      <Row
         title="Travel buffer"
         sub="Time between back-to-back lessons"
         control={<SelectChip value={rules.travelBufferMin} onChange={(v) => setRules({ ...rules, travelBufferMin: v })}
