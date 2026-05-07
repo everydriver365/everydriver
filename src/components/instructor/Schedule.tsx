@@ -3,9 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { addDays, format, isSameDay, isTomorrow, startOfDay } from "date-fns";
 import { ChevronRight, Plus, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useScheduleWeek, type ScheduleDay, type ScheduleLesson } from "@/hooks/useScheduleWeek";
+import { useDayLessonHistory, eolKey } from "@/hooks/useDayLessonHistory";
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
+import { EndLessonWizard } from "@/components/instructor/EndLessonWizard";
+import { supabase } from "@/integrations/supabase/client";
 
 /* ---------- DSM tokens (match MobileHomeRedesign) ---------- */
 const RED = "#C8242C";
@@ -440,14 +444,22 @@ function DaySummaryCard({
 function LessonRow({
   lesson,
   now,
+  eolDone,
   onClick,
+  onEOLClick,
 }: {
   lesson: ScheduleLesson;
   now: Date;
+  eolDone: boolean;
   onClick: () => void;
+  onEOLClick: (e: React.MouseEvent) => void;
 }) {
   const accent = lessonAccentColor(lesson, now);
   const t = (lesson.lessonType || "").toLowerCase();
+  const isPast = lesson.endDate <= now && lesson.status !== "cancelled";
+  const isPaid = lesson.paymentStatus === "paid";
+  const showPayPill = lesson.amountDue > 0 && lesson.status !== "cancelled";
+  const showEOLPill = isPast || lesson.status === "completed" || eolDone;
 
   const pills: { label: string; bg: string; color: string; aria: string }[] = [];
   if (lesson.status === "cancelled") {
@@ -535,6 +547,63 @@ function LessonRow({
               {p.label}
             </span>
           ))}
+          {showEOLPill && (
+            <button
+              type="button"
+              onClick={onEOLClick}
+              aria-label={eolDone ? "End of lesson complete — review" : "Complete end of lesson"}
+              style={{
+                background: TINT_BLUE,
+                border: "none",
+                borderRadius: 8,
+                padding: "1px 6px",
+                cursor: "pointer",
+                lineHeight: 1.2,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: BLUE,
+                  letterSpacing: 0.3,
+                  textTransform: "uppercase",
+                  textDecoration: eolDone ? "line-through" : "none",
+                  opacity: eolDone ? 0.6 : 1,
+                }}
+              >
+                EOL
+              </span>
+            </button>
+          )}
+          {showPayPill && (
+            <span
+              aria-label={isPaid ? "Paid" : "Not paid"}
+              style={{
+                background: isPaid ? "#E8F8ED" : "#FFECEC",
+                color: isPaid ? "#1A7A3C" : "#D33B3B",
+                fontSize: 10,
+                fontWeight: 600,
+                padding: "1px 6px",
+                borderRadius: 8,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                whiteSpace: "nowrap",
+              }}
+            >
+              <span
+                style={{
+                  width: 5,
+                  height: 5,
+                  borderRadius: 3,
+                  background: isPaid ? "#1A7A3C" : "#D33B3B",
+                  display: "inline-block",
+                }}
+              />
+              {isPaid ? "Paid" : "Not paid"}
+            </span>
+          )}
         </div>
         <div
           style={{
@@ -689,13 +758,17 @@ function EmptyDayState({
 /* ============================================================ */
 function LessonList({
   day,
+  eolSet,
   onLessonClick,
+  onLessonEOL,
   onGapClick,
   onAddLesson,
   onBlockDay,
 }: {
   day: ScheduleDay;
+  eolSet: Set<string> | undefined;
   onLessonClick: (id: string) => void;
+  onLessonEOL: (lesson: ScheduleLesson) => void;
   onGapClick: (start: string, end: string) => void;
   onAddLesson: () => void;
   onBlockDay: () => void;
@@ -734,8 +807,19 @@ function LessonList({
 
   for (let i = 0; i < day.lessons.length; i++) {
     const l = day.lessons[i];
+    const eolDone = eolSet?.has(eolKey(l.pupilId, l.startTimeFull)) ?? false;
     items.push(
-      <LessonRow key={l.id} lesson={l} now={now} onClick={() => onLessonClick(l.id)} />,
+      <LessonRow
+        key={l.id}
+        lesson={l}
+        now={now}
+        eolDone={eolDone}
+        onClick={() => onLessonClick(l.id)}
+        onEOLClick={(e) => {
+          e.stopPropagation();
+          onLessonEOL(l);
+        }}
+      />,
     );
     const next = day.lessons[i + 1];
     if (next) {
@@ -786,6 +870,9 @@ export default function Schedule({
   const [selectedDate, setSelectedDate] = useState<Date>(() => startOfDay(new Date()));
   const [weekStart, setWeekStart] = useState<Date>(() => startOfDay(new Date()));
   const [addOpen, setAddOpen] = useState(false);
+  const [wizardLesson, setWizardLesson] = useState<ScheduleLesson | null>(null);
+  const [wizardBalance, setWizardBalance] = useState(0);
+  const queryClient = useQueryClient();
 
   // If user selects a date outside current 7-day window, slide the window.
   useEffect(() => {
@@ -798,6 +885,7 @@ export default function Schedule({
   }, [selectedDate, weekStart]);
 
   const { data: days, isLoading, settings } = useScheduleWeek(instructorId, weekStart, 7);
+  const { data: eolSet } = useDayLessonHistory(instructorId, selectedDate);
 
   const selectedDay: ScheduleDay | undefined = useMemo(() => {
     if (!days) return undefined;
@@ -806,6 +894,21 @@ export default function Schedule({
 
   const openAddLesson = () => setAddOpen(true);
   const handleLessonClick = (id: string) => navigate(`/instructor/lessons/${id}`);
+  const handleLessonEOL = async (lesson: ScheduleLesson) => {
+    let balance = 0;
+    try {
+      const { data } = await supabase
+        .from("pupils")
+        .select("account_balance")
+        .eq("id", lesson.pupilId)
+        .single();
+      balance = Number(data?.account_balance ?? 0);
+    } catch {
+      balance = 0;
+    }
+    setWizardBalance(balance);
+    setWizardLesson(lesson);
+  };
   const openGapFiller = (start?: string, end?: string) => {
     const params = new URLSearchParams();
     params.set("date", format(selectedDate, "yyyy-MM-dd"));
@@ -855,7 +958,9 @@ export default function Schedule({
           />
           <LessonList
             day={selectedDay}
+            eolSet={eolSet}
             onLessonClick={handleLessonClick}
+            onLessonEOL={handleLessonEOL}
             onGapClick={handleGapClick}
             onAddLesson={openAddLesson}
             onBlockDay={handleBlockDay}
@@ -895,6 +1000,31 @@ export default function Schedule({
         defaultDate={selectedDate}
         onSuccess={() => setAddOpen(false)}
       />
+
+      {wizardLesson && (
+        <EndLessonWizard
+          open={!!wizardLesson}
+          onOpenChange={(open) => {
+            if (!open) setWizardLesson(null);
+          }}
+          lessonId={wizardLesson.id}
+          pupilId={wizardLesson.pupilId}
+          pupilName={wizardLesson.pupilName}
+          instructorId={instructorId}
+          durationMinutes={wizardLesson.durationMinutes}
+          lessonDate={format(selectedDate, "yyyy-MM-dd")}
+          startTime={wizardLesson.startTime}
+          currentBalance={wizardBalance}
+          onCompleted={() => {
+            setWizardLesson(null);
+            queryClient.invalidateQueries({ queryKey: ["schedule-week"] });
+            queryClient.invalidateQueries({ queryKey: ["day-lesson-history"] });
+            queryClient.invalidateQueries({ queryKey: ["day-lessons"] });
+            queryClient.invalidateQueries({ queryKey: ["today-overview"] });
+            queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
+          }}
+        />
+      )}
     </div>
   );
 }

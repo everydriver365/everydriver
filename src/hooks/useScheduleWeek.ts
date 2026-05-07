@@ -12,6 +12,7 @@ export interface ScheduleLesson {
   pupilFirstName: string;
   pupilLastInitial: string;
   startTime: string; // HH:MM
+  startTimeFull: string; // HH:MM:SS
   endTime: string; // HH:MM
   startDate: Date;
   endDate: Date;
@@ -20,6 +21,8 @@ export interface ScheduleLesson {
   pickupLocation: string | null;
   lessonType: string;
   status: string;
+  paymentStatus: string;
+  amountDue: number;
   isFirstLesson?: boolean;
   isLastLesson?: boolean;
 }
@@ -148,6 +151,7 @@ export function useScheduleWeek(
         .select(`
           id, pupil_id, lesson_date, start_time, duration_minutes,
           pickup_postcode, pickup_location, status, lesson_type,
+          payment_status, amount_due,
           pupils!inner (id, name, postcode, address)
         `)
         .eq("instructor_id", instructorId!)
@@ -165,7 +169,8 @@ export function useScheduleWeek(
       const lessonsByDate = new Map<string, ScheduleLesson[]>();
       (data || []).forEach((l: any) => {
         const dateStr = l.lesson_date as string;
-        const startTime = String(l.start_time).slice(0, 5);
+        const startTimeFull = String(l.start_time);
+        const startTime = startTimeFull.slice(0, 5);
         const dur = Number(l.duration_minutes || 60);
         const startD = new Date(`${dateStr}T${startTime}:00`);
         const endD = new Date(startD.getTime() + dur * 60_000);
@@ -180,6 +185,7 @@ export function useScheduleWeek(
           pupilFirstName: first,
           pupilLastInitial: lastInitial,
           startTime,
+          startTimeFull: startTimeFull.length === 5 ? `${startTimeFull}:00` : startTimeFull,
           endTime,
           startDate: startD,
           endDate: endD,
@@ -188,6 +194,8 @@ export function useScheduleWeek(
           pickupLocation: l.pickup_location || pupil?.address || null,
           lessonType: l.lesson_type || "Standard",
           status: l.status || "scheduled",
+          paymentStatus: l.payment_status || "unpaid",
+          amountDue: Number(l.amount_due ?? 0),
         };
         const arr = lessonsByDate.get(dateStr) || [];
         arr.push(ls);
