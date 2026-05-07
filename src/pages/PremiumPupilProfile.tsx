@@ -1335,6 +1335,8 @@ export default function PremiumPupilProfile() {
             </div>
             <SectionHeader title="Money" />
             {PaymentsCard}
+            <SectionHeader title="Eyesight" />
+            {EyesightCard}
             <SectionHeader title="Details" />
             {DetailsCard}
           </div>
