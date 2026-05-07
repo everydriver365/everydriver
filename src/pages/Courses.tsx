@@ -751,7 +751,7 @@ export default function Courses() {
       }
 
       // Geocode all instructor postcodes
-      const allPostcodes = (instructorsRes.data || []).map((i) => i.home_postcode.replace(/\s+/g, "").toUpperCase());
+      const allPostcodes = (instructorsRes.data || []).map((i: any) => (i.home_postcode || "").replace(/\s+/g, "").toUpperCase()).filter(Boolean);
       await geocodePostcodes(allPostcodes);
     } catch (error) {
       console.error("Error fetching data:", error);
