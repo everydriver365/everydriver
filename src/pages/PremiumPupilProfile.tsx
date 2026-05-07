@@ -54,7 +54,7 @@ const SHADOW_CARD =
   "0 1px 2px rgba(16,24,40,0.03), 0 8px 24px -14px rgba(16,24,40,0.10)";
 const SHADOW_HOVER =
   "0 1px 2px rgba(16,24,40,0.04), 0 14px 32px -16px rgba(16,24,40,0.14)";
-const RADIUS = 24;
+const RADIUS = 14;
 const TRANSITION = "all 180ms ease";
 
 /* ──────────────────────────── small atoms ──────────────────────────── */
@@ -131,7 +131,7 @@ function StatPill({ label, value, sub }: { label: string; value: string; sub?: s
     <div
       style={{
         background: C.card,
-        borderRadius: 18,
+        borderRadius: 14,
         padding: "14px 14px",
         border: `1px solid ${C.hairline}`,
         boxShadow: SHADOW_CARD,
@@ -1325,7 +1325,7 @@ export default function PremiumPupilProfile() {
         <div
           key={m.label}
           style={{
-            background: C.card, borderRadius: 16, padding: 12,
+            background: C.card, borderRadius: 12, padding: 12,
             border: `1px solid ${C.hairline}`, boxShadow: SHADOW_CARD,
             display: "flex", flexDirection: "column", gap: 4,
           }}
