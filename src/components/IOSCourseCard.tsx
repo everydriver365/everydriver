@@ -15,7 +15,7 @@ interface IOSCourseCardProps {
     car_make: string | null;
     car_model: string | null;
     home_postcode: string;
-    home_address: string | null;
+    home_address?: string | null;
     hourly_rate: number | null;
     bio: string | null;
     brand_colour: string | null;
