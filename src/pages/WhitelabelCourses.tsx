@@ -6,7 +6,6 @@ import { format } from "date-fns";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { SidebarCalendar } from "@/components/courses/SidebarCalendar";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
-import { MobileCourseCard } from "@/components/courses/MobileCourseCard";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
@@ -193,15 +192,32 @@ export default function WhitelabelCourses() {
                       </p>
                     </div>
                   ) : isMobile ? (
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-4">
                       {coursesWithDistance
                         .slice(0, mobileVisibleCount)
                         .map((course, index) => (
-                          <MobileCourseCard
+                          <motion.div
                             key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
-                            course={course}
-                            index={index}
-                          />
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                          >
+                            <DynamicCourseCard
+                              instructor={course.instructor}
+                              hours={course.hours}
+                              nextAvailable={course.bookableDate}
+                              courseImageUrl={course.courseImageUrl}
+                              isPopular={course.isPopular}
+                              availableFrom={course.availableFrom}
+                              distance={course.distance}
+                              features={course.features}
+                              isIntensive={course.isIntensive}
+                              discountedPrice={course.discountedPrice}
+                              customFeatures={course.customFeatures}
+                              isPremium={course.isPremium}
+                              placementType={course.placementType}
+                            />
+                          </motion.div>
                         ))}
                       {mobileVisibleCount < coursesWithDistance.length && (
                         <Button
