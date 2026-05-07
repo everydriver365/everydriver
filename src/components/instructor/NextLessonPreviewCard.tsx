@@ -1,0 +1,981 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { GoogleMap, OverlayViewF, OVERLAY_MOUSE_TARGET, PolylineF } from "@react-google-maps/api";
+import { format, parse, parseISO, isToday, isTomorrow, differenceInCalendarDays } from "date-fns";
+import {
+  Calendar,
+  ChevronDown,
+  Clock,
+  MapPin,
+  Phone,
+  MessageSquare,
+  Navigation,
+  Bot,
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { fetchGoogleMapsKey, loadGoogleMaps } from "@/lib/googleMapsLoader";
+import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
+import { usePupilLessonHistory } from "@/hooks/usePupilLessonHistory";
+import { usePupilPaymentStatus } from "@/hooks/usePupilPaymentStatus";
+
+/* -------------------------------------------------------------------------- */
+/*  Spec tokens                                                                */
+/* -------------------------------------------------------------------------- */
+
+const C = {
+  red: "#C8242C",
+  blue: "#1E6FB8",
+  blueTint: "#E8F2FA",
+  text: "#3A3A3A",
+  text2: "#6B6B6B",
+  text3: "#9A9A9A",
+  card: "#FFFFFF",
+  divider: "#EDE9E0",
+  green: "#1D9E75",
+  greenTint: "#E1F5EE",
+  greenText: "#0F6E56",
+  amberTint: "#FAEEDA",
+  amberText: "#BA7517",
+  redTint: "#FCEBEB",
+};
+
+const FONT =
+  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", sans-serif';
+
+const COLLAPSED_MAP_H = 170;
+const EXPANDED_MAP_H = 280;
+
+/* -------------------------------------------------------------------------- */
+/*  Caches & SDK                                                               */
+/* -------------------------------------------------------------------------- */
+
+const coordCache = new Map<string, { lat: number; lng: number } | null>();
+const inflight = new Map<string, Promise<{ lat: number; lng: number } | null>>();
+let sdkReady: Promise<boolean> | null = null;
+
+function ensureSdk(): Promise<boolean> {
+  if (sdkReady) return sdkReady;
+  sdkReady = (async () => {
+    try {
+      const key = await fetchGoogleMapsKey();
+      if (!key) return false;
+      await loadGoogleMaps(key);
+      return true;
+    } catch {
+      return false;
+    }
+  })();
+  return sdkReady;
+}
+
+async function geocodePostcode(postcode: string) {
+  if (coordCache.has(postcode)) return coordCache.get(postcode)!;
+  if (inflight.has(postcode)) return inflight.get(postcode)!;
+  const p = (async () => {
+    try {
+      const { data } = await supabase.functions.invoke("geocode-postcode", {
+        body: { postcodes: [postcode] },
+      });
+      const r = data?.results?.[0];
+      const coords =
+        r?.latitude && r?.longitude ? { lat: r.latitude, lng: r.longitude } : null;
+      coordCache.set(postcode, coords);
+      return coords;
+    } catch {
+      coordCache.set(postcode, null);
+      return null;
+    } finally {
+      inflight.delete(postcode);
+    }
+  })();
+  inflight.set(postcode, p);
+  return p;
+}
+
+const MAP_STYLES: google.maps.MapTypeStyle[] = [
+  { elementType: "geometry", stylers: [{ color: "#F5F4F1" }] },
+  { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#9A9A9A" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#FFFFFF" }] },
+  { featureType: "poi", stylers: [{ visibility: "off" }] },
+  { featureType: "transit", stylers: [{ visibility: "off" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#FFFFFF" }] },
+  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#EDE9E0" }] },
+  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#FCE9C9" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#D6E6F2" }] },
+  { featureType: "landscape.natural", elementType: "geometry", stylers: [{ color: "#E6EFD9" }] },
+  { featureType: "administrative", elementType: "geometry.stroke", stylers: [{ visibility: "off" }] },
+];
+
+/* -------------------------------------------------------------------------- */
+/*  Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
+
+function toSentenceName(name: string) {
+  return name
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(" ");
+}
+
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join("");
+}
+
+function fmtTime(t: string) {
+  try {
+    return format(parse(t, "HH:mm:ss", new Date()), "HH:mm");
+  } catch {
+    return t.slice(0, 5);
+  }
+}
+
+function fmtHours(min: number) {
+  const h = min / 60;
+  return Number.isInteger(h) ? `${h}h` : `${h.toFixed(1)}h`;
+}
+
+function relativeWhen(dateStr: string) {
+  try {
+    const d = parseISO(dateStr);
+    if (isToday(d)) return "Today";
+    if (isTomorrow(d)) return "Tomorrow";
+    const days = differenceInCalendarDays(d, new Date());
+    if (days > 1) return `In ${days} days`;
+    return format(d, "EEE d MMM");
+  } catch {
+    return dateStr;
+  }
+}
+
+function dateChip(dateStr: string, time: string) {
+  try {
+    const d = parseISO(dateStr);
+    return `${format(d, "EEE d MMM").toUpperCase()} · ${fmtTime(time)}`;
+  } catch {
+    return `${dateStr} · ${fmtTime(time)}`;
+  }
+}
+
+function haversine(a: google.maps.LatLngLiteral, b: google.maps.LatLngLiteral) {
+  const R = 6371000;
+  const r = (d: number) => (d * Math.PI) / 180;
+  const dLat = r(b.lat - a.lat);
+  const dLng = r(b.lng - a.lng);
+  const x =
+    Math.sin(dLat / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Props                                                                      */
+/* -------------------------------------------------------------------------- */
+
+export interface NextLessonPreviewCardProps {
+  lessonId: string;
+  pupilId: string;
+  pupilName: string;
+  pupilPhone?: string | null;
+  pupilProfileImage?: string | null;
+  lessonDate: string;
+  startTime: string;
+  durationMinutes?: number;
+  pickupPostcode?: string | null;
+  pickupLocation?: string | null;
+  minutesUntil: number;
+  instructorId?: string | null;
+  /** "HH:mm" — when AI call divert begins */
+  aiDivertTime?: string | null;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Component                                                                  */
+/* -------------------------------------------------------------------------- */
+
+export function NextLessonPreviewCard(props: NextLessonPreviewCardProps) {
+  const {
+    lessonId,
+    pupilId,
+    pupilName,
+    pupilPhone,
+    pupilProfileImage,
+    lessonDate,
+    startTime,
+    durationMinutes = 60,
+    pickupPostcode,
+    pickupLocation,
+    minutesUntil,
+    instructorId,
+    aiDivertTime,
+  } = props;
+
+  const navigate = useNavigate();
+  const [expanded, setExpanded] = useState(false);
+  const [sdkLoaded, setSdkLoaded] = useState(false);
+  const [destCoords, setDestCoords] = useState<{ lat: number; lng: number } | null | undefined>(
+    undefined,
+  );
+  const [browserLoc, setBrowserLoc] = useState<{ lat: number; lng: number } | null>(null);
+  const [routePath, setRoutePath] = useState<google.maps.LatLngLiteral[] | null>(null);
+  const [driveMin, setDriveMin] = useState<number | null>(null);
+
+  const lastPos = useInstructorLastPosition(instructorId ?? null);
+
+  // Load SDK
+  useEffect(() => {
+    let cancelled = false;
+    ensureSdk().then((ok) => !cancelled && setSdkLoaded(ok));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Geocode destination
+  useEffect(() => {
+    if (!pickupPostcode) {
+      setDestCoords(null);
+      return;
+    }
+    if (coordCache.has(pickupPostcode)) {
+      setDestCoords(coordCache.get(pickupPostcode)!);
+      return;
+    }
+    let cancelled = false;
+    geocodePostcode(pickupPostcode).then((c) => !cancelled && setDestCoords(c));
+    return () => {
+      cancelled = true;
+    };
+  }, [pickupPostcode]);
+
+  // Browser geolocation (fallback to instructor last position)
+  useEffect(() => {
+    if (!("geolocation" in navigator)) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) =>
+        setBrowserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => setBrowserLoc(null),
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 5 * 60_000 },
+    );
+  }, []);
+
+  const origin = useMemo<google.maps.LatLngLiteral | null>(() => {
+    if (browserLoc) return browserLoc;
+    if (lastPos.latitude != null && lastPos.longitude != null) {
+      return { lat: lastPos.latitude, lng: lastPos.longitude };
+    }
+    return null;
+  }, [browserLoc, lastPos.latitude, lastPos.longitude]);
+
+  // Fetch driving route + duration
+  useEffect(() => {
+    if (!sdkLoaded || !destCoords || !origin) return;
+    if (haversine(origin, destCoords) < 150) {
+      setRoutePath(null);
+      setDriveMin(0);
+      return;
+    }
+    let cancelled = false;
+    try {
+      const ds = new google.maps.DirectionsService();
+      ds.route(
+        {
+          origin,
+          destination: destCoords,
+          travelMode: google.maps.TravelMode.DRIVING,
+        },
+        (res, status) => {
+          if (cancelled) return;
+          if (status === "OK" && res?.routes?.[0]) {
+            const path =
+              res.routes[0].overview_path?.map((p) => ({ lat: p.lat(), lng: p.lng() })) || [];
+            setRoutePath(path.length ? path : null);
+            const sec = res.routes[0].legs?.[0]?.duration?.value ?? null;
+            setDriveMin(sec != null ? Math.round(sec / 60) : null);
+          }
+        },
+      );
+    } catch {
+      /* ignore */
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [sdkLoaded, destCoords?.lat, destCoords?.lng, origin?.lat, origin?.lng]);
+
+  // Map fit-bounds
+  const mapRef = useRef<google.maps.Map | null>(null);
+  useEffect(() => {
+    const m = mapRef.current;
+    if (!m) return;
+    const bounds = new google.maps.LatLngBounds();
+    if (routePath && routePath.length > 1) {
+      routePath.forEach((p) => bounds.extend(p));
+    } else if (destCoords && origin) {
+      bounds.extend(destCoords);
+      bounds.extend(origin);
+    } else if (destCoords) {
+      bounds.extend(destCoords);
+    }
+    if (!bounds.isEmpty()) {
+      m.fitBounds(bounds, { top: 36, right: 36, bottom: 36, left: 36 });
+    }
+  }, [routePath, destCoords?.lat, destCoords?.lng, origin?.lat, origin?.lng, expanded]);
+
+  /* ----- Optional sections (only fetched when expanded) ----- */
+  const history = usePupilLessonHistory(expanded ? pupilId : undefined, 5);
+  const pay = usePupilPaymentStatus(expanded ? pupilId : undefined);
+
+  /* ----- Handlers ----- */
+  const onCall = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (pupilPhone) window.location.href = `tel:${pupilPhone}`;
+  };
+  const onText = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (pupilPhone) window.location.href = `sms:${pupilPhone}`;
+  };
+  const onGo = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!destCoords) return;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const url = isIOS
+      ? `maps://maps.apple.com/?daddr=${destCoords.lat},${destCoords.lng}&dirflg=d`
+      : `https://www.google.com/maps/dir/?api=1&destination=${destCoords.lat},${destCoords.lng}&travelmode=driving`;
+    window.open(url, "_blank");
+  };
+  const openProfile = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/instructor/pupils/${pupilId}?lesson=${lessonId}`);
+  };
+
+  const mapH = expanded ? EXPANDED_MAP_H : COLLAPSED_MAP_H;
+  const lessonsCount = history.data?.filter((h) => h.status === "completed").length ?? null;
+  const lastLessonDate = history.data?.find((h) => h.status === "completed")?.lesson_date ?? null;
+  const lastLessonNote = history.data?.find((h) => h.notes && h.status === "completed")?.notes ?? null;
+
+  const paymentPill = (() => {
+    if (!pay.data) return null;
+    if (pay.data.balance >= 0) {
+      return { label: "Paid", bg: C.greenTint, fg: C.greenText };
+    }
+    return { label: "Overdue", bg: C.redTint, fg: C.red };
+  })();
+
+  return (
+    <div style={{ padding: "0 16px", fontFamily: FONT, WebkitFontSmoothing: "antialiased" }}>
+      {/* Section label */}
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 500,
+          letterSpacing: 1.2,
+          textTransform: "uppercase",
+          color: C.text2,
+          marginBottom: 8,
+          paddingLeft: 4,
+        }}
+      >
+        Up next
+      </div>
+
+      <div
+        style={{
+          background: C.card,
+          borderRadius: 12,
+          overflow: "hidden",
+          maxWidth: 440,
+          margin: "0 auto",
+          transition: "all 250ms ease-out",
+        }}
+      >
+        {/* ─────────── MAP ─────────── */}
+        <div
+          style={{
+            position: "relative",
+            height: mapH,
+            background: "#F5F4F1",
+            transition: "height 250ms ease-out",
+          }}
+        >
+          {sdkLoaded && destCoords ? (
+            <GoogleMap
+              mapContainerStyle={{ width: "100%", height: "100%" }}
+              center={destCoords}
+              zoom={14}
+              onLoad={(m) => {
+                mapRef.current = m;
+              }}
+              options={{
+                styles: MAP_STYLES,
+                disableDefaultUI: true,
+                gestureHandling: expanded ? "cooperative" : "none",
+                clickableIcons: false,
+                zoomControl: false,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: false,
+              }}
+            >
+              {routePath && routePath.length > 1 ? (
+                <PolylineF
+                  path={routePath}
+                  options={{
+                    strokeColor: C.red,
+                    strokeOpacity: 0,
+                    strokeWeight: 3,
+                    icons: [
+                      {
+                        icon: {
+                          path: "M 0,-1 0,1",
+                          strokeOpacity: 1,
+                          strokeColor: C.red,
+                          strokeWeight: 3,
+                          scale: 3,
+                        },
+                        offset: "0",
+                        repeat: "12px",
+                      },
+                    ],
+                  }}
+                />
+              ) : null}
+
+              {origin ? (
+                <OverlayViewF
+                  position={origin}
+                  mapPaneName={OVERLAY_MOUSE_TARGET}
+                  getPixelPositionOffset={(w, h) => ({ x: -(w / 2), y: -(h / 2) })}
+                >
+                  <div
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: "50%",
+                      background: C.green,
+                      border: "2px solid #FFFFFF",
+                      boxShadow: `0 0 0 2px rgba(29,158,117,0.3)`,
+                    }}
+                  />
+                </OverlayViewF>
+              ) : null}
+
+              <OverlayViewF
+                position={destCoords}
+                mapPaneName={OVERLAY_MOUSE_TARGET}
+                getPixelPositionOffset={(w, h) => ({ x: -(w / 2), y: -h })}
+              >
+                <svg width={26} height={34} viewBox="0 0 26 34" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M13 0C5.82 0 0 5.82 0 13c0 9.75 13 21 13 21s13-11.25 13-21C26 5.82 20.18 0 13 0z"
+                    fill={C.red}
+                  />
+                  <circle cx="13" cy="13" r="5" fill="#FFFFFF" />
+                </svg>
+              </OverlayViewF>
+            </GoogleMap>
+          ) : (
+            <div
+              style={{
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 12,
+                color: C.text3,
+              }}
+            >
+              {destCoords === null ? "Map unavailable" : "Loading map…"}
+            </div>
+          )}
+
+          {/* Top-left pill: relative time */}
+          <div
+            style={{
+              position: "absolute",
+              top: 10,
+              left: 10,
+              background: "#FFFFFF",
+              borderRadius: 12,
+              padding: "5px 10px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              fontSize: 11,
+              fontWeight: 500,
+              color: C.text,
+              boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+            }}
+          >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: 3,
+                background: C.red,
+                display: "inline-block",
+              }}
+            />
+            {relativeWhen(lessonDate)}
+          </div>
+
+          {/* Top-right pill: drive time */}
+          {driveMin != null && driveMin > 0 ? (
+            <div
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                background: "#FFFFFF",
+                borderRadius: 12,
+                padding: "5px 10px",
+                fontSize: 11,
+                fontWeight: 500,
+                color: C.text,
+                boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+              }}
+            >
+              {driveMin}m drive
+            </div>
+          ) : null}
+
+          {/* Bottom-left: details pill */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded((v) => !v);
+            }}
+            style={{
+              position: "absolute",
+              bottom: 10,
+              left: 10,
+              background: "#FFFFFF",
+              border: "none",
+              borderRadius: 8,
+              padding: "5px 10px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              fontSize: 11,
+              fontWeight: 500,
+              color: C.text,
+              cursor: "pointer",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+            }}
+            aria-label={expanded ? "Collapse details" : "Expand details"}
+          >
+            Details
+            <ChevronDown
+              size={12}
+              style={{
+                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 200ms ease",
+              }}
+            />
+          </button>
+
+          {/* Bottom-right: avatar */}
+          <button
+            type="button"
+            onClick={openProfile}
+            style={{
+              position: "absolute",
+              bottom: 10,
+              right: 10,
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              background: C.blue,
+              color: "#FFFFFF",
+              border: "2px solid #FFFFFF",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 13,
+              fontWeight: 600,
+              boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+              cursor: "pointer",
+              overflow: "hidden",
+              padding: 0,
+            }}
+            aria-label={`Open ${pupilName}'s profile`}
+          >
+            {pupilProfileImage ? (
+              <img src={pupilProfileImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              initials(pupilName)
+            )}
+          </button>
+        </div>
+
+        {/* ─────────── BODY ─────────── */}
+        <div style={{ padding: 14 }}>
+          {/* 1. Date chip */}
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              background: C.blueTint,
+              color: C.blue,
+              padding: "6px 12px",
+              borderRadius: 14,
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: 0.5,
+              textTransform: "uppercase",
+              marginBottom: 12,
+            }}
+          >
+            <Calendar size={13} strokeWidth={2} />
+            {dateChip(lessonDate, startTime)}
+          </div>
+
+          {/* 2. Pupil name row */}
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              width: "100%",
+              background: "transparent",
+              border: "none",
+              padding: 0,
+              marginBottom: 14,
+              cursor: "pointer",
+              textAlign: "left",
+            }}
+            aria-expanded={expanded}
+          >
+            <span style={{ fontSize: 20, fontWeight: 500, color: C.text, letterSpacing: -0.2 }}>
+              {toSentenceName(pupilName)}
+            </span>
+            <ChevronDown
+              size={22}
+              color={C.text3}
+              style={{
+                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 200ms ease",
+              }}
+            />
+          </button>
+
+          {/* 3. Lesson type row */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                background: C.blueTint,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <Clock size={16} color={C.blue} strokeWidth={2} />
+            </div>
+            <div style={{ fontSize: 14, color: C.text }}>
+              Standard lesson ·{" "}
+              <span style={{ color: C.blue, fontWeight: 500 }}>{fmtHours(durationMinutes)}</span>
+            </div>
+          </div>
+
+          {/* 4. Address row */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                background: C.blueTint,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <MapPin size={16} color={C.blue} strokeWidth={2} />
+            </div>
+            <div
+              style={{
+                fontSize: 14,
+                color: C.text,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                minWidth: 0,
+                flex: 1,
+              }}
+            >
+              {pickupPostcode ? <span style={{ fontWeight: 500 }}>{pickupPostcode}</span> : null}
+              {pickupPostcode && pickupLocation ? " · " : null}
+              {pickupLocation ?? (!pickupPostcode ? "No pickup set" : null)}
+            </div>
+          </div>
+
+          {/* 5. AI divert notice */}
+          {aiDivertTime && minutesUntil <= 24 * 60 ? (
+            <div
+              style={{
+                fontSize: 12,
+                color: C.text2,
+                marginBottom: 14,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <Bot size={14} color={C.text3} strokeWidth={2} />
+              AI divert starts at {aiDivertTime}
+            </div>
+          ) : null}
+
+          {/* 6. Action buttons */}
+          <div style={{ display: "flex", gap: 6 }}>
+            <ActionBtn
+              label="Call"
+              icon={<Phone size={14} strokeWidth={2.2} />}
+              variant="primary"
+              onClick={onCall}
+              disabled={!pupilPhone}
+            />
+            <ActionBtn
+              label="Text"
+              icon={<MessageSquare size={14} strokeWidth={2.2} />}
+              variant="secondary"
+              onClick={onText}
+              disabled={!pupilPhone}
+            />
+            <ActionBtn
+              label="Go"
+              icon={<Navigation size={14} strokeWidth={2.2} />}
+              variant="secondary"
+              onClick={onGo}
+              disabled={!destCoords}
+            />
+          </div>
+
+          {/* ─────── EXPANDED EXTRAS ─────── */}
+          {expanded ? (
+            <div style={{ marginTop: 14, paddingTop: 14, borderTop: `0.5px solid ${C.divider}` }}>
+              <SectionLabel>Pupil</SectionLabel>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                <div
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: "50%",
+                    background: C.blue,
+                    color: "#FFFFFF",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 16,
+                    fontWeight: 600,
+                    overflow: "hidden",
+                    flexShrink: 0,
+                  }}
+                >
+                  {pupilProfileImage ? (
+                    <img src={pupilProfileImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    initials(pupilName)
+                  )}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 15, fontWeight: 500, color: C.text }}>
+                    {toSentenceName(pupilName)}
+                  </div>
+                  <div style={{ fontSize: 12, color: C.text2 }}>Provisional</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={openProfile}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: C.blue,
+                    fontSize: 13,
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    padding: 0,
+                  }}
+                >
+                  View profile →
+                </button>
+              </div>
+
+              {/* Stats grid */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr 1fr",
+                  gap: 8,
+                  marginBottom: 14,
+                }}
+              >
+                <Stat label="Lessons" value={lessonsCount != null ? String(lessonsCount) : "—"} />
+                <Stat
+                  label="Last lesson"
+                  value={lastLessonDate ? format(parseISO(lastLessonDate), "d MMM") : "—"}
+                />
+                <Stat label="Test booked" value="Not yet" />
+              </div>
+
+              {/* Payment */}
+              {paymentPill ? (
+                <>
+                  <SectionLabel>Payment</SectionLabel>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      marginBottom: 14,
+                    }}
+                  >
+                    <span
+                      style={{
+                        background: paymentPill.bg,
+                        color: paymentPill.fg,
+                        fontSize: 11,
+                        fontWeight: 600,
+                        padding: "4px 10px",
+                        borderRadius: 12,
+                      }}
+                    >
+                      {paymentPill.label}
+                    </span>
+                    <div style={{ fontSize: 13, color: C.text }}>
+                      <span style={{ fontWeight: 500 }}>
+                        £{Math.abs(pay.data?.balance ?? 0).toFixed(2)}
+                      </span>{" "}
+                      <span style={{ color: C.text2 }}>balance</span>
+                    </div>
+                  </div>
+                </>
+              ) : null}
+
+              {/* Notes */}
+              {lastLessonNote ? (
+                <>
+                  <SectionLabel>Notes from last lesson</SectionLabel>
+                  <p
+                    style={{
+                      fontSize: 13,
+                      color: C.text,
+                      lineHeight: 1.4,
+                      margin: 0,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {lastLessonNote}
+                  </p>
+                </>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Sub-components                                                             */
+/* -------------------------------------------------------------------------- */
+
+function ActionBtn({
+  label,
+  icon,
+  variant,
+  onClick,
+  disabled,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  variant: "primary" | "secondary";
+  onClick: (e: React.MouseEvent) => void;
+  disabled?: boolean;
+}) {
+  const primary = variant === "primary";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        flex: 1,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        padding: 11,
+        borderRadius: 22,
+        border: "none",
+        background: primary ? C.blue : C.blueTint,
+        color: primary ? "#FFFFFF" : C.blue,
+        fontSize: 13,
+        fontWeight: 500,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        WebkitTapHighlightColor: "transparent",
+        fontFamily: FONT,
+      }}
+      aria-label={label}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        fontSize: 11,
+        fontWeight: 500,
+        letterSpacing: 1.2,
+        textTransform: "uppercase",
+        color: C.text2,
+        marginBottom: 8,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div
+        style={{
+          fontSize: 10,
+          fontWeight: 500,
+          letterSpacing: 0.5,
+          textTransform: "uppercase",
+          color: C.text2,
+          marginBottom: 2,
+        }}
+      >
+        {label}
+      </div>
+      <div style={{ fontSize: 14, fontWeight: 500, color: C.text }}>{value}</div>
+    </div>
+  );
+}
