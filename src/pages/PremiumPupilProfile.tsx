@@ -1343,7 +1343,7 @@ export default function PremiumPupilProfile() {
 
   const MobileLayout = (
     <div style={{ background: C.bg, minHeight: "100vh", paddingBottom: 96, fontFamily: FONT }}>
-      <div style={{ padding: "0 24px" }}>
+      <div style={{ padding: "0 12px" }}>
         {Header}
         {/* Tightly grouped hero → actions → insight → stats */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
