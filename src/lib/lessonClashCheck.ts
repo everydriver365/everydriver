@@ -5,7 +5,7 @@ export interface ClashSlot {
   name: string;
   startTime: string; // HH:mm
   endTime: string;   // HH:mm
-  kind: 'lesson' | 'event';
+  kind: 'lesson' | 'event' | 'block';
 }
 
 export interface ClashResult {
