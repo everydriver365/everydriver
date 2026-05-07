@@ -14,6 +14,7 @@ import { LessonTextSheet } from "./LessonTextSheet";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { AddLessonSheet } from "./AddLessonSheet";
+import { AddCalendarEventDialog } from "./AddCalendarEventDialog";
 import { TravelTimeIndicator } from "./TravelTimeIndicator";
 import { PupilAvatar } from "./PupilAvatar";
 import { useLessonTravelTimes } from "@/hooks/useLessonTravelTimes";
@@ -91,6 +92,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [addLessonOpen, setAddLessonOpen] = useState(false);
+  const [addEventOpen, setAddEventOpen] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<ScheduledLesson | null>(null);
   const [sendingMessage, setSendingMessage] = useState<string | null>(null);
   const [lessonColors, setLessonColors] = useState<Record<string, string>>({});
@@ -325,7 +327,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
           </p>
         </div>
         <Button
-          onClick={() => setAddLessonOpen(true)}
+          onClick={() => setAddEventOpen(true)}
           className="rounded-2xl bg-[#1a3a4a] hover:bg-[#1a3a4a]/90 text-white gap-1.5 h-10 px-5"
         >
           <Plus className="h-4 w-4" />
@@ -544,7 +546,20 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
         />
       )}
 
-      {/* Add Lesson Sheet */}
+      {/* Add Lesson / Event / Block dialog */}
+      <AddCalendarEventDialog
+        open={addEventOpen}
+        onOpenChange={setAddEventOpen}
+        instructorId={instructorId}
+        defaultDate={selectedDate}
+        onSuccess={() => {
+          fetchLessons();
+          fetchExternalEvents();
+          setAddEventOpen(false);
+        }}
+      />
+
+      {/* Legacy Add Lesson Sheet (kept for any deep-link usage) */}
       <AddLessonSheet
         open={addLessonOpen}
         onOpenChange={setAddLessonOpen}
