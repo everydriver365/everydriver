@@ -976,8 +976,8 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
               width: "100%",
               display: "flex",
               alignItems: "center",
-              gap: 10,
-              padding: "10px 12px",
+              gap: 12,
+              padding: "12px 14px",
               background: "transparent",
               border: "none",
               cursor: "pointer",
@@ -986,9 +986,9 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
           >
             <span
               style={{
-                width: 30,
-                height: 30,
-                borderRadius: 8,
+                width: 40,
+                height: 40,
+                borderRadius: 10,
                 background: r.iconBg,
                 color: r.iconColor,
                 display: "inline-flex",
@@ -997,25 +997,25 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
                 flexShrink: 0,
               }}
             >
-              <r.Icon size={13} strokeWidth={1.6} />
+              <r.Icon size={18} strokeWidth={2} />
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 1 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#1A1A1A" }}>{r.label}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: "#1A1A1A", letterSpacing: -0.1 }}>{r.label}</span>
                 <span
                   style={{
                     background: r.tierBg,
                     color: r.tierColor,
-                    borderRadius: 20,
-                    padding: "1px 6px",
-                    fontSize: 8,
+                    borderRadius: 999,
+                    padding: "1px 7px",
+                    fontSize: 9,
                     fontWeight: 700,
                   }}
                 >
                   {r.tierLabel}
                 </span>
               </div>
-              <div style={{ fontSize: 10, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div style={{ fontSize: 11, fontWeight: 500, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {r.subtitle}
               </div>
             </div>
@@ -1023,16 +1023,16 @@ function UpgradeCard({ rows }: { rows: UpgradeRowSpec[] }) {
               style={{
                 background: r.upgradeBg,
                 color: "#FFFFFF",
-                borderRadius: 20,
-                padding: "4px 10px",
-                fontSize: 10,
+                borderRadius: 999,
+                padding: "4px 11px",
+                fontSize: 11,
                 fontWeight: 700,
                 flexShrink: 0,
               }}
             >
               Upgrade
             </span>
-            <ChevronRight size={14} color="#C7C7CC" strokeWidth={1.8} />
+            <ChevronRight size={16} color="#C7C7CC" strokeWidth={2} />
           </button>
         </div>
       ))}
