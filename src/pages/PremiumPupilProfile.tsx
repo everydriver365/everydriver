@@ -1123,105 +1123,94 @@ export default function PremiumPupilProfile() {
     return { headline, bullets: bullets.slice(0, 4), recommendation, tags: tags.slice(0, 3) };
   })();
 
-  // ── Header (avatar-led, flowing — no card border) ──
+  // ── Pupil header card (matches mockup) ──
   const MobileHero = (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 16, padding: "4px 2px" }}>
-      <div style={{ position: "relative", flexShrink: 0 }}>
-        <PupilAvatar name={pupil.name} imageUrl={pupil.profile_image_url} size="lg" />
-        {status === "active" && (
-          <span
-            aria-hidden="true"
-            style={{
-              position: "absolute", bottom: 2, right: 2,
-              width: 14, height: 14, borderRadius: "50%",
-              background: C.green, border: `2px solid ${C.bg}`,
-              boxSizing: "border-box",
-            }}
-          />
-        )}
-      </div>
-      <div style={{ minWidth: 0, flex: 1, paddingTop: 2 }}>
-        <div
-          style={{
-            fontFamily: FONT, fontSize: 24, fontWeight: 700,
-            color: C.text, letterSpacing: "-0.02em", lineHeight: 1.15,
-            wordBreak: "break-word",
-          }}
-        >
-          {pupil.name}
+    <Card padding={16}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div style={{ position: "relative", flexShrink: 0 }}>
+          <PupilAvatar name={pupil.name} imageUrl={pupil.profile_image_url} size="lg" />
+          {status === "active" && (
+            <span
+              aria-hidden="true"
+              style={{
+                position: "absolute", bottom: 2, right: 2,
+                width: 12, height: 12, borderRadius: "50%",
+                background: "#1D9E75", border: `2px solid #FFFFFF`,
+                boxSizing: "border-box",
+              }}
+            />
+          )}
         </div>
-        <div
-          style={{
-            marginTop: 4,
-            fontFamily: FONT, fontSize: 13, fontWeight: 500,
-            color: C.muted, letterSpacing: "0.1px",
-            display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8,
-          }}
-        >
-          <span>{stageLabel}</span>
-          {(() => {
-            const map = {
-              signed:   { label: "Terms signed",       bg: "#E5F4EC", fg: C.green },
-              awaiting: { label: "Awaiting signature", bg: "#FBF1E0", fg: C.amber },
-              required: { label: "Needs signature",    bg: "#FBEAEC", fg: C.red },
-            } as const;
-            const t = map[termsState];
-            return (
-              <span
-                style={{
-                  background: t.bg, color: t.fg,
-                  fontFamily: FONT, fontSize: 11, fontWeight: 600,
-                  padding: "3px 9px", borderRadius: 999, lineHeight: 1.3,
-                  letterSpacing: "0.2px",
-                }}
-              >
-                {t.label}
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div style={{ fontFamily: FONT, fontSize: 19, fontWeight: 600, color: C.text, lineHeight: 1.2, wordBreak: "break-word" }}>
+            {pupil.name}
+          </div>
+          <div style={{ marginTop: 6, display: "flex", flexWrap: "wrap", gap: 6 }}>
+            <span style={{
+              background: C.tintBlue, color: C.tintBlueFg,
+              fontFamily: FONT, fontSize: 12, fontWeight: 500,
+              padding: "2px 8px", borderRadius: 10,
+            }}>
+              {stageLabel}
+            </span>
+            {termsState !== "signed" && (
+              <span style={{
+                background: termsState === "awaiting" ? C.tintAmber : C.tintRed,
+                color: termsState === "awaiting" ? C.amber : C.red,
+                fontFamily: FONT, fontSize: 12, fontWeight: 500,
+                padding: "2px 8px", borderRadius: 10,
+                display: "inline-flex", alignItems: "center", gap: 4,
+              }}>
+                <AlertCircle size={11} />
+                {termsState === "awaiting" ? "Awaiting signature" : "Needs signature"}
               </span>
-            );
-          })()}
-        </div>
-        {(pupil.phone || pupil.address || pupil.postcode) && (
-          <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 4 }}>
-            {pupil.phone && (
-              <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, lineHeight: 1.4 }}>
-                {pupil.phone}
-              </div>
             )}
-            {(pupil.address || pupil.postcode) && (
-              <div
-                style={{
-                  fontFamily: FONT, fontSize: 13, color: C.muted, lineHeight: 1.4,
-                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                }}
-              >
-                {[pupil.address, pupil.postcode].filter(Boolean).join(", ")}
-              </div>
+            {hasDebt && (
+              <span style={{
+                background: C.tintRed, color: C.red,
+                fontFamily: FONT, fontSize: 12, fontWeight: 500,
+                padding: "2px 8px", borderRadius: 10,
+                display: "inline-flex", alignItems: "center", gap: 4,
+              }}>
+                <PoundSterling size={11} />
+                £{Math.abs(balance).toFixed(2)} owed
+              </span>
             )}
           </div>
-        )}
+        </div>
       </div>
+
+      {(pupil.phone || pupil.address || pupil.postcode) && (
+        <div style={{ marginTop: 12, paddingTop: 12, borderTop: `0.5px solid ${C.hairline}`, display: "flex", flexDirection: "column", gap: 6 }}>
+          {pupil.phone && (
+            <a href={`tel:${pupil.phone}`} style={{ display: "flex", alignItems: "center", gap: 8, color: C.text, textDecoration: "none", fontFamily: FONT, fontSize: 13 }}>
+              <Phone size={14} color={C.subtle} /> {pupil.phone}
+            </a>
+          )}
+          {(pupil.address || pupil.postcode) && (
+            <button
+              onClick={handleNavigate}
+              style={{ display: "flex", alignItems: "flex-start", gap: 8, color: C.text, background: "transparent", border: "none", padding: 0, fontFamily: FONT, fontSize: 13, cursor: "pointer", textAlign: "left" }}
+            >
+              <MapPin size={14} color={C.subtle} style={{ marginTop: 2, flexShrink: 0 }} />
+              <span>{[pupil.address, pupil.postcode].filter(Boolean).join(", ")}</span>
+            </button>
+          )}
+        </div>
+      )}
+    </Card>
+  );
+
+  // ── Action row ──
+  const MobileActions = (
+    <div style={{ display: "flex", gap: 8 }}>
+      <QuickAction icon={Phone} label="Call" onClick={handleCall} disabled={!pupil.phone} primary />
+      <QuickAction icon={MessageSquare} label="Message" onClick={handleMessage} />
+      <QuickAction icon={Navigation} label="Navigate" onClick={handleNavigate} disabled={!pupil.address && !pupil.postcode && !pupil.what3words} />
+      <QuickAction icon={CalendarPlus} label="Book" onClick={() => setAddLessonOpen(true)} />
     </div>
   );
 
-  // ── Action row (subtle depth, larger targets) ──
-  const MobileActions = (
-    <div
-      style={{
-        background: C.card,
-        borderRadius: 22,
-        padding: "12px 8px",
-        boxShadow: SHADOW_CARD,
-        display: "flex",
-        justifyContent: "space-between",
-        gap: 8,
-      }}
-    >
-      <QuickAction icon={Phone} label="Call" onClick={handleCall} disabled={!pupil.phone} />
-      <QuickAction icon={MessageSquare} label="Message" onClick={handleMessage} color={C.green} />
-      <QuickAction icon={Navigation} label="Navigate" onClick={handleNavigate} color={C.amber} disabled={!pupil.address && !pupil.postcode && !pupil.what3words} />
-      <QuickAction icon={CalendarPlus} label="Book" onClick={() => setAddLessonOpen(true)} color={C.red} />
-    </div>
-  );
 
   // ── Smart insight card ──
   const toneMap = {
