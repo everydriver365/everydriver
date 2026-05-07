@@ -57,13 +57,17 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
     [],
   );
 
-  // Effective ordered visible tiles. If the user has saved a custom order,
-  // use it verbatim (hidden tiles simply omitted). Otherwise alphabetical.
+  // Effective ordered visible tiles. We always include EVERY tile so the
+  // grid surfaces every app feature. If the user customised order, pinned
+  // tiles come first, then the rest in alphabetical order.
   const orderedTiles = useMemo(() => {
-    const ids =
+    const customIds =
       isCustomised && pinnedRows && pinnedRows.length > 0
         ? pinnedRows.map((r) => r.tile_id)
-        : alphabeticalIds;
+        : [];
+    const seen = new Set(customIds);
+    const tail = alphabeticalIds.filter((id) => !seen.has(id));
+    const ids = [...customIds, ...tail];
     return ids
       .map((id) => QUICK_ACCESS_TILES_BY_ID[id])
       .filter(Boolean) as QuickAccessTile[];
