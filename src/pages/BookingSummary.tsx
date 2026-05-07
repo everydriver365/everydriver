@@ -265,7 +265,17 @@ export default function BookingSummary() {
       if (!instructorId) return;
 
       const [instructorRes, templateRes, instructorCourseRes, reviewsRes] = await Promise.all([
-        supabase.from("instructors").select("*, deposit_enabled, deposit_amount, deposit_deadline_days, cancellation_policy_text, booking_mode").eq("id", instructorId).maybeSingle(),
+        supabase.from("instructors").select(`
+          id, name, profile_image_url, car_type, car_make, car_model, car_image_url,
+          home_postcode, hourly_rate, bio, special_skills, brand_colour,
+          preferred_lesson_length, booking_advance_days, available_from,
+          allowed_lesson_lengths, buffer_minutes, cpd_certified, adi_code_of_practice,
+          instructor_grade, welcome_video_url,
+          deposit_enabled, deposit_amount, deposit_deadline_days,
+          cancellation_policy_text, booking_mode,
+          cash_payments_enabled, klarna_enabled, clearpay_enabled,
+          instant_bank_pay_enabled, school_skim_amount
+        `).eq("id", instructorId).maybeSingle(),
         supabase.from("course_templates").select("*").eq("course_hours", hours).maybeSingle(),
         supabase.from("instructor_courses").select("course_image_url").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
         supabase.from("course_reviews").select("*").eq("instructor_id", instructorId).eq("course_hours", hours).order("review_date", { ascending: false }).limit(5),
