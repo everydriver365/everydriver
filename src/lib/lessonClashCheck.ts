@@ -92,7 +92,7 @@ export async function checkLessonClash(args: CheckArgs): Promise<ClashResult> {
   const events = eventsRes.data || [];
   const blocks = blocksRes.data || [];
 
-  type Slot = { start: number; end: number; name: string; kind: 'lesson' | 'event' };
+  type Slot = { start: number; end: number; name: string; kind: 'lesson' | 'event' | 'block' };
 
   const lessonSlots: Slot[] = lessons.map((l: any) => {
     const s = toMinutes(l.start_time || '00:00');
