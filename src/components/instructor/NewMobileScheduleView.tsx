@@ -546,7 +546,20 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
         />
       )}
 
-      {/* Add Lesson Sheet */}
+      {/* Add Lesson / Event / Block dialog */}
+      <AddCalendarEventDialog
+        open={addEventOpen}
+        onOpenChange={setAddEventOpen}
+        instructorId={instructorId}
+        defaultDate={selectedDate}
+        onSuccess={() => {
+          fetchLessons();
+          fetchExternalEvents();
+          setAddEventOpen(false);
+        }}
+      />
+
+      {/* Legacy Add Lesson Sheet (kept for any deep-link usage) */}
       <AddLessonSheet
         open={addLessonOpen}
         onOpenChange={setAddLessonOpen}
