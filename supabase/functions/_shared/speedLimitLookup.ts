@@ -72,7 +72,19 @@ export async function resolveSpeedLimit(
     }
   } catch {/* miss — continue */}
 
-  // 3. Overpass — single query with geometry + tags, pick nearest drivable way
+  // 3. TomTom reverse geocode — authoritative posted speed limits
+  try {
+    const tomtom = await fetchTomTomSpeedLimit(lat, lng);
+    if (tomtom) {
+      console.log(`[SpeedLimit] tomtom → ${tomtom} km/h at ${lat},${lng}`);
+      cacheSpeedLimit(supabase, lat, lng, tomtom, "tomtom").catch(() => {});
+      return tomtom;
+    }
+  } catch (e) {
+    console.warn("[SpeedLimitLookup] TomTom error:", (e as Error).message);
+  }
+
+  // 4. Overpass — single query with geometry + tags, pick nearest drivable way
   try {
     const candidate = await fetchNearestRoad(lat, lng);
     if (candidate) {
