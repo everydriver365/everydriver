@@ -72,6 +72,32 @@ function SectionHeader({ title, action }: { title: string; action?: React.ReactN
   );
 }
 
+function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+  return (
+    <section style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ padding: "0 2px" }}>
+        <h2
+          style={{
+            fontFamily: FONT, fontSize: 12, fontWeight: 600,
+            letterSpacing: "0.6px", textTransform: "uppercase",
+            color: C.muted, margin: 0,
+          }}
+        >
+          {title}
+        </h2>
+        {subtitle && (
+          <div style={{ fontFamily: FONT, fontSize: 12, color: C.subtle, marginTop: 2 }}>
+            {subtitle}
+          </div>
+        )}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {children}
+      </div>
+    </section>
+  );
+}
+
 function Card({ children, padding = 20, className = "", interactive = false }: {
   children: React.ReactNode; padding?: number; className?: string; interactive?: boolean;
 }) {
