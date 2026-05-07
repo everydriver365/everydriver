@@ -1129,9 +1129,12 @@ export default function Schedule({
           <LessonList
             day={selectedDay}
             eolSet={eolSet}
+            standardRate={settings.standardRate}
+            standardLessonMinutes={60}
+            showRevenuePotential={showRevenuePotential}
             onLessonClick={handleLessonClick}
             onLessonEOL={handleLessonEOL}
-            onGapClick={handleGapClick}
+            onSlotBook={handleGapClick}
             onAddLesson={openAddLesson}
             onBlockDay={handleBlockDay}
           />
