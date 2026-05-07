@@ -98,22 +98,6 @@ export default function WhitelabelCourses() {
 
   return (
     <MainLayout>
-      <section className="border-b bg-secondary/30 py-8">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mx-auto max-w-4xl"
-          >
-            <h1 className="text-2xl font-bold md:text-3xl">{brand} — Courses</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Choose an available date below to see courses you can book.
-            </p>
-
-          </motion.div>
-        </div>
-      </section>
-
       <section className="container py-8">
         {lookupError ? (
           <div className="rounded-xl border bg-card p-8 text-center">
