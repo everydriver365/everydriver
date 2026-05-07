@@ -824,6 +824,24 @@ export default function PremiumPupilProfile() {
     }
   };
 
+  const customRate60 = (pupil as any).custom_hourly_rate as number | null | undefined;
+  const customRate90 = (pupil as any).custom_rate_90min as number | null | undefined;
+  const customRate120 = (pupil as any).custom_rate_120min as number | null | undefined;
+  const defaultRate = instructorRate ?? 40;
+  const RatesCard = (
+    <Card>
+      <PupilRateEditor
+        pupilId={pupil.id}
+        pupilName={pupil.name}
+        defaultRate={defaultRate}
+        currentCustomRate={customRate60 ?? null}
+        currentCustomRate90={customRate90 ?? null}
+        currentCustomRate120={customRate120 ?? null}
+        onSaved={() => queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] })}
+      />
+    </Card>
+  );
+
   const EyesightCard = (
     <Card>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
