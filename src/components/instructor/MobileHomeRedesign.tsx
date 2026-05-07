@@ -561,10 +561,7 @@ function ScheduleSection({
   onAddLesson: () => void;
 }) {
   const [tab, setTab] = useState<"today" | "tomorrow">("today");
-  const today = new Date().toISOString().slice(0, 10);
-  const tomorrowDate = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
-  const targetDate = tab === "today" ? today : tomorrowDate;
-
+  const today = new Date();
   const { data: todayLessons = [] } = useDayLessons(instructorId, today);
   const { data: tomorrowLessons = [] } = useTomorrowLessons(instructorId);
   const lessons = tab === "today" ? todayLessons : tomorrowLessons;
