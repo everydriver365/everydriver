@@ -10,6 +10,10 @@ const config: CapacitorConfig = {
   },
   ios: {
     contentInset: 'always',
+    backgroundColor: '#EEF1F5',
+  },
+  android: {
+    backgroundColor: '#EEF1F5',
   },
   plugins: {
     NativeBiometric: {
