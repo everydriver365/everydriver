@@ -796,7 +796,119 @@ export default function PremiumPupilProfile() {
     </Card>
   );
 
-  // ─────────────── Mobile-only intelligence layer ───────────────
+  const eyesightChecked = (pupil as any).eyesight_checked as boolean | null | undefined;
+  const needsGlasses = (pupil as any).needs_glasses as boolean | null | undefined;
+
+  const updateEyesight = async (patch: { eyesight_checked?: boolean | null; needs_glasses?: boolean | null }) => {
+    if (!pupil?.id) return;
+    setSavingEyesight(true);
+    try {
+      const { error } = await supabase.from("pupils").update(patch).eq("id", pupil.id);
+      if (error) throw error;
+      await queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] });
+      toast.success("Eyesight check updated");
+    } catch (err) {
+      console.error("Eyesight update error:", err);
+      toast.error("Failed to update");
+    } finally {
+      setSavingEyesight(false);
+    }
+  };
+
+  const EyesightCard = (
+    <Card>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 16, background: C.surface, display: "flex", alignItems: "center", justifyContent: "center", color: C.muted }}>
+            <Eye size={16} />
+          </div>
+          <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em" }}>
+            Eyesight check
+          </div>
+        </div>
+        {eyesightChecked === true && (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 999, background: `${C.green}14`, color: C.green, fontFamily: FONT, fontSize: 12, fontWeight: 600 }}>
+            <Check size={12} /> Pass
+          </span>
+        )}
+        {eyesightChecked === false && (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 999, background: `${C.red}14`, color: C.red, fontFamily: FONT, fontSize: 12, fontWeight: 600 }}>
+            <X size={12} /> Fail
+          </span>
+        )}
+      </div>
+
+      <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, marginBottom: 10 }}>
+        Read a number plate from 20 metres (20.5m for old-style plates).
+      </div>
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+        <button
+          onClick={() => updateEyesight({ eyesight_checked: true })}
+          disabled={savingEyesight}
+          style={{
+            flex: 1, padding: "10px 12px", borderRadius: 12,
+            border: `1px solid ${eyesightChecked === true ? C.green : C.hairline}`,
+            background: eyesightChecked === true ? C.green : C.card,
+            color: eyesightChecked === true ? "#FFFFFF" : C.text,
+            fontFamily: FONT, fontSize: 14, fontWeight: 600,
+            cursor: "pointer", transition: TRANSITION,
+            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+          }}
+        >
+          <Check size={14} /> Pass
+        </button>
+        <button
+          onClick={() => updateEyesight({ eyesight_checked: false })}
+          disabled={savingEyesight}
+          style={{
+            flex: 1, padding: "10px 12px", borderRadius: 12,
+            border: `1px solid ${eyesightChecked === false ? C.red : C.hairline}`,
+            background: eyesightChecked === false ? C.red : C.card,
+            color: eyesightChecked === false ? "#FFFFFF" : C.text,
+            fontFamily: FONT, fontSize: 14, fontWeight: 600,
+            cursor: "pointer", transition: TRANSITION,
+            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+          }}
+        >
+          <X size={14} /> Fail
+        </button>
+      </div>
+
+      <button
+        onClick={() => updateEyesight({ needs_glasses: !needsGlasses })}
+        disabled={savingEyesight}
+        style={{
+          width: "100%", padding: "12px 14px", borderRadius: 14,
+          border: `1px solid ${C.hairline}`, background: C.surface,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          cursor: "pointer", transition: TRANSITION,
+        }}
+      >
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontFamily: FONT, fontSize: 14, color: C.text, fontWeight: 500 }}>
+          <Glasses size={16} color={C.muted} />
+          Wears glasses or contacts
+        </span>
+        <span style={{
+          width: 40, height: 24, borderRadius: 999,
+          background: needsGlasses ? C.accent : C.hairline,
+          position: "relative", transition: TRANSITION,
+        }}>
+          <span style={{
+            position: "absolute", top: 2, left: needsGlasses ? 18 : 2,
+            width: 20, height: 20, borderRadius: 999, background: "#FFFFFF",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: TRANSITION,
+          }} />
+        </span>
+      </button>
+
+      {eyesightChecked === null || eyesightChecked === undefined ? (
+        <div style={{ fontFamily: FONT, fontSize: 12, color: C.amber, marginTop: 10, display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <AlertCircle size={12} /> Not yet checked — required before first lesson
+        </div>
+      ) : null}
+    </Card>
+  );
   const nextLessonDate = stats?.nextLesson?.lesson_date
     ? parseISO(stats.nextLesson.lesson_date as unknown as string)
     : null;
