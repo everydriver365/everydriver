@@ -1389,26 +1389,26 @@ export default function PremiumPupilProfile() {
           {SmartInsight}
           {MobileMetrics}
         </div>
-        {/* Sections below get a bit more air */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 22, marginTop: 24 }}>
-          <SectionHeader title="Lessons" />
-          {NextLesson}
-          {LastLesson}
-          {HistoryCard}
-          <SectionHeader title="Progress" />
-          {ProgressOverview}
-          <SectionHeader title="Notes" />
-          {NotesCard}
-          <SectionHeader title="Documents" />
-          {DocumentsCard}
-          <SectionHeader title="Payments" />
-          {PaymentsCard}
-          <SectionHeader title="Lesson rates" />
-          {RatesCard}
-          <SectionHeader title="Eyesight" />
-          {EyesightCard}
-          <SectionHeader title="Details" />
-          {DetailsCard}
+        {/* Grouped sections */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 28, marginTop: 28 }}>
+          <Section title="Lessons & progress">
+            {NextLesson}
+            {LastLesson}
+            {ProgressOverview}
+            {HistoryCard}
+          </Section>
+          <Section title="Money">
+            {PaymentsCard}
+            {RatesCard}
+          </Section>
+          <Section title="Safety & admin">
+            {EyesightCard}
+            {DocumentsCard}
+            {NotesCard}
+          </Section>
+          <Section title="Details">
+            {DetailsCard}
+          </Section>
         </div>
       </div>
     </div>
@@ -1431,35 +1431,29 @@ export default function PremiumPupilProfile() {
               </Card>
             )}
             {PupilCard}
-            <SectionHeader title="At a glance" />
             {StatsRow}
-            <SectionHeader title="Lessons" />
-            {NextLesson}
-            {LastLesson}
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 820 }}>
-            <SectionHeader title="Progress" />
-            {ProgressOverview}
-            <SectionHeader title="Lesson history" />
-            {HistoryCard}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <div>
-                <SectionHeader title="Notes" />
+          <div style={{ display: "flex", flexDirection: "column", gap: 28, maxWidth: 820 }}>
+            <Section title="Lessons & progress">
+              {NextLesson}
+              {LastLesson}
+              {ProgressOverview}
+              {HistoryCard}
+            </Section>
+            <Section title="Money">
+              {PaymentsCard}
+              {RatesCard}
+            </Section>
+            <Section title="Safety & admin">
+              {EyesightCard}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                {DocumentsCard}
                 {NotesCard}
               </div>
-              <div>
-                <SectionHeader title="Documents" />
-                {DocumentsCard}
-              </div>
-            </div>
-            <SectionHeader title="Money" />
-            {PaymentsCard}
-            <SectionHeader title="Lesson rates" />
-            {RatesCard}
-            <SectionHeader title="Eyesight" />
-            {EyesightCard}
-            <SectionHeader title="Details" />
-            {DetailsCard}
+            </Section>
+            <Section title="Details">
+              {DetailsCard}
+            </Section>
           </div>
         </div>
       </div>
