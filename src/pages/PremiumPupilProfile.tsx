@@ -154,9 +154,11 @@ function StatPill({ label, value, sub }: { label: string; value: string; sub?: s
   );
 }
 
-function QuickAction({ icon: Icon, label, onClick, color = C.accent, disabled }: {
-  icon: any; label: string; onClick?: () => void; color?: string; disabled?: boolean;
+function QuickAction({ icon: Icon, label, onClick, primary, disabled }: {
+  icon: any; label: string; onClick?: () => void; primary?: boolean; disabled?: boolean;
 }) {
+  const bg = primary ? C.accent : C.tintBlue;
+  const fg = primary ? "#FFFFFF" : C.tintBlueFg;
   return (
     <button
       type="button"
@@ -166,37 +168,15 @@ function QuickAction({ icon: Icon, label, onClick, color = C.accent, disabled }:
       onMouseUp={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
       onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
       style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 8,
-        flex: 1,
-        background: "transparent",
-        border: "none",
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.4 : 1,
-        padding: "4px 0",
-        transition: TRANSITION,
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        gap: 4, flex: 1, background: bg, color: fg, border: "none",
+        cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.4 : 1,
+        padding: "12px 6px", borderRadius: 12, transition: TRANSITION,
+        fontFamily: FONT,
       }}
     >
-      <div
-        style={{
-          height: 52,
-          width: 52,
-          borderRadius: 26,
-          background: `${color}14`,
-          color,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: TRANSITION,
-        }}
-      >
-        <Icon size={22} />
-      </div>
-      <span style={{ fontFamily: FONT, fontSize: 12, fontWeight: 500, color: C.text }}>
-        {label}
-      </span>
+      <Icon size={18} />
+      <span style={{ fontSize: 11, fontWeight: 600 }}>{label}</span>
     </button>
   );
 }
