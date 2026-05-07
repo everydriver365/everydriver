@@ -1084,7 +1084,7 @@ export function AddLessonSheet({
                         checked={overrideBuffer}
                         onChange={(e) => setOverrideBuffer(e.target.checked)}
                       />
-                      Book anyway (override buffer)
+                      {isHardOverlap ? 'Book anyway (override clash)' : 'Book anyway (override buffer)'}
                     </label>
                   </div>
                 </div>
