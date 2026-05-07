@@ -1346,7 +1346,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
       {/* Google-style FAB */}
       <button
         type="button"
-        onClick={() => setAddLessonOpen(true)}
+        onClick={() => { setAddEventDate(new Date()); setAddEventOpen(true); }}
         aria-label="Create event"
         style={{
           position: "fixed",
