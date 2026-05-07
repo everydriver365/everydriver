@@ -239,6 +239,12 @@ export default function InstructorLiveSession() {
     sessionId: device?.current_session_id ?? null,
     onPosition: (fix) => {
       setLastPhoneFix(fix);
+      // Drive the speed-limit panel directly from the locally resolved
+      // limit on every fix, so it actually changes as the road changes
+      // (no dependency on a pupil being selected or realtime DB pushes).
+      if (fix.speedLimitKmh != null) {
+        setSpeedLimitIfValid(fix.speedLimitKmh);
+      }
       setPhoneTrail((prev) => {
         const next = [...prev, fix];
         // Keep last ~120 points (~4 minutes at 2s throttle).
