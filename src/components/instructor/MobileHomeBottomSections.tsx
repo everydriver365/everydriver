@@ -428,10 +428,10 @@ function ScheduleSection({ instructorId }: { instructorId: string }) {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: 12,
+                        fontSize: 16,
                         fontWeight: 700,
                         color: TEXT,
-                        lineHeight: "17px",
+                        lineHeight: "20px",
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
