@@ -1,27 +1,48 @@
-# Fix: Speed limit never changes on Tracking
+## Goal
 
-## Root cause
+When adding a lesson, block, or event from the instructor app, if there's a clash with an existing booking, surface a clear warning and let the instructor tick **"Book anyway (override clash)"** to force-save. Today the DB trigger `prevent_lesson_clash` always blocks hard overlaps, so even the existing "Book anyway" checkbox in `AddLessonSheet` only works for buffer warnings — true overlaps still fail.
 
-In `src/pages/InstructorLiveSession.tsx`, when Phone Tracker is the active provider, the speed-limit number rendered on the panel comes from a React state value (`speedLimitKmh`) that is **only updated by Supabase subscriptions** to `live_pupil_positions` and `lesson_telematics`.
+## Changes
 
-That state is never updated from the actual GPS fix the phone is producing. The streamer (`usePhoneTrackingStreamer`) already resolves the per-fix limit and exposes it on every `onPosition` callback as `fix.speedLimitKmh`, but `InstructorLiveSession`'s `onPosition` handler ignores that field — it only stores `lastPhoneFix` and the trail.
+### 1. Database — let the trigger respect an override flag
 
-Consequences:
-- If no pupil is selected, no row is written to `live_pupil_positions`, so the subscription never fires and `speedLimitKmh` stays at whatever the very first DB value was (often the device's stale `last_speed_limit_kmh`, hence "always the same").
-- Even with a pupil, the panel updates lag the actual road because we wait for a DB round-trip + realtime push instead of using the value already computed locally.
+Add a nullable `clash_overridden boolean` column to `scheduled_lessons` (default `false`) and update `public.prevent_lesson_clash()` so that:
 
-## Fix
+```sql
+IF COALESCE(NEW.clash_overridden, false) THEN
+  RETURN NEW; -- instructor explicitly chose to double-book
+END IF;
+```
 
-Single, small change in `src/pages/InstructorLiveSession.tsx`:
+This is the only way to bypass the existing 23514 check from the client. We keep the trigger active for all the other (non-overridden) writes so accidental clashes are still blocked.
 
-In the `usePhoneTrackingStreamer({ ..., onPosition })` handler (around line 240), also call `setSpeedLimitIfValid(fix.speedLimitKmh)` so the locally resolved limit immediately drives the UI. The existing `setSpeedLimitIfValid` guard (16–113 km/h) protects against bogus values.
+### 2. `AddLessonSheet.tsx` (mobile add-lesson)
 
-Also clear `speedLimitKmh` when leaving phone provider / switching session so a stale value can't linger (mirrors the existing `resolvedRoadName` reset).
+- The component already has `overrideBuffer` state and a "Book anyway (override buffer)" checkbox shown only when the warning is buffer-only. Repurpose it so it's also shown when `isHardOverlap` is true (label changes to **"Book anyway (override clash)"**).
+- In `handleAddLessonExisting` / `handleAddLessonNew` / the recurring weeks loop:
+  - If `conflictWarning` and `overrideBuffer` is checked, proceed.
+  - Pass `clash_overridden: true` on every inserted row in the lessons array.
+- Strip the existing early-return `if (isHardOverlap) { toast.error... }` so the override actually wins.
 
-## Why this is enough
+### 3. `AddCalendarEventDialog.tsx` (lesson + block + event tabs)
 
-- `usePhoneTrackingStreamer` already awaits `resolvePhoneSpeedLimit` whenever the device has moved >60 m or 20 s have passed and updates `cachedLimitRef`, then includes that value on every `onPosition` fix.
-- `phoneSpeedLimit.ts` resolves via local IndexedDB grid cache (~11 m) → `resolve-speed-limit` edge function (Overpass + UK defaults).
-- After this change, the limit on screen will refresh as soon as a new GPS fix arrives with a different cached/looked-up value, with no dependency on a pupil being selected or on realtime DB subscriptions.
+- **Lesson tab** (`handleAddLesson`): instead of returning when `clash.hardOverlap`, render a small inline warning + a "Book anyway (override clash)" checkbox (new state `overrideClash`). When checked, insert with `clash_overridden: true`; otherwise keep blocking.
+- **Block / Event tabs** (`handleAddBlock`, `handleAddEvent`): currently no clash check at all. Add a pre-save call to `checkLessonClash` against the chosen instructor/date/time window. If a clash exists, show the same inline warning + override checkbox. Blocks/events live in `instructor_manual_blocks`, which has no DB trigger, so no schema change is needed for them — the override simply suppresses the UI block.
+- Reset the override state in `resetForm()` and whenever the date/time/duration changes (so users can't accidentally carry it over).
 
-No DB or edge-function changes are required.
+### 4. `RescheduleLessonSheet.tsx` and `EditScheduleEntryDialog.tsx`
+
+Out of scope for this request (user said *adding* a lesson or event). Leave untouched; we can extend later if needed.
+
+## Technical notes
+
+- `checkLessonClash` already returns the conflicting slot names — reuse `clash.message` for the warning text in `AddCalendarEventDialog`.
+- The block/event clash check should also flag overlaps with existing `instructor_manual_blocks` rows for the same instructor/day. `checkLessonClash` only queries `scheduled_lessons` + `instructor_calendar_events`. Extend it (or add a thin sibling helper used by the dialog) to also fetch `instructor_manual_blocks` for the day and treat them as `kind: 'block'` slots.
+- Default `clash_overridden = false` keeps every existing insert path safe; the trigger only steps aside when the client explicitly opts in.
+- No analytics, no toasts changes beyond the wording. UK + DSM portal styling stays as-is (rounded-2xl warning card matches the existing buffer warning).
+
+## Out of scope
+
+- Changing reschedule/edit flows.
+- Pupil-facing self-booking (still hard-blocks).
+- Showing override audit history in the UI.
