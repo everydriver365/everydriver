@@ -7,7 +7,10 @@ import {
   ArrowLeft, Phone, MessageSquare, Navigation, CalendarPlus, Edit3,
   Clock, MapPin, GraduationCap, Star, FileText, PoundSterling, Plus,
   ChevronRight, Mail, AlertCircle, Loader2, User, MoreHorizontal,
+  Eye, Glasses, Check, X,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
