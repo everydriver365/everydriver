@@ -63,6 +63,7 @@ import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgen
 import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
 import { NextUpTile } from "@/components/instructor/NextUpTile";
 import { SimpleNextLessonCard } from "@/components/instructor/SimpleNextLessonCard";
+import { NextLessonPreviewCard } from "@/components/instructor/NextLessonPreviewCard";
 
 import planAheadIcon from "@/assets/plan-ahead-icon.png";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
@@ -606,15 +607,19 @@ export function InstructorMobileHome({
                   />
                 </div>
                 {nextLesson.minutesUntil > 240 ? (
-                  <SimpleNextLessonCard
+                  <NextLessonPreviewCard
                     lessonId={nextLesson.lessonId}
                     pupilId={nextLesson.pupilId}
                     pupilName={nextLesson.pupilName}
+                    pupilPhone={nextLesson.pupilPhone}
+                    pupilProfileImage={nextLesson.pupilProfileImage}
                     lessonDate={nextLesson.lessonDate}
                     startTime={nextLesson.startTime}
                     durationMinutes={nextLesson.durationMinutes}
+                    pickupPostcode={nextLesson.pickupPostcode}
                     pickupLocation={nextLesson.pickupLocation}
                     minutesUntil={nextLesson.minutesUntil}
+                    instructorId={instructorId}
                   />
                 ) : (
                   <NextUpTile
