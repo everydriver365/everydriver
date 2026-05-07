@@ -354,6 +354,16 @@ serve(async (req) => {
       );
     }
 
+    // Filter out GPS spikes / jitter / teleports so the trip map polyline
+    // and stats don't show squiggles or random shoot-out lines.
+    const rawCount = gpsPoints.length;
+    const filtered = cleanGpsPoints(gpsPoints as GPSPoint[]);
+    console.log(`Cleaned GPS points: ${rawCount} → ${filtered.length}`);
+    // Reassign so the rest of the pipeline (segments / stats / route) uses
+    // the cleaned series.
+    (gpsPoints as any).length = 0;
+    (gpsPoints as any).push(...filtered);
+
     console.log(`Processing ${gpsPoints.length} GPS points for session ${telematicsId}`);
 
     // Check if we have stored road data
