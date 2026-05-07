@@ -733,12 +733,16 @@ function QuickAccessSection({ instructorId }: { instructorId: string }) {
     }
   };
 
-  const tiles = useMemo(
-    () => pinnedIds.map((id) => QUICK_ACCESS_TILES_BY_ID[id]).filter(Boolean),
-    [pinnedIds],
-  );
+  const tiles = useMemo(() => {
+    const pinned = pinnedIds
+      .map((id) => QUICK_ACCESS_TILES_BY_ID[id])
+      .filter(Boolean);
+    const pinnedSet = new Set(pinned.map((t) => t.id));
+    const rest = QUICK_ACCESS_TILES.filter((t) => !pinnedSet.has(t.id));
+    return [...pinned, ...rest];
+  }, [pinnedIds]);
 
-  const PER_PAGE = 8;
+  const PER_PAGE = 6;
   const pages: typeof tiles[] = useMemo(() => {
     if (tiles.length === 0) return [];
     const out: typeof tiles[] = [];
