@@ -62,6 +62,7 @@ import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
 import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
 import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
 import { NextUpTile } from "@/components/instructor/NextUpTile";
+import { UpNextCard } from "@/components/UpNextCard";
 import { SimpleNextLessonCard } from "@/components/instructor/SimpleNextLessonCard";
 import { NextLessonPreviewCard } from "@/components/instructor/NextLessonPreviewCard";
 
@@ -622,7 +623,7 @@ export function InstructorMobileHome({
                     instructorId={instructorId}
                   />
                 ) : (
-                  <NextUpTile
+                  <UpNextCard
                     lessonId={nextLesson.lessonId}
                     pupilId={nextLesson.pupilId}
                     pupilName={nextLesson.pupilName}
@@ -638,7 +639,7 @@ export function InstructorMobileHome({
                     durationMinutes={nextLesson.durationMinutes}
                     instructorId={instructorId}
                     checkInStatus={nextLesson.checkInStatus}
-              lessonStatus={(nextLesson as any).lessonStatus}
+                    lessonStatus={(nextLesson as any).lessonStatus}
                     lastLessonPlan={nextLesson.lastLessonPlan}
                   />
                 )}
