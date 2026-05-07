@@ -125,7 +125,16 @@ export async function checkLessonClash(args: CheckArgs): Promise<ClashResult> {
     }))
     .filter((s) => s.end > s.start);
 
-  const all = [...lessonSlots, ...eventSlots];
+  const blockSlots: Slot[] = blocks
+    .map((b: any) => ({
+      start: tsToMin(b.start_datetime),
+      end: tsToMin(b.end_datetime),
+      name: b.title || 'Time block',
+      kind: 'block' as const,
+    }))
+    .filter((s) => s.end > s.start);
+
+  const all = [...lessonSlots, ...eventSlots, ...blockSlots];
 
   const hardClashes = all.filter((s) => newStart < s.end && newEnd > s.start);
   const buffer = Math.max(bufferMinutes, 0);
