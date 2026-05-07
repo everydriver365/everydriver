@@ -933,7 +933,7 @@ export default function PremiumPupilProfile() {
   const eyesightCardBorder =
     eyesightChecked === true ? `${C.green}55` : eyesightChecked === false ? `${C.red}55` : undefined;
   const EyesightCard = (
-    <div style={eyesightCardTint ? { borderRadius: RADIUS, background: eyesightCardTint, border: `1px solid ${eyesightCardBorder}` } : undefined}>
+    <div style={eyesightCardTint ? { borderRadius: RADIUS, background: eyesightCardTint, border: `1px solid ${eyesightCardBorder}`, padding: 0 } : undefined}>
     <Card>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
