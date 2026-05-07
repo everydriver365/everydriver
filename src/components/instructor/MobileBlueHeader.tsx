@@ -55,16 +55,16 @@ export function MobileBlueHeader({
         style={{
           paddingTop: 0,
           backgroundColor: pageBg,
-          paddingLeft: 12,
-          paddingRight: 12,
-          paddingBottom: 8,
+          paddingLeft: 0,
+          paddingRight: 0,
+          paddingBottom: 0,
         }}
       >
         <div
           className="flex items-center justify-between"
           style={{
             background: "#FFFFFF",
-            borderRadius: 8,
+            borderRadius: 0,
             padding: 14,
           }}
         >
