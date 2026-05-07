@@ -621,7 +621,7 @@ function UpNextTile({
               <IconTile>
                 <Clock size={13} strokeWidth={2.2} />
               </IconTile>
-              <div style={{ fontSize: 13, color: CHARCOAL, fontWeight: 500 }}>
+              <div style={{ fontSize: 16, color: CHARCOAL, fontWeight: 500 }}>
                 Standard lesson · <span style={{ color: MUTED, fontWeight: 400 }}>{hoursLong(durationMinutes)}</span>
               </div>
             </div>
@@ -632,7 +632,7 @@ function UpNextTile({
               </IconTile>
               <div
                 style={{
-                  fontSize: 13,
+                  fontSize: 16,
                   color: CHARCOAL,
                   fontWeight: 500,
                   minWidth: 0,
@@ -676,7 +676,7 @@ function UpNextTile({
                 background: BLUE,
                 color: "#FFFFFF",
                 border: "none",
-                fontSize: 14,
+                fontSize: 16,
                 fontWeight: 600,
                 letterSpacing: 0.1,
                 display: "inline-flex",
@@ -700,7 +700,7 @@ function UpNextTile({
                 background: BLUE_TINT,
                 color: BLUE,
                 border: `0.5px solid ${BORDER}`,
-                fontSize: 14,
+                fontSize: 16,
                 fontWeight: 600,
                 letterSpacing: 0.1,
                 display: "inline-flex",
@@ -723,7 +723,7 @@ function UpNextTile({
                 background: BLUE_TINT,
                 color: BLUE,
                 border: `0.5px solid ${BORDER}`,
-                fontSize: 14,
+                fontSize: 16,
                 fontWeight: 600,
                 letterSpacing: 0.1,
                 display: "inline-flex",
