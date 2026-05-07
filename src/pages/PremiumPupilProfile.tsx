@@ -340,6 +340,8 @@ export default function PremiumPupilProfile() {
   const { instructor } = useInstructorAuth();
   const isMobile = useIsMobile();
   const instructorId = instructor?.id;
+  const queryClient = useQueryClient();
+  const [savingEyesight, setSavingEyesight] = useState(false);
 
   const { data: pupil, isLoading } = usePupil(pupilId, instructorId);
   const { data: stats } = usePupilLessonStats(pupilId);
