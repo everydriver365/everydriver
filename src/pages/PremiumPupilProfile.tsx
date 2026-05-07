@@ -81,11 +81,11 @@ function SectionHeader({ title, action }: { title: string; action?: React.ReactN
 function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <section style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <div style={{ padding: "0 2px" }}>
+      <div style={{ padding: "0 4px 4px" }}>
         <h2
           style={{
-            fontFamily: FONT, fontSize: 12, fontWeight: 600,
-            letterSpacing: "0.6px", textTransform: "uppercase",
+            fontFamily: FONT, fontSize: 11, fontWeight: 500,
+            letterSpacing: "1.2px", textTransform: "uppercase",
             color: C.muted, margin: 0,
           }}
         >
