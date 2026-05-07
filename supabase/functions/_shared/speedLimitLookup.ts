@@ -72,7 +72,19 @@ export async function resolveSpeedLimit(
     }
   } catch {/* miss — continue */}
 
-  // 3. Overpass — single query with geometry + tags, pick nearest drivable way
+  // 3. TomTom reverse geocode — authoritative posted speed limits
+  try {
+    const tomtom = await fetchTomTomSpeedLimit(lat, lng);
+    if (tomtom) {
+      console.log(`[SpeedLimit] tomtom → ${tomtom} km/h at ${lat},${lng}`);
+      cacheSpeedLimit(supabase, lat, lng, tomtom, "tomtom").catch(() => {});
+      return tomtom;
+    }
+  } catch (e) {
+    console.warn("[SpeedLimitLookup] TomTom error:", (e as Error).message);
+  }
+
+  // 4. Overpass — single query with geometry + tags, pick nearest drivable way
   try {
     const candidate = await fetchNearestRoad(lat, lng);
     if (candidate) {
@@ -188,6 +200,28 @@ function parseMaxspeed(raw: string): number | null {
   if (numMatch) return parseInt(numMatch[1], 10);
   if (raw.toLowerCase().includes("national")) return 97;
   return null;
+}
+
+async function fetchTomTomSpeedLimit(lat: number, lng: number): Promise<number | null> {
+  const key = Deno.env.get("TOMTOM_API_KEY");
+  if (!key) return null;
+  const url = `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lng}.json?key=${key}&returnSpeedLimit=true&radius=25`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+  if (!res.ok) {
+    console.warn(`[SpeedLimit] TomTom HTTP ${res.status}`);
+    return null;
+  }
+  const data = await res.json();
+  const raw = data?.addresses?.[0]?.address?.speedLimit;
+  return raw ? parseTomTomSpeed(String(raw)) : null;
+}
+
+function parseTomTomSpeed(raw: string): number | null {
+  const m = raw.match(/^(\d+)\s*(MPH|KMH|KPH)?$/i);
+  if (!m) return null;
+  const n = parseInt(m[1], 10);
+  const unit = (m[2] || "KMH").toUpperCase();
+  return unit === "MPH" ? Math.round(n * 1.60934) : n;
 }
 
 async function cacheSpeedLimit(
