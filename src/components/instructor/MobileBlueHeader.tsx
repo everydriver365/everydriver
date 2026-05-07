@@ -42,10 +42,11 @@ export function MobileBlueHeader({
   const aiDivert = useAICallDivert(instructorId, null);
   const divertOn = aiDivert.settings.mode !== "off";
   const divertActive = aiDivert.active;
-  const divertColor = divertOn ? "#1A7A3C" : "#CC2229";
+  const divertColor = divertOn ? "#1D9E75" : "#6B6B6B";
+  const ICON_BASE = "#6B6B6B";
 
   void surface;
-  const bg = "hsl(var(--dsm-page-bg,var(--dsm-bg)))";
+  const pageBg = "hsl(var(--dsm-page-bg,var(--dsm-bg)))";
 
   return (
     <>
@@ -53,32 +54,39 @@ export function MobileBlueHeader({
         className="sticky top-0 z-40"
         style={{
           paddingTop: 0,
-          backgroundColor: bg,
+          backgroundColor: pageBg,
+          paddingLeft: 12,
+          paddingRight: 12,
+          paddingBottom: 8,
         }}
       >
-        <div className="flex h-14 items-center justify-between px-5" style={{ marginTop: 2 }}>
+        <div
+          className="flex items-center justify-between"
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 8,
+            padding: 14,
+          }}
+        >
         {/* Left: logo+wordmark on home; back+title on other tab roots; back+title on subpages */}
-        <div className="flex items-center gap-2.5 min-w-0" style={{ opacity: 0.95 }}>
+        <div className="flex items-center min-w-0" style={{ gap: 10 }}>
           {showBackButton && (
             <button
               onClick={onBack}
               className="h-8 w-8 flex items-center justify-center -ml-1 shrink-0"
               aria-label="Back"
             >
-              <ChevronLeft size={22} strokeWidth={1.7} color={ICON_COLOR} />
+              <ChevronLeft size={22} strokeWidth={1.7} color={ICON_BASE} />
             </button>
           )}
           {isHomePage ? (
             <>
-              <img src={dsmLogo} alt="DSM" className="w-auto object-contain shrink-0" style={{ height: 29 }} />
-              <div
-                className="flex flex-col min-w-0 leading-none"
-                style={{ color: "hsl(var(--dsm-text-primary, 240 6% 11%))" }}
-              >
-                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: -0.1 }}>
+              <img src={dsmLogo} alt="DSM" className="w-auto object-contain shrink-0" style={{ height: 32 }} />
+              <div className="flex flex-col min-w-0" style={{ lineHeight: 1.2 }}>
+                <span style={{ fontSize: 14, fontWeight: 500, color: "#3A3A3A" }}>
                   Driving School
                 </span>
-                <span style={{ fontSize: 10, fontWeight: 400, letterSpacing: -0.1, marginTop: 2 }}>
+                <span style={{ fontSize: 12, fontWeight: 400, color: "#6B6B6B" }}>
                   Manager
                 </span>
               </div>
@@ -91,7 +99,7 @@ export function MobileBlueHeader({
                 fontSize: 18,
                 fontWeight: 600,
                 letterSpacing: -0.3,
-                color: "hsl(var(--dsm-text-primary, 240 6% 11%))",
+                color: "#3A3A3A",
               }}
             >
               {pageTitle}
@@ -100,37 +108,38 @@ export function MobileBlueHeader({
         </div>
 
         {/* Right: phone divert, bell, +, menu */}
-        <div className="flex items-center" style={{ gap: 12 }}>
+        <div className="flex items-center" style={{ gap: 16 }}>
           <button
             onClick={() => setDivertSheetOpen(true)}
-            className="relative flex items-center justify-center"
-            style={{ width: 32, height: 32 }}
-            aria-label={divertOn ? "AI call divert on — open settings" : "AI call divert off — open settings"}
-            title={divertOn ? "AI call divert on — open settings" : "AI call divert off — open settings"}
+            className="relative flex items-center justify-center transition-transform active:scale-95"
+            style={{ width: 44, height: 44, margin: -12, WebkitTapHighlightColor: "transparent" }}
+            aria-label={divertOn ? "Call settings — auto-divert on" : "Call settings"}
+            title={divertOn ? "AI call divert on" : "Call settings"}
           >
-            <Phone size={20} strokeWidth={1.9} color={divertColor} />
+            <Phone size={20} strokeWidth={1.9} color={divertColor} aria-hidden="true" />
           </button>
           <button
             onClick={() => navigate("/instructor/notifications")}
-            className="relative flex items-center justify-center"
-            style={{ width: 32, height: 32 }}
-            aria-label="Notifications"
+            className="relative flex items-center justify-center transition-transform active:scale-95"
+            style={{ width: 44, height: 44, margin: -12, WebkitTapHighlightColor: "transparent" }}
+            aria-label={`Notifications${notifCount > 0 ? `, ${notifCount} unread` : ""}`}
           >
-            <Bell size={20} strokeWidth={1.7} color={ICON_COLOR} />
+            <Bell size={20} strokeWidth={1.7} color={ICON_BASE} aria-hidden="true" />
             {notifCount > 0 && (
               <span
                 className="absolute flex items-center justify-center"
+                aria-hidden="true"
                 style={{
-                  top: -2,
-                  right: -2,
-                  minWidth: 16,
-                  height: 16,
-                  padding: "0 4px",
+                  top: 8,
+                  right: 7,
+                  minWidth: 14,
+                  height: 14,
+                  padding: "0 3px",
                   borderRadius: 8,
-                  background: "#E15D5A",
+                  background: "#C8242C",
                   color: "#FFFFFF",
                   fontSize: 9,
-                  fontWeight: 600,
+                  fontWeight: 500,
                   lineHeight: 1,
                 }}
               >
@@ -140,19 +149,19 @@ export function MobileBlueHeader({
           </button>
           <button
             onClick={onPlus}
-            className="flex items-center justify-center"
-            style={{ width: 32, height: 32 }}
-            aria-label="Quick actions"
+            className="flex items-center justify-center transition-transform active:scale-95"
+            style={{ width: 44, height: 44, margin: -12, WebkitTapHighlightColor: "transparent" }}
+            aria-label="Add new"
           >
-            <Plus size={20} strokeWidth={1.7} color={ICON_COLOR} />
+            <Plus size={20} strokeWidth={1.7} color={ICON_BASE} aria-hidden="true" />
           </button>
           <button
             onClick={onMenu}
-            className="flex items-center justify-center"
-            style={{ width: 32, height: 32 }}
+            className="flex items-center justify-center transition-transform active:scale-95"
+            style={{ width: 44, height: 44, margin: -12, WebkitTapHighlightColor: "transparent" }}
             aria-label="Menu"
           >
-            <Menu size={20} strokeWidth={1.7} color={ICON_COLOR} />
+            <Menu size={20} strokeWidth={1.7} color={ICON_BASE} aria-hidden="true" />
           </button>
         </div>
         </div>
