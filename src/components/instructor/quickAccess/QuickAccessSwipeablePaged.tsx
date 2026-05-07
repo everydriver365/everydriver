@@ -13,7 +13,7 @@ import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { useInstructorPeriodStats } from "@/hooks/useInstructorPeriodStats";
 
-const TILES_PER_PAGE = 8;
+const TILES_PER_PAGE = 4;
 
 interface Props {
   instructorId?: string;
@@ -256,7 +256,7 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
               gap: 12,
             }}
           >
@@ -285,7 +285,7 @@ export function QuickAccessSwipeablePaged({ instructorId }: Props) {
                   width: "100%",
                   scrollSnapAlign: "start",
                   display: "grid",
-                  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
                   gridAutoRows: "min-content",
                   rowGap: 14,
                   columnGap: 8,
