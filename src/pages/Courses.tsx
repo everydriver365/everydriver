@@ -1273,13 +1273,27 @@ export default function Courses() {
                     </div>
                     <h2 className="text-xl font-semibold text-foreground">No courses found</h2>
                     <p className="mt-2 text-muted-foreground">
-                      We couldn't find courses matching your search. Try widening your search radius, entering a different postcode, or removing some filters.
+                      {userLocation
+                        ? `No instructors offering courses within ${radius} miles${searchedAreaName ? ` of ${searchedAreaName}` : ""} on this date. Try widening your search radius below, picking a different date, or removing some filters.`
+                        : "We couldn't find courses matching your search. Try widening your search radius, entering a different postcode, or removing some filters."}
                     </p>
                     <div className="mt-6 flex flex-wrap justify-center gap-3">
-                      <Button variant="outline" onClick={() => { setSelectedInstructorId(null); setSortBy("soonest"); }}>
+                      {userLocation && parseInt(radius) < 50 && (
+                        <Button
+                          variant="default"
+                          onClick={() => {
+                            const next = parseInt(radius) < 25 ? "25" : "50";
+                            setRadius(next);
+                            handleSearch(searchedPostcode || postcode);
+                          }}
+                        >
+                          Expand to {parseInt(radius) < 25 ? "25" : "50"} miles
+                        </Button>
+                      )}
+                      <Button variant="outline" onClick={() => { setSelectedInstructorId(null); setSortBy("soonest"); setTransmission("all"); }}>
                         Clear Filters
                       </Button>
-                      <Button asChild>
+                      <Button variant="outline" asChild>
                         <a href="/contact"><MapPin className="h-4 w-4 mr-1" /> Contact Us</a>
                       </Button>
                     </div>
