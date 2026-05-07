@@ -131,7 +131,7 @@ function StatPill({ label, value, sub }: { label: string; value: string; sub?: s
     <div
       style={{
         background: C.card,
-        borderRadius: 18,
+        borderRadius: 14,
         padding: "14px 14px",
         border: `1px solid ${C.hairline}`,
         boxShadow: SHADOW_CARD,
