@@ -1315,8 +1315,10 @@ export default function PremiumPupilProfile() {
           {PaymentsCard}
           <SectionHeader title="Lesson rates" />
           {RatesCard}
-          <SectionHeader title="Eyesight" />
-          {EyesightCard}
+            <SectionHeader title="Lesson rates" />
+            {RatesCard}
+            <SectionHeader title="Eyesight" />
+            {EyesightCard}
           <SectionHeader title="Details" />
           {DetailsCard}
         </div>
