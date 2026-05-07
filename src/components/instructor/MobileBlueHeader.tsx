@@ -97,11 +97,13 @@ export function MobileBlueHeader({
         {/* Right: phone divert, bell, +, menu */}
         <div className="flex items-center" style={{ gap: 12 }}>
           <button
-            onClick={() => navigate("/instructor/ai-receptionist")}
+            onClick={() => {
+              void aiDivert.setMode(divertActive ? "off" : "auto");
+            }}
             className="relative flex items-center justify-center"
             style={{ width: 32, height: 32 }}
-            aria-label={divertActive ? "AI call divert active" : "AI call divert off"}
-            title={divertActive ? "AI call divert active" : "AI call divert off"}
+            aria-label={divertActive ? "Turn AI call divert off" : "Turn AI call divert on"}
+            title={divertActive ? "AI call divert active — tap to turn off" : "AI call divert off — tap to turn on"}
           >
             <Phone size={20} strokeWidth={1.9} color={divertColor} />
           </button>
