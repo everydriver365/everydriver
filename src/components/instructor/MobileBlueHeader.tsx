@@ -42,10 +42,11 @@ export function MobileBlueHeader({
   const aiDivert = useAICallDivert(instructorId, null);
   const divertOn = aiDivert.settings.mode !== "off";
   const divertActive = aiDivert.active;
-  const divertColor = divertOn ? "#1A7A3C" : "#CC2229";
+  const divertColor = divertOn ? "#1D9E75" : "#6B6B6B";
+  const ICON_BASE = "#6B6B6B";
 
   void surface;
-  const bg = "hsl(var(--dsm-page-bg,var(--dsm-bg)))";
+  const pageBg = "hsl(var(--dsm-page-bg,var(--dsm-bg)))";
 
   return (
     <>
@@ -53,10 +54,20 @@ export function MobileBlueHeader({
         className="sticky top-0 z-40"
         style={{
           paddingTop: 0,
-          backgroundColor: bg,
+          backgroundColor: pageBg,
+          paddingLeft: 12,
+          paddingRight: 12,
+          paddingBottom: 8,
         }}
       >
-        <div className="flex h-14 items-center justify-between px-5" style={{ marginTop: 2 }}>
+        <div
+          className="flex items-center justify-between"
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 8,
+            padding: 14,
+          }}
+        >
         {/* Left: logo+wordmark on home; back+title on other tab roots; back+title on subpages */}
         <div className="flex items-center gap-2.5 min-w-0" style={{ opacity: 0.95 }}>
           {showBackButton && (
