@@ -862,27 +862,53 @@ function EmptyDayState({
 /* ============================================================ */
 /* Lesson list with gaps                                        */
 /* ============================================================ */
+function combineDateAndTime(date: Date, hhmm: string): Date {
+  const [h, m] = hhmm.split(":").map(Number);
+  const d = new Date(date);
+  d.setHours(h, m || 0, 0, 0);
+  return d;
+}
+
 function LessonList({
   day,
   eolSet,
+  standardRate,
+  standardLessonMinutes,
+  showRevenuePotential,
   onLessonClick,
   onLessonEOL,
-  onGapClick,
+  onSlotBook,
   onAddLesson,
   onBlockDay,
 }: {
   day: ScheduleDay;
   eolSet: Set<string> | undefined;
+  standardRate: number;
+  standardLessonMinutes: number;
+  showRevenuePotential: boolean;
   onLessonClick: (id: string) => void;
   onLessonEOL: (lesson: ScheduleLesson) => void;
-  onGapClick: (start: string, end: string) => void;
+  onSlotBook: (start: string, end: string) => void;
   onAddLesson: () => void;
   onBlockDay: () => void;
 }) {
   const now = new Date();
-  const items: React.ReactNode[] = [];
 
-  if (day.lessons.length === 0) {
+  type Item =
+    | { kind: "lesson"; lesson: ScheduleLesson; sortKey: number }
+    | {
+        kind: "slot";
+        startDate: Date;
+        endDate: Date;
+        startTime: string;
+        endTime: string;
+        durationMinutes: number;
+        isAllDay: boolean;
+        sortKey: number;
+      };
+
+  // Empty + non-working day → keep simple empty state
+  if (day.lessons.length === 0 && !day.isWorkingDay) {
     return (
       <EmptyDayState
         isWorkingDay={day.isWorkingDay}
@@ -892,74 +918,109 @@ function LessonList({
     );
   }
 
-  const workStart = day.isWorkingDay ? timeToMinutes(day.workingStart) : null;
-  const workEnd = day.isWorkingDay ? timeToMinutes(day.workingEnd) : null;
+  const items: Item[] = [];
 
-  // Pre gap (before first lesson)
-  if (workStart !== null) {
-    const first = day.lessons[0];
-    const gap = timeToMinutes(first.startTime) - workStart;
-    if (gap >= 30) {
-      items.push(
-        <GapMarker
-          key="gap-start"
-          startTime={day.workingStart}
-          endTime={first.startTime}
-          onClick={() => onGapClick(day.workingStart, first.startTime)}
-        />,
-      );
-    }
-  }
+  // Lessons
+  day.lessons.forEach((lesson) => {
+    items.push({
+      kind: "lesson",
+      lesson,
+      sortKey: lesson.startDate.getTime(),
+    });
+  });
 
-  for (let i = 0; i < day.lessons.length; i++) {
-    const l = day.lessons[i];
-    const eolDone = eolSet?.has(eolKey(l.pupilId, l.startTimeFull)) ?? false;
-    items.push(
-      <LessonRow
-        key={l.id}
-        lesson={l}
-        now={now}
-        eolDone={eolDone}
-        onClick={() => onLessonClick(l.id)}
-        onEOLClick={(e) => {
-          e.stopPropagation();
-          onLessonEOL(l);
-        }}
-      />,
+  // Open slots only on working days
+  if (day.isWorkingDay) {
+    const sorted = [...day.lessons].sort(
+      (a, b) => a.startDate.getTime() - b.startDate.getTime(),
     );
-    const next = day.lessons[i + 1];
-    if (next) {
-      const gap = timeToMinutes(next.startTime) - timeToMinutes(l.endTime);
-      if (gap >= 30) {
-        items.push(
-          <GapMarker
-            key={`gap-${l.id}`}
-            startTime={l.endTime}
-            endTime={next.startTime}
-            onClick={() => onGapClick(l.endTime, next.startTime)}
-          />,
+    const workStart = combineDateAndTime(day.date, day.workingStart);
+    const workEnd = combineDateAndTime(day.date, day.workingEnd);
+
+    const pushSlot = (
+      sd: Date,
+      ed: Date,
+      sLabel: string,
+      eLabel: string,
+      isAllDay: boolean,
+    ) => {
+      const mins = Math.round((ed.getTime() - sd.getTime()) / 60000);
+      if (mins < 30) return;
+      items.push({
+        kind: "slot",
+        startDate: sd,
+        endDate: ed,
+        startTime: sLabel,
+        endTime: eLabel,
+        durationMinutes: mins,
+        isAllDay,
+        sortKey: sd.getTime(),
+      });
+    };
+
+    if (sorted.length === 0) {
+      pushSlot(workStart, workEnd, day.workingStart, day.workingEnd, true);
+    } else {
+      // Pre gap
+      pushSlot(workStart, sorted[0].startDate, day.workingStart, sorted[0].startTime, false);
+      // Between
+      for (let i = 0; i < sorted.length - 1; i++) {
+        pushSlot(
+          sorted[i].endDate,
+          sorted[i + 1].startDate,
+          sorted[i].endTime,
+          sorted[i + 1].startTime,
+          false,
         );
       }
+      // Trailing
+      const last = sorted[sorted.length - 1];
+      pushSlot(last.endDate, workEnd, last.endTime, day.workingEnd, false);
     }
   }
 
-  // Trailing gap
-  if (workEnd !== null) {
-    const last = day.lessons[day.lessons.length - 1];
-    const gap = workEnd - timeToMinutes(last.endTime);
-    if (gap >= 30) {
-      items.push(
-        <GapMarker
-          key="gap-end"
-          startTime={last.endTime}
-          endTime={day.workingEnd}
-          onClick={() => onGapClick(last.endTime, day.workingEnd)}
-        />,
-      );
-    }
-  }
+  items.sort((a, b) => a.sortKey - b.sortKey);
 
-  return <div>{items}</div>;
+  return (
+    <div>
+      {items.map((item) => {
+        if (item.kind === "lesson") {
+          const l = item.lesson;
+          const eolDone = eolSet?.has(eolKey(l.pupilId, l.startTimeFull)) ?? false;
+          return (
+            <LessonRow
+              key={l.id}
+              lesson={l}
+              now={now}
+              eolDone={eolDone}
+              onClick={() => onLessonClick(l.id)}
+              onEOLClick={(e) => {
+                e.stopPropagation();
+                onLessonEOL(l);
+              }}
+            />
+          );
+        }
+        const isPast = item.endDate.getTime() <= now.getTime();
+        return (
+          <OpenSlotCard
+            key={`slot-${item.startDate.getTime()}`}
+            startDate={item.startDate}
+            endDate={item.endDate}
+            startTime={item.startTime}
+            endTime={item.endTime}
+            durationMinutes={item.durationMinutes}
+            isAllDay={item.isAllDay}
+            isPast={isPast}
+            standardRate={standardRate}
+            standardLessonMinutes={standardLessonMinutes}
+            showRevenuePotential={showRevenuePotential}
+            onBook={() => onSlotBook(item.startTime, item.endTime)}
+          />
+        );
+      })}
+    </div>
+  );
 }
 
 /* ============================================================ */
