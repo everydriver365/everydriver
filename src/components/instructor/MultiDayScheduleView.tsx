@@ -22,6 +22,7 @@ import { GapFillCard } from "./GapFillCard";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { AddLessonSheet } from "./AddLessonSheet";
+import { AddCalendarEventDialog } from "./AddCalendarEventDialog";
 import { triggerAutomations } from "@/utils/triggerAutomations";
 import { toast } from "@/hooks/use-toast";
 import { LessonCheckInBadge } from "./LessonCheckInBadge";
@@ -522,6 +523,8 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [addLessonOpen, setAddLessonOpen] = useState(false);
+  const [addEventOpen, setAddEventOpen] = useState(false);
+  const [addEventDate, setAddEventDate] = useState<Date | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<ScheduledLesson | null>(null);
   const [sendingMessage, setSendingMessage] = useState<string | null>(null);
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
@@ -981,7 +984,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
                 </div>
                 <button
                   type="button"
-                  onClick={() => setAddLessonOpen(true)}
+                  onClick={() => { setAddEventDate(day); setAddEventOpen(true); }}
                   style={{
                     backgroundColor: today ? "#3D55A1" : "#FFFFFF",
                     border: today ? "none" : "0.5px solid rgba(26,82,160,0.12)",
@@ -1343,7 +1346,7 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
       {/* Google-style FAB */}
       <button
         type="button"
-        onClick={() => setAddLessonOpen(true)}
+        onClick={() => { setAddEventDate(new Date()); setAddEventOpen(true); }}
         aria-label="Create event"
         style={{
           position: "fixed",
@@ -1399,7 +1402,16 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
         />
       )}
 
-      {/* Add Lesson Sheet */}
+      {/* Add Lesson / Event / Block dialog */}
+      <AddCalendarEventDialog
+        open={addEventOpen}
+        onOpenChange={setAddEventOpen}
+        instructorId={instructorId}
+        defaultDate={addEventDate}
+        onSuccess={() => { setAddEventOpen(false); fetchData(); }}
+      />
+
+      {/* Legacy Add Lesson Sheet (kept for any deep-link usage) */}
       <AddLessonSheet
         open={addLessonOpen}
         onOpenChange={setAddLessonOpen}
