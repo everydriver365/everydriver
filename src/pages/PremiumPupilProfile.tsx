@@ -31,9 +31,9 @@ const FONT =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
 
 const C = {
-  bg: "#F7F7F8",
+  bg: "#EEF1F5",
   card: "#FFFFFF",
-  hairline: "#E9E9ED",
+  hairline: "#E5E7EB",
   text: "#0B0B0F",
   muted: "#6E6E73",
   subtle: "#9A9AA0",
@@ -41,7 +41,13 @@ const C = {
   green: "#2EA66B",
   amber: "#B8801F",
   red: "#C8434F",
-  surface: "#F3F3F5",
+  surface: "#F3F4F6",
+  tintBlue: "#E8F0F9",
+  tintBlueFg: "#1F5F9A",
+  tintGreen: "#E5F4EC",
+  tintAmber: "#FBF1E0",
+  tintRed: "#FBEAEC",
+  tintGrey: "#F1F2F4",
 };
 
 const SHADOW_CARD =
@@ -75,11 +81,11 @@ function SectionHeader({ title, action }: { title: string; action?: React.ReactN
 function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <section style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <div style={{ padding: "0 2px" }}>
+      <div style={{ padding: "0 4px 4px" }}>
         <h2
           style={{
-            fontFamily: FONT, fontSize: 12, fontWeight: 600,
-            letterSpacing: "0.6px", textTransform: "uppercase",
+            fontFamily: FONT, fontSize: 11, fontWeight: 500,
+            letterSpacing: "1.2px", textTransform: "uppercase",
             color: C.muted, margin: 0,
           }}
         >
