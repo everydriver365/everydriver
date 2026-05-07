@@ -94,8 +94,17 @@ export function MobileBlueHeader({
           )}
         </div>
 
-        {/* Right: bell, +, avatar, menu */}
+        {/* Right: phone divert, bell, +, menu */}
         <div className="flex items-center" style={{ gap: 12 }}>
+          <button
+            onClick={() => navigate("/instructor/ai-receptionist")}
+            className="relative flex items-center justify-center"
+            style={{ width: 32, height: 32 }}
+            aria-label={divertActive ? "AI call divert active" : "AI call divert off"}
+            title={divertActive ? "AI call divert active" : "AI call divert off"}
+          >
+            <Phone size={20} strokeWidth={1.9} color={divertColor} />
+          </button>
           <button
             onClick={() => navigate("/instructor/notifications")}
             className="relative flex items-center justify-center"
