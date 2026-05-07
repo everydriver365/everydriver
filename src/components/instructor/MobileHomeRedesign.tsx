@@ -129,71 +129,84 @@ function GreetingBlock({
   lessonsToday,
   earningsToday,
   pendingJobs,
+  divertActive,
+  onDivertClick,
 }: {
   firstName: string;
   lessonsToday: number;
   earningsToday: number;
   pendingJobs: number;
+  divertActive?: boolean;
+  onDivertClick?: () => void;
 }) {
   const now = new Date();
   const hour = now.getHours();
   const greet = hour < 12 ? "Morning" : hour < 18 ? "Afternoon" : "Evening";
   const dateLine = format(now, "EEE · d MMM yyyy").toUpperCase();
 
-  const Pill = ({
-    label,
-    tone,
-  }: {
-    label: string;
-    tone: "blue" | "red";
-  }) => {
-    const isRed = tone === "red";
-    return (
-      <span
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          height: 26,
-          padding: "0 11px",
-          borderRadius: 999,
-          fontSize: 12,
-          fontWeight: 600,
-          background: isRed ? RED : "#FFFFFF",
-          color: isRed ? "#FFFFFF" : BLUE,
-          border: isRed ? "0.5px solid transparent" : `0.5px solid ${BLUE}`,
-          letterSpacing: "-0.1px",
-        }}
-      >
-        {label}
-      </span>
-    );
-  };
+  const divertColor = divertActive ? "#1A7A3C" : "#CC2229";
+  const divertBg = divertActive ? "#E8F8ED" : "#FFE9EA";
 
   return (
     <div style={{ padding: "20px 18px 12px" }}>
       <div
         style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: MUTED,
-          letterSpacing: "0.08em",
-          marginBottom: 6,
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 12,
         }}
       >
-        {dateLine}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: MUTED,
+              letterSpacing: "0.08em",
+              marginBottom: 6,
+            }}
+          >
+            {dateLine}
+          </div>
+          <h1
+            style={{
+              fontSize: 26,
+              fontWeight: 700,
+              color: "#1A1A1A",
+              letterSpacing: "-0.4px",
+              margin: 0,
+              lineHeight: 1.15,
+            }}
+          >
+            {greet}, {firstName}.
+          </h1>
+        </div>
+        {onDivertClick && (
+          <button
+            type="button"
+            onClick={onDivertClick}
+            aria-label={divertActive ? "AI call divert active" : "AI call divert off"}
+            title={divertActive ? "AI call divert active" : "AI call divert off"}
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 999,
+              background: divertBg,
+              color: divertColor,
+              border: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              flexShrink: 0,
+              marginTop: 4,
+            }}
+          >
+            <Phone size={18} strokeWidth={2.2} />
+          </button>
+        )}
       </div>
-      <h1
-        style={{
-          fontSize: 26,
-          fontWeight: 700,
-          color: "#1A1A1A",
-          letterSpacing: "-0.4px",
-          margin: 0,
-          lineHeight: 1.15,
-        }}
-      >
-        {greet}, {firstName}.
-      </h1>
     </div>
   );
 }
@@ -1300,6 +1313,8 @@ export function MobileHomeRedesign({
         lessonsToday={lessonsToday}
         earningsToday={earningsToday}
         pendingJobs={pendingJobs}
+        divertActive={aiDivert.active}
+        onDivertClick={() => setDivertSheetOpen(true)}
       />
 
 
