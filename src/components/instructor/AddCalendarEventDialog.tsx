@@ -316,6 +316,21 @@ export function AddCalendarEventDialog({
       const [eh, em] = eventEndTime.split(':').map(Number);
       endDateTime.setHours(eh, em, 0, 0);
 
+      const durationMinutes = Math.round((endDateTime.getTime() - startDateTime.getTime()) / 60000);
+      if (!overrideClash && durationMinutes > 0) {
+        const clash = await checkLessonClash({
+          instructorId,
+          date: format(eventDate!, 'yyyy-MM-dd'),
+          startTime: eventStartTime,
+          durationMinutes,
+        });
+        if (clash.hardOverlap) {
+          setClashWarning(clash.message ?? 'Overlaps with an existing booking.');
+          setLoading(false);
+          return;
+        }
+      }
+
       const notesParts = [eventLocation && `Location: ${eventLocation}`, eventNotes].filter(Boolean);
 
       const { error } = await supabase
