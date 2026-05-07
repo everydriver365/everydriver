@@ -125,7 +125,7 @@ export function useFeaturedCourses(limit: number = 3, instructorId?: string | nu
       try {
         setLoading(true);
 
-        let instructorsQuery = supabase.from("instructors").select("*").eq("is_active", true);
+        let instructorsQuery = supabase.from("public_instructors").select("*").eq("is_active", true);
         let coursesQuery = supabase.from("instructor_courses").select("*").eq("is_active", true);
         let workingHoursQuery = supabase.from("instructor_working_hours").select("*").eq("is_active", true);
         let overridesQuery = supabase.from("instructor_date_overrides").select("*");
