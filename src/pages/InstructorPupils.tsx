@@ -293,7 +293,7 @@ export default function InstructorPupils() {
     try {
       const { data, error } = await supabase
         .from("pupils")
-        .select("*")
+        .select("*, test_centre:test_centres(id, name)")
         .eq("instructor_id", instructorId)
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
