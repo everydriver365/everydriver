@@ -110,6 +110,9 @@ interface Pupil {
   account_balance?: number | null;
   prepaid_hours?: number | null;
   test_date?: string | null;
+  test_time?: string | null;
+  test_centre_id?: string | null;
+  test_centre?: { id: string; name: string } | null;
   payment_type?: string | null;
   deposit_paid?: number | null;
   balance_due_date?: string | null;
@@ -832,7 +835,11 @@ export function PupilCardStack({
           {pupil.test_date && (
             <div className="flex items-center" style={{ gap: 6, fontSize: 12.5, color: "#B8801F", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
               <span aria-hidden style={{ fontSize: 13 }}>🚩</span>
-              <span>Test: {format(parseISO(pupil.test_date), "yyyy-MM-dd")}</span>
+              <span className="truncate">
+                Test: {format(parseISO(pupil.test_date), "d MMM yyyy")}
+                {pupil.test_time ? ` · ${pupil.test_time.slice(0, 5)}` : ""}
+                {pupil.test_centre?.name ? ` · ${pupil.test_centre.name}` : ""}
+              </span>
             </div>
           )}
         </motion.button>
