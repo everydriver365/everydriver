@@ -785,14 +785,16 @@ export function PupilCardStack({
                   <div className="flex items-center" style={{ gap: 8, minWidth: 0 }}>
                     <h3 className="truncate" style={{ fontSize: 16, fontWeight: 600, color: "#000000", letterSpacing: "-0.2px", lineHeight: 1.25, margin: 0, minWidth: 0 }}>
                       {titleCaseName(pupil.name)}
-                      {nameSuffix && (
-                        <span style={{ color: "#8E8E93", fontWeight: 400, marginLeft: 6 }}>– {nameSuffix}</span>
-                      )}
                     </h3>
                     <span style={{ background: coursePill.bg, color: coursePill.fg, fontSize: 10.5, fontWeight: 600, letterSpacing: "0.2px", padding: "2px 7px", borderRadius: 999, lineHeight: 1.3, flexShrink: 0 }}>
                       {courseLabel}
                     </span>
                   </div>
+                  {nameSuffix && (
+                    <div className="truncate" style={{ fontSize: 12.5, color: "#8E8E93", fontWeight: 400, lineHeight: 1.3 }}>
+                      {nameSuffix}
+                    </div>
+                  )}
                   {nextLine && (
                     <div className="flex items-center" style={{ gap: 6, fontSize: 13, color: "#6E6E73", lineHeight: 1.3, fontVariantNumeric: "tabular-nums" }}>
                       <Calendar size={12} strokeWidth={1.8} color="#8E8E93" />
