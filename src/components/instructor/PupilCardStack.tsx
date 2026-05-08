@@ -733,178 +733,106 @@ export function PupilCardStack({
           onClick={handleCardClick}
           whileTap={{ scale: 0.98, opacity: 0.94 }}
           transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
-          className="w-full text-left flex items-center"
-          style={{ padding: 16, gap: 14, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif', background: "transparent", border: "none" }}
+          className="w-full text-left"
+          style={{ padding: 16, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif', background: "transparent", border: "none", display: "flex", flexDirection: "column", gap: 12 }}
         >
-          {/* Deterministic avatar — slightly larger */}
-          <div className="relative shrink-0" style={{ width: 48, height: 48 }}>
-            {pupil.profile_image_url ? (
-              <img
-                src={pupil.profile_image_url}
-                alt={titleCaseName(pupil.name)}
-                style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", display: "block" }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: "50%",
-                  background: avatarBg,
-                  color: "#FFFFFF",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 16,
-                  fontWeight: 500,
-                  letterSpacing: "0.02em",
-                }}
-                aria-label={titleCaseName(pupil.name)}
-              >
-                {getInitials(pupil.name)}
-              </div>
-            )}
-            {statusDotColor && (
-              <span
-                aria-hidden="true"
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  right: 0,
-                  width: 12,
-                  height: 12,
-                  borderRadius: "50%",
-                  background: statusDotColor,
-                  border: "2px solid #FFFFFF",
-                  boxSizing: "border-box",
-                }}
-              />
-            )}
-          </div>
-
-          {/* Name + meta */}
-          {(() => {
-            // --- Lesson timing classification (display only) ---
-            let lessonPill: { label: string; bg: string; fg: string } | null = null;
-            let lessonLine: string | null = null;
-            let rightLabel: string | null = null;
-            if (lessonSummary?.date) {
-              const d = parseISO(lessonSummary.date);
-              const today = new Date(); today.setHours(0,0,0,0);
-              const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
-              const dayStart = new Date(d); dayStart.setHours(0,0,0,0);
-              const isToday = dayStart.getTime() === today.getTime();
-              const isTomorrow = dayStart.getTime() === tomorrow.getTime();
-              if (lessonSummary.type === "next") {
-                lessonLine = `Next: ${format(d, "d MMM")}`;
-                if (isToday) {
-                  lessonPill = { label: "Today", bg: "#E8F1FB", fg: "#2B7BC8" };
-                  rightLabel = format(d, "HH:mm");
-                } else if (isTomorrow) {
-                  lessonPill = { label: "Tomorrow", bg: "#EEF4FB", fg: "#2B7BC8" };
-                } else {
-                  lessonPill = { label: "Next", bg: "#F2F2F4", fg: "#3C3C43" };
-                }
-              } else {
-                lessonLine = `Last: ${format(d, "d MMM")}`;
-              }
-            }
-            const overduePill = isOverdue ? { label: "Overdue", bg: "#FBEAEC", fg: "#C8434F" } : null;
-
-            const totalLessons = pupil.lessons_completed || 0;
-            const metaSecondary = `${totalLessons} ${totalLessons === 1 ? "lesson" : "lessons"} · ${totalHours}h`;
-
-            return (
-              <div className="flex-1 min-w-0" style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                {/* Name row */}
-                <div className="flex items-center" style={{ gap: 6, minWidth: 0 }}>
-                  <h3
-                    className="truncate"
-                    style={{
-                      fontSize: 16,
-                      fontWeight: 600,
-                      color: "#000000",
-                      letterSpacing: "-0.2px",
-                      lineHeight: 1.25,
-                      margin: 0,
-                      minWidth: 0,
-                    }}
-                  >
-                    {titleCaseName(pupil.name)}
-                    {nameSuffix && (
-                      <span style={{ color: "#8E8E93", fontWeight: 400, marginLeft: 6 }}>
-                        – {nameSuffix}
-                      </span>
-                    )}
-                  </h3>
-                  {/* Subtle pill: Overdue > Today > Tomorrow > Next */}
-                  {(overduePill || lessonPill) && (
-                    <span
-                      style={{
-                        background: (overduePill || lessonPill)!.bg,
-                        color: (overduePill || lessonPill)!.fg,
-                        fontSize: 10.5,
-                        fontWeight: 600,
-                        letterSpacing: "0.2px",
-                        padding: "2px 7px",
-                        borderRadius: 999,
-                        lineHeight: 1.3,
-                        flexShrink: 0,
-                      }}
-                    >
-                      {(overduePill || lessonPill)!.label}
-                    </span>
-                  )}
-                </div>
-
-                {/* Primary meta: next/last lesson */}
-                {lessonLine && (
-                  <div
-                    style={{
-                      fontSize: 13,
-                      color: "#3C3C43",
-                      lineHeight: 1.3,
-                      fontVariantNumeric: "tabular-nums",
-                    }}
-                  >
-                    {lessonLine}
-                  </div>
-                )}
-
-                {/* Secondary meta: lessons + hours */}
+          {/* Top row: avatar + identity + balance */}
+          <div className="flex items-center w-full" style={{ gap: 14 }}>
+            <div className="relative shrink-0" style={{ width: 48, height: 48 }}>
+              {pupil.profile_image_url ? (
+                <img
+                  src={pupil.profile_image_url}
+                  alt={titleCaseName(pupil.name)}
+                  style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", display: "block" }}
+                />
+              ) : (
                 <div
                   style={{
-                    fontSize: 12,
-                    color: "#8E8E93",
-                    lineHeight: 1.3,
-                    fontVariantNumeric: "tabular-nums",
+                    width: 48, height: 48, borderRadius: "50%",
+                    background: avatarBg, color: "#FFFFFF",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 16, fontWeight: 500, letterSpacing: "0.02em",
                   }}
+                  aria-label={titleCaseName(pupil.name)}
                 >
-                  {metaSecondary}
+                  {getInitials(pupil.name)}
                 </div>
-              </div>
-            );
-          })()}
+              )}
+              {statusDotColor && (
+                <span aria-hidden="true" style={{ position: "absolute", bottom: 0, right: 0, width: 12, height: 12, borderRadius: "50%", background: statusDotColor, border: "2px solid #FFFFFF", boxSizing: "border-box" }} />
+              )}
+            </div>
 
-          {/* Right column: ONE element only — balance OR next time */}
-          <div className="shrink-0 flex items-center" style={{ gap: 6 }}>
-            {(hasDebt || hasCredit) ? (
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  padding: "4px 9px",
-                  borderRadius: 999,
-                  fontVariantNumeric: "tabular-nums",
-                  background: hasDebt ? "#FBEAEC" : "#E8F3E8",
-                  color: hasDebt ? "#C8434F" : "#3B8B3B",
-                }}
-              >
-                {hasDebt ? "−" : "+"}£{Math.abs(balance).toFixed(0)}
+            {(() => {
+              const courseKey = (pupil.course_type || "").toLowerCase();
+              const isAutomatic = courseKey.includes("auto");
+              const courseLabel = isAutomatic ? "Automatic" : "Manual";
+              const coursePill = { bg: isAutomatic ? "#F0EAFB" : "#E8F1FB", fg: isAutomatic ? "#7C3AED" : "#2B7BC8" };
+
+              let nextLine: string | null = null;
+              if (lessonSummary?.date && lessonSummary.type === "next") {
+                const d = parseISO(lessonSummary.date);
+                nextLine = `Next: ${format(d, "yyyy-MM-dd 'at' HH:mm")}`;
+              } else if (pupil.next_lesson) {
+                try {
+                  const d = parseISO(pupil.next_lesson);
+                  nextLine = `Next: ${format(d, "yyyy-MM-dd 'at' HH:mm")}`;
+                } catch {}
+              }
+
+              return (
+                <div className="flex-1 min-w-0" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  <div className="flex items-center" style={{ gap: 8, minWidth: 0 }}>
+                    <h3 className="truncate" style={{ fontSize: 16, fontWeight: 600, color: "#000000", letterSpacing: "-0.2px", lineHeight: 1.25, margin: 0, minWidth: 0 }}>
+                      {titleCaseName(pupil.name)}
+                      {nameSuffix && (
+                        <span style={{ color: "#8E8E93", fontWeight: 400, marginLeft: 6 }}>– {nameSuffix}</span>
+                      )}
+                    </h3>
+                    <span style={{ background: coursePill.bg, color: coursePill.fg, fontSize: 10.5, fontWeight: 600, letterSpacing: "0.2px", padding: "2px 7px", borderRadius: 999, lineHeight: 1.3, flexShrink: 0 }}>
+                      {courseLabel}
+                    </span>
+                  </div>
+                  {nextLine && (
+                    <div className="flex items-center" style={{ gap: 6, fontSize: 13, color: "#6E6E73", lineHeight: 1.3, fontVariantNumeric: "tabular-nums" }}>
+                      <Calendar size={12} strokeWidth={1.8} color="#8E8E93" />
+                      <span className="truncate">{nextLine}</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            <div className="shrink-0 flex flex-col items-end" style={{ gap: 2 }}>
+              <span style={{ fontSize: 18, fontWeight: 700, color: hasDebt ? "#E5394A" : hasCredit ? "#2EA84F" : "#000000", fontVariantNumeric: "tabular-nums", lineHeight: 1.1 }}>
+                {hasDebt ? "−" : ""}£{Math.abs(balance).toFixed(0)}
               </span>
-            ) : null}
-            <ChevronRight size={16} strokeWidth={1.6} color="#C7C7CC" />
+              <span style={{ fontSize: 11, color: "#8E8E93", fontWeight: 500 }}>
+                {hasDebt ? "Owes" : hasCredit ? "Credit" : "Settled"}
+              </span>
+            </div>
           </div>
+
+          {/* Progress row */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div className="flex items-center justify-between">
+              <span style={{ fontSize: 12, color: "#6E6E73", fontWeight: 500 }}>Progress</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#2B7BC8", fontVariantNumeric: "tabular-nums" }}>
+                {pupil.progress ?? 0}%
+              </span>
+            </div>
+            <div style={{ height: 6, background: "#EEF0F3", borderRadius: 999, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${Math.max(0, Math.min(100, pupil.progress ?? 0))}%`, background: "#2B7BC8", borderRadius: 999, transition: "width 0.4s ease" }} />
+            </div>
+          </div>
+
+          {/* Test date row */}
+          {pupil.test_date && (
+            <div className="flex items-center" style={{ gap: 6, fontSize: 12.5, color: "#B8801F", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
+              <span aria-hidden style={{ fontSize: 13 }}>🚩</span>
+              <span>Test: {format(parseISO(pupil.test_date), "yyyy-MM-dd")}</span>
+            </div>
+          )}
         </motion.button>
 
         {/* Subtle divider */}
