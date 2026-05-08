@@ -110,6 +110,9 @@ interface Pupil {
   account_balance?: number | null;
   prepaid_hours?: number | null;
   test_date?: string | null;
+  test_time?: string | null;
+  test_centre_id?: string | null;
+  test_centre?: { id: string; name: string } | null;
   payment_type?: string | null;
   deposit_paid?: number | null;
   balance_due_date?: string | null;
