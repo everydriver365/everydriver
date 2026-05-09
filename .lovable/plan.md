@@ -1,48 +1,49 @@
-## Goal
+## Why it's failing
 
-When adding a lesson, block, or event from the instructor app, if there's a clash with an existing booking, surface a clear warning and let the instructor tick **"Book anyway (override clash)"** to force-save. Today the DB trigger `prevent_lesson_clash` always blocks hard overlaps, so even the existing "Book anyway" checkbox in `AddLessonSheet` only works for buffer warnings — true overlaps still fail.
+The `instructor_courses` table has only two RLS policies:
+- public read
+- admins can do everything
 
-## Changes
+There's no policy that lets an **instructor** insert/update/delete their own row, so when Richard (or any instructor) hits "Add", Supabase returns `42501 — new row violates row-level security policy`. That's the "Failed to add course" toast.
 
-### 1. Database — let the trigger respect an override flag
+## What to change
 
-Add a nullable `clash_overridden boolean` column to `scheduled_lessons` (default `false`) and update `public.prevent_lesson_clash()` so that:
+### 1. Database (migration)
 
-```sql
-IF COALESCE(NEW.clash_overridden, false) THEN
-  RETURN NEW; -- instructor explicitly chose to double-book
-END IF;
-```
+Add three RLS policies on `public.instructor_courses` so instructors can manage only their own rows, using the standard identity helper:
 
-This is the only way to bypass the existing 23514 check from the client. We keep the trigger active for all the other (non-overridden) writes so accidental clashes are still blocked.
+- **Insert** — `WITH CHECK (instructor_id = public.get_instructor_id_for_user(auth.uid()))`
+- **Update** — `USING / WITH CHECK` same condition
+- **Delete** — `USING` same condition
 
-### 2. `AddLessonSheet.tsx` (mobile add-lesson)
+Public read and admin-manage policies stay as they are.
 
-- The component already has `overrideBuffer` state and a "Book anyway (override buffer)" checkbox shown only when the warning is buffer-only. Repurpose it so it's also shown when `isHardOverlap` is true (label changes to **"Book anyway (override clash)"**).
-- In `handleAddLessonExisting` / `handleAddLessonNew` / the recurring weeks loop:
-  - If `conflictWarning` and `overrideBuffer` is checked, proceed.
-  - Pass `clash_overridden: true` on every inserted row in the lessons array.
-- Strip the existing early-return `if (isHardOverlap) { toast.error... }` so the override actually wins.
+### 2. Replace `InstructorCoursesManager.tsx` with a simple toggle list
 
-### 3. `AddCalendarEventDialog.tsx` (lesson + block + event tabs)
+Current UI: a "Add a course…" dropdown + cards with edit/delete/image upload. Too many steps and the failing path.
 
-- **Lesson tab** (`handleAddLesson`): instead of returning when `clash.hardOverlap`, render a small inline warning + a "Book anyway (override clash)" checkbox (new state `overrideClash`). When checked, insert with `clash_overridden: true`; otherwise keep blocking.
-- **Block / Event tabs** (`handleAddBlock`, `handleAddEvent`): currently no clash check at all. Add a pre-save call to `checkLessonClash` against the chosen instructor/date/time window. If a clash exists, show the same inline warning + override checkbox. Blocks/events live in `instructor_manual_blocks`, which has no DB trigger, so no schema change is needed for them — the override simply suppresses the UI block.
-- Reset the override state in `resetForm()` and whenever the date/time/duration changes (so users can't accidentally carry it over).
+New UI: one row per **course template** from `course_templates` (currently 5: 10h Automatic, 20h, Test in a Week 28h, 30h, 40h). Each row shows:
 
-### 4. `RescheduleLessonSheet.tsx` and `EditScheduleEntryDialog.tsx`
+- Template name + hours badge
+- A single Switch on the right
 
-Out of scope for this request (user said *adding* a lesson or event). Leave untouched; we can extend later if needed.
+Toggle behaviour:
 
-## Technical notes
+- **Off → On**: if no `instructor_courses` row exists, insert one (`is_active = true`, copy `course_name` and `default_image_url` from the template). If a row exists but is inactive, update `is_active = true`.
+- **On → Off**: update the existing row to `is_active = false` (keep the row so any custom price/features survive).
 
-- `checkLessonClash` already returns the conflicting slot names — reuse `clash.message` for the warning text in `AddCalendarEventDialog`.
-- The block/event clash check should also flag overlaps with existing `instructor_manual_blocks` rows for the same instructor/day. `checkLessonClash` only queries `scheduled_lessons` + `instructor_calendar_events`. Extend it (or add a thin sibling helper used by the dialog) to also fetch `instructor_manual_blocks` for the day and treat them as `kind: 'block'` slots.
-- Default `clash_overridden = false` keeps every existing insert path safe; the trigger only steps aside when the client explicitly opts in.
-- No analytics, no toasts changes beyond the wording. UK + DSM portal styling stays as-is (rounded-2xl warning card matches the existing buffer warning).
+Optimistic update + revert on error. Toast on success/failure.
 
-## Out of scope
+Remove from this component: the Add dropdown, the Edit dialog, image upload, custom features editor, delete button. Pricing/customisation can live in a future "advanced" screen — out of scope for this task.
 
-- Changing reschedule/edit flows.
-- Pupil-facing self-booking (still hard-blocks).
-- Showing override audit history in the UI.
+### 3. Verify
+
+- Sign in as Richard Chapman, open Menu → Courses & payments → My Courses, toggle a course on, confirm a row appears in `instructor_courses` and no RLS error.
+- Confirm Richard now appears in the pupil-facing course/postcode search (the original symptom that started this thread).
+
+## Files touched
+
+- New migration: 3 RLS policies on `instructor_courses`.
+- `src/components/instructor/InstructorCoursesManager.tsx` — rewritten as a toggle list.
+
+No changes to the menu entry, routing, or pupil-facing search code.
