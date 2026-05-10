@@ -636,6 +636,14 @@ export function AddLessonSheet({
         const recurringDate = i === 0 ? lessonDate : addWeeks(lessonDate, i);
         const dateStr = format(recurringDate, 'yyyy-MM-dd');
         dateStrs.push(dateStr);
+        const mod = applyRateModifiers({
+          baseRate: hourlyRate,
+          lessonDate: dateStr,
+          lessonStartTime,
+          modifiers: rateModifiers,
+          bankHolidaySet: bankHolidays,
+        });
+        const hours = durationMinutes / 60;
         lessons.push({
           instructor_id: instructorId, pupil_id: selectedPupil,
           lesson_date: dateStr, start_time: lessonStartTime,
@@ -647,6 +655,9 @@ export function AddLessonSheet({
           planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
           notes: testNotes,
           clash_overridden: overrideBuffer && isHardOverlap,
+          price_per_hour: hourlyRate || null,
+          surcharge_amount: Math.round(mod.totalAmount * hours * 100) / 100,
+          amount_due: Math.round(mod.finalRate * hours * 100) / 100,
           ...(isDrivingTest && selectedTestCentre ? { test_centre_id: selectedTestCentre } : {}),
           ...(isDrivingTest && selectedExaminer ? { examiner_id: selectedExaminer } : {}),
         });
