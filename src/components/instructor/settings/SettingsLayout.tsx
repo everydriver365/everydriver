@@ -68,6 +68,58 @@ export function SettingsLayout({ categories, search, onSearchChange }: SettingsL
   const activeCategory =
     filteredCategories.find((c) => c.id === categoryId) ?? filteredCategories[0];
 
+  // Desktop sidebar state — declared unconditionally to satisfy rules of hooks.
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    if (typeof window === "undefined") return SIDEBAR_DEFAULT;
+    const stored = Number(window.localStorage.getItem(SIDEBAR_WIDTH_KEY));
+    return stored >= SIDEBAR_MIN && stored <= SIDEBAR_MAX ? stored : SIDEBAR_DEFAULT;
+  });
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
+  });
+  const draggingRef = useRef(false);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!draggingRef.current) return;
+      const next = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, e.clientX - 16));
+      setSidebarWidth(next);
+    };
+    const onUp = () => {
+      if (!draggingRef.current) return;
+      draggingRef.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      try {
+        window.localStorage.setItem(SIDEBAR_WIDTH_KEY, String(sidebarWidth));
+      } catch {}
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+  }, [sidebarWidth]);
+
+  const startDrag = (e: React.MouseEvent) => {
+    e.preventDefault();
+    draggingRef.current = true;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  };
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
+      } catch {}
+      return next;
+    });
+  };
+
   // ── MOBILE: drill-down ─────────────────────────────────────────────
   if (isMobile) {
     if (!categoryId) {
@@ -104,59 +156,6 @@ export function SettingsLayout({ categories, search, onSearchChange }: SettingsL
       </div>
     );
   }
-
-  // ── DESKTOP: two-pane (resizable) ──────────────────────────────────
-  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
-    if (typeof window === "undefined") return SIDEBAR_DEFAULT;
-    const stored = Number(window.localStorage.getItem(SIDEBAR_WIDTH_KEY));
-    return stored >= SIDEBAR_MIN && stored <= SIDEBAR_MAX ? stored : SIDEBAR_DEFAULT;
-  });
-  const draggingRef = useRef(false);
-
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      if (!draggingRef.current) return;
-      const next = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, e.clientX - 16));
-      setSidebarWidth(next);
-    };
-    const onUp = () => {
-      if (!draggingRef.current) return;
-      draggingRef.current = false;
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-      try {
-        window.localStorage.setItem(SIDEBAR_WIDTH_KEY, String(sidebarWidth));
-      } catch {}
-    };
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
-    };
-  }, [sidebarWidth]);
-
-  const startDrag = (e: React.MouseEvent) => {
-    e.preventDefault();
-    draggingRef.current = true;
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-  };
-
-  const [collapsed, setCollapsed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
-  });
-
-  const toggleCollapsed = () => {
-    setCollapsed((prev) => {
-      const next = !prev;
-      try {
-        window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
-      } catch {}
-      return next;
-    });
-  };
 
   return (
     <div className="flex gap-0 pb-12 relative">
