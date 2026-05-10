@@ -5,9 +5,10 @@ import {
   IconCar, IconCertificate, IconPhoto, IconCoin, IconCalendar, IconPhone,
   IconBook, IconCreditCard, IconDownload,
   IconHelpCircle, IconUserOff,
-  IconSettings,
 } from "@tabler/icons-react";
+import type { ComponentType, SVGProps } from "react";
 type TablerIcon = typeof IconUser;
+type AnyIcon = TablerIcon | ComponentType<SVGProps<SVGSVGElement> & { size?: number; stroke?: number }>;
 
 export interface SidebarItem {
   id: string;          // category id used in the URL
