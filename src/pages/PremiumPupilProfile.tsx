@@ -375,6 +375,14 @@ export default function PremiumPupilProfile() {
       return (data as any)?.n ?? 40;
     },
   });
+  const { data: defaultBufferMin } = useQuery({
+    queryKey: ["instructor-default-buffer", instructorId],
+    enabled: !!instructorId,
+    queryFn: async () => {
+      const { data } = await supabase.from("instructors").select("buffer_minutes").eq("id", instructorId!).maybeSingle();
+      return (data as any)?.buffer_minutes ?? 0;
+    },
+  });
   const { data: stats } = usePupilLessonStats(pupilId);
   const { data: notes = [] } = usePupilNotes(pupilId);
   const { data: documents = [] } = usePupilDocuments(pupilId);
