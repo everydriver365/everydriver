@@ -2,7 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   IconBolt,
   IconUser, IconShieldLock, IconBell,
-  IconCar, IconCertificate, IconPhoto, IconCoin, IconCalendar,
+  IconCar, IconCertificate, IconPhoto, IconCoin, IconCalendar, IconPhone,
   IconBook, IconCreditCard, IconDownload,
   IconHelpCircle, IconUserOff,
   IconSettings,
