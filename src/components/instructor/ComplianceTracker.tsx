@@ -337,7 +337,7 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
           </DialogHeader>
           <CPDLogManager 
             instructorId={instructorId} 
-            onUpdate={fetchComplianceData}
+            onUpdate={() => { fetchComplianceData(); fetchLatestCPD(); }}
           />
         </DialogContent>
       </Dialog>
