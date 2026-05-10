@@ -153,6 +153,7 @@ export function PostcodeRatesSection({ instructorId }: { instructorId: string })
   const [draftRules, setDraftRules] = useState<PostcodeRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [showImport, setShowImport] = useState(false);
 
   const reload = async () => {
     const { data } = await supabase
