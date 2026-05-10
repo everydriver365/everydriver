@@ -480,6 +480,34 @@ export function useSettingsCategories(): SettingsCategory[] {
         },
       ],
     },
+    {
+      id: "rates",
+      title: "Rates & coverage",
+      description: "Hourly rate, service area and postcode pricing",
+      icon: MapPin,
+      iconBg: "#ECFDF5",
+      iconColor: "#059669",
+      sections: [
+        {
+          id: "hourly",
+          title: "Hourly rate",
+          description: "Your default hourly rate for new bookings",
+          render: () => <HourlyRateSection instructorId={id} />,
+        },
+        {
+          id: "coverage",
+          title: "Coverage area",
+          description: "Where you'll travel for lessons",
+          render: () => <CoverageSection instructorId={id} />,
+        },
+        {
+          id: "postcode-rates",
+          title: "Postcode rates",
+          description: "Charge a different hourly rate for specific postcode areas",
+          render: () => <PostcodeRatesSection instructorId={id} />,
+        },
+      ],
+    },
   ];
 }
 
