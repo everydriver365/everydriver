@@ -1,20 +1,28 @@
-## Goal
-Remove the ADI Badge, Car Insurance, and DBS rows from the "Vehicle docs & CPD" section since they now live in the new Qualifications & credentials editor. Keep MOT and Road Tax (genuine vehicle docs) plus the existing CPD progress and DVSA Standards Check blocks.
+## Problem
 
-## Changes
+On `/instructor/settings/account`, the first section is called **"Profile & contact details"** but it actually renders `InstructorDetailsEditor`, which only has tabs for Vehicle, Qualifications, Social and GPS — no fields to edit name, email, phone, bio, or change the profile photo.
 
-### `src/components/instructor/ComplianceTracker.tsx`
-- Drop `adi_badge_number`, `adi_badge_expiry`, `car_insurance_expiry`, `dbs_certificate_expiry` from:
-  - the `ComplianceData` interface
-  - the `formData` state
-  - the Supabase select + update payload
-- Trim `complianceItems` to just MOT and Road Tax.
-- Remove the corresponding ADI / Insurance / DBS fields from the "Edit Dates" dialog, leaving MOT date, Road Tax date, and CPD target.
-- Keep CPD progress card, urgent alerts banner, and `<CompactStandardsCheck />`.
-- Rename the Documents card title from "Documents & Expiries" to "Vehicle documents" for clarity.
+The fully-working profile editor (avatar upload + basic fields) already exists in the legacy `AccountHub.tsx`, but it isn't surfaced anywhere in the new unified settings hub.
 
-No DB migrations and no changes to the Qualifications editor — the underlying columns stay in place (still written to by Qualifications).
+## Proposal
 
-### Out of scope
-- No mobile-layout changes.
-- No edits to other consumers of `ComplianceTracker` (`InstructorMenu.tsx`, `AccountHub.tsx`, `categories.tsx`) — they all just render the component, which keeps working.
+1. Extract the profile-basics block from `AccountHub.tsx` into a small reusable component `src/components/instructor/ProfileBasicsEditor.tsx`:
+   - Avatar (uploads to `instructor-images/{instructorId}/profile.{ext}`, writes `profile_image_url`)
+   - Name, Email, Phone (inputs)
+   - Bio (textarea)
+   - Single "Save changes" button
+   - Same logic and toasts already proven on AccountHub
+
+2. In `src/components/instructor/settings/categories.tsx`, update the **Account → "Profile & contact details"** section so it renders both:
+   - `<ProfileBasicsEditor instructorId={id} />` (new — photo + name/email/phone/bio)
+   - `<InstructorDetailsEditor instructorId={id} />` (existing — vehicle/qualifications/social/GPS tabs)
+
+   Stacked vertically with a divider so the user can edit personal details and instructor/vehicle details from one place.
+
+3. No DB changes — all the columns (`name`, `email`, `phone`, `bio`, `profile_image_url`) and the `instructor-images` storage bucket already exist and are wired up.
+
+## Out of scope
+
+- No edits to mobile layouts (per project rule).
+- No changes to the legacy `AccountHub.tsx` page itself — it continues to work; this just brings the same capability into the unified settings hub the user is actually on.
+- No new tabs or restructuring of the existing Vehicle/Qualifications/Social/GPS editor.
