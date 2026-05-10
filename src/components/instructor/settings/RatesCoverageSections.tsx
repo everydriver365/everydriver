@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettingsDirty } from "./SettingsDirtyContext";
 import { toast } from "@/hooks/use-toast";
 import { isValidOutwardCode, extractOutwardCode, resolveHourlyRate } from "@/lib/pricing/resolveHourlyRate";
+import { verifyOutwardCode, getCachedOutwardStatus, type OutwardStatus } from "@/lib/pricing/verifyOutwardCode";
 
 interface InstructorRow {
   hourly_rate: number | null;
