@@ -43,6 +43,8 @@ export function MobileHomepage() {
   const location = useLocation();
   const { toast } = useToast();
   const branding = useDomainBranding();
+  const whitelabel = getWhitelabelConfig();
+  const isWinchester = whitelabel?.host === "winchesterdrivingschool.co.uk";
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
