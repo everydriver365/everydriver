@@ -34,7 +34,7 @@ const PAGES: Record<string, PageDef> = {
   "login-security":{ title: "Login & security", subtitle: "Email, password, two-factor authentication and active sessions",                  render: () => <LoginSecurityPage /> },
   notifications:   { title: "Notifications",    subtitle: "Choose what to be notified about and how",                                        render: id => <NotificationsPage instructorId={id} /> },
   vehicle:         { title: "Vehicle",          subtitle: "Your teaching vehicle, MOT, road tax and insurance",                              render: id => <VehiclePage instructorId={id} /> },
-  credentials:     { title: "Credentials",      subtitle: "ADI badge, DBS check, driving licence and standards check",                       render: id => <CredentialsPage instructorId={id} /> },
+  credentials:     { title: "Credentials",      subtitle: "Documents and qualifications drive365 needs to verify you. Reviewed within 24 hours, never shown to learners.", render: id => <CredentialsPage instructorId={id} /> },
   "media-listing": { title: "Media & listing",  subtitle: "Photos, video and how learners see your public profile",                          render: id => <MediaListingPage instructorId={id} /> },
   "rates-coverage":{ title: "Rates & coverage", subtitle: "Hourly rate, block discounts and the postcodes you cover",                        render: id => <RatesCoveragePage instructorId={id} /> },
   availability:    { title: "Availability",     subtitle: "Working hours, holidays, lesson length and buffer between lessons",               render: id => <AvailabilityPage instructorId={id} /> },
