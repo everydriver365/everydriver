@@ -475,17 +475,30 @@ export default function InstructorPortalLogin() {
                   </AnimatePresence>
 
                   {!isForgotPassword && (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="rememberMe"
-                        checked={rememberMe}
-                        onChange={(e) => setRememberMeState(e.target.checked)}
-                        className="h-4 w-4 rounded border-white/20 bg-white/10 text-emerald-500 focus:ring-emerald-500"
-                      />
-                      <Label htmlFor="rememberMe" className="text-sm text-slate-400 cursor-pointer">
-                        Remember me
-                      </Label>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="rememberMe"
+                          checked={rememberMe}
+                          onChange={(e) => setRememberMeState(e.target.checked)}
+                          className="h-4 w-4 rounded border-white/20 bg-white/10 text-emerald-500 focus:ring-emerald-500"
+                        />
+                        <TooltipProvider delayDuration={150}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Label htmlFor="rememberMe" className="text-sm text-slate-400 cursor-pointer">
+                                Remember me
+                              </Label>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs text-xs">
+                              Keeps you signed in on this device until you sign out.
+                              Without it, you'll be signed out when the browser closes.
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      <SignInEnvironmentHint className="pl-6 text-slate-500" />
                     </div>
                   )}
 
