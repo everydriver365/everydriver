@@ -114,12 +114,12 @@ export function useDailyEarnings(instructorId: string | undefined) {
       const [thisMonthLessonsRes, lastMonthLessonsRes, thisMonthPaymentsRes, lastMonthPaymentsRes] = await Promise.all([
         supabase
           .from("lesson_history")
-          .select("duration_minutes")
+          .select(lessonSelect)
           .eq("instructor_id", instructorId)
           .gte("lesson_date", monthStart),
         supabase
           .from("lesson_history")
-          .select("duration_minutes")
+          .select(lessonSelect)
           .eq("instructor_id", instructorId)
           .gte("lesson_date", lastMonthStart)
           .lte("lesson_date", lastMonthEnd),
@@ -140,18 +140,20 @@ export function useDailyEarnings(instructorId: string | undefined) {
 
       const thisMonthHours = (thisMonthLessonsRes.data?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0) / 60;
       const lastMonthHours = (lastMonthLessonsRes.data?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0) / 60;
+      const thisMonthLessonEarnings = (thisMonthLessonsRes.data ?? []).reduce((s, l: any) => s + amountFor(l), 0);
+      const lastMonthLessonEarnings = (lastMonthLessonsRes.data ?? []).reduce((s, l: any) => s + amountFor(l), 0);
 
-      // Use actual payments if available, otherwise fall back to lesson-based calculation
       const thisMonthPayments = thisMonthPaymentsRes.data?.reduce((sum, p) => sum + Number(p.amount || 0), 0) || 0;
       const lastMonthPayments = lastMonthPaymentsRes.data?.reduce((sum, p) => sum + Number(p.amount || 0), 0) || 0;
 
-      const thisMonthEarnings = thisMonthPayments > 0 ? Math.round(thisMonthPayments) : Math.round(thisMonthHours * hourlyRate);
-      const lastMonthEarnings = lastMonthPayments > 0 ? Math.round(lastMonthPayments) : Math.round(lastMonthHours * hourlyRate);
+      const thisMonthEarnings = thisMonthPayments > 0 ? Math.round(thisMonthPayments) : Math.round(thisMonthLessonEarnings);
+      const lastMonthEarnings = lastMonthPayments > 0 ? Math.round(lastMonthPayments) : Math.round(lastMonthLessonEarnings);
 
       return {
         dailyEarnings,
-        thisWeek: Math.round(thisWeekHours * hourlyRate),
-        lastWeek: Math.round(lastWeekHours * hourlyRate),
+        thisWeek: Math.round(thisWeekEarnings),
+        lastWeek: Math.round(lastWeekEarnings),
+
         thisMonth: thisMonthEarnings,
         lastMonth: lastMonthEarnings,
         hoursThisMonth: Math.round(thisMonthHours),
