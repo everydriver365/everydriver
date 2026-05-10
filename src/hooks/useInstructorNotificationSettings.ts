@@ -89,6 +89,11 @@ export function useInstructorNotificationSettings(instructorId: string | undefin
         quiet_hours_end: ((row.quiet_hours_end as string) ?? DEFAULTS.quiet_hours_end).slice(0, 5),
         category_mutes: (row.category_mutes as Partial<Record<CategoryKey, boolean>>) ?? {},
         notification_rules: { ...DEFAULTS.notification_rules, ...(row.notification_rules as NotificationRules ?? {}) },
+        end_of_lesson_enabled: row.end_of_lesson_enabled === undefined ? DEFAULTS.end_of_lesson_enabled : Boolean(row.end_of_lesson_enabled),
+        end_of_lesson_lead_minutes: Number(row.end_of_lesson_lead_minutes ?? DEFAULTS.end_of_lesson_lead_minutes),
+        daily_summary_enabled: row.daily_summary_enabled === undefined ? DEFAULTS.daily_summary_enabled : Boolean(row.daily_summary_enabled),
+        daily_summary_time: ((row.daily_summary_time as string) ?? DEFAULTS.daily_summary_time).slice(0, 5),
+        daily_summary_include: { ...DEFAULT_INCLUDE, ...((row.daily_summary_include as Partial<DailySummaryInclude>) ?? {}) },
       });
     }
     setLoading(false);
@@ -113,6 +118,11 @@ export function useInstructorNotificationSettings(instructorId: string | undefin
             quiet_hours_end: next.quiet_hours_end,
             category_mutes: next.category_mutes,
             notification_rules: next.notification_rules,
+            end_of_lesson_enabled: next.end_of_lesson_enabled,
+            end_of_lesson_lead_minutes: next.end_of_lesson_lead_minutes,
+            daily_summary_enabled: next.daily_summary_enabled,
+            daily_summary_time: next.daily_summary_time,
+            daily_summary_include: next.daily_summary_include,
           } as never,
           { onConflict: "instructor_id" },
         );
