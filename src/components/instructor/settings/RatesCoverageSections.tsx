@@ -310,14 +310,64 @@ export function PostcodeRatesSection({ instructorId }: { instructorId: string })
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={() => setDraftRules(prev => [...prev, { id: newLocalId(), outward_code: "", hourly_rate: null }])}
-        className="rounded-lg border bg-transparent px-3 py-2 text-sm hover:bg-muted"
-        style={{ borderColor: "hsl(var(--border) / 0.6)" }}
-      >
-        + Add postcode
-      </button>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setDraftRules(prev => [...prev, { id: newLocalId(), outward_code: "", hourly_rate: null }])}
+          className="rounded-lg border bg-transparent px-3 py-2 text-sm hover:bg-muted"
+          style={{ borderColor: "hsl(var(--border) / 0.6)" }}
+        >
+          + Add postcode
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowImport(v => !v)}
+          className="rounded-lg border bg-transparent px-3 py-2 text-sm hover:bg-muted"
+          style={{ borderColor: "hsl(var(--border) / 0.6)" }}
+        >
+          {showImport ? "Close import" : "Bulk import (CSV)"}
+        </button>
+      </div>
+
+      {showImport && (
+        <CsvImporter
+          existing={originalRules}
+          onCancel={() => setShowImport(false)}
+          onApply={async (rows) => {
+            setBusyId("__import__");
+            try {
+              const byCode = new Map(originalRules.map(r => [r.outward_code.toUpperCase(), r]));
+              const updates: { id: string; hourly_rate: number }[] = [];
+              const inserts: { instructor_id: string; outward_code: string; hourly_rate: number }[] = [];
+              for (const r of rows) {
+                const existing = byCode.get(r.outward_code);
+                if (existing) {
+                  if (Number(existing.hourly_rate) !== r.hourly_rate) {
+                    updates.push({ id: existing.id, hourly_rate: r.hourly_rate });
+                  }
+                } else {
+                  inserts.push({ instructor_id: instructorId, outward_code: r.outward_code, hourly_rate: r.hourly_rate });
+                }
+              }
+              if (inserts.length) {
+                const { error } = await supabase.from("instructor_postcode_rates").insert(inserts);
+                if (error) throw error;
+              }
+              for (const u of updates) {
+                const { error } = await supabase.from("instructor_postcode_rates").update({ hourly_rate: u.hourly_rate }).eq("id", u.id);
+                if (error) throw error;
+              }
+              await reload();
+              setShowImport(false);
+              toast({ title: "Import complete", description: `${inserts.length} added, ${updates.length} updated` });
+            } catch (e: any) {
+              toast({ title: "Import failed", description: e?.message, variant: "destructive" });
+            } finally {
+              setBusyId(null);
+            }
+          }}
+        />
+      )}
 
       <p className="mt-3 text-xs text-muted-foreground">
         Priority: pupil's custom rate → matching postcode rule → default hourly rate.
