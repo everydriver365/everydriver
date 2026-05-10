@@ -51,6 +51,7 @@ import { RecordPaymentModal } from "@/components/instructor/RecordPaymentModal";
 import { PupilNoteSheet } from "@/components/instructor/PupilNoteSheet";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { SendPaymentReminderButton } from "@/components/instructor/SendPaymentReminderButton";
+import { PaymentLinkShare } from "@/components/instructor/PaymentLinkShare";
 import { DrivingSyllabus } from "@/components/instructor/DrivingSyllabus";
 import { NewPupilChecklist } from "@/components/instructor/NewPupilChecklist";
 import { Button } from "@/components/ui/button";
