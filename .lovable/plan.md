@@ -1,29 +1,43 @@
-## Plan: Surface "Lesson length, buffer & bank holidays" in the Working hours page
+## Plan: Working hours page — confirm sticky-bar wiring + light cleanup
 
-The section already exists in `categories.tsx` and is pulled into the `working-hours` area in `v3/areas.tsx`, but it currently renders **last** (after Google Calendar sync and Reminders), which buries it. It should sit next to Working hours where it logically belongs.
+### Audit result
 
-### Change
+The four field-based editors on `/instructor/settings/working-hours` are already wired to `SettingsDirtyContext` and the sticky "Save all changes" bar:
 
-**`src/components/instructor/settings/categories.tsx`** — reorder `schedule.sections` so the new editor appears directly under Working hours:
+| Section | Component | Dirty key |
+|---|---|---|
+| Working hours grid | `WorkingHoursEditor` | `working-hours` |
+| Lesson length, buffer & bank holidays | `LessonLengthBufferEditor` | `lesson-length` |
+| Pupil self-service booking | `PupilBookingSettingsEditor` | `pupil-booking` |
+| Lesson reminders | `ReminderSettings` | `reminders` |
 
-1. Working hours
-2. **Lesson length, buffer & bank holidays** ← move up
-3. Pupil self-service booking
-4. Google Calendar sync
-5. Lesson reminders
+Each registers `{ save, reset }` and reports dirty when its draft diverges from the loaded original. **Google Calendar sync** has no form fields (Connect / Sync now / Disconnect actions only), so it correctly stays outside the bar.
 
-**`src/components/instructor/settings/v3/areas.tsx`** — update the `pulls` array order for `working-hours` to match:
+**Date overrides** and **Quick day off** stay as instant writes — they're list operations, not field edits.
 
-```
-[hours, lesson-length, self-service, calendar, reminders]
-```
+### Cleanup pass (this is the only code change)
+
+1. **`WorkingHoursEditor.tsx`**
+   - Drop the `"Preset applied — remember to save!"` toast wording; replace with `"Preset applied"` since the sticky bar is now the source of truth.
+2. **`ReminderSettings.tsx`**
+   - Remove unused `Save` import from `lucide-react`.
+3. **`PupilBookingSettingsEditor.tsx`**
+   - Remove unused `Save` import from `lucide-react`.
+   - Remove any orphaned `saveMutation` declaration if still present after the previous refactor.
+4. **`LessonLengthBufferEditor.tsx`** — already clean, no change.
 
 ### Verification
 
-- Visit `/instructor/settings/working-hours` and confirm the five rows render in the order above.
-- Confirm the editor's fields (default lesson length, buffer minutes, auto-block bank holidays) edit cleanly and trigger the sticky save bar.
+- Load `/instructor/settings/working-hours`, edit one field in each of the four sections, confirm:
+  - Sticky bar appears the moment any field changes.
+  - "Save all changes" persists every section in one go and the bar disappears.
+  - "Discard" reverts each editor to its loaded values.
+- Add then remove a date override → still instant, no bar interaction.
+- Apply a weekly preset → sticky bar appears (preset mutates the same draft state).
 
 ### Out of scope
 
-- No changes to `LessonLengthBufferEditor` itself.
-- No changes to other settings pages, mobile layout, or save-bar wiring (already done in the previous step).
+- Mobile layouts.
+- Other settings pages.
+- Date-override / quick-day-off behaviour (kept instant per your decision).
+- Google Calendar connect flow.
