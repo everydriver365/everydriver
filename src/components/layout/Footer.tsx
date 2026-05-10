@@ -38,7 +38,7 @@ export function Footer() {
   const { logo, logoAlt, logoText, homeLink } = useRouteLogo();
 
   return (
-    <footer style={{ backgroundColor: "#09507f" }} className="relative border-t text-primary-foreground overflow-hidden">
+    <footer className="relative border-t bg-primary text-primary-foreground overflow-hidden">
       {/* Tyre track decoration - hidden on small screens */}
       <div className="hidden sm:block">
         <TyreTrackPattern />
