@@ -1,30 +1,91 @@
-I’ll replace the current mixed settings experience with one consistent desktop settings shell.
+Redesign the desktop instructor Settings from scratch — same visual language (DSM portal tokens, rounded-2xl cards, #F4F7F6 bg, #2B7BC8 accent), cleaner layout. Mobile is untouched.
 
-Plan:
+## Layout
 
-1. Create a single settings navigation model
-   - Use one sidebar for all instructor settings sections instead of mixing the newer sidebar, old category hub, Account Hub tabs, and external settings jumps.
-   - Group items under sensible headings like Account, Teaching, Bookings, Schedule, Communication, Website, Vehicle, and Advanced.
-   - Each sidebar item selects one detail panel on the right.
+Two-pane shell, full-width inside the portal chrome:
 
-2. Keep users in the same settings layout
-   - Clicking Notifications, Profile, Availability, Branding, Terms, Calendar, Famulor, Plan/Billing shortcuts, etc. will stay inside `/instructor/settings` layout.
-   - Where existing links currently navigate to `/instructor/settings/comms#notification-prefs`, `/instructor/settings/business#terms`, or “All other settings”, update them to select the matching right-hand panel instead.
-   - Remove the “All other settings” split that drops users into a different layout.
+```text
+┌─ Settings ──────────────────────────────────────────────────────────┐
+│  Sidebar (260px, sticky)        │  Detail pane (max 880px, centred) │
+│  ──────────────────────────     │  ──────────────────────────────── │
+│  Search settings…               │  Breadcrumb · Settings / Account  │
+│                                 │                                   │
+│  YOU                            │  ┌─ Hero summary card ─────────┐  │
+│   • Profile           ●         │  │ Avatar  Name · ADI 12345    │  │
+│   • Login & security            │  │ Profile 86% · 2 to-dos      │  │
+│                                 │  │ [Quick actions]             │  │
+│  TEACHING                       │  └─────────────────────────────┘  │
+│   • Vehicle & credentials       │                                   │
+│   • Working hours               │  Section card 1                   │
+│   • Rates & coverage            │  Section card 2                   │
+│                                 │  Section card 3                   │
+│  BOOKINGS & MONEY               │                                   │
+│   • How pupils book             │  (sticky save bar appears when    │
+│   • Payments & fees             │   any field is dirty)             │
+│   • Discounts & packages        │                                   │
+│                                 │                                   │
+│  COMMS                          │                                   │
+│   • Notifications               │                                   │
+│   • Phone & AI                  │                                   │
+│   • WhatsApp & messaging        │                                   │
+│                                 │                                   │
+│  WEBSITE                        │                                   │
+│   • Mini-site & pages           │                                   │
+│   • Branding & theme            │                                   │
+│                                 │                                   │
+│  SYSTEM                         │                                   │
+│   • Appearance & layout         │                                   │
+│   • Plan & billing              │                                   │
+│   • Data & privacy              │                                   │
+│   • Help & close account        │                                   │
+└─────────────────────────────────┴───────────────────────────────────┘
+```
 
-3. Render one detail section at a time
-   - The right pane will show only the selected section, not a stacked category page.
-   - The URL can remain bookmarkable using a lightweight pattern like `/instructor/settings/:sectionId`, but the visual shell will not change.
-   - Legacy paths will redirect into the same shell and preselect the relevant section.
+Behaviour:
+- Clicking any sidebar item swaps only the right pane. No navigation to a different layout, no full-page jumps.
+- Sidebar is sticky, scrolls independently, collapsible to a 56px icon rail.
+- URL stays bookmarkable: `/instructor/settings/:sectionId` (legacy paths redirect to the new IDs).
+- Persistent search filters the sidebar live and highlights matching sections.
+- Sticky save bar appears at the bottom of the detail pane when any embedded editor is dirty.
 
-4. Preserve existing functionality
-   - Reuse existing working components such as notification preferences, push settings, profile editors, booking/payment managers, working hours, calendar sync, call answering, Famulor, website settings, dashboard layout, exports, etc.
-   - Avoid database or notification logic changes.
-   - Keep mobile layouts unchanged unless you explicitly ask for mobile redesign.
+## 6 top-level areas (flattened)
 
-Technical notes:
+1. **You** — Profile, Login & security
+2. **Teaching** — Vehicle & ADI/DBS credentials, Working hours & availability, Rates & coverage area
+3. **Bookings & Money** — Booking mode, deposits, courses, intake questions; Payments (Square, GoCardless, SumUp), service fee split, BNPL; Discounts, packages, pricing rules, referrals
+4. **Comms** — Notification preferences + push + quiet hours; Phone number routing & AI call answering (Famulor); WhatsApp & message templates
+5. **Website** — Mini-site share link & pages, theme & fonts, test centres list
+6. **System** — Appearance & dashboard layout, Plan & billing, Data export & GDPR retention, Help & support / Close account / Reset stats
 
-- Refactor `InstructorSettingsHub` to always use the unified desktop shell for settings routes.
-- Replace the split between `SettingsLayoutV2`, `SettingsSidebar`, and the legacy `SettingsLayout` with one shared sidebar/detail component for desktop.
-- Keep old route redirects in `instructorPortalRoutes.tsx`, but point them to the correct unified section IDs.
-- Update settings shortcut links so they no longer navigate to separate-looking pages.
+Each area shows a hero summary card at the top of its detail pane with the most relevant at-a-glance info and 1–2 quick actions, then a stack of section cards using existing editor components.
+
+### Hero summary examples
+
+- **You** — avatar, name, ADI badge, profile completeness %, "Standards Check due" pill, [Edit photo] [Verify email]
+- **Teaching** — car reg, MOT/tax expiry chips, working-hours summary, [Set unavailable today]
+- **Bookings & Money** — connected gateways (Square/GoCardless/SumUp pills), service fee split %, [Open Square]
+- **Comms** — current cadence, quiet hours window, AI call status, [Test push]
+- **Website** — public URL with copy button, theme name, [Preview site]
+- **System** — current plan + renewal date, storage used, [Open Plan & billing]
+
+## Visual system
+
+- Reuse DSM portal tokens (`--portal-*`, accent #2B7BC8, bg #F4F7F6, cards rounded-2xl with 12px radius for inner controls).
+- Sidebar items: 13px label, 16px icon, 6px vertical padding, active = subtle filled chip + accent left bar.
+- Section cards: white, border `border/50`, 20px padding, header (title + 1-line description) + body.
+- Group labels in sidebar: 11px uppercase, tertiary text, 10px letter-spacing.
+- All copy plain English, sentence case.
+
+## Migration
+
+- Build a new `SettingsShell` (sidebar + detail) and a `useSettingsModel` hook returning the 6 areas, each with `heroSummary` + `sections[]` (each section reuses an existing editor component — no business logic changes).
+- Map every legacy section ID → new section ID and add redirects in `instructorPortalRoutes.tsx` so old links keep working.
+- Replace `SettingsLayoutV2`, `SettingsSidebar`, `SettingsLayout` (desktop branch), and `categories.tsx` consumption with the new shell.
+- Mobile: keep current `SettingsLayout` mobile drill-down untouched (per project rule).
+- Account Hub Notifications inline panel stays as-is.
+
+## Out of scope
+
+- No changes to underlying editors (notification prefs panel, Square/GoCardless settings, mini-site CMS, etc.) — same components, new shell only.
+- No mobile changes.
+- No backend, RLS, or notification logic changes.
