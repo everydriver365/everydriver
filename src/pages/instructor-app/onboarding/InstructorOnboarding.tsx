@@ -68,6 +68,7 @@ interface OnboardingData {
   website_theme: string;
   primary_color: string;
   slug: string;
+  logo_url: string | null;
   welcome_video_url: string | null;
   website_choice: "free" | "custom" | "booknow";
   personal_website_url: string;
@@ -105,6 +106,7 @@ const initialData: OnboardingData = {
   website_theme: "modern",
   primary_color: "#10b981",
   slug: "",
+  logo_url: null,
   welcome_video_url: null,
   website_choice: "free",
   personal_website_url: "",
@@ -156,6 +158,7 @@ export default function InstructorOnboarding() {
         bio: "",
         profile_image_url: instructor.profile_image_url || null,
         slug: instructor.app_slug || "",
+        logo_url: (instructor as any).logo_url || null,
       }));
       setLoading(false);
       setProfileError(false);
@@ -227,6 +230,7 @@ export default function InstructorOnboarding() {
             car_model: resolvedInstructor.car_model || "",
             hourly_rate: resolvedInstructor.hourly_rate || 35,
             slug: resolvedInstructor.app_slug || "",
+            logo_url: (resolvedInstructor as any).logo_url || null,
           }));
         } else {
           setProfileError(true);
@@ -268,7 +272,8 @@ export default function InstructorOnboarding() {
           car_make: data.car_make,
           car_model: data.car_model,
           hourly_rate: data.hourly_rate,
-        })
+          logo_url: data.logo_url,
+        } as any)
         .eq("id", instructorId);
 
       if (error) throw error;
@@ -369,6 +374,7 @@ export default function InstructorOnboarding() {
           custom_domain: drive365Subdomain,
           custom_domain_verified: false,
           personal_website_url: normalizedExternal,
+          logo_url: data.logo_url,
         } as any)
         .eq("id", instructorId);
 
