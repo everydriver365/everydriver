@@ -174,6 +174,14 @@ export function ProfileBasicsEditor({ instructorId }: Props) {
         {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
         Save changes
       </Button>
+
+      <AvatarRepositionDialog
+        open={!!pendingFile}
+        file={pendingFile}
+        saving={uploading}
+        onCancel={() => setPendingFile(null)}
+        onConfirm={handleCroppedUpload}
+      />
     </div>
   );
 }
