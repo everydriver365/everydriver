@@ -451,9 +451,6 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
             );
           })}
         </div>
-        <Button onClick={saveWorkingHours} className="mt-4 w-full" size="sm">
-          Save Weekly Schedule
-        </Button>
       </div>
 
       {/* Date Overrides */}
