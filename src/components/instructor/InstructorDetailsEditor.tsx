@@ -285,6 +285,48 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
           </CardContent>
         </Card>
 
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <div className="space-y-0.5">
+              <Label className="text-sm font-medium">Tracking device</Label>
+              <p className="text-xs text-muted-foreground">
+                Choose which device reports your live location.
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { value: "off", label: "Off" },
+                { value: "phone", label: "Phone" },
+                { value: "hardware", label: "Hardware", disabled: !gpsStatus.isConnected },
+              ] as const).map((opt) => {
+                const active = trackingMode === opt.value;
+                const disabled = savingMode || ("disabled" in opt && opt.disabled);
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => !active && updateTrackingMode(opt.value)}
+                    className="rounded-xl border px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+                    style={{
+                      borderColor: active ? "var(--portal-accent, #2B7BC8)" : "hsl(var(--border))",
+                      background: active ? "var(--portal-accent, #2B7BC8)" : "transparent",
+                      color: active ? "#fff" : "hsl(var(--foreground))",
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+            {!gpsStatus.isConnected && trackingMode !== "hardware" && (
+              <p className="text-xs text-muted-foreground">
+                Hardware option unlocks once a tracker connection is detected.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
         <Button variant="outline" onClick={testConnection} disabled={testingConnection} className="w-full">
           {testingConnection ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
           Test Connection
