@@ -744,6 +744,8 @@ export function EditPupilSheet({
                   currentCustomRate={pupil.custom_hourly_rate ?? null}
                   currentCustomRate90={pupil.custom_rate_90min ?? null}
                   currentCustomRate120={pupil.custom_rate_120min ?? null}
+                  pupilPostcode={(form?.postcode ?? (pupil as any).postcode) ?? null}
+                  instructorId={instructorId ?? undefined}
                   onSaved={() => onSaved?.()}
                 />
               </div>
