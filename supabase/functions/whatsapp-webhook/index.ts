@@ -652,6 +652,13 @@ Your job is to answer enquiries about driving lessons naturally and helpfully. B
 INSTRUCTOR INFO:
 - Name: ${context.name}
 - Hourly rate: £${context.hourlyRate || "TBC"}
+- Surcharges: ${[
+  Number(context.weekendSurcharge) > 0 ? `+£${Number(context.weekendSurcharge).toFixed(2)}/hr at weekends` : null,
+  Number(context.bankHolidaySurcharge) > 0 ? `+£${Number(context.bankHolidaySurcharge).toFixed(2)}/hr on bank holidays` : null,
+  Number(context.oddHoursSurcharge) > 0 && context.oddHoursStart && context.oddHoursEnd
+    ? `+£${Number(context.oddHoursSurcharge).toFixed(2)}/hr off-peak (${context.oddHoursStart}–${context.oddHoursEnd})`
+    : null,
+].filter(Boolean).join("; ") || "None"}
 - Car: ${context.carDetails || "Modern dual-control vehicle"}
 - Area: ${context.postcode || "Local area"}
 
