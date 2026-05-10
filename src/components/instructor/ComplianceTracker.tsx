@@ -50,6 +50,7 @@ export function ComplianceTracker({ instructorId }: ComplianceTrackerProps) {
   const [saving, setSaving] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [showCPDLog, setShowCPDLog] = useState(false);
+  const [latestCPD, setLatestCPD] = useState<{ title: string; hours: number; date: string } | null>(null);
   const [formData, setFormData] = useState<ComplianceData>({
     car_mot_expiry: "",
     car_tax_expiry: "",
