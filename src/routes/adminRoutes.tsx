@@ -13,6 +13,7 @@ const RealtimeAudit = lazy(() => import("@/pages/admin/RealtimeAudit"));
 const EOLAuditLog = lazy(() => import("@/pages/admin/EOLAuditLog"));
 const PhoneTrackingAudit = lazy(() => import("@/pages/admin/PhoneTrackingAudit"));
 const NotificationOutbox = lazy(() => import("@/pages/admin/NotificationOutbox"));
+const PlatformFees = lazy(() => import("@/pages/admin/PlatformFees"));
 
 export const adminRoutes = (
   <>
@@ -72,6 +73,10 @@ export const adminRoutes = (
     <Route
       path="/admin/notification-outbox"
       element={<ProtectedAdminRoute><NotificationOutbox /></ProtectedAdminRoute>}
+    />
+    <Route
+      path="/admin/platform-fees"
+      element={<ProtectedAdminRoute><PlatformFees /></ProtectedAdminRoute>}
     />
   </>
 );

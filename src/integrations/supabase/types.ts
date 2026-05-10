@@ -12501,6 +12501,64 @@ export type Database = {
           },
         ]
       }
+      platform_fees: {
+        Row: {
+          amount: number
+          booking_reference: string | null
+          created_at: string
+          currency: string
+          id: string
+          instructor_id: string | null
+          notes: string | null
+          pupil_id: string | null
+          source: string
+        }
+        Insert: {
+          amount?: number
+          booking_reference?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          instructor_id?: string | null
+          notes?: string | null
+          pupil_id?: string | null
+          source?: string
+        }
+        Update: {
+          amount?: number
+          booking_reference?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          instructor_id?: string | null
+          notes?: string | null
+          pupil_id?: string | null
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_fees_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_fees_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_fees_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_updates: {
         Row: {
           category: string
