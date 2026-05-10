@@ -207,12 +207,39 @@ serve(async (req) => {
       smsSent: false,
       pushSent: false,
       smsError: null as string | null,
-      pushError: null as string | null
+      pushError: null as string | null,
+      gateBlocked: null as string | null,
     };
+
+    // Resolve category + importance from the request type for the gate.
+    const categoryMap: Record<string, NotifyCategory> = {
+      new_booking: "lesson",
+      cancellation: "lesson",
+      reschedule: "lesson",
+      admin_message: "message",
+      admin_direct_message: "message",
+      pupil_message: "message",
+      security_alert: "system",
+    };
+    const gateCategory: NotifyCategory = categoryMap[data.type] ?? "system";
+    const gateImportance: NotifyImportance =
+      data.type === "security_alert" || data.type === "cancellation" ? "important" : "normal";
 
     // Send Push Notification
     try {
-      const { data: subscriptions, error: subError } = await supabase
+      const pushGate = await shouldSendToInstructor(supabase, data.instructorId, {
+        category: gateCategory,
+        channel: "push",
+        importance: gateImportance,
+        pupilId: data.type === "pupil_message" ? (data as { pupilId?: string }).pupilId : undefined,
+      });
+      if (!pushGate.allow) {
+        console.log(`[notify-instructor] push gate blocked: ${pushGate.reason}`);
+        results.pushError = `gate:${pushGate.reason}`;
+        results.gateBlocked = pushGate.reason ?? "blocked";
+      }
+
+      const { data: subscriptions, error: subError } = pushGate.allow ? await supabase
         .from("push_subscriptions")
         .select("endpoint, p256dh, auth")
         .eq("instructor_id", data.instructorId);
