@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
+import { shouldSendToInstructor, NotifyCategory, NotifyImportance } from "../_shared/notify-gate.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -206,11 +207,41 @@ serve(async (req) => {
       smsSent: false,
       pushSent: false,
       smsError: null as string | null,
-      pushError: null as string | null
+      pushError: null as string | null,
+      gateBlocked: null as string | null,
     };
+
+    // Resolve category + importance from the request type for the gate.
+    const categoryMap: Record<string, NotifyCategory> = {
+      new_booking: "lesson",
+      cancellation: "lesson",
+      reschedule: "lesson",
+      admin_message: "message",
+      admin_direct_message: "message",
+      pupil_message: "message",
+      security_alert: "system",
+    };
+    const gateCategory: NotifyCategory = categoryMap[data.type] ?? "system";
+    const gateImportance: NotifyImportance =
+      data.type === "security_alert" || data.type === "cancellation" ? "important" : "normal";
 
     // Send Push Notification
     try {
+      const pushGate = await shouldSendToInstructor(supabase, data.instructorId, {
+        category: gateCategory,
+        channel: "push",
+        importance: gateImportance,
+        pupilId: data.type === "pupil_message" ? (data as { pupilId?: string }).pupilId : undefined,
+      });
+      if (!pushGate.allow) {
+        console.log(`[notify-instructor] push gate blocked: ${pushGate.reason}`);
+        results.pushError = `gate:${pushGate.reason}`;
+        results.gateBlocked = pushGate.reason ?? "blocked";
+      }
+
+      if (!pushGate.allow) {
+        // Skip push send entirely; results already record the gate reason.
+      } else {
       const { data: subscriptions, error: subError } = await supabase
         .from("push_subscriptions")
         .select("endpoint, p256dh, auth")
@@ -252,13 +283,21 @@ serve(async (req) => {
           }
         }
       }
+      }
     } catch (pushError) {
       console.error("Error in push notification flow:", pushError);
       results.pushError = pushError instanceof Error ? pushError.message : "Unknown error";
     }
 
+    // SMS gate
+    const smsGate = await shouldSendToInstructor(supabase, data.instructorId, {
+      category: gateCategory,
+      channel: "sms",
+      importance: gateImportance,
+    });
+
     // Send SMS (if Twilio is configured and instructor has phone)
-    if (twilioAccountSid && twilioAuthToken && twilioPhoneNumber && instructor.phone) {
+    if (smsGate.allow && twilioAccountSid && twilioAuthToken && twilioPhoneNumber && instructor.phone) {
       try {
         const response = await fetch(
           `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`,
@@ -288,6 +327,9 @@ serve(async (req) => {
         console.error("Error sending SMS:", smsError);
         results.smsError = smsError instanceof Error ? smsError.message : "Unknown error";
       }
+    } else if (!smsGate.allow) {
+      console.log(`[notify-instructor] sms gate blocked: ${smsGate.reason}`);
+      results.smsError = `gate:${smsGate.reason}`;
     } else {
       if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
         console.log("Twilio credentials not configured - skipping SMS");

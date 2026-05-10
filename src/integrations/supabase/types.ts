@@ -15037,6 +15037,7 @@ export type Database = {
           deleted_at: string | null
           dropoff_postcode: string | null
           duration_minutes: number
+          eol_sent_at: string | null
           examiner_id: string | null
           geotab_trip_id: string | null
           google_event_id: string | null
@@ -15084,6 +15085,7 @@ export type Database = {
           deleted_at?: string | null
           dropoff_postcode?: string | null
           duration_minutes?: number
+          eol_sent_at?: string | null
           examiner_id?: string | null
           geotab_trip_id?: string | null
           google_event_id?: string | null
@@ -15131,6 +15133,7 @@ export type Database = {
           deleted_at?: string | null
           dropoff_postcode?: string | null
           duration_minutes?: number
+          eol_sent_at?: string | null
           examiner_id?: string | null
           geotab_trip_id?: string | null
           google_event_id?: string | null
