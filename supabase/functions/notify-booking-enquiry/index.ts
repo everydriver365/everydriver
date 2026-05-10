@@ -145,7 +145,7 @@ serve(async (req) => {
 
     // Email via Resend
     const RESEND_KEY = Deno.env.get("RESEND_API_KEY");
-    if (RESEND_KEY && instructor.email) {
+    if (emailGate.allow && RESEND_KEY && instructor.email) {
       try {
         const resend = new Resend(RESEND_KEY);
         const html = `
