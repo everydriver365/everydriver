@@ -608,8 +608,8 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
             <InlineEditField value={instructor.name} onSave={(v) => updateField("name", v)} icon={<UserCheck className="h-4 w-4 text-muted-foreground" />} label="Name" />
             <InlineEditField value={instructor.email || ""} onSave={(v) => updateField("email", v)} icon={<Mail className="h-4 w-4 text-muted-foreground" />} label="Email" type="email" emptyText="Add email" />
             <InlineEditField value={instructor.phone || ""} onSave={(v) => updateField("phone", v)} icon={<Phone className="h-4 w-4 text-muted-foreground" />} label="Phone" type="tel" emptyText="Add phone" />
-            <InlineEditField value={instructor.home_postcode} onSave={(v) => updateField("home_postcode", v)} icon={<MapPin className="h-4 w-4 text-muted-foreground" />} label="Postcode" />
-            <InlineEditField value={instructor.home_address || ""} onSave={(v) => updateField("home_address", v)} icon={<MapPin className="h-4 w-4 text-muted-foreground" />} label="Address" emptyText="Add address" type="address" onPostcodeChange={(pc) => updateField("home_postcode", pc)} />
+            <InlineEditField value={instructor.home_postcode} onSave={(v) => updateField("home_postcode", formatUKPostcode(v) || v)} icon={<MapPin className="h-4 w-4 text-muted-foreground" />} label="Postcode" />
+            <InlineEditField value={instructor.home_address || ""} onSave={(v) => updateField("home_address", v)} icon={<MapPin className="h-4 w-4 text-muted-foreground" />} label="Address" emptyText="Add address" type="address" onPostcodeChange={(pc) => updateField("home_postcode", formatUKPostcode(pc) || pc)} />
             <InlineEditField value={instructor.location_name || ""} onSave={(v) => updateField("location_name", v)} icon={<MapPin className="h-4 w-4 text-muted-foreground" />} label="Location Name" emptyText="Add location name" />
           </div>
         </SectionPanel>
