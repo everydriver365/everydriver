@@ -31,6 +31,7 @@ import { useBookingUpsells } from "@/hooks/useBookingUpsells";
 import { resolveHourlyRate, type PostcodeRateRule } from "@/lib/pricing/resolveHourlyRate";
 import { fetchInstructorPostcodeRules } from "@/hooks/useInstructorPostcodeRules";
 import { applyRateModifiers, loadUkBankHolidays, type RateModifiers } from "@/lib/pricing/applyRateModifiers";
+import { PLATFORM_FEE_GBP } from "@/lib/pricing/platformFee";
 
 
 interface Instructor {
@@ -444,6 +445,7 @@ export default function BookingSummary() {
           courseType: courseName,
           courseHours: hours,
           totalPrice,
+          platformFee,
           slots: selectedSlots.map(buildSlotPayload),
           paymentType,
           amountPaid: amountPaid ?? (paymentType === 'full' ? totalPrice + upsellTotal : depositAmount),
@@ -887,9 +889,11 @@ export default function BookingSummary() {
   }, 0);
   const surchargeTotal =
     Math.round((surchargedSlotsTotal + remainingHours * effectiveHourlyRate) * 100) / 100;
-  const totalPrice = surchargeTotal + schoolSkimAmount;
+  // Bookings include a flat £1 platform fee (separate from school skim & Service Fee).
+  const platformFee = PLATFORM_FEE_GBP;
+  const totalPrice = surchargeTotal + schoolSkimAmount + platformFee;
   const postcodeOverrideActive = effectiveHourlyRate !== baseHourlyRate;
-  const surchargesActive = totalPrice > (hours * effectiveHourlyRate + schoolSkimAmount) + 0.001;
+  const surchargesActive = totalPrice > (hours * effectiveHourlyRate + schoolSkimAmount + platformFee) + 0.001;
 
 
   // Enquiry-only mode: short-circuit the entire payment/scheduling flow
