@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, startOfDay } from "date-fns";
+import { computeLessonAmount } from "@/lib/pricing/resolveHourlyRate";
+import { fetchInstructorPostcodeRules } from "@/hooks/useInstructorPostcodeRules";
+
 
 export type ReportsRangeId = "7d" | "30d" | "90d" | "ytd" | "all";
 
@@ -177,7 +180,7 @@ export function useInstructorReportsData(
           .lte("recorded_at", tax.end.toISOString()),
         supabase
           .from("scheduled_lessons")
-          .select("duration_minutes, lesson_type, amount_due")
+          .select("duration_minutes, lesson_type, amount_due, pickup_postcode, pupils!inner (postcode, custom_hourly_rate, custom_rate_90min, custom_rate_120min)")
           .eq("instructor_id", instructorId!)
           .is("deleted_at", null)
           .neq("status", "cancelled")
@@ -206,6 +209,7 @@ export function useInstructorReportsData(
       ]);
 
       const hourlyRate = instructorRes.data?.hourly_rate ?? 38;
+      const postcodeRules = await fetchInstructorPostcodeRules(instructorId!);
 
       // ---- Top stats ----
       const revenue = (paymentsCurRes.data ?? []).reduce(
@@ -256,9 +260,19 @@ export function useInstructorReportsData(
       // ---- By lesson type ----
       const typeAgg: Record<string, { hours: number; amount: number }> = {};
       for (const l of lessonsCurRes.data ?? []) {
-        const t = (l.lesson_type || "Standard").trim() || "Standard";
-        const h = (l.duration_minutes || 0) / 60;
-        const amt = l.amount_due != null ? Number(l.amount_due) : h * hourlyRate;
+        const t = ((l as any).lesson_type || "Standard").trim() || "Standard";
+        const h = ((l as any).duration_minutes || 0) / 60;
+        const amt = computeLessonAmount({
+          durationMinutes: (l as any).duration_minutes || 0,
+          amountDue: (l as any).amount_due,
+          pupilCustomRate: (l as any).pupils?.custom_hourly_rate,
+          pupilCustomRate90: (l as any).pupils?.custom_rate_90min,
+          pupilCustomRate120: (l as any).pupils?.custom_rate_120min,
+          pupilPostcode: (l as any).pupils?.postcode,
+          lessonPostcode: (l as any).pickup_postcode,
+          instructorDefaultRate: hourlyRate,
+          postcodeRules,
+        });
         if (!typeAgg[t]) typeAgg[t] = { hours: 0, amount: 0 };
         typeAgg[t].hours += h;
         typeAgg[t].amount += amt;

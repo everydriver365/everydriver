@@ -4,6 +4,9 @@ import { addDays, format, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeHub";
 import { useQueryClient } from "@tanstack/react-query";
+import { computeLessonAmount } from "@/lib/pricing/resolveHourlyRate";
+import { fetchInstructorPostcodeRules } from "@/hooks/useInstructorPostcodeRules";
+
 
 export interface ScheduleLesson {
   id: string;
@@ -23,6 +26,8 @@ export interface ScheduleLesson {
   status: string;
   paymentStatus: string;
   amountDue: number;
+  /** Resolved £ amount honoring postcode overrides + pupil custom rate. */
+  effectiveAmount: number;
   isFirstLesson?: boolean;
   isLastLesson?: boolean;
 }
@@ -146,20 +151,23 @@ export function useScheduleWeek(
     queryKey,
     enabled: !!instructorId,
     queryFn: async (): Promise<ScheduleDay[]> => {
-      const { data, error } = await supabase
-        .from("scheduled_lessons")
-        .select(`
-          id, pupil_id, lesson_date, start_time, duration_minutes,
-          pickup_postcode, pickup_location, status, lesson_type,
-          payment_status, amount_due,
-          pupils!inner (id, name, postcode, address)
-        `)
-        .eq("instructor_id", instructorId!)
-        .gte("lesson_date", startStr)
-        .lte("lesson_date", endStr)
-        .neq("status", "cancelled")
-        .order("lesson_date")
-        .order("start_time");
+      const [{ data, error }, postcodeRules] = await Promise.all([
+        supabase
+          .from("scheduled_lessons")
+          .select(`
+            id, pupil_id, lesson_date, start_time, duration_minutes,
+            pickup_postcode, pickup_location, status, lesson_type,
+            payment_status, amount_due,
+            pupils!inner (id, name, postcode, address, custom_hourly_rate, custom_rate_90min, custom_rate_120min)
+          `)
+          .eq("instructor_id", instructorId!)
+          .gte("lesson_date", startStr)
+          .lte("lesson_date", endStr)
+          .neq("status", "cancelled")
+          .order("lesson_date")
+          .order("start_time"),
+        fetchInstructorPostcodeRules(instructorId!),
+      ]);
 
       if (error) throw error;
 
@@ -177,6 +185,18 @@ export function useScheduleWeek(
         const endTime = format(endD, "HH:mm");
         const pupil = l.pupils;
         const { first, lastInitial } = fmtName(pupil?.name || "Pupil");
+
+        const effectiveAmount = computeLessonAmount({
+          durationMinutes: dur,
+          amountDue: l.amount_due,
+          pupilCustomRate: pupil?.custom_hourly_rate,
+          pupilCustomRate90: pupil?.custom_rate_90min,
+          pupilCustomRate120: pupil?.custom_rate_120min,
+          pupilPostcode: pupil?.postcode,
+          lessonPostcode: l.pickup_postcode,
+          instructorDefaultRate: s.standardRate,
+          postcodeRules,
+        });
 
         const ls: ScheduleLesson = {
           id: l.id,
@@ -196,7 +216,9 @@ export function useScheduleWeek(
           status: l.status || "scheduled",
           paymentStatus: l.payment_status || "unpaid",
           amountDue: Number(l.amount_due ?? 0),
+          effectiveAmount,
         };
+
         const arr = lessonsByDate.get(dateStr) || [];
         arr.push(ls);
         lessonsByDate.set(dateStr, arr);

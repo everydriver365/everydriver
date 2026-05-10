@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useInstructorPostcodeRules } from "@/hooks/useInstructorPostcodeRules";
+import { resolveHourlyRate, extractOutwardCode } from "@/lib/pricing/resolveHourlyRate";
 
 interface PupilRateEditorProps {
   pupilId: string;
@@ -14,8 +16,13 @@ interface PupilRateEditorProps {
   currentCustomRate?: number | null;
   currentCustomRate90?: number | null;
   currentCustomRate120?: number | null;
+  /** Pupil postcode (used to apply per-postcode override rates) */
+  pupilPostcode?: string | null;
+  /** Instructor id (used to load per-postcode override rules) */
+  instructorId?: string;
   onSaved?: () => void;
 }
+
 
 interface DurationRow {
   key: "60" | "90" | "120";
@@ -36,8 +43,22 @@ export function PupilRateEditor({
   currentCustomRate,
   currentCustomRate90,
   currentCustomRate120,
+  pupilPostcode,
+  instructorId,
   onSaved,
 }: PupilRateEditorProps) {
+  const { data: postcodeRules } = useInstructorPostcodeRules(instructorId);
+  const resolvedHourly = resolveHourlyRate({
+    pupilPostcode,
+    instructorDefaultRate: defaultRate,
+    postcodeRules,
+  }) ?? defaultRate;
+  const overrideOutward = extractOutwardCode(pupilPostcode || null);
+  const overrideActive =
+    !!overrideOutward &&
+    !!postcodeRules?.find((r) => r.outward_code.toUpperCase() === overrideOutward) &&
+    resolvedHourly !== defaultRate;
+
   const [rate60, setRate60] = useState(currentCustomRate?.toString() ?? "");
   const [rate90, setRate90] = useState(currentCustomRate90?.toString() ?? "");
   const [rate120, setRate120] = useState(currentCustomRate120?.toString() ?? "");
@@ -128,10 +149,17 @@ export function PupilRateEditor({
         Lesson Rates for {pupilName}
       </div>
 
+      {overrideActive && (
+        <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
+          Postcode override <span className="font-semibold text-foreground">{overrideOutward}</span>{" "}
+          applies — defaults below use £{resolvedHourly.toFixed(2)}/hr instead of £{defaultRate.toFixed(2)}/hr.
+        </div>
+      )}
+
       <div className="space-y-2">
         {DURATIONS.map((d) => {
           const [val, set] = stateFor(d.key);
-          const defaultForDuration = defaultRate * d.hours;
+          const defaultForDuration = resolvedHourly * d.hours;
           return (
             <div key={d.key} className="space-y-1">
               <Label className="text-xs">
@@ -166,9 +194,10 @@ export function PupilRateEditor({
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Leave any field empty to use the instructor's default rate for that duration.
+          Leave any field empty to use the instructor's default rate for that duration{overrideActive ? ` (with the ${overrideOutward} postcode override applied)` : ""}.
         </p>
       </div>
+
     </div>
   );
 }

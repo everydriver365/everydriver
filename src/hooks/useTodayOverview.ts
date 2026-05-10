@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { computeLessonAmount } from "@/lib/pricing/resolveHourlyRate";
+import { fetchInstructorPostcodeRules } from "@/hooks/useInstructorPostcodeRules";
+
 
 interface TodayOverview {
   lessonCount: number;
@@ -33,7 +36,7 @@ export function useTodayOverview(instructorId: string | undefined) {
 
       const { data: lessons, error: lessonsError } = await supabase
         .from("scheduled_lessons")
-        .select(`id, pupil_id, start_time, duration_minutes, pickup_location, pickup_postcode, status, pupils!inner (name, postcode, address)`)
+        .select(`id, pupil_id, start_time, duration_minutes, amount_due, pickup_location, pickup_postcode, status, pupils!inner (name, postcode, address, custom_hourly_rate, custom_rate_90min, custom_rate_120min)`)
         .eq("instructor_id", instructorId)
         .eq("lesson_date", today)
         .neq("status", "cancelled")
@@ -41,8 +44,10 @@ export function useTodayOverview(instructorId: string | undefined) {
 
       if (lessonsError) throw lessonsError;
 
-      const { data: instructor, error: instructorError } = await supabase
-        .from("instructors").select("hourly_rate").eq("id", instructorId).maybeSingle();
+      const [{ data: instructor, error: instructorError }, postcodeRules] = await Promise.all([
+        supabase.from("instructors").select("hourly_rate").eq("id", instructorId).maybeSingle(),
+        fetchInstructorPostcodeRules(instructorId),
+      ]);
       if (instructorError) throw instructorError;
 
       const hourlyRate = instructor?.hourly_rate || 35;
@@ -50,7 +55,17 @@ export function useTodayOverview(instructorId: string | undefined) {
       const completedCount = lessons?.filter(l => l.status === 'completed')?.length || 0;
       const totalMinutes = lessons?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0;
       const totalHours = totalMinutes / 60;
-      const expectedEarnings = totalHours * hourlyRate;
+      const expectedEarnings = (lessons ?? []).reduce((sum, l: any) => sum + computeLessonAmount({
+        durationMinutes: l.duration_minutes || 0,
+        amountDue: l.amount_due,
+        pupilCustomRate: l.pupils?.custom_hourly_rate,
+        pupilCustomRate90: l.pupils?.custom_rate_90min,
+        pupilCustomRate120: l.pupils?.custom_rate_120min,
+        pupilPostcode: l.pupils?.postcode,
+        lessonPostcode: l.pickup_postcode,
+        instructorDefaultRate: hourlyRate,
+        postcodeRules,
+      }), 0);
 
       const firstLesson = lessons?.[0];
       const firstPickupLocation = firstLesson?.pickup_location || (firstLesson?.pupils as any)?.address || null;

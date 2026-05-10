@@ -42,3 +42,57 @@ export function resolveHourlyRate(args: {
   }
   return instructorDefaultRate ?? null;
 }
+
+/**
+ * Compute the £ amount for a single lesson, honoring (in order):
+ *   1. lesson.amount_due if explicitly set (>0)
+ *   2. pupil custom rate (per-duration if available, else hourly * hours)
+ *   3. matching postcode override
+ *   4. instructor default
+ */
+export function computeLessonAmount(args: {
+  durationMinutes: number;
+  amountDue?: number | null;
+  pupilCustomRate?: number | null;
+  pupilCustomRate90?: number | null;
+  pupilCustomRate120?: number | null;
+  pupilPostcode?: string | null;
+  lessonPostcode?: string | null;
+  instructorDefaultRate?: number | null;
+  postcodeRules?: PostcodeRateRule[] | null;
+}): number {
+  const {
+    durationMinutes,
+    amountDue,
+    pupilCustomRate,
+    pupilCustomRate90,
+    pupilCustomRate120,
+    pupilPostcode,
+    lessonPostcode,
+    instructorDefaultRate,
+    postcodeRules,
+  } = args;
+
+  if (amountDue != null && Number(amountDue) > 0) return Number(amountDue);
+
+  const hours = (durationMinutes || 0) / 60;
+  const dur = durationMinutes || 0;
+
+  // Per-duration custom rate has priority for matching durations.
+  if (dur === 90 && pupilCustomRate90 != null && pupilCustomRate90 > 0) {
+    return pupilCustomRate90;
+  }
+  if (dur === 120 && pupilCustomRate120 != null && pupilCustomRate120 > 0) {
+    return pupilCustomRate120;
+  }
+
+  const rate = resolveHourlyRate({
+    pupilCustomRate,
+    pupilPostcode: lessonPostcode || pupilPostcode,
+    instructorDefaultRate,
+    postcodeRules,
+  });
+
+  return Math.round(hours * (rate ?? 0) * 100) / 100;
+}
+
