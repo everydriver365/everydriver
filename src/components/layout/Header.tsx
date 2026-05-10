@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, MapPin, Search, Moon, Sun } from "lucide-react";
+import { Menu, X, MapPin, Search, Moon, Sun, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -11,6 +11,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useTheme } from "@/context/ThemeContext";
 import { useRouteLogo } from "@/hooks/useRouteLogo";
+import { getWhitelabelConfig } from "@/lib/whitelabel";
 
 const baseNavLinks = [
   { href: "/courses", label: "Courses" },
