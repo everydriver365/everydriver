@@ -25,12 +25,12 @@ export function SettingsShellV3({ instructorId: _ }: Props) {
     ? requested
     : (LEGACY_ID_MAP[requested] ?? "profile");
 
-  const activeItem = useMemo<AreaItem | undefined>(() => {
+  const { activeItem, activeGroup } = useMemo<{ activeItem?: AreaItem; activeGroup?: AreaGroup }>(() => {
     for (const g of AREA_GROUPS) {
       const found = g.items.find(i => i.id === itemId);
-      if (found) return found;
+      if (found) return { activeItem: found, activeGroup: g };
     }
-    return undefined;
+    return {};
   }, [itemId]);
 
   const filteredGroups = useMemo(() => {
