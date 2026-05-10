@@ -145,8 +145,8 @@ export function SettingsShellV3({ instructorId: _ }: Props) {
                 <li>
                   <button
                     type="button"
-                    onClick={() => navigate("/instructor")}
-                    className="hover:text-foreground transition-colors"
+                    onClick={() => { navigate("/instructor"); window.scrollTo({ top: 0 }); }}
+                    className="hover:text-foreground hover:underline underline-offset-2 transition-colors"
                   >
                     Dashboard
                   </button>
@@ -155,8 +155,8 @@ export function SettingsShellV3({ instructorId: _ }: Props) {
                 <li>
                   <button
                     type="button"
-                    onClick={() => navigate("/instructor/settings")}
-                    className="hover:text-foreground transition-colors"
+                    onClick={() => { navigate("/instructor/settings/profile"); window.scrollTo({ top: 0 }); }}
+                    className="hover:text-foreground hover:underline underline-offset-2 transition-colors"
                   >
                     Settings
                   </button>
@@ -167,8 +167,14 @@ export function SettingsShellV3({ instructorId: _ }: Props) {
                     <li>
                       <button
                         type="button"
-                        onClick={() => activeGroup.items[0] && navigate(`/instructor/settings/${activeGroup.items[0].id}`)}
-                        className="hover:text-foreground transition-colors"
+                        onClick={() => {
+                          const first = activeGroup.items[0];
+                          if (first) {
+                            navigate(`/instructor/settings/${first.id}`);
+                            window.scrollTo({ top: 0 });
+                          }
+                        }}
+                        className="hover:text-foreground hover:underline underline-offset-2 transition-colors"
                       >
                         {activeGroup.label}
                       </button>
@@ -178,8 +184,14 @@ export function SettingsShellV3({ instructorId: _ }: Props) {
                 {activeItem && (
                   <>
                     <li aria-hidden><ChevronRight className="h-3.5 w-3.5" /></li>
-                    <li aria-current="page" className="text-foreground font-medium">
-                      {activeItem.label}
+                    <li aria-current="page">
+                      <button
+                        type="button"
+                        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                        className="text-foreground font-medium hover:underline underline-offset-2"
+                      >
+                        {activeItem.label}
+                      </button>
                     </li>
                   </>
                 )}
