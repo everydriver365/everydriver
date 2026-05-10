@@ -209,6 +209,7 @@ export function useInstructorReportsData(
       ]);
 
       const hourlyRate = instructorRes.data?.hourly_rate ?? 38;
+      const postcodeRules = await fetchInstructorPostcodeRules(instructorId!);
 
       // ---- Top stats ----
       const revenue = (paymentsCurRes.data ?? []).reduce(
