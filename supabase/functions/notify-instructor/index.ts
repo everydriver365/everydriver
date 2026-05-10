@@ -283,13 +283,21 @@ serve(async (req) => {
           }
         }
       }
+      }
     } catch (pushError) {
       console.error("Error in push notification flow:", pushError);
       results.pushError = pushError instanceof Error ? pushError.message : "Unknown error";
     }
 
+    // SMS gate
+    const smsGate = await shouldSendToInstructor(supabase, data.instructorId, {
+      category: gateCategory,
+      channel: "sms",
+      importance: gateImportance,
+    });
+
     // Send SMS (if Twilio is configured and instructor has phone)
-    if (twilioAccountSid && twilioAuthToken && twilioPhoneNumber && instructor.phone) {
+    if (smsGate.allow && twilioAccountSid && twilioAuthToken && twilioPhoneNumber && instructor.phone) {
       try {
         const response = await fetch(
           `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`,
