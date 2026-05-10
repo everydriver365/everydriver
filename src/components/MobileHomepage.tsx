@@ -83,22 +83,14 @@ export function MobileHomepage() {
     });
   };
 
-  const navItems = isWinchester
-    ? [
-        { label: "Home", icon: Home, path: "/" },
-        { label: "Courses", icon: Search, path: "/courses" },
-        { label: "Theory", icon: BookOpen, path: "/theory" },
-        { label: "Reviews", icon: Star, path: "/reviews" },
-        { label: "Contact", icon: Phone, path: "/contact" },
-      ]
-    : [
-        { label: "Home", icon: Home, path: "/drive365" },
-        { label: "Search", icon: Search, path: "/courses" },
-        { label: "Theory", icon: BookOpen, path: "/theory" },
-        { label: "FAQs", icon: HelpCircle, path: "/faqs" },
-        { label: "Help", icon: MessageCircle, path: "/help" },
-        { label: "Benefits", icon: Gift, path: "/benefits" },
-      ];
+  const navItems = [
+    { label: "Home", icon: Home, path: "/drive365" },
+    { label: "Search", icon: Search, path: "/courses" },
+    { label: "Theory", icon: BookOpen, path: "/theory" },
+    { label: "FAQs", icon: HelpCircle, path: "/faqs" },
+    { label: "Help", icon: MessageCircle, path: "/help" },
+    { label: "Benefits", icon: Gift, path: "/benefits" },
+  ];
 
   return (
     <div className="learner-app min-h-screen bg-background">
