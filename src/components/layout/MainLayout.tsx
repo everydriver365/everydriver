@@ -1,8 +1,10 @@
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { MobileBottomNav } from "./MobileBottomNav";
+import { WhitelabelBottomNav } from "./WhitelabelBottomNav";
 import { BackToTopButton } from "./BackToTopButton";
 import { WhatsAppChatWidget } from "@/components/whatsapp/WhatsAppChatWidget";
+import { isWhitelabelDomain } from "@/lib/whitelabel";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -10,12 +12,13 @@ interface MainLayoutProps {
 }
 
 export function MainLayout({ children, hideFooter = false }: MainLayoutProps) {
+  const whitelabel = isWhitelabelDomain();
   return (
     <div className="learner-app flex min-h-screen flex-col overflow-x-hidden">
       <Header />
       <main className="flex-1 pb-20 md:pb-0 overflow-x-hidden">{children}</main>
       {!hideFooter && <Footer />}
-      <MobileBottomNav />
+      {whitelabel ? <WhitelabelBottomNav /> : <MobileBottomNav />}
       <BackToTopButton />
       <WhatsAppChatWidget />
     </div>
