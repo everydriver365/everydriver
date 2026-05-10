@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useOptionalSettingsDirty } from "@/components/instructor/settings/useOptionalSettingsDirty";
 
 interface ReminderSettingsProps {
   instructorId: string;
@@ -22,6 +23,10 @@ interface ReminderPreferences {
 }
 
 const timeOptions = [
+  { value: "06:00:00", label: "6:00 AM" },
+  { value: "07:00:00", label: "7:00 AM" },
+  { value: "08:00:00", label: "8:00 AM" },
+  { value: "09:00:00", label: "9:00 AM" },
   { value: "10:00:00", label: "10:00 AM" },
   { value: "12:00:00", label: "12:00 PM" },
   { value: "14:00:00", label: "2:00 PM" },
