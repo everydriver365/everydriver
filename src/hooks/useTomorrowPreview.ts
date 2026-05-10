@@ -76,7 +76,7 @@ export function useTomorrowPreview(instructorId: string | undefined) {
       return {
         lessonCount: lessons?.length || 0,
         totalHours: Math.round(totalHours * 10) / 10,
-        expectedEarnings: Math.round(totalHours * hourlyRate),
+        expectedEarnings: Math.round(expectedEarnings),
         firstLessonTime: lessons?.[0]?.start_time || null,
         lastLessonTime: lessons?.[lessons.length - 1]?.start_time || null,
         lessons: lessons?.map(l => ({
