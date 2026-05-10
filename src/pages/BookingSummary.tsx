@@ -269,7 +269,7 @@ export default function BookingSummary() {
     const fetchDetails = async () => {
       if (!instructorId) return;
 
-      const [instructorRes, templateRes, instructorCourseRes, reviewsRes] = await Promise.all([
+      const [instructorRes, templateRes, instructorCourseRes, reviewsRes, rulesRes] = await Promise.all([
         supabase.from("instructors").select(`
           id, name, profile_image_url, car_type, car_make, car_model, car_image_url,
           home_postcode, hourly_rate, bio, special_skills, brand_colour,
@@ -284,7 +284,12 @@ export default function BookingSummary() {
         supabase.from("course_templates").select("*").eq("course_hours", hours).maybeSingle(),
         supabase.from("instructor_courses").select("course_image_url").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
         supabase.from("course_reviews").select("*").eq("instructor_id", instructorId).eq("course_hours", hours).order("review_date", { ascending: false }).limit(5),
+        fetchInstructorPostcodeRules(instructorId),
       ]);
+
+      setPostcodeRules(rulesRes ?? []);
+
+
 
       if (instructorRes.error || !instructorRes.data) {
         console.error("Error fetching instructor:", instructorRes.error);
