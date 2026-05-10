@@ -1,80 +1,45 @@
-## Why Ken's tracker isn't visible
+## Goal
+Make every control on `/instructor/settings/working-hours` consistent: one sticky "Save all changes" bar, no orphaned inline Save buttons, no missing controls, no runtime hook errors.
 
-Ken D actually has **two** trackers in the database:
+## Scope (this page only)
+1. **Working hours** (`WorkingHoursEditor`)
+2. **Pupil self-service booking** (`PupilBookingSettingsEditor`)
+3. **Google Calendar sync** (`GoogleServiceAccountSetup`) — leave as-is (action-driven, not a form)
+4. **Lesson reminders** (`ReminderSettings`)
+5. **NEW: Lesson length, buffer & bank-holiday** — currently stranded in `AvailabilityPage`, not reachable here
 
-| Device | Provider | Active | Last seen | Heartbeat |
-|---|---|---|---|---|
-| Charlotte (`861778063583081`) | Radius | ✅ | 06:59 today (~3h ago) | 07:06 today |
-| Kenneth's Geotab | Geotab | ❌ | 15 Apr | 15 Apr |
+## Changes
 
-The GPS panel on the Profile → GPS tab only renders a single "Connected / Offline" pill with this rule:
+### 1. Wire each editor into `SettingsDirtyContext`
+For `WorkingHoursEditor`, `PupilBookingSettingsEditor`, and `ReminderSettings`:
+- Load row → keep `original` + `draft` in state.
+- `dirty = JSON.stringify(draft) !== JSON.stringify(original)` → call `setDirty(key, dirty)`.
+- `register(key, { save, reset })` in an effect; cleanup on unmount.
+- Remove the per-card "Save" button from each component (sticky bar handles it).
+- Keep destructive/instant actions (Disconnect, Sync Now, delete override, day-off quick add) as immediate actions — only field edits flow through the save bar.
 
-```ts
-isConnected = (now - last_seen_at) < 120s
-```
+Keys: `working-hours`, `pupil-booking`, `reminders`.
 
-Because Charlotte last reported 3 hours ago (vehicle parked overnight) and Geotab is `is_active=false`, **both devices fail that 120s test → the panel just says "Offline" with nothing else**, so it looks like there's no tracker at all.
+### 2. Add a 5th section: Lesson length, buffer & bank holidays
+- Extract the "Lesson length & buffer" block from `AvailabilityPage` into a new `LessonLengthBufferEditor` component (same UI, same save logic, wired to `SettingsDirtyContext` with key `lesson-length`).
+- Add it to `categories.tsx > schedule.sections` after `reminders`.
+- `AvailabilityPage` can keep using the same component so the legacy route still works.
 
-The smarter `useGPSConnectionStatus` hook already exists and uses a 4-state model (`active` / `recent` / `stationary` / `offline`) that correctly classifies a parked-but-fitted Radius device as **"Stationary"** (heartbeat recent, no movement). The settings panel just isn't using it.
+### 3. Fix the "Rendered more hooks than during the previous render" error
+Likely cause: one of the editors early-returns (`if (loading) return …`) before later `useEffect`/`register` calls run. Audit each editor and make sure every hook (including the `register`/`setDirty` effects added in step 1) runs unconditionally before any conditional return.
 
-## Plan
-
-Replace the single Connection Status card on the **Profile → GPS** tab with a **list of every fitted device** for the instructor, each with proper status, so a fitted-but-stationary or temporarily-offline tracker is still clearly visible.
-
-### 1. Fetch all devices, not just the latest
-
-In `InstructorDetailsEditor.tsx` (the GPS-only view + the GPS tab), replace the single-row `gps_devices` query (`.limit(1).maybeSingle()`) with a list query:
-
-```ts
-.from("gps_devices")
-.select("id, device_name, device_identifier, tracking_provider, is_active, last_seen_at, last_heartbeat_at, vehicle_id")
-.eq("instructor_id", instructorId)
-.order("is_active", { ascending: false })
-.order("last_seen_at", { ascending: false });
-```
-
-### 2. Use the existing 4-state status logic
-
-Extract the `getStatus()` helper from `useGPSConnectionStatus.ts` into a tiny shared util (`src/lib/gpsDeviceStatus.ts`) so both the dashboard hook and the settings panel agree. States:
-
-- **Active** — moved in last 60s (green)
-- **Recent** — moved in last 5 min (green)
-- **Stationary** — heartbeat in last 2 min, no movement (blue) → this is what Ken's parked Charlotte should show when running
-- **Offline** — no heartbeat & no movement (grey)
-
-### 3. Render one card per device
-
-For every row returned, show:
-
-- Device name + provider badge (Radius / Geotab / GPSGate / Quartix / Phone)
-- Status pill (Active / Recent / Stationary / Offline) with matching colour
-- "Last update: 3 hours ago" (existing `formatDistanceToNow`)
-- A small note when `is_active = false`: "Disabled by admin"
-- Linked vehicle name (from `instructor_vehicles` join) when `vehicle_id` is set
-
-If the device is offline but `is_active = true` and last seen within the last 24h, append the helper line: *"Tracker fitted — waiting for the vehicle to wake up."* This is the key UX fix that prevents users thinking the tracker has vanished.
-
-### 4. Empty state
-
-Only show "No trackers fitted yet — contact admin to add one" when the query returns **zero rows**. Today's UI shows that message implicitly any time `last_seen_at` is older than 2 minutes, which is wrong.
-
-### 5. Keep the Phone/Hardware/Off device selector
-
-The selector added in the previous turn stays exactly as-is; it sits **below** the new device list.
-
-### 6. Test Connection button
-
-Keep the existing `radius-poller` button; after it runs, re-fetch the device list (not just the single row) so a freshly-woken Radius tracker pops up immediately.
+### 4. Quality fixes while in there
+- `WorkingHoursEditor`: replace the 7-sequential-await weekly save with a single `upsert` array; normalise times to `HH:mm:ss`.
+- `PupilBookingSettingsEditor`: hide the unused `allowed_durations` field (already covered by `instructors.allowed_lesson_lengths`).
+- `ReminderSettings`: extend the reminder-time options to include 06:00, 07:00, 08:00, 09:00 plus existing 10:00–20:00.
 
 ## Out of scope
+- Mobile layout changes (per project rule).
+- Google Calendar sync internals.
+- Other settings pages (Credentials, Pricing, etc.).
+- Whether reminder/cron jobs actually fire (separate edge-function audit).
 
-- No DB changes — `gps_devices` already has every field we need.
-- No admin panel changes — adding/removing devices stays in `AdminTrackersManager`.
-- No mobile layout changes (per project rule).
-- No edits to other consumers of `useGPSConnectionStatus` (FleetLiveMap, AccountHub, etc.); they already work correctly.
-
-## Files touched
-
-- `src/components/instructor/InstructorDetailsEditor.tsx` — replace single-status card with the new device list inside both the `defaultTab === "gps"` block and the `<TabsContent value="gps">` block.
-- `src/lib/gpsDeviceStatus.ts` *(new)* — shared `getDeviceStatus(lastSeen, heartbeat)` returning `"active" | "recent" | "stationary" | "offline"`.
-- `src/hooks/useGPSConnectionStatus.ts` — switch its inline `getStatus` to import from the new util (no behaviour change).
+## Technical notes
+- Keys must be unique strings; use a stable `register`/cleanup pattern as in `AvailabilityPage` (lines 41–57) to avoid stale closures.
+- `SettingsDirtyContext.saveAll` iterates dirty keys serially — safe for these 4 sections.
+- No DB migration required; all columns already exist.
