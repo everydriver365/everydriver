@@ -8724,7 +8724,7 @@ export type Database = {
           auto_start_tracker: boolean
           availability_paused: boolean
           available_from: string | null
-          bank_holiday_surcharge_pct: number
+          bank_holiday_surcharge_amount: number
           battery_kwh: number | null
           bio: string | null
           bonus_earned: number | null
@@ -8829,7 +8829,7 @@ export type Database = {
           name: string
           odd_hours_end: string
           odd_hours_start: string
-          odd_hours_surcharge_pct: number
+          odd_hours_surcharge_amount: number
           payment_link_base_url: string | null
           payment_qr_url: string | null
           payment_qr_url_instructor_pays: string | null
@@ -8878,7 +8878,7 @@ export type Database = {
           website_menu_text_color: string | null
           website_text_color: string | null
           website_theme: string | null
-          weekend_surcharge_pct: number
+          weekend_surcharge_amount: number
           welcome_video_url: string | null
           whatsapp_enabled: boolean | null
           xero_connected: boolean | null
@@ -8921,7 +8921,7 @@ export type Database = {
           auto_start_tracker?: boolean
           availability_paused?: boolean
           available_from?: string | null
-          bank_holiday_surcharge_pct?: number
+          bank_holiday_surcharge_amount?: number
           battery_kwh?: number | null
           bio?: string | null
           bonus_earned?: number | null
@@ -9026,7 +9026,7 @@ export type Database = {
           name: string
           odd_hours_end?: string
           odd_hours_start?: string
-          odd_hours_surcharge_pct?: number
+          odd_hours_surcharge_amount?: number
           payment_link_base_url?: string | null
           payment_qr_url?: string | null
           payment_qr_url_instructor_pays?: string | null
@@ -9075,7 +9075,7 @@ export type Database = {
           website_menu_text_color?: string | null
           website_text_color?: string | null
           website_theme?: string | null
-          weekend_surcharge_pct?: number
+          weekend_surcharge_amount?: number
           welcome_video_url?: string | null
           whatsapp_enabled?: boolean | null
           xero_connected?: boolean | null
@@ -9118,7 +9118,7 @@ export type Database = {
           auto_start_tracker?: boolean
           availability_paused?: boolean
           available_from?: string | null
-          bank_holiday_surcharge_pct?: number
+          bank_holiday_surcharge_amount?: number
           battery_kwh?: number | null
           bio?: string | null
           bonus_earned?: number | null
@@ -9223,7 +9223,7 @@ export type Database = {
           name?: string
           odd_hours_end?: string
           odd_hours_start?: string
-          odd_hours_surcharge_pct?: number
+          odd_hours_surcharge_amount?: number
           payment_link_base_url?: string | null
           payment_qr_url?: string | null
           payment_qr_url_instructor_pays?: string | null
@@ -9272,7 +9272,7 @@ export type Database = {
           website_menu_text_color?: string | null
           website_text_color?: string | null
           website_theme?: string | null
-          weekend_surcharge_pct?: number
+          weekend_surcharge_amount?: number
           welcome_video_url?: string | null
           whatsapp_enabled?: boolean | null
           xero_connected?: boolean | null

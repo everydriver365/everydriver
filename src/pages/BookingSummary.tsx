@@ -283,8 +283,8 @@ export default function BookingSummary() {
           cancellation_policy_text, booking_mode,
           cash_payments_enabled, klarna_enabled, clearpay_enabled,
           instant_bank_pay_enabled, school_skim_amount,
-          weekend_surcharge_pct, bank_holiday_surcharge_pct,
-          odd_hours_surcharge_pct, odd_hours_start, odd_hours_end
+          weekend_surcharge_amount, bank_holiday_surcharge_amount,
+          odd_hours_surcharge_amount, odd_hours_start, odd_hours_end
         `).eq("id", instructorId).maybeSingle(),
         supabase.from("course_templates").select("*").eq("course_hours", hours).maybeSingle(),
         supabase.from("instructor_courses").select("course_image_url").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
@@ -321,9 +321,9 @@ export default function BookingSummary() {
       setBaseHourlyRate(hourlyRate);
       setSchoolSkimAmount(schoolSkim);
       setRateModifiers({
-        weekend_surcharge_pct: (instructor as any).weekend_surcharge_pct ?? 0,
-        bank_holiday_surcharge_pct: (instructor as any).bank_holiday_surcharge_pct ?? 0,
-        odd_hours_surcharge_pct: (instructor as any).odd_hours_surcharge_pct ?? 0,
+        weekend_surcharge_amount: (instructor as any).weekend_surcharge_amount ?? 0,
+        bank_holiday_surcharge_amount: (instructor as any).bank_holiday_surcharge_amount ?? 0,
+        odd_hours_surcharge_amount: (instructor as any).odd_hours_surcharge_amount ?? 0,
         odd_hours_start: (instructor as any).odd_hours_start ?? null,
         odd_hours_end: (instructor as any).odd_hours_end ?? null,
       });

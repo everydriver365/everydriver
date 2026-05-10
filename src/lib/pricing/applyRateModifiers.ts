@@ -4,27 +4,28 @@
  *  - bank holiday: UK bank holiday (gov.uk feed, cached)
  *  - odd hours: lesson start time falls inside the configured window
  *
+ * Surcharges are fixed £ amounts added to the per-hour rate.
  * Returns the modified rate plus a breakdown of which surcharges were applied.
  */
 
 export interface RateModifiers {
-  weekend_surcharge_pct?: number | null;
-  bank_holiday_surcharge_pct?: number | null;
-  odd_hours_surcharge_pct?: number | null;
+  weekend_surcharge_amount?: number | null;
+  bank_holiday_surcharge_amount?: number | null;
+  odd_hours_surcharge_amount?: number | null;
   odd_hours_start?: string | null; // "HH:MM[:SS]"
   odd_hours_end?: string | null;   // "HH:MM[:SS]"
 }
 
 export interface AppliedSurcharge {
   type: "weekend" | "bank_holiday" | "odd_hours";
-  pct: number;
+  amount: number; // £ per hour
 }
 
 export interface ModifiedRate {
   baseRate: number;
   finalRate: number;
   surcharges: AppliedSurcharge[];
-  totalPct: number;
+  totalAmount: number; // £ added to baseRate per hour
 }
 
 /* ---------------- UK bank holidays (gov.uk, cached) ---------------- */
@@ -34,7 +35,6 @@ let bhMemo: Set<string> | null = null;
 
 export async function loadUkBankHolidays(): Promise<Set<string>> {
   if (bhMemo) return bhMemo;
-  // session cache
   try {
     const cached = sessionStorage.getItem(BH_CACHE_KEY);
     if (cached) {
@@ -47,7 +47,6 @@ export async function loadUkBankHolidays(): Promise<Set<string>> {
     const res = await fetch("https://www.gov.uk/bank-holidays.json");
     if (!res.ok) return (bhMemo = new Set());
     const json = await res.json();
-    // Use England & Wales by default (most users); merge Scotland/NI to be permissive.
     const dates = new Set<string>();
     for (const region of ["england-and-wales", "scotland", "northern-ireland"]) {
       const events = json?.[region]?.events ?? [];
@@ -84,10 +83,9 @@ function isOddHour(startTime: string, oddStart: string, oddEnd: string): boolean
   const a = toMinutes(oddStart);
   const b = toMinutes(oddEnd);
   if (s == null || a == null || b == null) return false;
-  // Window may wrap midnight (e.g. 20:00 -> 07:00).
   if (a === b) return false;
   if (a < b) return s >= a && s < b;
-  return s >= a || s < b; // wrapped
+  return s >= a || s < b; // wrapped midnight
 }
 
 function ymd(d: Date): string {
@@ -101,15 +99,15 @@ function ymd(d: Date): string {
 
 export function applyRateModifiers(args: {
   baseRate: number | null | undefined;
-  lessonDate?: string | Date | null;       // "YYYY-MM-DD" or Date
-  lessonStartTime?: string | null;         // "HH:MM" (24h)
+  lessonDate?: string | Date | null;
+  lessonStartTime?: string | null;
   modifiers?: RateModifiers | null;
-  bankHolidaySet?: Set<string>;            // pre-loaded; defaults to cached
+  bankHolidaySet?: Set<string>;
 }): ModifiedRate {
   const base = Number(args.baseRate || 0);
   const surcharges: AppliedSurcharge[] = [];
   if (!args.modifiers || !base) {
-    return { baseRate: base, finalRate: base, surcharges, totalPct: 0 };
+    return { baseRate: base, finalRate: base, surcharges, totalAmount: 0 };
   }
 
   const m = args.modifiers;
@@ -121,7 +119,6 @@ export function applyRateModifiers(args: {
     date = args.lessonDate;
     dateStr = ymd(date);
   } else if (typeof args.lessonDate === "string" && args.lessonDate) {
-    // Treat as local-date YYYY-MM-DD
     const [y, mo, d] = args.lessonDate.slice(0, 10).split("-").map(Number);
     if (y && mo && d) {
       date = new Date(y, mo - 1, d);
@@ -130,36 +127,36 @@ export function applyRateModifiers(args: {
   }
 
   if (date) {
-    const dow = date.getDay(); // 0 Sun, 6 Sat
+    const dow = date.getDay();
     const isWeekend = dow === 0 || dow === 6;
     const isBH = !!dateStr && bh.has(dateStr);
 
-    if (isBH && Number(m.bank_holiday_surcharge_pct) > 0) {
-      surcharges.push({ type: "bank_holiday", pct: Number(m.bank_holiday_surcharge_pct) });
-    } else if (isWeekend && Number(m.weekend_surcharge_pct) > 0) {
-      // Bank holiday takes priority over weekend; don't double-apply.
-      surcharges.push({ type: "weekend", pct: Number(m.weekend_surcharge_pct) });
+    if (isBH && Number(m.bank_holiday_surcharge_amount) > 0) {
+      surcharges.push({ type: "bank_holiday", amount: Number(m.bank_holiday_surcharge_amount) });
+    } else if (isWeekend && Number(m.weekend_surcharge_amount) > 0) {
+      surcharges.push({ type: "weekend", amount: Number(m.weekend_surcharge_amount) });
     }
   }
 
   if (
     args.lessonStartTime &&
-    Number(m.odd_hours_surcharge_pct) > 0 &&
+    Number(m.odd_hours_surcharge_amount) > 0 &&
     m.odd_hours_start && m.odd_hours_end &&
     isOddHour(args.lessonStartTime, m.odd_hours_start, m.odd_hours_end)
   ) {
-    surcharges.push({ type: "odd_hours", pct: Number(m.odd_hours_surcharge_pct) });
+    surcharges.push({ type: "odd_hours", amount: Number(m.odd_hours_surcharge_amount) });
   }
 
-  const totalPct = surcharges.reduce((s, x) => s + x.pct, 0);
-  const finalRate = Math.round(base * (1 + totalPct / 100) * 100) / 100;
-  return { baseRate: base, finalRate, surcharges, totalPct };
+  const totalAmount = surcharges.reduce((s, x) => s + x.amount, 0);
+  const finalRate = Math.round((base + totalAmount) * 100) / 100;
+  return { baseRate: base, finalRate, surcharges, totalAmount };
 }
 
 export function describeSurcharge(s: AppliedSurcharge): string {
+  const amt = `+£${s.amount.toFixed(2)}/hr`;
   switch (s.type) {
-    case "weekend": return `Weekend (+${s.pct}%)`;
-    case "bank_holiday": return `Bank holiday (+${s.pct}%)`;
-    case "odd_hours": return `Off-peak hours (+${s.pct}%)`;
+    case "weekend": return `Weekend (${amt})`;
+    case "bank_holiday": return `Bank holiday (${amt})`;
+    case "odd_hours": return `Off-peak hours (${amt})`;
   }
 }
