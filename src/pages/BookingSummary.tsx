@@ -313,6 +313,8 @@ export default function BookingSummary() {
       
       const hourlyRate = instructor.hourly_rate || 40;
       const schoolSkim = instructor.school_skim_amount || 0;
+      setBaseHourlyRate(hourlyRate);
+      setSchoolSkimAmount(schoolSkim);
       const courseName = template?.course_name || (hours === 28 ? "Test in a Week" : `${hours} Hour Course`);
       const courseImageUrl = instructorCourse?.course_image_url || template?.default_image_url || null;
 
