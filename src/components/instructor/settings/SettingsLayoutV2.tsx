@@ -14,6 +14,7 @@ import { CredentialsPage } from "./pages/CredentialsPage";
 import { MediaListingPage } from "./pages/MediaListingPage";
 import { RatesCoveragePage } from "./pages/RatesCoveragePage";
 import { AvailabilityPage } from "./pages/AvailabilityPage";
+import { PhoneNumberPage } from "./pages/PhoneNumberPage";
 import { CpdPage } from "./pages/CpdPage";
 import { PlanBillingPage } from "./pages/PlanBillingPage";
 import { DataExportPage } from "./pages/DataExportPage";
