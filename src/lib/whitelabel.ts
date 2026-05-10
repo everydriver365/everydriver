@@ -15,6 +15,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { resolveInstructorBranding } from "@/lib/resolveInstructorBranding";
 
 export interface WhitelabelConfig {
   /** Hostname (lowercase, no www) that this config matches against */
@@ -132,31 +133,27 @@ export async function loadBrandConfig(
       }
     }
 
-    if (!resolveHost || isBareMarketingHost(resolveHost)) {
+    const descriptor = resolveInstructorBranding(resolveHost, "/");
+
+    if (descriptor.source === null) {
       cachedConfig = null;
       return null;
     }
 
-    const subdomainSlug = extractSubdomainSlug(resolveHost);
-
-    // 1. Verified custom domain match
-    let { data, error } = await supabase
+    let query = supabase
       .from("public_instructors")
-      .select("app_slug, business_name, name, logo_url, phone, email, location_name, home_postcode, brand_colour, custom_domain, custom_domain_verified")
-      .eq("custom_domain", resolveHost)
-      .eq("custom_domain_verified", true)
-      .maybeSingle();
+      .select("app_slug, business_name, name, logo_url, phone, email, location_name, home_postcode, brand_colour");
 
-    // 2. Fall back to subdomain slug match
-    if (!data && subdomainSlug) {
-      const res = await supabase
-        .from("public_instructors")
-        .select("app_slug, business_name, name, logo_url, phone, email, location_name, home_postcode, brand_colour")
-        .eq("app_slug", subdomainSlug)
-        .maybeSingle();
-      data = res.data as typeof data;
-      error = res.error;
+    if (descriptor.source === "custom-domain" && descriptor.customDomain) {
+      query = query.eq("custom_domain", descriptor.customDomain).eq("custom_domain_verified", true);
+    } else if (descriptor.slug) {
+      query = query.eq("app_slug", descriptor.slug);
+    } else {
+      cachedConfig = null;
+      return null;
     }
+
+    const { data, error } = await query.maybeSingle();
 
     if (error || !data) {
       cachedConfig = null;
