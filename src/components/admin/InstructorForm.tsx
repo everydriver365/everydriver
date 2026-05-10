@@ -342,7 +342,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
       const instructorData = {
         name: data.name,
         home_address: data.home_address || null,
-        home_postcode: data.home_postcode,
+        home_postcode: formatUKPostcode(data.home_postcode) || data.home_postcode,
         radius_miles: data.radius_miles,
         car_type: data.car_type,
         email: data.email || null,
