@@ -301,25 +301,25 @@ export function useSettingsCategories(): SettingsCategory[] {
           id: "notification-prefs",
           title: "Notification preferences",
           description: "What you get notified about",
-          render: () => <NotificationPreferencesPanel />,
+          render: () => <NotificationPreferencesPanel instructorId={id} />,
         },
         {
           id: "push",
           title: "Push notifications",
           description: "Enable push on this device",
-          render: () => <PushNotificationSettings />,
+          render: () => <PushNotificationSettings instructorId={id} />,
         },
         {
           id: "call-answering",
           title: "Call answering",
           description: "Choose how incoming pupil calls are answered",
-          render: () => <CallAnsweringSettings />,
+          render: () => <CallAnsweringSettings instructorId={id} />,
         },
         {
           id: "famulor",
           title: "AI phone assistant",
           description: "Famulor calls, campaigns, agents and analytics",
-          render: () => <FamulorHub instructorId={id} />,
+          render: () => <FamulorHub scope="instructor" instructorId={id} />,
         },
         {
           id: "whatsapp",
@@ -369,6 +369,7 @@ export function useSettingsCategories(): SettingsCategory[] {
                 website_header_style: (instructor as { website_header_style?: string })?.website_header_style,
                 brand_colour: (instructor as { brand_colour?: string })?.brand_colour,
               }}
+              onUpdate={refreshInstructor}
             />
           ),
         },
