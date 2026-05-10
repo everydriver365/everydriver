@@ -104,15 +104,15 @@ export function Footer() {
             <ul className="space-y-3 text-sm text-primary-foreground/70">
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                <span>0800 123 4567</span>
+                <a href={`tel:${contactPhone.replace(/\s/g, "")}`} className="hover:text-accent">{contactPhone}</a>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
-                <span>hello@drivetime.co.uk</span>
+                <a href={`mailto:${contactEmail}`} className="hover:text-accent break-all">{contactEmail}</a>
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5" />
-                <span>Covering all UK postcodes</span>
+                <span>{contactArea}</span>
               </li>
             </ul>
           </div>
