@@ -6,7 +6,7 @@
 // scheduled_lessons (added by the migration).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { shouldSendToInstructor } from "../_shared/notify-gate.ts";
+import { shouldSendToInstructor, enqueueOutbox } from "../_shared/notify-gate.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
