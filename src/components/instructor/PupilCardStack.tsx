@@ -674,7 +674,37 @@ export function PupilCardStack({
   // Calculate total hours from lessons_completed (approximate 2h per lesson if no better data)
   const totalHours = (pupil.lessons_completed || 0) * 2;
 
-  const isOverdue = hasDebt && !!pupil.balance_due_date && new Date(pupil.balance_due_date) < new Date();
+  // Show overdue ribbon for any pupil with an outstanding balance
+  const isOverdue = hasDebt;
+  const debtAmount = hasDebt ? Math.abs(balance) : 0;
+
+  const handleSendReminder = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!instructorId) {
+      toast.error("Instructor not loaded");
+      return;
+    }
+    if (!pupil.phone && !pupil.email) {
+      toast.error("No phone or email on file for this pupil");
+      return;
+    }
+    try {
+      const { data, error } = await supabase.functions.invoke("send-payment-reminder", {
+        body: {
+          instructorId,
+          instructorName: instructorName || "",
+          pupilIds: [pupil.id],
+        },
+      });
+      if (error) throw error;
+      if (data?.sent > 0) toast.success(`Reminder sent to ${pupil.name}`);
+      else if (data?.skipped > 0) toast.error("Pupil missing contact details");
+      else toast.error("Failed to send reminder");
+    } catch (err) {
+      console.error("reminder error", err);
+      toast.error("Failed to send reminder");
+    }
+  };
 
   return (
     <>
