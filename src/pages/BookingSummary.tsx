@@ -120,6 +120,9 @@ export default function BookingSummary() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [courseDetails, setCourseDetails] = useState<CourseDetails | null>(null);
+  const [postcodeRules, setPostcodeRules] = useState<PostcodeRateRule[]>([]);
+  const [baseHourlyRate, setBaseHourlyRate] = useState<number>(40);
+  const [schoolSkimAmount, setSchoolSkimAmount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
   const [reviews, setReviews] = useState<CourseReview[]>([]);
