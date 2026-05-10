@@ -178,6 +178,7 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
       
       if (error) throw error;
       await fetchGpsStatus();
+      setDevicesRefreshKey((k) => k + 1);
       
       if (data?.ok) {
         toast.success(`GPS poll complete: ${data.positionsUpdated || 0} positions updated`);
