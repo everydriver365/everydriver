@@ -58,7 +58,7 @@ export function useRealGapSlots(instructorId: string | undefined) {
           .eq("is_active", true),
         supabase
           .from("scheduled_lessons")
-          .select("lesson_date, start_time, duration_minutes")
+          .select("lesson_date, start_time, duration_minutes, pupil:pupils(travel_time_minutes)")
           .eq("instructor_id", instructorId)
           .gte("lesson_date", today)
           .lte("lesson_date", twoWeeksLater)
