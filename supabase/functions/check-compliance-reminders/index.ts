@@ -123,8 +123,17 @@ serve(async (req) => {
         const urgencyText = daysUntilExpiry === 1 ? "TOMORROW" : 
                            daysUntilExpiry <= 7 ? "URGENT" : "Reminder";
 
+        // Compliance is treated as system + important so cadence and quiet
+        // hours are bypassed, but a hard category mute still suppresses it.
+        const emailGate = await shouldSendToInstructor(supabase, instructor.id, {
+          category: "system", channel: "email", importance: "important",
+        });
+        const smsGate = await shouldSendToInstructor(supabase, instructor.id, {
+          category: "system", channel: "sms", importance: "important",
+        });
+
         // Send email if Resend is configured
-        if (resendApiKey && instructor.email) {
+        if (emailGate.allow && resendApiKey && instructor.email) {
           try {
             const emailHtml = `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
