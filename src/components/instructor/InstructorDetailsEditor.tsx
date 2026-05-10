@@ -27,6 +27,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { GpsDevicesList } from "@/components/instructor/GpsDevicesList";
 
 interface InstructorDetails {
   home_postcode: string | null;
