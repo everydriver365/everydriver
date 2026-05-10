@@ -1047,7 +1047,7 @@ serve(async (req) => {
         // Fetch instructor profile for context
         const { data: instructor } = await supabase
           .from("instructors")
-          .select("name, phone, hourly_rate, areas_covered, transmission_type, car_make, car_model, adi_number, adi_grade, qualifications, bio, email")
+          .select("name, phone, hourly_rate, areas_covered, transmission_type, car_make, car_model, adi_number, adi_grade, qualifications, bio, email, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end")
           .eq("id", instructor_id)
           .single();
 
