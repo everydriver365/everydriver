@@ -30,6 +30,9 @@ export function Header() {
   const navigate = useNavigate();
   const { resolvedTheme, setTheme } = useTheme();
   const { logo, logoAlt, logoText, homeLink } = useRouteLogo();
+  const whitelabel = getWhitelabelConfig();
+  const isWinchester = whitelabel?.host === "winchesterdrivingschool.co.uk";
+  const winchesterPhone = "07767 693276";
   const navLinks = [{ href: homeLink, label: "Home" }, ...baseNavLinks];
 
   const toggleTheme = () => {
