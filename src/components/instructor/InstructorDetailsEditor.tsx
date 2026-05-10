@@ -107,7 +107,33 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
   };
 
   const fetchTrackingConfig = async () => {
-    // GPS config is managed via admin panel - no instructor-level config needed
+    if (!instructorId) return;
+    const { data } = await supabase
+      .from("instructors")
+      .select("tracking_mode")
+      .eq("id", instructorId)
+      .maybeSingle();
+    const mode = (data as { tracking_mode?: string } | null)?.tracking_mode;
+    if (mode === "phone" || mode === "hardware" || mode === "off") {
+      setTrackingMode(mode);
+    }
+  };
+
+  const updateTrackingMode = async (mode: "off" | "phone" | "hardware") => {
+    const previous = trackingMode;
+    setTrackingMode(mode);
+    setSavingMode(true);
+    const { error } = await supabase
+      .from("instructors")
+      .update({ tracking_mode: mode })
+      .eq("id", instructorId);
+    setSavingMode(false);
+    if (error) {
+      setTrackingMode(previous);
+      toast.error("Couldn't update device");
+    } else {
+      toast.success(mode === "off" ? "Tracking disabled" : `Using ${mode}`);
+    }
   };
 
   const fetchGpsStatus = useCallback(async () => {
