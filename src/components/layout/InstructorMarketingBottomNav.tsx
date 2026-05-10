@@ -36,7 +36,7 @@ export function InstructorMarketingBottomNav() {
           );
         })}
       </div>
-      <div className="h-safe-area-inset-bottom bg-primary" />
+      <div style={{ backgroundColor: "#09507f" }} className="h-safe-area-inset-bottom" />
     </nav>
   );
 }
