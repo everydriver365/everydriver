@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettingsDirty } from "./SettingsDirtyContext";
 import { toast } from "@/hooks/use-toast";
 import { isValidOutwardCode, extractOutwardCode, resolveHourlyRate } from "@/lib/pricing/resolveHourlyRate";
+import { verifyOutwardCode, getCachedOutwardStatus, type OutwardStatus } from "@/lib/pricing/verifyOutwardCode";
 
 interface InstructorRow {
   hourly_rate: number | null;
@@ -270,15 +271,18 @@ export function PostcodeRatesSection({ instructorId }: { instructorId: string })
             return (
               <div key={rule.id} className="grid items-start gap-2"
                    style={{ gridTemplateColumns: "minmax(110px, 160px) minmax(120px, 1fr) auto auto" }}>
-                <input
-                  value={rule.outward_code}
-                  maxLength={4}
-                  placeholder="SO22"
-                  disabled={busy}
-                  onChange={e => updateLocal(rule.id, { outward_code: e.target.value.replace(/\s+/g, "").toUpperCase().slice(0, 4) })}
-                  className="rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2"
-                  style={{ borderColor: "hsl(var(--border) / 0.6)" }}
-                />
+                <div>
+                  <input
+                    value={rule.outward_code}
+                    maxLength={4}
+                    placeholder="SO22"
+                    disabled={busy}
+                    onChange={e => updateLocal(rule.id, { outward_code: e.target.value.replace(/\s+/g, "").toUpperCase().slice(0, 4) })}
+                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2"
+                    style={{ borderColor: "hsl(var(--border) / 0.6)" }}
+                  />
+                  <OutwardStatusBadge code={rule.outward_code} />
+                </div>
                 <input
                   type="number" inputMode="decimal" step="0.50" min="0"
                   placeholder="£/hour"
@@ -427,8 +431,9 @@ export function PostcodeRatesSection({ instructorId }: { instructorId: string })
                 <div style={{ color: "hsl(0 72% 50%)" }}>Not a recognisable UK postcode.</div>
               ) : (
                 <>
-                  <div className="text-muted-foreground">
-                    Outward code: <span className="font-mono font-medium text-foreground">{outward}</span>
+                  <div className="text-muted-foreground flex items-center gap-2">
+                    <span>Outward code: <span className="font-mono font-medium text-foreground">{outward}</span></span>
+                    <OutwardStatusBadge code={outward || ""} />
                   </div>
                   {match ? (
                     <div>
@@ -591,4 +596,53 @@ function CsvImporter({
       </div>
     </div>
   );
+}
+
+/* ============================================================
+   Outward code verification badge (postcodes.io)
+   ============================================================ */
+function OutwardStatusBadge({ code }: { code: string }) {
+  const trimmed = (code || "").replace(/\s+/g, "").toUpperCase();
+  const formatOk = trimmed.length > 0 && isValidOutwardCode(trimmed);
+  const [status, setStatus] = useState<OutwardStatus>(() =>
+    formatOk ? (getCachedOutwardStatus(trimmed) ?? "unknown") : "unknown"
+  );
+  const lastChecked = useRef<string>("");
+
+  useEffect(() => {
+    if (!formatOk) { setStatus("unknown"); return; }
+    const cached = getCachedOutwardStatus(trimmed);
+    if (cached) { setStatus(cached); return; }
+    const ctrl = new AbortController();
+    const t = setTimeout(async () => {
+      if (lastChecked.current === trimmed) return;
+      lastChecked.current = trimmed;
+      setStatus("checking");
+      const res = await verifyOutwardCode(trimmed, ctrl.signal);
+      setStatus(res);
+    }, 400);
+    return () => { clearTimeout(t); ctrl.abort(); };
+  }, [trimmed, formatOk]);
+
+  if (!trimmed) return null;
+  if (!formatOk) {
+    return <span className="mt-1 inline-block text-[11px]" style={{ color: "hsl(0 72% 50%)" }}>Invalid format</span>;
+  }
+  if (status === "checking" || status === "unknown") {
+    return <span className="mt-1 inline-block text-[11px] text-muted-foreground">Checking…</span>;
+  }
+  if (status === "valid") {
+    return (
+      <span className="mt-1 inline-flex items-center gap-1 text-[11px]" style={{ color: "hsl(142 70% 30%)" }}>
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3 8.5l3.2 3.2L13 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        Verified UK postcode
+      </span>
+    );
+  }
+  if (status === "invalid") {
+    return <span className="mt-1 inline-block text-[11px]" style={{ color: "hsl(28 90% 45%)" }}>Postcode not found</span>;
+  }
+  return <span className="mt-1 inline-block text-[11px] text-muted-foreground">Couldn't verify</span>;
 }
