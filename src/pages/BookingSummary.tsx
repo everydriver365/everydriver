@@ -30,6 +30,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useBookingUpsells } from "@/hooks/useBookingUpsells";
 import { resolveHourlyRate, type PostcodeRateRule } from "@/lib/pricing/resolveHourlyRate";
 import { fetchInstructorPostcodeRules } from "@/hooks/useInstructorPostcodeRules";
+import { applyRateModifiers, loadUkBankHolidays, type RateModifiers } from "@/lib/pricing/applyRateModifiers";
 
 
 interface Instructor {
@@ -123,6 +124,8 @@ export default function BookingSummary() {
   const [postcodeRules, setPostcodeRules] = useState<PostcodeRateRule[]>([]);
   const [baseHourlyRate, setBaseHourlyRate] = useState<number>(40);
   const [schoolSkimAmount, setSchoolSkimAmount] = useState<number>(0);
+  const [rateModifiers, setRateModifiers] = useState<RateModifiers | null>(null);
+  const [bankHolidays, setBankHolidays] = useState<Set<string>>(() => new Set());
   const [loading, setLoading] = useState(true);
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
   const [reviews, setReviews] = useState<CourseReview[]>([]);
@@ -279,7 +282,9 @@ export default function BookingSummary() {
           deposit_enabled, deposit_amount, deposit_deadline_days,
           cancellation_policy_text, booking_mode,
           cash_payments_enabled, klarna_enabled, clearpay_enabled,
-          instant_bank_pay_enabled, school_skim_amount
+          instant_bank_pay_enabled, school_skim_amount,
+          weekend_surcharge_pct, bank_holiday_surcharge_pct,
+          odd_hours_surcharge_pct, odd_hours_start, odd_hours_end
         `).eq("id", instructorId).maybeSingle(),
         supabase.from("course_templates").select("*").eq("course_hours", hours).maybeSingle(),
         supabase.from("instructor_courses").select("course_image_url").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
@@ -315,6 +320,14 @@ export default function BookingSummary() {
       const schoolSkim = instructor.school_skim_amount || 0;
       setBaseHourlyRate(hourlyRate);
       setSchoolSkimAmount(schoolSkim);
+      setRateModifiers({
+        weekend_surcharge_pct: (instructor as any).weekend_surcharge_pct ?? 0,
+        bank_holiday_surcharge_pct: (instructor as any).bank_holiday_surcharge_pct ?? 0,
+        odd_hours_surcharge_pct: (instructor as any).odd_hours_surcharge_pct ?? 0,
+        odd_hours_start: (instructor as any).odd_hours_start ?? null,
+        odd_hours_end: (instructor as any).odd_hours_end ?? null,
+      });
+      loadUkBankHolidays().then(setBankHolidays);
       const courseName = template?.course_name || (hours === 28 ? "Test in a Week" : `${hours} Hour Course`);
       const courseImageUrl = instructorCourse?.course_image_url || template?.default_image_url || null;
 
@@ -838,8 +851,30 @@ export default function BookingSummary() {
     instructorDefaultRate: baseHourlyRate,
     postcodeRules,
   }) ?? baseHourlyRate;
-  const totalPrice = (hours * effectiveHourlyRate) + schoolSkimAmount;
+
+  // Apply weekend / bank-holiday / off-peak surcharges per scheduled slot.
+  // Unscheduled remaining hours fall back to the base effective rate.
+  const scheduledHoursDecimal = selectedSlots.reduce((acc, s) => acc + (s.duration / 60), 0);
+  const remainingHours = Math.max(0, hours - scheduledHoursDecimal);
+  const surchargedSlotsTotal = selectedSlots.reduce((acc, s) => {
+    const dateStr = (() => {
+      const d = s.date instanceof Date ? s.date : new Date(s.date);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    })();
+    const { finalRate } = applyRateModifiers({
+      baseRate: effectiveHourlyRate,
+      lessonDate: dateStr,
+      lessonStartTime: s.startTime,
+      modifiers: rateModifiers,
+      bankHolidaySet: bankHolidays,
+    });
+    return acc + (s.duration / 60) * finalRate;
+  }, 0);
+  const surchargeTotal =
+    Math.round((surchargedSlotsTotal + remainingHours * effectiveHourlyRate) * 100) / 100;
+  const totalPrice = surchargeTotal + schoolSkimAmount;
   const postcodeOverrideActive = effectiveHourlyRate !== baseHourlyRate;
+  const surchargesActive = totalPrice > (hours * effectiveHourlyRate + schoolSkimAmount) + 0.001;
 
 
   // Enquiry-only mode: short-circuit the entire payment/scheduling flow

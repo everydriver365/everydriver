@@ -646,3 +646,143 @@ function OutwardStatusBadge({ code }: { code: string }) {
   }
   return <span className="mt-1 inline-block text-[11px] text-muted-foreground">Couldn't verify</span>;
 }
+
+/* ============================================================
+   Rate modifiers (weekend / bank holiday / off-peak)
+   ============================================================ */
+interface ModifiersDraft {
+  weekend_surcharge_pct: number;
+  bank_holiday_surcharge_pct: number;
+  odd_hours_surcharge_pct: number;
+  odd_hours_start: string; // "HH:MM"
+  odd_hours_end: string;   // "HH:MM"
+}
+
+const trimTime = (t: string | null | undefined): string => (t || "").slice(0, 5);
+
+export function RateModifiersSection({ instructorId }: { instructorId: string }) {
+  const [draft, setDraft] = useState<ModifiersDraft | null>(null);
+  const [orig, setOrig] = useState<ModifiersDraft | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { register, setDirty } = useSettingsDirty();
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("instructors")
+        .select("weekend_surcharge_pct, bank_holiday_surcharge_pct, odd_hours_surcharge_pct, odd_hours_start, odd_hours_end")
+        .eq("id", instructorId)
+        .single();
+      const d: ModifiersDraft = {
+        weekend_surcharge_pct: Number((data as any)?.weekend_surcharge_pct ?? 0),
+        bank_holiday_surcharge_pct: Number((data as any)?.bank_holiday_surcharge_pct ?? 0),
+        odd_hours_surcharge_pct: Number((data as any)?.odd_hours_surcharge_pct ?? 0),
+        odd_hours_start: trimTime((data as any)?.odd_hours_start) || "20:00",
+        odd_hours_end: trimTime((data as any)?.odd_hours_end) || "07:00",
+      };
+      setDraft(d);
+      setOrig(d);
+      setLoading(false);
+    })();
+  }, [instructorId]);
+
+  const dirty = !!draft && !!orig && JSON.stringify(draft) !== JSON.stringify(orig);
+  useEffect(() => { setDirty("rate-modifiers", dirty); }, [dirty, setDirty]);
+
+  useEffect(() => {
+    if (!draft) return;
+    register("rate-modifiers", {
+      save: async () => {
+        const clamp = (n: number) => Math.max(0, Math.min(200, Number(n) || 0));
+        const payload = {
+          weekend_surcharge_pct: clamp(draft.weekend_surcharge_pct),
+          bank_holiday_surcharge_pct: clamp(draft.bank_holiday_surcharge_pct),
+          odd_hours_surcharge_pct: clamp(draft.odd_hours_surcharge_pct),
+          odd_hours_start: draft.odd_hours_start,
+          odd_hours_end: draft.odd_hours_end,
+        };
+        const { error } = await supabase.from("instructors").update(payload).eq("id", instructorId);
+        if (error) { toast({ title: "Couldn't save", description: error.message, variant: "destructive" }); throw error; }
+        setOrig(draft);
+        toast({ title: "Saved" });
+      },
+      reset: () => setDraft(orig),
+    });
+    return () => register("rate-modifiers", null);
+  }, [draft, orig, register, instructorId]);
+
+  if (loading || !draft) return <div className="text-xs text-muted-foreground">Loading…</div>;
+
+  const Row = ({
+    label, hint, value, onChange,
+  }: { label: string; hint: string; value: number; onChange: (n: number) => void }) => (
+    <div className="grid items-center gap-3" style={{ gridTemplateColumns: "1fr 140px" }}>
+      <div>
+        <div className="text-sm font-medium">{label}</div>
+        <div className="text-xs text-muted-foreground">{hint}</div>
+      </div>
+      <div className="relative">
+        <input
+          type="number" inputMode="decimal" step="1" min="0" max="200"
+          value={value}
+          onChange={e => onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+          className="w-full rounded-lg border bg-background pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-2"
+          style={{ borderColor: "hsl(var(--border) / 0.6)" }}
+        />
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Row
+        label="Weekend surcharge"
+        hint="Applied to lessons on Saturday or Sunday."
+        value={draft.weekend_surcharge_pct}
+        onChange={n => setDraft(p => p && ({ ...p, weekend_surcharge_pct: n }))}
+      />
+      <Row
+        label="Bank holiday surcharge"
+        hint="Applied on UK bank holidays. Takes priority over weekend surcharge."
+        value={draft.bank_holiday_surcharge_pct}
+        onChange={n => setDraft(p => p && ({ ...p, bank_holiday_surcharge_pct: n }))}
+      />
+
+      <div className="rounded-xl border p-3" style={{ borderColor: "hsl(var(--border))" }}>
+        <Row
+          label="Off-peak / odd-hours surcharge"
+          hint="Applied when the lesson starts inside the window below."
+          value={draft.odd_hours_surcharge_pct}
+          onChange={n => setDraft(p => p && ({ ...p, odd_hours_surcharge_pct: n }))}
+        />
+        <div className="grid grid-cols-2 gap-3 mt-3">
+          <div>
+            <label className="block text-xs font-medium mb-1.5">Window starts at</label>
+            <input
+              type="time"
+              value={draft.odd_hours_start}
+              onChange={e => setDraft(p => p && ({ ...p, odd_hours_start: e.target.value }))}
+              className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2"
+              style={{ borderColor: "hsl(var(--border) / 0.6)" }}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1.5">Window ends at</label>
+            <input
+              type="time"
+              value={draft.odd_hours_end}
+              onChange={e => setDraft(p => p && ({ ...p, odd_hours_end: e.target.value }))}
+              className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2"
+              style={{ borderColor: "hsl(var(--border) / 0.6)" }}
+            />
+          </div>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Window can wrap midnight (e.g. 20:00 → 07:00). Surcharges stack with each other but bank
+          holiday replaces weekend.
+        </p>
+      </div>
+    </div>
+  );
+}

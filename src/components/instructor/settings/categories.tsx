@@ -49,7 +49,7 @@ import { DashboardLayoutManager } from "@/components/instructor/DashboardLayoutM
 import { AppearanceSettings } from "@/components/instructor/AppearanceSettings";
 import { ResetStatsDialog } from "@/components/instructor/ResetStatsDialog";
 import { FeatureTogglesSettings } from "@/components/instructor/FeatureTogglesSettings";
-import { HourlyRateSection, CoverageSection, PostcodeRatesSection } from "./RatesCoverageSections";
+import { HourlyRateSection, CoverageSection, PostcodeRatesSection, RateModifiersSection } from "./RatesCoverageSections";
 
 /**
  * Returns the 8 settings categories for the instructor portal.
@@ -505,6 +505,12 @@ export function useSettingsCategories(): SettingsCategory[] {
           title: "Postcode rates",
           description: "Charge a different hourly rate for specific postcode areas",
           render: () => <PostcodeRatesSection instructorId={id} />,
+        },
+        {
+          id: "rate-modifiers",
+          title: "Surcharges (weekend, bank holiday, off-peak)",
+          description: "Charge more on weekends, UK bank holidays, or outside normal hours",
+          render: () => <RateModifiersSection instructorId={id} />,
         },
       ],
     },
