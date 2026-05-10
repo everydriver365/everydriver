@@ -69,8 +69,15 @@ export function useSettingsCategories(): SettingsCategory[] {
         {
           id: "profile",
           title: "Profile & contact details",
-          description: "Name, email, phone, bio and rates",
-          render: () => <InstructorDetailsEditor instructorId={id} />,
+          description: "Photo, name, email, phone and bio",
+          render: () => (
+            <div className="space-y-6">
+              <ProfileBasicsEditor instructorId={id} />
+              <div className="border-t pt-6">
+                <InstructorDetailsEditor instructorId={id} />
+              </div>
+            </div>
+          ),
         },
         {
           id: "qualifications",
