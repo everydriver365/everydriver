@@ -326,6 +326,7 @@ export default function Courses() {
   const [courseTemplates, setCourseTemplates] = useState<CourseTemplate[]>([]);
   const [workingHours, setWorkingHours] = useState<WorkingHours[]>([]);
   const [dateOverrides, setDateOverrides] = useState<DateOverride[]>([]);
+  const [postcodeRulesByInstructor, setPostcodeRulesByInstructor] = useState<Record<string, PostcodeRateRule[]>>({});
 
   const monthOptions = useMemo(() => getMonthOptions(), []);
   
