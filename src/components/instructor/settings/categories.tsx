@@ -72,9 +72,15 @@ export function useSettingsCategories(): SettingsCategory[] {
           render: () => <InstructorDetailsEditor instructorId={id} />,
         },
         {
+          id: "qualifications",
+          title: "Qualifications & credentials",
+          description: "ADI badge, DBS, licence and insurance documents",
+          render: () => <QualificationsEditor instructorId={id} />,
+        },
+        {
           id: "compliance",
-          title: "ADI badge, DBS & vehicle docs",
-          description: "Track expiry dates and upload certificates",
+          title: "Vehicle docs & CPD",
+          description: "MOT, road tax and CPD logging",
           render: () => <ComplianceTracker instructorId={id} />,
         },
       ],
