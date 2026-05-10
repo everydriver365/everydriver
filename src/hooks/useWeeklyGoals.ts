@@ -39,7 +39,7 @@ export function useWeeklyGoals(instructorId: string | undefined) {
       const lastWeekEnd = endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
 
       const { data: thisWeekLessons, error: thisWeekError } = await supabase
-        .from("scheduled_lessons").select("duration_minutes, amount_due, status")
+        .from("scheduled_lessons").select("duration_minutes, amount_due, status, pickup_postcode, pupils!inner (postcode, custom_hourly_rate, custom_rate_90min, custom_rate_120min)")
         .eq("instructor_id", instructorId)
         .gte("lesson_date", format(weekStart, "yyyy-MM-dd"))
         .lte("lesson_date", format(weekEnd, "yyyy-MM-dd"))
@@ -47,28 +47,43 @@ export function useWeeklyGoals(instructorId: string | undefined) {
       if (thisWeekError) throw thisWeekError;
 
       const { data: lastWeekLessons, error: lastWeekError } = await supabase
-        .from("scheduled_lessons").select("duration_minutes, amount_due")
+        .from("scheduled_lessons").select("duration_minutes, amount_due, pickup_postcode, pupils!inner (postcode, custom_hourly_rate, custom_rate_90min, custom_rate_120min)")
         .eq("instructor_id", instructorId)
         .gte("lesson_date", format(lastWeekStart, "yyyy-MM-dd"))
         .lte("lesson_date", format(lastWeekEnd, "yyyy-MM-dd"))
         .neq("status", "cancelled");
       if (lastWeekError) throw lastWeekError;
 
-      const { data: instructor } = await supabase
-        .from("instructors").select("hourly_rate").eq("id", instructorId).maybeSingle();
+      const [{ data: instructor }, postcodeRules] = await Promise.all([
+        supabase.from("instructors").select("hourly_rate").eq("id", instructorId).maybeSingle(),
+        fetchInstructorPostcodeRules(instructorId),
+      ]);
 
       const hourlyRate = instructor?.hourly_rate || 35;
+      const sumEarnings = (rows: any[] | null | undefined) =>
+        (rows ?? []).reduce((s, l) => s + computeLessonAmount({
+          durationMinutes: l.duration_minutes || 0,
+          amountDue: l.amount_due,
+          pupilCustomRate: l.pupils?.custom_hourly_rate,
+          pupilCustomRate90: l.pupils?.custom_rate_90min,
+          pupilCustomRate120: l.pupils?.custom_rate_120min,
+          pupilPostcode: l.pupils?.postcode,
+          lessonPostcode: l.pickup_postcode,
+          instructorDefaultRate: hourlyRate,
+          postcodeRules,
+        }), 0);
       const minutesThisWeek = thisWeekLessons?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0;
       const minutesLastWeek = lastWeekLessons?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0;
       const hoursThisWeek = minutesThisWeek / 60;
       const hoursLastWeek = minutesLastWeek / 60;
       const hoursGoal = Math.max(30, Math.ceil(hoursLastWeek * 1.1));
-      const earningsThisWeek = hoursThisWeek * hourlyRate;
-      const earningsLastWeek = hoursLastWeek * hourlyRate;
+      const earningsThisWeek = sumEarnings(thisWeekLessons);
+      const earningsLastWeek = sumEarnings(lastWeekLessons);
       const progressPercent = hoursGoal > 0 ? Math.round((hoursThisWeek / hoursGoal) * 100) : 0;
       const dayOfWeek = now.getDay();
       const daysIntoPeriod = dayOfWeek === 0 ? 7 : dayOfWeek;
       const expectedPace = Math.round((daysIntoPeriod / 7) * 100);
+
 
       return {
         hoursThisWeek: Math.round(hoursThisWeek * 10) / 10,
