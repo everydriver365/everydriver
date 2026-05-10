@@ -123,6 +123,11 @@ export function MobileHomepage() {
             <Menu className="h-5 w-5" />
           </Button>
           <img src={routeLogo.logo} alt={routeLogo.logoAlt} className="h-8 -mx-1" />
+          {routeLogo.logoText && (
+            <span className="text-xs font-semibold text-primary-foreground leading-tight">
+              {routeLogo.logoText}
+            </span>
+          )}
         </div>
         <Button 
           variant="outline" 
