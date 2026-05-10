@@ -377,6 +377,100 @@ export function PostcodeRatesSection({ instructorId }: { instructorId: string })
         />
       )}
 
+      {(() => {
+        const trimmed = testPostcode.trim();
+        if (!trimmed) {
+          return (
+            <div className="mt-4 rounded-xl border p-3" style={{ borderColor: "hsl(var(--border))" }}>
+              <label className="block text-xs font-medium mb-1.5">Test a learner postcode</label>
+              <input
+                value={testPostcode}
+                onChange={e => setTestPostcode(e.target.value.toUpperCase())}
+                placeholder="e.g. SO22 5DR"
+                className="w-full max-w-xs rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2"
+                style={{ borderColor: "hsl(var(--border) / 0.6)" }}
+              />
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Enter a postcode to preview which rate would apply.
+              </p>
+            </div>
+          );
+        }
+        const outward = extractOutwardCode(trimmed);
+        const persistedRules = draftRules
+          .filter(r => r._persisted)
+          .map(r => ({ outward_code: r.outward_code, hourly_rate: Number(r.hourly_rate) || 0 }));
+        const match = outward
+          ? persistedRules.find(r => r.outward_code.toUpperCase() === outward)
+          : null;
+        const resolved = resolveHourlyRate({
+          pupilPostcode: trimmed,
+          instructorDefaultRate: defaultRate,
+          postcodeRules: persistedRules,
+        });
+        const valid = !!outward;
+        return (
+          <div
+            className="mt-4 rounded-xl border p-3"
+            style={{ borderColor: match ? "hsl(142 70% 40% / 0.5)" : "hsl(var(--border))" }}
+          >
+            <label className="block text-xs font-medium mb-1.5">Test a learner postcode</label>
+            <input
+              value={testPostcode}
+              onChange={e => setTestPostcode(e.target.value.toUpperCase())}
+              placeholder="e.g. SO22 5DR"
+              className="w-full max-w-xs rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2"
+              style={{ borderColor: "hsl(var(--border) / 0.6)" }}
+            />
+            <div className="mt-2 text-xs space-y-1">
+              {!valid ? (
+                <div style={{ color: "hsl(0 72% 50%)" }}>Not a recognisable UK postcode.</div>
+              ) : (
+                <>
+                  <div className="text-muted-foreground">
+                    Outward code: <span className="font-mono font-medium text-foreground">{outward}</span>
+                  </div>
+                  {match ? (
+                    <div>
+                      <span
+                        className="inline-block rounded-full px-2 py-0.5 text-[11px] font-medium mr-2"
+                        style={{ background: "hsl(142 70% 40% / 0.15)", color: "hsl(142 70% 30%)" }}
+                      >
+                        Postcode rule
+                      </span>
+                      Uses <span className="font-semibold text-foreground">£{match.hourly_rate.toFixed(2)}/hr</span> from your{" "}
+                      <span className="font-mono">{match.outward_code}</span> rule.
+                    </div>
+                  ) : (
+                    <div>
+                      <span
+                        className="inline-block rounded-full px-2 py-0.5 text-[11px] font-medium mr-2"
+                        style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}
+                      >
+                        Default
+                      </span>
+                      No matching rule. Falls back to default{" "}
+                      {defaultRate != null
+                        ? <>rate <span className="font-semibold text-foreground">£{defaultRate.toFixed(2)}/hr</span>.</>
+                        : <>hourly rate (not set).</>}
+                    </div>
+                  )}
+                  {resolved != null && (
+                    <div className="text-muted-foreground">
+                      Effective rate: <span className="font-semibold text-foreground">£{resolved.toFixed(2)}/hr</span>{" "}
+                      (a 1-hour lesson would cost £{resolved.toFixed(2)})
+                    </div>
+                  )}
+                  <div className="text-muted-foreground italic">
+                    Note: a pupil's own custom rate would still override this.
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
       <p className="mt-3 text-xs text-muted-foreground">
         Priority: pupil's custom rate → matching postcode rule → default hourly rate.
       </p>
