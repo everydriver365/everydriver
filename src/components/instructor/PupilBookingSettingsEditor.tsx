@@ -114,7 +114,7 @@ export function PupilBookingSettingsEditor({ instructorId }: PupilBookingSetting
     );
   }
 
-  const hasChanges = localSettings !== null;
+  
 
   return (
     <div className="space-y-6">
