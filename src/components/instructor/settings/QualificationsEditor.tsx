@@ -303,37 +303,74 @@ export function QualificationsEditor({ instructorId }: Props) {
 
   const adiBadgeValid = !form.adi_badge_number || /^\d{6}$/.test(form.adi_badge_number);
 
-  const save = async () => {
-    if (!adiBadgeValid) {
+  const SECTIONS: Record<string, (keyof Form)[]> = {
+    adi: ["adi_badge_number", "adi_badge_expiry", "adi_grade", "adi_certificate_url"],
+    dbs: ["dbs_certificate_issued", "dbs_certificate_expiry", "dbs_certificate_url"],
+    licence: ["driving_licence_number", "driving_licence_expiry"],
+    insurance: ["insurance_provider", "insurance_policy_number", "car_insurance_expiry", "insurance_certificate_url"],
+    experience: ["years_experience_adi", "additional_certifications"],
+  };
+
+  const sectionDirty = (keys: (keyof Form)[]) =>
+    keys.some((k) => JSON.stringify(form[k]) !== JSON.stringify(original[k]));
+
+  const [savingSection, setSavingSection] = useState<string | null>(null);
+
+  const saveSection = async (sectionKey: string) => {
+    const keys = SECTIONS[sectionKey];
+    if (sectionKey === "adi" && !adiBadgeValid) {
       toast.error("ADI badge number must be 6 digits");
       return;
     }
-    setSaving(true);
-    const payload: any = {
-      adi_badge_number: form.adi_badge_number || null,
-      adi_badge_expiry: form.adi_badge_expiry || null,
-      adi_grade: form.adi_grade || null,
-      adi_certificate_url: form.adi_certificate_url,
-      dbs_certificate_issued: form.dbs_certificate_issued || null,
-      dbs_certificate_expiry: form.dbs_certificate_expiry || null,
-      dbs_certificate_url: form.dbs_certificate_url,
-      driving_licence_number: form.driving_licence_number || null,
-      driving_licence_expiry: form.driving_licence_expiry || null,
-      insurance_provider: form.insurance_provider || null,
-      insurance_policy_number: form.insurance_policy_number || null,
-      car_insurance_expiry: form.car_insurance_expiry || null,
-      insurance_certificate_url: form.insurance_certificate_url,
-      years_experience_adi: form.years_experience_adi ? parseInt(form.years_experience_adi, 10) : null,
-      additional_certifications: form.additional_certifications,
-    };
+    setSavingSection(sectionKey);
+    const payload: any = {};
+    for (const k of keys) {
+      let v: any = form[k];
+      if (k === "years_experience_adi") v = v ? parseInt(v as string, 10) : null;
+      else if (k === "additional_certifications") v = v ?? [];
+      else if (typeof v === "string") v = v || null;
+      payload[k] = v;
+    }
     const { error } = await supabase.from("instructors").update(payload).eq("id", instructorId);
-    setSaving(false);
+    setSavingSection(null);
     if (error) {
       toast.error(error.message);
       return;
     }
-    setOriginal(form);
-    toast.success("Qualifications saved");
+    setOriginal((o) => ({ ...o, ...keys.reduce((a, k) => ({ ...a, [k]: form[k] }), {} as Partial<Form>) }));
+    toast.success("Saved");
+  };
+
+  const SectionFooter = ({ sectionKey }: { sectionKey: string }) => {
+    const keys = SECTIONS[sectionKey];
+    const isDirty = sectionDirty(keys);
+    const isSaving = savingSection === sectionKey;
+    return (
+      <div className="flex items-center justify-end gap-2 pt-3 mt-1" style={{ borderTop: "0.5px solid hsl(var(--border))" }}>
+        {isDirty && (
+          <button
+            type="button"
+            onClick={() =>
+              setForm((f) => ({ ...f, ...keys.reduce((a, k) => ({ ...a, [k]: original[k] }), {} as Partial<Form>) }))
+            }
+            className="h-8 px-3 text-[12px] bg-white hover:bg-muted/40"
+            style={{ border: "0.5px solid hsl(var(--border))", borderRadius: 8, fontWeight: 500 }}
+          >
+            Cancel
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => saveSection(sectionKey)}
+          disabled={!isDirty || isSaving}
+          className="h-8 px-3 text-[12px] inline-flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+          style={{ background: "#111827", color: "#FFFFFF", borderRadius: 8, fontWeight: 500 }}
+        >
+          {isSaving && <Loader2 size={12} className="animate-spin" />}
+          Save
+        </button>
+      </div>
+    );
   };
 
   if (loading) {
