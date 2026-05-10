@@ -299,15 +299,7 @@ export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
           </div>
         </div>
 
-        {/* Save button */}
-        <Button onClick={handleSave} disabled={saving} className="w-full">
-          {saving ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Save className="h-4 w-4 mr-2" />
-          )}
-          Save Settings
-        </Button>
+        {/* Save handled by the sticky settings save bar */}
       </CardContent>
     </Card>
   );
