@@ -12,6 +12,11 @@ const bookingSlotSchema = z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, "Invalid time format"),
   endTime: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, "Invalid time format"),
   duration: z.number().int().min(15).max(600),
+  // Optional pricing snapshot captured at checkout (per-hour rate already
+  // including postcode override + surcharge, plus the £/hr surcharge portion).
+  pricePerHour: z.number().min(0).max(10000).optional(),
+  surchargeAmount: z.number().min(0).max(10000).optional(),
+  amountDue: z.number().min(0).max(100000).optional(),
 });
 
 const bookingSchema = z.object({
@@ -129,6 +134,11 @@ serve(async (req) => {
         lesson_type: "driving",
         status: "scheduled",
         payment_status: "pending",
+        // Pricing snapshot at booking — preserves the rate paid even if the
+        // instructor later changes their hourly rate or surcharges.
+        ...(slot.pricePerHour != null ? { price_per_hour: slot.pricePerHour } : {}),
+        ...(slot.surchargeAmount != null ? { surcharge_amount: slot.surchargeAmount } : {}),
+        ...(slot.amountDue != null ? { amount_due: slot.amountDue } : {}),
       }));
 
       const { data: lessonData, error: lessonsError } = await supabase

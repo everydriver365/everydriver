@@ -15130,6 +15130,7 @@ export type Database = {
           pickup_what3words: string | null
           planned_competencies: string[] | null
           prepaid_hours_used: number | null
+          price_per_hour: number | null
           pupil_id: string
           recurrence_parent_id: string | null
           recurrence_rule: string | null
@@ -15137,6 +15138,7 @@ export type Database = {
           reminder_24h_sent_at: string | null
           start_time: string
           status: string
+          surcharge_amount: number
           test_centre_id: string | null
           trip_auto_linked_at: string | null
           updated_at: string
@@ -15178,6 +15180,7 @@ export type Database = {
           pickup_what3words?: string | null
           planned_competencies?: string[] | null
           prepaid_hours_used?: number | null
+          price_per_hour?: number | null
           pupil_id: string
           recurrence_parent_id?: string | null
           recurrence_rule?: string | null
@@ -15185,6 +15188,7 @@ export type Database = {
           reminder_24h_sent_at?: string | null
           start_time: string
           status?: string
+          surcharge_amount?: number
           test_centre_id?: string | null
           trip_auto_linked_at?: string | null
           updated_at?: string
@@ -15226,6 +15230,7 @@ export type Database = {
           pickup_what3words?: string | null
           planned_competencies?: string[] | null
           prepaid_hours_used?: number | null
+          price_per_hour?: number | null
           pupil_id?: string
           recurrence_parent_id?: string | null
           recurrence_rule?: string | null
@@ -15233,6 +15238,7 @@ export type Database = {
           reminder_24h_sent_at?: string | null
           start_time?: string
           status?: string
+          surcharge_amount?: number
           test_centre_id?: string | null
           trip_auto_linked_at?: string | null
           updated_at?: string
