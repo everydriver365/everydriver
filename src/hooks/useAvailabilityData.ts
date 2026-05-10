@@ -44,6 +44,21 @@ export const DEFAULT_RULES: BookingRules = {
   availableFrom: null,
 };
 
+/**
+ * Effective buffer between two adjacent lessons.
+ * If either lesson's pupil has a `travel_time_minutes` override, take the larger
+ * of (override, default) so neither pupil's travel requirement is violated.
+ */
+export function effectiveBufferMinutes(
+  defaultBuffer: number,
+  a?: { travel_time_minutes?: number | null } | null,
+  b?: { travel_time_minutes?: number | null } | null,
+): number {
+  const av = a?.travel_time_minutes ?? defaultBuffer;
+  const bv = b?.travel_time_minutes ?? defaultBuffer;
+  return Math.max(av, bv);
+}
+
 export function useAvailabilityData(instructorId: string | undefined) {
   return useQuery({
     queryKey: ["availability-page", instructorId],
