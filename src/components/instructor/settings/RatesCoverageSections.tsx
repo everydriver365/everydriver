@@ -597,3 +597,52 @@ function CsvImporter({
     </div>
   );
 }
+
+/* ============================================================
+   Outward code verification badge (postcodes.io)
+   ============================================================ */
+function OutwardStatusBadge({ code }: { code: string }) {
+  const trimmed = (code || "").replace(/\s+/g, "").toUpperCase();
+  const formatOk = trimmed.length > 0 && isValidOutwardCode(trimmed);
+  const [status, setStatus] = useState<OutwardStatus>(() =>
+    formatOk ? (getCachedOutwardStatus(trimmed) ?? "unknown") : "unknown"
+  );
+  const lastChecked = useRef<string>("");
+
+  useEffect(() => {
+    if (!formatOk) { setStatus("unknown"); return; }
+    const cached = getCachedOutwardStatus(trimmed);
+    if (cached) { setStatus(cached); return; }
+    const ctrl = new AbortController();
+    const t = setTimeout(async () => {
+      if (lastChecked.current === trimmed) return;
+      lastChecked.current = trimmed;
+      setStatus("checking");
+      const res = await verifyOutwardCode(trimmed, ctrl.signal);
+      setStatus(res);
+    }, 400);
+    return () => { clearTimeout(t); ctrl.abort(); };
+  }, [trimmed, formatOk]);
+
+  if (!trimmed) return null;
+  if (!formatOk) {
+    return <span className="mt-1 inline-block text-[11px]" style={{ color: "hsl(0 72% 50%)" }}>Invalid format</span>;
+  }
+  if (status === "checking" || status === "unknown") {
+    return <span className="mt-1 inline-block text-[11px] text-muted-foreground">Checking…</span>;
+  }
+  if (status === "valid") {
+    return (
+      <span className="mt-1 inline-flex items-center gap-1 text-[11px]" style={{ color: "hsl(142 70% 30%)" }}>
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3 8.5l3.2 3.2L13 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        Verified UK postcode
+      </span>
+    );
+  }
+  if (status === "invalid") {
+    return <span className="mt-1 inline-block text-[11px]" style={{ color: "hsl(28 90% 45%)" }}>Postcode not found</span>;
+  }
+  return <span className="mt-1 inline-block text-[11px] text-muted-foreground">Couldn't verify</span>;
+}
