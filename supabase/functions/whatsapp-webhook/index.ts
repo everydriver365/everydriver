@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
         perInstructorToken = acct.access_token;
         const { data: instr } = await supabase
           .from("instructors")
-          .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone")
+          .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end")
           .eq("id", acct.instructor_id)
           .maybeSingle();
         targetInstructor = instr;
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
     if (!targetInstructor) {
       const { data: instructor } = await supabase
         .from("instructors")
-        .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone")
+        .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end")
         .or(`whatsapp_phone.eq.${senderPhone},phone.eq.${senderPhone}`)
         .maybeSingle();
       targetInstructor = instructor;
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
     if (!targetInstructor) {
       const { data: fallback } = await supabase
         .from("instructors")
-        .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone")
+        .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end")
         .eq("ai_receptionist_enabled", true)
         .limit(1)
         .maybeSingle();
@@ -313,7 +313,7 @@ async function handleWidgetMessage(body: any) {
     // Widget is on an instructor's page — forward to that instructor's WhatsApp
     const { data: instr } = await supabase
       .from("instructors")
-      .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone")
+      .select("id, name, hourly_rate, car_details, postcode, ai_receptionist_enabled, whatsapp_phone, phone, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end")
       .eq("id", instructor_id)
       .maybeSingle();
 
