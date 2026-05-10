@@ -4,6 +4,9 @@ import { addDays, format, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeHub";
 import { useQueryClient } from "@tanstack/react-query";
+import { computeLessonAmount } from "@/lib/pricing/resolveHourlyRate";
+import { fetchInstructorPostcodeRules } from "@/hooks/useInstructorPostcodeRules";
+
 
 export interface ScheduleLesson {
   id: string;
