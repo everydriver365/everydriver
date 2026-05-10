@@ -18134,6 +18134,7 @@ export type Database = {
           booking_mode: string | null
           brand_colour: string | null
           buffer_minutes: number | null
+          business_name: string | null
           cancellation_charge_percent: number | null
           cancellation_policy_hours: number | null
           cancellation_policy_text: string | null
@@ -18149,6 +18150,7 @@ export type Database = {
           deposit_amount: number | null
           deposit_deadline_days: number | null
           deposit_enabled: boolean | null
+          email: string | null
           extra_info: string | null
           facebook_url: string | null
           hero_image_url: string | null
@@ -18171,6 +18173,7 @@ export type Database = {
           odd_hours_start: string | null
           odd_hours_surcharge_amount: number | null
           personal_website_url: string | null
+          phone: string | null
           preferred_lesson_length: number | null
           profile_image_url: string | null
           pupil_app_dark_mode: boolean | null
@@ -18201,6 +18204,7 @@ export type Database = {
           booking_mode?: string | null
           brand_colour?: string | null
           buffer_minutes?: number | null
+          business_name?: string | null
           cancellation_charge_percent?: number | null
           cancellation_policy_hours?: number | null
           cancellation_policy_text?: string | null
@@ -18216,6 +18220,7 @@ export type Database = {
           deposit_amount?: number | null
           deposit_deadline_days?: number | null
           deposit_enabled?: boolean | null
+          email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
           hero_image_url?: string | null
@@ -18238,6 +18243,7 @@ export type Database = {
           odd_hours_start?: string | null
           odd_hours_surcharge_amount?: number | null
           personal_website_url?: string | null
+          phone?: string | null
           preferred_lesson_length?: number | null
           profile_image_url?: string | null
           pupil_app_dark_mode?: boolean | null
@@ -18268,6 +18274,7 @@ export type Database = {
           booking_mode?: string | null
           brand_colour?: string | null
           buffer_minutes?: number | null
+          business_name?: string | null
           cancellation_charge_percent?: number | null
           cancellation_policy_hours?: number | null
           cancellation_policy_text?: string | null
@@ -18283,6 +18290,7 @@ export type Database = {
           deposit_amount?: number | null
           deposit_deadline_days?: number | null
           deposit_enabled?: boolean | null
+          email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
           hero_image_url?: string | null
@@ -18305,6 +18313,7 @@ export type Database = {
           odd_hours_start?: string | null
           odd_hours_surcharge_amount?: number | null
           personal_website_url?: string | null
+          phone?: string | null
           preferred_lesson_length?: number | null
           profile_image_url?: string | null
           pupil_app_dark_mode?: boolean | null
