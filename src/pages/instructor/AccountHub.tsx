@@ -206,22 +206,19 @@ export default function AccountHub() {
             </div>
           </TabsContent>
 
-          <TabsContent value="notifications">
-            <div className="bg-card rounded-2xl border p-6 space-y-4">
-              <div>
-                <p className="font-medium">Notifications</p>
-                <p className="text-sm text-muted-foreground">Choose what alerts you receive and how (push, email, SMS).</p>
-              </div>
-              <Button asChild className="w-full sm:w-auto">
-                <Link to="/instructor/settings/notifications">Open notification settings</Link>
+          <TabsContent value="notifications" className="space-y-4">
+            <div className="bg-card rounded-2xl border p-6">
+              <NotificationPreferencesPanel instructorId={instructorId!} />
+            </div>
+            <div className="bg-card rounded-2xl border p-6">
+              <PushNotificationSettings instructorId={instructorId!} />
+            </div>
+            <div className="bg-card rounded-2xl border p-6">
+              <p className="font-medium flex items-center gap-2"><SettingsIcon className="h-4 w-4 text-muted-foreground" />All settings</p>
+              <p className="text-sm text-muted-foreground mb-2">Branding, terms, integrations, AI call answering and more.</p>
+              <Button asChild variant="outline" className="w-full sm:w-auto">
+                <Link to="/instructor/settings">Open all settings <ChevronRight className="h-4 w-4 ml-1" /></Link>
               </Button>
-              <div className="pt-2 border-t">
-                <p className="font-medium flex items-center gap-2"><SettingsIcon className="h-4 w-4 text-muted-foreground" />All settings</p>
-                <p className="text-sm text-muted-foreground mb-2">Branding, terms, integrations, AI call answering and more.</p>
-                <Button asChild variant="outline" className="w-full sm:w-auto">
-                  <Link to="/instructor/settings">Open all settings <ChevronRight className="h-4 w-4 ml-1" /></Link>
-                </Button>
-              </div>
             </div>
           </TabsContent>
 
