@@ -271,15 +271,18 @@ export function PostcodeRatesSection({ instructorId }: { instructorId: string })
             return (
               <div key={rule.id} className="grid items-start gap-2"
                    style={{ gridTemplateColumns: "minmax(110px, 160px) minmax(120px, 1fr) auto auto" }}>
-                <input
-                  value={rule.outward_code}
-                  maxLength={4}
-                  placeholder="SO22"
-                  disabled={busy}
-                  onChange={e => updateLocal(rule.id, { outward_code: e.target.value.replace(/\s+/g, "").toUpperCase().slice(0, 4) })}
-                  className="rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2"
-                  style={{ borderColor: "hsl(var(--border) / 0.6)" }}
-                />
+                <div>
+                  <input
+                    value={rule.outward_code}
+                    maxLength={4}
+                    placeholder="SO22"
+                    disabled={busy}
+                    onChange={e => updateLocal(rule.id, { outward_code: e.target.value.replace(/\s+/g, "").toUpperCase().slice(0, 4) })}
+                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2"
+                    style={{ borderColor: "hsl(var(--border) / 0.6)" }}
+                  />
+                  <OutwardStatusBadge code={rule.outward_code} />
+                </div>
                 <input
                   type="number" inputMode="decimal" step="0.50" min="0"
                   placeholder="£/hour"
