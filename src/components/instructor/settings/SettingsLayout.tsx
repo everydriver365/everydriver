@@ -1,11 +1,12 @@
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Search, type LucideIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen, Search, type LucideIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 const SIDEBAR_WIDTH_KEY = "instructor-settings-sidebar-width";
+const SIDEBAR_COLLAPSED_KEY = "instructor-settings-sidebar-collapsed";
 const SIDEBAR_MIN = 220;
 const SIDEBAR_MAX = 480;
 const SIDEBAR_DEFAULT = 288;
@@ -142,30 +143,73 @@ export function SettingsLayout({ categories, search, onSearchChange }: SettingsL
     document.body.style.userSelect = "none";
   };
 
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
+  });
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
+      } catch {}
+      return next;
+    });
+  };
+
   return (
-    <div className="flex gap-0 pb-12">
-      <aside className="shrink-0" style={{ width: sidebarWidth }}>
-        <SearchBar value={search} onChange={onSearchChange} />
-        <div className="mt-3">
-          <CategoryList
-            categories={filteredCategories}
-            activeId={activeCategory?.id}
-            onSelect={(id) => navigate(`/instructor/settings/${id}`)}
-            compact
+    <div className="flex gap-0 pb-12 relative">
+      {!collapsed && (
+        <>
+          <aside className="shrink-0" style={{ width: sidebarWidth }}>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 min-w-0">
+                <SearchBar value={search} onChange={onSearchChange} />
+              </div>
+              <button
+                type="button"
+                onClick={toggleCollapsed}
+                title="Collapse sidebar"
+                aria-label="Collapse sidebar"
+                className="inline-flex items-center justify-center h-10 w-10 rounded-xl bg-card border border-border/50 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+              >
+                <PanelLeftClose className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="mt-3">
+              <CategoryList
+                categories={filteredCategories}
+                activeId={activeCategory?.id}
+                onSelect={(id) => navigate(`/instructor/settings/${id}`)}
+                compact
+              />
+            </div>
+          </aside>
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            onMouseDown={startDrag}
+            onDoubleClick={() => {
+              setSidebarWidth(SIDEBAR_DEFAULT);
+              try { window.localStorage.setItem(SIDEBAR_WIDTH_KEY, String(SIDEBAR_DEFAULT)); } catch {}
+            }}
+            title="Drag to resize · double-click to reset"
+            className="mx-2 w-1.5 cursor-col-resize rounded-full bg-transparent hover:bg-border/80 active:bg-border transition-colors"
           />
-        </div>
-      </aside>
-      <div
-        role="separator"
-        aria-orientation="vertical"
-        onMouseDown={startDrag}
-        onDoubleClick={() => {
-          setSidebarWidth(SIDEBAR_DEFAULT);
-          try { window.localStorage.setItem(SIDEBAR_WIDTH_KEY, String(SIDEBAR_DEFAULT)); } catch {}
-        }}
-        title="Drag to resize · double-click to reset"
-        className="mx-2 w-1.5 cursor-col-resize rounded-full bg-transparent hover:bg-border/80 active:bg-border transition-colors"
-      />
+        </>
+      )}
+      {collapsed && (
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          title="Expand sidebar"
+          aria-label="Expand sidebar"
+          className="shrink-0 mr-3 inline-flex items-center justify-center h-10 w-10 rounded-xl bg-card border border-border/50 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors self-start"
+        >
+          <PanelLeftOpen className="h-4 w-4" />
+        </button>
+      )}
       <main className="flex-1 min-w-0">
         {activeCategory ? (
           <div className="space-y-4">
