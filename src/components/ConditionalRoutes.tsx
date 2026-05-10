@@ -1,4 +1,5 @@
 import { isInstructorSubdomain, getInstructorSubdomain } from "@/components/DomainRouter";
+import { getWhitelabelConfig } from "@/lib/whitelabel";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import MiniWebsiteAbout from "@/pages/mini-website/MiniWebsiteAbout";
