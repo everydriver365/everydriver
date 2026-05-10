@@ -57,15 +57,16 @@ export function AccountSecurityPanel() {
     return () => { active = false; };
   }, []);
 
-  const reauth = async (): Promise<{ ok: true } | { ok: false; message: string }> => {
-    if (!isPasswordUser) return { ok: true };
-    if (!currentPassword) return { ok: false, message: "Enter your current password to continue." };
+  /** Returns null on success, or an error message string on failure. */
+  const reauth = async (): Promise<string | null> => {
+    if (!isPasswordUser) return null;
+    if (!currentPassword) return "Enter your current password to continue.";
     const { error } = await supabase.auth.signInWithPassword({
       email: currentEmail,
       password: currentPassword,
     });
-    if (error) return { ok: false, message: "Current password is incorrect." };
-    return { ok: true };
+    if (error) return "Current password is incorrect.";
+    return null;
   };
 
   const handleEmailUpdate = async () => {
@@ -77,9 +78,9 @@ export function AccountSecurityPanel() {
     }
     setSavingEmail(true);
     const auth = await reauth();
-    if (auth.ok === false) {
+    if (auth) {
       setSavingEmail(false);
-      setEmailError(auth.message);
+      setEmailError(auth);
       return;
     }
     const { error } = await supabase.auth.updateUser(
@@ -109,9 +110,9 @@ export function AccountSecurityPanel() {
     }
     setSavingPwd(true);
     const auth = await reauth();
-    if (auth.ok === false) {
+    if (auth) {
       setSavingPwd(false);
-      setPwdError(auth.message);
+      setPwdError(auth);
       return;
     }
     const { error } = await supabase.auth.updateUser({ password });
