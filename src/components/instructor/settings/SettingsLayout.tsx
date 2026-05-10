@@ -251,7 +251,7 @@ function CategoryList({
   compact?: boolean;
 }) {
   return (
-    <div className="rounded-2xl bg-card overflow-hidden border border-border/50">
+    <div className="rounded-xl bg-card overflow-hidden border border-border/50">
       {categories.map((cat, idx) => {
         const Icon = cat.icon;
         const isActive = activeId === cat.id;
@@ -261,25 +261,25 @@ function CategoryList({
             type="button"
             onClick={() => onSelect(cat.id)}
             className={cn(
-              "w-full flex items-center gap-3 text-left transition-colors",
-              compact ? "px-3 py-2.5" : "px-4 py-3.5",
+              "w-full flex items-center text-left transition-colors",
+              compact ? "px-2 py-1.5 gap-2" : "px-3 py-2.5 gap-3",
               idx > 0 && "border-t border-border/40",
               isActive ? "bg-accent" : "hover:bg-accent/50",
             )}
           >
             <span
-              className="inline-flex items-center justify-center rounded-xl shrink-0"
+              className="inline-flex items-center justify-center rounded-lg shrink-0"
               style={{
-                width: 36,
-                height: 36,
+                width: compact ? 26 : 32,
+                height: compact ? 26 : 32,
                 backgroundColor: cat.iconBg,
                 color: cat.iconColor,
               }}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className={compact ? "h-3.5 w-3.5" : "h-4 w-4"} />
             </span>
             <span className="flex-1 min-w-0">
-              <span className="block text-[15px] font-medium text-foreground truncate">
+              <span className={cn("block font-medium text-foreground truncate", compact ? "text-[13px]" : "text-[15px]")}>
                 {cat.title}
               </span>
               {!compact && (
