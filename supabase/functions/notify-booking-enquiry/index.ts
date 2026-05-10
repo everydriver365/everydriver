@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
 import { Resend } from "npm:resend@4.0.1";
+import { shouldSendToInstructor } from "../_shared/notify-gate.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -55,7 +56,18 @@ serve(async (req) => {
       whatsappSent: false,
       smsSent: false,
       emailSent: false,
+      gateBlocked: null as string | null,
     };
+
+    // Resolve gate decisions per channel up-front. New enquiries are job leads.
+    const [waGate, smsGate, emailGate] = await Promise.all([
+      shouldSendToInstructor(supabase, instructor.id, { category: "job", channel: "push" }),
+      shouldSendToInstructor(supabase, instructor.id, { category: "job", channel: "sms" }),
+      shouldSendToInstructor(supabase, instructor.id, { category: "job", channel: "email" }),
+    ]);
+    if (!waGate.allow && !smsGate.allow && !emailGate.allow) {
+      results.gateBlocked = waGate.reason ?? smsGate.reason ?? emailGate.reason ?? "blocked";
+    }
 
     // ---- WhatsApp / SMS via existing notify-instructor logic? Use Twilio direct + WhatsApp Business
     const TWILIO_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
@@ -78,7 +90,7 @@ serve(async (req) => {
       }
     } catch (_) { /* ignore */ }
 
-    if (WA_TOKEN && WA_PHONE_ID && instructor.phone) {
+    if (waGate.allow && WA_TOKEN && WA_PHONE_ID && instructor.phone) {
       try {
         const waRes = await fetch(
           `https://graph.facebook.com/v20.0/${WA_PHONE_ID}/messages`,
@@ -104,7 +116,7 @@ serve(async (req) => {
     }
 
     // SMS via Twilio (always send as backup)
-    if (TWILIO_SID && TWILIO_TOKEN && (TWILIO_FROM || TWILIO_MSG_SID) && instructor.phone) {
+    if (smsGate.allow && TWILIO_SID && TWILIO_TOKEN && (TWILIO_FROM || TWILIO_MSG_SID) && instructor.phone) {
       try {
         const params = new URLSearchParams({
           To: instructor.phone,
@@ -133,7 +145,7 @@ serve(async (req) => {
 
     // Email via Resend
     const RESEND_KEY = Deno.env.get("RESEND_API_KEY");
-    if (RESEND_KEY && instructor.email) {
+    if (emailGate.allow && RESEND_KEY && instructor.email) {
       try {
         const resend = new Resend(RESEND_KEY);
         const html = `

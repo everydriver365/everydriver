@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { shouldSendToInstructor } from "../_shared/notify-gate.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -122,8 +123,17 @@ serve(async (req) => {
         const urgencyText = daysUntilExpiry === 1 ? "TOMORROW" : 
                            daysUntilExpiry <= 7 ? "URGENT" : "Reminder";
 
+        // Compliance is treated as system + important so cadence and quiet
+        // hours are bypassed, but a hard category mute still suppresses it.
+        const emailGate = await shouldSendToInstructor(supabase, instructor.id, {
+          category: "system", channel: "email", importance: "important",
+        });
+        const smsGate = await shouldSendToInstructor(supabase, instructor.id, {
+          category: "system", channel: "sms", importance: "important",
+        });
+
         // Send email if Resend is configured
-        if (resendApiKey && instructor.email) {
+        if (emailGate.allow && resendApiKey && instructor.email) {
           try {
             const emailHtml = `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -161,7 +171,7 @@ serve(async (req) => {
         }
 
         // Send SMS for urgent reminders (7 days or less)
-        if (isUrgent && twilioSid && twilioToken && twilioPhone && instructor.phone) {
+        if (smsGate.allow && isUrgent && twilioSid && twilioToken && twilioPhone && instructor.phone) {
           try {
             const formattedPhone = instructor.phone.startsWith("+") 
               ? instructor.phone 
@@ -267,8 +277,15 @@ serve(async (req) => {
                            daysUntilExpiry <= 7 ? "URGENT" : "Reminder";
         const vehicleLabel = `${vehicle.registration}${vehicle.make ? ` (${vehicle.make}${vehicle.model ? ` ${vehicle.model}` : ''})` : ''}`;
 
+        const vEmailGate = await shouldSendToInstructor(supabase, instructor.id, {
+          category: "system", channel: "email", importance: "important",
+        });
+        const vSmsGate = await shouldSendToInstructor(supabase, instructor.id, {
+          category: "system", channel: "sms", importance: "important",
+        });
+
         // Send email if Resend is configured
-        if (resendApiKey && instructor.email) {
+        if (vEmailGate.allow && resendApiKey && instructor.email) {
           try {
             const emailHtml = `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -307,7 +324,7 @@ serve(async (req) => {
         }
 
         // Send SMS for urgent reminders (7 days or less)
-        if (isUrgent && twilioSid && twilioToken && twilioPhone && instructor.phone) {
+        if (vSmsGate.allow && isUrgent && twilioSid && twilioToken && twilioPhone && instructor.phone) {
           try {
             const formattedPhone = instructor.phone.startsWith("+") 
               ? instructor.phone 
