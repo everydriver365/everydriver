@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 import { InstructorDetailsEditor } from "@/components/instructor/InstructorDetailsEditor";
+import { ProfileBasicsEditor } from "@/components/instructor/ProfileBasicsEditor";
 import { ComplianceTracker } from "@/components/instructor/ComplianceTracker";
 import { QualificationsEditor } from "@/components/instructor/settings/QualificationsEditor";
 import { TestCentresAndExaminersManager } from "@/components/instructor/TestCentresAndExaminersManager";
