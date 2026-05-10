@@ -621,6 +621,11 @@ async function gatherInstructorContext(supabase: any, instructor: any) {
     courses: courses || [],
     workingHours: workingHours || [],
     bookedLessons: bookedLessons || [],
+    weekendSurcharge: instructor.weekend_surcharge_amount,
+    bankHolidaySurcharge: instructor.bank_holiday_surcharge_amount,
+    oddHoursSurcharge: instructor.odd_hours_surcharge_amount,
+    oddHoursStart: instructor.odd_hours_start,
+    oddHoursEnd: instructor.odd_hours_end,
   };
 }
 
