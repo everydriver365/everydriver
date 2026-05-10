@@ -119,7 +119,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 border-t border-primary-foreground/10 pt-8 text-center text-sm text-primary-foreground/50">
-          <p>© {new Date().getFullYear()} Drive365. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {copyrightName}. All rights reserved.</p>
           <div className="mt-2 flex justify-center gap-4">
             <a href="/privacy-policy" className="hover:text-accent">Privacy Policy</a>
             <span>|</span>
