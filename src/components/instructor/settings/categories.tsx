@@ -272,6 +272,12 @@ export function useSettingsCategories(): SettingsCategory[] {
           render: () => <WorkingHoursEditor instructorId={id} />,
         },
         {
+          id: "lesson-length",
+          title: "Lesson length, buffer & bank holidays",
+          description: "Default duration, gap between lessons and bank-holiday auto-block",
+          render: () => <LessonLengthBufferEditor instructorId={id} />,
+        },
+        {
           id: "self-service",
           title: "Pupil self-service booking",
           description: "Let pupils book, cancel and reschedule themselves",
@@ -288,12 +294,6 @@ export function useSettingsCategories(): SettingsCategory[] {
           title: "Lesson reminders",
           description: "Automatic SMS, email and WhatsApp reminders",
           render: () => <ReminderSettings instructorId={id} />,
-        },
-        {
-          id: "lesson-length",
-          title: "Lesson length, buffer & bank holidays",
-          description: "Default duration, gap between lessons and bank-holiday auto-block",
-          render: () => <LessonLengthBufferEditor instructorId={id} />,
         },
       ],
     },
