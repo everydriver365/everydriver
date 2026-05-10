@@ -17,91 +17,45 @@ These cause silent "Failed to save" failures for instructors today.
 | Table | UI ops | INSERT | UPDATE | DELETE |
 | --- | --- | --- | --- | --- |
 | `admin_alerts` | insert,update | ❌ | ❌ | ❌ |
-| `admin_conversations` | insert | ❌ | ❌ | ❌ |
 | `booking_drafts` | insert | ❌ | ❌ | ❌ |
 | `booking_enquiries` | insert,update | ❌ | ✅ | ❌ |
 | `booking_intake_questions` | delete,insert,update | ❌ | ✅ | ✅ |
 | `booking_pages` | delete,insert,update | ❌ | ❌ | ❌ |
-| `churn_events` | insert | ❌ | ❌ | ❌ |
-| `course_reviews` | insert,update | ❌ | ❌ | ❌ |
+| `churn_events` | insert | ❌ | ✅ | ✅ |
+| `course_reviews` | insert,update | ❌ | ✅ | ❌ |
 | `cover_offer_recipients` | upsert | ❌ | ✅ | ❌ |
-| `cpd_log_entries` | delete,insert | ❌ | ❌ | ❌ |
-| `domain_orders` | insert,update,upsert | ❌ | ❌ | ❌ |
-| `doodlepads` | delete,insert,update | ❌ | ❌ | ❌ |
-| `driving_test_results` | delete,insert,update | ❌ | ❌ | ❌ |
-| `examiners` | delete,insert,update | ❌ | ❌ | ❌ |
-| `favourite_locations` | delete,insert,update | ❌ | ❌ | ❌ |
-| `fuel_log` | delete,insert | ❌ | ❌ | ❌ |
-| `gap_offers` | insert,update | ❌ | ❌ | ❌ |
-| `geofence_alerts` | update | ❌ | ❌ | ❌ |
-| `geofences` | delete,insert,update | ❌ | ❌ | ❌ |
-| `gps_devices` | delete,insert,update | ❌ | ❌ | ❌ |
-| `hosting_orders` | insert | ❌ | ❌ | ❌ |
-| `instructor_blood_glucose_logs` | insert | ❌ | ❌ | ❌ |
-| `instructor_blood_pressure_logs` | insert | ❌ | ❌ | ❌ |
-| `instructor_calendar_shares` | insert,update | ❌ | ❌ | ❌ |
-| `instructor_date_overrides` | delete,insert,upsert | ❌ | ❌ | ❌ |
+| `gap_offers` | insert,update | ✅ | ❌ | ❌ |
+| `geofences` | delete,insert,update | ❌ | ✅ | ✅ |
 | `instructor_discount_codes` | delete,insert,update | ❌ | ✅ | ✅ |
-| `instructor_forum_alerts` | update | ❌ | ❌ | ❌ |
-| `instructor_forum_replies` | insert | ❌ | ❌ | ❌ |
-| `instructor_forum_topics` | insert | ❌ | ❌ | ❌ |
-| `instructor_google_service_calendar` | delete,update,upsert | ❌ | ❌ | ❌ |
-| `instructor_health_logs` | upsert | ❌ | ❌ | ❌ |
-| `instructor_health_settings` | upsert | ❌ | ❌ | ❌ |
-| `instructor_manual_blocks` | delete,insert,update | ❌ | ❌ | ❌ |
-| `instructor_referral_settings` | upsert | ❌ | ❌ | ❌ |
-| `instructor_standards_check` | upsert | ❌ | ❌ | ❌ |
+| `instructor_google_service_calendar` | delete,update,upsert | ❌ | ✅ | ✅ |
+| `instructor_standards_check` | upsert | ❌ | ✅ | ✅ |
 | `instructor_subscriptions` | insert,update,upsert | ❌ | ❌ | ❌ |
-| `instructor_terms_conditions` | insert,update | ❌ | ❌ | ❌ |
 | `instructor_test_centres` | delete,insert | ❌ | ❌ | ❌ |
-| `instructor_tile_preferences` | upsert | ❌ | ❌ | ❌ |
-| `instructor_todos` | delete,insert,update | ❌ | ❌ | ❌ |
-| `instructor_tracking_config` | update | ❌ | ❌ | ❌ |
-| `instructor_vehicles` | delete,insert,update | ❌ | ❌ | ❌ |
-| `instructor_water_logs` | upsert | ❌ | ❌ | ❌ |
-| `instructor_website_pages` | update | ❌ | ❌ | ❌ |
-| `instructor_working_hours` | insert,update | ❌ | ❌ | ❌ |
-| `invoices` | delete,insert,update | ❌ | ❌ | ❌ |
-| `lesson_cancellation_requests` | update | ❌ | ❌ | ❌ |
+| `instructor_vehicles` | delete,insert,update | ❌ | ✅ | ✅ |
 | `lesson_packages` | delete,insert,update | ❌ | ✅ | ✅ |
 | `lesson_ratings` | insert | ❌ | ❌ | ❌ |
-| `lesson_reminders` | insert,update | ❌ | ❌ | ❌ |
-| `lesson_telematics` | insert,update | ❌ | ❌ | ❌ |
-| `lesson_waitlist` | insert,update,upsert | ❌ | ❌ | ❌ |
+| `lesson_reminders` | insert,update | ❌ | ✅ | ✅ |
+| `lesson_waitlist` | insert,update,upsert | ❌ | ✅ | ✅ |
 | `live_chat_sessions` | insert,update | ❌ | ❌ | ❌ |
 | `mileage_logs` | delete,insert,update | ❌ | ❌ | ❌ |
 | `parent_conversations` | insert | ❌ | ❌ | ❌ |
 | `platform_commissions` | insert | ❌ | ❌ | ❌ |
 | `pricing_rules` | delete,insert,update | ❌ | ✅ | ✅ |
-| `pupil_assignments` | delete,insert,update | ❌ | ❌ | ❌ |
 | `pupil_packages` | insert | ❌ | ✅ | ✅ |
 | `pupil_reengagement_log` | insert | ❌ | ❌ | ❌ |
-| `pupil_signatures` | insert | ❌ | ❌ | ❌ |
-| `pupil_subscriptions` | insert,update | ❌ | ❌ | ❌ |
-| `pupils` | delete,insert,update | ❌ | ❌ | ❌ |
-| `push_subscriptions` | delete,upsert | ❌ | ❌ | ❌ |
+| `pupil_subscriptions` | insert,update | ❌ | ✅ | ✅ |
 | `quotes` | insert,update | ❌ | ✅ | ✅ |
-| `recurring_expenses` | delete,insert,update | ❌ | ❌ | ❌ |
-| `remote_signing_tokens` | insert,update | ❌ | ❌ | ❌ |
-| `reschedule_requests` | insert | ❌ | ❌ | ❌ |
-| `saved_routes` | delete,insert,update | ❌ | ❌ | ❌ |
-| `scheduled_lessons` | delete,insert,update | ❌ | ❌ | ❌ |
-| `scheduled_reports` | delete,insert,update | ❌ | ❌ | ❌ |
+| `reschedule_requests` | insert | ❌ | ✅ | ❌ |
+| `scheduled_reports` | delete,insert,update | ❌ | ✅ | ✅ |
 | `school_course_instructors` | delete,insert | ❌ | ❌ | ❌ |
 | `school_franchise_fees` | insert,update | ❌ | ❌ | ❌ |
 | `school_instructors` | delete,insert | ❌ | ❌ | ❌ |
-| `slot_offers` | insert,update | ❌ | ❌ | ❌ |
+| `slot_offers` | insert,update | ❌ | ✅ | ✅ |
 | `subscription_payments` | insert,update | ❌ | ❌ | ❌ |
 | `subscription_save_offers` | insert | ❌ | ❌ | ❌ |
-| `syllabus_templates` | delete,insert,update | ❌ | ❌ | ❌ |
-| `test_slot_watches` | delete,insert | ❌ | ❌ | ❌ |
 | `theory_mock_scores` | insert | ❌ | ✅ | ✅ |
 | `tile_health_checks` | insert | ❌ | ❌ | ❌ |
-| `urgent_alerts` | insert,update | ❌ | ❌ | ❌ |
-| `vehicle_security_alerts` | update | ❌ | ❌ | ❌ |
-| `vehicle_security_settings` | insert,update | ❌ | ❌ | ❌ |
-| `vehicle_service_history` | insert | ❌ | ❌ | ❌ |
-| `vehicle_service_reminders` | delete,insert,update | ❌ | ❌ | ❌ |
+| `urgent_alerts` | insert,update | ❌ | ✅ | ❌ |
 | `whatsapp_conversations` | insert,update | ❌ | ❌ | ❌ |
 
 
@@ -113,7 +67,7 @@ Audit logs, system-generated rows, payouts, etc. Instructor reads only.
 | --- | --- | --- | --- | --- |
 | `calendar_sync_queue` | delete,update | ✅ | ✅ | ✅ |
 | `compliance_reminders` | insert | ❌ | ❌ | ❌ |
-| `data_audit_log` | insert | ❌ | ❌ | ❌ |
+| `data_audit_log` | insert | ✅ | ❌ | ❌ |
 | `driver_timesheets` | — | ❌ | ❌ | ❌ |
 | `followup_log` | insert | ❌ | ❌ | ❌ |
 | `funnel_events` | insert | ✅ | ❌ | ❌ |
@@ -124,20 +78,20 @@ Audit logs, system-generated rows, payouts, etc. Instructor reads only.
 | `gps_battery_history` | — | ❌ | ❌ | ❌ |
 | `gps_ignition_events` | — | ❌ | ❌ | ❌ |
 | `instructor_health_alerts` | insert,update | ❌ | ❌ | ❌ |
-| `instructor_notifications` | insert,update | ❌ | ❌ | ❌ |
+| `instructor_notifications` | insert,update | ❌ | ✅ | ❌ |
 | `instructor_payouts` | insert | ❌ | ❌ | ❌ |
 | `instructor_premium_placements` | — | ❌ | ✅ | ❌ |
 | `instructor_reports` | insert | ✅ | ✅ | ✅ |
 | `instructor_weekly_reports` | upsert | ❌ | ❌ | ❌ |
-| `lesson_cancellation_stats` | — | ❌ | ❌ | ❌ |
-| `lesson_history` | delete,insert,update | ❌ | ❌ | ❌ |
+| `lesson_cancellation_stats` | — | ✅ | ✅ | ✅ |
+| `lesson_history` | delete,insert,update | ❌ | ✅ | ✅ |
 | `lesson_reminders_log` | — | ❌ | ❌ | ❌ |
-| `live_pupil_positions` | update | ❌ | ❌ | ❌ |
-| `movement_alerts` | update | ❌ | ❌ | ❌ |
+| `live_pupil_positions` | update | ❌ | ✅ | ✅ |
+| `movement_alerts` | update | ❌ | ✅ | ❌ |
 | `mtd_submission_log` | — | ❌ | ✅ | ✅ |
 | `on_my_way_notifications` | insert | ✅ | ✅ | ✅ |
 | `payment_disputes` | insert | ❌ | ✅ | ❌ |
-| `payment_history` | delete,insert,update | ❌ | ❌ | ❌ |
+| `payment_history` | delete,insert,update | ❌ | ✅ | ✅ |
 | `payment_intents` | insert,update | ❌ | ❌ | ❌ |
 | `payment_link_tracking` | update | ❌ | ❌ | ❌ |
 | `payment_reminder_log` | insert | ❌ | ❌ | ❌ |
@@ -149,25 +103,25 @@ Audit logs, system-generated rows, payouts, etc. Instructor reads only.
 | --- | --- | --- | --- | --- |
 | `broadcast_templates` | — | ✅ | ❌ | ✅ |
 | `dashcam_media` | — | ❌ | ❌ | ❌ |
-| `followup_templates` | — | ❌ | ❌ | ❌ |
+| `followup_templates` | — | ❌ | ✅ | ✅ |
 | `instructor_calendar_tokens` | — | ❌ | ❌ | ❌ |
 | `instructor_notification_settings` | — | ✅ | ✅ | ❌ |
 | `instructor_terms_templates` | — | ❌ | ✅ | ✅ |
 | `learner_test_requests` | — | ✅ | ❌ | ❌ |
 | `mtd_instructor_settings` | — | ❌ | ✅ | ✅ |
 | `mtd_quarterly_periods` | — | ❌ | ✅ | ✅ |
-| `pre_lesson_checklist_templates` | — | ❌ | ❌ | ❌ |
+| `pre_lesson_checklist_templates` | — | ❌ | ✅ | ✅ |
 | `pupil_churn_scores` | — | ❌ | ❌ | ❌ |
 | `pupil_leaderboard` | — | ❌ | ❌ | ❌ |
 | `pupil_milestones` | — | ✅ | ❌ | ❌ |
 | `pupil_terms_agreements` | — | ✅ | ❌ | ❌ |
 | `quartix_driver_scores` | — | ❌ | ❌ | ❌ |
-| `sos_alerts` | — | ❌ | ❌ | ❌ |
+| `sos_alerts` | — | ✅ | ❌ | ❌ |
 
 
 ## Healthy (full instructor write access)
 
-52 tables.
+84 tables.
 
 ---
-Critical count: **87**
+Critical count: **41**
