@@ -851,8 +851,30 @@ export default function BookingSummary() {
     instructorDefaultRate: baseHourlyRate,
     postcodeRules,
   }) ?? baseHourlyRate;
-  const totalPrice = (hours * effectiveHourlyRate) + schoolSkimAmount;
+
+  // Apply weekend / bank-holiday / off-peak surcharges per scheduled slot.
+  // Unscheduled remaining hours fall back to the base effective rate.
+  const scheduledHoursDecimal = selectedSlots.reduce((acc, s) => acc + (s.duration / 60), 0);
+  const remainingHours = Math.max(0, hours - scheduledHoursDecimal);
+  const surchargedSlotsTotal = selectedSlots.reduce((acc, s) => {
+    const dateStr = (() => {
+      const d = s.date instanceof Date ? s.date : new Date(s.date);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    })();
+    const { finalRate } = applyRateModifiers({
+      baseRate: effectiveHourlyRate,
+      lessonDate: dateStr,
+      lessonStartTime: s.startTime,
+      modifiers: rateModifiers,
+      bankHolidaySet: bankHolidays,
+    });
+    return acc + (s.duration / 60) * finalRate;
+  }, 0);
+  const surchargeTotal =
+    Math.round((surchargedSlotsTotal + remainingHours * effectiveHourlyRate) * 100) / 100;
+  const totalPrice = surchargeTotal + schoolSkimAmount;
   const postcodeOverrideActive = effectiveHourlyRate !== baseHourlyRate;
+  const surchargesActive = totalPrice > (hours * effectiveHourlyRate + schoolSkimAmount) + 0.001;
 
 
   // Enquiry-only mode: short-circuit the entire payment/scheduling flow
