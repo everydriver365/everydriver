@@ -8737,6 +8737,8 @@ export type Database = {
           square_merchant_id: string | null
           square_refresh_token_encrypted: string | null
           square_token_expires_at: string | null
+          standards_check_at: string | null
+          standards_check_result: string | null
           stripe_account_id: string | null
           support_chat_muted_at: string | null
           tax_code: string | null
@@ -8923,6 +8925,8 @@ export type Database = {
           square_merchant_id?: string | null
           square_refresh_token_encrypted?: string | null
           square_token_expires_at?: string | null
+          standards_check_at?: string | null
+          standards_check_result?: string | null
           stripe_account_id?: string | null
           support_chat_muted_at?: string | null
           tax_code?: string | null
@@ -9109,6 +9113,8 @@ export type Database = {
           square_merchant_id?: string | null
           square_refresh_token_encrypted?: string | null
           square_token_expires_at?: string | null
+          standards_check_at?: string | null
+          standards_check_result?: string | null
           stripe_account_id?: string | null
           support_chat_muted_at?: string | null
           tax_code?: string | null
