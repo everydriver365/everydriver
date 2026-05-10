@@ -33,6 +33,14 @@ export function SettingsShellV3({ instructorId: _ }: Props) {
     return {};
   }, [itemId]);
 
+  // Keep the URL in sync with the resolved V3 id so the breadcrumb (and
+  // sidebar active state) always reflects the real item/group.
+  useEffect(() => {
+    if (categoryId && categoryId !== itemId) {
+      navigate(`/instructor/settings/${itemId}`, { replace: true });
+    }
+  }, [categoryId, itemId, navigate]);
+
   const filteredGroups = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return AREA_GROUPS;
