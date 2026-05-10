@@ -63,6 +63,8 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
     isConnected: boolean;
     lastSeenAt: string | null;
   }>({ isConnected: false, lastSeenAt: null });
+  const [trackingMode, setTrackingMode] = useState<"off" | "phone" | "hardware">("off");
+  const [savingMode, setSavingMode] = useState(false);
 
   useEffect(() => {
     fetchDetails();
@@ -105,7 +107,33 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
   };
 
   const fetchTrackingConfig = async () => {
-    // GPS config is managed via admin panel - no instructor-level config needed
+    if (!instructorId) return;
+    const { data } = await supabase
+      .from("instructors")
+      .select("tracking_mode")
+      .eq("id", instructorId)
+      .maybeSingle();
+    const mode = (data as { tracking_mode?: string } | null)?.tracking_mode;
+    if (mode === "phone" || mode === "hardware" || mode === "off") {
+      setTrackingMode(mode);
+    }
+  };
+
+  const updateTrackingMode = async (mode: "off" | "phone" | "hardware") => {
+    const previous = trackingMode;
+    setTrackingMode(mode);
+    setSavingMode(true);
+    const { error } = await supabase
+      .from("instructors")
+      .update({ tracking_mode: mode })
+      .eq("id", instructorId);
+    setSavingMode(false);
+    if (error) {
+      setTrackingMode(previous);
+      toast.error("Couldn't update device");
+    } else {
+      toast.success(mode === "off" ? "Tracking disabled" : `Using ${mode}`);
+    }
   };
 
   const fetchGpsStatus = useCallback(async () => {
@@ -254,6 +282,48 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
                 </p>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <div className="space-y-0.5">
+              <Label className="text-sm font-medium">Tracking device</Label>
+              <p className="text-xs text-muted-foreground">
+                Choose which device reports your live location.
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { value: "off", label: "Off" },
+                { value: "phone", label: "Phone" },
+                { value: "hardware", label: "Hardware", disabled: !gpsStatus.isConnected },
+              ] as const).map((opt) => {
+                const active = trackingMode === opt.value;
+                const disabled = savingMode || ("disabled" in opt && opt.disabled);
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => !active && updateTrackingMode(opt.value)}
+                    className="rounded-xl border px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+                    style={{
+                      borderColor: active ? "var(--portal-accent, #2B7BC8)" : "hsl(var(--border))",
+                      background: active ? "var(--portal-accent, #2B7BC8)" : "transparent",
+                      color: active ? "#fff" : "hsl(var(--foreground))",
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+            {!gpsStatus.isConnected && trackingMode !== "hardware" && (
+              <p className="text-xs text-muted-foreground">
+                Hardware option unlocks once a tracker connection is detected.
+              </p>
+            )}
           </CardContent>
         </Card>
 
