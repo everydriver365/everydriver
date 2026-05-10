@@ -154,6 +154,8 @@ export function PostcodeRatesSection({ instructorId }: { instructorId: string })
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
+  const [defaultRate, setDefaultRate] = useState<number | null>(null);
+  const [testPostcode, setTestPostcode] = useState("");
 
   const reload = async () => {
     const { data } = await supabase
