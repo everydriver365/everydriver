@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ChevronLeft, Search } from "lucide-react";
+import { ChevronRight, Search } from "lucide-react";
 import { SettingsDirtyProvider } from "@/components/instructor/settings/SettingsDirtyContext";
 import { SettingsSaveBar } from "@/components/instructor/settings/SettingsSaveBar";
-import { AREA_GROUPS, useAreaSections, LEGACY_ID_MAP, ALL_ITEM_IDS, type AreaItem } from "./areas";
+import { AREA_GROUPS, useAreaSections, LEGACY_ID_MAP, ALL_ITEM_IDS, type AreaItem, type AreaGroup } from "./areas";
 
 interface Props {
   instructorId: string;
