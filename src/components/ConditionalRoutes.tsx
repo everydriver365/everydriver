@@ -25,6 +25,10 @@ export function ConditionalContact() {
     const slug = getInstructorSubdomain();
     return <MiniWebsiteContact subdomainSlug={slug} />;
   }
+  const whitelabel = getWhitelabelConfig();
+  if (whitelabel) {
+    return <MiniWebsiteContact subdomainSlug={whitelabel.instructorSlug} />;
+  }
   return <Contact />;
 }
 
