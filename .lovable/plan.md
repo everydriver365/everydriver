@@ -1,51 +1,127 @@
-## Why
+## Goal
 
-The Account category at `/instructor/settings/account` currently has only 3 sections (Profile & contact, Qualifications, Vehicle docs & CPD). Things that belong to "your account" are scattered across the legacy `AccountHub`, the dashboard profile page, and other settings categories — which is why it feels disjointed.
+Re-skin `/instructor/settings/*` to a quiet, Stripe/Linear-style admin surface. Same React app, same editors, same routes — new shell + new look. Mobile is untouched (per project memory).
 
-This plan keeps the unified Settings hub as the single home and folds the missing pieces into the **Account** category in a logical order, without duplicating editors that already live in Business / Bookings / Comms.
+## Design tokens (new, scoped to `.settings-v2`)
 
-## New Account section list (replaces the current 3)
+Add to `src/index.css` under a `.settings-v2` selector so the rest of the portal is unaffected:
 
+```text
+--color-background-primary: #ffffff
+--color-background-secondary: #fafafa
+--color-background-tertiary: #f4f4f5
+--color-text-primary: #0a0a0a
+--color-text-secondary: #52525b
+--color-text-tertiary: #71717a
+--color-border: rgba(0,0,0,0.08)            /* renders ~0.5px on retina */
+--color-background-success: #ecfdf5  --color-text-success: #047857
+--color-background-warning: #fffbeb  --color-text-warning: #b45309
+--color-background-danger:  #fef2f2  --color-text-danger:  #b91c1c
+--border-radius-md: 8px
+--border-radius-lg: 12px
+--font-weight-regular: 400
+--font-weight-medium: 500
 ```
+
+Two weights only (400 / 500). Sentence case throughout. No gradients, no shadows, no glows.
+
+## Sidebar restructure — 4 groups
+
+Reduce the current 8 categories down to the 4 the user asked for. Existing sections move; nothing is deleted.
+
+```text
 Account
-├── 1. Profile & contact details        (existing — Photo, name, email, phone, bio + extended details tabs)
-├── 2. Profile media                    (NEW — banner image, car photo, welcome video, ADI certificate)
-├── 3. Qualifications & credentials     (existing — ADI badge, DBS, licence, insurance docs)
-├── 4. DVSA Standards Check             (NEW here — date/time, result, trigger points, link)
-├── 5. Vehicle docs & CPD               (existing — MOT, road tax, CPD logging)
-├── 6. Login & security                 (NEW — change email, change password, sign out everywhere)
-└── 7. Plan, data & danger zone         (NEW — link to Plan & Billing, data export, delete account)
+  ├─ Profile               (ProfileBasicsEditor + InstructorDetailsEditor)
+  ├─ Login & security      (AccountSecurityPanel — restyled, see below)
+  └─ Notifications         (NotificationPreferencesPanel + PushNotificationSettings)
+
+Teaching
+  ├─ Vehicle               (vehicle slice of InstructorDetailsEditor + ComplianceTracker)
+  ├─ Credentials           (QualificationsEditor + CompactStandardsCheck)
+  ├─ Media & listing       (ProfileMediaEditor + listing preview link)
+  ├─ Rates & coverage      (InstructorCoursesManager + PricingRulesSettings + coverage postcodes)
+  └─ Availability          (WorkingHoursEditor + PupilBookingSettingsEditor + buffer/lesson length)
+
+Activity
+  ├─ CPD & training        (CPD slice of ComplianceTracker)
+  ├─ Plan & billing        (link card → /instructor/billing)
+  └─ Data export           (DataExportManager)
+
+More
+  ├─ Help & support        (mailto/link card)
+  └─ Close account         (delete-account flow with confirm dialog)
 ```
 
-Total: 7 sections, all answering the question "is this about *me* and *my* account?". Operational settings (terms, payments, schedule, comms, website) stay in their existing categories.
+The previous Business / Bookings / Schedule / Vehicle / Comms / Website / Advanced categories are kept reachable via a small "All other settings" link at the bottom of the new sidebar (so we don't lose features in this design pass — they get re-skinned in a follow-up).
 
-## What each new/moved section reuses
+## Shell rebuild — `SettingsLayoutV2`
 
-| Section | Component used | Source |
-|---|---|---|
-| Profile media | `CMSImageUpload` × 3 + welcome video input | already used in `AccountHub.tsx` "Media" tab |
-| DVSA Standards Check | `CompactStandardsCheck` (already updated last turn with date/time/result/trigger points) | currently shown on profile page only |
-| Login & security | New small component `AccountSecurityPanel` wrapping Supabase `updateUser({ email, password })` and `signOut({ scope: 'global' })` | new file |
-| Plan, data & danger zone | Existing `<Link to="/instructor/billing">`, existing `DataExportManager`, new "Delete account" confirm dialog calling an edge function | partial reuse |
+New file `src/components/instructor/settings/SettingsLayoutV2.tsx`. The existing `SettingsLayout` is left in place for mobile. Hub picks the v2 shell on `md:` and up.
 
-## Files to change
+- 220px left sidebar, white background, group labels in 11px/500 uppercase-replacement (sentence case "Account" etc., not all caps), items as plain text rows in `--color-text-secondary`.
+- Active item: white card, `--border-radius-md`, 0.5px border, `--color-text-primary`. Inactive: no background.
+- Tabler outline icons at 16px via `@tabler/icons-react` (add dependency).
+- Right pane: page header (20px/500 title, 13px subtitle), then white cards (`--border-radius-lg`, 0.5px border, `1.25rem 1.5rem` padding).
 
-- `src/components/instructor/settings/categories.tsx` — extend the `account` category's `sections` array with the four new entries in the order above.
-- `src/components/instructor/ProfileMediaEditor.tsx` (NEW) — extracts the Media tab markup from `AccountHub.tsx` into a self-contained component taking `{ instructorId }`.
-- `src/components/instructor/AccountSecurityPanel.tsx` (NEW) — change email, change password, sign out of all devices.
-- `src/components/instructor/AccountDangerZone.tsx` (NEW) — Plan & Billing link, Data export reuse, Delete account dialog.
-- (Optional) `src/pages/instructor/AccountHub.tsx` — leave the legacy page in place for now; once the user confirms the new hub is complete we can remove it in a follow-up.
+## Sticky save bar
 
-No database migrations required — every field already exists on `instructors` / `auth.users`.
+New `SettingsSaveBar` component, shown when a `SettingsDirtyContext` reports unsaved changes. Bottom-right of the right pane, fixed, with Cancel + "Save changes" (dark filled). Editors register their dirty state + a `save()` callback via the context. Existing editors that already auto-save get wrapped with a thin adapter that exposes those handlers; that's a per-editor follow-up — for this pass, only the new pages (Login & security, Notifications, Media & listing, Rates & coverage, Availability, Plan & billing, Data export, Close account) are wired to the save bar.
+
+## Removed mid-form buttons
+
+`AccountSecurityPanel` is rewritten to:
+- "Change email" row → opens confirm dialog → triggers `supabase.auth.updateUser({ email })`. No inline "Send confirmation" button.
+- "Change password" row → opens confirm dialog with new password fields → triggers `updateUser({ password })`.
+- "Sign out everywhere" row → confirm dialog → `signOut({ scope: "global" })`.
+- Two-factor toggle (UI only for now, wired to a `tfa_enabled` flag on `instructors` if present, otherwise disabled with "Coming soon" pill).
+- Active sessions list (read-only, "current device" badge — no API for others yet, so single-row).
+
+## Status pills
+
+New `StatusPill` component, three states only (success/warning/danger). Used in Credentials and Vehicle for cert/MOT validity, and in Plan & billing for subscription state. Format exactly per spec: `font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 500;` with Tabler `circle-check` / `alert-triangle` / `alert-circle`.
+
+## List row pattern
+
+New `SettingsListRow` (icon → name+meta → status pill → chevron). Used for Credentials documents, Vehicle docs, Data export rows, Plan invoice history.
+
+## New page contents
+
+- **Login & security** — email row, password row, sign-out-everywhere row, 2FA toggle, sessions list.
+- **Notifications** — channel × event-type matrix (email / SMS / push × new booking, cancellation, payment, review, message) with master toggle per channel; backed by `instructor_notification_settings` (existing).
+- **Media & listing** — keeps `ProfileMediaEditor` content but adds a "Preview public listing" button linking to the mini-website slug.
+- **Rates & coverage** — hourly rate, block discounts, intensive pricing (uses `LessonPackageManager` data), coverage postcodes (multi-input chips), service radius (slider, miles).
+- **Availability** — `WorkingHoursEditor` + holiday/blocked dates list + lesson length chips + buffer minutes number input.
+- **Plan & billing** — current plan card, usage, payment method, invoice history list, upgrade/downgrade link.
+- **Data export** — one row per dataset (pupils, lessons, schedule, financials) + "Full account backup (.zip)" row, all using `SettingsListRow`.
+- **Close account** — warning copy, 7-day grace explanation, GDPR retention list, "Email support" + "Request closure" (confirm-by-typing dialog).
+
+## Dependency
+
+Add `@tabler/icons-react` (single small dep, tree-shakes per icon import).
 
 ## Out of scope
 
-- Removing or renaming the other 7 categories (Business, Bookings & Payments, Schedule, Vehicle & Tracking, Communication, Website, Advanced).
-- Mobile layout changes (per project rule, only desktop wiring is touched).
-- Any changes to existing components' internals.
+- Mobile layout (project rule).
+- Re-skinning Business / Bookings / Schedule / Vehicle / Comms / Website / Advanced categories — they remain on the existing shell behind the "All other settings" link, to be migrated in a follow-up pass.
+- Backend changes (no migrations).
 
-## Open question
+## File list
 
-Section 7 includes "Delete account". This needs a server-side edge function to cascade-delete (or anonymise) the instructor and their data. Do you want me to:
-- **A.** Build it now (adds an edge function + confirm-by-typing dialog), or
-- **B.** Ship sections 1–6 first and add Delete account in a follow-up?
+- add `src/components/instructor/settings/SettingsLayoutV2.tsx`
+- add `src/components/instructor/settings/SettingsSidebar.tsx`
+- add `src/components/instructor/settings/SettingsSaveBar.tsx`
+- add `src/components/instructor/settings/SettingsDirtyContext.tsx`
+- add `src/components/instructor/settings/StatusPill.tsx`
+- add `src/components/instructor/settings/SettingsListRow.tsx`
+- add `src/components/instructor/settings/pages/LoginSecurityPage.tsx`
+- add `src/components/instructor/settings/pages/NotificationsPage.tsx`
+- add `src/components/instructor/settings/pages/MediaListingPage.tsx`
+- add `src/components/instructor/settings/pages/RatesCoveragePage.tsx`
+- add `src/components/instructor/settings/pages/AvailabilityPage.tsx`
+- add `src/components/instructor/settings/pages/PlanBillingPage.tsx`
+- add `src/components/instructor/settings/pages/DataExportPage.tsx`
+- add `src/components/instructor/settings/pages/CloseAccountPage.tsx`
+- edit `src/index.css` — add `.settings-v2` token block
+- edit `src/pages/instructor/InstructorSettingsHub.tsx` — wrap in `.settings-v2` and use `SettingsLayoutV2` on desktop
+- edit `src/components/instructor/settings/categories.tsx` — regroup into 4 categories, route the new pages
+- add `@tabler/icons-react` dependency
