@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Calendar, Clock, X, RefreshCw, ShoppingCart, Save } from "lucide-react";
+import { Loader2, Calendar, Clock, X, RefreshCw, ShoppingCart } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useOptionalSettingsDirty } from "@/components/instructor/settings/useOptionalSettingsDirty";
 

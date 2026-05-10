@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bell, Mail, MessageSquare, Smartphone, Clock, Loader2, Save, Sun, UserCheck } from "lucide-react";
+import { Bell, Mail, MessageSquare, Smartphone, Clock, Loader2, Sun, UserCheck } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
