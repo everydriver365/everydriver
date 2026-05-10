@@ -321,6 +321,14 @@ export default function Courses() {
   const handleLoadMore = () => {
     setMobileVisibleCount(prev => Math.min(prev + 6, filteredCourses.length));
   };
+
+  const resolvedRateFor = useCallback((instructor: any): number | null => {
+    return resolveHourlyRate({
+      pupilPostcode: searchedPostcode,
+      instructorDefaultRate: instructor?.hourly_rate ?? null,
+      postcodeRules: postcodeRulesByInstructor[instructor?.id] || null,
+    });
+  }, [searchedPostcode, postcodeRulesByInstructor]);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [instructorCourses, setInstructorCourses] = useState<InstructorCourse[]>([]);
   const [courseTemplates, setCourseTemplates] = useState<CourseTemplate[]>([]);
