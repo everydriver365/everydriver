@@ -1,77 +1,86 @@
-## Why this keeps happening
+## Goal
 
-The original symptom (course toggles failing) wasn't a one-off bug. It's the same root cause repeating across the app:
+Replace the scattered instructor portal navigation (40+ tiles, duplicate Profile/AccountHub/Settings pages, multiple availability pages) with a clean **5-hub** structure and a fully rebuilt **two-pane Settings** experience that works identically on desktop and mobile.
 
-When a table has an `instructor_id` column, instructors need explicit RLS policies that say "you can insert / update / delete rows where `instructor_id = get_instructor_id_for_user(auth.uid())`". Many tables were created with only:
+## The 5 top-level hubs
 
-- a `public read` policy (so pupils can see the data), and
-- an `admin manage` policy (so support can fix things).
+Bottom nav (mobile) and left sidebar (desktop) — exactly five entries, nothing more:
 
-…but no instructor write policies. Result: the UI fires the mutation, RLS silently rejects it (`42501`), the toast says "Failed to…", and the instructor concludes "settings don't work". Because there's no automated check, every one of these is found by a real instructor hitting it in production.
-
-I ran a full audit. There are roughly **30+ instructor-owned tables** with at least one missing write policy (insert/update/delete). Some are intentional (audit logs, system-generated reminders, etc.) — but many are user-facing features.
-
-## What I'll do
-
-### 1. Generate a single, definitive RLS audit
-
-Write `scripts/audit-instructor-rls.ts` that:
-
-- Lists every `public.*` table with an `instructor_id` column.
-- Cross-references `pg_policies` to flag tables where an instructor cannot insert / update / delete their own rows.
-- Cross-references the codebase: greps `src/` for `.from("<table>").insert/.update/.delete(` calls, so we know which gaps are actually exercised by the UI.
-- Outputs `docs/qa/instructor-rls-gaps.md` with three sections:
-  - **Critical** — UI writes to it, no policy exists. Will silently fail.
-  - **Intentional** — backend-only / service-role tables (annotated, kept gap on purpose).
-  - **Read-only by design** — instructor only reads (e.g. `compliance_reminders`).
-
-Run it once, commit the output. From now on I (and you) can re-run it any time and see the truth in one file.
-
-### 2. Fix every "Critical" row in one migration
-
-For each table flagged Critical, add the standard three policies:
-
-```sql
-CREATE POLICY "Instructors can insert own <table>"
-  ON public.<table> FOR INSERT TO authenticated
-  WITH CHECK (instructor_id = public.get_instructor_id_for_user(auth.uid()));
-
-CREATE POLICY "Instructors can update own <table>"
-  ON public.<table> FOR UPDATE TO authenticated
-  USING       (instructor_id = public.get_instructor_id_for_user(auth.uid()))
-  WITH CHECK  (instructor_id = public.get_instructor_id_for_user(auth.uid()));
-
-CREATE POLICY "Instructors can delete own <table>"
-  ON public.<table> FOR DELETE TO authenticated
-  USING       (instructor_id = public.get_instructor_id_for_user(auth.uid()));
+```text
+1. Today        /instructor          → Home, briefing, next-up, alerts
+2. Schedule     /instructor/schedule → Diary, availability, gaps, waiting list
+3. Pupils       /instructor/pupils   → Pupils, enquiries, messages, pending
+4. Money        /instructor/money    → Income, expenses, payments, tax, plan
+5. Settings     /instructor/settings → Single hub for EVERYTHING configurable
 ```
 
-I'll show you the exact list before applying — so you can veto anything that should stay locked down.
+All current standalone pages still exist as routes, but they are reached **only** through one of these five hubs. No more `Menu`, no more `Profile` vs `AccountHub` vs `Settings/profile` duplication.
 
-### 3. Add a lightweight regression guard
+## New Settings hub (full rebuild)
 
-Add `scripts/audit-instructor-rls.ts` to a `bun run audit:rls` script in `package.json`. It exits non-zero if any new `instructor_id` table appears in the codebase without matching policies. So the next person (me or a teammate) who creates `instructor_<thing>` and forgets RLS will get an immediate signal, not a customer ticket.
+iOS Settings model — two-pane on desktop, drill-down on mobile, same components.
 
-### 4. Fix the silent-failure UX
+```text
+Desktop (≥md)                          Mobile (<md)
+┌──────────────┬─────────────────────┐  ┌─────────────────┐
+│ Search…      │  Section title      │  │ Search…         │
+│              │  ─────────────      │  │ ▸ Account       │
+│ ▸ Account  ●│  [form / toggles]   │  │ ▸ Business      │
+│ ▸ Business   │                     │  │ ▸ Bookings…     │
+│ ▸ Bookings   │                     │  └─────────────────┘
+│ ▸ Website    │                     │  taps push a panel
+│ ▸ Schedule   │                     │  with same content
+│ ▸ Vehicle    │                     │  as the right pane
+│ ▸ Comms      │                     │
+│ ▸ Advanced   │                     │
+└──────────────┴─────────────────────┘
+```
 
-Even with policies in place, RLS rejections surface as `42501 / new row violates row-level security policy`. That's gibberish to users. Add a small helper `src/lib/supabaseError.ts` with `isRlsError(err)` + `friendlyDbError(err)`, and use it in the 5–6 most-hit instructor mutations (course toggle, profile editor, working hours, manual blocks, calendar overrides, gap offers). On RLS rejection, show: *"Permission denied — please refresh and try again. If it persists, contact support."* Plus log to console with the table + operation so I can find these instantly next time.
+### 8 categories (down from 7 messy ones)
 
-## Out of scope (deliberate)
+1. **Account** — profile, vehicle, photos, compliance docs, emergency contacts
+2. **Business** — terms, cancellation, no-show, GDPR, branding, mini-website pages & theme
+3. **Bookings & Payments** — courses, booking mode, deposits, packages, discounts, pricing rules, intake questions, BNPL, commission, Square, referrals
+4. **Schedule** — working hours, availability windows, calendar sync, reminders, pupil self-service
+5. **Vehicle & Tracking** — GPS, saved routes, dashcam, fuel, mileage
+6. **Communication** — notifications, call answering, Famulor (AI calls), WhatsApp
+7. **Integrations** — Square, Google Calendar, GPS Gate, Kinesis, accounting
+8. **Advanced** — demo mode, appearance, dashboard layout, data export, reset stats, plan & billing
 
-- I won't blanket-add policies to audit / log / system tables — those should stay restricted.
-- I won't refactor the underlying tables.
-- No mobile layout changes (per project rules).
+Search bar at top filters across all sections (already-built fuzzy matcher reused).
 
-## Verification
+## Key UX rules
 
-1. Re-run the audit — Critical list is empty.
-2. Sign in as Richard and walk through Settings → Profile, Courses, Working Hours, Calendar Overrides, Manual Blocks, Gap Offers. Every save shows a success toast, every row appears in the DB.
-3. Force an RLS error in dev (e.g. swap the helper to return null) — confirm the new friendly toast fires instead of `42501`.
+- Every section panel uses one shared `<SettingsSection>` component: title, description, save bar that auto-shows when dirty, success/error toast via `friendlyDbError()`.
+- All forms use the same field primitives (`SettingsField`, `SettingsToggleRow`, `SettingsSelect`) so spacing, labels, and error states are identical across the portal.
+- Mobile: each category is a route (`/instructor/settings/:categoryId`) so back-swipe + browser history work. Desktop: same routes, but rendered into the right pane with the left rail persistent.
+- No more inline sheets or modals for settings — every section is a real page so deep-links work and the back button is predictable.
 
-## Files
+## Page consolidation (what gets merged or removed)
 
-- `scripts/audit-instructor-rls.ts` (new)
-- `docs/qa/instructor-rls-gaps.md` (generated, committed)
-- one Supabase migration adding the missing policies (after you approve the table list)
-- `src/lib/supabaseError.ts` (new) + ~6 callsites updated
-- `package.json` — `audit:rls` script
+| Keep                              | Delete / redirect                                              |
+|-----------------------------------|----------------------------------------------------------------|
+| `/instructor/settings/account`    | `/instructor/profile` (AccountHub), `InstructorProfileDesktop`, `InstructorSettings.tsx`, `/instructor/menu`, `/settings/profile` |
+| `/instructor/settings/schedule`   | `/instructor/availability`, `/instructor/availability-windows` (moved into Schedule section, original routes 301 → settings) |
+| `/instructor/settings/integrations` | `/instructor/integrations` (now lives in settings)            |
+| `/instructor/settings/comms`      | `/instructor/settings/whatsapp`, `/instructor/settings/call-answering`, `/instructor/settings/notifications`, `/instructor/famulor` |
+| `/instructor/settings/business`   | `/instructor/settings/terms`, `/instructor/branding`, `/instructor/website/my-site` |
+| `/instructor/money`               | merges `/instructor/pay`, `/instructor/income`, `/instructor/expenses`, `/instructor/tax`, `/instructor/accounts`, `/instructor/billing` under tabs |
+
+All deleted routes get a `<Navigate replace>` to their new home so existing bookmarks, deep links, push notifications, and emails keep working.
+
+## Build order
+
+1. **Shared primitives** — `SettingsLayout` (two-pane shell), `SettingsCategoryList`, `SettingsSection`, `SettingsField`, `SettingsToggleRow`, `SettingsSaveBar`, `useSettingsForm` hook (dirty tracking + save + toast).
+2. **New routes** — add `/instructor/settings` (index = category list) and `/instructor/settings/:categoryId` (renders matching section). Wire the 5-hub bottom nav + desktop sidebar to point at the 5 routes only.
+3. **Rebuild each category panel** using existing form logic from current pages — copy the working save handlers, drop the old layouts. Order: Account → Business → Bookings → Schedule → Vehicle → Comms → Integrations → Advanced.
+4. **Money hub** — new `/instructor/money` with sub-tabs (Income / Expenses / Tax / Plan). Existing pages become tab panels, not separate routes.
+5. **Cleanup pass** — delete `InstructorMenu.tsx`, `AccountHub.tsx`, `InstructorProfileDesktop.tsx`, `InstructorProfileRouter.tsx`, `InstructorSettings.tsx`. Add redirects for every removed path.
+6. **QA** — visit every category on mobile (375px) and desktop (1280px); confirm save→toast→DB roundtrip on at least one field per section; confirm all 30+ old URLs redirect.
+
+## Out of scope
+
+- No backend / RLS work (already fixed in previous loop).
+- No changes to Today / Schedule / Pupils internal pages beyond moving availability into Settings.
+- No mobile Drive365 (pupil) portal changes.
+- No new features — this is purely IA + Settings rebuild.
