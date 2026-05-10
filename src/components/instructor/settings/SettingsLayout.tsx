@@ -6,6 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 const SIDEBAR_WIDTH_KEY = "instructor-settings-sidebar-width";
+const SIDEBAR_COLLAPSED_KEY = "instructor-settings-sidebar-collapsed";
 const SIDEBAR_MIN = 220;
 const SIDEBAR_MAX = 480;
 const SIDEBAR_DEFAULT = 288;
