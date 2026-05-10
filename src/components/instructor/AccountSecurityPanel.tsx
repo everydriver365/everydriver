@@ -77,7 +77,7 @@ export function AccountSecurityPanel() {
     }
     setSavingEmail(true);
     const auth = await reauth();
-    if (!auth.ok) {
+    if (auth.ok === false) {
       setSavingEmail(false);
       setEmailError(auth.message);
       return;
@@ -109,7 +109,7 @@ export function AccountSecurityPanel() {
     }
     setSavingPwd(true);
     const auth = await reauth();
-    if (!auth.ok) {
+    if (auth.ok === false) {
       setSavingPwd(false);
       setPwdError(auth.message);
       return;
