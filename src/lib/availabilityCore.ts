@@ -78,7 +78,7 @@ export function inTimeOfDay(startMin: number, tod: TimeOfDay = "any") {
  */
 export function buildDayConflicts(
   dateStr: string,
-  lessons: { start_time: string; duration_minutes: number }[],
+  lessons: { start_time: string; duration_minutes: number; pupil_travel_min?: number | null }[],
   blocks: { start_datetime: string; end_datetime: string }[],
   events: { start_time: string; end_time: string }[],
 ): TaggedConflict[] {
@@ -86,7 +86,12 @@ export function buildDayConflicts(
 
   for (const l of lessons) {
     const s = toMinutes(l.start_time);
-    out.push({ start: s, end: s + (l.duration_minutes || 60), kind: "lesson" });
+    out.push({
+      start: s,
+      end: s + (l.duration_minutes || 60),
+      kind: "lesson",
+      padOverrideMin: l.pupil_travel_min ?? undefined,
+    });
   }
 
   const clip = (sIso: string, eIso: string) => {
