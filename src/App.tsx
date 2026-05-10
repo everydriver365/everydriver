@@ -14,6 +14,7 @@ import { SchoolAuthProvider } from "@/context/SchoolAuthContext";
 import { DynamicPWAMeta } from "@/components/pwa/DynamicPWAMeta";
 import { DomainRouter } from "@/components/DomainRouter";
 import { ConditionalHome } from "@/components/ConditionalHome";
+import { BrandProvider } from "@/components/BrandProvider";
 import NotFound from "./pages/NotFound";
 
 // Route modules
@@ -31,6 +32,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AccessibilityProvider>
+    <BrandProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -67,6 +69,7 @@ const App = () => (
         </AdminAuthProvider>
       </BrowserRouter>
     </TooltipProvider>
+    </BrandProvider>
     </AccessibilityProvider>
   </QueryClientProvider>
 );

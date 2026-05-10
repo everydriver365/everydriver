@@ -18406,6 +18406,10 @@ export type Database = {
       cleanup_expired_parent_otp_codes: { Args: never; Returns: undefined }
       generate_calendar_share_token: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
+      generate_unique_instructor_slug: {
+        Args: { p_source: string }
+        Returns: string
+      }
       get_instructor_id_for_user: {
         Args: { p_user_id: string }
         Returns: string

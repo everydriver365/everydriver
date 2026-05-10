@@ -1,10 +1,20 @@
 /**
- * Whitelabel domain configuration.
+ * Branded-site (whitelabel + instructor subdomain) configuration.
  *
- * A whitelabel domain renders the full Drive365 learner site (same pages,
- * same booking & pupil-login flows) but rebranded and scoped to a single
- * instructor's data.
+ * A "branded site" is the full Drive365 learner site rendered with one
+ * instructor's logo, name, contact details and data scope. There are two
+ * ways a hostname can map to an instructor:
+ *
+ *   1. Subdomain  →  {app_slug}.everydriver.co.uk  or  {app_slug}.drive365.co.uk
+ *   2. Custom domain  →  matches `instructors.custom_domain`
+ *      (paid add-on; only counted when `custom_domain_verified = true`)
+ *
+ * The mapping is loaded once at app boot from the `public_instructors`
+ * view by `BrandProvider`, then cached in this module so synchronous
+ * callers (`getWhitelabelConfig()`, `useRouteLogo`, etc.) keep working.
  */
+
+import { supabase } from "@/integrations/supabase/client";
 
 export interface WhitelabelConfig {
   /** Hostname (lowercase, no www) that this config matches against */
@@ -13,71 +23,175 @@ export interface WhitelabelConfig {
   instructorSlug: string;
   /** Brand display name used in headers/footers/meta */
   brandName: string;
-  /** Logo path served from /public */
+  /** Logo URL (Supabase Storage or /public path) */
   logoPath: string;
   /** Optional contact details surfaced in headers/footers */
   phone?: string;
   email?: string;
   /** Optional address/area shown in footer */
   address?: string;
+  /** Brand primary colour (hex) for theming */
+  brandColour?: string;
 }
 
-const WHITELABEL_CONFIGS: WhitelabelConfig[] = [
-  {
-    host: "winchesterdrivingschool.co.uk",
-    instructorSlug: "ken-d",
-    brandName: "Winchester Driving School",
-    logoPath: "/winchester-logo.png",
-    phone: "07767 693276",
-    email: "info@winchesterdrivingschool.co.uk",
-    address: "Winchester & surrounding areas",
-  },
-];
+const EVERYDRIVER_HOST_SUFFIX = ".everydriver.co.uk";
+const DRIVE365_HOST_SUFFIX = ".drive365.co.uk";
+
+let cachedConfig: WhitelabelConfig | null | undefined = undefined; // undefined = not loaded yet
+let loadPromise: Promise<WhitelabelConfig | null> | null = null;
 
 function normaliseHost(hostname: string): string {
   return hostname.toLowerCase().replace(/^www\./, "");
 }
 
-export function getWhitelabelConfig(
-  hostname: string = typeof window !== "undefined" ? window.location.hostname : "",
-): WhitelabelConfig | null {
-  // Dev/preview override: ?whitelabel=winchesterdrivingschool.co.uk
-  // Persisted in sessionStorage so it survives client-side navigation.
-  if (typeof window !== "undefined") {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const override = params.get("whitelabel");
-      if (override) {
-        if (override === "off") {
-          window.sessionStorage.removeItem("lovable_whitelabel_override");
-        } else {
-          window.sessionStorage.setItem("lovable_whitelabel_override", override);
-        }
-      }
-      const stored = window.sessionStorage.getItem("lovable_whitelabel_override");
-      if (stored) {
-        const match = WHITELABEL_CONFIGS.find((c) => c.host === normaliseHost(stored));
-        if (match) return match;
-      }
-    } catch {
-      /* ignore */
-    }
-  }
-  const host = normaliseHost(hostname);
-  return WHITELABEL_CONFIGS.find((c) => c.host === host) ?? null;
+/**
+ * Hostnames that should be treated as the bare Drive365 / EveryDriver
+ * marketing sites — never resolve them to an instructor.
+ */
+function isBareMarketingHost(host: string): boolean {
+  return (
+    host === "drive365.co.uk" ||
+    host === "everydriver.co.uk" ||
+    host === "drivingschoolmanager.co.uk" ||
+    host === "driveforall.co.uk" ||
+    host === "drivingforall.co.uk" ||
+    host === "everydriver.co" ||
+    host === "everydriver.lovable.app" ||
+    host === "bookings.drive365.co.uk" ||
+    host.endsWith(".lovable.app") ||
+    host.endsWith(".lovableproject.com") ||
+    host === "localhost" ||
+    host === "127.0.0.1"
+  );
 }
 
-export function isWhitelabelDomain(
+/**
+ * Extracts a candidate subdomain slug from a hostname like
+ * `winchester.everydriver.co.uk` → `winchester`. Returns null if the
+ * hostname isn't an instructor subdomain.
+ */
+function extractSubdomainSlug(host: string): string | null {
+  for (const suffix of [EVERYDRIVER_HOST_SUFFIX, DRIVE365_HOST_SUFFIX]) {
+    if (host.endsWith(suffix)) {
+      const slug = host.slice(0, -suffix.length);
+      if (slug && slug !== "www" && slug !== "bookings") return slug;
+    }
+  }
+  return null;
+}
+
+function rowToConfig(host: string, row: {
+  app_slug: string | null;
+  business_name: string | null;
+  name: string | null;
+  logo_url: string | null;
+  phone: string | null;
+  email: string | null;
+  location_name: string | null;
+  home_postcode: string | null;
+  brand_colour: string | null;
+}): WhitelabelConfig | null {
+  if (!row.app_slug) return null;
+  return {
+    host,
+    instructorSlug: row.app_slug,
+    brandName: row.business_name?.trim() || row.name || "Driving School",
+    logoPath: row.logo_url || "/winchester-logo.png",
+    phone: row.phone || undefined,
+    email: row.email || undefined,
+    address: row.location_name || row.home_postcode || undefined,
+    brandColour: row.brand_colour || undefined,
+  };
+}
+
+/**
+ * Resolves the current hostname to an instructor branding config by
+ * querying `public_instructors`. Called once on app boot.
+ */
+export async function loadBrandConfig(
   hostname: string = typeof window !== "undefined" ? window.location.hostname : "",
-): boolean {
-  return getWhitelabelConfig(hostname) !== null;
+): Promise<WhitelabelConfig | null> {
+  if (loadPromise) return loadPromise;
+
+  loadPromise = (async () => {
+    // Dev/preview override: ?whitelabel=winchesterdrivingschool.co.uk
+    let resolveHost = normaliseHost(hostname);
+    if (typeof window !== "undefined") {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const override = params.get("whitelabel");
+        if (override === "off") {
+          window.sessionStorage.removeItem("lovable_whitelabel_override");
+        } else if (override) {
+          window.sessionStorage.setItem("lovable_whitelabel_override", override);
+        }
+        const stored = window.sessionStorage.getItem("lovable_whitelabel_override");
+        if (stored) resolveHost = normaliseHost(stored);
+      } catch {
+        /* ignore */
+      }
+    }
+
+    if (!resolveHost || isBareMarketingHost(resolveHost)) {
+      cachedConfig = null;
+      return null;
+    }
+
+    const subdomainSlug = extractSubdomainSlug(resolveHost);
+
+    // 1. Verified custom domain match
+    let { data, error } = await supabase
+      .from("public_instructors")
+      .select("app_slug, business_name, name, logo_url, phone, email, location_name, home_postcode, brand_colour, custom_domain, custom_domain_verified")
+      .eq("custom_domain", resolveHost)
+      .eq("custom_domain_verified", true)
+      .maybeSingle();
+
+    // 2. Fall back to subdomain slug match
+    if (!data && subdomainSlug) {
+      const res = await supabase
+        .from("public_instructors")
+        .select("app_slug, business_name, name, logo_url, phone, email, location_name, home_postcode, brand_colour")
+        .eq("app_slug", subdomainSlug)
+        .maybeSingle();
+      data = res.data as typeof data;
+      error = res.error;
+    }
+
+    if (error || !data) {
+      cachedConfig = null;
+      return null;
+    }
+
+    cachedConfig = rowToConfig(resolveHost, data);
+    return cachedConfig;
+  })();
+
+  return loadPromise;
+}
+
+/**
+ * Synchronous accessor used throughout the UI. Returns the cached
+ * config (null if the host isn't branded). Returns null until
+ * `loadBrandConfig()` has finished — call sites are tolerant of that.
+ */
+export function getWhitelabelConfig(
+  _hostname?: string,
+): WhitelabelConfig | null {
+  return cachedConfig ?? null;
+}
+
+export function isWhitelabelDomain(_hostname?: string): boolean {
+  return cachedConfig !== null && cachedConfig !== undefined;
 }
 
 export function getWhitelabelInstructorSlug(): string | null {
-  return getWhitelabelConfig()?.instructorSlug ?? null;
+  return cachedConfig?.instructorSlug ?? null;
 }
 
-export const ALL_WHITELABEL_HOSTS: string[] = WHITELABEL_CONFIGS.flatMap((c) => [
-  c.host,
-  `www.${c.host}`,
-]);
+/**
+ * Static list of hosts that historically rendered branded sites — used
+ * by routing code to enable branded behaviour before the async resolver
+ * has finished. Now empty because everything is DB-driven.
+ */
+export const ALL_WHITELABEL_HOSTS: string[] = [];
