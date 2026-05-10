@@ -20,7 +20,7 @@ serve(async (req) => {
     // Check if AI receptionist is enabled
     const { data: instructor, error: instructorError } = await supabase
       .from("instructors")
-      .select("name, phone, hourly_rate, car_type, car_make, car_model, ai_receptionist_enabled, home_postcode")
+      .select("name, phone, hourly_rate, car_type, car_make, car_model, ai_receptionist_enabled, home_postcode, weekend_surcharge_amount, bank_holiday_surcharge_amount, odd_hours_surcharge_amount, odd_hours_start, odd_hours_end")
       .eq("id", instructor_id)
       .single();
 
