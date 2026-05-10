@@ -100,19 +100,5 @@ export function ProfileMediaEditor({ instructorId }: Props) {
         </Button>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Award className="h-4 w-4 text-muted-foreground" />
-          <Label className="font-medium">ADI certificate</Label>
-        </div>
-        <CMSImageUpload
-          value={row.adi_certificate_url || null}
-          onChange={(url) => updateField("adi_certificate_url", url)}
-          bucket="instructor-images"
-          folder={instructorId}
-          label=""
-        />
-      </div>
-    </div>
   );
 }
