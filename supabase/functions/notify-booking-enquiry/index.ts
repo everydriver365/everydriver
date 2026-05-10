@@ -56,7 +56,18 @@ serve(async (req) => {
       whatsappSent: false,
       smsSent: false,
       emailSent: false,
+      gateBlocked: null as string | null,
     };
+
+    // Resolve gate decisions per channel up-front. New enquiries are job leads.
+    const [waGate, smsGate, emailGate] = await Promise.all([
+      shouldSendToInstructor(supabase, instructor.id, { category: "job", channel: "push" }),
+      shouldSendToInstructor(supabase, instructor.id, { category: "job", channel: "sms" }),
+      shouldSendToInstructor(supabase, instructor.id, { category: "job", channel: "email" }),
+    ]);
+    if (!waGate.allow && !smsGate.allow && !emailGate.allow) {
+      results.gateBlocked = waGate.reason ?? smsGate.reason ?? emailGate.reason ?? "blocked";
+    }
 
     // ---- WhatsApp / SMS via existing notify-instructor logic? Use Twilio direct + WhatsApp Business
     const TWILIO_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
