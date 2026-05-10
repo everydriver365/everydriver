@@ -223,9 +223,16 @@ export function DynamicCourseCard({
                     <span className="text-sm font-bold text-red-600">£{finalPrice.toFixed(0)}</span>
                   </div>
                 ) : (
-                  <span className="text-sm font-semibold">£{totalPrice.toFixed(2)}</span>
+                  <span className="text-sm font-semibold">
+                    {hasSurcharges ? "From " : ""}£{totalPrice.toFixed(2)}
+                  </span>
                 )}
               </div>
+              {hasSurcharges && !hasDiscount && (
+                <p className="text-[11px] text-muted-foreground -mt-1">
+                  Weekends, bank holidays & off-peak hours may cost more
+                </p>
+              )}
 
               {/* Payment Options - Dynamic instalment amounts */}
               <CompactPaymentBadges amount={finalPrice} className="pt-1" />
