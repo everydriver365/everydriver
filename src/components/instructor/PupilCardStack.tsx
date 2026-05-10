@@ -1460,6 +1460,25 @@ export function PupilCardStack({
         initialNote={effectiveNotes}
         onSaved={(newNote) => setNoteOverride(newNote)}
       />
+
+      {instructorId && (
+        <Sheet open={showPayLinkSheet} onOpenChange={setShowPayLinkSheet}>
+          <SheetContent side="bottom" className="rounded-t-2xl p-0 max-h-[90dvh] overflow-y-auto">
+            <SheetHeader className="px-5 pt-5 pb-2">
+              <SheetTitle>Payment link for {titleCaseName(pupil.name)}</SheetTitle>
+            </SheetHeader>
+            <div className="px-5 pb-6">
+              <PaymentLinkShare
+                instructorId={instructorId}
+                instructorName={instructorName}
+                pupils={[{ id: pupil.id, name: pupil.name }]}
+                initialAmount={debtAmount}
+                initialPupilId={pupil.id}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
     </>
   );
 }
