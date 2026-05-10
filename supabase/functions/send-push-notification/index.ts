@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { initVapidKeys, sendPush } from "../_shared/webpush.ts";
+import { shouldSendToInstructor, enqueueOutbox, NotifyCategory, NotifyImportance } from "../_shared/notify-gate.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,6 +22,11 @@ interface PushPayload {
 interface NotificationRequest {
   instructorId: string;
   notification: PushPayload;
+  category?: NotifyCategory;
+  importance?: NotifyImportance;
+  pupilId?: string;
+  jobValue?: number;
+  bypassGate?: boolean;
 }
 
 // Send Expo push notifications via Expo's push API
@@ -109,13 +115,38 @@ serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { instructorId, notification }: NotificationRequest = await req.json();
+    const body: NotificationRequest = await req.json();
+    const { instructorId, notification, category, importance, pupilId, jobValue, bypassGate } = body;
 
     if (!instructorId || !notification) {
       return new Response(
         JSON.stringify({ error: "Missing instructorId or notification" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Notification-preference gate
+    if (!bypassGate && category) {
+      const gate = await shouldSendToInstructor(supabase, instructorId, {
+        category, channel: "push", importance, pupilId, jobValue,
+      });
+      if (!gate.allow) {
+        if (gate.defer_until) {
+          await enqueueOutbox(supabase, {
+            instructor_id: instructorId,
+            category,
+            importance,
+            title: notification.title,
+            body: notification.body,
+            payload: { notification, pupilId, jobValue },
+            deliver_at: gate.defer_until,
+          });
+        }
+        return new Response(
+          JSON.stringify({ success: false, gated: true, reason: gate.reason, defer_until: gate.defer_until ?? null }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     let webSent = 0;

@@ -15,6 +15,14 @@ export interface NotificationRules {
 
 export type CategoryKey = "test_swap" | "message" | "job" | "system";
 
+export interface DailySummaryInclude {
+  tomorrow_lessons: boolean;
+  payments_due: boolean;
+  pupil_messages: boolean;
+  job_offers: boolean;
+  test_swaps: boolean;
+}
+
 export interface NotificationSettings {
   delivery_cadence: DeliveryCadence;
   quiet_hours_enabled: boolean;
@@ -22,7 +30,20 @@ export interface NotificationSettings {
   quiet_hours_end: string;   // "07:00"
   category_mutes: Partial<Record<CategoryKey, boolean>>;
   notification_rules: NotificationRules;
+  end_of_lesson_enabled: boolean;
+  end_of_lesson_lead_minutes: number;
+  daily_summary_enabled: boolean;
+  daily_summary_time: string; // "07:00"
+  daily_summary_include: DailySummaryInclude;
 }
+
+const DEFAULT_INCLUDE: DailySummaryInclude = {
+  tomorrow_lessons: true,
+  payments_due: true,
+  pupil_messages: true,
+  job_offers: true,
+  test_swaps: true,
+};
 
 const DEFAULTS: NotificationSettings = {
   delivery_cadence: "real_time",
@@ -39,6 +60,11 @@ const DEFAULTS: NotificationSettings = {
     job_min_value_pounds: 0,
     dedupe_repeat_sender: true,
   },
+  end_of_lesson_enabled: true,
+  end_of_lesson_lead_minutes: 0,
+  daily_summary_enabled: true,
+  daily_summary_time: "07:00",
+  daily_summary_include: DEFAULT_INCLUDE,
 };
 
 export function useInstructorNotificationSettings(instructorId: string | undefined) {
@@ -63,6 +89,11 @@ export function useInstructorNotificationSettings(instructorId: string | undefin
         quiet_hours_end: ((row.quiet_hours_end as string) ?? DEFAULTS.quiet_hours_end).slice(0, 5),
         category_mutes: (row.category_mutes as Partial<Record<CategoryKey, boolean>>) ?? {},
         notification_rules: { ...DEFAULTS.notification_rules, ...(row.notification_rules as NotificationRules ?? {}) },
+        end_of_lesson_enabled: row.end_of_lesson_enabled === undefined ? DEFAULTS.end_of_lesson_enabled : Boolean(row.end_of_lesson_enabled),
+        end_of_lesson_lead_minutes: Number(row.end_of_lesson_lead_minutes ?? DEFAULTS.end_of_lesson_lead_minutes),
+        daily_summary_enabled: row.daily_summary_enabled === undefined ? DEFAULTS.daily_summary_enabled : Boolean(row.daily_summary_enabled),
+        daily_summary_time: ((row.daily_summary_time as string) ?? DEFAULTS.daily_summary_time).slice(0, 5),
+        daily_summary_include: { ...DEFAULT_INCLUDE, ...((row.daily_summary_include as Partial<DailySummaryInclude>) ?? {}) },
       });
     }
     setLoading(false);
@@ -87,6 +118,11 @@ export function useInstructorNotificationSettings(instructorId: string | undefin
             quiet_hours_end: next.quiet_hours_end,
             category_mutes: next.category_mutes,
             notification_rules: next.notification_rules,
+            end_of_lesson_enabled: next.end_of_lesson_enabled,
+            end_of_lesson_lead_minutes: next.end_of_lesson_lead_minutes,
+            daily_summary_enabled: next.daily_summary_enabled,
+            daily_summary_time: next.daily_summary_time,
+            daily_summary_include: next.daily_summary_include,
           } as never,
           { onConflict: "instructor_id" },
         );

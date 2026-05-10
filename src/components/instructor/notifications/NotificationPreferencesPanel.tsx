@@ -205,6 +205,95 @@ export default function NotificationPreferencesPanel({ instructorId }: Props) {
           />
         </div>
       </Section>
+
+      {/* Reminders: End of Lesson + Daily Summary */}
+      <Section title="Reminders">
+        {/* End of lesson */}
+        <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+          <div className="flex-1 min-w-0 pr-3">
+            <p className="m-0" style={{ fontSize: 14, fontWeight: 500, color: TEXT }}>End-of-lesson reminder</p>
+            <p className="m-0" style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>Push when a lesson is about to finish so you can mark it complete.</p>
+          </div>
+          <Switch
+            checked={settings.end_of_lesson_enabled}
+            onCheckedChange={v => update({ end_of_lesson_enabled: v })}
+          />
+        </div>
+        {settings.end_of_lesson_enabled && (
+          <div className="grid grid-cols-3" style={{ gap: 6, marginBottom: 12 }}>
+            {[
+              { v: 5, label: "5 min before" },
+              { v: 2, label: "2 min before" },
+              { v: 0, label: "At end" },
+            ].map(opt => {
+              const active = settings.end_of_lesson_lead_minutes === opt.v;
+              return (
+                <button
+                  key={opt.v}
+                  type="button"
+                  onClick={() => update({ end_of_lesson_lead_minutes: opt.v })}
+                  style={{
+                    padding: "8px 10px",
+                    borderRadius: 10,
+                    background: active ? "#E6F1FB" : PAGE_BG,
+                    border: active ? "1px solid #2B7BC8" : "1px solid transparent",
+                    fontSize: 12,
+                    fontWeight: 500,
+                    color: active ? "#2B7BC8" : TEXT,
+                  }}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        <div style={{ height: 0.5, background: HAIRLINE, margin: "10px 0" }} />
+
+        {/* Daily summary */}
+        <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+          <div className="flex-1 min-w-0 pr-3">
+            <p className="m-0" style={{ fontSize: 14, fontWeight: 500, color: TEXT }}>Daily summary</p>
+            <p className="m-0" style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>One push each day with what's coming up and what needs attention.</p>
+          </div>
+          <Switch
+            checked={settings.daily_summary_enabled}
+            onCheckedChange={v => update({ daily_summary_enabled: v })}
+          />
+        </div>
+        {settings.daily_summary_enabled && (
+          <>
+            <div className="flex items-center gap-3" style={{ marginBottom: 12 }}>
+              <p className="m-0" style={{ fontSize: 12, color: MUTED }}>Send at</p>
+              <Input
+                type="time"
+                value={settings.daily_summary_time}
+                onChange={e => update({ daily_summary_time: e.target.value })}
+                className="h-9 max-w-[140px]"
+              />
+            </div>
+            <p className="m-0" style={{ fontSize: 11, fontWeight: 500, color: MUTED, marginBottom: 6, letterSpacing: "0.3px", textTransform: "uppercase" }}>Include</p>
+            {[
+              { k: "tomorrow_lessons" as const, label: "Today's & tomorrow's lessons" },
+              { k: "payments_due" as const, label: "Payments due" },
+              { k: "pupil_messages" as const, label: "Unread pupil messages" },
+              { k: "job_offers" as const, label: "New job offers" },
+              { k: "test_swaps" as const, label: "Test swap matches" },
+            ].map((item, i, arr) => (
+              <div key={item.k}>
+                <div className="flex items-center justify-between" style={{ padding: "6px 0" }}>
+                  <p className="m-0" style={{ fontSize: 14, color: TEXT }}>{item.label}</p>
+                  <Switch
+                    checked={settings.daily_summary_include[item.k]}
+                    onCheckedChange={v => update({ daily_summary_include: { ...settings.daily_summary_include, [item.k]: v } })}
+                  />
+                </div>
+                {i < arr.length - 1 && <div style={{ height: 0.5, background: HAIRLINE }} />}
+              </div>
+            ))}
+          </>
+        )}
+      </Section>
     </div>
   );
 }
