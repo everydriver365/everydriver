@@ -1037,7 +1037,113 @@ export default function PremiumPupilProfile() {
     </Card>
     </div>
   );
-  const nextLessonDate = stats?.nextLesson?.lesson_date
+
+  // ─── Scheduling: per-pupil travel time override ───
+  const pupilTravelMin = (pupil as any).travel_time_minutes as number | null | undefined;
+  const [travelInput, setTravelInput] = useState<string>(
+    pupilTravelMin == null ? "" : String(pupilTravelMin)
+  );
+  const [savingTravel, setSavingTravel] = useState(false);
+  useEffect(() => {
+    setTravelInput(pupilTravelMin == null ? "" : String(pupilTravelMin));
+  }, [pupilTravelMin]);
+
+  const saveTravelTime = async (next: number | null) => {
+    if (!pupil?.id) return;
+    if (next === (pupilTravelMin ?? null)) return;
+    setSavingTravel(true);
+    try {
+      const { error } = await supabase
+        .from("pupils")
+        .update({ travel_time_minutes: next } as any)
+        .eq("id", pupil.id);
+      if (error) throw error;
+      await queryClient.invalidateQueries({ queryKey: ["pupil-profile", pupil.id, instructorId] });
+      toast.success(next == null ? "Using default buffer" : "Travel time updated");
+    } catch (err) {
+      console.error("Travel time update error:", err);
+      toast.error("Failed to update travel time");
+      setTravelInput(pupilTravelMin == null ? "" : String(pupilTravelMin));
+    } finally {
+      setSavingTravel(false);
+    }
+  };
+
+  const commitTravelTime = () => {
+    const trimmed = travelInput.trim();
+    if (trimmed === "") {
+      saveTravelTime(null);
+      return;
+    }
+    const parsed = Math.round(Number(trimmed));
+    if (!Number.isFinite(parsed) || parsed < 0 || parsed > 240) {
+      toast.error("Enter a value between 0 and 240 minutes");
+      setTravelInput(pupilTravelMin == null ? "" : String(pupilTravelMin));
+      return;
+    }
+    saveTravelTime(parsed);
+  };
+
+  const SchedulingCard = (
+    <Card>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 16, background: C.surface, display: "flex", alignItems: "center", justifyContent: "center", color: C.muted }}>
+          <Clock size={16} />
+        </div>
+        <div style={{ fontFamily: FONT, fontSize: 17, color: C.text, fontWeight: 600, letterSpacing: "-0.01em" }}>
+          Travel time
+        </div>
+      </div>
+      <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, marginBottom: 12 }}>
+        Overrides your default buffer ({defaultBufferMin ?? 0} min) when {pupil.name?.split(" ")[0] || "this pupil"} is scheduled next to another lesson. Leave blank to use the default.
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ position: "relative", flex: 1 }}>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            max={240}
+            step={5}
+            value={travelInput}
+            onChange={(e) => setTravelInput(e.target.value)}
+            onBlur={commitTravelTime}
+            onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+            placeholder={`${defaultBufferMin ?? 0} (default)`}
+            disabled={savingTravel}
+            style={{
+              width: "100%", padding: "10px 56px 10px 12px",
+              borderRadius: 12, border: `1px solid ${C.hairline}`,
+              background: C.card, fontFamily: FONT, fontSize: 14, color: C.text,
+              outline: "none",
+            }}
+          />
+          <span style={{
+            position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
+            fontFamily: FONT, fontSize: 12, color: C.subtle, pointerEvents: "none",
+          }}>
+            min
+          </span>
+        </div>
+        {pupilTravelMin != null && (
+          <button
+            type="button"
+            onClick={() => { setTravelInput(""); saveTravelTime(null); }}
+            disabled={savingTravel}
+            style={{
+              padding: "10px 12px", borderRadius: 12,
+              border: `1px solid ${C.hairline}`, background: C.card,
+              color: C.muted, fontFamily: FONT, fontSize: 13, fontWeight: 500,
+              cursor: "pointer", transition: TRANSITION,
+            }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+    </Card>
+  );
+
     ? parseISO(stats.nextLesson.lesson_date as unknown as string)
     : null;
   const lastLessonDate = stats?.lastLesson?.lesson_date
