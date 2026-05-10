@@ -15,6 +15,14 @@ export interface NotificationRules {
 
 export type CategoryKey = "test_swap" | "message" | "job" | "system";
 
+export interface DailySummaryInclude {
+  tomorrow_lessons: boolean;
+  payments_due: boolean;
+  pupil_messages: boolean;
+  job_offers: boolean;
+  test_swaps: boolean;
+}
+
 export interface NotificationSettings {
   delivery_cadence: DeliveryCadence;
   quiet_hours_enabled: boolean;
@@ -22,7 +30,20 @@ export interface NotificationSettings {
   quiet_hours_end: string;   // "07:00"
   category_mutes: Partial<Record<CategoryKey, boolean>>;
   notification_rules: NotificationRules;
+  end_of_lesson_enabled: boolean;
+  end_of_lesson_lead_minutes: number;
+  daily_summary_enabled: boolean;
+  daily_summary_time: string; // "07:00"
+  daily_summary_include: DailySummaryInclude;
 }
+
+const DEFAULT_INCLUDE: DailySummaryInclude = {
+  tomorrow_lessons: true,
+  payments_due: true,
+  pupil_messages: true,
+  job_offers: true,
+  test_swaps: true,
+};
 
 const DEFAULTS: NotificationSettings = {
   delivery_cadence: "real_time",
@@ -39,6 +60,11 @@ const DEFAULTS: NotificationSettings = {
     job_min_value_pounds: 0,
     dedupe_repeat_sender: true,
   },
+  end_of_lesson_enabled: true,
+  end_of_lesson_lead_minutes: 0,
+  daily_summary_enabled: true,
+  daily_summary_time: "07:00",
+  daily_summary_include: DEFAULT_INCLUDE,
 };
 
 export function useInstructorNotificationSettings(instructorId: string | undefined) {
