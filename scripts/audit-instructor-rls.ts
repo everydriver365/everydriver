@@ -120,7 +120,8 @@ for (const f of codeFiles) {
   }
 }
 
-// Tables we deliberately keep restricted (system / audit / service-role only).
+// Tables we deliberately keep restricted (system / audit / service-role only,
+// or admin-managed, or school-owner-managed via a different policy shape).
 const INTENTIONAL = new Set([
   "calendar_sync_queue",
   "compliance_reminders",
@@ -139,6 +140,7 @@ const INTENTIONAL = new Set([
   "instructor_payouts",
   "instructor_premium_placements",
   "instructor_reports",
+  "instructor_subscriptions", // admin-managed
   "instructor_weekly_reports",
   "lesson_cancellation_stats",
   "lesson_history",
@@ -152,6 +154,21 @@ const INTENTIONAL = new Set([
   "payment_intents",
   "payment_link_tracking",
   "payment_reminder_log",
+  // Edge-function / service-role write paths only:
+  "gap_offers",
+  "mileage_logs",
+  "cover_offer_recipients",
+  "platform_commissions",
+  "pupil_reengagement_log",
+  "subscription_save_offers",
+  "tile_health_checks",
+  // Admin-managed pages:
+  "booking_pages",
+  "urgent_alerts",
+  "school_franchise_fees",
+  // School-owner managed via is_school_owner / schools.owner_user_id:
+  "school_course_instructors",
+  "school_instructors",
 ]);
 
 type Row = { table: string; insert: boolean; update: boolean; delete: boolean; uses: string };
