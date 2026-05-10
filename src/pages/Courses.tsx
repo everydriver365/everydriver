@@ -1279,6 +1279,8 @@ export default function Courses() {
                             discountedPrice={course.discountedPrice}
                             customFeatures={course.customFeatures}
                             areaName={areaCache[course.instructor.home_postcode?.replace(/\s+/g, "").toUpperCase()] || null}
+                            effectiveHourlyRate={resolvedRateFor(course.instructor)}
+                            learnerPostcode={searchedPostcode}
                           />
                         </motion.div>
                       ))}
