@@ -153,6 +153,7 @@ export function PostcodeRatesSection({ instructorId }: { instructorId: string })
   const [draftRules, setDraftRules] = useState<PostcodeRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [showImport, setShowImport] = useState(false);
 
   const reload = async () => {
     const { data } = await supabase
@@ -310,18 +311,183 @@ export function PostcodeRatesSection({ instructorId }: { instructorId: string })
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={() => setDraftRules(prev => [...prev, { id: newLocalId(), outward_code: "", hourly_rate: null }])}
-        className="rounded-lg border bg-transparent px-3 py-2 text-sm hover:bg-muted"
-        style={{ borderColor: "hsl(var(--border) / 0.6)" }}
-      >
-        + Add postcode
-      </button>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setDraftRules(prev => [...prev, { id: newLocalId(), outward_code: "", hourly_rate: null }])}
+          className="rounded-lg border bg-transparent px-3 py-2 text-sm hover:bg-muted"
+          style={{ borderColor: "hsl(var(--border) / 0.6)" }}
+        >
+          + Add postcode
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowImport(v => !v)}
+          className="rounded-lg border bg-transparent px-3 py-2 text-sm hover:bg-muted"
+          style={{ borderColor: "hsl(var(--border) / 0.6)" }}
+        >
+          {showImport ? "Close import" : "Bulk import (CSV)"}
+        </button>
+      </div>
+
+      {showImport && (
+        <CsvImporter
+          existing={originalRules}
+          onCancel={() => setShowImport(false)}
+          onApply={async (rows) => {
+            setBusyId("__import__");
+            try {
+              const byCode = new Map(originalRules.map(r => [r.outward_code.toUpperCase(), r]));
+              const updates: { id: string; hourly_rate: number }[] = [];
+              const inserts: { instructor_id: string; outward_code: string; hourly_rate: number }[] = [];
+              for (const r of rows) {
+                const existing = byCode.get(r.outward_code);
+                if (existing) {
+                  if (Number(existing.hourly_rate) !== r.hourly_rate) {
+                    updates.push({ id: existing.id, hourly_rate: r.hourly_rate });
+                  }
+                } else {
+                  inserts.push({ instructor_id: instructorId, outward_code: r.outward_code, hourly_rate: r.hourly_rate });
+                }
+              }
+              if (inserts.length) {
+                const { error } = await supabase.from("instructor_postcode_rates").insert(inserts);
+                if (error) throw error;
+              }
+              for (const u of updates) {
+                const { error } = await supabase.from("instructor_postcode_rates").update({ hourly_rate: u.hourly_rate }).eq("id", u.id);
+                if (error) throw error;
+              }
+              await reload();
+              setShowImport(false);
+              toast({ title: "Import complete", description: `${inserts.length} added, ${updates.length} updated` });
+            } catch (e: any) {
+              toast({ title: "Import failed", description: e?.message, variant: "destructive" });
+            } finally {
+              setBusyId(null);
+            }
+          }}
+        />
+      )}
 
       <p className="mt-3 text-xs text-muted-foreground">
         Priority: pupil's custom rate → matching postcode rule → default hourly rate.
       </p>
+    </div>
+  );
+}
+
+/* ============================================================
+   CSV importer (inline)
+   ============================================================ */
+interface ParsedRow { outward_code: string; hourly_rate: number; }
+interface ParseError { line: number; raw: string; reason: string; }
+
+function parseCsv(text: string): { rows: ParsedRow[]; errors: ParseError[] } {
+  const rows: ParsedRow[] = [];
+  const errors: ParseError[] = [];
+  const seen = new Set<string>();
+  const lines = text.split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    const line = raw.trim();
+    if (!line) continue;
+    // skip header
+    if (i === 0 && /[a-z]/i.test(line) && !/\d/.test(line)) continue;
+    const parts = line.split(/[,\t;]/).map(s => s.trim().replace(/^["']|["']$/g, ""));
+    if (parts.length < 2) { errors.push({ line: i + 1, raw, reason: "Need 2 columns: postcode, rate" }); continue; }
+    const code = parts[0].replace(/\s+/g, "").toUpperCase().slice(0, 4);
+    const rateStr = parts[1].replace(/[£$,\s]/g, "");
+    const rate = Number(rateStr);
+    if (!isValidOutwardCode(code)) { errors.push({ line: i + 1, raw, reason: `Invalid postcode "${parts[0]}"` }); continue; }
+    if (!Number.isFinite(rate) || rate <= 0) { errors.push({ line: i + 1, raw, reason: `Invalid rate "${parts[1]}"` }); continue; }
+    if (seen.has(code)) { errors.push({ line: i + 1, raw, reason: `Duplicate ${code} in CSV` }); continue; }
+    seen.add(code);
+    rows.push({ outward_code: code, hourly_rate: Math.round(rate * 100) / 100 });
+  }
+  return { rows, errors };
+}
+
+function CsvImporter({
+  existing,
+  onApply,
+  onCancel,
+}: {
+  existing: PostcodeRule[];
+  onApply: (rows: ParsedRow[]) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const { rows, errors } = parseCsv(text);
+  const existingCodes = new Set(existing.map(r => r.outward_code.toUpperCase()));
+  const newCount = rows.filter(r => !existingCodes.has(r.outward_code)).length;
+  const updateCount = rows.filter(r => existingCodes.has(r.outward_code)).length;
+
+  const onFile = async (f: File | null) => {
+    if (!f) return;
+    setText(await f.text());
+  };
+
+  return (
+    <div className="mt-3 rounded-xl border p-3" style={{ borderColor: "hsl(var(--border))" }}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-xs font-medium">Bulk import postcode rates</div>
+        <input
+          type="file"
+          accept=".csv,text/csv,text/plain"
+          onChange={e => onFile(e.target.files?.[0] ?? null)}
+          className="text-xs"
+        />
+      </div>
+      <p className="text-xs text-muted-foreground mb-2">
+        Format: <code>outward_code,hourly_rate</code> per line. Header optional. Example:
+        <br />
+        <code>SO22,42.00</code> &nbsp;<code>SO23,40</code> &nbsp;<code>PO19,45</code>
+      </p>
+      <textarea
+        value={text}
+        onChange={e => setText(e.target.value)}
+        rows={6}
+        placeholder={"SO22, 42.00\nSO23, 40\nPO19, 45"}
+        className="w-full rounded-lg border bg-background px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2"
+        style={{ borderColor: "hsl(var(--border) / 0.6)" }}
+      />
+      {(rows.length > 0 || errors.length > 0) && (
+        <div className="mt-2 text-xs">
+          <div className="text-muted-foreground">
+            {rows.length} valid · {newCount} new · {updateCount} update existing · {errors.length} error{errors.length === 1 ? "" : "s"}
+          </div>
+          {errors.length > 0 && (
+            <ul className="mt-1 max-h-24 overflow-auto" style={{ color: "hsl(0 72% 50%)" }}>
+              {errors.slice(0, 10).map((e, i) => (
+                <li key={i}>Line {e.line}: {e.reason}</li>
+              ))}
+              {errors.length > 10 && <li>…and {errors.length - 10} more</li>}
+            </ul>
+          )}
+        </div>
+      )}
+      <div className="mt-3 flex gap-2">
+        <button
+          type="button"
+          disabled={busy || rows.length === 0}
+          onClick={async () => { setBusy(true); try { await onApply(rows); } finally { setBusy(false); } }}
+          className="rounded-lg px-3 h-9 text-sm font-medium disabled:opacity-40"
+          style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+        >
+          {busy ? "Importing…" : `Import ${rows.length || ""}`.trim()}
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={onCancel}
+          className="rounded-lg border bg-transparent px-3 h-9 text-sm hover:bg-muted disabled:opacity-40"
+          style={{ borderColor: "hsl(var(--border) / 0.6)" }}
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }
