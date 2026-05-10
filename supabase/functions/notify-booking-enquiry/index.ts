@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
 import { Resend } from "npm:resend@4.0.1";
+import { shouldSendToInstructor } from "../_shared/notify-gate.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
