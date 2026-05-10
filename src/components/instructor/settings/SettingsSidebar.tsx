@@ -41,6 +41,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
       { id: "media-listing",    label: "Media & listing",    icon: IconPhoto },
       { id: "rates-coverage",   label: "Rates & coverage",   icon: IconCoin },
       { id: "availability",     label: "Availability",       icon: IconCalendar },
+      { id: "phone-number",     label: "Phone number",       icon: IconPhone },
     ],
   },
   {
