@@ -269,21 +269,7 @@ export function PupilBookingSettingsEditor({ instructorId }: PupilBookingSetting
         />
       </div>
 
-      {/* Save Button */}
-      {hasChanges && (
-        <Button
-          onClick={() => saveMutation.mutate()}
-          disabled={saveMutation.isPending}
-          className="w-full"
-        >
-          {saveMutation.isPending ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Save className="h-4 w-4 mr-2" />
-          )}
-          Save Settings
-        </Button>
-      )}
+      {/* Save handled by the sticky settings save bar */}
     </div>
   );
 }
