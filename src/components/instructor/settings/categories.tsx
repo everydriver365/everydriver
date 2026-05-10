@@ -49,7 +49,7 @@ import { DashboardLayoutManager } from "@/components/instructor/DashboardLayoutM
 import { AppearanceSettings } from "@/components/instructor/AppearanceSettings";
 import { ResetStatsDialog } from "@/components/instructor/ResetStatsDialog";
 import { FeatureTogglesSettings } from "@/components/instructor/FeatureTogglesSettings";
-import { HourlyRateSection, CoverageSection, PostcodeRatesSection } from "./RatesCoverageSections";
+import { HourlyRateSection, CoverageSection, PostcodeRatesSection, RateModifiersSection } from "./RatesCoverageSections";
 
 /**
  * Returns the 8 settings categories for the instructor portal.
