@@ -260,9 +260,19 @@ export function useInstructorReportsData(
       // ---- By lesson type ----
       const typeAgg: Record<string, { hours: number; amount: number }> = {};
       for (const l of lessonsCurRes.data ?? []) {
-        const t = (l.lesson_type || "Standard").trim() || "Standard";
-        const h = (l.duration_minutes || 0) / 60;
-        const amt = l.amount_due != null ? Number(l.amount_due) : h * hourlyRate;
+        const t = ((l as any).lesson_type || "Standard").trim() || "Standard";
+        const h = ((l as any).duration_minutes || 0) / 60;
+        const amt = computeLessonAmount({
+          durationMinutes: (l as any).duration_minutes || 0,
+          amountDue: (l as any).amount_due,
+          pupilCustomRate: (l as any).pupils?.custom_hourly_rate,
+          pupilCustomRate90: (l as any).pupils?.custom_rate_90min,
+          pupilCustomRate120: (l as any).pupils?.custom_rate_120min,
+          pupilPostcode: (l as any).pupils?.postcode,
+          lessonPostcode: (l as any).pickup_postcode,
+          instructorDefaultRate: hourlyRate,
+          postcodeRules,
+        });
         if (!typeAgg[t]) typeAgg[t] = { hours: 0, amount: 0 };
         typeAgg[t].hours += h;
         typeAgg[t].amount += amt;
