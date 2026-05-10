@@ -1,24 +1,25 @@
-Plan to fix the Winchester whitelabel site:
+## Goal
 
-1. Fix the data access causing the 404s
-- The reviews page and courses page are failing because public reads of the safe instructor view are currently blocked by database permissions.
-- Add a database migration to restore anonymous/authenticated SELECT access to `public_instructors` and ensure it remains a safe public view of active instructor fields only.
+Make the Winchester Driving School mobile homepage a 1:1 clone of the Drive365 mobile homepage. The only difference allowed: the WDS logo and "Winchester Driving School" wording in the header (already wired via `useRouteLogo` + whitelabel config).
 
-2. Make whitelabel reviews use public-safe instructor data
-- Update the mini-website page loader so whitelabel/public pages resolve instructors through `public_instructors` instead of the locked private `instructors` table.
-- Keep published page lookup via `instructor_website_pages`, which already has a public published-page policy.
-- This should stop `/reviews` showing “Page Not Found” for Ken D.
+## Changes
 
-3. Make Ken D courses load from June 2026
-- Keep `/courses` scoped to the Winchester instructor slug `ken-d`.
-- Once the public instructor lookup works, the existing Ken D record (`available_from = 2026-06-01`) and active working hours/courses should render June 2026 availability.
-- If needed, make the course page select the first actual available June date after loading instead of leaving the user on an empty state.
+**`src/components/MobileHomepage.tsx`** — strip all `isWinchester` branches so the page renders exactly like Drive365:
 
-4. Populate contact details from the instructor record
-- Remove the hard-coded Ken D contact override in the contact page.
-- Use Ken D’s instructor record values: phone `07767693276`, email `info@winchesterdrivingschool.co.uk`, and location from the instructor location fields/postcode.
-- Make the Winchester `/contact` route render the Ken D contact page through the whitelabel slug, matching the existing `/reviews` whitelabel handling.
+1. Remove the `isWinchester` constant and `getWhitelabelConfig` import (no longer needed here — branding still flows through `useRouteLogo`).
+2. Delete the Winchester-only hero overlay (phone pill + amber "Book Now" button) at the top-right of the hero image.
+3. Use the single Drive365 `navItems` list (Home → `/drive365`, Search, Theory, FAQs, Help, Benefits) for everyone — drop the Winchester variant (Home/Courses/Theory/Reviews/Contact).
+4. Remove the bottom-nav fork: always render the standard Drive365 bottom nav, never `WhitelabelBottomNav`.
+5. Remove any other `isWinchester ?` conditional branches (around line 381 and elsewhere) so franchise/benefits/feature sections render identically on both domains.
 
-5. Verify on mobile preview
-- Check `/reviews`, `/courses`, and `/contact` with the Winchester whitelabel override at mobile width.
-- Confirm reviews no longer 404, courses show Ken D availability from June 2026, and contact details are populated from the record.
+**No other files change.** Header, Footer, route resolution, and whitelabel data scoping (Ken D's courses/reviews/contact) all stay as-is.
+
+## Out of scope
+
+- Header/Footer (already show WDS logo + Winchester name + Ken D contact details).
+- Whitelabel data scoping for `/courses`, `/reviews`, `/contact` (unchanged).
+- The `WhitelabelBottomNav` component itself can stay in the repo for other pages that still use it.
+
+## Verification
+
+Open `/?whitelabel=winchesterdrivingschool.co.uk` at 440px and `/` at 440px (Drive365) side-by-side: every section, the hero, search card, polaroid stack, franchise promo, and bottom nav should be identical apart from the WDS logo + "Winchester Driving School" wording in the top header.

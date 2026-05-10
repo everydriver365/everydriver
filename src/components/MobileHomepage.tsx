@@ -22,8 +22,6 @@ import weeklyLessonsIcon from "@/assets/weekly-lessons-icon.jpg";
 import earlierTestGuaranteedBadge from "@/assets/free-retest-badge.png";
 import referFriendsImage from "@/assets/refer-friends.png";
 import { useDomainBranding } from "@/hooks/useDomainBranding";
-import { getWhitelabelConfig } from "@/lib/whitelabel";
-import { WhitelabelBottomNav } from "@/components/layout/WhitelabelBottomNav";
 
 export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
@@ -44,8 +42,6 @@ export function MobileHomepage() {
   const location = useLocation();
   const { toast } = useToast();
   const branding = useDomainBranding();
-  const whitelabel = getWhitelabelConfig();
-  const isWinchester = whitelabel?.host === "winchesterdrivingschool.co.uk";
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,22 +83,14 @@ export function MobileHomepage() {
     });
   };
 
-  const navItems = isWinchester
-    ? [
-        { label: "Home", icon: Home, path: "/" },
-        { label: "Courses", icon: Search, path: "/courses" },
-        { label: "Theory", icon: BookOpen, path: "/theory" },
-        { label: "Reviews", icon: Star, path: "/reviews" },
-        { label: "Contact", icon: Phone, path: "/contact" },
-      ]
-    : [
-        { label: "Home", icon: Home, path: "/drive365" },
-        { label: "Search", icon: Search, path: "/courses" },
-        { label: "Theory", icon: BookOpen, path: "/theory" },
-        { label: "FAQs", icon: HelpCircle, path: "/faqs" },
-        { label: "Help", icon: MessageCircle, path: "/help" },
-        { label: "Benefits", icon: Gift, path: "/benefits" },
-      ];
+  const navItems = [
+    { label: "Home", icon: Home, path: "/drive365" },
+    { label: "Search", icon: Search, path: "/courses" },
+    { label: "Theory", icon: BookOpen, path: "/theory" },
+    { label: "FAQs", icon: HelpCircle, path: "/faqs" },
+    { label: "Help", icon: MessageCircle, path: "/help" },
+    { label: "Benefits", icon: Gift, path: "/benefits" },
+  ];
 
   return (
     <div className="learner-app min-h-screen bg-background">
@@ -145,24 +133,6 @@ export function MobileHomepage() {
           style={{ maxHeight: '55vh' }}
         />
 
-        {/* Winchester: phone + Book Now overlay on hero right */}
-        {isWinchester && (
-          <div className="absolute top-3 right-3 z-20 flex flex-col items-end gap-2">
-            <a
-              href="tel:07767693276"
-              className="flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur px-3 py-1.5 text-xs font-semibold text-primary shadow-md hover:bg-white"
-            >
-              <Phone className="h-3.5 w-3.5" />
-              07767 693276
-            </a>
-            <Link
-              to="/courses"
-              className="rounded-full bg-amber-400 px-4 py-2 text-xs font-bold text-primary shadow-md hover:bg-amber-300"
-            >
-              Book Now
-            </Link>
-          </div>
-        )}
         {/* Search Card - Overlapping Hero Bottom */}
         <div className="absolute bottom-0 left-0 right-0 translate-y-1/2 px-4 z-10">
           <div className="relative bg-primary rounded-2xl p-5 pt-4 shadow-xl">
@@ -378,30 +348,26 @@ export function MobileHomepage() {
       <div className="h-24" />
       
       {/* Bottom Navigation */}
-      {isWinchester ? (
-        <WhitelabelBottomNav />
-      ) : (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-primary-foreground/10">
-          <div className="flex items-center justify-around h-16 px-1">
-            {navItems.map(item => {
-              const isActive = location.pathname === item.path;
-              return (
-                <Link 
-                  key={item.path} 
-                  to={item.path} 
-                  className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors relative ${isActive ? "text-white" : "text-primary-foreground/60 hover:text-primary-foreground/80"}`}
-                >
-                  <item.icon className={`h-5 w-5 ${isActive ? "scale-110" : ""} transition-transform`} />
-                  <span className="text-[10px] font-medium">{item.label}</span>
-                  {isActive && <div className="absolute bottom-1 w-1 h-1 rounded-full bg-white" />}
-                </Link>
-              );
-            })}
-          </div>
-          {/* Safe area for iOS */}
-          <div className="h-safe-area-inset-bottom bg-primary" />
-        </nav>
-      )}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-primary-foreground/10">
+        <div className="flex items-center justify-around h-16 px-1">
+          {navItems.map(item => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link 
+                key={item.path} 
+                to={item.path} 
+                className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors relative ${isActive ? "text-white" : "text-primary-foreground/60 hover:text-primary-foreground/80"}`}
+              >
+                <item.icon className={`h-5 w-5 ${isActive ? "scale-110" : ""} transition-transform`} />
+                <span className="text-[10px] font-medium">{item.label}</span>
+                {isActive && <div className="absolute bottom-1 w-1 h-1 rounded-full bg-white" />}
+              </Link>
+            );
+          })}
+        </div>
+        {/* Safe area for iOS */}
+        <div className="h-safe-area-inset-bottom bg-primary" />
+      </nav>
 
       {/* Feature Detail Modal */}
       <Dialog open={!!selectedFeature} onOpenChange={() => setSelectedFeature(null)}>
