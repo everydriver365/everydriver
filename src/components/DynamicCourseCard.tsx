@@ -65,6 +65,10 @@ export function DynamicCourseCard({
   const totalPrice = basePrice + schoolSkim;
   const finalPrice = discountedPrice || totalPrice;
   const hasDiscount = discountedPrice && discountedPrice < totalPrice;
+  const hasSurcharges =
+    Number(instructor.weekend_surcharge_amount) > 0 ||
+    Number(instructor.bank_holiday_surcharge_amount) > 0 ||
+    Number(instructor.odd_hours_surcharge_amount) > 0;
   const courseName = hours === 28 ? "TEST IN A WEEK" : `${hours} HOUR COURSE`;
   const brandColour = instructor.brand_colour || "#1e3a5f";
 
