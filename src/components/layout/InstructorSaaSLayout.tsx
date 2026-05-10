@@ -60,7 +60,7 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
             <Button variant="ghost" className="text-nav-foreground/80 hover:text-nav-foreground hover:bg-nav-foreground/10" asChild>
               <Link to="/instructor-app/login">Log in</Link>
             </Button>
-            <Button className="bg-[#0075c9] hover:bg-[#005a9e] text-white" asChild>
+            <Button className="bg-[#09507f] hover:bg-[#063a5c] text-white" asChild>
               <Link to="/instructor-app/signup">Get Started Free</Link>
             </Button>
           </div>
