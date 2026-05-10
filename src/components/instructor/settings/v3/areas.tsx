@@ -67,7 +67,7 @@ export const AREA_GROUPS: AreaGroup[] = [
         id: "rates-coverage", label: "Rates & coverage",
         title: "Rates & coverage area", description: "Hourly rate, service area and per-postcode pricing.",
         icon: MapPin, iconBg: "#ECFDF5", iconColor: "#059669",
-        pulls: [G("rates", "hourly"), G("rates", "coverage"), G("rates", "postcode-rates")],
+        pulls: [G("rates", "hourly"), G("rates", "coverage"), G("rates", "postcode-rates"), G("rates", "rate-modifiers")],
       },
     ],
   },
