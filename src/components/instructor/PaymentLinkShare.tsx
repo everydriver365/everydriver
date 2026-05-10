@@ -12,12 +12,14 @@ interface PaymentLinkShareProps {
   instructorId: string;
   instructorName?: string;
   pupils?: PupilOption[];
+  initialAmount?: number | null;
+  initialPupilId?: string;
 }
 
-export function PaymentLinkShare({ instructorId, instructorName, pupils = [] }: PaymentLinkShareProps) {
+export function PaymentLinkShare({ instructorId, instructorName, pupils = [], initialAmount, initialPupilId }: PaymentLinkShareProps) {
   const [copied, setCopied] = useState(false);
-  const [customAmount, setCustomAmount] = useState("");
-  const [selectedPupilId, setSelectedPupilId] = useState<string>("");
+  const [customAmount, setCustomAmount] = useState(initialAmount && initialAmount > 0 ? initialAmount.toFixed(2) : "");
+  const [selectedPupilId, setSelectedPupilId] = useState<string>(initialPupilId || "");
 
   const parsedAmount = parseFloat(customAmount);
   const isValidAmount = !isNaN(parsedAmount) && parsedAmount >= 1 && parsedAmount <= 5000;

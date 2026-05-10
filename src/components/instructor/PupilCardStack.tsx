@@ -51,6 +51,7 @@ import { RecordPaymentModal } from "@/components/instructor/RecordPaymentModal";
 import { PupilNoteSheet } from "@/components/instructor/PupilNoteSheet";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { SendPaymentReminderButton } from "@/components/instructor/SendPaymentReminderButton";
+import { PaymentLinkShare } from "@/components/instructor/PaymentLinkShare";
 import { DrivingSyllabus } from "@/components/instructor/DrivingSyllabus";
 import { NewPupilChecklist } from "@/components/instructor/NewPupilChecklist";
 import { Button } from "@/components/ui/button";
@@ -227,6 +228,7 @@ export function PupilCardStack({
   // Payment modal states
   const [showRecordPaymentModal, setShowRecordPaymentModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [showPayLinkSheet, setShowPayLinkSheet] = useState(false);
   const [paymentRefreshTrigger, setPaymentRefreshTrigger] = useState(0);
   
   // Syllabus sheet state
@@ -674,7 +676,37 @@ export function PupilCardStack({
   // Calculate total hours from lessons_completed (approximate 2h per lesson if no better data)
   const totalHours = (pupil.lessons_completed || 0) * 2;
 
-  const isOverdue = hasDebt && !!pupil.balance_due_date && new Date(pupil.balance_due_date) < new Date();
+  // Show overdue ribbon for any pupil with an outstanding balance
+  const isOverdue = hasDebt;
+  const debtAmount = hasDebt ? Math.abs(balance) : 0;
+
+  const handleSendReminder = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!instructorId) {
+      toast.error("Instructor not loaded");
+      return;
+    }
+    if (!pupil.phone && !pupil.email) {
+      toast.error("No phone or email on file for this pupil");
+      return;
+    }
+    try {
+      const { data, error } = await supabase.functions.invoke("send-payment-reminder", {
+        body: {
+          instructorId,
+          instructorName: instructorName || "",
+          pupilIds: [pupil.id],
+        },
+      });
+      if (error) throw error;
+      if (data?.sent > 0) toast.success(`Reminder sent to ${pupil.name}`);
+      else if (data?.skipped > 0) toast.error("Pupil missing contact details");
+      else toast.error("Failed to send reminder");
+    } catch (err) {
+      console.error("reminder error", err);
+      toast.error("Failed to send reminder");
+    }
+  };
 
   return (
     <>
@@ -815,6 +847,25 @@ export function PupilCardStack({
               <span style={{ fontSize: 11, color: "#8E8E93", fontWeight: 500 }}>
                 {hasDebt ? "Owes" : hasCredit ? "Credit" : "Settled"}
               </span>
+              {hasDebt && (
+                <div className="flex items-center" style={{ gap: 8, marginTop: 4 }}>
+                  <button
+                    type="button"
+                    onClick={handleSendReminder}
+                    style={{ fontSize: 11, fontWeight: 600, color: "#C8434F", textDecoration: "underline", background: "transparent", border: "none", padding: 0, cursor: "pointer" }}
+                  >
+                    Remind
+                  </button>
+                  <span style={{ fontSize: 11, color: "#D1D1D6" }}>·</span>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setShowPayLinkSheet(true); }}
+                    style={{ fontSize: 11, fontWeight: 600, color: "#2B7BC8", textDecoration: "underline", background: "transparent", border: "none", padding: 0, cursor: "pointer" }}
+                  >
+                    Pay link
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1409,6 +1460,25 @@ export function PupilCardStack({
         initialNote={effectiveNotes}
         onSaved={(newNote) => setNoteOverride(newNote)}
       />
+
+      {instructorId && (
+        <Sheet open={showPayLinkSheet} onOpenChange={setShowPayLinkSheet}>
+          <SheetContent side="bottom" className="rounded-t-2xl p-0 max-h-[90dvh] overflow-y-auto">
+            <SheetHeader className="px-5 pt-5 pb-2">
+              <SheetTitle>Payment link for {titleCaseName(pupil.name)}</SheetTitle>
+            </SheetHeader>
+            <div className="px-5 pb-6">
+              <PaymentLinkShare
+                instructorId={instructorId}
+                instructorName={instructorName}
+                pupils={[{ id: pupil.id, name: pupil.name }]}
+                initialAmount={debtAmount}
+                initialPupilId={pupil.id}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
     </>
   );
 }
