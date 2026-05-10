@@ -23,6 +23,7 @@ import { ExaminerSelector } from './driving-test/ExaminerSelector';
 import { TestCentrePicker } from './driving-test/TestCentrePicker';
 import { SegmentedControl } from '@/components/instructor/ui/SegmentedControl';
 import { pupilAvatarColor, pupilAvatarInitial } from '@/lib/pupilAvatarColor';
+import { applyRateModifiers, loadUkBankHolidays, type RateModifiers } from '@/lib/pricing/applyRateModifiers';
 
 interface AddLessonSheetProps {
   open: boolean;
