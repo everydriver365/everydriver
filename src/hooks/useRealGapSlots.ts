@@ -122,9 +122,13 @@ export function useRealGapSlots(instructorId: string | undefined) {
         const startHour = override?.start_time || dayHours?.start_time || "09:00";
         const endHour = override?.end_time || dayHours?.end_time || "17:00";
 
-        const dayLessons = (scheduledLessons || []).filter(
-          (l) => l.lesson_date === dateStr,
-        );
+        const dayLessons = (scheduledLessons || [])
+          .filter((l: any) => l.lesson_date === dateStr)
+          .map((l: any) => ({
+            start_time: l.start_time,
+            duration_minutes: l.duration_minutes,
+            pupil_travel_min: l.pupil?.travel_time_minutes ?? null,
+          }));
         const dayBlocks = manualBlocks || [];
         const dayEvents = calendarEvents || [];
 
