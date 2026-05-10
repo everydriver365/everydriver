@@ -1,5 +1,5 @@
 import {
-  User, Briefcase, CreditCard, Calendar, Car, MessageCircle, Plug, Settings as SettingsIcon,
+  User, Briefcase, CreditCard, Calendar, Car, MessageCircle, Plug, Settings as SettingsIcon, MapPin,
 } from "lucide-react";
 import type { SettingsCategory } from "./SettingsLayout";
 
