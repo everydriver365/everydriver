@@ -710,9 +710,18 @@ export function AddLessonSheet({
       const lessons = [];
       for (let i = 0; i < weeks; i++) {
         const recurringDate = i === 0 ? lessonDate : addWeeks(lessonDate, i);
+        const dateStr = format(recurringDate, 'yyyy-MM-dd');
+        const mod = applyRateModifiers({
+          baseRate: hourlyRate,
+          lessonDate: dateStr,
+          lessonStartTime,
+          modifiers: rateModifiers,
+          bankHolidaySet: bankHolidays,
+        });
+        const hours = durationMinutes / 60;
         lessons.push({
           instructor_id: instructorId, pupil_id: newPupil.id,
-          lesson_date: format(recurringDate, 'yyyy-MM-dd'), start_time: lessonStartTime,
+          lesson_date: dateStr, start_time: lessonStartTime,
           duration_minutes: durationMinutes, pickup_location: addr || null,
           status: 'scheduled', payment_status: paymentMethod === 'cash' ? 'cash' : 'not_paid',
           payment_method: paymentMethod,
@@ -721,6 +730,9 @@ export function AddLessonSheet({
           planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
           notes: testNotes,
           clash_overridden: overrideBuffer && isHardOverlap,
+          price_per_hour: hourlyRate || null,
+          surcharge_amount: Math.round(mod.totalAmount * hours * 100) / 100,
+          amount_due: Math.round(mod.finalRate * hours * 100) / 100,
           ...(isDrivingTest && selectedTestCentre ? { test_centre_id: selectedTestCentre } : {}),
           ...(isDrivingTest && selectedExaminer ? { examiner_id: selectedExaminer } : {}),
         });
