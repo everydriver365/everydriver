@@ -12,9 +12,8 @@ const PremiumPupilProfile = lazy(() => import("@/pages/PremiumPupilProfile"));
 const InstructorSchedule = lazy(() => import("@/pages/instructor-app/InstructorScheduleRouter"));
 const InstructorEventDetails = lazy(() => import("@/pages/InstructorEventDetails"));
 const InstructorDiary = lazy(() => import("@/pages/InstructorDiary"));
-const InstructorMenu = lazy(() => import("@/pages/InstructorMenu"));
-const InstructorSettings = lazy(() => import("@/pages/InstructorSettings"));
-const InstructorSettingsCategory = lazy(() => import("@/pages/InstructorSettingsCategory"));
+
+const InstructorSettingsHub = lazy(() => import("@/pages/instructor/InstructorSettingsHub"));
 const InstructorNotifications = lazy(() => import("@/pages/InstructorNotifications"));
 const InstallInstructor = lazy(() => import("@/pages/InstallInstructor"));
 const IconPreviewPage = lazy(() => import("@/pages/instructor/IconPreviewPage"));
@@ -23,14 +22,6 @@ const InstructorAccessibilitySettings = lazy(() => import("@/pages/instructor/In
 const InstructorModules = lazy(() => import("@/pages/instructor-app/InstructorModules"));
 const InstructorMySite = lazy(() => import("@/pages/instructor-app/InstructorMySite"));
 const InstructorPlanBilling = lazy(() => import("@/pages/instructor-app/InstructorPlanBilling"));
-const InstructorProfile = lazy(() => import("@/pages/instructor-app/InstructorProfileRouter"));
-const AccountHub = lazy(() => import("@/pages/instructor/AccountHub"));
-const InstructorIntegrationsHub = lazy(() => import("@/pages/instructor/InstructorIntegrationsHub"));
-const InstructorFamulorPage = lazy(() => import("@/pages/instructor/InstructorFamulorPage"));
-const InstructorBrandingPage = lazy(() => import("@/pages/instructor/InstructorBrandingPage"));
-const InstructorTermsSettingsPage = lazy(() => import("@/pages/instructor/InstructorTermsSettingsPage"));
-const InstructorCallAnsweringPage = lazy(() => import("@/pages/instructor/InstructorCallAnsweringPage"));
-const InstructorNotificationSettingsPage = lazy(() => import("@/pages/instructor/InstructorNotificationSettingsPage"));
 const InstructorReports = lazy(() => import("@/pages/instructor-app/InstructorReportsRouter"));
 
 // Jobs & scheduling
@@ -159,21 +150,23 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/events/:eventKey" element={<InstructorEventDetails />} />
     <Route path="/instructor/course-planner" element={<CoursePlannerPage />} />
     <Route path="/instructor/diary" element={<InstructorDiary />} />
-    <Route path="/instructor/menu" element={<InstructorMenu />} />
-    <Route path="/instructor/profile" element={<AccountHub />} />
-    <Route path="/instructor/integrations" element={<InstructorIntegrationsHub />} />
-    <Route path="/instructor/famulor" element={<InstructorFamulorPage />} />
-    <Route path="/instructor/branding" element={<InstructorBrandingPage />} />
-    <Route path="/instructor/settings/terms" element={<InstructorTermsSettingsPage />} />
-    <Route path="/instructor/settings/call-answering" element={<InstructorCallAnsweringPage />} />
-    <Route path="/instructor/settings/notifications" element={<InstructorNotificationSettingsPage />} />
-    <Route path="/instructor/settings" element={<InstructorSettings />} />
-    <Route path="/instructor/settings/profile" element={<InstructorProfile />} />
-    <Route path="/settings/profile" element={<InstructorProfile />} />
+    {/* Legacy hubs → unified Settings hub */}
+    <Route path="/instructor/menu" element={<Navigate to="/instructor/settings" replace />} />
+    <Route path="/instructor/profile" element={<Navigate to="/instructor/settings/account" replace />} />
+    <Route path="/instructor/integrations" element={<Navigate to="/instructor/settings/schedule#calendar" replace />} />
+    <Route path="/instructor/famulor" element={<Navigate to="/instructor/settings/comms#famulor" replace />} />
+    <Route path="/instructor/branding" element={<Navigate to="/instructor/settings/business#branding" replace />} />
+    <Route path="/instructor/settings/terms" element={<Navigate to="/instructor/settings/business#terms" replace />} />
+    <Route path="/instructor/settings/call-answering" element={<Navigate to="/instructor/settings/comms#call-answering" replace />} />
+    <Route path="/instructor/settings/notifications" element={<Navigate to="/instructor/settings/comms#notification-prefs" replace />} />
+    <Route path="/instructor/settings/profile" element={<Navigate to="/instructor/settings/account" replace />} />
+    <Route path="/settings/profile" element={<Navigate to="/instructor/settings/account" replace />} />
     <Route path="/instructor/settings/whatsapp" element={<InstructorWhatsAppSettings />} />
     <Route path="/instructor/settings/whatsapp/templates" element={<InstructorWhatsAppTemplates />} />
     <Route path="/instructor/settings/accessibility" element={<InstructorAccessibilitySettings />} />
-    <Route path="/instructor/settings/:categoryId" element={<InstructorSettingsCategory />} />
+    {/* Unified Settings hub */}
+    <Route path="/instructor/settings" element={<InstructorSettingsHub />} />
+    <Route path="/instructor/settings/:categoryId" element={<InstructorSettingsHub />} />
     <Route path="/instructor/notifications" element={<InstructorNotifications />} />
     <Route path="/instructor/install" element={<InstallInstructor />} />
     <Route path="/instructor/modules" element={<InstructorModules />} />
