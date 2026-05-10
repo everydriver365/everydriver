@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { friendlyDbError } from "@/lib/supabaseError";
 import { cn } from "@/lib/utils";
 
 interface TestCentre {
@@ -125,7 +126,7 @@ export function InstructorTestCentresManager({ instructorId }: InstructorTestCen
       console.error("Error updating test centres:", error);
       // Revert
       setSelectedIds(isSelected ? [...newSelectedIds, id] : newSelectedIds.filter(i => i !== id));
-      toast.error("Failed to update test centres");
+      toast.error(friendlyDbError(error as any, { table: "instructor_test_centres", operation: isSelected ? "delete" : "insert" }));
     } finally {
       setSaving(false);
     }

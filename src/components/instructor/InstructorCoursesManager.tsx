@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { friendlyDbError } from "@/lib/supabaseError";
 
 interface InstructorCourse {
   id: string;
@@ -109,7 +110,7 @@ export function InstructorCoursesManager({ instructorId }: InstructorCoursesMana
       );
     } catch (error) {
       console.error("Error toggling course:", error);
-      toast.error("Failed to update course");
+      toast.error(friendlyDbError(error as any, { table: "instructor_courses", operation: "update" }));
       // Revert
       if (existing) {
         setCourses(prev => prev.map(c => c.id === existing.id ? { ...c, is_active: !nextActive } : c));
