@@ -143,17 +143,32 @@ Deno.serve(async (req) => {
       contact_phone: p.contact_phone ?? null,
     };
 
-    // 1. Instructor bell
-    await admin.from("instructor_notifications").insert({
-      instructor_id: p.instructor_id,
-      title: copy.title,
-      message: copy.message,
-      type: copy.type,
-      action_url: copy.action_url,
-      metadata,
-    }).then(({ error }) => {
-      if (error) console.error("[notify-ai-event] instructor insert", error.message);
+    // Map kind → notification category for the gate.
+    const categoryForKind: NotifyCategory =
+      p.kind === "booking_created" ? "job" : "lesson";
+    const gate = await shouldSendToInstructor(admin, p.instructor_id, {
+      category: categoryForKind,
+      channel: "push",
+      importance: "normal",
+      pupilId: p.pupil_id ?? undefined,
     });
+
+    // 1. Instructor bell — only when not muted/deferred. Admin + parent rows
+    //    still go below regardless so the audit trail isn't lost.
+    if (gate.allow) {
+      await admin.from("instructor_notifications").insert({
+        instructor_id: p.instructor_id,
+        title: copy.title,
+        message: copy.message,
+        type: copy.type,
+        action_url: copy.action_url,
+        metadata,
+      }).then(({ error }) => {
+        if (error) console.error("[notify-ai-event] instructor insert", error.message);
+      });
+    } else {
+      console.log(`[notify-ai-event] instructor bell suppressed: ${gate.reason}`);
+    }
 
     // 2. Admin bell
     await admin.from("admin_alerts").insert({
