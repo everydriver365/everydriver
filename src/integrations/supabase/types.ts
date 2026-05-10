@@ -8731,7 +8731,9 @@ export type Database = {
           direct_debit_enabled: boolean
           disability_experience: string[]
           drive_time_alerts_enabled: boolean | null
+          driving_licence_back_url: string | null
           driving_licence_expiry: string | null
+          driving_licence_front_url: string | null
           driving_licence_number: string | null
           electricity_cost_per_kwh: number | null
           email: string | null
@@ -8779,6 +8781,7 @@ export type Database = {
           min_lead_hours: number
           mini_website_domain_id: string | null
           morning_briefing_enabled: boolean | null
+          mot_certificate_url: string | null
           motability_friendly: boolean
           name: string
           payment_link_base_url: string | null
@@ -8799,6 +8802,7 @@ export type Database = {
           quotes_enabled: boolean | null
           radius_miles: number
           reflective_logs_enabled: boolean | null
+          road_tax_reference: string | null
           school_skim_amount: number | null
           school_skim_percentage: number | null
           secondary_colour: string | null
@@ -8919,7 +8923,9 @@ export type Database = {
           direct_debit_enabled?: boolean
           disability_experience?: string[]
           drive_time_alerts_enabled?: boolean | null
+          driving_licence_back_url?: string | null
           driving_licence_expiry?: string | null
+          driving_licence_front_url?: string | null
           driving_licence_number?: string | null
           electricity_cost_per_kwh?: number | null
           email?: string | null
@@ -8967,6 +8973,7 @@ export type Database = {
           min_lead_hours?: number
           mini_website_domain_id?: string | null
           morning_briefing_enabled?: boolean | null
+          mot_certificate_url?: string | null
           motability_friendly?: boolean
           name: string
           payment_link_base_url?: string | null
@@ -8987,6 +8994,7 @@ export type Database = {
           quotes_enabled?: boolean | null
           radius_miles?: number
           reflective_logs_enabled?: boolean | null
+          road_tax_reference?: string | null
           school_skim_amount?: number | null
           school_skim_percentage?: number | null
           secondary_colour?: string | null
@@ -9107,7 +9115,9 @@ export type Database = {
           direct_debit_enabled?: boolean
           disability_experience?: string[]
           drive_time_alerts_enabled?: boolean | null
+          driving_licence_back_url?: string | null
           driving_licence_expiry?: string | null
+          driving_licence_front_url?: string | null
           driving_licence_number?: string | null
           electricity_cost_per_kwh?: number | null
           email?: string | null
@@ -9155,6 +9165,7 @@ export type Database = {
           min_lead_hours?: number
           mini_website_domain_id?: string | null
           morning_briefing_enabled?: boolean | null
+          mot_certificate_url?: string | null
           motability_friendly?: boolean
           name?: string
           payment_link_base_url?: string | null
@@ -9175,6 +9186,7 @@ export type Database = {
           quotes_enabled?: boolean | null
           radius_miles?: number
           reflective_logs_enabled?: boolean | null
+          road_tax_reference?: string | null
           school_skim_amount?: number | null
           school_skim_percentage?: number | null
           secondary_colour?: string | null
