@@ -60,10 +60,11 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
   },
 ];
 
-export function SettingsSidebar() {
+export function SettingsSidebar({ extraGroups = [] }: { extraGroups?: SidebarGroup[] }) {
   const navigate = useNavigate();
   const { categoryId } = useParams<{ categoryId?: string }>();
   const active = categoryId ?? "account";
+  const allGroups = [...SIDEBAR_GROUPS, ...extraGroups];
 
   return (
     <aside
@@ -76,7 +77,7 @@ export function SettingsSidebar() {
       }}
       className="shrink-0"
     >
-      {SIDEBAR_GROUPS.map(group => (
+      {allGroups.map(group => (
         <div key={group.id} style={{ marginBottom: 18 }}>
           <div
             style={{
@@ -90,7 +91,7 @@ export function SettingsSidebar() {
           </div>
           <ul style={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {group.items.map(item => {
-              const Icon = item.icon;
+              const Icon: any = item.icon;
               const isActive = active === item.id;
               return (
                 <li key={item.id}>
@@ -108,7 +109,7 @@ export function SettingsSidebar() {
                       cursor: "pointer",
                     }}
                   >
-                    <Icon size={16} stroke={1.5} />
+                    <Icon size={16} stroke={1.5} className="h-4 w-4" />
                     {item.label}
                   </button>
                 </li>
@@ -117,21 +118,6 @@ export function SettingsSidebar() {
           </ul>
         </div>
       ))}
-      <div style={{ borderTop: "0.5px solid var(--color-border)", marginTop: 12, paddingTop: 12 }}>
-        <button
-          type="button"
-          onClick={() => navigate("/instructor/settings/all")}
-          style={{
-            display: "flex", alignItems: "center", gap: 8,
-            width: "100%", padding: "6px 8px", borderRadius: "var(--border-radius-md)",
-            background: "transparent", border: 0,
-            fontSize: 12, color: "var(--color-text-tertiary)", cursor: "pointer",
-          }}
-        >
-          <IconSettings size={14} stroke={1.5} />
-          All other settings
-        </button>
-      </div>
     </aside>
   );
 }
