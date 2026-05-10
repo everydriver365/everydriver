@@ -431,8 +431,9 @@ export function PostcodeRatesSection({ instructorId }: { instructorId: string })
                 <div style={{ color: "hsl(0 72% 50%)" }}>Not a recognisable UK postcode.</div>
               ) : (
                 <>
-                  <div className="text-muted-foreground">
-                    Outward code: <span className="font-mono font-medium text-foreground">{outward}</span>
+                  <div className="text-muted-foreground flex items-center gap-2">
+                    <span>Outward code: <span className="font-mono font-medium text-foreground">{outward}</span></span>
+                    <OutwardStatusBadge code={outward || ""} />
                   </div>
                   {match ? (
                     <div>
