@@ -239,7 +239,10 @@ serve(async (req) => {
         results.gateBlocked = pushGate.reason ?? "blocked";
       }
 
-      const { data: subscriptions, error: subError } = pushGate.allow ? await supabase
+      if (!pushGate.allow) {
+        // Skip push send entirely; results already record the gate reason.
+      } else {
+      const { data: subscriptions, error: subError } = await supabase
         .from("push_subscriptions")
         .select("endpoint, p256dh, auth")
         .eq("instructor_id", data.instructorId);
