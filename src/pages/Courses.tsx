@@ -779,6 +779,20 @@ export default function Courses() {
       // Geocode all instructor postcodes
       const allPostcodes = (instructorsRes.data || []).map((i: any) => (i.home_postcode || "").replace(/\s+/g, "").toUpperCase()).filter(Boolean);
       await geocodePostcodes(allPostcodes);
+
+      // Load postcode rate overrides for all visible instructors (single batched query)
+      const instructorIds = (instructorsRes.data || []).map((i: any) => i.id).filter(Boolean);
+      if (instructorIds.length) {
+        const { data: rateRows } = await supabase
+          .from("instructor_postcode_rates")
+          .select("instructor_id, outward_code, hourly_rate")
+          .in("instructor_id", instructorIds);
+        const map: Record<string, PostcodeRateRule[]> = {};
+        for (const r of (rateRows || []) as any[]) {
+          (map[r.instructor_id] ||= []).push({ outward_code: r.outward_code, hourly_rate: Number(r.hourly_rate) });
+        }
+        setPostcodeRulesByInstructor(map);
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
