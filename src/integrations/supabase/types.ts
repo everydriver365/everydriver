@@ -7411,6 +7411,48 @@ export type Database = {
         }
         Relationships: []
       }
+      instructor_postcode_rates: {
+        Row: {
+          created_at: string
+          hourly_rate: number
+          id: string
+          instructor_id: string
+          outward_code: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hourly_rate: number
+          id?: string
+          instructor_id: string
+          outward_code: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hourly_rate?: number
+          id?: string
+          instructor_id?: string
+          outward_code?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_postcode_rates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_postcode_rates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_premium_placements: {
         Row: {
           created_at: string
